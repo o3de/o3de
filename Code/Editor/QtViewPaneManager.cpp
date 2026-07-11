@@ -729,7 +729,29 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
             }
             else
             {
-                m_advancedDockManager->disableAutoSaveLayout(newDockWidget);
+                // Unique object names let the dock manager save and restore additional instances.
+                auto instanceName = [&name](int number)
+                {
+                    return QStringLiteral("%1 (%2)").arg(name).arg(number);
+                };
+                auto nameTaken = [pane](const QString& objectName)
+                {
+                    for (const DockWidget* dockWidget : pane->m_dockWidgetInstances)
+                    {
+                        if (dockWidget->objectName() == objectName)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+
+                int instanceNumber = 2;
+                while (nameTaken(instanceName(instanceNumber)))
+                {
+                    ++instanceNumber;
+                }
+                newDockWidget->setObjectName(instanceName(instanceNumber));
             }
 
             newDockWidget->setVisible(true);
@@ -1220,25 +1242,7 @@ void QtViewPaneManager::SaveLayout(QString layoutName)
         return;
     }
 
-    layoutName = layoutName.trimmed();
-
-    ViewLayoutState state;
-    for (const QtViewPane& pane : m_registeredPanes)
-    {
-        // Include all visible and tabbed panes in our layout, since tabbed panes
-        // won't be visible if they aren't the active tab, but still need to be
-        // retained in the layout
-        if (pane.IsVisible() || AzQtComponents::DockTabWidget::IsTabbed(pane.m_dockWidget))
-        {
-            state.viewPanes.push_back(pane.m_dockWidget->PaneName());
-        }
-    }
-
-    state.mainWindowState = m_advancedDockManager->saveState();
-
-    state.fakeDockWidgetGeometries = m_fakeDockWidgetGeometries;
-
-    SaveStateToLayout(state, layoutName);
+    SaveStateToLayout(GetLayout(), layoutName.trimmed());
 
     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
@@ -1354,6 +1358,16 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
         {
             state.viewPanes.push_back(pane.m_dockWidget->PaneName());
         }
+
+        // Additional multi-instance docks are saved under their unique object names.
+        for (DockWidget* dockWidget : pane.m_dockWidgetInstances)
+        {
+            if (dockWidget != pane.m_dockWidget &&
+                (dockWidget->isVisible() || AzQtComponents::DockTabWidget::IsTabbed(dockWidget)))
+            {
+                state.viewPanes.push_back(dockWidget->objectName());
+            }
+        }
     }
 
     state.mainWindowState = m_advancedDockManager->saveState();
@@ -1361,6 +1375,29 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
     state.fakeDockWidgetGeometries = m_fakeDockWidgetGeometries;
 
     return state;
+}
+
+void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName)
+{
+    if (GetPane(paneName))
+    {
+        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        return;
+    }
+
+    // "Name (N)" entries recreate additional instances under their saved object names.
+    const int suffixStart = paneName.lastIndexOf(QStringLiteral(" ("));
+    const QString baseName = suffixStart > 0 && paneName.endsWith(QLatin1Char(')')) ? paneName.left(suffixStart) : QString();
+    QtViewPane* basePane = baseName.isEmpty() ? nullptr : GetPane(baseName);
+    if (basePane && basePane->m_options.canHaveMultipleInstances)
+    {
+        const QtViewPane* openedPane = OpenPane(
+            baseName, QtViewPane::OpenMode::OnlyOpen | QtViewPane::OpenMode::MultiplePanes | QtViewPane::OpenMode::RestoreLayout);
+        if (openedPane && !basePane->m_dockWidgetInstances.isEmpty())
+        {
+            basePane->m_dockWidgetInstances.last()->setObjectName(paneName);
+        }
+    }
 }
 
 
@@ -1454,7 +1491,7 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPaneForLayoutRestore(paneName);
     }
 
     // must do this after opening all of the panes!
@@ -1486,7 +1523,7 @@ bool QtViewPaneManager::RestoreLayout(const ViewLayoutState& state)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPaneForLayoutRestore(paneName);
     }
 
     // must do this after opening all of the panes!

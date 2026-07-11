@@ -106,6 +106,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveViewportBorder();
         bool GetViewportBorderVisible() const;
 
+        //! Re-anchors the overlay onto another viewport's render overlay.
+        void SetRenderOverlay(QWidget* renderOverlay);
+
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
 

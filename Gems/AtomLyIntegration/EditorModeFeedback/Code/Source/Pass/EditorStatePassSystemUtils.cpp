@@ -93,7 +93,7 @@ namespace AZ::Render
         // Pass data
         {
             auto passData = AZStd::make_shared<RPI::EditorStateParentPassData>();
-            passData->editorStatePass = &state;
+            passData->editorState = state.GetState();
             stateParentPassTemplate->m_passData = passData;
         }
 
@@ -209,7 +209,7 @@ namespace AZ::Render
             passData->m_pipelineViewTag = "MainCamera";
             passData->m_shaderAsset.m_filePath = shaderFilePath;
             passData->m_shaderAsset.m_assetId = shaderAssetId;
-            passData->editorStatePass = &state;
+            passData->editorState = state.GetState();
             passTemplate->m_passData = passData;
         }
 

@@ -233,6 +233,10 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
+    // Stop listening before unbinding: a dying viewport must not rebind its scene, or it would
+    // leave a pipeline for a vanishing window behind in the target scene.
+    m_editorEntityNotifications.reset();
+
     // A world whose last viewport goes away is torn down.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
         &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
@@ -243,7 +247,6 @@ EditorViewportWidget::~EditorViewportWidget()
 
     m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
-    m_editorEntityNotifications.reset();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
     Camera::CameraNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetUndoManager()->RemoveListener(this);
@@ -406,6 +409,8 @@ void EditorViewportWidget::Update()
 
     if (!isVisible())
     {
+        // The viewport UI overlay rides the selected viewport; keep it updating while its owner is tabbed away.
+        m_viewportUi.Update();
         return;
     }
 
@@ -679,7 +684,7 @@ void EditorViewportWidget::RenderAll()
 
     m_entityVisibilityQuery.DisplayVisibility(*m_debugDisplay);
 
-    if (m_manipulatorManager != nullptr)
+    if (m_manipulatorManager != nullptr && AzToolsFramework::IsEditedWorldVisibleInViewport(GetViewportId()))
     {
         namespace AztfVi = AzToolsFramework::ViewportInteraction;
 

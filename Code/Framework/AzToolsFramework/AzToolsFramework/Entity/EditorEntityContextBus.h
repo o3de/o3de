@@ -174,8 +174,8 @@ namespace AzToolsFramework
         virtual AzFramework::EntityContextId GetActiveWorldId() = 0;
         virtual void SetFocusedViewport(AzFramework::ViewportId viewportId) = 0;
 
-        //! The ownership service holding a world's root level. The editor context id or a null id
-        //! resolves to the active world.
+        //! The ownership service holding a world's root level. A null id resolves to the active
+        //! world; the editor context id addresses world 0 itself.
         virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
 
         //! The scene a world's entities live and render in (world 0 = the editor scene).
@@ -206,6 +206,12 @@ namespace AzToolsFramework
         //! Fired when a viewport was bound to a different world (the viewport rebinds its scene).
         virtual void OnViewportWorldChanged(
             AzFramework::ViewportId /*viewportId*/, const AzFramework::EntityContextId& /*worldId*/) {}
+
+        //! Fired once a world's level has instantiated (per-world editor state initializes here).
+        virtual void OnWorldLoaded(const AzFramework::EntityContextId& /*worldId*/) {}
+
+        //! Fired after a world was torn down (per-world editor state drops its entries).
+        virtual void OnWorldDestroyed(const AzFramework::EntityContextId& /*worldId*/) {}
 
         //! Fired when an Editor entity is created
         virtual void OnEditorEntityCreated(const AZ::EntityId& /*entityId*/) {}

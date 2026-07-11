@@ -11,7 +11,6 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -33,6 +32,26 @@ namespace AzToolsFramework
         return IsInFocusSubTree(parentId, focusRootId);
     }
 
+    //! A null id addresses the active world; the editor context id addresses world 0 itself.
+    static AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId)
+    {
+        AzFramework::EntityContextId worldId = entityContextId;
+        if (worldId.IsNull())
+        {
+            EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
+        }
+        return worldId;
+    }
+
+    //! Returns the world owning the entity, or the active world for entities outside every context.
+    static AzFramework::EntityContextId GetEntityWorldId(AZ::EntityId entityId)
+    {
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+        return ResolveWorldId(worldId);
+    }
+
     void FocusModeSystemComponent::Init()
     {
     }
@@ -40,16 +59,16 @@ namespace AzToolsFramework
     void FocusModeSystemComponent::Activate()
     {
         AZ::Interface<FocusModeInterface>::Register(this);
+        EditorEntityContextNotificationBus::Handler::BusConnect();
         EditorEntityInfoNotificationBus::Handler::BusConnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
-
-        RefreshFocusedEntityIdList();
     }
 
     void FocusModeSystemComponent::Deactivate()
     {
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AZ::Interface<FocusModeInterface>::Unregister(this);
     }
 
@@ -76,61 +95,77 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::SetFocusRoot(AZ::EntityId entityId)
     {
-        AZ::EntityId previousFocusEntityId = m_focusRoot;
-        m_focusRoot = entityId;
+        const AzFramework::EntityContextId worldId =
+            entityId.IsValid() ? GetEntityWorldId(entityId) : ResolveWorldId(AzFramework::EntityContextId::CreateNull());
+        SetFocusRootForWorld(worldId, entityId);
+    }
 
-        RefreshFocusedEntityIdList();
+    void FocusModeSystemComponent::SetFocusRootForWorld(const AzFramework::EntityContextId& worldId, AZ::EntityId entityId)
+    {
+        WorldFocus& focus = GetWorldFocus(worldId);
+        const AZ::EntityId previousFocusEntityId = focus.m_focusRoot;
+        focus.m_focusRoot = entityId;
+
+        RefreshFocusedEntityIdList(focus);
 
         // Only trigger notifications if the focus root has changed.
-        if (m_focusRoot != previousFocusEntityId)
+        if (focus.m_focusRoot != previousFocusEntityId)
         {
             if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
             {
-                if (!previousFocusEntityId.IsValid() && m_focusRoot.IsValid())
+                if (!previousFocusEntityId.IsValid() && focus.m_focusRoot.IsValid())
                 {
-                    tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                    tracker->ActivateMode({ worldId }, ViewportEditorMode::Focus);
                 }
-                else if (previousFocusEntityId.IsValid() && !m_focusRoot.IsValid())
+                else if (previousFocusEntityId.IsValid() && !focus.m_focusRoot.IsValid())
                 {
-                    tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+                    tracker->DeactivateMode({ worldId }, ViewportEditorMode::Focus);
                 }
             }
 
-            FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
+            FocusModeNotificationBus::Broadcast(
+                &FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, focus.m_focusRoot);
         }
     }
 
-    void FocusModeSystemComponent::ClearFocusRoot([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    void FocusModeSystemComponent::ClearFocusRoot(AzFramework::EntityContextId entityContextId)
     {
-        SetFocusRoot(AZ::EntityId());
+        SetFocusRootForWorld(ResolveWorldId(entityContextId), AZ::EntityId());
     }
 
-    AZ::EntityId FocusModeSystemComponent::GetFocusRoot([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    AZ::EntityId FocusModeSystemComponent::GetFocusRoot(AzFramework::EntityContextId entityContextId)
     {
-        return m_focusRoot;
+        auto focusIt = m_worldFocus.find(ResolveWorldId(entityContextId));
+        return focusIt != m_worldFocus.end() ? focusIt->second.m_focusRoot : AZ::EntityId();
     }
 
-    const EntityIdList& FocusModeSystemComponent::GetFocusedEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    const EntityIdList& FocusModeSystemComponent::GetFocusedEntities(AzFramework::EntityContextId entityContextId)
     {
-        return m_focusedEntityIdList;
+        WorldFocus& focus = GetWorldFocus(ResolveWorldId(entityContextId));
+        if (focus.m_focusedEntityIdList.empty())
+        {
+            RefreshFocusedEntityIdList(focus);
+        }
+        return focus.m_focusedEntityIdList;
     }
 
     bool FocusModeSystemComponent::IsInFocusSubTree(AZ::EntityId entityId) const
     {
-        // If the focus is on the root, all entities are in the focus subtree.
-        if (m_focusRoot == AZ::EntityId())
-        {
-            return true;
-        }
+        auto focusIt = m_worldFocus.find(GetEntityWorldId(entityId));
+        const AZ::EntityId focusRoot = focusIt != m_worldFocus.end() ? focusIt->second.m_focusRoot : AZ::EntityId();
 
-        return AzToolsFramework::IsInFocusSubTree(entityId, m_focusRoot);
+        // If the focus is on the root, all entities are in the focus subtree.
+        return focusRoot.IsValid() ? AzToolsFramework::IsInFocusSubTree(entityId, focusRoot) : true;
     }
 
     bool FocusModeSystemComponent::IsFocusRoot(AZ::EntityId entityId) const
     {
-        if (m_focusRoot.IsValid())
+        auto focusIt = m_worldFocus.find(GetEntityWorldId(entityId));
+        const AZ::EntityId focusRoot = focusIt != m_worldFocus.end() ? focusIt->second.m_focusRoot : AZ::EntityId();
+
+        if (focusRoot.IsValid())
         {
-            return (entityId == m_focusRoot);
+            return (entityId == focusRoot);
         }
         else
         {
@@ -140,13 +175,25 @@ namespace AzToolsFramework
         }
     }
 
+    void FocusModeSystemComponent::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        m_worldFocus.erase(worldId);
+    }
+
     void FocusModeSystemComponent::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
     {
+        auto focusIt = m_worldFocus.find(GetEntityWorldId(childId));
+        if (focusIt == m_worldFocus.end())
+        {
+            return;
+        }
+        EntityIdList& focusedEntityIdList = focusIt->second.m_focusedEntityIdList;
+
         // If the parent's entityId is in the list and the child isn't, add the child to the list.
         bool isParentInList = false;
         bool isChildInList = false;
 
-        for (auto iter = m_focusedEntityIdList.begin(); iter != m_focusedEntityIdList.end(); ++iter)
+        for (auto iter = focusedEntityIdList.begin(); iter != focusedEntityIdList.end(); ++iter)
         {
             if (*iter == parentId)
             {
@@ -167,34 +214,45 @@ namespace AzToolsFramework
 
         if (isParentInList && !isChildInList)
         {
-            m_focusedEntityIdList.push_back(childId);
+            focusedEntityIdList.push_back(childId);
         }
     }
 
     void FocusModeSystemComponent::OnEntityInfoUpdatedRemoveChildEnd([[maybe_unused]] AZ::EntityId parentId, AZ::EntityId childId)
     {
-        // If the removed entityId is in the list, remove it.
-        if (auto iter = AZStd::find(m_focusedEntityIdList.begin(), m_focusedEntityIdList.end(), childId);
-            iter != m_focusedEntityIdList.end())
+        // The removed entity's world may already be gone, so sweep every world's list.
+        for (auto& [worldId, focus] : m_worldFocus)
         {
-            // Swap and pop since we don't care about the ordering.
-            *iter = m_focusedEntityIdList.back();
-            m_focusedEntityIdList.pop_back();
+            if (auto iter = AZStd::find(focus.m_focusedEntityIdList.begin(), focus.m_focusedEntityIdList.end(), childId);
+                iter != focus.m_focusedEntityIdList.end())
+            {
+                // Swap and pop since we don't care about the ordering.
+                *iter = focus.m_focusedEntityIdList.back();
+                focus.m_focusedEntityIdList.pop_back();
+            }
         }
     }
 
     void FocusModeSystemComponent::OnPrefabInstancePropagationEnd()
     {
-        // Can't rely on any of the entities in the list to still exist, refresh the whole thing.
-        RefreshFocusedEntityIdList();
+        // Can't rely on any of the entities in the lists to still exist, refresh everything.
+        for (auto& [worldId, focus] : m_worldFocus)
+        {
+            RefreshFocusedEntityIdList(focus);
+        }
     }
 
-    void FocusModeSystemComponent::RefreshFocusedEntityIdList()
+    FocusModeSystemComponent::WorldFocus& FocusModeSystemComponent::GetWorldFocus(const AzFramework::EntityContextId& worldId)
     {
-        m_focusedEntityIdList.clear();
+        return m_worldFocus[worldId];
+    }
+
+    void FocusModeSystemComponent::RefreshFocusedEntityIdList(WorldFocus& focus)
+    {
+        focus.m_focusedEntityIdList.clear();
 
         AZStd::queue<AZ::EntityId> entityIdQueue;
-        entityIdQueue.push(m_focusRoot);
+        entityIdQueue.push(focus.m_focusRoot);
 
         while (!entityIdQueue.empty())
         {
@@ -203,7 +261,7 @@ namespace AzToolsFramework
 
             if (entityId.IsValid())
             {
-                m_focusedEntityIdList.push_back(entityId);
+                focus.m_focusedEntityIdList.push_back(entityId);
             }
 
             EntityIdList children;

@@ -32,22 +32,32 @@ namespace AZ::Render
     EditorStatePassSystem::EditorStatePassSystem(EditorStateList&& editorStates)
         : m_editorStates(AZStd::move(editorStates))
     {
-        auto* passSystem = RPI::PassSystemInterface::Get();
-        AZ_Assert(passSystem, "Cannot get the pass system.");
-        passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
-        passSystem->AddPassCreator(Name(BufferCopyStatePassTemplatePassClassName), &EditorStateBufferCopyPass::Create);
-        passSystem->AddPassCreator(Name(StatePassTemplatePassClassName), &EditorStateParentPass::Create);
-        passSystem->AddPassCreator(Name(EditorModeDesaturationPassName), &EditorModeDesaturationPass::Create);
-        passSystem->AddPassCreator(Name(EditorModeTintPassPassName), &EditorModeTintPass::Create);
-        passSystem->AddPassCreator(Name(EditorModeBlurPassName), &EditorModeBlurPass::Create);
-        passSystem->AddPassCreator(Name(EditorModeOutlinePassName), &EditorModeOutlinePass::Create);
+        // Pass creators and template mappings are process-wide; only the first instance registers them.
+        static bool passCreatorsRegistered = false;
+        if (!passCreatorsRegistered)
+        {
+            passCreatorsRegistered = true;
 
-        // Editor state child effect passes
-        passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
+            auto* passSystem = RPI::PassSystemInterface::Get();
+            AZ_Assert(passSystem, "Cannot get the pass system.");
+            passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
+            passSystem->AddPassCreator(Name(BufferCopyStatePassTemplatePassClassName), &EditorStateBufferCopyPass::Create);
+            passSystem->AddPassCreator(Name(StatePassTemplatePassClassName), &EditorStateParentPass::Create);
+            passSystem->AddPassCreator(Name(EditorModeDesaturationPassName), &EditorModeDesaturationPass::Create);
+            passSystem->AddPassCreator(Name(EditorModeTintPassPassName), &EditorModeTintPass::Create);
+            passSystem->AddPassCreator(Name(EditorModeBlurPassName), &EditorModeBlurPass::Create);
+            passSystem->AddPassCreator(Name(EditorModeOutlinePassName), &EditorModeOutlinePass::Create);
+
+            // Editor state child effect passes
+            passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
+        }
     }
 
     void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline)
     {
+        // Mask templates are created once process-wide; every instance needs the mask names.
+        m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
+
         const auto templateName = Name(MainPassParentTemplateName);
 
         // Early return if pass is already found in render pipeline or if the pipeline is not the default one (i.e it is an XR pipeline).
@@ -91,7 +101,6 @@ namespace AZ::Render
             }
 
             // Entity mask passes
-            m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
             for (const auto& drawList : m_masks)
             {
                 RPI::PassRequest pass;
@@ -191,6 +200,19 @@ namespace AZ::Render
                 "EditorStatePassSystem", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
             return;
         }
+    }
+
+    const EditorStateBase* EditorStatePassSystem::GetEditorState(EditorState editorState) const
+    {
+        for (const auto& state : m_editorStates)
+        {
+            if (state->GetState() == editorState)
+            {
+                return state.get();
+            }
+        }
+
+        return nullptr;
     }
 
     EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStates() const

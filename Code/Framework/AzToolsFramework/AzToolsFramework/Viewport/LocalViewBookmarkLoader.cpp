@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -159,9 +160,19 @@ namespace AzToolsFramework
         return AZStd::string::format("/%.*s/LastKnownLocation", AZ_STRING_ARG(bookmarkFileName.Native()));
     }
 
+    //! View bookmarks belong to the level being viewed: the active world's root prefab.
+    static PrefabEditorEntityOwnershipInterface* GetActiveWorldOwnershipService()
+    {
+        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
+        EditorEntityContextRequestBus::BroadcastResult(
+            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService,
+            AzFramework::EntityContextId::CreateNull());
+        return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+    }
+
     static AZ::IO::Path GenerateBookmarkFileName()
     {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabEditorEntityOwnershipInterface = GetActiveWorldOwnershipService();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
         Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
@@ -515,13 +526,19 @@ namespace AzToolsFramework
 
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
-        auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        auto prefabEditorEntityOwnershipInterface = GetActiveWorldOwnershipService();
         if (!prefabEditorEntityOwnershipInterface)
         {
             return nullptr;
         }
 
-        const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+        Prefab::InstanceOptionalReference rootInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        if (!rootInstance.has_value())
+        {
+            return nullptr;
+        }
+
+        const AZ::EntityId containerEntityId = rootInstance->get().GetContainerEntityId();
         if (!containerEntityId.IsValid())
         {
             return nullptr;

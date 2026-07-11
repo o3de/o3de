@@ -331,6 +331,14 @@ namespace AzToolsFramework::ViewportUi
         m_viewportUi->InitializeUiOverlay();
     }
 
+    void ViewportUiManager::SetViewportUiRenderOverlay(QWidget* renderOverlay)
+    {
+        if (m_viewportUi)
+        {
+            m_viewportUi->SetRenderOverlay(renderOverlay);
+        }
+    }
+
     void ViewportUiManager::Update()
     {
         m_viewportUi->Update();

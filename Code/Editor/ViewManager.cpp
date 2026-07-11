@@ -79,6 +79,10 @@ CViewManager::CViewManager()
     // The raw widget registration only serves CLayoutViewPane::SetViewClass (preview mode); a bare
     // EditorViewportWidget never receives a viewport id, so opening it as a pane would be inert.
     viewportOptions.showInMenu = false;
+    // Viewports stay interactive in component/ImGui modes: disabling one freezes its camera and
+    // drops input releases, latching stale modifier state in ViewportManipulatorController.
+    viewportOptions.isDisabledInComponentMode = false;
+    viewportOptions.isDisabledInImGuiMode = false;
 
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
@@ -89,6 +93,8 @@ CViewManager::CViewManager()
     dockableViewportOptions.paneRect = QRect(0, 0, 800, 450);
     dockableViewportOptions.canHaveMultipleInstances = true;
     dockableViewportOptions.viewportType = ET_ViewportCamera;
+    dockableViewportOptions.isDisabledInComponentMode = false;
+    dockableViewportOptions.isDisabledInImGuiMode = false;
     QtViewPaneManager::instance()->RegisterPane(
         LyViewPane::EditorViewport,
         LyViewPane::CategoryViewport,
@@ -160,12 +166,27 @@ void CViewManager::RegisterViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
+    // Park the viewport UI overlay back on its owner before its anchor viewport goes away.
+    const bool viewportUiAnchorClosing = m_pSelectedView == pViewport;
+
     if (m_pSelectedView == pViewport)
     {
         m_pSelectedView = nullptr;
     }
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
+
+    if (viewportUiAnchorClosing)
+    {
+        for (CViewport* viewport : m_viewports)
+        {
+            if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
+            {
+                static_cast<QtViewport*>(viewport)->AnchorViewportUiTo(static_cast<QtViewport*>(viewport));
+                break;
+            }
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,6 +369,16 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequests::SetFocusedViewport, m_pSelectedView->GetViewportId());
+
+        // The single viewport UI widget set rides the selected viewport.
+        for (CViewport* viewport : m_viewports)
+        {
+            if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
+            {
+                static_cast<QtViewport*>(viewport)->AnchorViewportUiTo(static_cast<QtViewport*>(m_pSelectedView));
+                break;
+            }
+        }
     }
 }
 

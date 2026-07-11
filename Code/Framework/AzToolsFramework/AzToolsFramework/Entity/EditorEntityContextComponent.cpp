@@ -53,6 +53,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
 namespace AzToolsFramework
@@ -78,10 +79,9 @@ namespace AzToolsFramework
         };
     }
 
-    //! An additional editor world: a real entity context owning one level as its root prefab,
-    //! living in its own scene (child of Main). Its entities receive the same editor treatment as
-    //! world 0's — the owning component's SetupEditorEntities runs for everything added here. The
-    //! render scene is attached on demand by the first viewport that binds to the world's scene.
+    //! An additional editor world: a real entity context owning one level as its root prefab and
+    //! living in its own scene (child of Main). Entities added here receive the same editor
+    //! treatment as world 0's; a render scene is attached by the first viewport that binds.
     class EditorEntityContextComponent::EditorWorld
         : public AzFramework::EntityContext
     {
@@ -124,40 +124,41 @@ namespace AzToolsFramework
                 editorModeTracker->ActivateMode({ GetContextId() }, ViewportEditorMode::Default);
             }
 
-            // Only the level's template loads now (no entities). Instantiation waits until a
-            // viewport has bound and attached a render scene to this world's scene — entities
-            // activating before that resolve their render components to the Main scene instead.
+            // Only the level's template loads now; instantiation waits until a viewport has bound
+            // and attached a render scene, or entities would resolve to the Main scene instead.
             auto* prefabLoader = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
             auto* prefabSystem = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
             AZ_Assert(prefabLoader && prefabSystem, "Editor world created without the prefab system");
             if (prefabLoader && prefabSystem)
             {
-                Prefab::TemplateId templateId = prefabSystem->GetTemplateIdFromFilePath(levelPrefabPath);
+                // Template queries take project-relative paths.
+                const AZ::IO::Path relativeLevelPath = prefabLoader->GenerateRelativePath(levelPrefabPath);
+                Prefab::TemplateId templateId = prefabSystem->GetTemplateIdFromFilePath(relativeLevelPath);
                 if (templateId == Prefab::InvalidTemplateId)
                 {
                     templateId = prefabLoader->LoadTemplateFromFile(levelPrefabPath);
                 }
                 if (templateId != Prefab::InvalidTemplateId)
                 {
-                    m_levelPath = prefabLoader->GenerateRelativePath(levelPrefabPath);
+                    m_levelPath = relativeLevelPath;
                     m_pendingLevelLoad = true;
                 }
             }
         }
 
-        void LoadPendingLevel()
+        bool LoadPendingLevel()
         {
             if (!m_pendingLevelLoad)
             {
-                return;
+                return false;
             }
             m_pendingLevelLoad = false;
 
-            PrefabEditorEntityOwnershipInterface* prefabService =
-                static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+            PrefabEditorEntityOwnershipInterface* prefabService = GetOwnershipService();
             Prefab::InstanceOptionalReference rootInstance = prefabService->LoadRootPrefab(m_levelPath);
             AZ_Error("EditorWorld", rootInstance.has_value(), "Could not instantiate the level '%s' in its world",
                 m_levelPath.c_str());
+            return rootInstance.has_value();
         }
 
         ~EditorWorld() override
@@ -193,7 +194,7 @@ namespace AzToolsFramework
             return m_scene;
         }
 
-        PrefabEditorEntityOwnershipInterface* GetOwnershipService() const
+        PrefabEditorEntityOwnershipService* GetOwnershipService() const
         {
             return static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
         }
@@ -352,8 +353,10 @@ namespace AzToolsFramework
     //=========================================================================
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
-        AZ::Entity* entity = CreateEntity(name);
+        // New loose entities are created in the active world.
+        AZ::Entity* entity = aznew AZ::Entity(name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
+        GetActiveWorldOwnershipService()->AddEntity(entity);
         FinalizeEditorEntity(entity);
 
         return entity->GetId();
@@ -383,10 +386,19 @@ namespace AzToolsFramework
         }
         entity = aznew AZ::Entity(entityId, name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
-        AddEntity(entity);
+        GetActiveWorldOwnershipService()->AddEntity(entity);
         FinalizeEditorEntity(entity);
 
         return entity->GetId();
+    }
+
+    PrefabEditorEntityOwnershipService* EditorEntityContextComponent::GetActiveWorldOwnershipService()
+    {
+        const AzFramework::EntityContextId activeWorldId = GetActiveWorldId();
+        auto worldIt = m_worlds.find(activeWorldId);
+        return worldIt != m_worlds.end()
+            ? worldIt->second->GetOwnershipService()
+            : static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
     }
 
     //=========================================================================
@@ -422,7 +434,53 @@ namespace AzToolsFramework
 
     void EditorEntityContextComponent::HandleEntitiesAdded(const EntityList& entities)
     {
-        m_entityOwnershipService->HandleEntitiesAdded(entities);
+        // Entities register with the context of the world whose prefab instance owns them.
+        if (m_worlds.empty())
+        {
+            m_entityOwnershipService->HandleEntitiesAdded(entities);
+            return;
+        }
+
+        AZStd::unordered_map<AzFramework::EntityContextId, EntityList> entitiesPerWorld;
+        for (AZ::Entity* entity : entities)
+        {
+            entitiesPerWorld[FindEntityWorldId(entity->GetId())].push_back(entity);
+        }
+        for (auto& [worldId, worldEntities] : entitiesPerWorld)
+        {
+            auto worldIt = m_worlds.find(worldId);
+            AzFramework::EntityOwnershipService* ownershipService =
+                worldIt != m_worlds.end() ? worldIt->second->GetOwnershipService() : m_entityOwnershipService.get();
+            ownershipService->HandleEntitiesAdded(worldEntities);
+        }
+    }
+
+    AzFramework::EntityContextId EditorEntityContextComponent::FindEntityWorldId(AZ::EntityId entityId)
+    {
+        auto* instanceMapper = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
+        Prefab::InstanceOptionalReference owningInstance =
+            instanceMapper ? instanceMapper->FindOwningInstance(entityId) : AZStd::nullopt;
+        if (!owningInstance.has_value())
+        {
+            return GetContextId();
+        }
+
+        const Prefab::Instance* rootInstance = &owningInstance->get();
+        while (rootInstance->GetParentInstance().has_value())
+        {
+            rootInstance = &rootInstance->GetParentInstance()->get();
+        }
+
+        for (const auto& [worldId, world] : m_worlds)
+        {
+            PrefabEditorEntityOwnershipInterface* worldService = world->GetOwnershipService();
+            Prefab::InstanceOptionalReference worldRoot = worldService->GetRootPrefabInstance();
+            if (worldRoot.has_value() && &worldRoot->get() == rootInstance)
+            {
+                return worldId;
+            }
+        }
+        return GetContextId();
     }
 
     //=========================================================================
@@ -752,6 +810,8 @@ namespace AzToolsFramework
             if (!worldStillBound)
             {
                 m_worlds.erase(previousWorldId);
+                EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnWorldDestroyed, previousWorldId);
             }
         }
 
@@ -763,9 +823,10 @@ namespace AzToolsFramework
 
             // The viewport's synchronous rebind above attached a render scene to the world's scene;
             // the world's level instantiates only now so its entities resolve there, not to Main.
-            if (auto worldIt = m_worlds.find(newWorldId); worldIt != m_worlds.end())
+            if (auto worldIt = m_worlds.find(newWorldId); worldIt != m_worlds.end() && worldIt->second->LoadPendingLevel())
             {
-                worldIt->second->LoadPendingLevel();
+                EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnWorldLoaded, newWorldId);
             }
 
             if (viewportId == m_focusedViewportId)
@@ -802,8 +863,7 @@ namespace AzToolsFramework
     PrefabEditorEntityOwnershipInterface* EditorEntityContextComponent::GetWorldEntityOwnershipService(
         const AzFramework::EntityContextId& worldId)
     {
-        const AzFramework::EntityContextId resolvedWorldId =
-            (worldId.IsNull() || worldId == GetContextId()) ? GetActiveWorldId() : worldId;
+        const AzFramework::EntityContextId resolvedWorldId = worldId.IsNull() ? GetActiveWorldId() : worldId;
 
         if (resolvedWorldId == GetContextId())
         {
@@ -816,13 +876,11 @@ namespace AzToolsFramework
 
     AZStd::shared_ptr<AzFramework::Scene> EditorEntityContextComponent::GetWorldScene(const AzFramework::EntityContextId& worldId)
     {
-        const AzFramework::EntityContextId resolvedWorldId =
-            (worldId.IsNull() || worldId == GetContextId()) ? GetActiveWorldId() : worldId;
+        const AzFramework::EntityContextId resolvedWorldId = worldId.IsNull() ? GetActiveWorldId() : worldId;
 
         if (resolvedWorldId == GetContextId())
         {
-            // World 0 renders in the main scene (its editor child scene carries no render scene of
-            // its own), exactly as the stock viewport always bound.
+            // World 0 renders in the main scene, as the stock viewport always bound.
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             return sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;
         }

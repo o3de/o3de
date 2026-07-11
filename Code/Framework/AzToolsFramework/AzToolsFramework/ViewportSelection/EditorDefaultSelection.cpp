@@ -219,6 +219,12 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Manipulators act on the world being edited only.
+        if (!IsEditedWorldVisibleInViewport(mouseInteractionEvent.m_mouseInteraction.m_interactionId.m_viewportId))
+        {
+            return false;
+        }
+
         using AzToolsFramework::ViewportInteraction::MouseEvent;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
         // store the current interaction for use in DrawManipulators
@@ -250,32 +256,39 @@ namespace AzToolsFramework
         bool enterComponentModeAttempted = false;
         const bool componentModeBefore = InComponentMode();
 
+        // Component modes edit one world; other worlds' viewports keep normal selection.
+        const bool editedWorldVisible =
+            IsEditedWorldVisibleInViewport(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+
         bool handled = false;
         if (!componentModeBefore)
         {
-            // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
-            ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
-                [&mouseInteraction, &enterComponentModeAttempted](
-                    ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
-                {
-                    // detect if a double click happened on any Component in the viewport, attempting
-                    // to move it into ComponentMode (note: this is not guaranteed to succeed as an
-                    // incompatible multi-selection may prevent it)
-                    enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
-                    return !enterComponentModeAttempted;
-                });
-
-            // here we know ComponentMode was entered successfully and was not prohibited
-            if (m_componentModeCollection.ModesAdded())
+            if (editedWorldVisible)
             {
-                // for other entities in current selection, if they too support the same
-                // ComponentMode, add them as well (same effect as pressing Component
-                // Mode button in the Property Grid)
-                m_componentModeCollection.AddOtherSelectedEntityModes();
-                TransitionToComponentMode();
+                // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
+                ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
+                    [&mouseInteraction, &enterComponentModeAttempted](
+                        ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
+                    {
+                        // detect if a double click happened on any Component in the viewport, attempting
+                        // to move it into ComponentMode (note: this is not guaranteed to succeed as an
+                        // incompatible multi-selection may prevent it)
+                        enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
+                        return !enterComponentModeAttempted;
+                    });
+
+                // here we know ComponentMode was entered successfully and was not prohibited
+                if (m_componentModeCollection.ModesAdded())
+                {
+                    // for other entities in current selection, if they too support the same
+                    // ComponentMode, add them as well (same effect as pressing Component
+                    // Mode button in the Property Grid)
+                    m_componentModeCollection.AddOtherSelectedEntityModes();
+                    TransitionToComponentMode();
+                }
             }
         }
-        else
+        else if (editedWorldVisible)
         {
             ComponentModeFramework::ComponentModeRequestBus::EnumerateHandlers(
                 [&mouseInteraction, &handled](ComponentModeFramework::ComponentModeRequestBus::InterfaceType* componentModeRequest)
@@ -297,6 +310,13 @@ namespace AzToolsFramework
                         return !componentModeDelegateRequests->DetectLeaveComponentModeInteraction(mouseInteraction);
                     });
             }
+        }
+        else if (
+            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
+            mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            // Clicking into another world's viewport leaves component mode; camera navigation does not.
+            EndComponentMode();
         }
 
         // we do not want a double click on a Component while attempting to enter ComponentMode
@@ -323,14 +343,18 @@ namespace AzToolsFramework
             m_transformComponentSelection->DisplayViewportSelection(viewportInfo, debugDisplay);
         }
 
-        // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
-        m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+        // manipulators act on the world being edited only
+        if (IsEditedWorldVisibleInViewport(viewportInfo.m_viewportId))
+        {
+            // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
+            m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
-        // draw the manipulators
-        const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
-        debugDisplay.DepthTestOff();
-        m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
-        debugDisplay.DepthTestOn();
+            // draw the manipulators
+            const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
+            debugDisplay.DepthTestOff();
+            m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
+            debugDisplay.DepthTestOn();
+        }
     }
 
     void EditorDefaultSelection::DisplayViewportSelection2d(

@@ -10,30 +10,24 @@
 
 #include <Pass/State/EditorStateBase.h>
 
-#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzCore/std/functional.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 
 namespace AZ::Render
 {
     //! Class for the Focused Entity editor state effect.
+    //! Prefab focus is tracked per world; the state follows the world its scene renders.
     class FocusedEntityState
         : public EditorStateBase
-        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     {
     public:
-        FocusedEntityState();
-        ~FocusedEntityState();
-
-        // ViewportEditorModeNotificationsBus overrides ...
-        void OnEditorModeActivated(
-            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
-        void OnEditorModeDeactivated(
-            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        explicit FocusedEntityState(AZStd::function<AzFramework::EntityContextId()> worldIdProvider);
 
         // EditorStateBase overrides ...
         bool IsEnabled() const override;
         AzToolsFramework::EntityIdList GetMaskedEntities() const override;
 
     private:
-        bool m_inFocusMode = false; //!< True if Focus Mode is active, otherwise false.
+        AZStd::function<AzFramework::EntityContextId()> m_worldIdProvider;
     };
 } // namespace AZ::Render

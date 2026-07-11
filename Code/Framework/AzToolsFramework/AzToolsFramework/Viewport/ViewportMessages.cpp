@@ -196,4 +196,27 @@ namespace AzToolsFramework
         EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
         return entityContextId;
     }
+
+    bool IsEditedWorldVisibleInViewport(const AzFramework::ViewportId viewportId)
+    {
+        EntityIdList selectedEntities;
+        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+
+        auto editedWorldId = AzFramework::EntityContextId::CreateNull();
+        if (!selectedEntities.empty())
+        {
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                editedWorldId, selectedEntities.front(), &AzFramework::EntityIdContextQueries::GetOwningContextId);
+        }
+        if (editedWorldId.IsNull())
+        {
+            EditorEntityContextRequestBus::BroadcastResult(editedWorldId, &EditorEntityContextRequests::GetActiveWorldId);
+        }
+
+        // Outside the editor there is no world registry and everything stays visible.
+        AzFramework::EntityContextId viewportWorldId = editedWorldId;
+        EditorEntityContextRequestBus::BroadcastResult(
+            viewportWorldId, &EditorEntityContextRequests::GetViewportWorld, viewportId);
+        return viewportWorldId == editedWorldId;
+    }
 } // namespace AzToolsFramework

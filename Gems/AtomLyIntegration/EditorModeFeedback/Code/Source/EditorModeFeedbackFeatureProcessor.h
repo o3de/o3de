@@ -20,6 +20,7 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -56,7 +57,16 @@ namespace AZ
             //! Enable or disable the rendering editor mode feedback.
             void SetEnableRender(bool enableRender);
 
+            //! Returns this scene's instance of the given editor state effect (null if not found).
+            const EditorStateBase* GetEditorState(EditorState editorState) const;
+
         private:
+            //! Returns the world this scene's effects follow. Resolved lazily: the owning
+            //! framework scene links to the render scene only after feature processor activation.
+            AzFramework::EntityContextId GetWorldId();
+
+            AzFramework::EntityContextId m_worldId = AzFramework::EntityContextId::CreateNull();
+
             //! The pass system for the editor state feedback effects.
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
 

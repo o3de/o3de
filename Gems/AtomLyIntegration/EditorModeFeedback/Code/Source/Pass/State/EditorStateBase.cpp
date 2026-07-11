@@ -39,6 +39,11 @@ namespace AZ::Render
         EditorStateRequestsBus::Handler::BusDisconnect();
     }
 
+    EditorState EditorStateBase::GetState() const
+    {
+        return m_state;
+    }
+
     const AZStd::string& EditorStateBase::GetStateName() const
     {
         return m_stateName;

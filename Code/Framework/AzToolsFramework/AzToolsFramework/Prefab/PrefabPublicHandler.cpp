@@ -101,6 +101,22 @@ namespace AzToolsFramework
             m_prefabFocusHandler.UnregisterPrefabFocusInterface();
         }
 
+        //! Returns the ownership service of the world owning the entity; an invalid id addresses the active world.
+        static PrefabEditorEntityOwnershipInterface* GetWorldOwnershipService(AZ::EntityId entityId = AZ::EntityId())
+        {
+            AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+            if (entityId.IsValid())
+            {
+                AzFramework::EntityIdContextQueryBus::EventResult(
+                    worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            }
+
+            PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
+            EditorEntityContextRequestBus::BroadcastResult(
+                ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
+            return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        }
+
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
             EntityList inputEntityList, topLevelEntities;
@@ -227,8 +243,9 @@ namespace AzToolsFramework
                     detachedInstancePtrs.emplace_back(AZStd::move(detachedInstance));
                 }
 
-                // Create new prefab instance.
-                auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+                // Create new prefab instance in the world owning the common root.
+                auto prefabEditorEntityOwnershipInterface =
+                    GetWorldOwnershipService(commonRootEntityOwningInstance->get().GetContainerEntityId());
                 if (!prefabEditorEntityOwnershipInterface)
                 {
                     return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
@@ -468,18 +485,6 @@ namespace AzToolsFramework
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
             AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Transform& transform)
         {
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            if (!prefabEditorEntityOwnershipInterface)
-            {
-                return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
-                                                 "(PrefabEditorEntityOwnershipInterface unavailable)."));
-            }
-            if (!prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
-            {
-                return AZ::Failure(AZStd::string("Could not instantiate prefab - no root prefab assigned. "
-                "Currently, prefabs can only be instantiated inside a level"));
-            }
-
             InstanceOptionalReference instanceToParentUnder;
 
             // Get parent entity's owning instance
@@ -492,7 +497,24 @@ namespace AzToolsFramework
             {
                 AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
                 instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+                if (!instanceToParentUnder.has_value())
+                {
+                    return AZ::Failure(AZStd::string("Could not instantiate prefab - no instance to parent under."));
+                }
                 parentId = instanceToParentUnder->get().GetContainerEntityId();
+            }
+
+            // The instantiation targets the world owning the parent instance.
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(parentId);
+            if (!prefabEditorEntityOwnershipInterface)
+            {
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
+                                                 "(PrefabEditorEntityOwnershipInterface unavailable)."));
+            }
+            if (!prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                return AZ::Failure(AZStd::string("Could not instantiate prefab - no root prefab assigned. "
+                "Currently, prefabs can only be instantiated inside a level"));
             }
 
             // Block instantiating prefab as override since it is not supported.
@@ -745,23 +767,24 @@ namespace AzToolsFramework
         {
             AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
 
-            // A root prefab (level) must be assigned before entities can be created. During an
-            // async level load the root instance already exists with a container entity but its
-            // template is reset to InvalidTemplateId (see PrefabEditorEntityOwnershipService::Reset),
-            // so the "owning instance exists" check below would pass and undo DOM generation would
-            // then crash in FindTemplateDom. Reject early, mirroring the guard InstantiatePrefab
-            // already uses, so the request fails gracefully instead.
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            if (!prefabEditorEntityOwnershipInterface || !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
-            {
-                return AZ::Failure(AZStd::string(
-                    "Cannot add entity because no root prefab is assigned. Entities can only be created inside a loaded level."));
-            }
-
             // If the parent is invalid, parent to the container of the currently focused prefab.
             if (!parentId.IsValid())
             {
                 parentId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+            }
+
+            // A root prefab (level) must be assigned in the parent's world before entities can be
+            // created. During an async level load the root instance already exists with a container
+            // entity but its template is reset to InvalidTemplateId (see
+            // PrefabEditorEntityOwnershipService::Reset), so the "owning instance exists" check
+            // below would pass and undo DOM generation would then crash in FindTemplateDom. Reject
+            // early, mirroring the guard InstantiatePrefab already uses, so the request fails
+            // gracefully instead.
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(parentId);
+            if (!prefabEditorEntityOwnershipInterface || !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                return AZ::Failure(AZStd::string(
+                    "Cannot add entity because no root prefab is assigned. Entities can only be created inside a loaded level."));
             }
 
             // If the parent entity isn't owned by a prefab instance, bail.
@@ -838,7 +861,7 @@ namespace AzToolsFramework
             }
 
             InstanceOptionalReference focusedInstance =
-                m_prefabFocusHandler.GetFocusedPrefabInstance(editorEntityContextId);
+                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(parentId);
             if (!focusedInstance.has_value())
             {
                 return AZ::Failure<AZStd::string>("Can't find current focused prefab instance.");
@@ -988,11 +1011,8 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-                        EditorEntityContextRequestBus::BroadcastResult(
-                            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-                        InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(
-                            editorEntityContextId);
+                        InstanceOptionalReference focusedInstance =
+                            m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(entityId);
 
                         AZ::Entity* entityToUpdate = GetEntityById(entityId);
                         PrefabUndoHelpers::UpdateEntitiesAsOverrides(
@@ -1180,7 +1200,8 @@ namespace AzToolsFramework
 
         AZ::EntityId PrefabPublicHandler::GetLevelInstanceContainerEntityId() const
         {
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            // "The level" is the active world's root level.
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
             if (!prefabEditorEntityOwnershipInterface)
             {
                 AZ_Assert(
@@ -1425,9 +1446,8 @@ namespace AzToolsFramework
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
             }
 
-            // We only allow explicit deletions for entities inside the currently focused prefab.
-            AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
-            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+            // We only allow explicit deletions for entities inside their world's focused prefab.
+            InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(firstEntityIdToDelete);
             if (!focusedInstance.has_value())
             {
                 return AZ::Failure(AZStd::string("Cannot get the focused instance."));
@@ -1593,10 +1613,11 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Cannot detach Prefab Instance with invalid container entity."));
             }
 
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+            InstanceOptionalReference focusedInstanceOfContainer =
+                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(containerEntityId);
 
-            if (containerEntityId == m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
+            if (focusedInstanceOfContainer.has_value() &&
+                containerEntityId == focusedInstanceOfContainer->get().GetContainerEntityId())
             {
                 return AZ::Failure(AZStd::string("Cannot detach focused Prefab Instance."));
             }
@@ -1891,9 +1912,9 @@ namespace AzToolsFramework
                 return m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             }
 
-            // If the entityId is invalid, then the owning instance would be the root prefab instance of the
-            // PrefabEditorEntityOwnershipService.
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            // If the entityId is invalid, then the owning instance would be the root prefab instance
+            // of the active world's ownership service.
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
             if (!prefabEditorEntityOwnershipInterface)
             {
                 AZ_Assert(false, "Could not get owning instance of common root entity :"
@@ -1945,11 +1966,11 @@ namespace AzToolsFramework
 
             AZStd::queue<AZ::Entity*> entityQueue;
 
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
+            // The inputs share one owning instance, so the first entity names the relevant world.
+            InstanceOptionalReference focusedInstance =
+                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(inputEntities.front()->GetId());
             AZ::EntityId focusedPrefabContainerEntityId =
-                m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusedInstance.has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
             for (auto inputEntity : inputEntities)
             {
                 if (inputEntity && inputEntity->GetId() != focusedPrefabContainerEntityId)
@@ -2065,13 +2086,14 @@ namespace AzToolsFramework
                 outEntityIds = entityIds;
             }
 
-            AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
-            AZ::EntityId focusedInstanceContainerEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-
-            if (auto iter = AZStd::find(outEntityIds.begin(), outEntityIds.end(), focusedInstanceContainerEntityId); iter != outEntityIds.end())
-            {
-                outEntityIds.erase(iter);
-            }
+            // Drop any world's focused container from the list (selections may span worlds).
+            AZStd::erase_if(
+                outEntityIds,
+                [this](const AZ::EntityId& entityId)
+                {
+                    InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(entityId);
+                    return focusedInstance.has_value() && focusedInstance->get().GetContainerEntityId() == entityId;
+                });
 
             return outEntityIds;
         }

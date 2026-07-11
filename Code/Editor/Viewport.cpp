@@ -211,6 +211,12 @@ QtViewport::~QtViewport()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void QtViewport::AnchorViewportUiTo(QtViewport* viewport)
+{
+    m_viewportUi.SetViewportUiRenderOverlay(&viewport->m_renderOverlay);
+}
+
+//////////////////////////////////////////////////////////////////////////
 void QtViewport::ScreenToClient(QPoint& pPoint) const
 {
     pPoint = mapFromGlobal(pPoint);

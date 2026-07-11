@@ -425,6 +425,7 @@ namespace AZ
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
+                m_atomSceneRemovalHandlers.clear();
                 m_viewportContext.reset();
                 m_nativeWindow = nullptr;
                 m_windowHandle = nullptr;
@@ -577,17 +578,30 @@ namespace AZ
                 sceneDesc.m_nameId = AZ::Name(scene->GetName());
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
-                if (scene->GetName() != AzFramework::Scene::MainSceneName)
-                {
-                    // EditorModeFeedback's pass system registers process-wide pass templates and may
-                    // only live in the main scene.
-                    atomScene->DisableFeatureProcessor(AZ::RPI::FeatureProcessorId{ "AZ::Render::EditorModeFeatureProcessor" });
-                }
                 atomScene->Activate();
 
                 // Register scene to RPI system so it will be processed/rendered per tick
                 RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
                 scene->SetSubsystem(atomScene);
+
+                // Scenes created for additional framework scenes (editor worlds) unregister when
+                // their framework scene is removed; the default scene uses DestroyDefaultScene.
+                if (scene != m_defaultFrameworkScene.get())
+                {
+                    auto& removalHandler = m_atomSceneRemovalHandlers.emplace_back(
+                        AzFramework::Scene::RemovalEvent::Handler(
+                            [atomScene](
+                                [[maybe_unused]] AzFramework::Scene& removedScene,
+                                [[maybe_unused]] AzFramework::Scene::RemovalEventType eventType) mutable
+                            {
+                                if (atomScene)
+                                {
+                                    RPI::RPISystemInterface::Get()->UnregisterScene(atomScene);
+                                    atomScene = nullptr;
+                                }
+                            }));
+                    scene->ConnectToEvents(removalHandler);
+                }
 
                 atomSceneHandle = atomScene;
 

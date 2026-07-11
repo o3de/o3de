@@ -210,7 +210,6 @@ namespace AzToolsFramework
 
     void ContainerEntitySystemComponent::OnEntityStreamLoadSuccess()
     {
-        // We don't yet support multiple entity contexts, so just use the default.
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
@@ -226,25 +225,16 @@ namespace AzToolsFramework
         }
     }
 
-    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
+    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear([[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
-        // We don't yet support multiple entity contexts, so only clear the default.
-        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        if (entityContextId != editorEntityContextId)
-        {
-            return AZ::Failure(AZStd::string(
-                "Error in ContainerEntitySystemComponent::Clear - cannot clear non-default Entity Context!"));
-        }
-
-        if (!m_containers.empty())
-        {
-            return AZ::Failure(AZStd::string(
-                "Error in ContainerEntitySystemComponent::Clear - cannot clear container states if entities are still registered!"));
-        }
-
-        m_openContainers.clear();
+        // A world reset unregisters its containers; sweep open states whose containers no longer
+        // exist so other worlds' containers keep their state.
+        AZStd::erase_if(
+            m_openContainers,
+            [this](const AZ::EntityId& containerEntityId)
+            {
+                return !m_containers.contains(containerEntityId);
+            });
 
         return AZ::Success();
     }

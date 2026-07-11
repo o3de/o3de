@@ -31,6 +31,11 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Scene/Scene.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AZ
 {
@@ -70,10 +75,65 @@ namespace AZ
             EnableSceneNotification();
 
             EditorStateList editorStates;
-            editorStates.push_back(AZStd::make_unique<FocusedEntityState>());
+            editorStates.push_back(AZStd::make_unique<FocusedEntityState>(
+                [this]
+                {
+                    return GetWorldId();
+                }));
             editorStates.push_back(AZStd::make_unique<SelectedEntityState>());
             m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStates));
             AZ::TickBus::Handler::BusConnect();
+        }
+
+        AzFramework::EntityContextId EditorModeFeatureProcessor::GetWorldId()
+        {
+            if (!m_worldId.IsNull())
+            {
+                return m_worldId;
+            }
+
+            // The framework scene owning this render scene names the world rendered here.
+            AZStd::shared_ptr<AzFramework::Scene> owningScene;
+            if (auto* sceneSystem = AzFramework::SceneSystemInterface::Get())
+            {
+                sceneSystem->IterateActiveScenes(
+                    [this, &owningScene](const AZStd::shared_ptr<AzFramework::Scene>& scene)
+                    {
+                        auto* renderScene = scene->FindSubsystemInScene<RPI::ScenePtr>();
+                        const bool owns = renderScene && renderScene->get() == GetParentScene();
+                        if (owns)
+                        {
+                            owningScene = scene;
+                        }
+                        return !owns;
+                    });
+            }
+            if (!owningScene)
+            {
+                return AzToolsFramework::GetEntityContextId();
+            }
+
+            auto worldId = AzFramework::EntityContextId::CreateNull();
+            if (auto* entityContext = owningScene->FindSubsystemInScene<AzFramework::EntityContext::SceneStorageType>();
+                entityContext && *entityContext)
+            {
+                worldId = (*entityContext)->GetContextId();
+            }
+
+            // Only registered worlds (and world 0 itself) resolve to a scene; anything else (the
+            // main scene carries the game context) is world 0, the editor context.
+            m_worldId = AzToolsFramework::GetEntityContextId();
+            if (!worldId.IsNull())
+            {
+                AZStd::shared_ptr<AzFramework::Scene> worldScene;
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, worldId);
+                if (worldScene)
+                {
+                    m_worldId = worldId;
+                }
+            }
+            return m_worldId;
         }
 
         void EditorModeFeatureProcessor::Deactivate()
@@ -137,8 +197,16 @@ namespace AZ
                 if(auto it = m_maskRenderers.find(mask);
                     it != m_maskRenderers.end())
                 {
-                    it->second.RenderMaskEntities(m_maskMaterial, entities);
-                } 
+                    // Every scene's feature processor sees the same editor state; each renders only its own entities.
+                    auto sceneEntities = entities;
+                    AZStd::erase_if(
+                        sceneEntities,
+                        [this](const AZ::EntityId& entityId)
+                        {
+                            return RPI::Scene::GetSceneForEntityId(entityId) != GetParentScene();
+                        });
+                    it->second.RenderMaskEntities(m_maskMaterial, sceneEntities);
+                }
             }
         }
 
@@ -164,6 +232,11 @@ namespace AZ
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
+        }
+
+        const EditorStateBase* EditorModeFeatureProcessor::GetEditorState(EditorState editorState) const
+        {
+            return m_editorStatePassSystem ? m_editorStatePassSystem->GetEditorState(editorState) : nullptr;
         }
 
         void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)

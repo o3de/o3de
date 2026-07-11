@@ -227,6 +227,8 @@ private:
     ViewLayoutState GetLayout() const;
     bool RestoreLayout(const ViewLayoutState& state);
     void SaveStateToLayout(const ViewLayoutState& state, const QString& layoutName);
+    //! Opens a saved layout entry: a pane name, or "Name (N)" for an additional multi-instance pane.
+    void OpenPaneForLayoutRestore(const QString& paneName);
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     QDockWidget* ShowFakeNonDockableDockWidget(AzQtComponents::StyledDockWidget* dockWidget, QtViewPane* pane);

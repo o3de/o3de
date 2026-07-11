@@ -373,6 +373,10 @@ namespace AzToolsFramework
     //! Utility function to return EntityContextId.
     AZTF_API AzFramework::EntityContextId GetEntityContextId();
 
+    //! Returns true if the viewport shows the world being edited: the world owning the current
+    //! selection, or the active world when nothing is selected.
+    AZTF_API bool IsEditedWorldVisibleInViewport(AzFramework::ViewportId viewportId);
+
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
     //! origin of the ray will be returned.

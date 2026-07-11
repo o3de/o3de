@@ -490,6 +490,12 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
+public:
+    //! Re-anchors this viewport's UI overlay onto another viewport; the editor's single set of
+    //! viewport UI widgets rides the selected viewport.
+    void AnchorViewportUiTo(QtViewport* viewport);
+
+protected:
     AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
 
     float m_selectionTolerance;

@@ -528,6 +528,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         UpdateUiOverlayGeometry();
     }
 
+    void ViewportUiDisplay::SetRenderOverlay(QWidget* renderOverlay)
+    {
+        m_renderOverlay = renderOverlay;
+        PositionUiOverlayOverRenderViewport();
+    }
+
     ViewportUiElementInfo ViewportUiDisplay::GetViewportUiElementInfo(const ViewportUiElementId elementId)
     {
         if (auto element = m_viewportUiElements.find(elementId); element != m_viewportUiElements.end())

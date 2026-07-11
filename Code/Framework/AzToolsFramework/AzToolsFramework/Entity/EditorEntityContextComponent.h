@@ -35,6 +35,8 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    class PrefabEditorEntityOwnershipService;
+
     namespace UndoSystem
     {
         class UndoCacheInterface;
@@ -158,7 +160,13 @@ namespace AzToolsFramework
 
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
-        
+
+        //! Returns the world whose root prefab instance owns the entity (world 0 when none does).
+        AzFramework::EntityContextId FindEntityWorldId(AZ::EntityId entityId);
+
+        //! Returns the active world's ownership service.
+        PrefabEditorEntityOwnershipService* GetActiveWorldOwnershipService();
+
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
         void OnStopGameModeRequest() override;
