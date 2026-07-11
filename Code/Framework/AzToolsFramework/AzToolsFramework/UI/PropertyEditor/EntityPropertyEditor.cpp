@@ -608,6 +608,7 @@ namespace AzToolsFramework
         connect(m_gui->m_entitySearchBox, &QLineEdit::textChanged, this, &EntityPropertyEditor::OnSearchTextChanged);
         connect(m_gui->m_entitySearchBox, &QWidget::customContextMenuRequested, this, &EntityPropertyEditor::OnSearchContextMenu);
         connect(m_gui->m_pinButton, &QToolButton::clicked, this, &EntityPropertyEditor::OpenPinnedInspector);
+        connect(m_gui->m_collapseAllButton, &QToolButton::clicked, this, &EntityPropertyEditor::OnCollapseAll);
 
         m_componentPalette = new ComponentPaletteWidget(this, true);
         connect(m_componentPalette, &ComponentPaletteWidget::OnAddComponentEnd, this, [this]()
@@ -1364,6 +1365,7 @@ namespace AzToolsFramework
 
         m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout || isPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
+        m_gui->m_collapseAllButton->setVisible(displayComponentSearchBox);
 
         bool isEditingPrefabContainer = isContainerOfFocusedPrefabLayout;
 
@@ -2836,9 +2838,9 @@ namespace AzToolsFramework
         addAction(m_actionToDeleteComponents);
         m_entityComponentActions.push_back(m_actionToDeleteComponents);
 
-        QAction* seperator1 = new QAction(this);
-        seperator1->setSeparator(true);
-        addAction(seperator1);
+        auto* separator1 = new QAction(this);
+        separator1->setSeparator(true);
+        addAction(separator1);
 
         m_actionToCutComponents = new QAction(tr("Cut component"), this);
         m_actionToCutComponents->setShortcut(QKeySequence::Cut);
@@ -2871,9 +2873,9 @@ namespace AzToolsFramework
         addAction(m_actionToDuplicateComponents);
         m_entityComponentActions.push_back(m_actionToDuplicateComponents);
 
-        QAction* seperator2 = new QAction(this);
-        seperator2->setSeparator(true);
-        addAction(seperator2);
+        auto* separator2 = new QAction(this);
+        separator2->setSeparator(true);
+        addAction(separator2);
 
         m_actionToEnableComponents = new QAction(tr("Enable component"), this);
         m_actionToEnableComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -2914,6 +2916,15 @@ namespace AzToolsFramework
         connect(m_actionToMoveComponentsBottom, &QAction::triggered, this, &EntityPropertyEditor::MoveComponentsBottom);
         addAction(m_actionToMoveComponentsBottom);
         m_entityComponentActions.push_back(m_actionToMoveComponentsBottom);
+
+        auto* separator3 = new QAction(this);
+        separator3->setSeparator(true);
+        addAction(separator3);
+
+        m_actionToCollapseAll = new QAction(tr("Collapse All"), this);
+        connect(m_actionToCollapseAll, &QAction::triggered, this, &EntityPropertyEditor::OnCollapseAll);
+        addAction(m_actionToCollapseAll);
+        m_entityComponentActions.push_back(m_actionToCollapseAll);
 
         UpdateInternalState();
     }
@@ -2988,6 +2999,27 @@ namespace AzToolsFramework
         //additional request to hide actions when not allowed so enable and disable aren't shown at the same time
         m_actionToEnableComponents->setVisible(allowRemove && allowEnable);
         m_actionToDisableComponents->setVisible(allowRemove && allowDisable);
+
+        if (hasComponents)
+        {
+            bool anyExpanded = false;
+            for (auto componentEditor : m_componentEditors)
+            {
+                if (componentEditor->IsExpanded())
+                {
+                    anyExpanded = true;
+                    break;
+                }
+            }
+
+            m_actionToCollapseAll->setEnabled(anyExpanded);
+        }
+        else
+        {
+            m_actionToCollapseAll->setEnabled(false);
+        }
+
+        m_actionToCollapseAll->setVisible(hasComponents);
     }
 
     bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntities() const
@@ -5286,6 +5318,14 @@ namespace AzToolsFramework
 
         AzToolsFramework::EntityIdSet pinnedEntities(selectedEntities.begin(), selectedEntities.end());
         AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
+    }
+
+    void EntityPropertyEditor::OnCollapseAll()
+    {
+        for (auto componentEditor : m_componentEditors)
+        {
+            componentEditor->SetExpanded(false);
+        }
     }
 
     void EntityPropertyEditor::OnPrepareForContextReset()

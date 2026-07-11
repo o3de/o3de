@@ -94,6 +94,8 @@ namespace AzToolsFramework
 
             void SetStatusText(const QString& assetStatus);
             void UpdateSaveMenuActionsStatus();
+            // Enable/disable the Edit > Undo / Redo actions based on the current tab's history.
+            void UpdateUndoRedoActionsStatus();
             void SetCurrentTab(AssetEditorTab* tab);
 
             void UpdateTabTitle(AssetEditorTab* tab);
@@ -120,6 +122,10 @@ namespace AzToolsFramework
             void ExpandAll();
             void CollapseAll();
 
+            // Route undo/redo to the current tab (each tab owns its own history).
+            void Undo();
+            void Redo();
+
             void currentTabChanged(int newCurrentIndex);
             void onTabCloseButtonPressed(int tabIndexToClose);
 
@@ -139,8 +145,8 @@ namespace AzToolsFramework
 
             void PopulateRecentMenu();
 
-            // Give the Asset Editor its own Action Manager context so its shortcuts (Ctrl+S / Ctrl+Shift+S) win
-            // over the main Editor's identical ones while focus is inside the pane. See the implementation.
+            // Give the Asset Editor its own Action Manager context so its shortcuts (Ctrl+S / Ctrl+Shift+S /
+            // Ctrl+Z / Ctrl+Y) win over the main Editor's identical ones while focus is inside the pane.
             void RegisterShortcutActionContext();
 
             void CloseOnNextTick();
@@ -171,6 +177,9 @@ namespace AzToolsFramework
             QAction* m_saveAssetAction;
             QAction* m_saveAsAssetAction;
             QAction* m_saveAllAssetsAction;
+
+            QAction* m_undoAction = nullptr;
+            QAction* m_redoAction = nullptr;
 
             QMenu* m_recentFileMenu;
             QMenu* m_newAssetMenu = nullptr;

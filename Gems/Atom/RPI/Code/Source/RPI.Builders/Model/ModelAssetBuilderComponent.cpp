@@ -71,6 +71,16 @@ namespace AZ
     {
         static const uint64_t s_invalidMaterialUid = 0;
 
+        static void* MeshOptimizerAllocate(size_t size)
+        {
+            return azmalloc(size);
+        }
+
+        static void MeshOptimizerFree(void* ptr)
+        {
+            azfree(ptr);
+        }
+
         static bool MismatchedVertexLayoutsAreErrors()
         {
             bool mismatchedVertexStreamsAreErrors = false;
@@ -153,16 +163,6 @@ namespace AZ
 
                 AZ::u32 simplifyOption = 0;
 
-                if (settings.m_lockBorder)
-                {
-                    simplifyOption |= meshopt_SimplifyLockBorder;
-                }
-
-                if (settings.m_sparse)
-                {
-                    simplifyOption |= meshopt_SimplifySparse;
-                }
-
                 if (settings.m_prune)
                 {
                     simplifyOption |= meshopt_SimplifyPrune;
@@ -195,6 +195,8 @@ namespace AZ
 
         SceneAPI::Events::ProcessingResult ModelAssetBuilderComponent::BuildModel(ModelAssetBuilderContext& context)
         {
+            meshopt_setAllocator(MeshOptimizerAllocate, MeshOptimizerFree);
+
             {
                 auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(s_defaultVertexBufferPoolSourcePath, 0);
                 if (!assetIdOutcome.IsSuccess())

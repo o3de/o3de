@@ -38,8 +38,6 @@ namespace AzQtComponents
     static int g_borderWidth = 1;
     static int g_releaseTabMaxAnimationDuration = 250; // Copied from qtabbar_p.h
     // Will be initialized by TabWidget::loadConfig
-    static int g_closeButtonWidth = -1;
-    static int g_closeButtonPadding = -1;
     static int g_closeButtonMinTabWidth = -1;
     static int g_toolTipTabWidthThreshold = -1;
     static int g_overflowSpacing = -1;
@@ -96,17 +94,12 @@ namespace AzQtComponents
         ConfigHelpers::read<QPixmap>(settings, QStringLiteral("TearIcon"), config.tearIcon);
         ConfigHelpers::read<int>(settings, QStringLiteral("TearIconLeftPadding"), config.tearIconLeftPadding);
         ConfigHelpers::read<int>(settings, QStringLiteral("TabHeight"), config.tabHeight);
-        ConfigHelpers::read<int>(settings, QStringLiteral("MinimumTabWidth"), config.minimumTabWidth);
         ConfigHelpers::read<int>(settings, QStringLiteral("CloseButtonSize"), config.closeButtonSize);
-        ConfigHelpers::read<int>(settings, QStringLiteral("TextRightPadding"), config.textRightPadding);
-        ConfigHelpers::read<int>(settings, QStringLiteral("CloseButtonRightPadding"), config.closeButtonRightPadding);
         ConfigHelpers::read<int>(settings, QStringLiteral("CloseButtonMinTabWidth"), config.closeButtonMinTabWidth);
         ConfigHelpers::read<int>(settings, QStringLiteral("ToolTipTabWidthThreshold"), config.toolTipTabWidthThreshold);
         ConfigHelpers::read<bool>(settings, QStringLiteral("ShowOverflowMenu"), config.showOverflowMenu);
         ConfigHelpers::read<int>(settings, QStringLiteral("OverflowSpacing"), config.overflowSpacing);
 
-        g_closeButtonPadding = config.closeButtonRightPadding;
-        g_closeButtonWidth = config.closeButtonSize;
         g_closeButtonMinTabWidth = config.closeButtonMinTabWidth;
         g_toolTipTabWidthThreshold = config.toolTipTabWidthThreshold;
         g_overflowSpacing = config.overflowSpacing;
@@ -120,10 +113,7 @@ namespace AzQtComponents
             QPixmap(),  // TearIcon
             3,          // TearIconLeftPadding
             30,         // TabHeight 28 + 1 (top margin) + 1 (bottom margin)
-            16,         // MinimumTabWidth
             16,         // CloseButtonSize
-            40,         // TextRightPadding
-            4,          // CloseButtonRightPadding
             32,         // CloseButtonMinTabWidth
             96,         // ToolTipTabWidthThreshold
             true,       // ShowOverflowMenu
@@ -529,6 +519,19 @@ namespace AzQtComponents
         setToolTipIfNeeded(m_hoveredTab);
 
         QTabBar::paintEvent(paintEvent);
+
+        // Draw the tear icon (3 vertical dots on draggable tabs)
+        if (isMovable() && !m_movingTab && m_hoveredTab >= 0 && !m_tearIcon.isNull())
+        {
+            const QRect hoveredTabRect = tabRect(m_hoveredTab);
+            const QRect tearIconRectangle(
+                hoveredTabRect.left() + m_tearIconLeftPadding + g_borderWidth,
+                hoveredTabRect.top() + (hoveredTabRect.height() - m_tearIcon.height()) / 2,
+                m_tearIcon.width(),
+                m_tearIcon.height());
+            QPainter painter(this);
+            painter.drawPixmap(tearIconRectangle, m_tearIcon);
+        }
     }
 
     QSize TabBar::minimumSizeHint() const
@@ -541,6 +544,45 @@ namespace AzQtComponents
         minSizeHint.setWidth(0);
 
         return minSizeHint;
+    }
+
+    QSize TabBar::tabSizeHint(int index) const
+    {
+        // Handle tabs shrinking when overflowing
+        QSize size = QTabBar::tabSizeHint(index);
+
+        if (m_overflowing == Overflowing)
+        {
+            auto tabWidget = qobject_cast<TabWidget*>(parent());
+            if (!tabWidget)
+            {
+                return size;
+            }
+
+            int availableWidth = tabWidget->width() - tabWidget->count() + 1;
+
+            // Reserve the space taken by the top-right corner widget, which holds the
+            // action toolbar and/or the overflow button
+            if (auto* corner = tabWidget->cornerWidget(Qt::TopRightCorner))
+            {
+                availableWidth -= corner->width();
+            }
+
+            if (index == currentIndex())
+            {
+                // The selected tab keeps its full size, but is never wider than the whole
+                // tab bar region.
+                size.setWidth(qMax(0, qMin(size.width(), availableWidth)));
+            }
+            else
+            {
+                // The other tabs share whatever width is left after the selected tab
+                const int remainingWidth = availableWidth - tabSizeHint(currentIndex()).width();
+                size.setWidth(qMax(0, remainingWidth / (count() - 1)));
+            }
+        }
+
+        return size;
     }
 
     void TabBar::tabInserted(int /*index*/)
@@ -644,17 +686,6 @@ namespace AzQtComponents
                 int tabWidth = tabRect(i).width();
                 shouldShow &= tabWidth >= g_closeButtonMinTabWidth;
 
-                // Need to explicitly move the button if we want to customize its position
-                // Don't bother moving it if it won't be shown
-                if (shouldShow)
-                {
-                    QPoint p = tabRect(i).topLeft();
-
-                    p.setX(p.x() + tabRect(i).width() - g_closeButtonPadding - g_closeButtonWidth);
-                    p.setY(p.y() + 1 + (tabRect(i).height() - g_closeButtonWidth) / 2);
-                    tabBtn->move(p);
-                }
-
                 tabBtn->setVisible(shouldShow);
 
                 // Remove tooltips from close buttons so we can see the tab ones
@@ -689,10 +720,11 @@ namespace AzQtComponents
     bool TabBar::polish(Style* style, QWidget* widget, const TabWidget::Config& config)
     {
         Q_UNUSED(style);
-        Q_UNUSED(config);
 
         if (auto tabBar = qobject_cast<TabBar*>(widget))
         {
+            tabBar->m_tearIcon = config.tearIcon;
+            tabBar->m_tearIconLeftPadding = config.tearIconLeftPadding;
             tabBar->setUsesScrollButtons(false);
             return true;
         }
@@ -721,116 +753,6 @@ namespace AzQtComponents
         Q_UNUSED(widget);
 
         return config.closeButtonSize;
-    }
-
-    bool TabBar::drawTabBarTabLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const TabWidget::Config& config)
-    {
-        const QStyleOptionTab* tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
-
-        if (!tabOption)
-        {
-            return false;
-        }
-
-        const TabBar* tabBar = qobject_cast<const TabBar*>(widget);
-        if (!tabBar)
-        {
-            return false;
-        }
-
-        // Tear icon drawing can't be done properly using QSS only because text and image can't be positioned differently
-        if (tabBar->isMovable() && (option->state & (QStyle::State_MouseOver | QStyle::State_Sunken)))
-        {
-            painter->save();
-            const QRect tearIconRectangle(
-                option->rect.left() + config.tearIconLeftPadding + g_borderWidth,
-                option->rect.top() + (option->rect.height() - config.tearIcon.height()) / 2,
-                config.tearIcon.width(),
-                config.tearIcon.height());
-            style->baseStyle()->drawItemPixmap(painter, tearIconRectangle, 0, config.tearIcon);
-            painter->restore();
-        }
-
-        painter->save();
-        if (tabBar->m_useMaxWidth)
-        {
-            QRect textRect = style->subElementRect(QStyle::SE_TabBarTabText, option, widget);
-
-            // Extend the label to cover more of the tab width
-            QSize widthExtension = QSize(config.closeButtonSize, 0);
-
-            if (option->state & QStyle::State_MouseOver)
-            {
-                widthExtension /= 4;
-            }
-
-            textRect.setSize(textRect.size() + widthExtension);
-            
-            QString labelText = painter->fontMetrics().elidedText(tabOption->text, Qt::ElideRight, textRect.width());
-            painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, labelText);
-        }
-        else
-        {
-            style->baseStyle()->drawControl(QStyle::CE_TabBarTabLabel, option, painter, widget);
-        }
-        painter->restore();
-
-        return true;
-    }
-
-    QSize TabBar::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config)
-    {
-        const QStyleOptionTab* tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
-
-        if (!tabOption)
-        {
-            return QSize();
-        }
-
-        const TabBar* tabBar = qobject_cast<const TabBar*>(widget);
-        if (!tabBar)
-        {
-            return QSize();
-        }
-
-        QSize size = style->baseStyle()->sizeFromContents(type, tabOption, contentsSize, widget);
-
-        size.setHeight(config.tabHeight);
-
-        if (tabBar->m_overflowing != Overflowing || (tabOption->state & QStyle::State_Selected))
-        {
-            size.setWidth(size.width() + config.textRightPadding);
-            if (!tabBar->tabsClosable())
-            {
-                size -= QSize(config.closeButtonSize + 1, 0);
-            }
-        }
-        else
-        {
-            auto tabWidget = qobject_cast<TabWidget*>(tabBar->parent());
-            if (!tabWidget)
-            {
-                return {};
-            }
-
-            int availableWidth = tabWidget->width() - tabWidget->count() + 1;
-            if (tabWidget->isActionToolBarVisible())
-            {
-                auto toolBarContainer = qobject_cast<QWidget*>(tabWidget->actionToolBar()->parent());
-                if (toolBarContainer != nullptr)
-                {
-                    availableWidth -= toolBarContainer->size().width();
-                }
-            }
-
-            QStyleOptionTab selectedOptions;
-            tabBar->initStyleOption(&selectedOptions, tabBar->currentIndex());
-            QSize selectedSize = sizeFromContents(style, type, &selectedOptions, contentsSize, tabBar, config);
-            availableWidth -= selectedSize.width();
-            size.setWidth(availableWidth / (tabBar->count() - 1));
-        }
-
-        return size;
     }
 
 } // namespace AzQtComponents

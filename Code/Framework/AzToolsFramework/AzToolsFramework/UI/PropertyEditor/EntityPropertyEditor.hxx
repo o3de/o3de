@@ -388,6 +388,7 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
+        QAction* m_actionToCollapseAll = nullptr;
 
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
@@ -685,6 +686,7 @@ namespace AzToolsFramework
         void ClearSearchFilter();
 
         void OpenPinnedInspector();
+        void OnCollapseAll();
 
         void DragStopped();
 

@@ -79,6 +79,14 @@ namespace AzToolsFramework
             bool TrySaveAsset(const AZStd::function<void()>& savedCallback);
             bool UserRefusedSave();
             void ClearUserRefusedSaveFlag();
+
+            // Per-tab undo/redo. Each tab keeps its own history (serialized asset snapshots), so switching
+            // away from a tab and back resumes its history where it was left off.
+            void Undo();
+            void Redo();
+            bool CanUndo() const;
+            bool CanRedo() const;
+
         public Q_SLOTS:
 
             void SaveAsset();
@@ -166,8 +174,29 @@ namespace AzToolsFramework
 
             QIcon m_warningIcon;
 
-            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function. 
+            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function.
 
+            // --- Undo/redo support ---
+            // Serialize the current in-memory asset into a snapshot buffer (uses the asset handler, same
+            // round-trip as save), and restore a snapshot back into the in-memory asset in place.
+            void CaptureSnapshot(AZStd::vector<AZ::u8>& snapshotOut) const;
+            bool RestoreSnapshot(const AZStd::vector<AZ::u8>& snapshot);
+            // Capture the pre-edit state once at the start of an edit gesture (coalesced across the many
+            // Before/AfterPropertyModified calls a single drag emits).
+            void BeginUndoableEdit();
+            // Finalize the pending pre-edit snapshot as one undo entry (called when an edit gesture settles).
+            void CommitPendingUndoEntry();
+            // Clear all history (on load/create) so a freshly opened asset starts with no undo.
+            void ClearUndoHistory();
+            void NotifyUndoRedoStateChanged();
+
+            AZStd::vector<AZStd::vector<AZ::u8>> m_undoStack;
+            AZStd::vector<AZStd::vector<AZ::u8>> m_redoStack;
+            AZStd::vector<AZ::u8> m_pendingPreEditSnapshot;
+            bool m_hasPendingUndoEntry = false;
+            bool m_isRestoringSnapshot = false;
+            QTimer m_undoCoalesceTimer;
+            static constexpr size_t s_maxUndoLevels = 100;
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework
