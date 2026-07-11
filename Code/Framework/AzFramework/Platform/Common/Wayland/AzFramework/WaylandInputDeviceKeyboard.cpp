@@ -243,7 +243,16 @@ namespace AzFramework
             ResetRepeatState();
         }
 
-        if (const InputChannelId* key = InputChannelFromKeySym(sym))
+        // Resolve the tilde/grave key (the physical key under Escape and above Tab) by its physical
+        // location rather than its keysym. Non-US layouts (e.g. German) produce a different keysym at
+        // this location, so a keysym-only lookup would miss it. This mirrors the position-based
+        // resolution already used on Windows (scan code 0x29) and Mac (keycode kVK_ANSI_Grave).
+        const xkb_keycode_t tildeKeycode = m_xkbKeymap ? xkb_keymap_key_by_name(m_xkbKeymap, "TLDE") : XKB_KEYCODE_INVALID;
+        if (tildeKeycode != XKB_KEYCODE_INVALID && (waylandKey + 8) == tildeKeycode)
+        {
+            QueueRawKeyEvent(InputDeviceKeyboard::Key::PunctuationTilde, isPressed);
+        }
+        else if (const InputChannelId* key = InputChannelFromKeySym(sym))
         {
             QueueRawKeyEvent(*key, isPressed);
         }
