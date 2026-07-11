@@ -107,12 +107,10 @@ namespace GradientSignal
         ImageGradientModificationNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
 
         // Set our paint brush min/max world size range. The minimum size should be large enough to paint at least one pixel, and
-        // the max size is clamped so that we can't paint more than 256 x 256 pixels per brush stamp.
-        // 256 is an arbitrary number, but if we start getting much larger, performance can drop precipitously.
-        // Note: To truly control performance, additional clamping is still needed, because large mouse movements in world space with
-        // a tiny brush can still cause extremely large numbers of brush points to get calculated and checked.
+        // the max size is clamped so that we can't paint more than 4096 x 4096 pixels per brush stamp.
+        // This provides a wide usable slider range while still keeping a reasonable upper bound.
 
-        constexpr float MaxBrushPixelSize = 256.0f;
+        constexpr float MaxBrushPixelSize = 4096.0f;
         AZ::Vector2 imagePixelsPerMeter(0.0f);
         ImageGradientRequestBus::EventResult(imagePixelsPerMeter, GetEntityId(), &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
 
