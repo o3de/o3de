@@ -484,8 +484,14 @@ namespace AZ
             AZStd::vector<AZStd::pair<AZ::EntityId, AZ::Data::Instance<AZ::RPI::Model>>> current;
             AZ::ComponentApplicationBus::Broadcast(
                 &AZ::ComponentApplicationRequests::EnumerateEntities,
-                [&current, meshFeatureProcessor](AZ::Entity* entity)
+                [this, &current, meshFeatureProcessor](AZ::Entity* entity)
                 {
+                    // View modes render only the entities living in this scene's world.
+                    if (AZ::RPI::Scene::GetSceneForEntityId(entity->GetId()) != GetParentScene())
+                    {
+                        return;
+                    }
+
                     AZ::Data::Instance<AZ::RPI::Model> model;
                     AZ::Render::MeshComponentRequestBus::EventResult(
                         model, entity->GetId(), &AZ::Render::MeshComponentRequests::GetModel);
