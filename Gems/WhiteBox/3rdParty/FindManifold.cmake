@@ -14,10 +14,13 @@ endif()
 
 function(GetManifold)
     set(MANIFOLD_GIT_REPO "https://github.com/elalish/manifold.git")
-    set(MANIFOLD_GIT_TAG "v3.5.1")
+    set(MANIFOLD_GIT_TAG "cc8a7f66d7d5a560da94346258c5b546af27811e")
+    # Keep the human-readable tag to show the user in the console
+    set(MANIFOLD_DISPLAY_VERSION "v3.5.1")
 
-    message(STATUS "WhiteBox Gem uses Manifold (Apache-2.0) ${MANIFOLD_GIT_REPO}")
+    message(STATUS "WhiteBox Gem uses Manifold ${MANIFOLD_DISPLAY_VERSION} (Apache-2.0) ${MANIFOLD_GIT_REPO}")
     message(STATUS "    - Manifold provides the CSG boolean operations (Api::MeshBoolean).")
+
 
     set(OLD_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL})
     set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
