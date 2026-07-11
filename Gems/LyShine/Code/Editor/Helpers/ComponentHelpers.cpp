@@ -483,26 +483,26 @@ namespace Internal
         return CanComponentServicesBeRemoved(componentsToRemove);
     }
 
-    bool CanPasteComponentsToEntities(const AzToolsFramework::EntityIdList& entities, bool isCanvasEntity)
+    // Check that the given mime data holds components that can all be pasted onto the entities.
+    bool CanPasteComponentsToEntitiesFromMimeData(
+        const QMimeData* mimeData, const AzToolsFramework::EntityIdList& entities, bool isCanvasEntity)
     {
-        const QMimeData* mimeData = AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard();
-
-        // Check that there are components on the clipboard and that they can all be pasted onto the entities
-        bool canPasteAll = true;
         if (entities.empty() || !mimeData)
         {
-            canPasteAll = false;
-        }
-        else
-        {
-            // Create class data from mime data
-            AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
-            AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
-
-            canPasteAll = CanAddComponentsToEntities(classDataForComponentsToAdd, entities, isCanvasEntity);
+            return false;
         }
 
-        return canPasteAll;
+        // Create class data from mime data
+        AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
+        AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
+
+        return CanAddComponentsToEntities(classDataForComponentsToAdd, entities, isCanvasEntity);
+    }
+
+    bool CanPasteComponentsToEntities(const AzToolsFramework::EntityIdList& entities, bool isCanvasEntity)
+    {
+        return CanPasteComponentsToEntitiesFromMimeData(
+            AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard(), entities, isCanvasEntity);
     }
 
     AzToolsFramework::EntityIdList GetSelectedEntities(bool* isCanvasSelectedOut = nullptr)
@@ -629,13 +629,79 @@ namespace Internal
         HandleSelectedEntitiesPropertiesChanged();
     }
 
+    // Serialize components to mime data without touching the clipboard (so duplicate can reuse paste).
+    AZStd::unique_ptr<QMimeData> CreateComponentMimeData(const AZ::Entity::ComponentArrayType& copyableComponents)
+    {
+        return AzToolsFramework::ComponentMimeData::Create(copyableComponents);
+    }
+
     void CopyComponents(const AZ::Entity::ComponentArrayType& copyableComponents)
     {
-        // Create the mime data object
-        AZStd::unique_ptr<QMimeData> mimeData = AzToolsFramework::ComponentMimeData::Create(copyableComponents);
+        AzToolsFramework::ComponentMimeData::PutComponentMimeDataOnClipboard(CreateComponentMimeData(copyableComponents));
+    }
 
-        // Put it on the clipboard
-        AzToolsFramework::ComponentMimeData::PutComponentMimeDataOnClipboard(AZStd::move(mimeData));
+    // Add the components in the mime data onto every entity, as one undoable change.
+    void PasteComponentsFromMimeData(
+        const QMimeData* mimeData, const AzToolsFramework::EntityIdList& entities, const char* undoLabel)
+    {
+        AzToolsFramework::ComponentMimeData::ComponentDataContainer componentsToAdd;
+        AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
+
+        AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
+        AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
+        AZ_Error(
+            "UI Editor",
+            componentsToAdd.size() == classDataForComponentsToAdd.size(),
+            "Component mime data's components list size is different from class data list size.");
+        if (componentsToAdd.size() != classDataForComponentsToAdd.size())
+        {
+            return;
+        }
+
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
+
+        // Paste to all the target entities
+        for (const AZ::EntityId& entityId : entities)
+        {
+            AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
+            // De-serialize from mime data each time so the same component pointer isn't added to multiple entities.
+            AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
+            if (!entity)
+            {
+                AZ_Error("UI Editor", false, "Can't find entity by Id.");
+                continue;
+            }
+
+            // We must deactivate the entity to add components
+            bool reactivate = false;
+            if (entity->GetState() == AZ::Entity::State::Active)
+            {
+                reactivate = true;
+                entity->Deactivate();
+            }
+
+            for (int componentIndex = 0; componentIndex < componentsToAdd.size(); ++componentIndex)
+            {
+                AZ::Component* component = componentsToAdd[componentIndex];
+                if (!component)
+                {
+                    AZ_Error("UI Editor", false, "Null component provided by mime data.");
+                    continue;
+                }
+
+                entity->AddComponent(component);
+            }
+
+            // Reactivate if we were previously active
+            if (reactivate)
+            {
+                entity->Activate();
+            }
+        }
+
+        UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, undoLabel);
+
+        HandleSelectedEntitiesPropertiesChanged();
     }
 
     void AddComponentsWithAssetToEntities(const ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs, const AzToolsFramework::EntityIdList& entities)
@@ -809,65 +875,8 @@ namespace ComponentHelpers
 
             if (Internal::CanPasteComponentsToEntities(selectedEntities, isCanvasSelected))
             {
-                // Create components from mime data
-                const QMimeData* mimeData = AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard();
-                AzToolsFramework::ComponentMimeData::ComponentDataContainer componentsToAdd;
-                AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
-
-                // Create class data from mime data
-                AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
-                AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
-                AZ_Error("UI Editor", componentsToAdd.size() == classDataForComponentsToAdd.size(), "Component mime data's components list size is different from class data list size.");
-                if (componentsToAdd.size() == classDataForComponentsToAdd.size())
-                {
-                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
-
-                    // Paste to all selected entities
-                    for (const AZ::EntityId& entityId : selectedEntities)
-                    {
-                        AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
-                        // De-serialize from mime data each time the component is pasted, otherwise the same component pointer could be added to multiple entities.
-                        AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
-                        if (!entity)
-                        {
-                            AZ_Error("UI Editor", false, "Can't find entity by Id.");
-                            continue;
-                        }
-
-                        // We must deactivate the entity to add components
-                        bool reactivate = false;
-                        if (entity->GetState() == AZ::Entity::State::Active)
-                        {
-                            reactivate = true;
-                            entity->Deactivate();
-                        }
-
-                        // Add components
-                        for (int componentIndex = 0; componentIndex < componentsToAdd.size(); ++componentIndex)
-                        {
-                            AZ::Component* component = componentsToAdd[componentIndex];
-                            if (!component)
-                            {
-                                AZ_Error("UI Editor", false, "Null component provided by mime data.");
-                                continue;
-                            }
-
-                            // Add the component
-                            entity->AddComponent(component);
-                        }
-
-                        // Reactivate if we were previously active
-                        if (reactivate)
-                        {
-                            entity->Activate();
-                        }
-                    }
-
-                    UiEditorInternalNotificationBus::Broadcast(
-                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "paste component");
-
-                    Internal::HandleSelectedEntitiesPropertiesChanged();
-                }
+                Internal::PasteComponentsFromMimeData(
+                    AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard(), selectedEntities, "paste component");
             }
         });
 
@@ -890,6 +899,51 @@ namespace ComponentHelpers
 
         // Disable the action if not every component can be pasted onto every element
         action->setEnabled(canPasteAll);
+    }
+
+    QAction* CreateDuplicateComponentsAction(QWidget* parent)
+    {
+        QAction* action = new QAction("Duplicate component", parent);
+        action->setShortcut(QKeySequence("Ctrl+D"));
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(action,
+            &QAction::triggered,
+            []()
+        {
+            AZ::Entity::ComponentArrayType componentsToCopy;
+            UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
+            AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
+            if (copyableComponents.empty())
+            {
+                return;
+            }
+
+            // Build mime data directly and paste it, so duplicate doesn't overwrite the user's clipboard.
+            AZStd::unique_ptr<QMimeData> mimeData = Internal::CreateComponentMimeData(copyableComponents);
+
+            bool isCanvasSelected = false;
+            AzToolsFramework::EntityIdList selectedEntities = Internal::GetSelectedEntities(&isCanvasSelected);
+            if (!Internal::CanPasteComponentsToEntitiesFromMimeData(mimeData.get(), selectedEntities, isCanvasSelected))
+            {
+                return;
+            }
+
+            Internal::PasteComponentsFromMimeData(mimeData.get(), selectedEntities, "duplicate component");
+        });
+
+        return action;
+    }
+
+    void UpdateDuplicateComponentsAction(QAction* action)
+    {
+        AZ::Entity::ComponentArrayType componentsToCopy;
+        UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
+        AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
+
+        action->setText(copyableComponents.size() > 1 ? "Duplicate components" : "Duplicate component");
+
+        bool canDuplicate = !copyableComponents.empty() && Internal::AreComponentsAddableByUser(copyableComponents);
+        action->setEnabled(canDuplicate);
     }
 
     bool CanAddComponentsToSelectedEntities(const AZStd::vector<AZ::TypeId>& componentTypes, EntityComponentPair* firstIncompatibleComponentType)

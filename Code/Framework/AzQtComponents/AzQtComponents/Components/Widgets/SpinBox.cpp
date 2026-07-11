@@ -527,6 +527,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         case QEvent::DynamicPropertyChange:
         {
             auto styleSheet = StyleManager::styleSheetStyle(spinBox);
+            styleSheet->unpolish(spinBox);
             styleSheet->polish(spinBox);
             break;
         }

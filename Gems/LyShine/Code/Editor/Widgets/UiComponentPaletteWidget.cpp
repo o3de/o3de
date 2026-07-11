@@ -10,6 +10,8 @@
 
 #include "UiEditorInternalBus.h"
 
+#include <QModelIndex>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 

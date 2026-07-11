@@ -29,9 +29,11 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QApplication>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
@@ -1463,6 +1465,12 @@ namespace EMStudio
 
     void MainWindow::OnSaveAll()
     {
+        // Ctrl+S maps to Save All. Clearing focus first fires the focused property editor's focus-out,
+        // committing its in-progress value (and undo entry) so the edited object is marked dirty before
+        // SaveDirtyFiles decides what to save. Without this, edits like transition properties (issue #13224)
+        // are not yet applied and get skipped.
+        AzQtComponents::ClearFocusWithin(this);
+
         m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, MCORE_INVALIDINDEX32, QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     }
 

@@ -176,5 +176,22 @@ namespace AzQtComponents
 #endif // Q_OS_WIN
         });
     }
+
+    bool ClearFocusWithin(QWidget* parent)
+    {
+        if (!parent)
+        {
+            return false;
+        }
+
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget && parent->isAncestorOf(focusWidget))
+        {
+            focusWidget->clearFocus();
+            return true;
+        }
+
+        return false;
+    }
 } // namespace AzQtComponents
 

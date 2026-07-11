@@ -1816,7 +1816,21 @@ namespace AzToolsFramework
         : QStyledItemDelegate(parent)
         , m_visibilityCheckBoxes(parent, "Visibility", EntityOutlinerListModel::PartiallyVisibleRole, EntityOutlinerListModel::InvisibleAncestorRole)
         , m_lockCheckBoxes(parent, "Lock", EntityOutlinerListModel::PartiallyLockedRole, EntityOutlinerListModel::LockedAncestorRole)
+        , m_cacheRefreshTimer(new QTimer(this))
     {
+        QObject::connect(
+            m_cacheRefreshTimer,
+            &QTimer::timeout,
+            this,
+            [this]()
+            {
+                // periodically clear the cached bounding rect of a tall character
+                // so that if the font changes, we can recalculate it.
+                m_cachedBoundingRectOfTallCharacter = QRect();
+            });
+        m_cacheRefreshTimer->setInterval(200);
+        m_cacheRefreshTimer->start();
+        
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerItemDelegate requires a EditorEntityFrameworkInterface instance on Construction.");
@@ -2187,17 +2201,10 @@ namespace AzToolsFramework
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         // Get the height of a tall character...
-        // we do this only once per 'tick'
+
         if (m_cachedBoundingRectOfTallCharacter.isNull())
         {
             m_cachedBoundingRectOfTallCharacter = option.fontMetrics.boundingRect("|");
-            // schedule it to be reset so that if font changes sometime soon, it updates.
-            auto resetFunction = [this]() 
-            { 
-                m_cachedBoundingRectOfTallCharacter = QRect(); 
-            };
-
-            QTimer::singleShot(0, resetFunction);
         }
         
         if (!index.parent().isValid())

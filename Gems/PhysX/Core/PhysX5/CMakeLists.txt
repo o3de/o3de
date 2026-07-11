@@ -157,7 +157,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         OUTPUT_NAME ${gem_name}.Editor.Gem
-        AUTOMOC
         FILES_CMAKE
             ${physx_module_files}
         COMPILE_DEFINITIONS

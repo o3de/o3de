@@ -102,8 +102,27 @@ namespace AZ::DocumentPropertyEditor
         return new ExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
+    void DocumentAdapter::QueueResetDocument(DocumentResetType resetType)
+    {
+        // Implementation for queuing a reset document operation
+        m_queuedResetType = m_queuedResetType == DocumentResetType::HardReset ? DocumentResetType::HardReset : resetType;
+        m_isResetQueued = true;
+    }
+
+    void DocumentAdapter::ExecuteQueuedReset()
+    {
+        if (m_isResetQueued)
+        {
+            NotifyResetDocument(m_queuedResetType);
+        }
+    }
+
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
     {
+        // this is the actual reset function, which overrides any queuing, so reset it.
+        m_isResetQueued = false;
+        m_queuedResetType = DocumentResetType::SoftReset;
+
         if (resetType == DocumentResetType::HardReset || m_cachedContents.IsNull())
         {
             // If it's a hard reset, or we don't have any lazily cached contents, just send the reset signal.

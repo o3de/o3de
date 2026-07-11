@@ -608,6 +608,7 @@ namespace AzToolsFramework
         connect(m_gui->m_entitySearchBox, &QLineEdit::textChanged, this, &EntityPropertyEditor::OnSearchTextChanged);
         connect(m_gui->m_entitySearchBox, &QWidget::customContextMenuRequested, this, &EntityPropertyEditor::OnSearchContextMenu);
         connect(m_gui->m_pinButton, &QToolButton::clicked, this, &EntityPropertyEditor::OpenPinnedInspector);
+        connect(m_gui->m_collapseAllButton, &QToolButton::clicked, this, &EntityPropertyEditor::OnCollapseAll);
 
         m_componentPalette = new ComponentPaletteWidget(this, true);
         connect(m_componentPalette, &ComponentPaletteWidget::OnAddComponentEnd, this, [this]()
@@ -1364,6 +1365,7 @@ namespace AzToolsFramework
 
         m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout || isPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
+        m_gui->m_collapseAllButton->setVisible(displayComponentSearchBox);
 
         bool isEditingPrefabContainer = isContainerOfFocusedPrefabLayout;
 
@@ -2810,9 +2812,8 @@ namespace AzToolsFramework
         ToolsApplicationRequests::Bus::BroadcastResult(areEntitiesEditable, &ToolsApplicationRequests::AreEntitiesEditable, m_selectedEntityIds);
         if (areEntitiesEditable)
         {
-            componentPalette->Populate(m_serializeContext, m_selectedEntityIds, m_componentFilter, serviceFilter, incompatibleServiceFilter);
-            componentPalette->Present();
             componentPalette->setGeometry(QRect(position, size));
+            componentPalette->Populate(m_serializeContext, m_selectedEntityIds, m_componentFilter, serviceFilter, incompatibleServiceFilter);
         }
     }
 
@@ -2837,9 +2838,9 @@ namespace AzToolsFramework
         addAction(m_actionToDeleteComponents);
         m_entityComponentActions.push_back(m_actionToDeleteComponents);
 
-        QAction* seperator1 = new QAction(this);
-        seperator1->setSeparator(true);
-        addAction(seperator1);
+        auto* separator1 = new QAction(this);
+        separator1->setSeparator(true);
+        addAction(separator1);
 
         m_actionToCutComponents = new QAction(tr("Cut component"), this);
         m_actionToCutComponents->setShortcut(QKeySequence::Cut);
@@ -2862,9 +2863,19 @@ namespace AzToolsFramework
         addAction(m_actionToPasteComponents);
         m_entityComponentActions.push_back(m_actionToPasteComponents);
 
-        QAction* seperator2 = new QAction(this);
-        seperator2->setSeparator(true);
-        addAction(seperator2);
+        m_actionToDuplicateComponents = new QAction(tr("Duplicate component"), this);
+        m_actionToDuplicateComponents->setShortcut(QKeySequence("Ctrl+D"));
+        m_actionToDuplicateComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        connect(m_actionToDuplicateComponents, &QAction::triggered, this, [this]()
+        {
+            DuplicateComponents();
+        });
+        addAction(m_actionToDuplicateComponents);
+        m_entityComponentActions.push_back(m_actionToDuplicateComponents);
+
+        auto* separator2 = new QAction(this);
+        separator2->setSeparator(true);
+        addAction(separator2);
 
         m_actionToEnableComponents = new QAction(tr("Enable component"), this);
         m_actionToEnableComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -2906,6 +2917,15 @@ namespace AzToolsFramework
         addAction(m_actionToMoveComponentsBottom);
         m_entityComponentActions.push_back(m_actionToMoveComponentsBottom);
 
+        auto* separator3 = new QAction(this);
+        separator3->setSeparator(true);
+        addAction(separator3);
+
+        m_actionToCollapseAll = new QAction(tr("Collapse All"), this);
+        connect(m_actionToCollapseAll, &QAction::triggered, this, &EntityPropertyEditor::OnCollapseAll);
+        addAction(m_actionToCollapseAll);
+        m_entityComponentActions.push_back(m_actionToCollapseAll);
+
         UpdateInternalState();
     }
 
@@ -2932,6 +2952,7 @@ namespace AzToolsFramework
         m_actionToCutComponents->setEnabled(allowRemove && allowCopy);
         m_actionToCopyComponents->setEnabled(allowCopy);
         m_actionToPasteComponents->setEnabled(allowAnyComponentModification && !m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
+        m_actionToDuplicateComponents->setEnabled(allowCopy && allowAnyComponentModification && !m_selectedEntityIds.empty());
         m_actionToMoveComponentsUp->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
         m_actionToMoveComponentsDown->setEnabled(allowRemove && IsMoveComponentsDownAllowed());
         m_actionToMoveComponentsTop->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
@@ -2978,9 +2999,35 @@ namespace AzToolsFramework
         //additional request to hide actions when not allowed so enable and disable aren't shown at the same time
         m_actionToEnableComponents->setVisible(allowRemove && allowEnable);
         m_actionToDisableComponents->setVisible(allowRemove && allowDisable);
+
+        if (hasComponents)
+        {
+            bool anyExpanded = false;
+            for (auto componentEditor : m_componentEditors)
+            {
+                if (componentEditor->IsExpanded())
+                {
+                    anyExpanded = true;
+                    break;
+                }
+            }
+
+            m_actionToCollapseAll->setEnabled(anyExpanded);
+        }
+        else
+        {
+            m_actionToCollapseAll->setEnabled(false);
+        }
+
+        m_actionToCollapseAll->setVisible(hasComponents);
     }
 
     bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntities() const
+    {
+        return CanPasteComponentsOnSelectedEntitiesFromMimeData(ComponentMimeData::GetComponentMimeDataFromClipboard());
+    }
+
+    bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntitiesFromMimeData(const QMimeData* mimeData) const
     {
         if (!AllowAnyComponentModification())
         {
@@ -3004,9 +3051,6 @@ namespace AzToolsFramework
             // Can't paste components if there is a mixed selection or read only entities
             return false;
         }
-
-        // Grab component data from clipboard, if exists
-        const QMimeData* mimeData = ComponentMimeData::GetComponentMimeDataFromClipboard();
 
         if (!mimeData)
         {
@@ -3132,9 +3176,27 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::DuplicateComponents()
+    {
+        const auto& componentsToEdit = GetCopyableComponents();
+        if (componentsToEdit.empty() || !AreComponentsCopyable(componentsToEdit))
+        {
+            return;
+        }
+
+        // Build mime data directly and paste it, so duplicate doesn't overwrite the user's clipboard.
+        AZStd::unique_ptr<QMimeData> mimeData = ComponentMimeData::Create(componentsToEdit);
+        PasteComponentsFromMimeData(mimeData.get());
+    }
+
     void EntityPropertyEditor::PasteComponents()
     {
-        if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities())
+        PasteComponentsFromMimeData(ComponentMimeData::GetComponentMimeDataFromClipboard());
+    }
+
+    void EntityPropertyEditor::PasteComponentsFromMimeData(const QMimeData* mimeData)
+    {
+        if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntitiesFromMimeData(mimeData))
         {
             ScopedUndoBatch undoBatch("Paste Component(s)");
 
@@ -3151,7 +3213,7 @@ namespace AzToolsFramework
                 GetAllComponentsForEntityInOrder(GetEntity(entityId), componentsInOrder);
 
                 //perform the paste operation which should add new components to the entity or pending list
-                EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::PasteComponentsToEntity, entityId);
+                EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::PasteComponentsToEntityFromMimeData, entityId, mimeData);
 
                 //get the post-paste set of components, which should include all prior components plus new ones
                 componentsAfterPaste.clear();
@@ -5256,6 +5318,14 @@ namespace AzToolsFramework
 
         AzToolsFramework::EntityIdSet pinnedEntities(selectedEntities.begin(), selectedEntities.end());
         AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
+    }
+
+    void EntityPropertyEditor::OnCollapseAll()
+    {
+        for (auto componentEditor : m_componentEditors)
+        {
+            componentEditor->SetExpanded(false);
+        }
     }
 
     void EntityPropertyEditor::OnPrepareForContextReset()

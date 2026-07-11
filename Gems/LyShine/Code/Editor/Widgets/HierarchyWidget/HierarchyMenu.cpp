@@ -194,6 +194,27 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
             }
         }
     }
+
+    // Duplicate element (Copy + Paste as sibling in one step).
+    {
+        action = new QAction("Duplicate", this);
+        action->setShortcut(QKeySequence("Ctrl+D"));
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                QMetaObject::invokeMethod(hierarchy, "Duplicate", Qt::QueuedConnection);
+            });
+        addAction(action);
+
+        if (!itemsAreSelected)
+        {
+            action->setEnabled(false);
+        }
+    }
 }
 
 void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, size_t showMask)

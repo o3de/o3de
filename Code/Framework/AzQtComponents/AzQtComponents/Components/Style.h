@@ -124,7 +124,6 @@ namespace AzQtComponents
         void drawControl(QStyle::ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const override;
         void drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const override;
         void drawComplexControl(QStyle::ComplexControl element, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget) const override;
-        void drawItemText(QPainter* painter, const QRect& rectangle, int alignment, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole) const override;
 
         void drawDragIndicator(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
 
@@ -182,9 +181,6 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // needs to have dll-interface to be used by clients of class 'AzQtComponents::LineEdit'
         QScopedPointer<Data> m_data;
         AZ_POP_DISABLE_WARNING
-
-        // To be used when text alignment has to be forced from outside Qt
-        mutable QVariant m_drawItemTextAlignmentOverride;
 
         mutable const QWidget* m_drawControlWidget = nullptr;
     };

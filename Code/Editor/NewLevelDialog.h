@@ -9,11 +9,41 @@
 
 #pragma once
 
+#include <QApplication>
+#include <QPainter>
 #include <QScopedPointer>
 #include <QAbstractButton>
 #include <QDialog>
+#include <QStyledItemDelegate>
 
 #include "LevelRoots.h"
+
+// QListWidget icon-mode items render icons in white when selected in Qt6 because
+// QIcon::Selected mode tints the pixmap. This delegate draws the selection background
+// manually and strips State_Selected before Qt renders, keeping the icon readable.
+class DrawIconWithBackgroundDelegate : public QStyledItemDelegate
+{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+
+        QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
+
+        const bool selected = opt.state & QStyle::State_Selected;
+        if (selected)
+        {
+            painter->fillRect(opt.rect, opt.palette.highlight());
+        }
+
+        opt.state &= ~QStyle::State_Selected;
+        opt.state &= ~QStyle::State_HasFocus;
+        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+    }
+};
 
 namespace Ui {
     class CNewLevelDialog;

@@ -342,6 +342,7 @@ void CUiAnimViewDialog::InitToolbar()
     qaction = m_viewToolBar->addAction(QIcon(":/Trackview/view/tvview-00.png"), "Track Editor");
     qaction->setData(ID_TV_MODE_DOPESHEET);
     qaction->setShortcut(QKeySequence("Ctrl+D"));
+    qaction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     qaction->setCheckable(true);
     qaction->setChecked(true);
     m_actions[ID_TV_MODE_DOPESHEET] = qaction;

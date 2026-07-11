@@ -26,11 +26,9 @@ namespace AZ
                 if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext->Class<LodRule::AutoLodGenerationSettings>()
-                        ->Version(1)
+                        ->Version(2)
                         ->Field("PreserveTopology", &LodRule::AutoLodGenerationSettings::m_preserveTopology)
                         ->Field("LimitError", &LodRule::AutoLodGenerationSettings::m_limitError)
-                        ->Field("LockBorder", &LodRule::AutoLodGenerationSettings::m_lockBorder)
-                        ->Field("Sparse", &LodRule::AutoLodGenerationSettings::m_sparse)
                         ->Field("Prune", &LodRule::AutoLodGenerationSettings::m_prune)
                         ->Field("TargetError", &LodRule::AutoLodGenerationSettings::m_targetError)
                         ->Field("IndexThreshold", &LodRule::AutoLodGenerationSettings::m_indexThreshold);
@@ -41,10 +39,6 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::AutoLodGenerationSettings::m_preserveTopology, "Preserve Topology", "Preserve the topology of the mesh (slower).")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::AutoLodGenerationSettings::m_lockBorder, "Lock Border", "Restrict from collapsing edges that are on the border of the mesh.")
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &LodRule::AutoLodGenerationSettings::m_preserveTopology)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::AutoLodGenerationSettings::m_sparse, "Sparse", "Improve simplification performance assuming input indices are a sparse subset of the mesh.")
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &LodRule::AutoLodGenerationSettings::m_preserveTopology)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::AutoLodGenerationSettings::m_prune, "Prune", "Allow the simplifier to remove isolated components regardless of the topological restrictions inside the component.")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &LodRule::AutoLodGenerationSettings::m_preserveTopology)
                             ->DataElement(AZ::Edit::UIHandlers::Default, &LodRule::AutoLodGenerationSettings::m_limitError, "Limit Error", "Enable the error limit for the mesh.")

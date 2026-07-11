@@ -17,8 +17,11 @@ set(O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION FALSE CACHE BOOL "Option to forcibly 
 # Add a GLOBAL property which can be used to quickly determine if a directory is an external subdirectory
 get_property(cache_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
 foreach(cache_external_subdir IN LISTS cache_external_subdirs)
-    cmake_path(ABSOLUTE_PATH cache_external_subdir OUTPUT_VARIABLE real_external_subdir NORMALIZE)
-    set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${real_external_subdir}" TRUE)
+    # note that on windows, drive letters may be the incorrect casing until you call file(REAL_PATH)
+    # but, we want the rest of it to be cmake normalized, so we call cmake_path(NORMAL_PATH) after file(REAL_PATH)
+    file(REAL_PATH "${cache_external_subdir}" cache_external_subdir)
+    cmake_path(NORMAL_PATH cache_external_subdir)
+    set_property(GLOBAL PROPERTY "O3DE_SUBDIRECTORY_${cache_external_subdir}" TRUE)
 endforeach()
 
 # The visited_gem_name_set is used to append the external_subdirectories found
@@ -57,6 +60,10 @@ function(add_o3de_object_gem_json_external_subdirectories object_type object_nam
         foreach(gem_external_subdir IN LISTS gem_external_subdirs)
             cmake_path(ABSOLUTE_PATH gem_external_subdir BASE_DIRECTORY ${gem_path} OUTPUT_VARIABLE real_external_subdir NORMALIZE)
 
+            # Make sure its both normalized and drive letter casing safe by passing it through REAL_PATH and normal_path
+            file(REAL_PATH "${real_external_subdir}" real_external_subdir)
+            cmake_path(NORMAL_PATH real_external_subdir)
+
             if(NOT object_name STREQUAL "")
                 # Append external subdirectory to the O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name} PROPERTY
                 set(object_external_subdir_property_name O3DE_EXTERNAL_SUBDIRS_${object_type}_${object_name})
@@ -92,6 +99,10 @@ function(add_o3de_object_json_external_subdirectories object_type object_name ob
         o3de_read_json_external_subdirs(object_external_subdirs ${object_json_path})
         foreach(object_external_subdir IN LISTS object_external_subdirs)
             cmake_path(ABSOLUTE_PATH object_external_subdir BASE_DIRECTORY ${object_path} OUTPUT_VARIABLE real_external_subdir NORMALIZE)
+            # note that on windows, drive letters may be the incorrect casing until you call file(REAL_PATH)
+            # but, we want the rest of it to be cmake normalized, so we call cmake_path(NORMAL_PATH) after file(REAL_PATH)
+            file(REAL_PATH "${real_external_subdir}" real_external_subdir)
+            cmake_path(NORMAL_PATH real_external_subdir)
 
             # Append external subdirectory ONLY to O3DE_EXTERNAL_SUBDIRS_PROJECT_${project_name} PROPERTY
             if(NOT object_name STREQUAL "")
@@ -179,6 +190,10 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
             get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
 
             if (gem_path)
+                # fixes up the path to be uniform - REAL_PATH will fix drive letter casing
+                # cmake_path(NORMAL_PATH) will fix separators and relative dots and so on.
+                file(REAL_PATH "${gem_path}" gem_path)
+                cmake_path(NORMAL_PATH gem_path)
                 list(APPEND gem_dirs ${gem_path})
             elseif(NOT gem_optional)
                 # Sort the list so it is easier to search visually

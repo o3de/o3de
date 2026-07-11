@@ -381,12 +381,14 @@ namespace AzToolsFramework
         QAction* m_actionToCutComponents = nullptr;
         QAction* m_actionToCopyComponents = nullptr;
         QAction* m_actionToPasteComponents = nullptr;
+        QAction* m_actionToDuplicateComponents = nullptr;
         QAction* m_actionToEnableComponents = nullptr;
         QAction* m_actionToDisableComponents = nullptr;
         QAction* m_actionToMoveComponentsUp = nullptr;
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
+        QAction* m_actionToCollapseAll = nullptr;
 
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
@@ -394,6 +396,7 @@ namespace AzToolsFramework
         void UpdateActions();
 
         bool CanPasteComponentsOnSelectedEntities() const;
+        bool CanPasteComponentsOnSelectedEntitiesFromMimeData(const QMimeData* mimeData) const;
         bool CanPasteComponentsOnEntity(const ComponentTypeMimeData::ClassDataContainer& classDataForComponentsToPaste, const AZ::Entity* entity) const;
 
         AZ::Entity::ComponentArrayType GetCopyableComponents() const;
@@ -401,7 +404,9 @@ namespace AzToolsFramework
         void DeleteComponents();
         void CutComponents();
         void CopyComponents();
+        void DuplicateComponents();
         void PasteComponents();
+        void PasteComponentsFromMimeData(const QMimeData* mimeData);
         void EnableComponents(AZStd::span<AZ::Component* const> components);
         void EnableComponents();
         void DisableComponents(AZStd::span<AZ::Component* const> components);
@@ -681,6 +686,7 @@ namespace AzToolsFramework
         void ClearSearchFilter();
 
         void OpenPinnedInspector();
+        void OnCollapseAll();
 
         void DragStopped();
 

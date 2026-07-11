@@ -588,7 +588,8 @@ namespace AZ::DocumentPropertyEditor
                 }
                 return overallResult;
             }
-            else if (!value.IsOpaqueValue())
+
+            if (!value.IsOpaqueValue())
             {
                 // CallbackAttributes that return a value may be bound to a simple value of that type
                 // In that case, ignore our parameters and simply return the value

@@ -148,6 +148,9 @@ namespace AZ::DocumentPropertyEditor
         //! AdapterMessage provides a Match method to facilitate checking the message against
         //! registered CallbackAttributes.
         Dom::Value SendAdapterMessage(const AdapterMessage& message);
+        
+        //! Subclasses can call this to execute any queued reset operations, if any are present.
+        virtual void ExecuteQueuedReset();
 
         //! If true, debug mode is enabled for all DocumentAdapters.
         //! \see SetDebugModeEnabled
@@ -193,6 +196,12 @@ namespace AZ::DocumentPropertyEditor
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
         void NotifyResetDocument(DocumentResetType resetType = DocumentResetType::SoftReset);
+
+        //! Subclasses may call this to enqueue a NotifyResetDocument to be executed later when the current call stack unwinds.
+        //! Subclasses should call this one in most cases, except when a true clear is required such as when all data is instantly
+        //! invalid (during a quit / complete reload).
+        void QueueResetDocument(DocumentResetType resetType = DocumentResetType::SoftReset);
+
         //! Subclasses may call this to trigger a ChangedEvent to notify the view that this adapter's contents have changed.
         //! This patch should apply cleanly on the last result GetContents would have returned after any preceding changed
         //! or reset events.
@@ -207,6 +216,8 @@ namespace AZ::DocumentPropertyEditor
         FilterEvent m_filterEvent;
 
         mutable Dom::Value m_cachedContents;
+        DocumentResetType m_queuedResetType = DocumentResetType::SoftReset;
+        bool m_isResetQueued = false;
     };
 } // namespace AZ::DocumentPropertyEditor
 

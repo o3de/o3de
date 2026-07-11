@@ -15,6 +15,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
+class QMimeData;
+
 namespace AzToolsFramework
 {
     class EntityCompositionRequests
@@ -151,6 +153,9 @@ namespace AzToolsFramework
         * \param entityId the Id of the entity to paste to
         */
         virtual void PasteComponentsToEntity(AZ::EntityId entityId) = 0;
+
+        //! Pastes components from the given mime data to the entity without reading the clipboard (used by duplicate).
+        virtual void PasteComponentsToEntityFromMimeData([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const QMimeData* mimeData) {}
 
         /*!
         * Checks if there is component data available to paste into an entity

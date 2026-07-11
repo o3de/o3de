@@ -114,6 +114,12 @@ namespace
 
         return it != keys.cend() ? &*it : nullptr;
     }
+
+    bool IsAzKeyDown(const ImGuiIO& io, const InputChannelId& inputChannelId)
+    {
+        const unsigned int keyIndex = GetAzKeyIndex(inputChannelId);
+        return keyIndex < AZ_ARRAY_SIZE(io.KeysDown) && io.KeysDown[keyIndex];
+    }
 }
 
 void ImGuiManager::Initialize()
@@ -291,6 +297,8 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
 
     if (m_clientMenuBarState == DisplayState::Hidden)
     {
+        m_pendingTextInputEvents.clear();
+
         // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
         // continuous bus notifications
         if (m_imGuiBroadcastState.m_deactivationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
@@ -391,6 +399,7 @@ ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
     }
 
     // Start New Frame
+    FlushPendingTextInputEvents();
     ImGui::NewFrame();
 
     // Advance ImGui by Elapsed Frame Time
@@ -670,19 +679,51 @@ void ImGuiManager::EnableControllerSupportMode(ImGuiControllerModeFlags::FlagTyp
 
 bool ImGuiManager::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
+    if (m_clientMenuBarState != DisplayState::Visible)
+    {
+        return false;
+    }
+
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
     ImGuiIO& io = ImGui::GetIO();
-    io.AddInputCharactersUTF8(textUTF8.c_str());
-
-    if (textUTF8 == "\b" && !io.KeysDown[GetAzKeyIndex(InputDeviceKeyboard::Key::EditBackspace)])
+    if (IsAzKeyDown(io, m_consoleKeyInputChannelId))
     {
-        // Simulate the backspace key being pressed
-        io.KeysDown[GetAzKeyIndex(InputDeviceKeyboard::Key::EditBackspace)] = true;
-        m_simulateBackspaceKeyPressed = true;
+        return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;
     }
 
+    m_pendingTextInputEvents.push_back(textUTF8);
+
     return io.WantTextInput && m_clientMenuBarState == DisplayState::Visible;;
+}
+
+void ImGuiManager::FlushPendingTextInputEvents()
+{
+    if (m_pendingTextInputEvents.empty())
+    {
+        return;
+    }
+
+    if (m_clientMenuBarState != DisplayState::Visible)
+    {
+        m_pendingTextInputEvents.clear();
+        return;
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+    for (const AZStd::string& textUTF8 : m_pendingTextInputEvents)
+    {
+        io.AddInputCharactersUTF8(textUTF8.c_str());
+
+        if (textUTF8 == "\b" && !io.KeysDown[GetAzKeyIndex(InputDeviceKeyboard::Key::EditBackspace)])
+        {
+            // Simulate the backspace key being pressed
+            io.KeysDown[GetAzKeyIndex(InputDeviceKeyboard::Key::EditBackspace)] = true;
+            m_simulateBackspaceKeyPressed = true;
+        }
+    }
+
+    m_pendingTextInputEvents.clear();
 }
 
 void ImGuiManager::ToggleToImGuiVisibleState(DisplayState state)
@@ -751,6 +792,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         default:
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
+            m_pendingTextInputEvents.clear();
 
             // Avoid hiding the cursor when in the Editor and not in game mode
             const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 

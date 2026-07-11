@@ -152,6 +152,7 @@ private:
     QAction* m_actionToCutComponents;
     QAction* m_actionToCopyComponents;
     QAction* m_actionToPasteComponents;
+    QAction* m_actionToDuplicateComponents;
 
     // We require an overlay widget to act as a canvas to draw on top of everything in the properties pane
     // so that we can draw outside of the component editors' bounds

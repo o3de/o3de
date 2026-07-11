@@ -28,6 +28,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -43,7 +44,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -56,8 +60,11 @@ AZ_POP_DISABLE_WARNING
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
+#include <QApplication>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
+#include <QTimer>
 #include <QMessageBox>
 #include <QVBoxLayout>
 
@@ -70,6 +77,10 @@ namespace AzToolsFramework
         //////////////////////////////////
 
         static constexpr const char* k_assetEditorSettingsPath = "/O3DE/Preferences/AssetEditor/Settings";
+
+        // Dedicated Action Manager context for the Asset Editor so its shortcuts (e.g. Ctrl+S) win over the
+        // main Editor's identical ones while focus is inside the Asset Editor. See RegisterShortcutActionContext.
+        static constexpr const char* k_assetEditorActionContextId = "o3de.context.assetEditor";
 
         void AssetEditorWidgetUserSettings::Reflect(AZ::ReflectContext* context)
         {
@@ -309,10 +320,12 @@ namespace AzToolsFramework
 
             m_saveAssetAction = fileMenu->addAction("&Save");
             m_saveAssetAction->setShortcut(QKeySequence::Save);
+            m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAsset);
 
             m_saveAsAssetAction = fileMenu->addAction("&Save As");
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
+            m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
             m_saveAllAssetsAction = fileMenu->addAction("Save All");
@@ -323,6 +336,25 @@ namespace AzToolsFramework
             m_saveAssetAction->setEnabled(false);
             m_saveAsAssetAction->setEnabled(false);
             m_saveAllAssetsAction->setEnabled(false);
+
+            QMenu* editMenu = mainMenu->addMenu(tr("&Edit"));
+
+            m_undoAction = editMenu->addAction(tr("&Undo"));
+            m_undoAction->setShortcut(QKeySequence::Undo);
+            connect(m_undoAction, &QAction::triggered, this, &AssetEditorWidget::Undo);
+
+            m_redoAction = editMenu->addAction(tr("&Redo"));
+            m_redoAction->setShortcut(QKeySequence::Redo);
+            connect(m_redoAction, &QAction::triggered, this, &AssetEditorWidget::Redo);
+
+            // Like the save actions, the undo/redo shortcuts are scoped to this widget for their menu labels;
+            // the actual key handling is claimed in event() so it cannot be lost to the main Editor's identical
+            // Undo/Redo (which would otherwise undo the level while the Asset Editor has focus).
+            m_undoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            m_redoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+            m_undoAction->setEnabled(false);
+            m_redoAction->setEnabled(false);
 
             QMenu* viewMenu = mainMenu->addMenu(tr("&View"));
 
@@ -335,6 +367,8 @@ namespace AzToolsFramework
             mainLayout->setMenuBar(mainMenu);
 
             setLayout(mainLayout);
+
+            RegisterShortcutActionContext();
 
             QObject::connect(m_recentFileMenu, &QMenu::aboutToShow, this, &AssetEditorWidget::PopulateRecentMenu);
 
@@ -371,6 +405,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::SaveAll()
         {
+            CommitInProgressEdit();
 
             for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
             {
@@ -630,6 +665,47 @@ namespace AzToolsFramework
             return tab->SaveAssetToPath(assetPath.data());
         }
 
+        void AssetEditorWidget::RegisterShortcutActionContext()
+        {
+            // The Asset Editor pane shares its top-level window with the main Editor, whose Ctrl+S (save level)
+            // and Ctrl+Z/Ctrl+Y (undo/redo) are dispatched by the Action Manager: a per-context event filter
+            // installed on the context's widget claims the shortcut on QEvent::ShortcutOverride and consumes it
+            // before it reaches parent widgets. Giving the Asset Editor its own action context installs that
+            // filter on this widget - a descendant of the main window - so it runs first and triggers the Asset
+            // Editor's own actions (registered on this widget via addAction below) instead of the main Editor's.
+            // This is the standard O3DE way to let duplicated shortcut hotkeys coexist, and keeps the shortcuts
+            // rebindable through the Hotkey Manager (no hard-coded key handling).
+            auto* actionManager = AZ::Interface<ActionManagerInterface>::Get();
+            auto* hotKeyManager = AZ::Interface<HotKeyManagerInterface>::Get();
+            if (!actionManager || !hotKeyManager)
+            {
+                return;
+            }
+
+            if (!actionManager->IsActionContextRegistered(k_assetEditorActionContextId))
+            {
+                ActionContextProperties contextProperties;
+                contextProperties.m_name = "O3DE Asset Editor";
+                actionManager->RegisterActionContext(k_assetEditorActionContextId, contextProperties);
+            }
+
+            // The context's widget watcher triggers matching actions found on the watched widget, so these
+            // actions must be added to this widget (not just the menus) to be reachable.
+            addAction(m_saveAssetAction);
+            addAction(m_saveAsAssetAction);
+            addAction(m_undoAction);
+            addAction(m_redoAction);
+
+            hotKeyManager->AssignWidgetToActionContext(k_assetEditorActionContextId, this);
+        }
+
+        void AssetEditorWidget::CommitInProgressEdit()
+        {
+            // Clearing focus fires the editor's focus-out, which writes the value (and its undo entry) into the
+            // model so the save below captures the committed data.
+            AzQtComponents::ClearFocusWithin(this);
+        }
+
         void AssetEditorWidget::SaveAsset()
         {
             if (!m_tabs->count())
@@ -637,11 +713,13 @@ namespace AzToolsFramework
                 return;
             }
 
+            CommitInProgressEdit();
+
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsset();
 
         }
-        
+
         void AssetEditorWidget::SaveAssetAs()
         {
             if (!m_tabs->count())
@@ -649,13 +727,49 @@ namespace AzToolsFramework
                 return;
             }
 
+            CommitInProgressEdit();
+
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsDialog();
+        }
+
+        void AssetEditorWidget::Undo()
+        {
+            if (AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget()))
+            {
+                tab->Undo();
+            }
+        }
+
+        void AssetEditorWidget::Redo()
+        {
+            if (AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget()))
+            {
+                tab->Redo();
+            }
+        }
+
+        void AssetEditorWidget::UpdateUndoRedoActionsStatus()
+        {
+            // Keep Undo/Redo enabled whenever a tab is open - even with empty history - so the action-context
+            // watcher always claims Ctrl+Z / Ctrl+Y while an asset is open and they never fall through to the
+            // main Editor's level undo. The tab's Undo()/Redo() are no-ops when there is nothing to undo/redo.
+            // (When no tab is open the actions are disabled, releasing the shortcut back to the level.)
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            if (m_undoAction)
+            {
+                m_undoAction->setEnabled(tab != nullptr);
+            }
+            if (m_redoAction)
+            {
+                m_redoAction->setEnabled(tab != nullptr);
+            }
         }
 
         void AssetEditorWidget::currentTabChanged(int /*newCurrentIndex*/)
         {
             UpdateSaveMenuActionsStatus();
+            UpdateUndoRedoActionsStatus();
         }
 
         void AssetEditorWidget::onTabCloseButtonPressed(int tabIndexToClose)
