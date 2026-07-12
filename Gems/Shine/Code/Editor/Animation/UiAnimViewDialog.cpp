@@ -220,7 +220,7 @@ void CUiAnimViewDialog::OnAddEntityNodeMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BOOL CUiAnimViewDialog::OnInitDialog()
+bool CUiAnimViewDialog::OnInitDialog()
 {
     InitToolbar();
     InitMenu();
@@ -287,7 +287,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     QString cursorPosText = QString("0.000(%1fps)").arg(FloatToIntRet(m_wndCurveEditor->GetFPS()));
     m_cursorPos->setText(cursorPosText);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return true unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 

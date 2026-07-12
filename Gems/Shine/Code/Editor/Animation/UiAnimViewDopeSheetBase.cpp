@@ -2650,7 +2650,7 @@ void CUiAnimViewDopeSheetBase::SetTickDisplayMode(EUiAVTickMode mode)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewDopeSheetBase::SetSnapFPS(UINT fps)
+void CUiAnimViewDopeSheetBase::SetSnapFPS(unsigned int fps)
 {
     m_snapFrameTime = (fps == 0) ? 0.033333f : (1.0f / float(fps));
 }

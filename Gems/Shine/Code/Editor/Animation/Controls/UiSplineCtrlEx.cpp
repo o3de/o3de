@@ -3066,7 +3066,7 @@ void AbstractSplineWidget::FitSplineToViewHeight()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void AbstractSplineWidget::OnUserCommand(UINT cmd)
+void AbstractSplineWidget::OnUserCommand(unsigned int cmd)
 {
     switch (cmd)
     {

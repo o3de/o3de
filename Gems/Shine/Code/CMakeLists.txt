@@ -157,6 +157,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::${gem_name}.Static
+                Gem::${gem_name}.Tools.Static
                 Legacy::CryCommon
                 Gem::LmbrCentral.Editor
                 Gem::TextureAtlas.Editor

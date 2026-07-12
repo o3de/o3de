@@ -79,7 +79,7 @@ public:
 
     void SetSnappingMode(ESnappingMode mode) { m_snappingMode = mode; }
     ESnappingMode GetSnappingMode() const { return m_snappingMode; }
-    void SetSnapFPS(UINT fps);
+    void SetSnapFPS(unsigned int fps);
 
     EUiAVTickMode GetTickDisplayMode() const { return m_tickDisplayMode; }
     void SetTickDisplayMode(EUiAVTickMode mode);

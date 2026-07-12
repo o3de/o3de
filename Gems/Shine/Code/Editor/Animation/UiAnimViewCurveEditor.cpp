@@ -289,7 +289,7 @@ void CUiAnimViewCurveEditor::OnSplineChange()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewCurveEditor::OnSplineCmd(UINT cmd)
+void CUiAnimViewCurveEditor::OnSplineCmd(unsigned int cmd)
 {
     m_ui->m_wndSpline->OnUserCommand(cmd);
     OnSplineCmdUpdateUI();

@@ -170,8 +170,8 @@ private:
     QCursor m_arrowCursor;
     QCursor m_noIcon;
 
-    UINT m_currentMatchIndex;
-    UINT m_matchCount;
+    unsigned int m_currentMatchIndex;
+    unsigned int m_matchCount;
 
     bool m_bIgnoreNotifications;
     bool m_bNeedReload;

@@ -58,7 +58,7 @@ protected:
 private:
 
     void OnSplineChange();
-    void OnSplineCmd(UINT cmd);
+    void OnSplineCmd(unsigned int cmd);
     void OnSplineCmdUpdateUI();
     void OnTimelineChange();
     void OnHorizontalScrollBarChange();

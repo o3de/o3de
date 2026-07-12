@@ -25,7 +25,7 @@ void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int li
 #include <QCursor>
 #include <QPixmap>
 
-QCursor CMFCUtils::LoadCursor(UINT nIDResource, int hotX, int hotY)
+QCursor CMFCUtils::LoadCursor(unsigned int nIDResource, int hotX, int hotY)
 {
     QString path;
     switch (nIDResource)
@@ -79,7 +79,7 @@ QString TrimTrailingZeros(QString str)
 {
     if (str.contains('.'))
     {
-        for (int p = str.size() - 1; p >= 0; --p)
+        for (qsizetype p = str.size() - 1; p >= 0; --p)
         {
             if (str.at(p) == '.')
             {

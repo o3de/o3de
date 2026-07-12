@@ -823,7 +823,7 @@ void CUiAnimViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float
     update();
 }
 
-void CUiAnimViewSplineCtrl::OnUserCommand(UINT cmd)
+void CUiAnimViewSplineCtrl::OnUserCommand(unsigned int cmd)
 {
     CUiAnimViewSequence* pSequence = nullptr;
     UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
