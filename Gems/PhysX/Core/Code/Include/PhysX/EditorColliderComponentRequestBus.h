@@ -129,22 +129,6 @@ namespace PhysX
     };
 
     using EditorMeshColliderComponentRequestBus = AZ::EBus<EditorMeshColliderComponentRequests>;
-
-    /// O3DE_DEPRECATION_NOTICE(GHI-14717)
-    /// <EditorColliderValidationRequests>
-    /// Bus used to validate that non-convex meshes are not used with simulation types which do not support them.
-    /// </EditorColliderValidationRequests>
-    class AZ_DEPRECATED(EditorColliderValidationRequests, "Functionality moved to EditorMeshColliderValidationRequests")
-        : public AZ::ComponentBus
-    {
-    public:
-        /// Checks if the the mesh in the collider is correct with the current state of the Rigidbody.
-        virtual void ValidateRigidBodyMeshGeometryType() = 0;
-    };
-
-    AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations", "-Wdeprecated-declarations");
-    using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
-    AZ_POP_DISABLE_WARNING;
     
     //! Bus used to validate that non-convex meshes are not used with simulation types which do not support them.
     class EditorMeshColliderValidationRequests : public AZ::ComponentBus

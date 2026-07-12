@@ -23,12 +23,8 @@ namespace PhysX
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_enabled = false;
         float m_damping = 1.0f;
-        float m_stiffness = 1e+5f;
-
-    private:
-        bool ReadOnlyProperties() const;
+        float m_stiffness = 0.0f;
     };
 
     //! Properties of a PhysX material.
@@ -60,7 +56,7 @@ namespace PhysX
         static float GetMinDensityLimit();
         static float GetMaxDensityLimit();
 
-        bool IsRestitutionReadOnly() const;
         AZ::Crc32 GetCompliantConstantModeVisibility() const;
+        AZ::u32 RestitutionChangeNotify();
     };
 } // namespace PhysX

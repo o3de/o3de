@@ -31,7 +31,7 @@ namespace physx
 {
     class PxFoundation;
     class PxPhysics;
-    class PxCooking;
+    // class PxCooking;
     class PxCpuDispatcher;
 }
 
@@ -75,12 +75,16 @@ namespace PhysX
 
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
-        physx::PxCooking* GetPxCooking() { return m_physXSdk.m_cooking; }
+        physx::PxCookingParams* GetPxCookingParams() { return m_physXSdk.m_cookingParams.get(); }
         physx::PxCpuDispatcher* GetPxCpuDispathcher()
         {
             AZ_Assert(m_cpuDispatcher, "PhysX CPU dispatcher was not created");
             return m_cpuDispatcher;
         }
+        //! Accessor to get scratch buffer for use in scene->simulate.
+        void* GetScratchBuffer() { return m_scratchBufferAddress; }
+        AZ::u32 GetScratchBufferSize() { return static_cast<AZ::u32>(m_scratchBufferSize); }
+
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
         //TEMP -- until these are fully moved over here
@@ -107,12 +111,16 @@ namespace PhysX
         {
             physx::PxFoundation* m_foundation = nullptr;
             physx::PxPhysics* m_physics = nullptr;
-            physx::PxCooking* m_cooking = nullptr;
+            AZStd::unique_ptr<physx::PxCookingParams> m_cookingParams;
         };
         PhysXSdk m_physXSdk;
         PxAzAllocatorCallback m_physXAllocatorCallback;
         PxAzErrorCallback m_physXErrorCallback;
         PxAzProfilerCallback m_pxAzProfilerCallback;
+
+        // Scratch memory buffer to use for work during simulation run to reduce dynamic allocation.
+        void* m_scratchBufferAddress = nullptr;
+        size_t m_scratchBufferSize = 0;
 
         physx::PxCpuDispatcher* m_cpuDispatcher = nullptr;
 

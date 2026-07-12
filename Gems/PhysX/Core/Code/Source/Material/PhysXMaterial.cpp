@@ -211,10 +211,6 @@ namespace PhysX
         {
             SetFrictionCombineMode(static_cast<CombineMode>(value.GetValue<AZ::u32>()));
         }
-        else if (propertyName == MaterialConstants::CompliantContactModeEnabledName)
-        {
-            EnableCompliantContactMode(value.GetValue<bool>());
-        }
         else if (propertyName == MaterialConstants::CompliantContactModeDampingName)
         {
             SetCompliantContactModeDamping(value.GetValue<float>());
@@ -266,16 +262,13 @@ namespace PhysX
     void Material::SetRestitution(float restitution)
     {
         AZ_Warning(
-            "PhysX Material", restitution >= 0.0f && restitution <= 1.0f, "Restitution value %f will be clamped into range [0, 1]",
+            "PhysX Material", restitution <= 1.0f, "Restitution value %f will be clamped below 1.0",
             restitution);
 
-        m_restitution = AZ::GetClamp(restitution, 0.0f, 1.0f);
+        m_restitution = AZ::GetMin(restitution, 1.0f);
 
-        // Restitution property in a PxMaterial is reused for spring stiffness when compliant contact mode is enabled.
-        if (!IsCompliantContactModeEnabled())
-        {
-            m_pxMaterial->setRestitution(m_restitution);
-        }
+        // Restitution property in a PxMaterial is reused for spring stiffness and enables compliant contact mode.
+        m_pxMaterial->setRestitution(m_restitution);
     }
 
     CombineMode Material::GetFrictionCombineMode() const
@@ -314,30 +307,7 @@ namespace PhysX
 
     bool Material::IsCompliantContactModeEnabled() const
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
-        return m_pxMaterial->getFlags().isSet(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
-#else
-        return false;
-#endif
-    }
-
-    void Material::EnableCompliantContactMode([[maybe_unused]] bool enabled)
-    {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
-        m_pxMaterial->setFlag(physx::PxMaterialFlag::eCOMPLIANT_CONTACT, enabled);
-        if (enabled)
-        {
-            m_pxMaterial->setDamping(m_compliantContactModeDamping);
-            // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
-            m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
-        }
-        else
-        {
-            m_pxMaterial->setDamping(0.0f);
-            // Restores restitution value when Compliant Contact Modde is disabled
-            m_pxMaterial->setRestitution(m_restitution);
-        }
-#endif
+        return m_pxMaterial->getRestitution() < 0.0f;
     }
 
     float Material::GetCompliantContactModeDamping() const
@@ -347,7 +317,6 @@ namespace PhysX
 
     void Material::SetCompliantContactModeDamping([[maybe_unused]] float damping)
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         AZ_Warning("PhysX Material", damping >= 0.0f, "Compliant Contact Mode Damping value %f is out of range, 0 will be used.", damping);
 
         m_compliantContactModeDamping = AZ::GetMax(0.0f, damping);
@@ -356,7 +325,6 @@ namespace PhysX
         {
             m_pxMaterial->setDamping(m_compliantContactModeDamping);
         }
-#endif
     }
 
     float Material::GetCompliantContactModeStiffness() const
@@ -366,18 +334,13 @@ namespace PhysX
 
     void Material::SetCompliantContactModeStiffness([[maybe_unused]] float stiffness)
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         AZ_Warning(
             "PhysX Material", stiffness >= 0.0f, "Compliant Contact Mode Stiffness value %f is out of range, 0 will be used.", stiffness);
 
         m_compliantContactModeStiffness = AZ::GetMax(0.0f, stiffness);
 
-        if (IsCompliantContactModeEnabled())
-        {
-            // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
-            m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
-        }
-#endif
+        // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
+        SetRestitution(-m_compliantContactModeStiffness);
     }
 
     const AZ::Color& Material::GetDebugColor() const

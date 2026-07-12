@@ -263,10 +263,10 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(actor->getScene());
 
             auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
-            ASSERT_TRUE(pxShape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eBOX);
+            ASSERT_TRUE(pxShape->GetPxShape()->getGeometry().getType() == physx::PxGeometryType::eBOX);
 
-            physx::PxBoxGeometry boxGeometry;
-            pxShape->GetPxShape()->getBoxGeometry(boxGeometry);
+            const physx::PxGeometry& baseGeometry = pxShape->GetPxShape()->getGeometry();
+            const auto& boxGeometry = static_cast<const physx::PxBoxGeometry&>(baseGeometry);
 
             EXPECT_NEAR(boxGeometry.halfExtents.x, halfExtents.GetX(), PhysXSpecificTest::tolerance);
             EXPECT_NEAR(boxGeometry.halfExtents.y, halfExtents.GetY(), PhysXSpecificTest::tolerance);

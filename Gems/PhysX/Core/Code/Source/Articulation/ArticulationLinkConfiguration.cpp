@@ -16,50 +16,191 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ArticulationSensorConfiguration, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(ArticulationCacheConfiguration, AZ::SystemAllocator);
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationLinkConfiguration, AZ::SystemAllocator);
+
+    physx::PxArticulationCacheFlags ArticulationCacheConfiguration::GetPxCacheFlags() const
+    {
+        physx::PxArticulationCacheFlags flags;
+
+        if (m_jointVelocities)
+        {
+            flags |= physx::PxArticulationCacheFlag::eVELOCITY;
+        }
+        if (m_jointAccelerations)
+        {
+            flags |= physx::PxArticulationCacheFlag::eACCELERATION;
+        }
+        if (m_jointPositions)
+        {
+            flags |= physx::PxArticulationCacheFlag::ePOSITION;
+        }
+        if (m_jointForces)
+        {
+            flags |= physx::PxArticulationCacheFlag::eFORCE;
+        }
+        if (m_linkVelocities)
+        {
+            flags |= physx::PxArticulationCacheFlag::eLINK_VELOCITY;
+        }
+        if (m_linkAccelerations)
+        {
+            flags |= physx::PxArticulationCacheFlag::eLINK_ACCELERATION;
+        }
+        if (m_rootLinkTransform)
+        {
+            flags |= physx::PxArticulationCacheFlag::eROOT_TRANSFORM;
+        }
+        if (m_rootLinkVelocities)
+        {
+            flags |= physx::PxArticulationCacheFlag::eROOT_VELOCITIES;
+        }
+        if (m_linkIncomingJointForces)
+        {
+            flags |= physx::PxArticulationCacheFlag::eLINK_INCOMING_JOINT_FORCE;
+        }
+        if (m_jointTargetPositions)
+        {
+            flags |= physx::PxArticulationCacheFlag::eJOINT_TARGET_POSITIONS;
+        }
+        if (m_jointTargetVelocities)
+        {
+            flags |= physx::PxArticulationCacheFlag::eJOINT_TARGET_VELOCITIES;
+        }
+        if (m_linkForces)
+        {
+            flags |= physx::PxArticulationCacheFlag::eLINK_FORCE;
+        }
+        if (m_linkTorques)
+        {
+            flags |= physx::PxArticulationCacheFlag::eLINK_TORQUE;
+        }
+        return flags;
+    }
+
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationJointMotorProperties, AZ::SystemAllocator);
 
-    void ArticulationSensorConfiguration::Reflect(AZ::ReflectContext* context)
+    void ArticulationCacheConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ArticulationSensorConfiguration>()
+            serializeContext->Class<ArticulationCacheConfiguration>()
                 ->Version(1)
-                ->Field("Local Position", &ArticulationSensorConfiguration::m_localPosition)
-                ->Field("Local Rotation", &ArticulationSensorConfiguration::m_localRotation)
-                ->Field("Include Forward Dynamics Forces", &ArticulationSensorConfiguration::m_includeForwardDynamicsForces)
-                ->Field("Include Constraint Solver Forces", &ArticulationSensorConfiguration::m_includeConstraintSolverForces)
-                ->Field("Use World Frame", &ArticulationSensorConfiguration::m_useWorldFrame);
+                ->Field("Joint Velocities", &ArticulationCacheConfiguration::m_jointVelocities)
+                ->Field("Joint Accelerations", &ArticulationCacheConfiguration::m_jointAccelerations)
+                ->Field("Joint Positions", &ArticulationCacheConfiguration::m_jointPositions)
+                ->Field("Joint Forces", &ArticulationCacheConfiguration::m_jointForces)
+                ->Field("Link Velocities", &ArticulationCacheConfiguration::m_linkVelocities)
+                ->Field("Link Accelerations", &ArticulationCacheConfiguration::m_linkAccelerations)
+                ->Field("Root Link Transform", &ArticulationCacheConfiguration::m_rootLinkTransform)
+                ->Field("Root Link Velocities", &ArticulationCacheConfiguration::m_rootLinkVelocities)
+                ->Field("Link Incoming Joint Forces", &ArticulationCacheConfiguration::m_linkIncomingJointForces)
+                ->Field("Joint Target Positions", &ArticulationCacheConfiguration::m_jointTargetPositions)
+                ->Field("Joint Target Velocities", &ArticulationCacheConfiguration::m_jointTargetVelocities)
+                ->Field("Link Forces", &ArticulationCacheConfiguration::m_linkForces)
+                ->Field("Link Torques", &ArticulationCacheConfiguration::m_linkTorques)
+                ;
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ArticulationSensorConfiguration>("PhysX Articulation Sensor Configuration", "")
+                /*
+                Much of the functionality for joints on the ArticulationCache is already implemented in the ArtiuculationJointBus.
+                This directly queries the Articulation for the values instead of through the cache.
+                We may want to eventually replace all querying for cache getting/setting, but it does not necessarily benefit the user.
+                Joint-based flags have been hidden by default and set to false for now.
+                */
+                editContext->Class<ArticulationCacheConfiguration>("PhysX Articulation Cache Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    
+                    // Joint flags
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &ArticulationSensorConfiguration::m_localPosition,
-                        "Local Position",
-                        "The local position of the sensor relative to the articulation link")
+                        &ArticulationCacheConfiguration::m_jointVelocities,
+                        "Joint Velocities",
+                        "The articulation joint DOF velocities.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &ArticulationSensorConfiguration::m_localRotation,
-                        "Local Rotation",
-                        "The local rotation of the sensor relative to the articulation link")
+                        &ArticulationCacheConfiguration::m_jointAccelerations,
+                        "Joint Accelerations",
+                        "The articulation joint DOF Accelerations.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &ArticulationSensorConfiguration::m_includeForwardDynamicsForces,
-                        "Include Forward Dynamics Forces",
-                        "Whether the output reported by the sensor should include forward dynamics forces")
+                        &ArticulationCacheConfiguration::m_jointPositions,
+                        "Joint Positions",
+                        "The articulation joint DOF Positions.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &ArticulationSensorConfiguration::m_includeConstraintSolverForces,
-                        "Include Constraint Solver Forces",
-                        "Whether the output reported by the sensor should include constraint solver forces")
+                        &ArticulationCacheConfiguration::m_jointForces,
+                        "Joint Forces",
+                        "The articulation joint DOF Forces.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &ArticulationSensorConfiguration::m_useWorldFrame,
-                        "Use World Frame",
-                        "If true, the output will be reported in world space, otherwise in the local space of the sensor");
+                        &ArticulationCacheConfiguration::m_jointTargetPositions,
+                        "Joint Target Positions",
+                        "The articulation joint drive target positions.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_jointTargetVelocities,
+                        "Joint Target Velocities",
+                        "The articulation joint drive target velocities.\n"
+                        "N = getDofs()")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, false)
+
+                    // Link flags
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_linkVelocities,
+                        "Link Velocities",
+                        "Link spacial linear and angular velocities.\n"
+                        "N = total number of links.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_linkAccelerations,
+                        "Link Accelerations",
+                        "Link classical linear and angular accelerations.\n"
+                        "N = total number of links.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_rootLinkTransform,
+                        "Root Link Transform",
+                        "The transform of the root link.\n"
+                        "N = 1")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_rootLinkVelocities,
+                        "Root Link Velocities",
+                        "Just the root link linear and angular velocities.\n"
+                        "N = 1")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_linkIncomingJointForces,
+                        "Link Incoming Joint Forces",
+                        "The total force and torque transmitted from the parent link to this link.\n"
+                        "N = total number of links.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_linkForces,
+                        "Link External Forces",
+                        "An external force applied to the link center of mass.\n"
+                        "N = total number of links.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationCacheConfiguration::m_linkTorques,
+                        "Link External Torques",
+                        "An external torque applied to the link.\n"
+                        "N = total number of links.");
             }
         }
     }
@@ -124,8 +265,8 @@ namespace PhysX
                 ->Field("Motor configuration", &ArticulationLinkConfiguration::m_motorConfiguration)
                 ->Field("Armature", &ArticulationLinkConfiguration::m_armature)
                 ->Field("Friction", &ArticulationLinkConfiguration::m_jointFriction)
-                ->Field("Sensor Configuration", &ArticulationLinkConfiguration::m_sensorConfigs)
-                ->Field("Offset", &ArticulationLinkConfiguration::m_offset);
+                ->Field("Offset", &ArticulationLinkConfiguration::m_offset)
+                ->Field("Cache Configuration", &ArticulationLinkConfiguration::m_articulationCacheConfig);
         }
     }
 

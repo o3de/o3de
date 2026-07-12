@@ -10,16 +10,18 @@
 
 namespace PhysX
 {
-    void* PxAzAllocatorCallback::allocate(size_t size, [[maybe_unused]] const char* typeName, const char* filename, int line)
+    void* PxAzAllocatorCallback::allocate(size_t size, [[maybe_unused]] const char* typeName, [[maybe_unused]] const char* filename, [[maybe_unused]] int line)
     {
         // PhysX requires 16-byte alignment
-        void* ptr = AZ::AllocatorInstance<PhysXAllocator>::Get().Allocate(size, 16, 0, "PhysX", filename, line);
+        // void* ptr = AZ::AllocatorInstance<PhysXAllocator>::Get().Allocate(size, 16, 0, "PhysX", filename, line); // TODO: Verify for removal of depracated Allocate function
+        void* ptr = AZ::AllocatorInstance<PhysXAllocator>::Get().allocate(size, 16);
         AZ_Assert((reinterpret_cast<size_t>(ptr) & 15) == 0, "PhysX requires 16-byte aligned memory allocations.");
         return ptr;
     }
 
     void PxAzAllocatorCallback::deallocate(void* ptr)
     {
-        AZ::AllocatorInstance<PhysXAllocator>::Get().DeAllocate(ptr);
+        // AZ::AllocatorInstance<PhysXAllocator>::Get().DeAllocate(ptr); // TODO: Verify for removal of depracated DeAllocate function
+        AZ::AllocatorInstance<PhysXAllocator>::Get().deallocate(ptr);
     }
 }

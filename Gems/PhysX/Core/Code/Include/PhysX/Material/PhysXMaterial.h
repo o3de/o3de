@@ -37,7 +37,7 @@ namespace PhysX
     namespace MaterialConstants
     {
         inline constexpr AZStd::string_view MaterialAssetType = "PhysX";
-        inline constexpr AZ::u32 MaterialAssetVersion = 2;
+        inline constexpr AZ::u32 MaterialAssetVersion = 3;
 
         inline constexpr AZStd::string_view DynamicFrictionName = "DynamicFriction";
         inline constexpr AZStd::string_view StaticFrictionName = "StaticFriction";
@@ -113,7 +113,6 @@ namespace PhysX
         void SetDensity(float density);
 
         bool IsCompliantContactModeEnabled() const;
-        void EnableCompliantContactMode(bool enabled);
 
         float GetCompliantContactModeDamping() const;
         void SetCompliantContactModeDamping(float damping);

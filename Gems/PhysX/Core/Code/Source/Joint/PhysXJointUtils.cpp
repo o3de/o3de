@@ -142,8 +142,9 @@ namespace PhysX::Utils
         // Soft limit allows angle to exceed limit but springs back with configurable spring stiffness and damping.
         physx::PxJointLimitCone swingLimit(
             AZ::DegToRad(properties.m_limitFirst),
-            AZ::DegToRad(properties.m_limitSecond),
-            properties.m_tolerance);
+            AZ::DegToRad(properties.m_limitSecond)
+            // properties.m_tolerance
+            );
 
         if (properties.m_isSoftLimit)
         {
@@ -171,8 +172,9 @@ namespace PhysX::Utils
 
         physx::PxJointAngularLimitPair limitPair(
             AZ::DegToRad(properties.m_limitSecond),
-            AZ::DegToRad(properties.m_limitFirst),
-            properties.m_tolerance);
+            AZ::DegToRad(properties.m_limitFirst)
+            // properties.m_tolerance
+            );
 
         if (properties.m_isSoftLimit)
         {
@@ -200,7 +202,11 @@ namespace PhysX::Utils
 
 
         const auto[limitLower, limitUpper] = AZStd::minmax(properties.m_limitFirst, properties.m_limitSecond);
-        physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
+        physx::PxJointLinearLimitPair limitPair(
+            physx::PxTolerancesScale(),
+            limitLower, limitUpper
+            // properties.m_tolerance
+            );
 
         if (properties.m_isSoftLimit)
         {
@@ -235,7 +241,12 @@ namespace PhysX::Utils
         const float limitLower = AZ::GetMin(properties.m_limitFirst, properties.m_limitSecond);
         const float limitUpper = AZ::GetMax(properties.m_limitFirst, properties.m_limitSecond);
 
-        physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
+        physx::PxJointLinearLimitPair limitPair(
+            physx::PxTolerancesScale(),
+            limitLower,
+            limitUpper
+            // properties.m_tolerance
+            );
 
         if (properties.m_isSoftLimit)
         {

@@ -146,7 +146,7 @@ namespace PhysXEditorTests
         const physx::PxShape* pxShape = static_cast<const physx::PxShape*>(shape->GetNativePointer());
         // Check the geometry is a type of Convex
         PHYSX_SCENE_READ_LOCK(pxRigidBody->getScene());
-        EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+        EXPECT_EQ(pxShape->getGeometry().getType(), physx::PxGeometryType::eCONVEXMESH);
     }
 
     TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderSetZeroRadius_ErrorIssued)

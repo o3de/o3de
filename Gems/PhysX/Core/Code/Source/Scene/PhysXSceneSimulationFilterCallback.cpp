@@ -93,7 +93,7 @@ namespace PhysX
     }
 
     physx::PxFilterFlags SceneSimulationFilterCallback::pairFound(
-        [[maybe_unused]] physx::PxU32 pairId, [[maybe_unused]] physx::PxFilterObjectAttributes attributes0,
+        [[maybe_unused]] physx::PxU64 pairId, [[maybe_unused]] physx::PxFilterObjectAttributes attributes0,
         [[maybe_unused]] physx::PxFilterData filterData0, const physx::PxActor* actor0,
         [[maybe_unused]] const physx::PxShape* shape0, [[maybe_unused]] physx::PxFilterObjectAttributes attributes1,
         [[maybe_unused]] physx::PxFilterData filterData1, const physx::PxActor* actor1,
@@ -108,14 +108,14 @@ namespace PhysX
     }
 
     void SceneSimulationFilterCallback::pairLost(
-        [[maybe_unused]] physx::PxU32 pairId, [[maybe_unused]] physx::PxFilterObjectAttributes attributes0,
+        [[maybe_unused]] physx::PxU64 pairId, [[maybe_unused]] physx::PxFilterObjectAttributes attributes0,
         [[maybe_unused]] physx::PxFilterData filterData0, [[maybe_unused]] physx::PxFilterObjectAttributes attributes1,
         [[maybe_unused]] physx::PxFilterData filterData1, [[maybe_unused]] bool objectRemoved)
     {
 
     }
 
-    bool SceneSimulationFilterCallback::statusChange([[maybe_unused]] physx::PxU32& pairId, [[maybe_unused]] physx::PxPairFlags& pairFlags,
+    bool SceneSimulationFilterCallback::statusChange([[maybe_unused]] physx::PxU64& pairId, [[maybe_unused]] physx::PxPairFlags& pairFlags,
         [[maybe_unused]] physx::PxFilterFlags& filterFlags)
     {
         return false;

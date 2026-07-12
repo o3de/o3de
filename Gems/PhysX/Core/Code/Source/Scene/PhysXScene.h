@@ -156,5 +156,9 @@ namespace PhysX
         physx::PxControllerManager* m_controllerManager = nullptr; //!< The physx controller manager
 
         AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().
+
+        // Cached scratch buffer so we don't need to get this data once per physics tick
+        void* m_scratchBuffer = nullptr;
+        AZ::u32 m_bufferSize = 0;
     };
 }

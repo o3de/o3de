@@ -125,15 +125,11 @@ namespace PhysX
         physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape,
             const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         physx::PxQueryHitType::Enum postFilter(
             const physx::PxFilterData& filterData,
             const physx::PxQueryHit& hit,
             const physx::PxShape* shape,
             const physx::PxRigidActor* actor) override;
-#endif
-
-        physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         // physx::PxUserControllerHitReport
         void onShapeHit(const physx::PxControllerShapeHit& hit) override;

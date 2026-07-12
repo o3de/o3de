@@ -70,12 +70,12 @@ namespace PhysX
         if (serializeContext)
         {
             serializeContext->Class<RagdollComponent, AZ::Component>()
-                ->Version(3, &RagdollComponentVersionConverter)
+                ->Version(4, &RagdollComponentVersionConverter)
                 ->Field("PositionIterations", &RagdollComponent::m_positionIterations)
                 ->Field("VelocityIterations", &RagdollComponent::m_velocityIterations)
-                ->Field("EnableJointProjection", &RagdollComponent::m_enableJointProjection)
-                ->Field("ProjectionLinearTol", &RagdollComponent::m_jointProjectionLinearTolerance)
-                ->Field("ProjectionAngularTol", &RagdollComponent::m_jointProjectionAngularToleranceDegrees)
+                // ->Field("EnableJointProjection", &RagdollComponent::m_enableJointProjection)
+                // ->Field("ProjectionLinearTol", &RagdollComponent::m_jointProjectionLinearTolerance)
+                // ->Field("ProjectionAngularTol", &RagdollComponent::m_jointProjectionAngularToleranceDegrees)
                 ->Field("EnableMassRatioClamping", &RagdollComponent::m_enableMassRatioClamping)
                 ->Field("MaxMassRatio", &RagdollComponent::m_maxMassRatio);
 
@@ -102,26 +102,26 @@ namespace PhysX
                         "performance. Very high values might introduce instability.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableJointProjection, "Enable Joint Projection",
-                        "When active, preserves joint constraints in volatile simulations. "
-                        "Might not be physically correct in all simulations.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionLinearTolerance,
-                        "Joint Projection Linear Tolerance",
-                        "Maximum linear joint error. Projection is applied to linear joint errors above this value.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1e-3f)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionAngularToleranceDegrees,
-                        "Joint Projection Angular Tolerance",
-                        "Maximum angular joint error. Projection is applied to angular joint errors above this value.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
+                    // ->DataElement(
+                    //     AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableJointProjection, "Enable Joint Projection",
+                    //     "When active, preserves joint constraints in volatile simulations. "
+                    //     "Might not be physically correct in all simulations.")
+                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    // ->DataElement(
+                    //     AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionLinearTolerance,
+                    //     "Joint Projection Linear Tolerance",
+                    //     "Maximum linear joint error. Projection is applied to linear joint errors above this value.")
+                    // ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    // ->Attribute(AZ::Edit::Attributes::Step, 1e-3f)
+                    // ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
+                    // ->DataElement(
+                    //     AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionAngularToleranceDegrees,
+                    //     "Joint Projection Angular Tolerance",
+                    //     "Maximum angular joint error. Projection is applied to angular joint errors above this value.")
+                    // ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    // ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    // ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    // ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableMassRatioClamping, "Enable Mass Ratio Clamping",
                         "When active, ragdoll node mass values may be overridden to avoid unstable mass ratios.")
@@ -137,10 +137,10 @@ namespace PhysX
         }
     }
 
-    bool RagdollComponent::IsJointProjectionVisible() const
-    {
-        return m_enableJointProjection;
-    }
+    // bool RagdollComponent::IsJointProjectionVisible() const
+    // {
+    //     return m_enableJointProjection;
+    // }
 
     bool RagdollComponent::IsMaxMassRatioVisible() const
     {
@@ -382,25 +382,25 @@ namespace PhysX
             }
         }
 
-        if (m_enableJointProjection)
-        {
-            const float linearTolerance = AZ::GetMax(0.0f, m_jointProjectionLinearTolerance);
-            const float angularTolerance = AZ::DegToRad(AZ::GetMax(0.0f, m_jointProjectionAngularToleranceDegrees));
-
-            for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
-            {
-                if (const AzPhysics::Joint* joint = ragdoll->GetNode(nodeIndex)->GetJoint())
-                {
-                    if (auto* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
-                    {
-                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECTION, true);
-                        pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
-                        pxJoint->setProjectionLinearTolerance(linearTolerance);
-                        pxJoint->setProjectionAngularTolerance(angularTolerance);
-                    }
-                }
-            }
-        }
+        // if (m_enableJointProjection)
+        // {
+        //     const float linearTolerance = AZ::GetMax(0.0f, m_jointProjectionLinearTolerance);
+        //     const float angularTolerance = AZ::DegToRad(AZ::GetMax(0.0f, m_jointProjectionAngularToleranceDegrees));
+        //
+        //     for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        //     {
+        //         if (const AzPhysics::Joint* joint = ragdoll->GetNode(nodeIndex)->GetJoint())
+        //         {
+        //             if (auto* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
+        //             {
+        //                 pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECTION, true);
+        //                 pxJoint->setConstraintFlag(physx::PxConstraintFlag::ePROJECT_TO_ACTOR0, true);
+        //                 pxJoint->setProjectionLinearTolerance(linearTolerance);
+        //                 pxJoint->setProjectionAngularTolerance(angularTolerance);
+        //             }
+        //         }
+        //     }
+        // }
 
         // If mass ratio clamping is enabled, iterate out from the root and clamp mass values
         if (m_enableMassRatioClamping)

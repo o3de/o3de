@@ -162,7 +162,7 @@ namespace PhysX
             , const AZ::Vector3& nonUniformScale);
 
         //! Returns AABB of collider by constructing PxGeometry from collider and shape configuration,
-        //! and invoking physx::PxGeometryQuery::getWorldBounds.
+        //! and invoking physx::PxGeometryQuery::computeGeomBounds.
         //! This function is used only by editor components.
         AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform
             , bool hasNonUniformScale

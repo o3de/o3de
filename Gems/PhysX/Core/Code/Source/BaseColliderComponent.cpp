@@ -70,21 +70,19 @@ namespace PhysX
             auto pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
             const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
-#else
-            const auto pxGeometryHolder = pxShape->getGeometry();
-            const physx::PxGeometry& pxShapeGeom = pxGeometryHolder.any();
-#endif
 
-            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
+            physx::PxBounds3 bounds;
+            physx::PxGeometryQuery::computeGeomBounds(bounds, pxShapeGeom,
                 pxWorldTransform * pxShape->getLocalPose(), 1.0f);
 
             for (size_t shapeIndex = 1; shapeIndex < numShapes; ++shapeIndex)
             {
                 pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
-                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
-                    pxWorldTransform * pxShape->getLocalPose(), 1.0f));
+                physx::PxBounds3 shapeBounds;
+                physx::PxGeometryQuery::computeGeomBounds(shapeBounds, pxShapeGeom,
+                    pxWorldTransform * pxShape->getLocalPose(), 1.0f);
+                bounds.include(shapeBounds);
             }
 
             m_aabb = PxMathConvert(bounds);

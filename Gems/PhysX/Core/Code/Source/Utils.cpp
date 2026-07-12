@@ -46,6 +46,8 @@
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/MathConversion.h>
 
+#include "System/PhysXSystem.h"
+
 namespace PhysX
 {
     namespace Utils
@@ -309,8 +311,8 @@ namespace PhysX
             {
                 PHYSX_SCENE_WRITE_LOCK(pxScene);
 
-                physx::PxHeightFieldGeometry hfGeom;
-                pxShape->getHeightFieldGeometry(hfGeom);
+                const auto& geometry = static_cast<const physx::PxHeightFieldGeometry&>(pxShape->getGeometry());
+                physx::PxHeightFieldGeometry hfGeom = geometry; // may be a cleaner way to do this
                 hfGeom.heightField = pxHeightfield;
                 pxShape->setGeometry(hfGeom);
             }
@@ -768,9 +770,6 @@ namespace PhysX
 
         bool CookConvexToPxOutputStream(const AZ::Vector3* vertices, AZ::u32 vertexCount, physx::PxOutputStream& stream)
         {
-            physx::PxCooking* cooking = nullptr;
-            SystemRequestsBus::BroadcastResult(cooking, &SystemRequests::GetCooking);
-
             physx::PxConvexMeshDesc convexDesc;
             convexDesc.points.count = vertexCount;
             convexDesc.points.stride = sizeof(AZ::Vector3);
@@ -779,7 +778,7 @@ namespace PhysX
 
             physx::PxConvexMeshCookingResult::Enum resultCode = physx::PxConvexMeshCookingResult::eSUCCESS;
 
-            bool result = cooking->cookConvexMesh(convexDesc, stream, &resultCode);
+            bool result = PxCookConvexMesh(*GetPhysXSystem()->GetPxCookingParams(), convexDesc, stream, &resultCode);
 
             AZ_Error("PhysX", result,
                 "CookConvexToPxOutputStream: Failed to cook convex mesh. Please check the data is correct. Error: %s",
@@ -791,9 +790,6 @@ namespace PhysX
         bool CookTriangleMeshToToPxOutputStream(const AZ::Vector3* vertices, AZ::u32 vertexCount,
             const AZ::u32* indices, AZ::u32 indexCount, physx::PxOutputStream& stream)
         {
-            physx::PxCooking* cooking = nullptr;
-            SystemRequestsBus::BroadcastResult(cooking, &SystemRequests::GetCooking);
-
             // Validate indices size
             AZ_Error("PhysX", indexCount % 3 == 0, "Number of indices must be a multiple of 3.");
 
@@ -808,7 +804,7 @@ namespace PhysX
 
             physx::PxTriangleMeshCookingResult::Enum resultCode = physx::PxTriangleMeshCookingResult::eSUCCESS;
 
-            bool result = cooking->cookTriangleMesh(meshDesc, stream, &resultCode);
+            bool result = PxCookTriangleMesh(*GetPhysXSystem()->GetPxCookingParams(), meshDesc, stream, &resultCode);
 
             AZ_Error("PhysX", result,
                 "CookTriangleMeshToToPxOutputStream: Failed to cook triangle mesh. Please check the data is correct. Error: %s.",
@@ -978,7 +974,8 @@ namespace PhysX
             AZ::Transform overallTransformNoScale = GetColliderWorldTransform(worldTransform,
                 colliderConfiguration.m_position, colliderConfiguration.m_rotation);
             overallTransformNoScale.ExtractUniformScale();
-            const physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(geometryHolder.any(),
+            physx::PxBounds3 bounds;
+            physx::PxGeometryQuery::computeGeomBounds(bounds, geometryHolder.any(),
                 PxMathConvert(overallTransformNoScale),
                 boundsInflationFactor);
             return PxMathConvert(bounds);
@@ -1806,7 +1803,7 @@ namespace PhysX
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
             PrismaticJointConfiguration::Reflect(context);
-            ArticulationSensorConfiguration::Reflect(context);
+            ArticulationCacheConfiguration::Reflect(context);
             ArticulationJointMotorProperties::Reflect(context);
             ArticulationLinkConfiguration::Reflect(context);
 

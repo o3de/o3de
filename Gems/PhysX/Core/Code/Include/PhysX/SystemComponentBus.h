@@ -78,13 +78,13 @@ namespace PhysX
         /// @param layer The collision layer the object belongs to.
         /// @param group The set of collision layers the object will interact with.
         virtual physx::PxFilterData CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group) = 0;
-
-        /// Gets the cooking object.
-        /// It is possible to update the current cooking params with setParams on PxCooking,
-        /// this way the default cooking params can be overridden if required.
-        /// References: https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Geometry.html#triangle-meshes,
-        /// https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Startup.html#cooking
-        virtual physx::PxCooking* GetCooking() = 0;
+        //
+        // /// Gets the cooking object.
+        // /// It is possible to update the current cooking params with setParams on PxCooking,
+        // /// this way the default cooking params can be overridden if required.
+        // /// References: https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Geometry.html#triangle-meshes,
+        // /// https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Startup.html#cooking
+        // virtual physx::PxCooking* GetCooking() = 0;
     };
 
     using SystemRequestsBus = AZ::EBus<SystemRequests>;

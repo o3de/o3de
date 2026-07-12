@@ -125,23 +125,23 @@ namespace PhysX
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
         const physx::PxFilterData& filterData, const physx::PxQueryHit& hit,
         [[maybe_unused]] const physx::PxShape* shape,
         [[maybe_unused]] const physx::PxRigidActor* actor)
     {
-        return postFilter(filterData, hit);
-    }
-#endif
-
-    physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
-        const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
-    {
         return m_objectPostFilter
             ? m_objectPostFilter(filterData, hit)
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
+
+    // physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
+    //     const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+    // {
+    //     return m_objectPostFilter
+    //         ? m_objectPostFilter(filterData, hit)
+    //         : physx::PxQueryHitType::Enum::eBLOCK;
+    // }
 
     void CharacterControllerCallbackManager::onShapeHit(const physx::PxControllerShapeHit& hit)
     {

@@ -152,6 +152,11 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
+        // Initialize the simulation scratch buffer. It must be in increments of 16K and 16-byte aligned.
+        m_scratchBufferSize = 16 * 1024 * m_systemConfig.m_limitsConfiguration.m_numScratchBufferBlocks;
+        m_scratchBufferAddress = AZ::AllocatorInstance<PhysXAllocator>::Get().allocate(m_scratchBufferSize, 16);
+        AZ_Assert((reinterpret_cast<size_t>(m_scratchBufferAddress) & 15) == 0, "PhysX requires 16-byte aligned memory allocations.");
+
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
     }
@@ -170,6 +175,9 @@ namespace PhysX
         }
 
         RemoveAllScenes();
+
+        // Deallocate the scratch buffer
+        AZ::AllocatorInstance<PhysXAllocator>::Get().deallocate(m_scratchBufferAddress, m_scratchBufferSize, 16);
 
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
@@ -452,8 +460,8 @@ namespace PhysX
         m_physXSdk.m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, physx::PxTolerancesScale(), physXTrackOutstandingAllocations, pvd);
         PxInitExtensions(*m_physXSdk.m_physics, pvd);
 
-        // set up cooking for height fields, meshes etc.
-        m_physXSdk.m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, cookingParams);
+        // set up cooking parameters for height fields, meshes etc.
+        m_physXSdk.m_cookingParams = AZStd::make_unique<physx::PxCookingParams>(cookingParams);
 
         // Set up CPU dispatcher
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
@@ -466,18 +474,18 @@ namespace PhysX
         delete m_cpuDispatcher;
         m_cpuDispatcher = nullptr;
 
-        m_physXSdk.m_cooking->release();
-        m_physXSdk.m_cooking = nullptr;
-
         PxCloseExtensions();
 
         m_physXSdk.m_physics->release();
         m_physXSdk.m_physics = nullptr;
 
+        m_physXSdk.m_cookingParams.reset();
+
         m_physXDebug.ShutdownPhysXPvd();
 
         m_physXSdk.m_foundation->release();
         m_physXSdk.m_foundation = nullptr;
+
     }
 
     const PhysXSystemConfiguration& PhysXSystem::GetPhysXConfiguration() const

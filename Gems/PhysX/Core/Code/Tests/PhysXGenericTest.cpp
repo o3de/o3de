@@ -458,7 +458,6 @@ namespace PhysX
         material->SetRestitution(prevRestitution);
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
     TEST_F(GenericPhysicsInterfaceTest, Materials_BoxWithCompliantContactModeDisabled_DoesNotPenetrateFloor)
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
@@ -467,7 +466,6 @@ namespace PhysX
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
 
         PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_compliantContactMode.m_enabled = false;
         box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
 
         for (AZ::u32 step = 0; step < 300; ++step)
@@ -490,7 +488,7 @@ namespace PhysX
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
 
         PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_compliantContactMode.m_enabled = true;
+        materialConfiguration.m_restitution = -0.5f; // New CompliantContact is enabled via negative restitution in PhysX 5.6.1
         box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
 
         bool penetratedFloor = false;
@@ -510,7 +508,6 @@ namespace PhysX
         // The box should settle near to the floor
         EXPECT_THAT(box->GetPosition().GetZ(), ::testing::FloatNear(0.5f, 0.0001f));
     }
-#endif // (PX_PHYSICS_VERSION_MAJOR >= 5)
 
     TEST_F(GenericPhysicsInterfaceTest, Collider_ColliderTag_IsSetFromConfiguration)
     {

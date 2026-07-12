@@ -102,7 +102,7 @@ namespace PhysX
         Ragdoll* GetPhysXRagdoll();
         const Ragdoll* GetPhysXRagdollConst() const;
 
-        bool IsJointProjectionVisible() const;
+        // bool IsJointProjectionVisible() const;
         bool IsMaxMassRatioVisible() const;
 
         AzPhysics::SimulatedBodyHandle m_ragdollHandle = AzPhysics::InvalidSimulatedBodyHandle;
@@ -112,13 +112,16 @@ namespace PhysX
         AZ::u32 m_positionIterations = 16;
         /// Minimum number of velocity iterations to perform in the PhysX solver.
         AZ::u32 m_velocityIterations = 8;
-        /// Whether to use joint projection to preserve joint constraints in demanding
-        /// situations at the expense of potentially reducing physical correctness.
-        bool m_enableJointProjection = true;
-        /// Linear joint error above which projection will be applied.
-        float m_jointProjectionLinearTolerance = 1e-3f;
-        /// Angular joint error (in degrees) above which projection will be applied.
-        float m_jointProjectionAngularToleranceDegrees = 1.0f;
+
+        // Deprecated in PhysX 5.1.0
+        // /// Whether to use joint projection to preserve joint constraints in demanding
+        // /// situations at the expense of potentially reducing physical correctness.
+        // bool m_enableJointProjection = true;
+        // /// Linear joint error above which projection will be applied.
+        // float m_jointProjectionLinearTolerance = 1e-3f;
+        // /// Angular joint error (in degrees) above which projection will be applied.
+        // float m_jointProjectionAngularToleranceDegrees = 1.0f;
+
         /// Allows ragdoll node mass values to be overridden to avoid unstable mass ratios.
         bool m_enableMassRatioClamping = false;
         /// If mass ratio clamping is enabled, masses will be clamped to within this ratio.

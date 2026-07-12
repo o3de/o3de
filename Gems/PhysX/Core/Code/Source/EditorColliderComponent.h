@@ -36,23 +36,6 @@ namespace AzPhysics
 
 namespace PhysX
 {
-    //! Legacy edit context wrapper for the physics asset and asset specific parameters in the shape configuration.
-    //!
-    //! O3DE_DEPRECATION_NOTICE(GHI-14718)
-    //! Physics asset shape is now handled by EditorMeshColliderComponent.
-    //! This class is only used to keep the serialization data intact inside
-    //! EditorColliderComponent so it can be converted to EditorMeshColliderComponent
-    //! when running the console command 'ed_physxUpdatePrefabsWithColliderComponents'.
-    struct LegacyEditorProxyAssetShapeConfig
-    {
-        AZ_CLASS_ALLOCATOR(LegacyEditorProxyAssetShapeConfig, AZ::SystemAllocator);
-        AZ_TYPE_INFO(LegacyEditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Data::Asset<Pipeline::MeshAsset> m_pxAsset{ AZ::Data::AssetLoadBehavior::QueueLoad };
-        Physics::PhysicsAssetShapeConfiguration m_configuration;
-    };
-
     //! Edit context wrapper for cylinder specific parameters and cached geometry.
     struct EditorProxyCylinderShapeConfig
     {
@@ -79,21 +62,12 @@ namespace PhysX
         EditorProxyShapeConfig() = default;
         EditorProxyShapeConfig(const Physics::ShapeConfiguration& shapeConfiguration);
 
-        // O3DE_DEPRECATION_NOTICE(GHI-14718)
-        // Initial value for m_shapeType needs to remain PhysicsAsset
-        // to support command to convert EditorColliderComponent to
-        // EditorMeshColliderComponent. This is because prefabs do not
-        // store in JSON the default values and therefore the converter
-        // would lose the ability to know if the type was PhysX Asset
-        // before to convert the component to a Editor Mesh Collider.
-        // The initial value can be changed to Box when GHI-14718 deprecation
-        // task is done.
-        Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
+        Physics::ShapeType m_shapeType = Physics::ShapeType::Box;
         Physics::SphereShapeConfiguration m_sphere;
         Physics::BoxShapeConfiguration m_box;
         Physics::CapsuleShapeConfiguration m_capsule;
         EditorProxyCylinderShapeConfig m_cylinder;
-        LegacyEditorProxyAssetShapeConfig m_legacyPhysicsAsset; // O3DE_DEPRECATION_NOTICE(GHI-14718)
+
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
         Physics::CookedMeshShapeConfiguration m_cookedMesh;

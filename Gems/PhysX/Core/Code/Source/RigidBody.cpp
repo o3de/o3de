@@ -42,7 +42,7 @@ namespace PhysX
         bool CanShapeComputeMassProperties(const physx::PxShape& pxShape)
         {
             // Note: List based on computeMassAndInertia function in ExtRigidBodyExt.cpp file in PhysX.
-            const physx::PxGeometryType::Enum geometryType = pxShape.getGeometryType();
+            const physx::PxGeometryType::Enum geometryType = pxShape.getGeometry().getType();
             return geometryType == physx::PxGeometryType::eSPHERE
                 || geometryType == physx::PxGeometryType::eBOX
                 || geometryType == physx::PxGeometryType::eCAPSULE
@@ -167,7 +167,7 @@ namespace PhysX
             return;
         }
 
-        if (pxShape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH && !IsKinematic())
+        if (pxShape->GetPxShape()->getGeometry().getType() == physx::PxGeometryType::eTRIANGLEMESH && !IsKinematic())
         {
             AZ_Error("PhysX", false, "Cannot use triangle mesh geometry on a dynamic object: %s", GetName().c_str());
             return;

@@ -248,23 +248,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetRestitutionCombineMode(), PhysX::CombineMode::Minimum);
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
-    TEST_F(PhysXMaterialFixture, Material_GetSet_CompliantContactMode_Enabled)
-    {
-        PhysX::MaterialConfiguration materialConfiguration;
-
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
-
-        EXPECT_FALSE(material->IsCompliantContactModeEnabled());
-
-        material->EnableCompliantContactMode(true);
-        EXPECT_TRUE(material->IsCompliantContactModeEnabled());
-
-        material->EnableCompliantContactMode(false);
-        EXPECT_FALSE(material->IsCompliantContactModeEnabled());
-    }
-
-    TEST_F(PhysXMaterialFixture, Material_CompliantContactModeEnabled_RestitutionRemainsUnchanged)
+    TEST_F(PhysXMaterialFixture, Material_CompliantContactModeEnabled_NegativeRestitution)
     {
         PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_restitution = 1.0f;
@@ -278,10 +262,10 @@ namespace UnitTest
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 2.0f, Tolerance);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 3.0f, Tolerance);
 
-        material->EnableCompliantContactMode(true);
+        material->SetRestitution(-1.0f);
 
         EXPECT_TRUE(material->IsCompliantContactModeEnabled());
-        EXPECT_NEAR(material->GetRestitution(), 1.0f, Tolerance);
+        EXPECT_NEAR(material->GetRestitution(), -1.0f, Tolerance);
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 2.0f, Tolerance);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 3.0f, Tolerance);
     }
@@ -290,18 +274,19 @@ namespace UnitTest
     {
         PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_compliantContactMode.m_damping = 245.0f;
+        materialConfiguration.m_restitution = 1.0f;
 
         AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 245.0f, Tolerance);
 
         // Damping property is set correctly with compliant contact mode enabled
-        material->EnableCompliantContactMode(true);
+        material->SetRestitution(-1.0f); // Enables compliant contact in 5.6.1
         material->SetCompliantContactModeDamping(64.2f);
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 64.2f, Tolerance);
 
         // Damping property is set correctly with compliant contact mode disabled
-        material->EnableCompliantContactMode(false);
+        material->SetRestitution(1.0f); // Disables compliant contact in 5.6.1
         material->SetCompliantContactModeDamping(43.1f);
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 43.1f, Tolerance);
     }
@@ -323,18 +308,19 @@ namespace UnitTest
     {
         PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_compliantContactMode.m_stiffness = 245.0f;
+        materialConfiguration.m_restitution = 1.0f;
 
         AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 245.0f, Tolerance);
 
         // Stiffness property is set correctly with compliant contact mode enabled
-        material->EnableCompliantContactMode(true);
+        material->SetRestitution(-1.0f); // Enables compliant contact in 5.6.1
         material->SetCompliantContactModeStiffness(64.2f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 64.2f, Tolerance);
 
         // Stiffness property is set correctly with compliant contact mode disabled
-        material->EnableCompliantContactMode(false);
+        material->SetRestitution(1.0f); // Disables compliant contact in 5.6.1
         material->SetCompliantContactModeStiffness(43.1f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 43.1f, Tolerance);
     }
@@ -351,7 +337,6 @@ namespace UnitTest
         material->SetCompliantContactModeStiffness(0.0f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 0.0f, Tolerance);
     }
-#endif // (PX_PHYSICS_VERSION_MAJOR >= 5)
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_DebugColor)
     {

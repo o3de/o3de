@@ -204,21 +204,22 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
-                    ->EndGroup()
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Joint Offset")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                           AZ::Edit::UIHandlers::Default,
-                           &ArticulationLinkConfiguration::m_offset,
-                           "Offset",
-                           "Zero-position offset for the joint. For hinge joints the value is in degrees; "
-                           "for prismatic joints the value is in meters. Limits, drive targets, and reported "
-                           "positions are all expressed relative to this offset.")
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_offset,
+                        "Offset",
+                        "Zero-position offset for the joint. For hinge joints the value is in degrees; "
+                        "for prismatic joints the value is in meters. Limits, drive targets, and reported "
+                        "positions are all expressed relative to this offset.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
-                    ->EndGroup();
+                    ->EndGroup()
+
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_articulationCacheConfig, "Cache Configuration",
+                        "Data which should be copied each simulation run to the cache. It is recommended to only enable what is needed.\n"
+                        "This applies to all links and joints and cannot be set on a per-link level.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation);
             }
         }
     }
@@ -242,10 +243,11 @@ namespace PhysX
                 constexpr const char* ToolTip = "Articulated rigid body.";
 
                 AZStd::vector<AZ::Crc32> componentMenus;
-                if (ReducedCoordinateArticulationsEnabled())
-                {
-                    componentMenus.push_back(AZ::Crc32("Game"));
-                }
+                componentMenus.push_back(AZ::Crc32("Game"));
+                // if (ReducedCoordinateArticulationsEnabled())
+                // {
+                //     componentMenus.push_back(AZ::Crc32("Game"));
+                // }
 
                 editContext->Class<EditorArticulationLinkComponent>("PhysX Articulation Link", ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")

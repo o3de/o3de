@@ -20,8 +20,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::CompliantContactModeConfiguration>()
-                ->Version(1)
-                ->Field("Enabled", &CompliantContactModeConfiguration::m_enabled)
+                ->Version(2)
                 ->Field("Damping", &CompliantContactModeConfiguration::m_damping)
                 ->Field("Stiffness", &CompliantContactModeConfiguration::m_stiffness);
 
@@ -31,31 +30,20 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &CompliantContactModeConfiguration::m_enabled,
-                        "Enable",
-                        "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_damping,
                         "Damping",
                         "Higher damping values produce spongy contacts.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &CompliantContactModeConfiguration::ReadOnlyProperties)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_stiffness,
                         "Stiffness",
-                        "Higher stiffness values produce stiffer springs that behave more like a rigid contact. The higher the mass of the object, the higher the stiffness needs to be to reduce penetration.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &CompliantContactModeConfiguration::ReadOnlyProperties);
+                        "Read-Only. Adjust this by setting restitution to a negative value. Higher stiffness values produce stiffer springs that behave more like a rigid contact. The higher the mass of the object, the higher the stiffness needs to be to reduce penetration.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                    ;
             }
         }
-    }
-
-    bool CompliantContactModeConfiguration::ReadOnlyProperties() const
-    {
-        return !m_enabled;
     }
 
     void MaterialConfiguration::Reflect(AZ::ReflectContext* context)
@@ -82,33 +70,31 @@ namespace PhysX
                 editContext->Class<PhysX::MaterialConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "PhysX Material")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, "Static friction", "Friction coefficient when object is still")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, "Static friction", "Friction coefficient when object is still.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, "Dynamic friction", "Friction coefficient when object is moving")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, "Dynamic friction", "Friction coefficient when object is moving.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_restitution, "Restitution", "Restitution coefficient")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_restitution, "Restitution", "Restitution coefficient. Negative value enables compliant contact and acts as stiffness.")
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MaterialConfiguration::IsRestitutionReadOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_frictionCombine, "Friction combine", "How the friction is combined between colliding objects")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MaterialConfiguration::RestitutionChangeNotify)
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_frictionCombine, "Friction combine", "How the friction is combined between colliding objects.")
                         ->EnumAttribute(CombineMode::Average, "Average")
                         ->EnumAttribute(CombineMode::Minimum, "Minimum")
                         ->EnumAttribute(CombineMode::Maximum, "Maximum")
                         ->EnumAttribute(CombineMode::Multiply, "Multiply")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_restitutionCombine, "Restitution combine", "How the restitution is combined between colliding objects")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_restitutionCombine, "Restitution combine", "How the restitution is combined between colliding objects.")
                         ->EnumAttribute(CombineMode::Average, "Average")
                         ->EnumAttribute(CombineMode::Minimum, "Minimum")
                         ->EnumAttribute(CombineMode::Maximum, "Maximum")
                         ->EnumAttribute(CombineMode::Multiply, "Multiply")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MaterialConfiguration::IsRestitutionReadOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_density, "Density", "Material density")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_density, "Density", "Material density.")
                         ->Attribute(AZ::Edit::Attributes::Min, &MaterialConfiguration::GetMinDensityLimit)
                         ->Attribute(AZ::Edit::Attributes::Max, &MaterialConfiguration::GetMaxDensityLimit)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetDensityUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_compliantContactMode, "Compliant Contact Mode",
-                        "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled.")
+                        "Enabled when restitution is set to a negative value. The normal force of the contact is computed using an implicit spring.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &MaterialConfiguration::GetCompliantConstantModeVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &MaterialConfiguration::m_debugColor, "Debug Color", "Debug color to use for this material")
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &MaterialConfiguration::m_debugColor, "Debug Color", "Debug color to use for this material.")
                     ;
             }
         }
@@ -128,7 +114,6 @@ namespace PhysX
             {MaterialConstants::DensityName, m_density},
             {MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(m_restitutionCombine)},
             {MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(m_frictionCombine)},
-            {MaterialConstants::CompliantContactModeEnabledName, m_compliantContactMode.m_enabled},
             {MaterialConstants::CompliantContactModeDampingName, m_compliantContactMode.m_damping},
             {MaterialConstants::CompliantContactModeStiffnessName, m_compliantContactMode.m_stiffness},
             {MaterialConstants::DebugColorName, m_debugColor}
@@ -203,6 +188,18 @@ namespace PhysX
 
             checkProperties(materialPropertyNames);
         }
+
+        // Check properties from version 3: Removed Compliant Contact Mode Enabled toggle.
+        if (materialAsset->GetVersion() == 3)
+        {
+            const AZStd::fixed_vector materialPropertyNames =
+            {
+                MaterialConstants::CompliantContactModeDampingName,
+                MaterialConstants::CompliantContactModeStiffnessName
+            };
+
+            checkProperties(materialPropertyNames);
+        }
 #endif
     }
 
@@ -216,21 +213,22 @@ namespace PhysX
         return MaterialConstants::MaxDensityLimit;
     }
 
-    bool MaterialConfiguration::IsRestitutionReadOnly() const
-    {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
-        return m_compliantContactMode.m_enabled;
-#else
-        return false;
-#endif
-    }
-
     AZ::Crc32 MaterialConfiguration::GetCompliantConstantModeVisibility() const
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         return AZ::Edit::PropertyVisibility::Show;
-#else
-        return AZ::Edit::PropertyVisibility::Hide;
-#endif
+    }
+
+    AZ::u32 MaterialConfiguration::RestitutionChangeNotify()
+    {
+        if (m_restitution < 0.0f)
+        {
+            m_compliantContactMode.m_stiffness = AZStd::abs(m_restitution);
+        }
+        else
+        {
+            m_compliantContactMode.m_stiffness = 0.0f;
+        }
+
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 } // namespace PhysX

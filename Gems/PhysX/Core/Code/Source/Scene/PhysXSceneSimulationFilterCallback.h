@@ -38,13 +38,13 @@ namespace PhysX
             const AzPhysics::SimulatedBody* body1);
 
         // physx::PxSimulationFilterCallback Interface
-        physx::PxFilterFlags pairFound(physx::PxU32 pairId, physx::PxFilterObjectAttributes attributes0,
+        physx::PxFilterFlags pairFound(physx::PxU64 pairId, physx::PxFilterObjectAttributes attributes0,
             physx::PxFilterData filterData0, const physx::PxActor* actor0, const physx::PxShape* shape0,
             physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1, const physx::PxActor* actor1,
             const physx::PxShape* shape1, physx::PxPairFlags& pairFlags) override;
-        void pairLost(physx::PxU32 pairId, physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
+        void pairLost(physx::PxU64 pairId, physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
             physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1, bool objectRemoved) override;
-        bool statusChange(physx::PxU32& pairId, physx::PxPairFlags& pairFlags, physx::PxFilterFlags& filterFlags) override;
+        bool statusChange(physx::PxU64& pairId, physx::PxPairFlags& pairFlags, physx::PxFilterFlags& filterFlags) override;
 
     private:
         struct CollisionActorPair

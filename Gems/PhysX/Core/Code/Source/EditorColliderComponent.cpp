@@ -55,22 +55,8 @@ namespace PhysX
         }
     }
 
-    // O3DE_DEPRECATION_NOTICE(GHI-14718)
-    void LegacyEditorProxyAssetShapeConfig::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<LegacyEditorProxyAssetShapeConfig>()
-                ->Version(1)
-                ->Field("Asset", &LegacyEditorProxyAssetShapeConfig::m_pxAsset)
-                ->Field("Configuration", &LegacyEditorProxyAssetShapeConfig::m_configuration)
-                ;
-        }
-    }
-
     void EditorProxyShapeConfig::Reflect(AZ::ReflectContext* context)
     {
-        LegacyEditorProxyAssetShapeConfig::Reflect(context);
         EditorProxyCylinderShapeConfig::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -82,7 +68,6 @@ namespace PhysX
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
                 ->Field("Capsule", &EditorProxyShapeConfig::m_capsule)
                 ->Field("Cylinder", &EditorProxyShapeConfig::m_cylinder)
-                ->Field("PhysicsAsset", &EditorProxyShapeConfig::m_legacyPhysicsAsset) // O3DE_DEPRECATION_NOTICE(GHI-14718)
                 ->Field("HasNonUniformScale", &EditorProxyShapeConfig::m_hasNonUniformScale)
                 ->Field("SubdivisionLevel", &EditorProxyShapeConfig::m_subdivisionLevel)
                 ;
@@ -335,21 +320,7 @@ namespace PhysX
 
     void EditorColliderComponent::Init()
     {
-        // O3DE_DEPRECATION_NOTICE(GHI-14718)
-        // If initial value is PhysicsAsset, default to Box and update the UI.
-        // To be removed when m_shapeType intial value is changed to Box with GHI-14718.
-        if (m_proxyShapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset)
-        {
-            m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
-            // Primitive colliders can only have one material slot.
-            if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
-            {
-                m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
-            }
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-        }
+        
     }
 
     void EditorColliderComponent::Activate()
