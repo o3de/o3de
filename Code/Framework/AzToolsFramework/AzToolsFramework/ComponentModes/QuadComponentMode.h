@@ -10,14 +10,15 @@
 
 #include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ComponentModes/QuadViewportEdit.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
-    void InstallQuadViewportEditFunctions(
+    AZTF_API void InstallQuadViewportEditFunctions(
         QuadViewportEdit* quadViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     //! The specific ComponentMode responsible for handling capsule editing.
-    class QuadComponentMode
+    class AZTF_API QuadComponentMode
         : public BaseShapeComponentMode
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {

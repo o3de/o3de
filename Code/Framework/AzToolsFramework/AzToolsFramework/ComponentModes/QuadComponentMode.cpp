@@ -9,7 +9,9 @@
 #include <AzToolsFramework/ComponentModes/QuadComponentMode.h>
 
 #include "ComponentModes/QuadViewportEdit.h"
+
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
+#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/QuadManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -59,7 +61,7 @@ namespace AzToolsFramework
         InstallBaseShapeViewportEditFunctions(quadViewportEdit.get(), m_entityComponentIdPair);
         InstallQuadViewportEditFunctions(quadViewportEdit.get(), m_entityComponentIdPair);
         m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(quadViewportEdit);
-        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(g_mainManipulatorManagerId);
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(GetMainManipulatorManagerId());
         m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->AddEntityComponentIdPair(
             m_entityComponentIdPair);
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
