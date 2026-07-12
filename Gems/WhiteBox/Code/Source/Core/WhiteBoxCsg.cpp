@@ -829,5 +829,17 @@ namespace WhiteBox
 
             return true;
         }
+
+        bool RepairMesh(WhiteBoxMesh& whiteBox)
+        {
+            // Round-trip through a triangle soup, exactly as the boolean does with its inputs.
+            const Csg::TriangleMesh soup = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
+            if (soup.m_indices.empty())
+            {
+                return false;
+            }
+            Detail::RebuildFromTriangleMesh(whiteBox, soup);
+            return true;
+        }
     } // namespace Api
 } // namespace WhiteBox

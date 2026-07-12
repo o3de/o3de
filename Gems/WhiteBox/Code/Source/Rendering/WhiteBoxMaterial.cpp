@@ -19,10 +19,11 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxMaterial>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Tint", &WhiteBoxMaterial::m_tint)
                 ->Field("UseTexture", &WhiteBoxMaterial::m_useTexture)
-                ->Field("Visible", &WhiteBoxMaterial::m_visible);
+                ->Field("Visible", &WhiteBoxMaterial::m_visible)
+                ->Field("UseVertexColor", &WhiteBoxMaterial::m_useVertexColor);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {

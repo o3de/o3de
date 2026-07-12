@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 
 #include <Rendering/Atom/WhiteBoxAttributeBuffer.h>
@@ -40,7 +41,9 @@ namespace WhiteBox
     public:
         AZ_RTTI(AtomRenderMesh, "{1F48D2F5-037C-400B-977C-7C0C9A34B84C}", RenderMeshInterface);
 
-        explicit AtomRenderMesh(AZ::EntityId entityId);
+        //! @param isPrimary when false this is an auxiliary mesh (e.g. one of several per-layer
+        //! tinted meshes on the same entity) and must NOT own the single per-entity mesh-handle state.
+        explicit AtomRenderMesh(AZ::EntityId entityId, bool isPrimary = true);
         ~AtomRenderMesh();
 
         // RenderMeshInterface ...
@@ -48,6 +51,7 @@ namespace WhiteBox
             const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal) override;
         void UpdateTransform(const AZ::Transform& worldFromLocal) override;
         void UpdateMaterial(const WhiteBoxMaterial& material) override;
+        void SetMaterialAssetOverride(const AZ::Data::AssetId& materialAssetId) override;
         bool IsVisible() const override;
         void SetVisiblity(bool visibility) override;
 
@@ -88,6 +92,8 @@ namespace WhiteBox
         bool DoesMeshRequireFullRebuild(const WhiteBoxMeshAtomData& meshData) const;
 
         AZ::EntityId m_entityId;
+        bool m_isPrimary = true; //!< Only the primary mesh owns the per-entity MeshHandleState bus.
+        AZ::Data::AssetId m_materialAssetOverride; //!< External material asset to use instead of the default.
         AZ::Data::Asset<AZ::RPI::ModelLodAsset> m_lodAsset;
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         AZ::Data::Instance<AZ::RPI::Model> m_model;

@@ -12,9 +12,13 @@
 #include "Rendering/WhiteBoxRenderData.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/utils.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/VisibleGeometryBus.h>
@@ -31,6 +35,15 @@ namespace WhiteBox
     class EditorWhiteBoxMeshAsset;
     class RenderMeshInterface;
 
+    //! How a layer combines with the accumulation of the layers beneath it (in list order).
+    enum class LayerCombineMode
+    {
+        Separate,   //!< Kept as its own island (no CSG) - the default, original behaviour.
+        Union,      //!< CSG-union onto the layers below (fuses solids).
+        Subtract,   //!< CSG-subtract from the layers below (carves a hole).
+        Intersect   //!< CSG-intersect with the layers below (keeps only the overlap).
+    };
+
     //! Editor representation of White Box Tool.
     class EditorWhiteBoxComponent
         : public AzToolsFramework::Components::EditorComponentBase
@@ -42,6 +55,7 @@ namespace WhiteBox
         , private AZ::TransformNotificationBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private AzToolsFramework::EditorVisibilityNotificationBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorWhiteBoxComponent, "{C9F2D913-E275-49BB-AB4F-2D221C16170A}", EditorComponentBase);
@@ -57,6 +71,9 @@ namespace WhiteBox
         void Activate() override;
         void Deactivate() override;
 
+        // AZ::TickBus::Handler ... (polls for layer add/remove that the container UI does not notify)
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
         // EditorWhiteBoxComponentRequestBus overrides ...
         WhiteBoxMesh* GetWhiteBoxMesh() override;
         void SerializeWhiteBox() override;
@@ -64,6 +81,11 @@ namespace WhiteBox
         void WriteAssetToComponent() override;
         void RebuildWhiteBox() override;
         void SetDefaultShape(DefaultShapeType defaultShape) override;
+        void SetMaterialTint(const AZ::Color& tint) override;
+        AZ::Color GetMaterialTint() override;
+        void SetMaterialUseTexture(bool useTexture) override;
+        void SetMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
+        AZ::Data::AssetId GetMaterialOverride() override;
         int GetDrawSides() override { return m_drawShapeData.m_sides; }
         DrawShapeType GetDrawShape() override { return m_drawShapeData.m_shape; }
         DrawStairInfo GetDrawStairInfo() override
@@ -72,6 +94,7 @@ namespace WhiteBox
             return DrawStairInfo{stair.m_steps, stair.m_byHeight, stair.m_stepHeight, stair.m_rotation};
         }
         bool GetDrawCarve() override { return m_drawCarve; }
+        bool GetDrawMergeUnion() override { return m_drawMergeUnion; }
         bool GetDrawUnitCube() override { return m_drawUnitCube; }
         //! Size of the next stamped cube; existing cubes keep their own size.
         float GetDrawUnitCubeSize() override
@@ -83,6 +106,7 @@ namespace WhiteBox
         void SetVoxelCell(const AZ::Vector3& cellMin, bool filled) override;
         void SetVoxelCells(const AZStd::vector<AZ::Vector3>& cellMins, bool filled) override;
         bool BuildColliderMesh(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices) override;
+        bool CarveCubeGrids(const WhiteBoxMesh& cutter, const AZ::Transform& cutterTransform) override;
 
         // EditorComponentSelectionRequestsBus overrides ...
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
@@ -116,6 +140,8 @@ namespace WhiteBox
         WhiteBoxMesh* GetLiveBooleanDisplayMesh();
         //! Whether the live (non-destructive) boolean is currently enabled.
         bool GetLiveBoolean() const { return m_liveBoolean; }
+        //! Enter White Box component mode (undoable). The entity must be selected and the component active.
+        void EnterComponentMode();
 
     private:
         //! Staircase-specific settings for the Draw Shape tool (only relevant when the
@@ -157,6 +183,30 @@ namespace WhiteBox
             AZ::Crc32 StairVisibility() const;
         };
 
+        //! One editable layer: geometry, name, visibility and transform. Layers are combined for output;
+        //! edits target the active one.
+        struct WhiteBoxLayer
+        {
+            AZ_TYPE_INFO(WhiteBoxLayer, "{3F2A9B84-7C1E-4D6A-9E2F-1B5C8A0D6E44}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            AZStd::string m_name = "Layer";
+            AZ::u64 m_id = 0; //!< Stable unique id so the active/working layer survives list reordering.
+            bool m_visible = true;
+            AZ::Vector3 m_tint = DefaultMaterialTint; //!< Per-layer render tint (used when 'Use Global Tint' is off).
+            LayerCombineMode m_combineMode = LayerCombineMode::Separate; //!< How this layer combines with the ones below it.
+            bool m_invertNormals = false; //!< Render this layer inside-out (reversed winding) - non-destructive.
+            AZ::Vector3 m_position = AZ::Vector3::CreateZero();       //!< Per-layer translation (applied at combine time).
+            AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();       //!< Per-layer rotation, Euler degrees (XYZ).
+            AZ::Vector3 m_scale = AZ::Vector3::CreateOne();           //!< Per-layer non-uniform scale.
+            Api::WhiteBoxMeshStream m_freeformData;   //!< Serialized freeform (drawable) mesh.
+            Api::WhiteBoxMeshStream m_gridData;       //!< Serialized separate-cube grid mesh.
+            Api::WhiteBoxMeshStream m_gridMergedData; //!< Serialized merged-cube grid mesh.
+            AZStd::vector<AZ::u64> m_voxelCells;
+            AZStd::vector<float> m_voxelCellSizes;
+            AZStd::vector<AZ::u8> m_voxelMerged;
+        };
+
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -187,6 +237,42 @@ namespace WhiteBox
         //! Remove every cube placed by the Unit Cube Stamp tool (clears the voxel set and
         //! regenerates the surface, leaving any hand-edited freeform geometry intact).
         AZ::Crc32 ClearVoxelCubes();
+        //! Weld coincident vertices and regroup coplanar faces (Api::RepairMesh) so booleans work again.
+        AZ::Crc32 FixNonManifoldMesh();
+        //! Create a new White Box "layer": a child entity with its own White Box component, then
+        //! switch edit focus to it (so the next shape/cube is drawn into the child).
+        AZ::Crc32 CreateChildLayer();
+
+        // Data-layer plumbing. The working members (m_whiteBox, the two grids, occupancy)
+        // always hold the ACTIVE layer; StoreLayer/LoadActiveLayer move data to/from m_layers.
+        void StoreLayer(int index);          //!< Working members -> m_layers[index].
+        void LoadActiveLayer();              //!< m_layers[m_activeLayerIndex] -> working members.
+        Api::WhiteBoxMeshPtr BuildLayerMesh(const WhiteBoxLayer& layer); //!< Combined display mesh for a stored layer.
+        AZ::u32 OnActiveLayerChange();       //!< Active Layer control changed: commit current, load new.
+        AZStd::vector<AZStd::pair<int, AZStd::string>> GetLayerNames(); //!< (index, name) pairs for the Active Layer dropdown.
+        AZ::Crc32 OnNewLayer();              //!< Append an empty layer and make it active.
+        AZ::Crc32 OnDeleteLayer();           //!< Delete the active layer (keeps at least one).
+        AZ::u32 OnLayersMetaChanged();       //!< Layer name/visibility edited: recombine + resync.
+        void RefreshComponentMode();         //!< Mark the component mode intersection data dirty after a layer swap.
+        void ClearWorkingLayer();            //!< Reset the working members to empty (used when there are zero layers).
+        AZ::Crc32 OnApplyLayerTransform();   //!< Bake the active layer's transform into its geometry, then reset it.
+        //! Build the full combined mesh from an active-layer freeform: every visible layer
+        //! (active from @p activeFreeform + grids + its transform, others from their stored data),
+        //! CSG-accumulated in list order per each layer's combine mode. Null == the single-active
+        //! identity/no-grid fast path (caller falls back to the raw freeform).
+        Api::WhiteBoxMeshPtr BuildCombined(WhiteBoxMesh* activeFreeform);
+        AZ::u64 AllocLayerId();                 //!< Hand out a fresh stable layer id.
+        int IndexOfLayerId(AZ::u64 id) const;   //!< Index of the layer with @p id, or -1.
+        AZ::u64 LayerSignature() const;         //!< Hash of the current layer id order + count.
+        void SyncLayerStructure();              //!< Reconcile working state after the list is reordered / added to / removed from.
+        WhiteBoxRenderData BuildColoredRenderData(); //!< Per-layer-tinted render faces (used when Use Global Tint is off).
+        void BuildLayerRenderMeshes(); //!< Build one tinted render mesh per visible layer (per-layer tint mode).
+        AZ::u32 OnGlobalTintChange();           //!< Use Global Tint toggled: rebuild render + show/hide the global tint.
+        AZ::Crc32 OnAddCollision();             //!< Add a White Box collider component to this entity.
+        AZ::Crc32 GlobalTintVisibility() const; //!< Show the global material tint only when Use Global Tint is on.
+        //! Apply a layer's Position/Rotation(Euler deg)/Scale to every vertex of a display mesh.
+        static void ApplyTransformToMesh(
+            WhiteBoxMesh& mesh, const AZ::Vector3& position, const AZ::Vector3& eulerDegrees, const AZ::Vector3& scale);
         AZ::Crc32 OnDefaultShapeChange();
         //! Apply a CSG boolean using the White Box mesh on m_booleanSourceEntity.
         void ApplyBoolean();
@@ -202,11 +288,26 @@ namespace WhiteBox
         //! Ensure the per-cell size array (m_voxelCellSizes) is consistent with m_voxelCells,
         //! migrating legacy data that only stored a single baked size (m_voxelCellSize).
         void NormalizeVoxelData();
+        //! Merge (@p add true) or carve (@p add false) the given occupancy cells into the
+        //! base mesh with a CSG boolean, so the accumulated mesh stays watertight and
+        //! 2-manifold with no T-junctions. The cells are built as a per-cell manifold operand.
+        void StampCubeCells(WhiteBoxMesh* grid, const AZStd::unordered_set<AZ::u64>& cells, float cellSize, bool add);
 
         //! The mesh used for RENDER / collision / bounds / selection. In live
         //! (non-destructive) boolean mode this is the evaluated result; otherwise
         //! it is the editable base mesh (GetWhiteBoxMesh).
         WhiteBoxMesh* EvaluatedMesh();
+        //! The grid mesh holding stamped cubes that are kept SEPARATE from the freeform mesh
+        //! (appended for output). Created on first use.
+        WhiteBoxMesh* GridMesh();
+        //! The grid mesh holding stamped cubes that are MERGED (CSG-unioned) with the freeform
+        //! mesh for output. Created on first use.
+        WhiteBoxMesh* GridMergedMesh();
+        //! Rebuild m_combinedMesh (freeform plus grid) for EvaluatedMesh; null when the grid is empty.
+        void RebuildCombinedMesh();
+        //! Return a new mesh = @p freeform with the grid layer appended, or null if there is
+        //! no grid (caller uses @p freeform as-is) or @p freeform is null.
+        Api::WhiteBoxMeshPtr CombinedWithGrid(WhiteBoxMesh* freeform);
         //! Rebuild m_displayMesh = base (boolean) source, when live mode is active.
         void EvaluateLiveBoolean();
         //! Connect/disconnect the listener that re-evaluates when the source moves.
@@ -223,6 +324,8 @@ namespace WhiteBox
         AZ::Crc32 AssetVisibility() const;
         //! The Unit Cube "Cube Size" spin box only shows while the Unit Cube Stamp tool is on.
         AZ::Crc32 DrawUnitCubeSizeVisibility() const;
+        //! ChangeNotify for the "Edges Only" toggle: hide/show the solid render mesh.
+        void OnEdgesOnlyChange();
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation
@@ -231,6 +334,9 @@ namespace WhiteBox
         Api::WhiteBoxMeshPtr m_whiteBox; //!< Handle/opaque pointer to the White Box mesh data.
         AZStd::optional<AZStd::unique_ptr<RenderMeshInterface>>
             m_renderMesh; //!< The render mesh to use for the White Box mesh data.
+        //! Auxiliary render meshes, one per visible layer, each with its own tint. Only populated
+        //! when 'Use Global Tint' is off; in that mode m_renderMesh draws nothing.
+        AZStd::vector<AZStd::unique_ptr<RenderMeshInterface>> m_layerRenderMeshes;
         AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); //!< Cached world transform of Entity.
         Api::WhiteBoxMeshStream m_whiteBoxData; //!< Serialized White Box mesh data.
         //! Holds a reference to an optional WhiteBoxMeshAsset and manages the lifecycle of adding/removing an asset.
@@ -246,6 +352,11 @@ namespace WhiteBox
         bool m_flipYZForExport = false; //!< Flips the Y and Z components of white box vertices when exporting for different coordinate systems
         DrawShapeData m_drawShapeData; //!< Draw Shape tool settings (shape, sides and staircase options).
         bool m_drawCarve = false; //!< When set, draw acts as a CSG boolean (same as holding Ctrl).
+        bool m_drawMergeUnion = false; //!< When set, committing a drawn shape CSG-unions it into the mesh.
+        bool m_edgesOnly = false; //!< When set, hide the solid render mesh and draw only the mesh edges.
+        bool m_mergeGridWithMesh = false; //!< When set, the grid layer is CSG-unioned with the freeform mesh for OUTPUT only (non-destructive).
+        bool m_useGlobalTint = true; //!< When set, every layer renders with the global material tint; otherwise each layer uses its own tint.
+        AZ::Data::AssetId m_materialOverrideAssetId; //!< External material asset override (invalid = built-in material).
         bool m_drawUnitCube = false; //!< Draw mode click-stamps grid-snapped unit cubes (CSG) instead of drag-draw.
         float m_drawUnitCubeSize = 1.0f; //!< Desired world-space size of the next stamped cube.
         float m_voxelCellSize = 1.0f; //!< Legacy single baked cell size; only used to migrate old scenes.
@@ -256,12 +367,27 @@ namespace WhiteBox
             Api::BooleanOperation::Subtraction; //!< How to combine the source mesh with this one.
         bool m_hideSourceAfterApply = false;   //!< Hide the source entity after a successful Apply Boolean.
         bool m_deleteSourceAfterApply = false; //!< Delete the source entity after a successful Apply Boolean.
+        bool m_booleanAffectActiveOnly = false; //!< When set, the boolean cuts only the active layer; otherwise the whole combined mesh.
 
         AZStd::vector<AZ::u64> m_voxelCells; //!< Packed integer cell coords filled by the Unit Cube Stamp tool.
         AZStd::vector<float> m_voxelCellSizes; //!< Per-cell world cube size (parallel to m_voxelCells) so mixed sizes coexist.
+        AZStd::vector<AZ::u8> m_voxelMerged; //!< Per-cell flag (parallel to m_voxelCells): 1 = merged-with-mesh cube, 0 = separate.
+
+        AZStd::vector<WhiteBoxLayer> m_layers;  //!< All editable layers (combined for output; edits target the active one).
+        int m_activeLayerIndex = 0;             //!< Which layer is the current edit target.
+        int m_loadedLayerIndex = -1;            //!< Runtime: which layer the working members currently hold (-1 = none).
+        int m_lastLayerCount = -1;              //!< Runtime: layer count at the last sync (detects add/remove in the list).
+        AZ::u64 m_loadedLayerId = 0;            //!< Runtime: stable id of the layer whose data is in the working members.
+        AZ::u64 m_nextLayerId = 1;              //!< Next stable layer id to hand out (serialized so ids stay unique).
+        AZ::u64 m_lastLayerSignature = 0;       //!< Runtime: hash of the layer id order (detects reorder as well as add/remove).
 
         bool m_liveBoolean = false; //!< Non-destructive: keep the base editable, evaluate the boolean for display only.
         Api::WhiteBoxMeshPtr m_displayMesh; //!< Evaluated (base [op] source) mesh used for display while live.
+        Api::WhiteBoxMeshPtr m_gridMesh; //!< Stamped cubes kept SEPARATE from the freeform mesh (appended for output).
+        Api::WhiteBoxMeshStream m_gridMeshData; //!< Serialized separate-cube grid mesh (component-local).
+        Api::WhiteBoxMeshPtr m_gridMergedMesh; //!< Stamped cubes MERGED (CSG-unioned) with the freeform mesh for output.
+        Api::WhiteBoxMeshStream m_gridMergedData; //!< Serialized merged-cube grid mesh (component-local).
+        Api::WhiteBoxMeshPtr m_combinedMesh; //!< Non-serialized freeform+grid mesh used for render/collision/bounds/selection.
         //! Boolean render variant for the game-mode bake (serialized for clones). Empty without a boolean.
         WhiteBoxRenderData m_bakedBooleanRenderData;
         //! Uncut base render variant for the game-mode bake (serialized for clones).

@@ -623,6 +623,19 @@ namespace WhiteBox
             }
         }
 
+        // 1b. this entity's EVALUATED mesh (freeform + stamp/grid layer). The precomputed
+        //     intersection data above only covers the freeform mesh, so raycast the evaluated
+        //     mesh too - otherwise the stamp cannot snap to cubes in the separate grid layer.
+        {
+            WhiteBoxMesh* evaluated = nullptr;
+            EditorWhiteBoxComponentRequestBus::EventResult(
+                evaluated, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetEvaluatedWhiteBoxMesh);
+            if (evaluated != nullptr)
+            {
+                raycastWhiteBox(*evaluated, worldFromLocal);
+            }
+        }
+
         // 2. every OTHER white box mesh in the scene (not in the scene intersector)
         {
             const AZ::EntityId selfEntity = m_entityComponentIdPair.GetEntityId();
@@ -824,11 +837,7 @@ namespace WhiteBox
                 UnitCubeAxisFromNormal(worldFromLocal, hitNormal, m_unitCubeAxis, m_unitCubeSign);
                 UpdateUnitCubeRegion(baseMin);
 
-                AZ_Printf(
-                    "WhiteBoxUnitCube",
-                    "DOWN  cubeCells=%d carve=%d axis=%d sign=%d anchorCell=(%.0f,%.0f,%.0f) hitWorld=(%.2f,%.2f,%.2f)",
-                    m_unitCubeSize, m_unitCubeCarve ? 1 : 0, m_unitCubeAxis, m_unitCubeSign, baseMin.GetX(),
-                    baseMin.GetY(), baseMin.GetZ(), hitWorld.GetX(), hitWorld.GetY(), hitWorld.GetZ());
+                
                 return true;
             }
 
@@ -924,11 +933,7 @@ namespace WhiteBox
                     // Only log when the previewed region actually changes (avoid per-frame spam).
                     if (!m_unitCubeMinLocal.IsClose(prevMin) || !m_unitCubeExtent.IsClose(prevExt))
                     {
-                        AZ_Printf(
-                            "WhiteBoxUnitCube", "DRAG  %s regionMin=(%.0f,%.0f,%.0f) ext=(%.0f,%.0f,%.0f)",
-                            m_unitCubeAcrossGrow ? "ACROSS" : "DEPTH ", m_unitCubeMinLocal.GetX(),
-                            m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(), m_unitCubeExtent.GetX(),
-                            m_unitCubeExtent.GetY(), m_unitCubeExtent.GetZ());
+                        
                     }
                     return true; // keep the drag captured so the preview follows the cursor
                 }
@@ -950,11 +955,7 @@ namespace WhiteBox
             if (leftUp && m_unitCubeDragging)
             {
                 m_unitCubeDragging = false;
-                AZ_Printf(
-                    "WhiteBoxUnitCube", "UP    stamp regionMin=(%.0f,%.0f,%.0f) ext=(%.0f,%.0f,%.0f) valid=%d",
-                    m_unitCubeMinLocal.GetX(), m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(),
-                    m_unitCubeExtent.GetX(), m_unitCubeExtent.GetY(), m_unitCubeExtent.GetZ(),
-                    m_unitCubeHoverValid ? 1 : 0);
+                
                 if (m_unitCubeHoverValid)
                 {
                     StampUnitCubeRegion();
@@ -1059,6 +1060,12 @@ namespace WhiteBox
                     // pull in -> carve (subtract), pull out -> add (union).
                     BooleanAtPolygon(worldFromLocal, m_height);
                 }
+                else if (CurrentMergeUnion())
+                {
+                    // Merge Draw Shape toggle: always CSG-union the shape into the mesh so
+                    // the result is a clean watertight manifold (no overlapping geometry).
+                    BooleanAtPolygon(worldFromLocal, m_height, true);
+                }
                 else
                 {
                     CommitBox(worldFromLocal);
@@ -1150,7 +1157,7 @@ namespace WhiteBox
     // Uses Manifold rather than the legacy inset/extrude/remove-cap trick, so a
     // carve becomes a closed pocket when shallow and a clean through-hole when it
     // exceeds the wall thickness - automatically, no special-casing.
-    void DrawShapeMode::BooleanAtPolygon(const AZ::Transform& worldFromLocal, float height)
+    void DrawShapeMode::BooleanAtPolygon(const AZ::Transform& worldFromLocal, float height, const bool forceUnion)
     {
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
@@ -1183,8 +1190,9 @@ namespace WhiteBox
             AZStd::swap(uAxis, vAxis);
         }
 
-        // Pull direction decides the operation.
-        const bool carve = (height < 0.f);
+        // Pull direction decides the operation, unless a union is forced (Merge Draw Shape
+        // toggle), in which case the shape is always added regardless of pull direction.
+        const bool carve = !forceUnion && (height < 0.f);
         const Api::BooleanOperation operation =
             carve ? Api::BooleanOperation::Subtraction : Api::BooleanOperation::Union;
 
@@ -1217,16 +1225,28 @@ namespace WhiteBox
 
         AzToolsFramework::ScopedUndoBatch undoBatch(carve ? "Carve White Box" : "Add White Box");
 
-        // Apply the boolean (identity transform: the cutter is already built in
-        // the target's local space).
-        if (!Api::ApplyMeshBoolean(*whiteBox, *cutter, AZ::Transform::CreateIdentity(), operation))
+        // Identity transform: the cutter is in local space. No early out - it may still hit stamped cubes.
+        const bool freeformChanged =
+            Api::ApplyMeshBoolean(*whiteBox, *cutter, AZ::Transform::CreateIdentity(), operation);
+        if (freeformChanged)
         {
-            // No intersection / empty result - nothing to do.
-            return;
+            Api::CalculateNormals(*whiteBox);
+            Api::CalculatePlanarUVs(*whiteBox);
         }
 
-        Api::CalculateNormals(*whiteBox);
-        Api::CalculatePlanarUVs(*whiteBox);
+        // A carve also cuts through the stamped-cube grids so shapes can carve cubes.
+        bool gridsChanged = false;
+        if (carve)
+        {
+            EditorWhiteBoxComponentRequestBus::EventResult(
+                gridsChanged, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::CarveCubeGrids, *cutter,
+                AZ::Transform::CreateIdentity());
+        }
+
+        if (!freeformChanged && !gridsChanged)
+        {
+            return; // nothing intersected (neither freeform nor cubes)
+        }
 
         EditorWhiteBoxComponentRequestBus::Event(
             m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
@@ -1668,6 +1688,14 @@ namespace WhiteBox
         return carve;
     }
 
+    bool DrawShapeMode::CurrentMergeUnion() const
+    {
+        bool mergeUnion = false;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            mergeUnion, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetDrawMergeUnion);
+        return mergeUnion;
+    }
+
     bool DrawShapeMode::UnitCubeMode() const
     {
         bool unitCube = false;
@@ -1823,10 +1851,7 @@ namespace WhiteBox
             }
         }
 
-        AZ_Printf(
-            "WhiteBoxUnitCube", "STAMP %d cells (%dx%dx%d) min=(%.0f,%.0f,%.0f) filled=%d", static_cast<int>(cells.size()),
-            nx, ny, nz, m_unitCubeMinLocal.GetX(), m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(),
-            m_unitCubeCarve ? 0 : 1);
+        
 
         // Fill (add) or clear (carve) every cell in one undo batch. The component
         // regenerates a clean, watertight surface (coplanar faces grouped) from its voxel set.

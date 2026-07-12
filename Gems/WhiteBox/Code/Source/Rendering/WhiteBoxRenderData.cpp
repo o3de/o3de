@@ -48,7 +48,8 @@ namespace WhiteBox
                 ->Field("Vertex1", &WhiteBoxFace::m_v1)
                 ->Field("Vertex2", &WhiteBoxFace::m_v2)
                 ->Field("Vertex3", &WhiteBoxFace::m_v3)
-                ->Field("Normal", &WhiteBoxFace::m_normal);
+                ->Field("Normal", &WhiteBoxFace::m_normal)
+                ->Field("Color", &WhiteBoxFace::m_color);
         }
     }
 

@@ -8,10 +8,13 @@
 
 #include "Asset/EditorWhiteBoxMeshAsset.h"
 #include "Asset/WhiteBoxMeshAssetHandler.h"
+#include "Components/EditorWhiteBoxColliderComponent.h"
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "Rendering/WhiteBoxNullRenderMesh.h"
+#include "Tools/WhiteBoxLayerUtil.h"
+
 #include "Rendering/WhiteBoxRenderDataUtil.h"
 #include "Rendering/WhiteBoxRenderMeshInterface.h"
 #include "Util/WhiteBoxEditorUtil.h"
@@ -29,6 +32,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -39,6 +44,7 @@
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -71,9 +77,88 @@ namespace WhiteBox
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
     }
 
+    // Copy every polygon of @p src into @p dest (welding shared vertices within src by
+    // vertex handle), leaving dest's existing geometry untouched. The two meshes stay
+    // topologically separate islands - this is an APPEND, not a CSG merge - which is how the
+    // stamp/grid layer is folded into the freeform mesh only for output.
+    static void AppendMesh(WhiteBoxMesh& dest, const WhiteBoxMesh& src)
+    {
+        AZStd::unordered_map<int, Api::VertexHandle> vmap;
+        const auto destVertex = [&](const Api::VertexHandle& srcVertex) -> Api::VertexHandle
+        {
+            const auto it = vmap.find(srcVertex.Index());
+            if (it != vmap.end())
+            {
+                return it->second;
+            }
+            const Api::VertexHandle dh = Api::AddVertex(dest, Api::VertexPosition(src, srcVertex));
+            vmap.emplace(srcVertex.Index(), dh);
+            return dh;
+        };
+
+        for (const Api::PolygonHandle& polygon : Api::MeshPolygonHandles(src))
+        {
+            Api::FaceVertHandlesList faceVertHandles;
+            faceVertHandles.reserve(polygon.m_faceHandles.size());
+            for (const Api::FaceHandle& faceHandle : polygon.m_faceHandles)
+            {
+                const auto halfedges = Api::FaceHalfedgeHandles(src, faceHandle);
+                if (halfedges.size() >= 3)
+                {
+                    faceVertHandles.push_back(Api::FaceVertHandles{
+                        { destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[0])),
+                          destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[1])),
+                          destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[2])) }});
+                }
+            }
+            if (!faceVertHandles.empty())
+            {
+                Api::AddPolygon(dest, faceVertHandles);
+            }
+        }
+    }
+
+    // Combine a freeform mesh with the two cube grids into one output mesh: merged cubes are
+    // CSG-unioned with the freeform (falling back to append if the union is rejected), separate
+    // cubes are appended. Any argument may be null/empty. Returns null only if there is nothing
+    // to combine. Used for both the active layer and stored (inactive) layers.
+    static Api::WhiteBoxMeshPtr CombineFreeformAndGrids(
+        WhiteBoxMesh* freeform, WhiteBoxMesh* grid, WhiteBoxMesh* gridMerged)
+    {
+        const bool hasFreeform = freeform != nullptr && !Api::MeshFaceHandles(*freeform).empty();
+        const bool hasMerged = gridMerged != nullptr && !Api::MeshFaceHandles(*gridMerged).empty();
+        const bool hasSeparate = grid != nullptr && !Api::MeshFaceHandles(*grid).empty();
+        if (!hasFreeform && !hasMerged && !hasSeparate)
+        {
+            return nullptr;
+        }
+        Api::WhiteBoxMeshPtr combined = hasFreeform ? Api::CloneMesh(*freeform) : Api::CreateWhiteBoxMesh();
+        if (!combined)
+        {
+            return nullptr;
+        }
+        if (hasMerged)
+        {
+            if (Api::MeshFaceHandles(*combined).empty() ||
+                !Api::ApplyMeshBoolean(
+                    *combined, *gridMerged, AZ::Transform::CreateIdentity(), Api::BooleanOperation::Union))
+            {
+                AppendMesh(*combined, *gridMerged);
+            }
+        }
+        if (hasSeparate)
+        {
+            AppendMesh(*combined, *grid);
+        }
+        Api::CalculateNormals(*combined);
+        Api::CalculatePlanarUVs(*combined);
+        return combined;
+    }
+
     // build intermediate data to be passed to WhiteBoxRenderMeshInterface
     // to be used to generate concrete render mesh
-    static WhiteBoxRenderData CreateWhiteBoxRenderData(const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material)
+    static WhiteBoxRenderData CreateWhiteBoxRenderData(
+        const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material, const bool flipWinding = false)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -83,7 +168,7 @@ namespace WhiteBox
         const auto faceCount = Api::MeshFaceCount(whiteBox);
         faceData.reserve(faceCount);
 
-        const auto createWhiteBoxFaceFromHandle = [&whiteBox](const Api::FaceHandle& faceHandle) -> WhiteBoxFace
+        const auto createWhiteBoxFaceFromHandle = [&whiteBox, flipWinding](const Api::FaceHandle& faceHandle) -> WhiteBoxFace
         {
             const auto copyVertex = [&whiteBox](const Api::HalfedgeHandle& in, WhiteBoxVertex& out)
             {
@@ -96,9 +181,20 @@ namespace WhiteBox
             face.m_normal = Api::FaceNormal(whiteBox, faceHandle);
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
 
-            copyVertex(faceHalfedgeHandles[0], face.m_v1);
-            copyVertex(faceHalfedgeHandles[1], face.m_v2);
-            copyVertex(faceHalfedgeHandles[2], face.m_v3);
+            if (flipWinding)
+            {
+                // Reverse winding (swap v1/v3) and flip the face normal so the layer renders inside-out.
+                copyVertex(faceHalfedgeHandles[0], face.m_v3);
+                copyVertex(faceHalfedgeHandles[1], face.m_v2);
+                copyVertex(faceHalfedgeHandles[2], face.m_v1);
+                face.m_normal = -face.m_normal;
+            }
+            else
+            {
+                copyVertex(faceHalfedgeHandles[0], face.m_v1);
+                copyVertex(faceHalfedgeHandles[1], face.m_v2);
+                copyVertex(faceHalfedgeHandles[2], face.m_v3);
+            }
 
             return face;
         };
@@ -321,6 +417,49 @@ namespace WhiteBox
                 {
                     outCells.push_back(cell);
                     outSizes.push_back(size);
+                }
+            }
+        }
+
+        // Per-cell "merged with the freeform mesh" flags travel alongside the cell coords and
+        // sizes (three parallel arrays). These group / flatten them together as
+        // sizeKey -> (coord -> merged).
+        using CellMerge = AZStd::unordered_map<AZ::u64, AZ::u8>;
+        using SizeMergeGroups = AZStd::unordered_map<AZ::s32, CellMerge>;
+
+        SizeMergeGroups GroupBySizeMerge(
+            const AZStd::vector<AZ::u64>& cells, const AZStd::vector<float>& sizes,
+            const AZStd::vector<AZ::u8>& merged)
+        {
+            SizeMergeGroups groups;
+            for (size_t i = 0; i < cells.size(); ++i)
+            {
+                const float size = i < sizes.size() ? sizes[i] : 1.0f;
+                const AZ::u8 m = i < merged.size() ? merged[i] : AZ::u8{0};
+                groups[QuantizeSize(size)][cells[i]] = m;
+            }
+            return groups;
+        }
+
+        void FlattenMergeGroups(
+            const SizeMergeGroups& groups, AZStd::vector<AZ::u64>& outCells, AZStd::vector<float>& outSizes,
+            AZStd::vector<AZ::u8>& outMerged)
+        {
+            outCells.clear();
+            outSizes.clear();
+            outMerged.clear();
+            for (const auto& group : groups)
+            {
+                if (group.second.empty())
+                {
+                    continue;
+                }
+                const float size = SizeFromQuantized(group.first);
+                for (const auto& cell : group.second)
+                {
+                    outCells.push_back(cell.first);
+                    outSizes.push_back(size);
+                    outMerged.push_back(cell.second);
                 }
             }
         }
@@ -554,9 +693,57 @@ namespace WhiteBox
             }
             clearPlanes();
 
-            AZ_Printf(
-                "WhiteBoxVoxel", "GenerateSurface: %d cells -> %d quad polygons, %d verts",
-                static_cast<int>(cells.size()), polygonCount, static_cast<int>(verts.size()));
+            
+        }
+
+        // Build the surface WITHOUT greedy merging: one quad per exposed cell face. Unlike
+        // the greedy version this is guaranteed watertight and 2-manifold for ANY cell set
+        // (including non-convex clusters), because every face is a full unit-cell face with
+        // no T-junctions. That makes it a valid CSG boolean operand - the greedy surface can
+        // contain T-junctions on concave clusters, which the boolean would reject.
+        void GenerateSurfacePerCell(WhiteBoxMesh& mesh, const AZStd::unordered_set<AZ::u64>& cells, const float cellSize)
+        {
+            AZStd::unordered_map<AZ::u64, Api::VertexHandle> verts;
+            const auto vert = [&](int x, int y, int z) -> Api::VertexHandle
+            {
+                const AZ::u64 key = PackCell(x, y, z);
+                const auto it = verts.find(key);
+                if (it != verts.end())
+                {
+                    return it->second;
+                }
+                const Api::VertexHandle h = Api::AddVertex(
+                    mesh, AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)) * cellSize);
+                verts.emplace(key, h);
+                return h;
+            };
+            const auto filled = [&](int x, int y, int z) { return cells.count(PackCell(x, y, z)) != 0; };
+            const auto quad =
+                [&](Api::VertexHandle a, Api::VertexHandle b, Api::VertexHandle c, Api::VertexHandle d)
+            {
+                Api::FaceVertHandlesList f;
+                f.push_back(Api::FaceVertHandles{{a, b, c}});
+                f.push_back(Api::FaceVertHandles{{a, c, d}});
+                Api::AddPolygon(mesh, f);
+            };
+
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x + 1, y, z))
+                    quad(vert(x + 1, y, z), vert(x + 1, y + 1, z), vert(x + 1, y + 1, z + 1), vert(x + 1, y, z + 1));
+                if (!filled(x - 1, y, z))
+                    quad(vert(x, y + 1, z), vert(x, y, z), vert(x, y, z + 1), vert(x, y + 1, z + 1));
+                if (!filled(x, y + 1, z))
+                    quad(vert(x + 1, y + 1, z), vert(x, y + 1, z), vert(x, y + 1, z + 1), vert(x + 1, y + 1, z + 1));
+                if (!filled(x, y - 1, z))
+                    quad(vert(x, y, z), vert(x + 1, y, z), vert(x + 1, y, z + 1), vert(x, y, z + 1));
+                if (!filled(x, y, z + 1))
+                    quad(vert(x, y, z + 1), vert(x + 1, y, z + 1), vert(x + 1, y + 1, z + 1), vert(x, y + 1, z + 1));
+                if (!filled(x, y, z - 1))
+                    quad(vert(x, y + 1, z), vert(x + 1, y + 1, z), vert(x + 1, y, z), vert(x, y, z));
+            }
         }
 
         // Quantize a vertex position to its voxel-grid cell index (positions are cell
@@ -810,6 +997,37 @@ namespace WhiteBox
             const float legacy = m_voxelCellSize < 0.05f ? 0.05f : m_voxelCellSize;
             m_voxelCellSizes.assign(m_voxelCells.size(), legacy);
         }
+        if (m_voxelMerged.size() != m_voxelCells.size())
+        {
+            // Legacy data (before per-cube merge flags) is treated as separate cubes.
+            m_voxelMerged.assign(m_voxelCells.size(), AZ::u8{0});
+        }
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::GridMergedMesh()
+    {
+        if (!m_gridMergedMesh)
+        {
+            m_gridMergedMesh = Api::CreateWhiteBoxMesh();
+        }
+        return m_gridMergedMesh.get();
+    }
+
+    bool EditorWhiteBoxComponent::CarveCubeGrids(const WhiteBoxMesh& cutter, const AZ::Transform& cutterTransform)
+    {
+        // Subtract the draw-shape cutter from both cube grids so a carve cuts through stamped
+        // cubes too. The freeform mesh is handled separately by the draw mode. The caller
+        // serializes and rebuilds afterwards.
+        bool changed = false;
+        for (WhiteBoxMesh* grid : { m_gridMesh.get(), m_gridMergedMesh.get() })
+        {
+            if (grid != nullptr && !Api::MeshFaceHandles(*grid).empty() &&
+                Api::ApplyMeshBoolean(*grid, cutter, cutterTransform, Api::BooleanOperation::Subtraction))
+            {
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     void EditorWhiteBoxComponent::RegenerateVoxelMesh(
@@ -825,16 +1043,40 @@ namespace WhiteBox
         const VoxelDetail::SizeGroups oldGroups = VoxelDetail::GroupBySize(oldCells, oldSizes);
         const VoxelDetail::SizeGroups newGroups = VoxelDetail::GroupBySize(newCells, newSizes);
 
-        // Remove ONLY the faces that belong to the previous voxel surface, leaving every
-        // freeform face (and any voxel face the user has since hand-edited off the lattice)
-        // untouched. Each cube size lives on its own grid, so match faces per size group:
-        // pre-compute the surface signatures for every old size, then keep any mesh face
-        // whose corners quantise (at that size) onto one of those signatures.
-        AZStd::unordered_map<AZ::s32, VoxelDetail::FaceSignatureSet> oldSigsBySize;
+        // Only touch the size-groups that actually CHANGED. A group whose cell set is
+        // identical in old and new is left completely alone - its faces are neither removed
+        // nor regenerated - so stamping never re-runs face creation over cubes of other
+        // sizes (which is what previously duplicated geometry into a non-manifold mesh) and
+        // never disturbs cubes the user has hand-edited.
+        AZStd::unordered_set<AZ::s32> changedSizes;
         for (const auto& group : oldGroups)
         {
-            oldSigsBySize.emplace(
-                group.first, VoxelDetail::SurfaceFaceSignatures(group.second, VoxelDetail::SizeFromQuantized(group.first)));
+            const auto it = newGroups.find(group.first);
+            if (it == newGroups.end() || it->second != group.second)
+            {
+                changedSizes.insert(group.first);
+            }
+        }
+        for (const auto& group : newGroups)
+        {
+            const auto it = oldGroups.find(group.first);
+            if (it == oldGroups.end() || it->second != group.second)
+            {
+                changedSizes.insert(group.first);
+            }
+        }
+
+        // Remove the previous voxel surface for the CHANGED sizes only, matching mesh faces
+        // by signature (freeform / hand-edited faces never match, so they are preserved).
+        AZStd::unordered_map<AZ::s32, VoxelDetail::FaceSignatureSet> oldSigsBySize;
+        for (const AZ::s32 sizeKey : changedSizes)
+        {
+            const auto it = oldGroups.find(sizeKey);
+            if (it != oldGroups.end())
+            {
+                oldSigsBySize.emplace(
+                    sizeKey, VoxelDetail::SurfaceFaceSignatures(it->second, VoxelDetail::SizeFromQuantized(sizeKey)));
+            }
         }
 
         int removedFaces = 0;
@@ -864,10 +1106,14 @@ namespace WhiteBox
             }
         }
 
-        // Add the new voxel surface, one grid per cube size.
-        for (const auto& group : newGroups)
+        // Regenerate the surface for the CHANGED sizes only, one grid per cube size.
+        for (const AZ::s32 sizeKey : changedSizes)
         {
-            VoxelDetail::GenerateSurface(*mesh, group.second, VoxelDetail::SizeFromQuantized(group.first));
+            const auto it = newGroups.find(sizeKey);
+            if (it != newGroups.end())
+            {
+                VoxelDetail::GenerateSurface(*mesh, it->second, VoxelDetail::SizeFromQuantized(sizeKey));
+            }
         }
 
         // Purge vertices orphaned by the face removal above. RemoveFaces keeps isolated
@@ -875,10 +1121,7 @@ namespace WhiteBox
         // in vertex and edge editing modes; deleting them here keeps the mesh clean.
         Api::RemoveIsolatedVertices(*mesh);
 
-        AZ_Printf(
-            "WhiteBoxVoxel", "RegenerateVoxelMesh: old=%d new=%d cells (%d old sizes, %d new sizes), removedFaces=%d",
-            static_cast<int>(oldCells.size()), static_cast<int>(newCells.size()), static_cast<int>(oldGroups.size()),
-            static_cast<int>(newGroups.size()), removedFaces);
+        
 
         Api::CalculateNormals(*mesh);
         Api::CalculatePlanarUVs(*mesh);
@@ -887,33 +1130,53 @@ namespace WhiteBox
         RebuildWhiteBox();
     }
 
-    void EditorWhiteBoxComponent::SetVoxelCell(const AZ::Vector3& cellMin, const bool filled)
+    void EditorWhiteBoxComponent::StampCubeCells(
+        WhiteBoxMesh* grid, const AZStd::unordered_set<AZ::u64>& cells, const float cellSize, const bool add)
     {
-        NormalizeVoxelData();
-
-        const AZ::s32 sizeKey = VoxelDetail::QuantizeSize(m_drawUnitCubeSize);
-        const AZ::u64 key = VoxelDetail::PackCell(
-            static_cast<int>(std::floor(cellMin.GetX())), static_cast<int>(std::floor(cellMin.GetY())),
-            static_cast<int>(std::floor(cellMin.GetZ())));
-
-        // Snapshot the old state (keeps regen/undo in sync), then add or remove this cell
-        // in the group for the CURRENT Cube Size - existing cubes of other sizes are left
-        // exactly as they are, so the size can change freely without clearing the stamp.
-        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
-        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
-
-        VoxelDetail::SizeGroups groups = VoxelDetail::GroupBySize(oldCells, oldSizes);
-        const bool changed =
-            filled ? groups[sizeKey].insert(key).second : (groups[sizeKey].erase(key) > 0);
-        if (!changed)
+        if (grid == nullptr || cells.empty())
         {
-            return; // already in the requested state
+            return;
         }
 
-        AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Voxel" : "Remove Voxel");
-        VoxelDetail::FlattenGroups(groups, m_voxelCells, m_voxelCellSizes);
-        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
-        undoBatch.MarkEntityDirty(GetEntityId());
+        // Build the affected cells as their own clean, watertight, per-cell manifold surface -
+        // a valid CSG boolean operand (greedy merging can leave T-junctions on a non-convex
+        // cluster, which the boolean rejects).
+        Api::WhiteBoxMeshPtr cube = Api::CreateWhiteBoxMesh();
+        VoxelDetail::GenerateSurfacePerCell(*cube, cells, cellSize);
+        Api::CalculateNormals(*cube);
+        Api::CalculatePlanarUVs(*cube);
+
+        const bool gridEmpty = Api::MeshFaceHandles(*grid).empty();
+        const auto addDirect = [&]()
+        {
+            VoxelDetail::GenerateSurfacePerCell(*grid, cells, cellSize);
+            Api::CalculateNormals(*grid);
+            Api::CalculatePlanarUVs(*grid);
+        };
+
+        if (add)
+        {
+            // Union the new cubes into the grid so cubes stay watertight/manifold among
+            // themselves; fall back to a direct add if the grid is empty or not a manifold.
+            if (gridEmpty ||
+                !Api::ApplyMeshBoolean(*grid, *cube, AZ::Transform::CreateIdentity(), Api::BooleanOperation::Union))
+            {
+                addDirect();
+            }
+            
+        }
+        else if (!gridEmpty)
+        {
+            // Carve: subtract the cubes from this grid only (the freeform mesh is never touched).
+            const bool ok =
+                Api::ApplyMeshBoolean(*grid, *cube, AZ::Transform::CreateIdentity(), Api::BooleanOperation::Subtraction);
+            
+        }
+    }
+
+    void EditorWhiteBoxComponent::SetVoxelCell(const AZ::Vector3& cellMin, const bool filled)
+    {
+        SetVoxelCells(AZStd::vector<AZ::Vector3>{cellMin}, filled);
     }
 
     void EditorWhiteBoxComponent::SetVoxelCells(const AZStd::vector<AZ::Vector3>& cellMins, const bool filled)
@@ -926,33 +1189,93 @@ namespace WhiteBox
         NormalizeVoxelData();
 
         const AZ::s32 sizeKey = VoxelDetail::QuantizeSize(m_drawUnitCubeSize);
+        const float cellSize = VoxelDetail::SizeFromQuantized(sizeKey);
+        const AZ::u8 newMerged = m_mergeGridWithMesh ? AZ::u8{1} : AZ::u8{0};
 
-        // Snapshot the old state, then apply every cell in the CURRENT Cube Size's group in
-        // one shot (single undo step + regen). Cubes already placed at other sizes are
-        // untouched, so mixed sizes coexist and the size can be changed between stamps.
-        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
-        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
+        // Occupancy: which cells are filled, and per cell whether it is a "merged" cube (lives
+        // in the merged grid) or a "separate" cube (lives in the separate grid). A stamp adds
+        // to the CURRENT toggle's grid; a carve removes each cell from whichever grid it is in.
+        VoxelDetail::SizeMergeGroups groups =
+            VoxelDetail::GroupBySizeMerge(m_voxelCells, m_voxelCellSizes, m_voxelMerged);
+        VoxelDetail::CellMerge& occupancy = groups[sizeKey];
 
-        VoxelDetail::SizeGroups groups = VoxelDetail::GroupBySize(oldCells, oldSizes);
-        VoxelDetail::CellSet& target = groups[sizeKey];
-
-        bool changed = false;
+        VoxelDetail::CellSet affectedMerged;
+        VoxelDetail::CellSet affectedSeparate;
         for (const AZ::Vector3& cellMin : cellMins)
         {
             const AZ::u64 key = VoxelDetail::PackCell(
                 static_cast<int>(std::floor(cellMin.GetX())), static_cast<int>(std::floor(cellMin.GetY())),
                 static_cast<int>(std::floor(cellMin.GetZ())));
-            changed = (filled ? target.insert(key).second : (target.erase(key) > 0)) || changed;
+            if (filled)
+            {
+                const auto inserted = occupancy.emplace(key, newMerged);
+                if (inserted.second)
+                {
+                    (newMerged != 0 ? affectedMerged : affectedSeparate).insert(key);
+                }
+            }
+            else
+            {
+                const auto it = occupancy.find(key);
+                if (it != occupancy.end())
+                {
+                    (it->second != 0 ? affectedMerged : affectedSeparate).insert(key);
+                    occupancy.erase(it);
+                }
+            }
         }
 
-        if (!changed)
+        if (affectedMerged.empty() && affectedSeparate.empty())
         {
-            return; // every requested cell was already in the requested state
+            return; // nothing to add or carve (cells were already in the requested state)
         }
 
-        AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Cube" : "Remove Cube");
-        VoxelDetail::FlattenGroups(groups, m_voxelCells, m_voxelCellSizes);
-        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
+        AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Cube" : "Carve Cube");
+        VoxelDetail::FlattenMergeGroups(groups, m_voxelCells, m_voxelCellSizes, m_voxelMerged);
+
+        // How many cubes remain in each grid AFTER this operation. A carve that removes the
+        // last cube from a grid must reset that grid mesh directly: subtracting the final cube
+        // produces an empty CSG result, which the boolean reports as failure and leaves the
+        // grid unchanged, stranding that last cube.
+        bool anyMerged = false;
+        bool anySeparate = false;
+        for (const AZ::u8 mergedFlag : m_voxelMerged)
+        {
+            if (mergedFlag != 0)
+            {
+                anyMerged = true;
+            }
+            else
+            {
+                anySeparate = true;
+            }
+        }
+
+        if (!affectedMerged.empty())
+        {
+            if (!filled && !anyMerged)
+            {
+                m_gridMergedMesh = Api::CreateWhiteBoxMesh(); // carved the last merged cube
+            }
+            else
+            {
+                StampCubeCells(GridMergedMesh(), affectedMerged, cellSize, filled);
+            }
+        }
+        if (!affectedSeparate.empty())
+        {
+            if (!filled && !anySeparate)
+            {
+                m_gridMesh = Api::CreateWhiteBoxMesh(); // carved the last separate cube
+            }
+            else
+            {
+                StampCubeCells(GridMesh(), affectedSeparate, cellSize, filled);
+            }
+        }
+
+        SerializeWhiteBox();
+        RebuildWhiteBox();
         undoBatch.MarkEntityDirty(GetEntityId());
     }
 
@@ -965,16 +1288,529 @@ namespace WhiteBox
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
-        // Remove the whole voxel surface (regenerate against an empty set) and purge the
-        // orphaned vertices. Freeform / hand-edited faces are left untouched.
-        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
-        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
+        // The stamp/grid layer is separate from the freeform mesh, so clearing removes only
+        // the stamped cubes and leaves any freeform / draw-shape geometry intact.
         AzToolsFramework::ScopedUndoBatch undoBatch("Clear Cube Stamp");
         m_voxelCells.clear();
         m_voxelCellSizes.clear();
-        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
+        m_voxelMerged.clear();
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        m_gridMergedMesh = Api::CreateWhiteBoxMesh();
+        Api::WriteMesh(*m_gridMesh, m_gridMeshData);
+        Api::WriteMesh(*m_gridMergedMesh, m_gridMergedData);
+        RebuildWhiteBox();
         undoBatch.MarkEntityDirty(GetEntityId());
         return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::FixNonManifoldMesh()
+    {
+        WhiteBoxMesh* mesh = GetWhiteBoxMesh();
+        if (mesh == nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        // Weld coincident vertices and regroup coplanar faces so the whole mesh becomes a
+        // clean manifold. A single non-manifold region otherwise blocks every boolean.
+        AzToolsFramework::ScopedUndoBatch undoBatch("Fix Non-Manifold Mesh");
+        if (Api::RepairMesh(*mesh))
+        {
+            SerializeWhiteBox();
+            RebuildWhiteBox();
+            undoBatch.MarkEntityDirty(GetEntityId());
+        }
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::CreateChildLayer()
+    {
+        // All of the entity/component-mode work lives in the standalone layer utility.
+        CreateChildWhiteBoxLayer(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    void EditorWhiteBoxComponent::EnterComponentMode()
+    {
+        // Go through the "edit selected components" request so the card's enter/exit button stays in sync.
+        // The entity must be selected first.
+        namespace Cmf = AzToolsFramework::ComponentModeFramework;
+        Cmf::ComponentModeSystemRequestBus::Broadcast(
+            &Cmf::ComponentModeSystemRequests::AddSelectedComponentModesOfType,
+            azrtti_typeid<EditorWhiteBoxComponent>());
+    }
+
+    void EditorWhiteBoxComponent::WhiteBoxLayer::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<WhiteBoxLayer>()
+                ->Version(1)
+                ->Field("Name", &WhiteBoxLayer::m_name)
+                ->Field("Id", &WhiteBoxLayer::m_id)
+                ->Field("Visible", &WhiteBoxLayer::m_visible)
+                ->Field("Tint", &WhiteBoxLayer::m_tint)
+                ->Field("Combine", &WhiteBoxLayer::m_combineMode)
+                ->Field("InvertNormals", &WhiteBoxLayer::m_invertNormals)
+                ->Field("Position", &WhiteBoxLayer::m_position)
+                ->Field("Rotation", &WhiteBoxLayer::m_rotation)
+                ->Field("Scale", &WhiteBoxLayer::m_scale)
+                ->Field("Freeform", &WhiteBoxLayer::m_freeformData)
+                ->Field("Grid", &WhiteBoxLayer::m_gridData)
+                ->Field("GridMerged", &WhiteBoxLayer::m_gridMergedData)
+                ->Field("VoxelCells", &WhiteBoxLayer::m_voxelCells)
+                ->Field("VoxelCellSizes", &WhiteBoxLayer::m_voxelCellSizes)
+                ->Field("VoxelMerged", &WhiteBoxLayer::m_voxelMerged);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<WhiteBoxLayer>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box Layer"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "One editable White Box layer."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_name,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Name"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Layer name."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxLayer::m_visible,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Visible"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Show or hide this layer (hidden layers are excluded from the combined output)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Color, &WhiteBoxLayer::m_tint, QT_TRANSLATE_NOOP("WhiteBox", "Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render colour for this layer (used when 'Use Global Tint' is off)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &WhiteBoxLayer::m_combineMode,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Combine"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "How this layer combines with the layers below it: Separate keeps it as its own island; "
+                        "Union fuses it; Subtract carves it out; Intersect keeps only the overlap."))
+                    ->EnumAttribute(LayerCombineMode::Separate, QT_TRANSLATE_NOOP("WhiteBox", "Separate"))
+                    ->EnumAttribute(LayerCombineMode::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(LayerCombineMode::Subtract, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(LayerCombineMode::Intersect, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxLayer::m_invertNormals,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Invert Normals"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render this layer inside-out (flips its normals / winding). Non-destructive and reversible; "
+                        "applies to existing and new geometry in the layer."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_position,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Position"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Translate this layer's geometry (applied non-destructively at combine time)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_rotation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Rotation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Rotate this layer's geometry, Euler degrees (XYZ)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_scale, QT_TRANSLATE_NOOP("WhiteBox", "Scale"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Scale this layer's geometry (non-uniform)."))
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.001f);
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::StoreLayer(const int index)
+    {
+        if (index < 0 || index >= static_cast<int>(m_layers.size()))
+        {
+            return;
+        }
+        // The working streams are kept current by SerializeWhiteBox, so copy them (plus the
+        // occupancy arrays) into the layer.
+        WhiteBoxLayer& layer = m_layers[index];
+        layer.m_freeformData = m_whiteBoxData;
+        layer.m_gridData = m_gridMeshData;
+        layer.m_gridMergedData = m_gridMergedData;
+        layer.m_voxelCells = m_voxelCells;
+        layer.m_voxelCellSizes = m_voxelCellSizes;
+        layer.m_voxelMerged = m_voxelMerged;
+    }
+
+    void EditorWhiteBoxComponent::LoadActiveLayer()
+    {
+        if (m_layers.empty())
+        {
+            return;
+        }
+        if (m_activeLayerIndex < 0)
+        {
+            m_activeLayerIndex = 0;
+        }
+        if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        }
+        const WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        m_whiteBoxData = layer.m_freeformData;
+        m_gridMeshData = layer.m_gridData;
+        m_gridMergedData = layer.m_gridMergedData;
+        m_voxelCells = layer.m_voxelCells;
+        m_voxelCellSizes = layer.m_voxelCellSizes;
+        m_voxelMerged = layer.m_voxelMerged;
+
+        m_whiteBox = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_whiteBox, m_whiteBoxData); // new/empty layers stay empty (no default cube)
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_gridMesh, m_gridMeshData);
+        m_gridMergedMesh = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_gridMergedMesh, m_gridMergedData);
+        m_loadedLayerIndex = m_activeLayerIndex;
+        m_loadedLayerId = m_layers[m_activeLayerIndex].m_id;
+        m_lastLayerCount = static_cast<int>(m_layers.size());
+    }
+
+    void EditorWhiteBoxComponent::ApplyTransformToMesh(
+        WhiteBoxMesh& mesh, const AZ::Vector3& position, const AZ::Vector3& eulerDegrees, const AZ::Vector3& scale)
+    {
+        const bool identity = position.IsZero() && eulerDegrees.IsZero() &&
+            scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        if (identity)
+        {
+            return; // nothing to do - leave the mesh (and its UVs/normals) untouched
+        }
+
+        const AZ::Quaternion rotation = AZ::Quaternion::CreateFromEulerAnglesDegrees(eulerDegrees);
+        for (const Api::VertexHandle vertexHandle : Api::MeshVertexHandles(mesh))
+        {
+            AZ::Vector3 p = Api::VertexPosition(mesh, vertexHandle);
+            p *= scale;                       // component-wise (non-uniform) scale
+            p = rotation.TransformVector(p);  // rotate
+            p += position;                    // translate
+            Api::SetVertexPosition(mesh, vertexHandle, p);
+        }
+        Api::CalculateNormals(mesh);
+        Api::CalculatePlanarUVs(mesh);
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::BuildLayerMesh(const WhiteBoxLayer& layer)
+    {
+        // Deserialize a stored layer and combine its geometry into one display mesh.
+        Api::WhiteBoxMeshPtr freeform = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*freeform, layer.m_freeformData);
+        Api::WhiteBoxMeshPtr grid = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*grid, layer.m_gridData);
+        Api::WhiteBoxMeshPtr gridMerged = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*gridMerged, layer.m_gridMergedData);
+        Api::WhiteBoxMeshPtr combined = CombineFreeformAndGrids(freeform.get(), grid.get(), gridMerged.get());
+        if (combined)
+        {
+            ApplyTransformToMesh(*combined, layer.m_position, layer.m_rotation, layer.m_scale);
+        }
+        return combined;
+    }
+
+    AZStd::vector<AZStd::pair<int, AZStd::string>> EditorWhiteBoxComponent::GetLayerNames()
+    {
+        AZStd::vector<AZStd::pair<int, AZStd::string>> names;
+        if (m_layers.empty())
+        {
+            // Never return an empty value list: an empty combo would select index -1 and log
+            // "Out of range combo box index -1". A single placeholder keeps value 0 valid until a
+            // layer is created (drawing into the empty component auto-creates "Layer 1").
+            names.emplace_back(0, AZStd::string("(no layers)"));
+            return names;
+        }
+        names.reserve(m_layers.size());
+        for (int i = 0; i < static_cast<int>(m_layers.size()); ++i)
+        {
+            const AZStd::string& name = m_layers[i].m_name;
+            names.emplace_back(i, AZStd::string::format("%d: %s", i, name.empty() ? "Layer" : name.c_str()));
+        }
+        return names;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnActiveLayerChange()
+    {
+        // With no layers there is nothing to switch to; force a tree rebuild so a stale dropdown
+        // (still listing deleted layers) is replaced by the "(no layers)" placeholder.
+        if (m_layers.empty())
+        {
+            m_activeLayerIndex = 0;
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+        const int incoming = m_activeLayerIndex;
+        if (m_activeLayerIndex < 0)
+        {
+            m_activeLayerIndex = 0;
+        }
+        if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        }
+        // The combo box can briefly hold entries for layers that were just deleted. If the picked
+        // index was out of range we clamped it, so rebuild the tree to resync the dropdown.
+        const bool wasStale = m_activeLayerIndex != incoming;
+        const AZ::u32 refresh = wasStale ? AZ::Edit::PropertyRefreshLevels::EntireTree
+                                         : AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        if (m_activeLayerIndex == m_loadedLayerIndex)
+        {
+            return refresh;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Switch White Box Layer");
+        SerializeWhiteBox(); // commit the currently loaded layer into m_layers
+        LoadActiveLayer();   // load the newly selected layer into the working members
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return refresh;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnNewLayer()
+    {
+        AzToolsFramework::ScopedUndoBatch undoBatch("New White Box Layer");
+        SerializeWhiteBox(); // commit the current layer
+        WhiteBoxLayer layer;
+        layer.m_name = AZStd::string::format("Layer %d", static_cast<int>(m_layers.size()) + 1);
+        layer.m_id = AllocLayerId();
+        m_layers.push_back(AZStd::move(layer));
+        m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        m_lastLayerCount = static_cast<int>(m_layers.size());
+        LoadActiveLayer(); // load the new empty layer
+        m_lastLayerSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnDeleteLayer()
+    {
+        if (m_layers.empty() || m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Delete White Box Layer");
+        m_layers.erase(m_layers.begin() + m_activeLayerIndex);
+        m_lastLayerCount = static_cast<int>(m_layers.size());
+        if (m_layers.empty())
+        {
+            // Deleting the last layer leaves an empty white box (nothing renders, stamps cleared).
+            m_activeLayerIndex = 0;
+            ClearWorkingLayer();
+        }
+        else
+        {
+            if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+            {
+                m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+            }
+            m_loadedLayerIndex = -1; // force a reload of the working members
+            LoadActiveLayer();
+        }
+        m_lastLayerSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnLayersMetaChanged()
+    {
+        // If the id order/count changed, the list was added-to, removed-from or reordered (some
+        // O3DE versions deliver these via this ChangeNotify) - do the full structural resync.
+        if (LayerSignature() != m_lastLayerSignature)
+        {
+            SyncLayerStructure();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        // Otherwise this is an in-place edit (name / visibility / combine mode / transform). Keep
+        // the working index pointing at the loaded layer and recombine to reflect the change.
+        const int k = IndexOfLayerId(m_loadedLayerId);
+        if (k >= 0)
+        {
+            m_loadedLayerIndex = k;
+        }
+        RebuildWhiteBox();
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    void EditorWhiteBoxComponent::RefreshComponentMode()
+    {
+        EditorWhiteBoxComponentModeRequestBus::Event(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()),
+            &EditorWhiteBoxComponentModeRequestBus::Events::MarkWhiteBoxIntersectionDataDirty);
+    }
+
+    void EditorWhiteBoxComponent::ClearWorkingLayer()
+    {
+        // Reset the working members to empty geometry. Used when there are zero layers so the
+        // white box shows nothing and the stamp occupancy is cleared.
+        m_whiteBox = Api::CreateWhiteBoxMesh();
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        m_gridMergedMesh = Api::CreateWhiteBoxMesh();
+        m_voxelCells.clear();
+        m_voxelCellSizes.clear();
+        m_voxelMerged.clear();
+        Api::WriteMesh(*m_whiteBox, m_whiteBoxData);
+        Api::WriteMesh(*m_gridMesh, m_gridMeshData);
+        Api::WriteMesh(*m_gridMergedMesh, m_gridMergedData);
+        m_loadedLayerIndex = -1;
+        m_loadedLayerId = 0;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnApplyLayerTransform()
+    {
+        if (m_layers.empty() || m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        const bool identity = layer.m_position.IsZero() && layer.m_rotation.IsZero() &&
+            layer.m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        if (identity)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None; // nothing to bake
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Apply White Box Layer Transform");
+
+        const bool isActive = m_activeLayerIndex == m_loadedLayerIndex;
+        if (isActive)
+        {
+            SerializeWhiteBox(); // flush the working members into this layer's streams first
+        }
+
+        // Fold the grids into the freeform, bake the transform into every vertex, then clear the
+        // grids + voxel occupancy (rotated/scaled cubes cannot map back to axis-aligned voxels, so
+        // the stamps are frozen into the mesh) and reset the transform to identity.
+        Api::WhiteBoxMeshPtr freeform = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*freeform, layer.m_freeformData);
+        Api::WhiteBoxMeshPtr grid = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*grid, layer.m_gridData);
+        Api::WhiteBoxMeshPtr gridMerged = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*gridMerged, layer.m_gridMergedData);
+        if (!Api::MeshFaceHandles(*grid).empty())
+        {
+            AppendMesh(*freeform, *grid);
+        }
+        if (!Api::MeshFaceHandles(*gridMerged).empty())
+        {
+            AppendMesh(*freeform, *gridMerged);
+        }
+        ApplyTransformToMesh(*freeform, layer.m_position, layer.m_rotation, layer.m_scale);
+
+        Api::WriteMesh(*freeform, layer.m_freeformData);
+        layer.m_gridData.clear();
+        layer.m_gridMergedData.clear();
+        layer.m_voxelCells.clear();
+        layer.m_voxelCellSizes.clear();
+        layer.m_voxelMerged.clear();
+        layer.m_position = AZ::Vector3::CreateZero();
+        layer.m_rotation = AZ::Vector3::CreateZero();
+        layer.m_scale = AZ::Vector3::CreateOne();
+
+        if (isActive)
+        {
+            m_loadedLayerIndex = -1; // force the working members to reload from the baked streams
+            LoadActiveLayer();
+        }
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree; // reset the Position/Rotation/Scale fields
+    }
+
+    AZ::u64 EditorWhiteBoxComponent::AllocLayerId()
+    {
+        if (m_nextLayerId == 0)
+        {
+            m_nextLayerId = 1;
+        }
+        return m_nextLayerId++;
+    }
+
+    int EditorWhiteBoxComponent::IndexOfLayerId(const AZ::u64 id) const
+    {
+        if (id == 0)
+        {
+            return -1;
+        }
+        for (int i = 0; i < static_cast<int>(m_layers.size()); ++i)
+        {
+            if (m_layers[i].m_id == id)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    AZ::u64 EditorWhiteBoxComponent::LayerSignature() const
+    {
+        AZ::u64 h = 1469598103934665603ull ^ static_cast<AZ::u64>(m_layers.size());
+        for (const WhiteBoxLayer& layer : m_layers)
+        {
+            h ^= layer.m_id;
+            h *= 1099511628211ull;
+        }
+        return h;
+    }
+
+    void EditorWhiteBoxComponent::SyncLayerStructure()
+    {
+        // Give any natively-added ("+") layers a stable id first so ids are unique.
+        for (WhiteBoxLayer& layer : m_layers)
+        {
+            if (layer.m_id == 0)
+            {
+                layer.m_id = AllocLayerId();
+            }
+        }
+
+        const int count = static_cast<int>(m_layers.size());
+        if (count == 0)
+        {
+            m_activeLayerIndex = 0;
+            ClearWorkingLayer();
+        }
+        else
+        {
+            const int k = IndexOfLayerId(m_loadedLayerId);
+            if (k >= 0)
+            {
+                // The working members still belong to a live layer: the list was reordered or
+                // added to. Just reindex (so the render skips the correct slot) and keep the
+                // selection on the same layer - no reload, so no in-progress edits are lost.
+                m_loadedLayerIndex = k;
+                m_activeLayerIndex = k;
+            }
+            else
+            {
+                // The loaded layer was removed: load whatever the active index now points at.
+                if (m_activeLayerIndex < 0)
+                {
+                    m_activeLayerIndex = 0;
+                }
+                if (m_activeLayerIndex >= count)
+                {
+                    m_activeLayerIndex = count - 1;
+                }
+                m_loadedLayerIndex = -1;
+                LoadActiveLayer();
+            }
+        }
+
+        m_lastLayerCount = count;
+        m_lastLayerSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+            AzToolsFramework::Refresh_EntireTree);
+    }
+
+    void EditorWhiteBoxComponent::OnEdgesOnlyChange()
+    {
+        // Edges-only hides the solid render mesh; the edges themselves are drawn in
+        // DisplayEntityViewport so the shape still reads as a wireframe.
+        if (m_edgesOnly)
+        {
+            HideRenderMesh();
+        }
+        else if (AzToolsFramework::IsEntityVisible(GetEntityId()))
+        {
+            ShowRenderMesh();
+        }
     }
 
     bool EditorWhiteBoxComponent::BuildColliderMesh(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
@@ -1052,16 +1888,19 @@ namespace WhiteBox
         VoxelDetail::GreedyColliderTriangles(cells, cellSize, vertices, indices);
         const int totalTris = static_cast<int>(indices.size() / 3);
 
-        AZ_Printf(
-            "WhiteBoxCollider", "BuildColliderMesh: cells=%d freeformTris=%d greedyTris=%d totalTris=%d verts=%d",
-            static_cast<int>(cells.size()), freeformTris, totalTris - freeformTris, totalTris,
-            static_cast<int>(vertices.size()));
+        
 
         return !indices.empty();
     }
 
     WhiteBoxMesh* EditorWhiteBoxComponent::EvaluatedMesh()
     {
+        // When a stamp/grid layer exists it is combined with the freeform mesh (see
+        // RebuildCombinedMesh) so render / collision / bounds / selection all see both.
+        if (m_combinedMesh)
+        {
+            return m_combinedMesh.get();
+        }
         // Non-destructive: render/collide/select against the evaluated result while
         // the editable base (GetWhiteBoxMesh) stays untouched.
         if (m_liveBoolean && m_displayMesh)
@@ -1074,6 +1913,169 @@ namespace WhiteBox
     WhiteBoxMesh* EditorWhiteBoxComponent::GetEvaluatedWhiteBoxMesh()
     {
         return EvaluatedMesh();
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::GridMesh()
+    {
+        if (!m_gridMesh)
+        {
+            m_gridMesh = Api::CreateWhiteBoxMesh();
+        }
+        return m_gridMesh.get();
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::CombinedWithGrid(WhiteBoxMesh* freeform)
+    {
+        const bool hasMerged = m_gridMergedMesh && !Api::MeshFaceHandles(*m_gridMergedMesh).empty();
+        const bool hasSeparate = m_gridMesh && !Api::MeshFaceHandles(*m_gridMesh).empty();
+        if (freeform == nullptr || (!hasMerged && !hasSeparate))
+        {
+            return nullptr; // no grid layer -> caller uses the freeform mesh as-is
+        }
+        Api::WhiteBoxMeshPtr combined = Api::CloneMesh(*freeform);
+        if (!combined)
+        {
+            return nullptr;
+        }
+
+        // Merged cubes: CSG-union with the freeform so they read as one watertight solid. This
+        // is a throwaway OUTPUT copy - the real freeform and grid meshes are never modified, so
+        // removing a stamped cube can never damage the freeform it overlapped. Falls back to a
+        // plain append if the union is rejected (e.g. the freeform mesh is not a valid manifold).
+        if (hasMerged)
+        {
+            if (Api::MeshFaceHandles(*combined).empty() ||
+                !Api::ApplyMeshBoolean(
+                    *combined, *m_gridMergedMesh, AZ::Transform::CreateIdentity(), Api::BooleanOperation::Union))
+            {
+                AppendMesh(*combined, *m_gridMergedMesh);
+            }
+        }
+
+        // Separate cubes: always appended alongside the freeform (their own islands).
+        if (hasSeparate)
+        {
+            AppendMesh(*combined, *m_gridMesh);
+        }
+
+        Api::CalculateNormals(*combined);
+        Api::CalculatePlanarUVs(*combined);
+        return combined;
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::BuildCombined(WhiteBoxMesh* activeFreeform)
+    {
+        const int count = static_cast<int>(m_layers.size());
+        const int activeIdx = m_loadedLayerIndex;
+
+        AZStd::vector<int> visible;
+        visible.reserve(count);
+        for (int i = 0; i < count; ++i)
+        {
+            if (m_layers[i].m_visible)
+            {
+                visible.push_back(i);
+            }
+        }
+        if (visible.empty())
+        {
+            return Api::CreateWhiteBoxMesh(); // nothing visible -> empty mesh (renders nothing)
+        }
+
+        const bool activeIdentity = activeIdx >= 0 && activeIdx < count &&
+            m_layers[activeIdx].m_position.IsZero() && m_layers[activeIdx].m_rotation.IsZero() &&
+            m_layers[activeIdx].m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        const bool activeNoGrid = !((m_gridMesh && !Api::MeshFaceHandles(*m_gridMesh).empty()) ||
+                                    (m_gridMergedMesh && !Api::MeshFaceHandles(*m_gridMergedMesh).empty()));
+
+        // Fast path: only the active layer is visible, identity transform, no grid -> return null so
+        // EvaluatedMesh falls back to the raw working freeform (no clone, original behaviour).
+        if (visible.size() == 1 && visible[0] == activeIdx && activeIdentity && activeNoGrid)
+        {
+            return nullptr;
+        }
+
+        // Accumulate the visible layers in list order (index 0 = bottom). The first visible layer is
+        // the base; every subsequent layer combines with the running result per its combine mode.
+        Api::WhiteBoxMeshPtr acc;
+        for (const int idx : visible)
+        {
+            Api::WhiteBoxMeshPtr mesh;
+            if (idx == activeIdx)
+            {
+                mesh = CombinedWithGrid(activeFreeform);
+                if (!mesh && activeFreeform != nullptr)
+                {
+                    mesh = Api::CloneMesh(*activeFreeform);
+                }
+                if (mesh && !activeIdentity)
+                {
+                    ApplyTransformToMesh(
+                        *mesh, m_layers[activeIdx].m_position, m_layers[activeIdx].m_rotation,
+                        m_layers[activeIdx].m_scale);
+                }
+            }
+            else
+            {
+                mesh = BuildLayerMesh(m_layers[idx]); // already transformed
+            }
+            if (!mesh)
+            {
+                continue;
+            }
+            if (!acc)
+            {
+                acc = AZStd::move(mesh); // first visible layer is the base (its own mode is ignored)
+                continue;
+            }
+            const AZ::Transform identity = AZ::Transform::CreateIdentity();
+            // Inter-layer booleans only apply in global-tint mode. With per-layer tint on, each
+            // layer stays a separate coloured island so its colour is unambiguous.
+            const LayerCombineMode mode = m_useGlobalTint ? m_layers[idx].m_combineMode : LayerCombineMode::Separate;
+            switch (mode)
+            {
+            case LayerCombineMode::Union:
+                if (Api::MeshFaceHandles(*acc).empty() ||
+                    !Api::ApplyMeshBoolean(*acc, *mesh, identity, Api::BooleanOperation::Union))
+                {
+                    AppendMesh(*acc, *mesh);
+                }
+                break;
+            case LayerCombineMode::Subtract:
+                Api::ApplyMeshBoolean(*acc, *mesh, identity, Api::BooleanOperation::Subtraction);
+                break;
+            case LayerCombineMode::Intersect:
+                Api::ApplyMeshBoolean(*acc, *mesh, identity, Api::BooleanOperation::Intersection);
+                break;
+            case LayerCombineMode::Separate:
+            default:
+                AppendMesh(*acc, *mesh);
+                break;
+            }
+        }
+        if (!acc)
+        {
+            return Api::CreateWhiteBoxMesh();
+        }
+        Api::CalculateNormals(*acc);
+        Api::CalculatePlanarUVs(*acc);
+        return acc;
+    }
+
+    void EditorWhiteBoxComponent::RebuildCombinedMesh()
+    {
+        // When the entity boolean is live and applies to the WHOLE mesh (not just the active layer),
+        // m_displayMesh already folds in every layer, grid and transform, so use it directly.
+        if (m_liveBoolean && m_displayMesh && !m_booleanAffectActiveOnly)
+        {
+            m_combinedMesh = Api::CloneMesh(*m_displayMesh);
+            return;
+        }
+
+        // Otherwise the active-layer base is the live-boolean result (active-only mode) or the raw
+        // editable mesh; BuildCombined folds in the grids, the other layers and all transforms.
+        WhiteBoxMesh* freeform = (m_liveBoolean && m_displayMesh) ? m_displayMesh.get() : GetWhiteBoxMesh();
+        m_combinedMesh = BuildCombined(freeform);
     }
 
     WhiteBoxMesh* EditorWhiteBoxComponent::GetLiveBooleanDisplayMesh()
@@ -1106,7 +2108,7 @@ namespace WhiteBox
         {
             return nullptr;
         }
-        WhiteBoxMesh* sourceMesh = sourceComponents[0]->GetWhiteBoxMesh();
+        WhiteBoxMesh* sourceMesh = sourceComponents[0]->GetEvaluatedWhiteBoxMesh();
         if (sourceMesh == nullptr)
         {
             return nullptr;
@@ -1118,8 +2120,22 @@ namespace WhiteBox
         AZ::TransformBus::EventResult(sourceWorldTM, m_booleanSourceEntity, &AZ::TransformBus::Events::GetWorldTM);
         const AZ::Transform operandTransform = thisWorldTM.GetInverse() * sourceWorldTM;
 
-        // Evaluate into a clone so the editable base is never modified.
-        Api::WhiteBoxMeshPtr evaluated = Api::CloneMesh(*baseMesh);
+        // Evaluate into a fresh mesh so the editable base is never modified. By default the cut
+        // applies to the WHOLE combined geometry (every visible layer, its grid/stamps and its
+        // transform); "Affect only the active layer" restricts it to the active layer's base mesh.
+        Api::WhiteBoxMeshPtr evaluated;
+        if (m_booleanAffectActiveOnly)
+        {
+            evaluated = Api::CloneMesh(*baseMesh);
+        }
+        else
+        {
+            evaluated = BuildCombined(baseMesh); // full base combined (no live boolean -> no recursion)
+            if (!evaluated)
+            {
+                evaluated = Api::CloneMesh(*baseMesh);
+            }
+        }
         if (!evaluated)
         {
             return nullptr;
@@ -1144,18 +2160,24 @@ namespace WhiteBox
         m_displayMesh = EvaluateBooleanMesh();
 
         // Cache the true (uncut) base render data (serialized) so the game-mode bake always has
-        // the base variant, even on a clone where GetWhiteBoxMesh() is null.
+        // the base variant, even on a clone where GetWhiteBoxMesh() is null. Use the full combined
+        // base (all visible layers, grids and transforms) so the bake matches the editor view.
         if (WhiteBoxMesh* baseMesh = GetWhiteBoxMesh())
         {
-            m_bakedBaseRenderData = CreateWhiteBoxRenderData(*baseMesh, m_material);
+            const Api::WhiteBoxMeshPtr combined = BuildCombined(baseMesh);
+            m_bakedBaseRenderData = CreateWhiteBoxRenderData(combined ? *combined : *baseMesh, m_material);
         }
 
-        // Cache the boolean-evaluated render data (serialized) so the game-mode bake can supply
-        // the boolean render variant even when BuildGameEntity runs on a cloned entity, where
-        // the non-serialized m_displayMesh is null.
+        // Cache the boolean-evaluated render data (serialized) so the game-mode bake can supply the
+        // boolean render variant even when BuildGameEntity runs on a cloned entity (m_displayMesh
+        // null). In whole-mesh mode m_displayMesh is already the full combined result; in
+        // active-only mode fold the grids/other layers around the active boolean result.
         if (m_displayMesh)
         {
-            m_bakedBooleanRenderData = CreateWhiteBoxRenderData(*m_displayMesh, m_material);
+            const Api::WhiteBoxMeshPtr combined =
+                m_booleanAffectActiveOnly ? BuildCombined(m_displayMesh.get()) : nullptr;
+            m_bakedBooleanRenderData =
+                CreateWhiteBoxRenderData(combined ? *combined : *m_displayMesh, m_material);
         }
         else if (!m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
         {
@@ -1355,12 +2377,16 @@ namespace WhiteBox
     {
         EditorWhiteBoxMeshAsset::Reflect(context);
         DrawShapeData::Reflect(context);
+        WhiteBoxLayer::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorWhiteBoxComponent, EditorComponentBase>()
                 ->Version(2, &EditorWhiteBoxVersionConverter)
                 ->Field("WhiteBoxData", &EditorWhiteBoxComponent::m_whiteBoxData)
+                ->Field("Layers", &EditorWhiteBoxComponent::m_layers)
+                ->Field("ActiveLayer", &EditorWhiteBoxComponent::m_activeLayerIndex)
+                ->Field("NextLayerId", &EditorWhiteBoxComponent::m_nextLayerId)
                 ->Field("DefaultShape", &EditorWhiteBoxComponent::m_defaultShape)
                 ->Field("EditorMeshAsset", &EditorWhiteBoxComponent::m_editorMeshAsset)
                 ->Field("Material", &EditorWhiteBoxComponent::m_material)
@@ -1369,16 +2395,25 @@ namespace WhiteBox
                 ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport)
                 ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
                 ->Field("DrawCarve", &EditorWhiteBoxComponent::m_drawCarve)
+                ->Field("DrawMergeUnion", &EditorWhiteBoxComponent::m_drawMergeUnion)
+                ->Field("EdgesOnly", &EditorWhiteBoxComponent::m_edgesOnly)
+                ->Field("MergeGridWithMesh", &EditorWhiteBoxComponent::m_mergeGridWithMesh)
+                ->Field("UseGlobalTint", &EditorWhiteBoxComponent::m_useGlobalTint)
+                ->Field("MaterialOverride", &EditorWhiteBoxComponent::m_materialOverrideAssetId)
                 ->Field("DrawUnitCube", &EditorWhiteBoxComponent::m_drawUnitCube)
                 ->Field("DrawUnitCubeSize", &EditorWhiteBoxComponent::m_drawUnitCubeSize)
                 ->Field("VoxelCellSize", &EditorWhiteBoxComponent::m_voxelCellSize)
                 ->Field("DrawUnitCubeShowGrid", &EditorWhiteBoxComponent::m_drawUnitCubeShowGrid)
                 ->Field("VoxelCells", &EditorWhiteBoxComponent::m_voxelCells)
                 ->Field("VoxelCellSizes", &EditorWhiteBoxComponent::m_voxelCellSizes)
+                ->Field("GridMeshData", &EditorWhiteBoxComponent::m_gridMeshData)
+                ->Field("GridMergedData", &EditorWhiteBoxComponent::m_gridMergedData)
+                ->Field("VoxelMerged", &EditorWhiteBoxComponent::m_voxelMerged)
                 ->Field("BooleanSource", &EditorWhiteBoxComponent::m_booleanSourceEntity)
                 ->Field("BooleanOp", &EditorWhiteBoxComponent::m_booleanOperation)
                 ->Field("BooleanHideSource", &EditorWhiteBoxComponent::m_hideSourceAfterApply)
                 ->Field("BooleanDeleteSource", &EditorWhiteBoxComponent::m_deleteSourceAfterApply)
+                ->Field("BooleanAffectActive", &EditorWhiteBoxComponent::m_booleanAffectActiveOnly)
                 ->Field("BooleanLive", &EditorWhiteBoxComponent::m_liveBoolean)
                 ->Field("BakedBooleanRenderData", &EditorWhiteBoxComponent::m_bakedBooleanRenderData)
                 ->Field("BakedBaseRenderData", &EditorWhiteBoxComponent::m_bakedBaseRenderData);
@@ -1407,6 +2442,38 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
                     ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Layers")
+                    // Placed as the FIRST child of the group and separated from the New/Delete
+                    // buttons by the Active Layer combo: the property editor drops the LAST button
+                    // in a run of consecutive UIElements, so three buttons in a row would lose one.
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Bake the active layer's Position/Rotation/Scale into its geometry and reset them to identity "
+                        "(so drawing / edge-restore line up). Stamps on the layer are frozen into the mesh."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnApplyLayerTransform)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Apply Transform (Active Layer)"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_activeLayerIndex,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Active Layer"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Which layer edits (draw / stamp / carve) target. Switching commits the current layer and "
+                        "loads the selected one."))
+                    ->Attribute(AZ::Edit::Attributes::GenericValueList, &EditorWhiteBoxComponent::GetLayerNames)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnActiveLayerChange)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Add a new empty layer and make it the edit target."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnNewLayer)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "New Layer"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Delete the active layer (at least one layer is always kept)."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDeleteLayer)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Delete Layer"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_layers,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Layer List"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "All layers. Edit a layer name or toggle its visibility here; use New/Delete Layer above to "
+                        "add or remove layers."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLayersMetaChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawShapeData,
                         QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape"),
@@ -1418,6 +2485,11 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Carve (Boolean)"),
                         QT_TRANSLATE_NOOP("WhiteBox", "When on, drawing performs a CSG boolean (same as holding Ctrl): pull into the surface to "
                         "carve/subtract, pull out to add/union."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawMergeUnion,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Merge Draw Shape (Union)"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When on, committing a drawn shape CSG-unions it into the mesh (a clean, watertight, "
+                        "manifold merge with no T-junctions) instead of leaving overlapping geometry."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube,
                         QT_TRANSLATE_NOOP("WhiteBox", "Unit Cube Stamp"),
@@ -1441,11 +2513,37 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "When on, the stamp ghost shows the individual cubes (a grid); when off it shows a single "
                         "outer box."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_mergeGridWithMesh,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Merge With Mesh"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Applies to cubes stamped AFTER you change it (per-cube, not global). When ON, a stamped cube "
+                        "is CSG-unioned with the freeform mesh for display so it reads as one watertight solid; when "
+                        "OFF it sits as a separate island. Either way the merge is non-destructive - the freeform mesh "
+                        "is never modified, so removing a cube can never damage it - and Carve/Clear only affect cubes."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "",
                     QT_TRANSLATE_NOOP("WhiteBox", "Remove every cube placed with the Unit Cube Stamp tool."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ClearVoxelCubes)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Clear Cube Stamp"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Weld coincident vertices and regroup coplanar faces so the whole mesh is a clean manifold. "
+                        "Run this if a boolean fails because part of the mesh is non-manifold."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::FixNonManifoldMesh)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Fix Non-Manifold Mesh"))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Create a new layer: a child entity with its own White Box component, and switch edit focus "
+                        "to it so the next shape/cube you draw goes into the new layer."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::CreateChildLayer)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "New Layer (Child)"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_edgesOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Edges Only"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Hide the solid render mesh and draw only the mesh edges (wireframe-style preview)."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnEdgesOnlyChange)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
                         QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),
@@ -1456,12 +2554,23 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Save As ..."))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Add a White Box collider component to this entity so it has physics collision."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAddCollision)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Add Collision"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_useGlobalTint,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Use Global Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When on, every layer renders with the global White Box Material tint below. When off, each "
+                        "layer uses its own per-layer Tint (set in the Layer List)."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnGlobalTintChange)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material,
                         QT_TRANSLATE_NOOP("WhiteBox", "White Box Material"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "The properties of the White Box material."))
+                        QT_TRANSLATE_NOOP("WhiteBox", "The properties of the White Box material (global tint)."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::GlobalTintVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_componentModeDelegate,
                         QT_TRANSLATE_NOOP("WhiteBox", "Component Mode"),
@@ -1512,6 +2621,13 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_booleanAffectActiveOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Affect only the active layer"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When off (default) the boolean cuts the whole combined mesh (all visible layers, stamps "
+                        "and transforms). When on it only cuts the active layer's base mesh."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
+                    ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_hideSourceAfterApply,
                         QT_TRANSLATE_NOOP("WhiteBox", "Hide Source After Apply"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Hide the source entity once the boolean is applied."))
@@ -1529,8 +2645,204 @@ namespace WhiteBox
     {
         if (m_renderMesh.has_value())
         {
-            (*m_renderMesh)->UpdateMaterial(m_material);
-            m_renderData.m_material = m_material;
+            WhiteBoxMaterial material = m_material;
+            material.m_useVertexColor = !m_useGlobalTint; // per-layer tint travels in the vertex colours
+            (*m_renderMesh)->UpdateMaterial(material);
+            m_renderData.m_material = material;
+        }
+    }
+
+    void EditorWhiteBoxComponent::SetMaterialTint(const AZ::Color& tint)
+    {
+        m_material.m_tint = tint.GetAsVector3();
+        OnMaterialChange(); // push the new tint to the live material instance
+    }
+
+    AZ::Color EditorWhiteBoxComponent::GetMaterialTint()
+    {
+        return AZ::Color(m_material.m_tint);
+    }
+
+    void EditorWhiteBoxComponent::SetMaterialUseTexture(bool useTexture)
+    {
+        m_material.m_useTexture = useTexture;
+        OnMaterialChange();
+    }
+
+    void EditorWhiteBoxComponent::SetMaterialOverride(const AZ::Data::AssetId& materialAssetId)
+    {
+        if (m_materialOverrideAssetId == materialAssetId)
+        {
+            return;
+        }
+        m_materialOverrideAssetId = materialAssetId;
+        // The material asset is baked into the model when it is created, so force the render mesh to
+        // be recreated (drop to a null render mesh first) with the new material.
+        if (m_renderMesh.has_value())
+        {
+            m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
+            RebuildRenderMesh();
+        }
+    }
+
+    AZ::Data::AssetId EditorWhiteBoxComponent::GetMaterialOverride()
+    {
+        return m_materialOverrideAssetId;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnAddCollision()
+    {
+        AZ::Entity* entity = GetEntity();
+        if (entity == nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        if (entity->FindComponent<EditorWhiteBoxColliderComponent>() != nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None; // already has a White Box collider
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Add White Box Collision");
+        AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+            AZ::Failure(AZStd::string("uninitialized"));
+        AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+            outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ GetEntityId() },
+            AZ::ComponentTypeList{ azrtti_typeid<EditorWhiteBoxColliderComponent>() });
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree; // refresh the inspector to show the new component
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnGlobalTintChange()
+    {
+        RebuildWhiteBox();                                 // recolour (and re-fold, since combine
+                                                           // modes only apply in global-tint mode)
+        return AZ::Edit::PropertyRefreshLevels::EntireTree; // show / hide the global tint element
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::GlobalTintVisibility() const
+    {
+        return m_useGlobalTint ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    WhiteBoxRenderData EditorWhiteBoxComponent::BuildColoredRenderData()
+    {
+        WhiteBoxRenderData renderData;
+        renderData.m_material = m_material;
+        renderData.m_material.m_useVertexColor = !m_useGlobalTint;
+
+        WhiteBoxMesh* freeform = (m_liveBoolean && m_displayMesh) ? m_displayMesh.get() : GetWhiteBoxMesh();
+        const int count = static_cast<int>(m_layers.size());
+        const int activeIdx = m_loadedLayerIndex;
+        const bool activeIdentity = activeIdx >= 0 && activeIdx < count &&
+            m_layers[activeIdx].m_position.IsZero() && m_layers[activeIdx].m_rotation.IsZero() &&
+            m_layers[activeIdx].m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+
+        // Each visible layer contributes its own faces tinted with its colour. (In per-layer-tint
+        // mode BuildCombined keeps the layers as separate islands, so this matches the geometry.)
+        for (int i = 0; i < count; ++i)
+        {
+            if (!m_layers[i].m_visible)
+            {
+                continue;
+            }
+            Api::WhiteBoxMeshPtr mesh;
+            if (i == activeIdx)
+            {
+                mesh = CombinedWithGrid(freeform);
+                if (!mesh && freeform != nullptr)
+                {
+                    mesh = Api::CloneMesh(*freeform);
+                }
+                if (mesh && !activeIdentity)
+                {
+                    ApplyTransformToMesh(
+                        *mesh, m_layers[i].m_position, m_layers[i].m_rotation, m_layers[i].m_scale);
+                }
+            }
+            else
+            {
+                mesh = BuildLayerMesh(m_layers[i]);
+            }
+            if (!mesh)
+            {
+                continue;
+            }
+            const AZ::Vector3& t = m_layers[i].m_tint;
+            const AZ::Vector4 color = m_useGlobalTint
+                ? AZ::Vector4::CreateOne()
+                : AZ::Vector4(t.GetX(), t.GetY(), t.GetZ(), 1.0f);
+            WhiteBoxRenderData layerData = CreateWhiteBoxRenderData(*mesh, m_material, m_layers[i].m_invertNormals);
+            for (WhiteBoxFace& face : layerData.m_faces)
+            {
+                face.m_color = color;
+            }
+            renderData.m_faces.insert(
+                renderData.m_faces.end(), layerData.m_faces.begin(), layerData.m_faces.end());
+        }
+        return renderData;
+    }
+
+    void EditorWhiteBoxComponent::BuildLayerRenderMeshes()
+    {
+        m_layerRenderMeshes.clear();
+
+        WhiteBoxMesh* freeform = (m_liveBoolean && m_displayMesh) ? m_displayMesh.get() : GetWhiteBoxMesh();
+        const int count = static_cast<int>(m_layers.size());
+        const int activeIdx = m_loadedLayerIndex;
+        const bool activeIdentity = activeIdx >= 0 && activeIdx < count &&
+            m_layers[activeIdx].m_position.IsZero() && m_layers[activeIdx].m_rotation.IsZero() &&
+            m_layers[activeIdx].m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+
+        for (int i = 0; i < count; ++i)
+        {
+            if (!m_layers[i].m_visible)
+            {
+                continue;
+            }
+            Api::WhiteBoxMeshPtr mesh;
+            if (i == activeIdx)
+            {
+                mesh = CombinedWithGrid(freeform);
+                if (!mesh && freeform != nullptr)
+                {
+                    mesh = Api::CloneMesh(*freeform);
+                }
+                if (mesh && !activeIdentity)
+                {
+                    ApplyTransformToMesh(
+                        *mesh, m_layers[i].m_position, m_layers[i].m_rotation, m_layers[i].m_scale);
+                }
+            }
+            else
+            {
+                mesh = BuildLayerMesh(m_layers[i]);
+            }
+            if (!mesh || Api::MeshFaceHandles(*mesh).empty())
+            {
+                continue;
+            }
+
+            WhiteBoxRenderData layerData = CreateWhiteBoxRenderData(*mesh, m_material);
+            if (layerData.m_faces.empty())
+            {
+                continue;
+            }
+
+            AZStd::unique_ptr<RenderMeshInterface> renderMesh;
+            WhiteBoxRequestBus::BroadcastResult(
+                renderMesh, &WhiteBoxRequests::CreateAuxiliaryRenderMeshInterface, GetEntityId());
+            if (!renderMesh)
+            {
+                continue;
+            }
+            renderMesh->BuildMesh(layerData, m_worldFromLocal);
+
+            WhiteBoxMaterial layerMaterial = m_material;
+            layerMaterial.m_tint = m_layers[i].m_tint; // per-layer tint via baseColor.color
+            layerMaterial.m_useVertexColor = false;
+            renderMesh->UpdateMaterial(layerMaterial);
+
+            m_layerRenderMeshes.push_back(AZStd::move(renderMesh));
         }
     }
 
@@ -1624,6 +2936,7 @@ namespace WhiteBox
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
+        AZ::TickBus::Handler::BusConnect();
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorWhiteBoxComponent, EditorWhiteBoxComponentMode>(
             entityComponentIdPair, this);
@@ -1642,16 +2955,25 @@ namespace WhiteBox
         // re-evaluate the live boolean and listen for the source entity moving
         UpdateBooleanSourceListener();
         EvaluateLiveBoolean();
+        RebuildCombinedMesh(); // fold in the stamp/grid layer so it renders on load
 
         if (AzToolsFramework::IsEntityVisible(entityId))
         {
-            ShowRenderMesh();
+            if (m_edgesOnly)
+            {
+                HideRenderMesh();
+            }
+            else
+            {
+                ShowRenderMesh();
+            }
             OnMaterialChange();
         }
     }
 
     void EditorWhiteBoxComponent::Deactivate()
     {
+        AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
@@ -1666,38 +2988,115 @@ namespace WhiteBox
 
         m_componentModeDelegate.Disconnect();
         m_editorMeshAsset->Release();
+        m_layerRenderMeshes.clear();
         m_renderMesh.reset();
         m_whiteBox.reset();
         m_displayMesh.reset();
     }
 
+    void EditorWhiteBoxComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    {
+        // The reflected layer container's native add/remove ("+"/"-") does not reliably invoke
+        // the DataElement ChangeNotify, so a structural edit made directly in the property grid
+        // would otherwise go undetected until the next stamp/draw. Poll the layer count here and
+        // resync the working state (and the rendered mesh) the moment it changes.
+        // The layer container's own add/remove/reorder does not always notify, so poll the id order.
+        if (LayerSignature() != m_lastLayerSignature)
+        {
+            SyncLayerStructure();
+        }
+    }
+
     void EditorWhiteBoxComponent::DeserializeWhiteBox()
     {
-        // create WhiteBoxMesh object from internal data
-        m_whiteBox = Api::CreateWhiteBoxMesh();
+        // Migrate a LEGACY scene (single mesh stored in the loose fields, no layer list) that
+        // actually has geometry into one layer. Components with no layers and no loose geometry
+        // (freshly added, or intentionally emptied by deleting all layers) stay empty.
+        const bool looseHasGeometry = !m_whiteBoxData.empty() || !m_gridMeshData.empty() ||
+            !m_gridMergedData.empty() || !m_voxelCells.empty();
+        if (m_layers.empty() && looseHasGeometry)
+        {
+            WhiteBoxLayer layer;
+            layer.m_name = "Layer 1";
+            layer.m_freeformData = m_whiteBoxData;
+            layer.m_gridData = m_gridMeshData;
+            layer.m_gridMergedData = m_gridMergedData;
+            layer.m_voxelCells = m_voxelCells;
+            layer.m_voxelCellSizes = m_voxelCellSizes;
+            layer.m_voxelMerged = m_voxelMerged;
+            m_layers.push_back(AZStd::move(layer));
+            m_activeLayerIndex = 0;
+        }
 
+        // Ensure every layer has a stable id (migrate old scenes) and keep the allocator ahead.
+        for (const WhiteBoxLayer& existing : m_layers)
+        {
+            if (existing.m_id != 0 && existing.m_id >= m_nextLayerId)
+            {
+                m_nextLayerId = existing.m_id + 1;
+            }
+        }
+        for (WhiteBoxLayer& toId : m_layers)
+        {
+            if (toId.m_id == 0)
+            {
+                toId.m_id = AllocLayerId();
+            }
+        }
+
+        m_lastLayerCount = static_cast<int>(m_layers.size());
+        m_lastLayerSignature = LayerSignature();
+
+        if (m_layers.empty())
+        {
+            // No layers -> an empty white box (nothing renders, no stamps).
+            ClearWorkingLayer();
+            return;
+        }
+
+        if (m_activeLayerIndex < 0)
+        {
+            m_activeLayerIndex = 0;
+        }
+        if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        }
+
+        // Point the working streams at the active layer, then build the working meshes from them.
+        const WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        m_whiteBoxData = layer.m_freeformData;
+        m_gridMeshData = layer.m_gridData;
+        m_gridMergedData = layer.m_gridMergedData;
+        m_voxelCells = layer.m_voxelCells;
+        m_voxelCellSizes = layer.m_voxelCellSizes;
+        m_voxelMerged = layer.m_voxelMerged;
+
+        m_whiteBox = Api::CreateWhiteBoxMesh();
         if (m_editorMeshAsset->InUse())
         {
             m_editorMeshAsset->Load();
         }
         else
         {
-            // attempt to load the mesh
             const auto result = Api::ReadMesh(*m_whiteBox, m_whiteBoxData);
-            AZ_Error("EditorWhiteBoxComponent", result != WhiteBox::Api::ReadResult::Error, "Error deserializing white box mesh stream");
-
-            // if the read was successful but the byte stream is empty
-            // (there was nothing to load), create a default mesh
-            if (result == Api::ReadResult::Empty)
-            {
-                Api::InitializeAsUnitCube(*m_whiteBox);
-            }
+            AZ_Error(
+                "EditorWhiteBoxComponent", result != WhiteBox::Api::ReadResult::Error,
+                "Error deserializing white box mesh stream");
         }
+
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_gridMesh, m_gridMeshData);
+        m_gridMergedMesh = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_gridMergedMesh, m_gridMergedData);
+        m_loadedLayerIndex = m_activeLayerIndex;
+        m_loadedLayerId = m_layers[m_activeLayerIndex].m_id;
     }
 
     void EditorWhiteBoxComponent::RebuildWhiteBox()
     {
         EvaluateLiveBoolean(); // refresh m_displayMesh so render/physics/bounds use the latest result
+        RebuildCombinedMesh(); // fold the stamp/grid layer into the mesh used for output
         RebuildRenderMesh();
         RebuildPhysicsMesh();
     }
@@ -1716,7 +3115,9 @@ namespace WhiteBox
         // Base render geometry: the live base mesh, else the cached base data (m_renderData may be the cut result).
         if (WhiteBoxMesh* baseMesh = GetWhiteBoxMesh())
         {
-            whiteBoxComponent->GenerateWhiteBoxMesh(CreateWhiteBoxRenderData(*baseMesh, m_material));
+            const Api::WhiteBoxMeshPtr combined = CombinedWithGrid(baseMesh);
+            whiteBoxComponent->GenerateWhiteBoxMesh(
+                CreateWhiteBoxRenderData(combined ? *combined : *baseMesh, m_material));
         }
         else if (!m_bakedBaseRenderData.m_faces.empty())
         {
@@ -1732,7 +3133,8 @@ namespace WhiteBox
         WhiteBoxRenderData booleanRenderData;
         if (WhiteBoxMesh* displayMesh = GetLiveBooleanDisplayMesh())
         {
-            booleanRenderData = CreateWhiteBoxRenderData(*displayMesh, m_material);
+            const Api::WhiteBoxMeshPtr combined = CombinedWithGrid(displayMesh);
+            booleanRenderData = CreateWhiteBoxRenderData(combined ? *combined : *displayMesh, m_material);
         }
         else
         {
@@ -1793,8 +3195,26 @@ namespace WhiteBox
         // must have been created in Activate or have had the Entity made visible again
         if (m_renderMesh.has_value())
         {
-            // cache the white box render data
-            m_renderData = CreateWhiteBoxRenderData(*EvaluatedMesh(), m_material);
+            m_layerRenderMeshes.clear(); // single mesh (with per-vertex colours) serves both modes
+
+            // Use the per-layer build when per-layer tint is on OR any visible layer inverts its
+            // normals (both need per-layer faces). Otherwise the CSG-combined mesh is used so
+            // inter-layer booleans render correctly.
+            bool anyLayerInverted = false;
+            for (const WhiteBoxLayer& layer : m_layers)
+            {
+                if (layer.m_visible && layer.m_invertNormals)
+                {
+                    anyLayerInverted = true;
+                    break;
+                }
+            }
+            const bool perLayerRender = !m_useGlobalTint || anyLayerInverted;
+
+            // Global tint -> plain (white-vertex) faces coloured by the material baseColor. Per-layer
+            // tint -> per-face vertex colours (needs the material's "Use Vertex Color" enabled).
+            m_renderData = perLayerRender ? BuildColoredRenderData()
+                                          : CreateWhiteBoxRenderData(*EvaluatedMesh(), m_material);
 
             // it's possible the white box mesh data isn't yet ready (for example if it's stored
             // in an asset which hasn't finished loading yet) so don't attempt to create a render
@@ -1808,9 +3228,20 @@ namespace WhiteBox
                     WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
                 }
 
+                // apply any external material asset override before the model is (re)created
+                (*m_renderMesh)->SetMaterialAssetOverride(m_materialOverrideAssetId);
+
                 // generate the mesh
                 (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
                 OnMaterialChange();
+            }
+            else if (!IsWhiteBoxNullRenderMesh(m_renderMesh))
+            {
+                // The geometry became empty (e.g. every layer was deleted) while a concrete render
+                // mesh is still showing the previous geometry. Building a zero-size mesh makes the
+                // RHI reject the (empty) buffers, so instead swap the concrete mesh back to a null
+                // render mesh: it draws nothing and stays rebuildable.
+                m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
             }
         }
 
@@ -1837,6 +3268,40 @@ namespace WhiteBox
         {
             Api::WriteMesh(*m_whiteBox, m_whiteBoxData);
         }
+
+        // The stamp/grid layers are component-local, persist them alongside the freeform mesh.
+        if (m_gridMesh)
+        {
+            Api::WriteMesh(*m_gridMesh, m_gridMeshData);
+        }
+        if (m_gridMergedMesh)
+        {
+            Api::WriteMesh(*m_gridMergedMesh, m_gridMergedData);
+        }
+
+        // If there are no layers yet but the working mesh now has geometry (a draw/stamp into an
+        // empty white box), start a first layer so the edit is preserved.
+        if (m_layers.empty())
+        {
+            const bool hasGeometry =
+                (m_whiteBox != nullptr && !Api::MeshFaceHandles(*m_whiteBox).empty()) || !m_voxelCells.empty();
+            if (hasGeometry)
+            {
+                WhiteBoxLayer layer;
+                layer.m_name = "Layer 1";
+                layer.m_id = AllocLayerId();
+                m_layers.push_back(AZStd::move(layer));
+                m_activeLayerIndex = 0;
+                m_loadedLayerIndex = 0;
+                m_loadedLayerId = m_layers[0].m_id;
+                // Deliberately leave m_lastLayerCount unchanged so the tick handler notices the
+                // 0 -> 1 layer change and refreshes the property grid (the new layer appears).
+            }
+        }
+
+        // Mirror the just-written working state into the layer it belongs to so the serialized
+        // layer list always reflects the latest edits.
+        StoreLayer(m_loadedLayerIndex);
     }
 
     void EditorWhiteBoxComponent::SetDefaultShape(const DefaultShapeType defaultShape)
@@ -1858,6 +3323,13 @@ namespace WhiteBox
         if (m_renderMesh.has_value())
         {
             (*m_renderMesh)->UpdateTransform(world);
+        }
+        for (auto& layerRenderMesh : m_layerRenderMeshes)
+        {
+            if (layerRenderMesh)
+            {
+                layerRenderMesh->UpdateTransform(world);
+            }
         }
 
         // moving this entity changes the cut relative to the source; re-evaluate whenever a
@@ -2263,7 +3735,8 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::HideRenderMesh()
     {
-        // clear the optional
+        // clear the optional (and any per-layer tinted meshes)
+        m_layerRenderMeshes.clear();
         m_renderMesh.reset();
     }
 
@@ -2398,6 +3871,23 @@ namespace WhiteBox
             WhiteBoxDebugRendering(
                 *GetWhiteBoxMesh(), m_worldFromLocal, debugDisplay,
                 GetEditorSelectionBoundsViewport(AzFramework::ViewportInfo{}));
+        }
+
+        // Edges-only wireframe overlay: the solid render mesh is hidden, so draw the mesh's
+        // polygon edges here so the shape is still visible.
+        if (m_edgesOnly)
+        {
+            if (WhiteBoxMesh* mesh = EvaluatedMesh())
+            {
+                debugDisplay.SetColor(AZ::Color(0.30f, 0.90f, 1.0f, 1.0f));
+                for (const Api::EdgeHandle& edgeHandle : Api::MeshPolygonEdgeHandles(*mesh))
+                {
+                    const AZStd::array<Api::VertexHandle, 2> edgeVerts = Api::EdgeVertexHandles(*mesh, edgeHandle);
+                    debugDisplay.DrawLine(
+                        m_worldFromLocal.TransformPoint(Api::VertexPosition(*mesh, edgeVerts[0])),
+                        m_worldFromLocal.TransformPoint(Api::VertexPosition(*mesh, edgeVerts[1])));
+                }
+            }
         }
     }
 } // namespace WhiteBox

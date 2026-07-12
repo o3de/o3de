@@ -685,6 +685,10 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
             BooleanOperation operation);
 
+        //! Weld coincident vertices and regroup coplanar triangles (what CSG does to its inputs), so a
+        //! non-manifold mesh stops blocking booleans. False if the mesh was empty.
+        bool RepairMesh(WhiteBoxMesh& whiteBox);
+
         //! Recalculate all normals of each face in the mesh.
         void CalculateNormals(WhiteBoxMesh& whiteBox);
 

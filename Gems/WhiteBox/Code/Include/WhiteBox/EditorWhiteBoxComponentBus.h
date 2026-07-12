@@ -11,6 +11,10 @@
 #include "EditorWhiteBoxDefaultShapeTypes.h"
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace WhiteBox
@@ -32,6 +36,16 @@ namespace WhiteBox
 
         //! Return a pointer to the WhiteBoxMesh.
         virtual WhiteBoxMesh* GetWhiteBoxMesh() = 0;
+
+        //! The mesh used for render / collision / selection (stamps and live boolean folded in).
+        virtual WhiteBoxMesh* GetEvaluatedWhiteBoxMesh() { return GetWhiteBoxMesh(); }
+
+        //! Subtract @p cutter from the stamped-cube grids. Returns true if any grid changed.
+        virtual bool CarveCubeGrids(
+            [[maybe_unused]] const WhiteBoxMesh& cutter, [[maybe_unused]] const AZ::Transform& cutterTransform)
+        {
+            return false;
+        }
 
         //! Return a handle wrapping the raw address of the WhiteBoxMesh pointer.
         //! @note This is currently used to address the WhiteBoxMesh via script.
@@ -59,6 +73,18 @@ namespace WhiteBox
         //! Set the white box mesh default shape.
         virtual void SetDefaultShape(DefaultShapeType defaultShape) = 0;
 
+        //! Set the global material tint (used when "Use Global Tint" is on).
+        virtual void SetMaterialTint([[maybe_unused]] const AZ::Color& tint) {}
+        //! Get the global material tint.
+        virtual AZ::Color GetMaterialTint() { return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f); }
+        //! Turn the material's texture on/off (off gives a flat solid colour).
+        virtual void SetMaterialUseTexture([[maybe_unused]] bool useTexture) {}
+        //! Override the render material with an external material asset (e.g. from another gem).
+        //! Pass an invalid AssetId to revert to the built-in White Box material.
+        virtual void SetMaterialOverride([[maybe_unused]] const AZ::Data::AssetId& materialAssetId) {}
+        //! Get the current material override asset id (invalid if using the built-in material).
+        virtual AZ::Data::AssetId GetMaterialOverride() { return AZ::Data::AssetId(); }
+
         //! Number of sides the draw-shape tool uses for round / N-gon shapes
         //! (4 = box / square). Sourced from the component's "Draw Sides" property.
         virtual int GetDrawSides() { return 4; }
@@ -74,6 +100,10 @@ namespace WhiteBox
         //! When true, draw acts as a CSG boolean (same as holding Ctrl): pulling in
         //! carves/subtracts, pulling out adds/unions.
         virtual bool GetDrawCarve() { return false; }
+
+        //! When true, committing a drawn shape CSG-unions it into the mesh (a clean,
+        //! watertight, manifold merge) instead of adding overlapping geometry.
+        virtual bool GetDrawMergeUnion() { return false; }
 
         //! When true, draw mode click-stamps grid-snapped 1x1x1 cubes (CSG union, or
         //! subtract with Ctrl) instead of the click-drag-pull workflow.

@@ -49,6 +49,11 @@ namespace WhiteBox
             // v3
             positions[idxFace * 3 + 2] = face.m_v3.m_position;
             uvs[idxFace * 3 + 2] = face.m_v3.m_uv;
+
+            // per-face tint (per-layer colour) -> per-vertex COLOR0
+            m_colors[idxFace * 3 + 0] = face.m_color;
+            m_colors[idxFace * 3 + 1] = face.m_color;
+            m_colors[idxFace * 3 + 2] = face.m_color;
         }
 
         // calculate the basis vectors for the TBN matrices

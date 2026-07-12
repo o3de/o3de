@@ -12,6 +12,8 @@ set(FILES
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
     Source/EditorWhiteBoxComponent.cpp
     Source/EditorWhiteBoxComponent.h
+    Source/Tools/WhiteBoxLayerUtil.cpp
+    Source/Tools/WhiteBoxLayerUtil.h
     Source/EditorWhiteBoxComponentMode.cpp
     Source/EditorWhiteBoxComponentMode.h
     Source/EditorWhiteBoxComponentModeBus.h

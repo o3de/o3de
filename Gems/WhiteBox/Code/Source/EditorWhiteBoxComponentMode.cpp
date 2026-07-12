@@ -369,6 +369,26 @@ namespace WhiteBox
     }
 
 
+    void EditorWhiteBoxComponentMode::SetSubMode(SubMode subMode)
+    {
+        switch (subMode)
+        {
+        case SubMode::DrawShape:
+            EnterDrawShapeMode();
+            break;
+        case SubMode::EdgeRestore:
+            EnterEdgeRestoreMode();
+            break;
+        case SubMode::Transform:
+            EnterTransformMode();
+            break;
+        case SubMode::Default:
+        default:
+            EnterDefaultMode();
+            break;
+        }
+    }
+
     void EditorWhiteBoxComponentMode::EnterDrawShapeMode()
     {
         m_modes = AZStd::make_unique<DrawShapeMode>(GetEntityComponentIdPair());

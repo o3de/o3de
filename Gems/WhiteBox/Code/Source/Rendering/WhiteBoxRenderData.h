@@ -11,6 +11,7 @@
 #include "WhiteBoxMaterial.h"
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/vector.h>
@@ -58,6 +59,7 @@ namespace WhiteBox
         WhiteBoxVertex m_v2;
         WhiteBoxVertex m_v3;
         AZ::Vector3 m_normal;
+        AZ::Vector4 m_color = AZ::Vector4::CreateOne(); //!< Per-face tint (per-layer colour); white = untinted.
     };
 
     //! Builds a vector of visible faces by removing the degenerate faces from the source data

@@ -72,6 +72,7 @@ namespace WhiteBox
         // EditorWhiteBoxComponentModeRequestBus ...
         void MarkWhiteBoxIntersectionDataDirty() override;
         SubMode GetCurrentSubMode() const override;
+        void SetSubMode(SubMode subMode) override;
         void OverrideKeyboardModifierQuery(const KeyboardModifierQueryFn& keyboardModifierQueryFn) override;
 
     private:

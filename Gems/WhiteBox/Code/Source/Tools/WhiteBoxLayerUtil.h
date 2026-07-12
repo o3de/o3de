@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <AzCore/Component/EntityId.h>
+
+namespace WhiteBox
+{
+    //! Create a child White Box entity under @p parentEntityId, select it and enter its edit mode (next
+    //! tick). One undo step. @return the new entity (invalid on failure).
+    AZ::EntityId CreateChildWhiteBoxLayer(AZ::EntityId parentEntityId);
+} // namespace WhiteBox

@@ -118,7 +118,7 @@ namespace WhiteBox
         //! footprint pulled to @p height along the surface normal). The sign of
         //! @p height picks the operation: pull in = subtract (carve), pull out =
         //! union (add).
-        void BooleanAtPolygon(const AZ::Transform& worldFromLocal, float height);
+        void BooleanAtPolygon(const AZ::Transform& worldFromLocal, float height, bool forceUnion = false);
         
         bool m_carveMode = false;   // set on first click if Ctrl is held
         //! Stamp the current drawn AABB into the white box mesh and record an undo batch.
@@ -143,6 +143,8 @@ namespace WhiteBox
         //! Whether the component's "Carve (Boolean)" toggle is active (a persistent
         //! alternative to holding Ctrl).
         bool CurrentCarve() const;
+        //! Whether the component's "Merge Draw Shape (Union)" toggle is active.
+        bool CurrentMergeUnion() const;
 
         //! Whether the component's "Unit Cube Stamp" mode is active.
         bool UnitCubeMode() const;

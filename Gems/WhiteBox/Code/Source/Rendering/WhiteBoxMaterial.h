@@ -34,5 +34,9 @@ namespace WhiteBox
 
         //! Flag for whether the material will be visible in game mode (true) or not (false).
         bool m_visible = DefaultVisibility;
+
+        //! Runtime flag: per-vertex COLOR0 carries the tint (per-layer tint mode) so the base
+        //! color must be white. Not user-editable; set by the component when building render data.
+        bool m_useVertexColor = false;
     };
 } // namespace WhiteBox
