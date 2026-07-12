@@ -30,7 +30,7 @@
         "GameState",
         "ImGui",
         "LandscapeCanvas",
-        "LyShine",
+        "Shine",
         "MiniAudio",
         "PhysX5",
         "PrimitiveAssets",

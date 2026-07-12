@@ -97,4 +97,3 @@ float SlicerEdit::OffsetBorderValue(float borderValue) const
     }
 }
 
-#include <moc_SlicerEdit.cpp>

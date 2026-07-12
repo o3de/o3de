@@ -304,7 +304,7 @@ namespace LmbrCentral
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
-            // Sprite files are only used by LyShine and should be moved there at some point
+            // Sprite files are only used by Shine and should be moved there at some point
             assetCatalog->AddExtension("sprite");
         }
 

@@ -132,7 +132,7 @@ public:
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value) override { assert(0); };
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector2& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value) override { assert(0); };
@@ -146,7 +146,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector2& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
@@ -181,9 +181,9 @@ public:
     int GetActiveKey(float time, KeyType* key);
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB GetCustomColor() const override
+    AZ::Color GetCustomColor() const override
     { return m_customColor; }
-    void SetCustomColor(ColorB color) override
+    void SetCustomColor(const AZ::Color& color) override
     {
         m_customColor = color;
         m_bCustomColorSet = true;
@@ -226,7 +226,7 @@ protected:
     UiAnimParamData m_componentParamData;
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB m_customColor;
+    AZ::Color m_customColor;
     bool m_bCustomColorSet;
 #endif
 
@@ -372,7 +372,7 @@ inline bool TUiAnimTrack<KeyType>::Serialize([[maybe_unused]] IUiAnimationSystem
         {
             unsigned int abgr;
             xmlNode->getAttr("CustomColor", abgr);
-            m_customColor = ColorB(abgr);
+            m_customColor.FromU32(abgr);
         }
 #endif
 
@@ -401,7 +401,7 @@ inline bool TUiAnimTrack<KeyType>::Serialize([[maybe_unused]] IUiAnimationSystem
         xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
         if (m_bCustomColorSet)
         {
-            xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+            xmlNode->setAttr("CustomColor", m_customColor.ToU32());
         }
 #endif
 

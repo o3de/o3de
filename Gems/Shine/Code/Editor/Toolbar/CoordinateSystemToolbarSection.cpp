@@ -149,4 +149,3 @@ void CoordinateSystemToolbarSection::UpdateCanvasSnapEnabled()
     CanvasHelpers::EndUndoableCanvasChange(m_editorWindow, "toggle snapping", canvasUndoXml);
 }
 
-#include <moc_CoordinateSystemToolbarSection.cpp>

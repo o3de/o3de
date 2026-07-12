@@ -1029,4 +1029,3 @@ void CellSelectRectItem::mousePressEvent([[maybe_unused]] QGraphicsSceneMouseEve
     }
 }
 
-#include <moc_SpriteBorderEditor.cpp>

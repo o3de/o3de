@@ -47,15 +47,15 @@
                     }
                 }
             },
-            "LyShine": {
+            "Shine": {
                 "Targets": {
-                    "LyShine": {
+                    "Shine": {
                         "AutoLoad": false
                     },
-                    "LyShine.Editor": {
+                    "Shine.Editor": {
                         "AutoLoad": false
                     },
-                    "LyShine.Tools": {
+                    "Shine.Tools": {
                         "AutoLoad": false
                     }
                 }

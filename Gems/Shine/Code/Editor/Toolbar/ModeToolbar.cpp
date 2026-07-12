@@ -106,4 +106,3 @@ void ModeToolbar::AddModes(EditorWindow* parent)
     addActions(m_group->actions());
 }
 
-#include <moc_ModeToolbar.cpp>

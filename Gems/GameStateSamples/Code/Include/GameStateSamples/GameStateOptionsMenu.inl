@@ -13,11 +13,11 @@
 
 #include <SaveData/SaveDataRequestBus.h>
 
-#include <LyShine/Bus/UiButtonBus.h>
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
-#include <LyShine/Bus/UiCursorBus.h>
-#include <LyShine/Bus/UiSliderBus.h>
+#include <Shine/Bus/UiButtonBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiCursorBus.h>
+#include <Shine/Bus/UiSliderBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameStateSamples

@@ -51,7 +51,7 @@ namespace CopyDependencyBuilder
         
         if (fileExtension == "font" || fileExtension == "fontfamily")
         {
-            static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h in the LyShine gem
+            static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // from UiAssetTypes.h in the Shine gem
             return fontAssetType;
         }
 

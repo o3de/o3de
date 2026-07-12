@@ -199,4 +199,3 @@ void PropertyHandlerUiParticleFloatKeyframe::Register()
         aznew PropertyHandlerUiParticleFloatKeyframe());
 }
 
-#include <moc_PropertyHandlerUiParticleFloatKeyframe.cpp>

@@ -49,7 +49,7 @@ CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CUiAnimViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -237,8 +237,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
+    qRegisterMetaType<CUiAnimViewNode*>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();
@@ -1363,8 +1362,8 @@ void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
     AZ::Color defaultColor(0.0f, 0.0f, 0.0f, 1.0f);
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        defaultColor = AZ::Color(customColor.r, customColor.g, customColor.b, 255);
+        AZ::Color customColor = pTrack->GetCustomColor();
+        defaultColor = customColor;
     }
     const AZ::Color color = AzQtComponents::ColorPicker::getColor(AzQtComponents::ColorPicker::Configuration::RGB, defaultColor, QObject::tr("Select Color"));
 
@@ -1373,7 +1372,7 @@ void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
         UiAnimUndo undo("Customize Track Color");
         UiAnimUndo::Record(new CUndoTrackObject(pTrack, pSequence));
 
-        pTrack->SetCustomColor(ColorB(color.GetR8(), color.GetG8(), color.GetB8()));
+        pTrack->SetCustomColor(color);
 
         UpdateDopeSheet();
     }
@@ -1671,4 +1670,3 @@ void CUiAnimViewNodesCtrl::EraseNodeRecordRec(CUiAnimViewNode* pNode)
     }
 }
 
-#include <Animation/moc_UiAnimViewNodes.cpp>

@@ -1044,10 +1044,10 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 
     char buffer[200];
 
-    sprintf_s(buffer, "There are %d loaded UI canvases", static_cast<int>(m_loadedCanvases.size()));
+    azsprintf(buffer, "There are %d loaded UI canvases", static_cast<int>(m_loadedCanvases.size()));
     WriteLine(buffer, white);
 
-    sprintf_s(buffer, "NN: %20s %2s %2s %2s %11s %5s %5s %5s %5s %5s %5s %5s %5s %5s %5s %20s %20s",
+    azsprintf(buffer, "NN: %20s %2s %2s %2s %11s %5s %5s %5s %5s %5s %5s %5s %5s %5s %5s %20s %20s",
         "Name", "En", "Po", "Na", "DrawOrder",
         "nElem", "nEnab", "nRend", "nRCtl", "nImg", "nText", "nMask", "nFadr", "nIntr", "nUpdt", "ActiveInt", "HoverInt");
     WriteLine(buffer, white);
@@ -1120,7 +1120,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
         UiCanvasComponent::DebugInfoNumElements info;
         canvas->GetDebugInfoNumElements(info);
 
-        sprintf_s(buffer, "%2d: %20s %2s %2s %2s %11d %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %20s %20s",
+        azsprintf(buffer, "%2d: %20s %2s %2s %2s %11d %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d %20s %20s",
             i, leafName.c_str(),
             enabledString, posEnabledString, navEnabledString,
             drawOrder,
@@ -1148,7 +1148,7 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
         totalEnabledUpdates += info.m_numUpdateElements;
     }
 
-    sprintf_s(buffer, "Totals: %16s %2d %2d %2d %11s %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d",
+    azsprintf(buffer, "Totals: %16s %2d %2d %2d %11s %5d %5d %5d %5d %5d %5d %5d %5d %5d %5d",
         "",
         totalEnabled, totalPositionalInputs, totalNavigable,
         "",
@@ -1198,7 +1198,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
 
     char buffer[200];
 
-    sprintf_s(buffer, "NN: %20s %5s   %5s %5s %5s %5s %5s   %5s %5s %5s %5s %5s %5s",
+    azsprintf(buffer, "NN: %20s %5s   %5s %5s %5s %5s %5s   %5s %5s %5s %5s %5s %5s",
         "Canvas name", "nDraw",   "nPrim", "nTris", "nMask", "nRTs", "nUTex",   "XMask", "XRT", "XBlnd", "XSrgb", "XMaxV", "XTex");
     WriteLine(buffer, blue);
 
@@ -1238,7 +1238,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
         ShineDebug::DebugInfoRenderGraph info;
         canvas->GetDebugInfoRenderGraph(info);
 
-        sprintf_s(buffer, "%2d: %20s %5d   %5d %5d %5d %5d %5d   %5d %5d %5d %5d %5d %5d",
+        azsprintf(buffer, "%2d: %20s %5d   %5d %5d %5d %5d %5d   %5d %5d %5d %5d %5d %5d",
             i, leafName.c_str(),
             info.m_numRenderNodes,
             info.m_numPrimitives, info.m_numTriangles,
@@ -1291,7 +1291,7 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
         totalDueToTextures += info.m_numNodesDueToTextures;
     }
 
-    sprintf_s(buffer, "Totals:                  %5d   %5d %5d %5d %5d         %5d %5d %5d %5d %5d %5d",
+    azsprintf(buffer, "Totals:                  %5d   %5d %5d %5d %5d         %5d %5d %5d %5d %5d %5d",
         totalRenderNodes,
         totalPrimitives, totalTriangles, totalMasks, totalRTs,
         totalDueToMask, totalDueToRT,

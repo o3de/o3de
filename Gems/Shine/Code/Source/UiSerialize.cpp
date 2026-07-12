@@ -320,17 +320,6 @@ namespace UiSerialize
 
         if (serializeContext)
         {
-            serializeContext->Class<ColorF>()->
-                Field("r", &ColorF::r)->
-                Field("g", &ColorF::g)->
-                Field("b", &ColorF::b)->
-                Field("a", &ColorF::a);
-
-            serializeContext->Class<ColorB>()->
-                Field("r", &ColorB::r)->
-                Field("g", &ColorB::g)->
-                Field("b", &ColorB::b)->
-                Field("a", &ColorB::a);
         }
 
         // Vec2 (still used in UI Animation sequence splines)

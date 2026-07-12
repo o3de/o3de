@@ -77,7 +77,7 @@ public:
     virtual void OnStop() {}
     virtual void OnLoop() {}
 
-    virtual Matrix34 GetReferenceMatrix() const;
+    virtual AZ::Matrix3x4 GetReferenceMatrix() const;
 
     //////////////////////////////////////////////////////////////////////////
     bool IsParamValid(const CUiAnimParamType& paramType) const override;

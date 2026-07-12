@@ -28,7 +28,7 @@
         "GameState",
         "ImGui",
         "LandscapeCanvas",
-        "LyShine",
+        "Shine",
         "PhysX5",
         "PrimitiveAssets",
         "PrefabBuilder",

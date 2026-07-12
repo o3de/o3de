@@ -9,10 +9,10 @@
 #include <GameState/GameStateRequestBus.h>
 #include <GameStateSamples/GameStateLocalUserLobby.h>
 
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
-#include <LyShine/Bus/UiElementBus.h>
-#include <LyShine/Bus/UiTextBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiElementBus.h>
+#include <Shine/Bus/UiTextBus.h>
 
 #include <LocalUser/LocalUserRequestBus.h>
 

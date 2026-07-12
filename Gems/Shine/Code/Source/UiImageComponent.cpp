@@ -8,11 +8,14 @@
 #include "UiImageComponent.h"
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+
+#include <MathConversion.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
@@ -2056,16 +2059,16 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
         firstHalfFixedLineEnd = firstHalfFixedLineEnd * -1.0f;
         secondHalfFixedLineEnd = secondHalfFixedLineEnd * -1.0f;
     }
-    Matrix33 lineRotationMatrix;
+    AZ::Matrix3x3 lineRotationMatrix;
 
-    lineRotationMatrix.SetRotationZ(startAngle - fillOffset);
-    firstHalfFixedLineEnd = firstHalfFixedLineEnd * lineRotationMatrix;
+    lineRotationMatrix = AZ::Matrix3x3::CreateRotationZ(startAngle - fillOffset);
+    firstHalfFixedLineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(firstHalfFixedLineEnd), 0.f) * lineRotationMatrix));
     firstHalfFixedLineEnd = lineOrigin + firstHalfFixedLineEnd;
-    secondHalfFixedLineEnd = secondHalfFixedLineEnd * lineRotationMatrix;
+    secondHalfFixedLineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(secondHalfFixedLineEnd), 0.f) * lineRotationMatrix));
     secondHalfFixedLineEnd = lineOrigin + secondHalfFixedLineEnd;
 
-    lineRotationMatrix.SetRotationZ(startAngle - fillOffset + (endAngle - startAngle) * m_fillAmount);
-    rotatingLineEnd = rotatingLineEnd * lineRotationMatrix;
+    lineRotationMatrix = AZ::Matrix3x3::CreateRotationZ(startAngle - fillOffset + (endAngle - startAngle) * m_fillAmount);
+    rotatingLineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(rotatingLineEnd), 0.f) * lineRotationMatrix));
     rotatingLineEnd = lineOrigin + rotatingLineEnd;
 
     int numIndicesToRender = 0;
@@ -2168,9 +2171,8 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
         endAngle = temp;
         lineEnd = lineEnd * -1.0f;
     }
-    Matrix33 lineRotationMatrix;
-    lineRotationMatrix.SetRotationZ(startAngle + (endAngle - startAngle) * m_fillAmount);
-    lineEnd = lineEnd * lineRotationMatrix;
+    AZ::Matrix3x3 lineRotationMatrix = AZ::Matrix3x3::CreateRotationZ(startAngle + (endAngle - startAngle) * m_fillAmount);
+    lineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(lineEnd), 0.f) * lineRotationMatrix));
     lineEnd = lineOrigin + lineEnd;
 
     int numIndicesToRender = 0;

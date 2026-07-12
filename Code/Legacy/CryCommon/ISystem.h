@@ -70,7 +70,6 @@ typedef void* WIN_HWND;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
-class ILyShine;
 
 enum EValidatorModule : int;
 enum EValidatorSeverity : int;

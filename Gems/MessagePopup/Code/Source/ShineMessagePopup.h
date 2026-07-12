@@ -9,20 +9,20 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <LyShine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
 #include <MessagePopup/MessagePopupBus.h>
 
 namespace MessagePopup
 {
-    class LyShineMessagePopup
+    class ShineMessagePopup
         : public AZ::Component
         , protected MessagePopup::MessagePopupImplBus::Handler
         , public UiCanvasNotificationBus::MultiHandler
     {
     public:
-        AZ_COMPONENT(LyShineMessagePopup, "{C950D60D-4673-4262-A44D-6A0A1A4DB342}");
+        AZ_COMPONENT(ShineMessagePopup, "{C950D60D-4673-4262-A44D-6A0A1A4DB342}");
 
-        LyShineMessagePopup();
+        ShineMessagePopup();
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -36,7 +36,7 @@ namespace MessagePopup
         virtual void OnHidePopup(const MessagePopupInfo& _popupInfo) override;
 
         //UiCanvasNotificationBus interface implementation
-        void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) override;
+        void OnAction(AZ::EntityId entityId, const Shine::ActionName& actionName) override;
 
         // AZ::Component interface implementation
         void Init() override;
