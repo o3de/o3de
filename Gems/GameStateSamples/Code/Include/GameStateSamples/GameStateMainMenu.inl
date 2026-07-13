@@ -20,12 +20,12 @@
 
 #include <LocalUser/LocalUserRequestBus.h>
 
-#include <LyShine/Bus/UiButtonBus.h>
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
-#include <LyShine/Bus/UiCursorBus.h>
-#include <LyShine/Bus/UiDynamicLayoutBus.h>
-#include <LyShine/Bus/UiElementBus.h>
+#include <Shine/Bus/UiButtonBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiCursorBus.h>
+#include <Shine/Bus/UiDynamicLayoutBus.h>
+#include <Shine/Bus/UiElementBus.h>
 
 #include <SaveData/SaveDataRequestBus.h>
 

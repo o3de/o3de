@@ -1,0 +1,293 @@
+{
+    "Entities": {
+        "Entity_[17166539642762875528]": {
+            "Id": {
+                "id": 17166539642762875528
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 40.0,
+                        "top": 8.0,
+                        "right": -8.0,
+                        "bottom": -8.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Checkbox",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 5
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17166532044965728904]": {
+            "Id": {
+                "id": 17166532044965728904
+            },
+            "Name": "CheckBox",
+            "Components": {
+                "Component_[12753255697967905323]": {
+                    "$type": "UiCheckboxComponent",
+                    "Id": 12753255697967905323,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17166532032080827016
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/checkbox_box_hover.tif.streamingimage"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17166539642762875528
+                            },
+                            "Color": [
+                                0.7176470756530762,
+                                0.7333332896232605,
+                                0.7411764860153198
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17166532032080827016
+                            },
+                            "Color": [
+                                0.8313726186752319,
+                                0.9137254953384399,
+                                0.9372549057006836
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17166532032080827016
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/checkbox_box_hover.tif.streamingimage"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17166539642762875528
+                            },
+                            "Color": [
+                                0.3764705955982208,
+                                0.384313702583313,
+                                0.38823530077934265
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17166532032080827016
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/checkbox_box_disabled.tif.streamingimage"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17166539642762875528
+                            },
+                            "Color": [
+                                0.8392156958580017,
+                                0.8392156958580017,
+                                0.8392156958580017
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17166532036375794312
+                            },
+                            "Color": [
+                                0.8901960849761963,
+                                0.8901960849761963,
+                                0.8901960849761963
+                            ]
+                        }
+                    ],
+                    "OptionalCheckedEntity": {
+                        "id": 17166532036375794312
+                    }
+                },
+                "Component_[1385417330579471054]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1385417330579471054,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17166532032080827016
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17166532036375794312
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17166539642762875528
+                            },
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[2576547595041655489]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2576547595041655489
+                },
+                "Component_[948020824279796190]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 948020824279796190,
+                    "Offsets": {
+                        "left": -100.0000228881836,
+                        "top": -25.0,
+                        "right": 100.0000228881836,
+                        "bottom": 25.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17166532032080827016]": {
+            "Id": {
+                "id": 17166532032080827016
+            },
+            "Name": "Box",
+            "Components": {
+                "Component_[12621505696790213218]": {
+                    "$type": "UiImageComponent",
+                    "Id": 12621505696790213218,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/checkbox_box_normal.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.9882352948188782,
+                        0.9882352948188782,
+                        0.9882352948188782
+                    ],
+                    "ImageType": 2
+                },
+                "Component_[3672577756982932199]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3672577756982932199,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 2.0,
+                        "top": -16.0,
+                        "right": 34.0,
+                        "bottom": 16.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[4161073939277575230]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4161073939277575230
+                },
+                "Component_[993087442120893231]": {
+                    "$type": "UiElementComponent",
+                    "Id": 993087442120893231,
+                    "Id": 3
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17166532036375794312]": {
+            "Id": {
+                "id": 17166532036375794312
+            },
+            "Name": "Check",
+            "Components": {
+                "Component_[15468362970321111311]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15468362970321111311
+                },
+                "Component_[15602039163934615808]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15602039163934615808,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 2.0,
+                        "top": -16.0,
+                        "right": 34.0,
+                        "bottom": 16.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[3757812230385720060]": {
+                    "$type": "UiImageComponent",
+                    "Id": 3757812230385720060,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/checkbox_check.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.5450981259346008,
+                        0.7450981140136719,
+                        0.8196079134941101
+                    ],
+                    "ImageType": 2
+                },
+                "Component_[4442025690883899859]": {
+                    "$type": "UiElementComponent",
+                    "Id": 4442025690883899859,
+                    "Id": 4
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

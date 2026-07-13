@@ -19,7 +19,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LyShine.Clients.API
+            Gem::Shine.Clients.API
 )
 
 ly_add_target(
