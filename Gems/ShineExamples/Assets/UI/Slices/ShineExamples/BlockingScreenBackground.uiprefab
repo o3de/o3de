@@ -1,0 +1,49 @@
+{
+    "Entities": {
+        "Entity_[17238504336658190984]": {
+            "Id": {
+                "id": 17238504336658190984
+            },
+            "Name": "Background",
+            "Components": {
+                "Component_[10576364381664338482]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 10576364381664338482,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[11665710602697670455]": {
+                    "$type": "UiButtonComponent",
+                    "Id": 11665710602697670455,
+                    "NavigationSettings": {
+                        "NavigationMode": 2
+                    }
+                },
+                "Component_[14056115298103258996]": {
+                    "$type": "UiElementComponent",
+                    "Id": 14056115298103258996,
+                    "Id": 2
+                },
+                "Component_[5780771333250319935]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5780771333250319935
+                },
+                "Component_[914543401131595578]": {
+                    "$type": "UiImageComponent",
+                    "Id": 914543401131595578
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -1,0 +1,199 @@
+{
+    "Entities": {
+        "Entity_[1309983553152]": {
+            "Id": {
+                "id": 1309983553152
+            },
+            "Name": "LabelContentLayoutColumn",
+            "Components": {
+                "Component_[11263140435238516808]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11263140435238516808
+                },
+                "Component_[14522267302105544966]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 14522267302105544966,
+                    "Padding": {
+                        "left": 20,
+                        "top": 40,
+                        "right": 20,
+                        "bottom": 40
+                    },
+                    "ChildHAlignment": 1,
+                    "ChildVAlignment": 1,
+                    "IgnoreDefaultLayoutCells": false
+                },
+                "Component_[4870728266742469310]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4870728266742469310,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[8367175238151439726]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8367175238151439726,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 1314278520448
+                            }
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[1318573487744]": {
+            "Id": {
+                "id": 1318573487744
+            },
+            "Name": "LabelLayoutColumn",
+            "Components": {
+                "Component_[11263140435238516808]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11263140435238516808
+                },
+                "Component_[14522267302105544966]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 14522267302105544966,
+                    "IgnoreDefaultLayoutCells": false
+                },
+                "Component_[4870728266742469310]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4870728266742469310,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.004997299984097481,
+                        "bottom": 640.02001953125
+                    }
+                },
+                "Component_[8367175238151439726]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8367175238151439726,
+                    "Id": 4
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[1340048324224]": {
+            "Id": {
+                "id": 1340048324224
+            },
+            "Name": "ContentLayoutColumn",
+            "Components": {
+                "Component_[11263140435238516808]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11263140435238516808
+                },
+                "Component_[13644375332360062562]": {
+                    "$type": "UiLayoutCellComponent",
+                    "Id": 13644375332360062562,
+                    "MinWidthOverridden": true,
+                    "MinWidth": 200.0
+                },
+                "Component_[14522267302105544966]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 14522267302105544966
+                },
+                "Component_[4870728266742469310]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4870728266742469310,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 40.00499725341797,
+                        "top": 0.0,
+                        "right": 240.010009765625,
+                        "bottom": 640.02001953125
+                    }
+                },
+                "Component_[8367175238151439726]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8367175238151439726,
+                    "Id": 5
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[1314278520448]": {
+            "Id": {
+                "id": 1314278520448
+            },
+            "Name": "LayoutRow",
+            "Components": {
+                "Component_[11825280273400243061]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11825280273400243061
+                },
+                "Component_[2614574940977286314]": {
+                    "$type": "UiLayoutCellComponent",
+                    "Id": 2614574940977286314,
+                    "ExtraWidthRatioOverridden": true
+                },
+                "Component_[3424534919233379658]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 3424534919233379658,
+                    "Spacing": 40.0,
+                    "IgnoreDefaultLayoutCells": false
+                },
+                "Component_[4782712980104099246]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4782712980104099246,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 520.0050048828125,
+                        "top": 40.0,
+                        "right": 760.0050048828125,
+                        "bottom": 680.010009765625
+                    }
+                },
+                "Component_[8627246374072350663]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8627246374072350663,
+                    "Id": 3,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 1318573487744
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 1340048324224
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}
