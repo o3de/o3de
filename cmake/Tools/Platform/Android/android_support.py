@@ -35,14 +35,14 @@ from cmake.Tools.layout_tool import remove_link
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-    '4.2.2': {'min_gradle_version': '6.7.1',
-              'sdk_build': '30.0.3',
-              'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.20'},
     '7.3.1': {'min_gradle_version': '7.5.1',
               'sdk_build': '33.0.0',
               'default_ndk': '27.3.13750724',
               'min_cmake_version': '3.24'},
+    '9.2.1': {'min_gradle_version': '9.4.1',
+              'sdk_build': '36.0.0',
+              'default_ndk': '29.0.14206865',
+              'min_cmake_version': '4.0'},
 }
 
 APP_NAME = 'app'

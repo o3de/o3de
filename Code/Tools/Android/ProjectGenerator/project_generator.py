@@ -63,7 +63,7 @@ class ProjectGenerator(ThreadedLambda):
                 o3de_cmd,
                 "android-configure",
                 "--set-value",
-                "android.gradle.plugin=8.1.0",
+                "android.gradle.plugin=9.2.1",
                 "--project",
                 config.project_path,
             ],

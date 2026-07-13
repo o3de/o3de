@@ -32,8 +32,8 @@ from o3de import manifest
 
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
-GRADLE_MIN_VERSION = Version('6.5')
-GRADLE_MAX_VERSION = Version('7.5.1')
+GRADLE_MIN_VERSION = Version('9.4')
+GRADLE_MAX_VERSION = Version('9.6')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
@@ -115,14 +115,14 @@ ANDROID_SDK_COMMAND_LINE_TOOLS_VER = '--android-sdk-command-line-tools-version'
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
 
-MIN_ANDROID_SDK_PLATFORM = 28   # The minimum platform/api level that is supported for the SDK Platform
-MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported for the NDK
+MIN_ANDROID_SDK_PLATFORM = 35   # The minimum platform/api level for native NDK compilation (NDK r29 max is 35)
+MIN_NATIVE_API_LEVEL = 28       # The minimum Native API level that is supported for the NDK (16KB page alignment)
 
 
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = Version("4.2.2")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = Version("9.2.1")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"

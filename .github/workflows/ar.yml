@@ -48,10 +48,10 @@ on:
 
 env:
   CMAKE_VERSION: &cmake_version "4.2.3"
-  GRADLE_VERSION: &gradle_version "8.12"
+  GRADLE_VERSION: &gradle_version "9.4.1"
   MSVC_PLATFORM_TOOLSET: &msvc_platform_toolset "v143"
   MSVC_TOOLSET_VERSION: &msvc_toolset_version "14.44"
-  NDK_VERSION: &ndk_version "27.3.13750724"
+  NDK_VERSION: &ndk_version "29.0.14206865"
 
 jobs:
   # The following jobs are used to build the project for the different platforms.
