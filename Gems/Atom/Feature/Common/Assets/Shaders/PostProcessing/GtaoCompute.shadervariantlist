@@ -5,6 +5,6 @@
         {   "StableId": 2, "Options" : { "o_qualityLevel": 1 } },
         {   "StableId": 3, "Options" : { "o_qualityLevel": 2 } },
         {   "StableId": 4, "Options" : { "o_qualityLevel": 3 } },
-        {   "StableId": 5, "Options" : { "o_qualityLevel": 4 } },
+        {   "StableId": 5, "Options" : { "o_qualityLevel": 4 } }
     ]    
 }

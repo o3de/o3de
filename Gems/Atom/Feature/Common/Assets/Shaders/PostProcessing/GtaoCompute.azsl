@@ -164,9 +164,7 @@ float2 SearchForLargestAngleDual(in uint numTaps, float2 BaseUV, float2 ScreenDi
     for(uint i = 0; i < numTaps; i++)
     {
         float fi = (float) i;
-        float s = (fi + InitialOffset) / (numTaps + 1);
-        s = s * s;
-        float2 sampleOffset = ScreenDir * max(PixelRadius * s, (fi + 1));
+        float2 sampleOffset = ScreenDir * max(PixelRadius * (fi + InitialOffset), fi + 1.0);
         float2 UVOffset = PassSrg::m_constants.m_pixelSize * sampleOffset;  
 
         UVOffset.y *= -1;
@@ -314,7 +312,7 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID,
     // Maybe TODO: Add fade out like Unreal does
     // Since the original SSAO shader doesn't use fade out, so it's also not added here, correspondingly
 
-    float output = 1 - (1 - pow(abs(sum), 0.5 * PassSrg::m_constants.m_power)) * PassSrg::m_constants.m_strength;
+    float output = 1 - (1 - pow(saturate(sum), 0.5 * PassSrg::m_constants.m_power)) * PassSrg::m_constants.m_strength;
 
     // Gamma compensation
     // Not sure if it's needed here, so comment it out for the moment
