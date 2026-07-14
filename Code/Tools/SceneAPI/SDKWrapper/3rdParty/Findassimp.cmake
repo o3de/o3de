@@ -24,12 +24,12 @@ block()
     set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
 
     o3de_fetch_content(assimp
-        VERSION "v6.0.5"
+        VERSION "v6.0.4"
         LICENSE "Custom BSD-3-Clause"
-        URL "https://github.com/assimp/assimp/archive/refs/tags/v6.0.5.tar.gz"
-        URL_HASH "edf3749559c2b7d1f758ffb66fc5bec62186221e623b7f2e8969f17ee46ecb6f"
+        URL "https://github.com/assimp/assimp/archive/e0b52347c6e52de2827ec957a9ebf00ce3c54f79.tar.gz"
+        URL_HASH "00e4bf0b9d9d8e9b346fa3dd859c3ce5f3438451822d5933c07f65a76fc04745"
         GIT "https://github.com/assimp/assimp.git"
-        GIT_HASH "392a658f9c271be965271f45e7521a1b80ea4392"
+        GIT_HASH "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"
         PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
         EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
