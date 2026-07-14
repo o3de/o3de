@@ -12,7 +12,7 @@ if (TARGET 3rdParty::Manifold)
     return()
 endif()
 
-function(GetManifold)
+block()
     set(MANIFOLD_GIT_REPO "https://github.com/elalish/manifold.git")
     set(MANIFOLD_GIT_TAG "cc8a7f66d7d5a560da94346258c5b546af27811e")
     # Keep the human-readable tag to show the user in the console
@@ -35,16 +35,30 @@ function(GetManifold)
     set(MANIFOLD_PAR OFF CACHE BOOL "" FORCE)
     set(MANIFOLD_DEBUG OFF CACHE BOOL "" FORCE)
     # Build manifold as a static library without forcing BUILD_SHARED_LIBS
-    # globally - a plain (non-cache) variable set in this function scope is
+    # globally - a plain (non-cache) variable set in this block scope is
     # inherited by the FetchContent subdirectory only.
     set(BUILD_SHARED_LIBS OFF)
 
-    FetchContent_Declare(
-        manifold
-        GIT_REPOSITORY ${MANIFOLD_GIT_REPO}
-        GIT_TAG        ${MANIFOLD_GIT_TAG}
+    o3de_fetch_content(manifold
+        VERSION "${MANIFOLD_DISPLAY_VERSION}"
+        LICENSE "Apache-2.0"
+        URL "https://github.com/elalish/manifold/archive/refs/tags/v3.5.1.tar.gz"
+        URL_HASH "1b42f28d7c1c6d07df7244ca22cb7d82de980899001969c9985c2662a77eb43c"
+        GIT "${MANIFOLD_GIT_REPO}"
+        GIT_HASH "${MANIFOLD_GIT_TAG}"
         EXCLUDE_FROM_ALL
     )
+
+    o3de_fetch_content(Clipper2
+        VERSION "46f6391"
+        LICENSE "BSL-1.0"
+        URL "https://github.com/AngusJohnson/Clipper2/archive/46f639177fe418f9689e8ddb74f08a870c71f5b4.tar.gz"
+        URL_HASH "73f5783e0c88299976334f48e3e356c756b96212c652ecc8bceec3bd99455bcb"
+        GIT "https://github.com/AngusJohnson/Clipper2.git"
+        GIT_HASH "46f639177fe418f9689e8ddb74f08a870c71f5b4"
+        SOURCE_SUBDIR CPP
+    )
+
     FetchContent_MakeAvailable(manifold)
 
     # O3DE promotes some off-by-default MSVC warnings to errors globally
@@ -128,9 +142,7 @@ function(GetManifold)
         "${manifold_SOURCE_DIR}/include"
         "${manifold_BINARY_DIR}/include") # generated manifold/version.h
     target_link_libraries(ManifoldInterface INTERFACE manifold)
-endfunction()
-
-GetManifold()
+endblock()
 
 add_library(3rdParty::Manifold ALIAS ManifoldInterface)
 

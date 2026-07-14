@@ -44,9 +44,17 @@ execute_process(
 if (PATCH_ALREADY_APPLIED STREQUAL "0")
     message(STATUS "Skipping already applied patch ${PATCH_FILE_NAME} in dir ${CMAKE_BINARY_DIR}")
 else()
-    message(STATUS "Cleaning directory before patch...")
-    execute_process(COMMAND ${GIT_EXECUTABLE} restore .)
-    execute_process(COMMAND ${GIT_EXECUTABLE} clean -fdx)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --is-inside-work-tree
+        RESULT_VARIABLE NOT_IN_GIT_WORK_TREE
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+    if(NOT_IN_GIT_WORK_TREE EQUAL 0)
+        message(STATUS "Cleaning directory before patch...")
+        execute_process(COMMAND ${GIT_EXECUTABLE} restore .)
+        execute_process(COMMAND ${GIT_EXECUTABLE} clean -fdx)
+    endif()
     message(STATUS "Applying patch ${PATCH_FILE_NAME} at ${CMAKE_BINARY_DIR}...")
     execute_process(
         COMMAND ${GIT_EXECUTABLE} apply --ignore-whitespace "${PATCH_FILE_NAME}"

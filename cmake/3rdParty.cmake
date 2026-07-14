@@ -8,6 +8,7 @@
 
 set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
 set(O3DE_FETCHCONTENT_MESSAGE_LEVEL "ERROR" CACHE STRING "Message level when fetching 3rd party libraries.  Set to DEBUG or VERBOSE to debug")
+set(O3DE_FETCHCONTENT_FORCE_GIT OFF CACHE BOOL "Force FetchContent to use git to acquire packages instead of downloading archives")
 
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"

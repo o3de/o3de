@@ -220,6 +220,23 @@ function(download_file)
 
     set(${download_file_RESULTS} "-1;unknown_error" PARENT_SCOPE)
 
+    # Use a lock file to prevent concurrent configurations from clobbering the same download.
+    set(lock_file "${download_file_TARGET_FILE}.lock")
+    get_filename_component(lock_dir "${lock_file}" DIRECTORY)
+    file(MAKE_DIRECTORY "${lock_dir}")
+    file(LOCK "${lock_file}" GUARD FUNCTION TIMEOUT 300)
+
+    # Another configuration may have completed the download while we waited for the lock.
+    # If the file is already present with the correct hash, skip downloading.
+    if(EXISTS "${download_file_TARGET_FILE}")
+        file(SHA256 "${download_file_TARGET_FILE}" existing_hash)
+        if("${existing_hash}" STREQUAL "${download_file_EXPECTED_HASH}")
+            ly_package_message(STATUS "download_file: ${download_file_TARGET_FILE} already downloaded by another process, reusing.")
+            set(${download_file_RESULTS} "0" PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
     foreach(retry_count RANGE 0 ${LY_PACKAGE_DOWNLOAD_RETRY_COUNT})
         download_file_internal( URL ${download_file_URL} TARGET_FILE ${download_file_TARGET_FILE} RESULTS results EXPECTED_HASH ${download_file_EXPECTED_HASH} SHOULD_RETRY should_retry)
         if (NOT should_retry)
@@ -743,3 +760,143 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
     # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
     ly_parse_third_party_dependencies(3rdParty::Qt)
 endif()
+
+# Wrapper around FetchContent_Declare that tries url-based download first, and falls back to git clone if all urls fail.
+#
+# At least one of URL or GIT must be provided.
+# If URL is provided, each URL is attempted with retries.
+# If all URLs fail and GIT is also provided, it will fall back to a git clone.
+# Downloads are cached in LY_PACKAGE_DOWNLOAD_CACHE_LOCATION/<name>/
+#
+# NOTE: This function only calls FetchContent_Declare.
+# The caller must call FetchContent_MakeAvailable(<name>) after setting any desired build options.
+function(o3de_fetch_content arg_NAME)
+    set(options)
+    set(oneValueArgs
+        VERSION # Human-readable version string (e.g. "v1.15.2")
+        LICENSE # License identifier (e.g. "BSD-3-Clause", "MIT")
+        URL_HASH # SHA256 hash of the archive (required if url is specified)
+        GIT # Git repository url as fallback
+        GIT_HASH # Git tag, branch, or commit hash
+    )
+    set(multiValueArgs
+        URL # One or more archive urls to try in order
+    )
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+
+    if(NOT arg_URL AND NOT arg_GIT)
+        message(FATAL_ERROR "At least one of URL or GIT is required.")
+    endif()
+
+    if(arg_URL AND NOT arg_URL_HASH)
+        message(FATAL_ERROR "URL_HASH is required when URL is specified.")
+    endif()
+
+    include(FetchContent)
+
+    # Common args shared by both URL and GIT paths
+    # Note: do NOT initialize to "" - that creates an empty list element which
+    # would insert a spurious empty argument into FetchContent_Declare.
+    set(fc_args)
+
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    endif()
+
+    # Forward any extra arguments we don't explicitly handle
+    if(arg_UNPARSED_ARGUMENTS)
+        list(APPEND fc_args ${arg_UNPARSED_ARGUMENTS})
+    endif()
+
+    # Set up cache directory for downloads
+    set(download_cache_dir "")
+    if(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION)
+        set(download_cache_dir "${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${arg_NAME}")
+    endif()
+
+    # Try URL-based download first
+    set(url_download_succeeded FALSE)
+    if(arg_URL AND NOT O3DE_FETCHCONTENT_FORCE_GIT)
+        foreach(current_url IN LISTS arg_URL)
+            if(download_cache_dir)
+                set(target_file "${download_cache_dir}/${arg_URL_HASH}")
+            else()
+                set(target_file "${CMAKE_BINARY_DIR}/downloads/${arg_NAME}/${arg_URL_HASH}")
+            endif()
+
+            # Check if we already have the file with the correct hash
+            set(need_download TRUE)
+            if(EXISTS "${target_file}")
+                file(SHA256 "${target_file}" existing_hash)
+                if("${existing_hash}" STREQUAL "${arg_URL_HASH}")
+                    ly_package_message(STATUS "Cached archive matches expected hash, reusing ${target_file}")
+                    set(need_download FALSE)
+                    set(url_download_succeeded TRUE)
+                else()
+                    ly_package_message(STATUS "Cached archive hash mismatch, re-downloading from ${current_url}")
+                    file(REMOVE "${target_file}")
+                endif()
+            endif()
+
+            if(need_download)
+                message(VERBOSE "Attempting URL download from ${current_url}")
+                get_filename_component(target_dir "${target_file}" DIRECTORY)
+                file(MAKE_DIRECTORY "${target_dir}")
+
+                download_file(
+                    URL "${current_url}"
+                    TARGET_FILE "${target_file}"
+                    EXPECTED_HASH "${arg_URL_HASH}"
+                    RESULTS download_results
+                )
+
+                list(GET download_results 0 download_code)
+                if(download_code EQUAL 0)
+                    set(url_download_succeeded TRUE)
+                else()
+                    list(REMOVE_AT download_results 0)
+                    message(WARNING "Failed to download from ${current_url}: ${download_results}")
+                    file(REMOVE "${target_file}")
+                endif()
+            endif()
+
+            if(url_download_succeeded)
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    if(url_download_succeeded)
+        # Use the successfully downloaded/cached archive via url.
+        # The archive is already in the cache at target_file, so we hand FetchContent
+        # a file:// path directly - no DOWNLOAD_DIR is needed for a local file.
+        list(APPEND fc_args
+            URL "file://${target_file}"
+            URL_HASH "SHA256=${arg_URL_HASH}"
+        )
+    elseif(arg_GIT)
+        list(APPEND fc_args
+            GIT_REPOSITORY "${arg_GIT}"
+            GIT_TAG "${arg_GIT_HASH}"
+        )
+
+        # Warn only if url downloads actually failed (not if intentionally skipped)
+        if(arg_URL AND NOT O3DE_FETCHCONTENT_FORCE_GIT)
+            message(WARNING "All url downloads failed, falling back to git clone from ${arg_GIT}")
+        endif()
+    else()
+        message(FATAL_ERROR "All URL downloads failed and no GIT was provided as fallback.")
+    endif()
+
+    FetchContent_Declare(${arg_NAME} ${fc_args})
+
+    set(status_msg "Using package ${arg_NAME}")
+    if(arg_VERSION)
+        string(APPEND status_msg " ${arg_VERSION}")
+    endif()
+    if(arg_LICENSE)
+        string(APPEND status_msg " (${arg_LICENSE})")
+    endif()
+
+    message(STATUS "${status_msg}")
+endfunction()
