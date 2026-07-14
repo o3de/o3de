@@ -100,6 +100,22 @@ function(GetManifold)
         target_compile_options(Clipper2 PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_WARNINGS})
     endif()
 
+    # Strip the bogus `-lm` entry from Clipper2 targets on Windows
+    # (doesn't exist on Windows; leaks into link when using clang with MSVC ABI).
+    if (WIN32)
+        foreach (clipper2_target Clipper2 Clipper2Z)
+            if (TARGET ${clipper2_target})
+                foreach (link_prop LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+                    get_target_property(clipper2_libs ${clipper2_target} ${link_prop})
+                    if (clipper2_libs)
+                        list(REMOVE_ITEM clipper2_libs "-lm" "m")
+                        set_target_properties(${clipper2_target} PROPERTIES ${link_prop} "${clipper2_libs}")
+                    endif()
+                endforeach()
+            endif()
+        endforeach()
+    endif()
+
     # O3DE promotes some off-by-default MSVC warnings to errors via /weNNNN.
     # /W0 (from O3DE_COMPILE_OPTION_DISABLE_WARNINGS) does NOT cancel per-warning
     # /we flags - only an explicit /wd does. Disable the ones manifold trips over:

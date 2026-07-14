@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <version>
 #include <AzCore/std/containers/array_fwd.h>
 #include <AzCore/std/ranges/subrange_fwd.h>
 #include <AzCore/std/utility/tuple_fwd.h>
@@ -59,9 +60,12 @@ namespace AZStd
         && tuple_size_v<remove_cvref_t<T>> == 2;
 }
 
-//! common_type and basic_common_reference are from the std namespace.
-//! Their names are brought into the AZStd namespace via a "using" directive.
-//! Therefore they need to be specialized in their original namespace.
+//! common_type/basic_common_reference live in std, so the AZStd fallbacks must be specialized there too.
+//! C++23 adds these same pair/tuple specializations to the stdlib (P2321 "zip", then P2165 tuple-like),
+//! and since AZStd::pair/tuple alias std::pair/tuple, keeping ours would be a duplicate partial specialization.
+//! So only define them when the stdlib doesn't.
+#if !((defined(__cpp_lib_ranges_zip) && __cpp_lib_ranges_zip >= 202110L) \
+    || (defined(__cpp_lib_tuple_like) && __cpp_lib_tuple_like >= 202207L))
 namespace std
 {
     template<class... TTypes, class... UTypes, template<class> class TQual, template<class> class UQual>
@@ -97,3 +101,4 @@ namespace std
         using type = AZStd::pair<common_type_t<T1, U1>, common_type_t<T2, U2>>;
     };
 }
+#endif // stdlib provides pair/tuple common_type/common_reference (P2321 / P2165)
