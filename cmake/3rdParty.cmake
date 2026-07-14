@@ -405,6 +405,10 @@ function(o3de_fixup_fetchcontent_targets)
         # alias it with 3rdParty::targetname
         add_library(3rdParty::${TARGET_TO_FIXUP} ALIAS ${TARGET_TO_FIXUP})
 
+        # We install headers for fetchcontent libraries explicitly, so clear any PUBLIC_HEADER property.
+        # Installing the target below without a PUBLIC_HEADER DESTINATION would warn.
+        set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY PUBLIC_HEADER)
+
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
 
