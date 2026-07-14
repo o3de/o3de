@@ -11,10 +11,14 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QPaintEvent>
+#include <QResizeEvent>
+#include <QShowEvent>
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextDocument>
-
+#include <QTimer>
+#include <QHideEvent>
 
 namespace AzQtComponents
 {
@@ -29,19 +33,6 @@ namespace AzQtComponents
         setText(text);
     }
 
-    void ElidingLabel::handleElision()
-    {
-        m_elidedText.clear();
-
-        elide();
-
-        if (m_updateGeomentry)
-        {
-            updateGeometry();
-            m_updateGeomentry = false;
-        }
-    }
-
     void ElidingLabel::setText(const QString& text)
     {
         if (text == m_text)
@@ -51,7 +42,7 @@ namespace AzQtComponents
 
         m_text = text;
         m_metricsLabel->setText(m_text);
-
+        updateGeometry();
         requestElide(true);
     }
 
@@ -68,18 +59,61 @@ namespace AzQtComponents
         }
 
         m_elideMode = mode;
-        update();
+        requestElide(true);
     }
 
+    // This event also happens if the label is resized due to a layout update
+    // In that case, we should re-elide the text to fit the new size.
     void ElidingLabel::resizeEvent(QResizeEvent* event)
     {
-        QWidget::resizeEvent(event);
-        requestElide(false);
+        QLabel::resizeEvent(event);
+
+        if (m_elideTimerId == 0)
+        {
+            if (!isHidden())
+            {
+                requestElide(true); // the first 'tick' always updates the elision immediately since its probably a layout change.
+            }
+        }
+        else
+        {
+            requestElide(false);
+        }
+    }
+
+    void ElidingLabel::showEvent([[maybe_unused]] QShowEvent* event)
+    {
+        QLabel::showEvent(event);
+        requestElide(true);
+    }
+
+    void ElidingLabel::hideEvent([[maybe_unused]] QHideEvent* event)
+    {
+        QLabel::hideEvent(event);
+
+        if (m_elideTimerId != 0)
+        {
+            killTimer(m_elideTimerId);
+            m_elideTimerId = 0;
+            m_elideDeferred = false;
+        }
     }
 
     void ElidingLabel::elide()
     {
+        if (isHidden())
+        {
+            return;
+        }
         ensurePolished();
+
+        if (m_text.isEmpty())
+        {
+            m_elidedText.clear();
+            QLabel::setText(QString());
+            setToolTip(m_description);
+            return;
+        }
 
         if (Qt::mightBeRichText(m_text))
         {
@@ -252,13 +286,18 @@ namespace AzQtComponents
         QLabel::paintEvent(event);
     }
 
-    void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
+     void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
     {
-        if (m_elideDeferred)
+        if (event->timerId() != m_elideTimerId)
         {
-            // do the elision, but keep the timer running in case another request comes in too quickly
-            handleElision();
+            return;
+        }
+
+        if (m_elideDeferred) // a "elide again!" came in during the timer.
+        {
             m_elideDeferred = false;
+            // do the elision, but keep the timer running in case another request comes in too quickly
+            elide();
         }
         else
         {
@@ -268,22 +307,29 @@ namespace AzQtComponents
         }
     }
 
-    void ElidingLabel::requestElide(bool updateGeometry)
+    void ElidingLabel::requestElide(bool immediate)
     {
-        if (!m_updateGeomentry && updateGeometry)
+        if (isHidden())
         {
-            m_updateGeomentry = true;
+            return;
         }
-        if (!m_elideTimerId)
+
+        if (immediate)
         {
-            // do the elision immediately, but start a timer to make sure we don't elide again too quickly
-            handleElision();
-            m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
+            elide();
+            return;
         }
         else
         {
-            // the timer's already running
-            m_elideDeferred = true;
+            if (m_elideTimerId == 0)
+            {
+                m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
+            }
+            else
+            {
+                // if the timer is already running, we got a request to elide when we're already got one queued up.
+                m_elideDeferred = true;  // this will cause the timer to start again.
+            }
         }
     }
 

@@ -342,12 +342,13 @@ namespace AzToolsFramework
     {
         PropertyDoubleSpinCtrl* newCtrl = aznew PropertyDoubleSpinCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSpinCtrl::valueChanged, this, [newCtrl]()
-            {
-                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
-            });
+        {
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+        });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
@@ -367,7 +368,8 @@ namespace AzToolsFramework
             });
         connect(newCtrl, &PropertyDoubleSpinCtrl::editingFinished, this, [newCtrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 

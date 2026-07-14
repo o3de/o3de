@@ -187,19 +187,7 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
         {
-            if (m_currentUndoBatch)
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch,
-                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                    m_currentUndoBatch,
-                    "Modify Property");
-            }
-            else
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
-            }
+            ScopedUndoBatch undoBatch("Modify Property", &m_currentUndoBatch);
 
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
@@ -208,15 +196,12 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
         {
+            ScopedUndoBatch undoBatch("Modify Property", &m_currentUndoBatch);
+
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
-
-            if (m_currentUndoBatch)
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
-                m_currentUndoBatch = nullptr;
-            }
+            m_currentUndoBatch = nullptr;
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)

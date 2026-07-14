@@ -20,6 +20,7 @@ namespace AzToolsFramework
 
         void SetValueFromDom(const AZ::Dom::Value& node) override;
         virtual bool ResetToDefaults() override;
+        void RefreshUI() override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
@@ -28,6 +29,7 @@ namespace AzToolsFramework
 
     protected:
         AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action;
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_priorAction;
 
         void OnClicked() override;
     };

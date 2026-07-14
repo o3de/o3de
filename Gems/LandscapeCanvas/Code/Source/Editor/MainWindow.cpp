@@ -947,7 +947,7 @@ namespace LandscapeCanvasEditor
 
         if (it != m_dockWidgetsByEntity.end())
         {
-            const AZ::EntityId& rootEntityId = it->first;
+            AZ::EntityId rootEntityId = it->first;
             m_dockWidgetsByEntity.erase(it);
 
             // Save our graph whenever it is closed

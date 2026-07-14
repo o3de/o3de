@@ -14,6 +14,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QTimer>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h> // scoped undo batch
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -156,32 +157,30 @@ namespace AZ::DocumentPropertyEditor
             switch (changeType)
             {
             case Nodes::ValueChangeType::InProgressEdit:
+                m_gotInProgressEdit = true;
                 if (m_entityId.IsValid())
                 {
-                    if (m_currentUndoBatch)
-                    {
-                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            m_currentUndoBatch,
-                            &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                            m_currentUndoBatch,
-                            "Modify Entity Property");
-                    }
-                    else
-                    {
-                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
-                    }
-
-                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityId);
+                    AzToolsFramework::ScopedUndoBatch batch("Modify Component Property", &m_currentUndoBatch);
+                    batch.MarkEntityDirty(m_entityId);
                 }
                 break;
             case Nodes::ValueChangeType::FinishedEdit:
-                if (m_currentUndoBatch)
-                {
-                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
-                    m_currentUndoBatch = nullptr;
-                }
+                // if you find yourself here and the assert triggers, it means someone created some sort of widget or control
+                // that sends only a FinishedEdit, without an InProgressEdit being emitted beforehand.
+                // Controls that have continuous changes like sliders or text boxes (each keystroke) need to issue a
+                // InProgressEdit for each change, then a FinishedEdit when the user is done (arbitrary call to make, could
+                // be something like lost focus, could be hitting return, could be releasing a mouse button).
+                // Instantanous controls like buttons, checkboxes, etc, should issue both an InProgressEdit and FinishedEdit
+                // in the same call, since they are effectively atomic.  Doing so allows this code to deal with the undo
+                // stack up front and not have to do undo/redo capture operations at the end of the change when editing is finished.
+
+                // Note that if you are deep in the UI code for a component or writing a Handler, this means issuing:
+                // AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, gui);
+                // AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::OnEditingFinished, gui);
+                // since those result in InProgressEdit, FinishedEdit being sent to the ComponentAdapter.
+                AZ_Assert(m_gotInProgressEdit, "ComponentAdapter::HandleMessage - Got FinishedEdit without InProgressEdit.");
+                m_gotInProgressEdit = false;
+                m_currentUndoBatch = nullptr;
                 break;
             }
         };

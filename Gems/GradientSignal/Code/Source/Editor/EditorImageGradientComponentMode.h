@@ -48,17 +48,9 @@ namespace GradientSignal
         // ImageGradientModificationNotificationBus overrides...
         void OnImageGradientBrushStrokeBegin() override;
         void OnImageGradientBrushStrokeEnd(AZStd::shared_ptr<ImageTileBuffer> changedDataBuffer, const AZ::Aabb& dirtyRegion) override;
-
-        void BeginUndoBatch();
-        void EndUndoBatch();
-
     private:
         //! The core paintbrush manipulator and painting logic.
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
-
-        //! The undo information for the in-progress painting brush stroke.
-        AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
-        PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
 
         //! The paint brush cluster that manages switching between paint/smooth/eyedropper modes
         AzToolsFramework::PaintBrushSubModeCluster m_subModeCluster;

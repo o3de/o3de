@@ -21,49 +21,6 @@
 #define UNDOREDO_MULTIPLE_OBJECTS_TEXT " (Multiple Objects)"
 
 
-//! CSuperUndo objects groups together a block of UndoStepto to allow them to be Undo by single operation.
-class CSuperUndoStep
-    : public CUndoStep
-{
-public:
-    //! Add new undo object to undo step.
-    void AddUndoStep(CUndoStep* step)
-    {
-        m_undoSteps.push_back(step);
-    }
-    int GetSize() const override
-    {
-        int size = 0;
-        for (int i = 0; i < m_undoSteps.size(); i++)
-        {
-            size += m_undoSteps[i]->GetSize();
-        }
-        return size;
-    }
-    bool IsEmpty() const override
-    {
-        return m_undoSteps.empty();
-    }
-    void Undo(bool bUndo) override
-    {
-        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
-        {
-            m_undoSteps[i]->Undo(bUndo);
-        }
-    }
-    void Redo() override
-    {
-        for (int i = 0; i < m_undoSteps.size(); i++)
-        {
-            m_undoSteps[i]->Redo();
-        }
-    }
-
-private:
-    //! Undo steps included in this step.
-    AZStd::vector<CUndoStep*> m_undoSteps;
-};
-
 // Helper class for CUndoManager that monitors the Asset Manager and suspends undo recording while the Asset Manager
 // is processing asset loading events.  The events are processed non-deterministically, so they could accidentally get captured
 // within an undo recording block.
@@ -97,10 +54,8 @@ public:
 CUndoManager::CUndoManager()
 {
     m_bRecording = false;
-    m_bSuperRecording = false;
 
     m_currentUndo = nullptr;
-    m_superUndo = nullptr;
     m_assetManagerUndoInterruptor = new AssetManagerUndoInterruptor();
 
     m_suspendCount = 0;
@@ -117,7 +72,6 @@ CUndoManager::~CUndoManager()
     ClearRedoStack();
     ClearUndoStack();
 
-    delete m_superUndo;
     delete m_currentUndo;
     delete m_assetManagerUndoInterruptor;
 }
@@ -126,8 +80,6 @@ CUndoManager::~CUndoManager()
 void CUndoManager::Begin()
 {
     //CryLog( "<Undo> Begin SuspendCount=%d",m_suspendCount );
-    //if (m_bSuperRecording)
-    //CLogFile::FormatLine( "<Undo> Begin (Inside SuperSuper)" );
     if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
     {
         return;
@@ -209,21 +161,14 @@ void CUndoManager::Accept(const QString& name)
         ClearRedoStack();
 
         m_currentUndo->SetName(name);
-        if (m_bSuperRecording)
+        // Normal recording.
+        // Keep max undo steps.
+        while (m_undoStack.size() && (m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
         {
-            m_superUndo->AddUndoStep(m_currentUndo);
+            delete m_undoStack.front();
+            m_undoStack.pop_front();
         }
-        else
-        {
-            // Normal recording.
-            // Keep max undo steps.
-            while (m_undoStack.size() && (m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
-            {
-                delete m_undoStack.front();
-                m_undoStack.pop_front();
-            }
-            m_undoStack.push_back(m_currentUndo);
-        }
+        m_undoStack.push_back(m_currentUndo);
         //CLogFile::FormatLine( "Undo Object Accepted (Undo:%d,Redo:%d, Size=%dKb)",m_undoStack.size(),m_redoStack.size(),GetDatabaseSize()/1024 );
 
         // If undo accepted, document modified.
@@ -303,7 +248,7 @@ void CUndoManager::Redo(int numSteps)
         return;
     }
 
-    if (m_bRecording || m_bSuperRecording)
+    if (m_bRecording)
     {
         AZ_Warning("CUndoManager", false, "Cannot Redo while Recording");
         return;
@@ -363,7 +308,7 @@ void CUndoManager::Undo(int numSteps)
         return;
     }
 
-    if (m_bRecording || m_bSuperRecording)
+    if (m_bRecording)
     {
         AZ_Warning("CUndoManager", false, "Cannot Undo while Recording");
         return;
@@ -525,99 +470,6 @@ void CUndoManager::Resume()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUndoManager::SuperBegin()
-{
-    //CLogFile::FormatLine( "<Undo> SuperBegin (SuspendCount%d)",m_suspendCount );
-    if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
-    {
-        return;
-    }
-
-    m_bSuperRecording = true;
-    m_superUndo = new CSuperUndoStep;
-    //CLogFile::WriteLine( "<Undo> SuperBegin OK" );
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUndoManager::SuperAccept(const QString& name)
-{
-    //CLogFile::WriteLine( "<Undo> SupperAccept" );
-    if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
-    {
-        return;
-    }
-
-    if (!m_bSuperRecording)
-    {
-        return;
-    }
-
-    assert(m_superUndo != 0);
-
-    if (m_bRecording)
-    {
-        Accept(name);
-    }
-
-    if (!m_superUndo->IsEmpty())
-    {
-        m_superUndo->SetName(name);
-        // Keep max undo steps.
-        while (m_undoStack.size() && (m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
-        {
-            delete m_undoStack.front();
-            m_undoStack.pop_front();
-        }
-        m_undoStack.push_back(m_superUndo);
-    }
-    else
-    {
-        // If no any object was recorded, Cancel undo operation.
-        SuperCancel();
-    }
-
-    //CLogFile::FormatLine( "Undo Object Accepted (Undo:%d,Redo:%d)",m_undoStack.size(),m_redoStack.size() );
-    m_bSuperRecording = false;
-    m_superUndo = nullptr;
-    //CLogFile::WriteLine( "<Undo> SupperAccept OK" );
-
-    SignalNumUndoRedoToListeners();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUndoManager::SuperCancel()
-{
-    //CLogFile::WriteLine( "<Undo> SuperCancel" );
-    if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
-    {
-        return;
-    }
-
-    if (!m_bSuperRecording)
-    {
-        return;
-    }
-
-    assert(m_superUndo != 0);
-
-    if (m_bRecording)
-    {
-        Cancel();
-    }
-
-    Suspend();
-    //! Undo all changes already made.
-    m_superUndo->Undo(false); // Undo not by Undo command (no need to store Redo)
-    Resume();
-
-    m_bSuperRecording = false;
-    delete m_superUndo;
-    m_superUndo = nullptr;
-    //CLogFile::WriteLine( "<Undo> SuperCancel OK" );
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
     return static_cast<int>(m_undoStack.size());
@@ -702,9 +554,7 @@ void CUndoManager::Flush()
     ClearRedoStack();
     ClearUndoStack();
 
-    delete m_superUndo;
     delete m_currentUndo;
-    m_superUndo = nullptr;
     m_currentUndo = nullptr;
 
     SignalUndoFlushedToListeners();
@@ -802,7 +652,7 @@ void CUndoManager::SignalUndoFlushedToListeners()
 
 bool CUndoManager::IsUndoRecording() const
 {
-    return (m_bRecording || m_bSuperRecording) && m_suspendCount == 0;
+    return m_bRecording && m_suspendCount == 0;
 }
 
 bool CUndoManager::IsUndoSuspended() const

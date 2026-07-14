@@ -29,7 +29,6 @@ namespace AzToolsFramework
     BaseManipulator::~BaseManipulator()
     {
         AZ_Assert(!Registered(), "Manipulator must be unregistered before it is destroyed");
-        EndUndoBatch();
     }
 
     bool BaseManipulator::OnLeftMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
@@ -39,19 +38,6 @@ namespace AzToolsFramework
         if (m_onLeftMouseDownImpl)
         {
             BeginAction();
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Manipulator Left Mouse Down");
-
-            for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
-            {
-                ToolsApplicationRequests::Bus::Broadcast(
-                    &ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityComponentId.GetEntityId());
-                ToolsApplicationNotificationBus::Broadcast(
-                    &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
-                    entityComponentId,
-                    Refresh_Values);
-            }
-
             (*this.*m_onLeftMouseDownImpl)(interaction, rayIntersectionDistance);
             return true;
         }
@@ -66,19 +52,6 @@ namespace AzToolsFramework
         if (m_onRightMouseDownImpl)
         {
             BeginAction();
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Manipulator Right Mouse Down");
-
-            for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
-            {
-                ToolsApplicationRequests::Bus::Broadcast(
-                    &ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityComponentId.GetEntityId());
-                ToolsApplicationNotificationBus::Broadcast(
-                    &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
-                    entityComponentId,
-                    Refresh_Values);
-
-            }
             (*this.*m_onRightMouseDownImpl)(interaction, rayIntersectionDistance);
             return true;
         }
@@ -90,28 +63,39 @@ namespace AzToolsFramework
     // attached as no active manipulator will have been set in ManipulatorManager.
     void BaseManipulator::OnLeftMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
+        // Note that our manipulator system allows for the concept of clicking a thing (like a button)
+        // amongst the manipulators to do things.  However, this usually just changes the mode of a manipulator
+        // without altering entity data.  For the very special case where clicking, without moving the mouse does change
+        // entity data, please ensure that the undo batch is created and the entity is marked dirty in that specific subclass
+        // implementation of OnLeftMouseUpImpl.
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         SetBoundsDirty();
 
         EndAction();
         OnLeftMouseUpImpl(interaction);
-        EndUndoBatch();
+        m_undoBatch = nullptr; // mouse up operations end a logical undo op
     }
 
     void BaseManipulator::OnRightMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
+        // Note that our manipulator system allows for the concept of clicking a thing (like a button)
+        // amongst the manipulators to do things.  However, this usually just changes the mode of a manipulator
+        // without altering entity data.  For the very special case where clicking, without moving the mouse does change
+        // entity data, please ensure that the undo batch is created and the entity is marked dirty in that specific subclass
+        // implementation of OnRightMouseUpImpl.
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirty();
 
         EndAction();
         OnRightMouseUpImpl(interaction);
-        EndUndoBatch();
+        m_undoBatch = nullptr; // mouse up operations end a logical undo op
     }
 
     bool BaseManipulator::OnMouseOver(const ManipulatorId manipulatorId, const ViewportInteraction::MouseInteraction& interaction)
     {
+        // we do nothing with undo here, since mousing over something should never change the actual data state of an entity
+        // and users will get very angry if just moving their mouse over a manipulator causes actual data changes.
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         UpdateMouseOver(manipulatorId);
@@ -121,10 +105,14 @@ namespace AzToolsFramework
 
     void BaseManipulator::OnMouseWheel(const ViewportInteraction::MouseInteraction& interaction)
     {
+        // hovering over a manipulator and rolling the mouse wheel likely modifies entity data, so we create an undo.
+        AzToolsFramework::ScopedUndoBatch undoBatch("Mouse Wheel Manipulator", &m_undoBatch);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         OnMouseWheelImpl(interaction);
 
         for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
         {
+            undoBatch.MarkEntityDirty(entityComponentId.GetEntityId());
             ToolsApplicationNotificationBus::Broadcast(
                 &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
                 entityComponentId,
@@ -142,10 +130,12 @@ namespace AzToolsFramework
 
             return;
         }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Drag Manipulator", &m_undoBatch);
 
         // ensure property grid (entity inspector) values are refreshed
         for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
         {
+            undoBatch.MarkEntityDirty(entityComponentId.GetEntityId());
             ToolsApplicationNotificationBus::Broadcast(
                 &ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplayForComponent,
                 entityComponentId,
@@ -230,16 +220,15 @@ namespace AzToolsFramework
     {
         if (!PerformingAction())
         {
+            bool m_wasMouseOver = m_mouseOver;
             m_mouseOver = (m_manipulatorId == manipulatorId);
-        }
-    }
-
-    void BaseManipulator::EndUndoBatch()
-    {
-        if (m_undoBatch != nullptr)
-        {
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
-            m_undoBatch = nullptr;
+            if (m_wasMouseOver != m_mouseOver)
+            {
+                // the mouse left the current manipulator, clear the undo batch
+                // so we don't try to resume it (for example, wheeling over one manipulator, then
+                // moving the mouse to a new one and wheeling again).
+                m_undoBatch = nullptr;
+            }
         }
     }
 

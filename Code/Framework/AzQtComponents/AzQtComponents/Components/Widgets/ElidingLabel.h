@@ -10,6 +10,13 @@
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QLabel>
+
+class QShowEvent;
+class QPaintEvent;
+class QResizeEvent;
+class QTimer;
+class QHideEvent;
+
 #include <QRegularExpression>
 
 namespace AzQtComponents
@@ -111,14 +118,13 @@ namespace AzQtComponents
         //! Overrides the QLabel sizeHint function to return the elided text size.
         QSize sizeHint() const override;
 
-        void handleElision();
-
     protected:
         void resizeEvent(QResizeEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
         void timerEvent(QTimerEvent* event) override;
-
-        void requestElide(bool updateGeometry);
+        void showEvent(QShowEvent* event) override;
+        void hideEvent(QHideEvent* event) override;
+        void requestElide(bool immediate);
 
         QString m_filterString;
         QRegularExpression m_filterRegex;
@@ -139,7 +145,6 @@ namespace AzQtComponents
         static constexpr int s_minTimeBetweenUpdates = 200;
         int m_elideTimerId = 0;
         bool m_elideDeferred = false;
-        bool m_updateGeomentry = false;
     };
 
 } // namespace AzQtComponents

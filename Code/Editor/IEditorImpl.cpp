@@ -891,30 +891,6 @@ void CEditorImpl::CancelUndo()
     }
 }
 
-void CEditorImpl::SuperBeginUndo()
-{
-    if (m_pUndoManager)
-    {
-        m_pUndoManager->SuperBegin();
-    }
-}
-
-void CEditorImpl::SuperAcceptUndo(const QString& name)
-{
-    if (m_pUndoManager)
-    {
-        m_pUndoManager->SuperAccept(name);
-    }
-}
-
-void CEditorImpl::SuperCancelUndo()
-{
-    if (m_pUndoManager)
-    {
-        m_pUndoManager->SuperCancel();
-    }
-}
-
 void CEditorImpl::SuspendUndo()
 {
     if (m_pUndoManager)

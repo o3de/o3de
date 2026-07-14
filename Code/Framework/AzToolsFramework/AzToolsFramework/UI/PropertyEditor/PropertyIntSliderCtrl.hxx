@@ -87,8 +87,13 @@ namespace AzToolsFramework
     QWidget* IntSliderHandler<ValueType>::CreateGUI(QWidget* parent)
     {
         PropertyIntSliderCtrl* newCtrl = static_cast<PropertyIntSliderCtrl*>(BaseHandler::CreateGUI(parent));
+        this->connect(newCtrl, &PropertyIntSliderCtrl::valueChanged, this, [newCtrl]()
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+        });
         this->connect(newCtrl, &PropertyIntSliderCtrl::editingFinished, this, [newCtrl]()
         {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
 

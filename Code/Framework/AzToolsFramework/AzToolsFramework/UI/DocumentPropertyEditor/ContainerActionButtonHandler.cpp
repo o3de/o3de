@@ -16,8 +16,10 @@ namespace AzToolsFramework
     {
     }
 
-    void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
+    void ContainerActionButtonHandler::RefreshUI()
     {
+        using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
+        using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
 
         static const QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
         static const QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
@@ -25,18 +27,13 @@ namespace AzToolsFramework
         static const QIcon s_iconUp(QStringLiteral(":/stylesheet/img/indicator-arrow-up.svg"));
         static const QIcon s_iconDown(QStringLiteral(":/stylesheet/img/indicator-arrow-down.svg"));
 
-        using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
-        using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
 
-        GenericButtonHandler::SetValueFromDom(node);
-
-        auto oldAction = m_action;
-        m_action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
-
-        if (m_action == oldAction)
+        if (m_action == m_priorAction)
         {
             return;
         }
+
+        m_priorAction = m_action;
 
         switch (m_action)
         {
@@ -79,8 +76,22 @@ namespace AzToolsFramework
         }
     }
 
+    void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
+    {
+        using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
+        using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
+
+        GenericButtonHandler::SetValueFromDom(node);
+        m_priorAction = m_action;
+        m_action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
+    }
+
     bool ContainerActionButtonHandler::ResetToDefaults()
     {
+        using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
+        m_action = ContainerAction::None;
+        m_priorAction = ContainerAction::None;
+
         return GenericButtonHandler::ResetToDefaults();
     }
 

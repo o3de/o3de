@@ -311,9 +311,15 @@ namespace AZ
         void EditorMaterialComponent::UpdateMaterialSlots()
         {
             SetDirty();
+            // cache the old slots until the new ones are updated so that
+            // asset reference counts don't go to 0 temporarily.
+            auto oldDefaultSlot = m_defaultMaterialSlot;
+            EditorMaterialComponentSlotContainer oldSlots;
+            EditorMaterialComponentSlotsByLodContainer oldLODSlots;
+
+            m_materialSlots.swap(oldSlots);
+            m_materialSlotsByLod.swap(oldLODSlots);
             m_defaultMaterialSlot = {};
-            m_materialSlots = {};
-            m_materialSlotsByLod = {};
 
             // Get the known material assignment slots from the associated model or other source
             MaterialAssignmentMap originalMaterials;
