@@ -35,6 +35,7 @@ block()
     # Thus, you must set any configuration settings here, in the scope in which you call FetchContent_MakeAvailable.
     set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
     set(BUILD_SHARED_LIBS OFF)
     set(BUILD_FRAMEWORK OFF)
@@ -45,7 +46,7 @@ block()
 
     # the below line is what actualy runs its CMakeList.txt file and executes targets and so on:
     FetchContent_MakeAvailable(ogg)
-    
+
     # restore any CACHE settings changed:
     set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
 endblock()
