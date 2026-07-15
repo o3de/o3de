@@ -78,8 +78,8 @@ namespace AZ::DocumentPropertyEditor::Tests
             Dom::Value row = GetEntryRow(cvarName);
             ASSERT_FALSE(row.IsNull());
             auto result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value, Nodes::ValueChangeType::InProgressEdit);
-            auto result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value, Nodes::ValueChangeType::FinishedEdit);
             EXPECT_TRUE(result.IsSuccess());
+            result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value, Nodes::ValueChangeType::FinishedEdit);
             AZ_Error("CvarAdapterDpeTests", result.IsSuccess(), "%s", result.GetError().c_str());
         }
 

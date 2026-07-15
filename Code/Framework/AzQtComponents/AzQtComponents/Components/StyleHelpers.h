@@ -54,11 +54,11 @@ namespace AzQtComponents
                     // them with the new property value. Child render rules must be explicitly invalidated.
                     styleSheet->unpolish(widget);
                     styleSheet->polish(widget);
-                    for (QWidget* child : widget->template findChildren<QWidget*>())
-                    {
-                        styleSheet->unpolish(child);
-                        styleSheet->polish(child);
-                    }
+                    // Note that this specific function is supposed
+                    // to be attached to the actual object itself that
+                    // has the property being observed, and is expected
+                    // to have its style sheet selector based on that property.
+                    // Thus it is not necessary to update the child
                 }
             });
         }
