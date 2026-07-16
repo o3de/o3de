@@ -17,9 +17,6 @@
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QTimer>
-#include <QHideEvent>
-
 namespace AzQtComponents
 {
     ElidingLabel::ElidingLabel(const QString& text, QWidget* parent /* = nullptr */)
@@ -43,7 +40,7 @@ namespace AzQtComponents
         m_text = text;
         m_metricsLabel->setText(m_text);
         updateGeometry();
-        requestElide(true);
+        requestElide();
     }
 
     void ElidingLabel::setDescription(const QString& description)
@@ -59,7 +56,7 @@ namespace AzQtComponents
         }
 
         m_elideMode = mode;
-        requestElide(true);
+        requestElide();
     }
 
     // This event also happens if the label is resized due to a layout update
@@ -67,36 +64,13 @@ namespace AzQtComponents
     void ElidingLabel::resizeEvent(QResizeEvent* event)
     {
         QLabel::resizeEvent(event);
-
-        if (m_elideTimerId == 0)
-        {
-            if (!isHidden())
-            {
-                requestElide(true); // the first 'tick' always updates the elision immediately since its probably a layout change.
-            }
-        }
-        else
-        {
-            requestElide(false);
-        }
+        requestElide();
     }
 
     void ElidingLabel::showEvent([[maybe_unused]] QShowEvent* event)
     {
         QLabel::showEvent(event);
-        requestElide(true);
-    }
-
-    void ElidingLabel::hideEvent([[maybe_unused]] QHideEvent* event)
-    {
-        QLabel::hideEvent(event);
-
-        if (m_elideTimerId != 0)
-        {
-            killTimer(m_elideTimerId);
-            m_elideTimerId = 0;
-            m_elideDeferred = false;
-        }
+        requestElide();
     }
 
     void ElidingLabel::elide()
@@ -286,51 +260,13 @@ namespace AzQtComponents
         QLabel::paintEvent(event);
     }
 
-     void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
-    {
-        if (event->timerId() != m_elideTimerId)
-        {
-            return;
-        }
-
-        if (m_elideDeferred) // a "elide again!" came in during the timer.
-        {
-            m_elideDeferred = false;
-            // do the elision, but keep the timer running in case another request comes in too quickly
-            elide();
-        }
-        else
-        {
-            // s_minTimeBetweenUpdates has elapsed since the last elide, and no new requests have come in
-            killTimer(m_elideTimerId);
-            m_elideTimerId = 0;
-        }
-    }
-
-    void ElidingLabel::requestElide(bool immediate)
+    void ElidingLabel::requestElide()
     {
         if (isHidden())
         {
             return;
         }
-
-        if (immediate)
-        {
-            elide();
-            return;
-        }
-        else
-        {
-            if (m_elideTimerId == 0)
-            {
-                m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
-            }
-            else
-            {
-                // if the timer is already running, we got a request to elide when we're already got one queued up.
-                m_elideDeferred = true;  // this will cause the timer to start again.
-            }
-        }
+        elide();
     }
 
 } // namespace AzQtComponents

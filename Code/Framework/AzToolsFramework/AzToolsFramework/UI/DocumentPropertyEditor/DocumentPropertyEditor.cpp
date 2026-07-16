@@ -1815,11 +1815,21 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::UpdateDirtyHandlers()
     {
-        for (PropertyHandlerWidgetInterface* dirtyHandler : m_dirtyHandlers)
+        AZStd::unordered_set<PropertyHandlerWidgetInterface*> dirtyHandlers;
+        m_dirtyHandlers.swap(dirtyHandlers);
+
+        for (PropertyHandlerWidgetInterface* dirtyHandler : dirtyHandlers)
         {
             dirtyHandler->RefreshUI();
         }
-        m_dirtyHandlers.clear();
+
+        // additional check - this above loop should not cause any other handlers to be dirty
+        // if it does, it means that someone is setting UI values without blocking signals.
+        AZ_Assert(
+            m_dirtyHandlers.empty(),
+            "DocumentPropertyEditor::UpdateDirtyHandlers - dirty handlers were added during refreshUI."
+            "it means that a handler is setting values without blocking signals.  Ensure that if you "
+            "are calling UI functions like setText / setValue / etc, you are blocking signals.");
     }
 
     void DocumentPropertyEditor::HandleDomMessage(

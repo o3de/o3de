@@ -158,6 +158,14 @@ namespace AZ::DocumentPropertyEditor
             {
             case Nodes::ValueChangeType::InProgressEdit:
                 m_gotInProgressEdit = true;
+
+                // At this point,  we expect the value to have already been modified in the entity.  In the case of reflected
+                // properties, the RPEPropertyHandlerWrapper<T> class has already validated and then written the value into
+                // the underlying entity component object, before it invokes this message.  In the case of the container buttons
+                // that add/remove container elements, also, this custom handler has already modified the underlying container,
+                // before it invokes this message.
+                // If you make a custom handler, make sure that you either mutate the underlying data first before invoking this
+                // event, or capture a custom undo yourself.
                 if (m_entityId.IsValid())
                 {
                     AzToolsFramework::ScopedUndoBatch batch("Modify Component Property", &m_currentUndoBatch);

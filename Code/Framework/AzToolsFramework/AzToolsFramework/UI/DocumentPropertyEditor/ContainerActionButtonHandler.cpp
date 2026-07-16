@@ -74,6 +74,8 @@ namespace AzToolsFramework
                 break;
             }
         }
+
+        GenericButtonHandler::RefreshUI();
     }
 
     void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)

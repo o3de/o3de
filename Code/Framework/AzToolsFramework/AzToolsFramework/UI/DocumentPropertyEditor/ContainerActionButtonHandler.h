@@ -28,8 +28,8 @@ namespace AzToolsFramework
         }
 
     protected:
-        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action;
-        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_priorAction;
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action = AZ::DocumentPropertyEditor::Nodes::ContainerAction::None;
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_priorAction = AZ::DocumentPropertyEditor::Nodes::ContainerAction::None;
 
         void OnClicked() override;
     };

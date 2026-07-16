@@ -14,8 +14,6 @@
 class QShowEvent;
 class QPaintEvent;
 class QResizeEvent;
-class QTimer;
-class QHideEvent;
 
 #include <QRegularExpression>
 
@@ -121,10 +119,8 @@ namespace AzQtComponents
     protected:
         void resizeEvent(QResizeEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
-        void timerEvent(QTimerEvent* event) override;
         void showEvent(QShowEvent* event) override;
-        void hideEvent(QHideEvent* event) override;
-        void requestElide(bool immediate);
+        void requestElide();
 
         QString m_filterString;
         QRegularExpression m_filterRegex;
@@ -141,10 +137,6 @@ namespace AzQtComponents
 
         Qt::TextElideMode m_elideMode;
         QLabel* m_metricsLabel;
-        
-        static constexpr int s_minTimeBetweenUpdates = 200;
-        int m_elideTimerId = 0;
-        bool m_elideDeferred = false;
     };
 
 } // namespace AzQtComponents

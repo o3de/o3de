@@ -220,9 +220,9 @@ namespace AzToolsFramework
     {
         if (!PerformingAction())
         {
-            bool m_wasMouseOver = m_mouseOver;
+            bool wasMouseOver = m_mouseOver;
             m_mouseOver = (m_manipulatorId == manipulatorId);
-            if (m_wasMouseOver != m_mouseOver)
+            if (wasMouseOver != m_mouseOver)
             {
                 // the mouse left the current manipulator, clear the undo batch
                 // so we don't try to resume it (for example, wheeling over one manipulator, then
