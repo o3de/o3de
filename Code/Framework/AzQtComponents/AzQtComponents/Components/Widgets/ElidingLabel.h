@@ -120,6 +120,8 @@ namespace AzQtComponents
         void resizeEvent(QResizeEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
         void showEvent(QShowEvent* event) override;
+
+        //! Requests that the label re-elide its text.
         void requestElide();
 
         QString m_filterString;
