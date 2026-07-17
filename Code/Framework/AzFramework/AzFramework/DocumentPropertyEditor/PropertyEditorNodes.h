@@ -10,6 +10,7 @@
 
 #include <AzFramework/DocumentPropertyEditor/DocumentSchema.h>
 #include <AzFramework/AzFrameworkAPI.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -84,14 +85,18 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     //! PropertyRefreshLevel: Determines the amount of a property tree that needs to be rebuilt
     //! based on a change to a reflected property.
-    enum class PropertyRefreshLevel : AZ::u32
+    using PropertyRefreshLevel = AZ::Crc32;
+    namespace PropertyRefreshLevels
     {
+        using namespace AZ::Edit::PropertyRefreshLevels;
+    };
+    /*{
         Undefined = 0,
         None = static_cast<AZ::u32>(AZ_CRC_CE("RefreshNone")),
         ValuesOnly = static_cast<AZ::u32>(AZ_CRC_CE("RefreshValues")),
         AttributesAndValues = static_cast<AZ::u32>(AZ_CRC_CE("RefreshAttributesAndValues")),
         EntireTree = static_cast<AZ::u32>(AZ_CRC_CE("RefreshEntireTree")),
-    };
+    }*/
 
     //! Label: A textual label that shall render its contents as part of a Row.
     struct AZF_API Label : NodeWithVisiblityControl
