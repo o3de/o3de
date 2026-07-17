@@ -33,6 +33,12 @@
 
 Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
+#if defined(AZ_DEBUG_BUILD)
+// in debug builds we do a constant check of the undo stack each idle tick
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#endif
+
 // internal, private namespace:
 namespace
 {
@@ -324,6 +330,33 @@ namespace Editor
         {
             QTimer::singleShot(1, this, &EditorQtApplication::maybeProcessIdle);
         }
+
+#if defined(AZ_DEBUG_BUILD)
+        AzToolsFramework::UndoSystem::URSequencePoint* currentUndoBatch = nullptr;
+        // in debug builds we do a constant check of the undo stack each idle tick
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::GetCurrentUndoBatch);
+        if (currentUndoBatch)
+        {
+            // Note to developers, if this appears, then someone called "Begin Undo Batch" without calling "End Undo Batch" within the same
+            // callstack, allowing control to pass back to the main loop before the batch was ended.
+            // This is a programming error, and should be fixed.  In order to do multi-frame undos (like dragging an object),
+            // you should use the following pattern
+            // 1. Store a "URSequencePoint*" member variable in your class, initialized to nullptr.  This serves as a HANDLE
+            //    to the undo batch, and can be used to resume the batch in subsequent frames.
+            // 2. When data is modified (and only when data is modified), use the ScopedUndoBatch object and pass in the
+            //    resume handle.  Its okay if its nullptr - it will make a new one, or try to resume the existing one if it can.
+            //    It will return either the same handle, or make a new handle.  Mark the entity dirty using the batch, and
+            //    update/create any data inside it as a child if it needs additional data.
+            // 3. Allow the ScopedUndoBatch object to fall out of scope.
+            // 4. When the user action completes (such as they release the mouse button and editing is over), set your
+            //    remembered handle to nullptr, so the next data change will start a new batch.
+            AZ_Warning(
+                "Undo System",
+                false,
+                "Undo batch '%s' is still open. This may indicate that an undo batch was not properly closed within the same callstack as it was opened.",
+                currentUndoBatch->GetName().c_str());
+        }
+#endif
     }
 
     void EditorQtApplication::InstallQtLogHandler()

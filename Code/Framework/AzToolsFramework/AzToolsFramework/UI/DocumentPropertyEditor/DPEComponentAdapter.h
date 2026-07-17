@@ -81,6 +81,9 @@ namespace AZ::DocumentPropertyEditor
 
         //! object, used in conjunction with a QPointer, to track if this component is still alive
         QObject m_stillAlive;
+        // for debugging, detect if someone makes a control that sends a "finished edit" without an
+        // in progress edit.
+        bool m_gotInProgressEdit = false;
     };
 
 } // namespace AZ::DocumentPropertyEditor

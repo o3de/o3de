@@ -50,9 +50,16 @@ namespace AzToolsFramework::Prefab
         using PrefabPropertyEditorNodes::PrefabOverrideLabel;
 
         m_overridden = PrefabOverrideLabel::IsOverridden.ExtractFromDomNode(domValue).value_or(false);
+        // Cache the node so we can retrieve data when we handle context menu actions. 
+        m_node = domValue;
+    }
+
+    void PrefabOverrideLabelHandler::RefreshUI()
+    {
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
 
         // Set up label
-        AZStd::string_view labelText = PrefabOverrideLabel::Value.ExtractFromDomNode(domValue).value_or("");
+        AZStd::string_view labelText = PrefabOverrideLabel::Value.ExtractFromDomNode(m_node).value_or("");
         m_textLabel->setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
 
         m_textLabel->setProperty(OverriddenPropertyName, QVariant(m_overridden));
@@ -62,8 +69,6 @@ namespace AzToolsFramework::Prefab
         m_iconButton->setIcon(m_overridden ? *m_overrideIcon : *m_emptyIcon);
         m_iconButton->setIconSize(kIconSize);
 
-        // Cache the node so we can retrieve data when we handle context menu actions. 
-        m_node = domValue;
     }
 
     bool PrefabOverrideLabelHandler::ResetToDefaults()

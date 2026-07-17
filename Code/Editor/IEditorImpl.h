@@ -181,9 +181,6 @@ public:
     void RestoreUndo(bool undo) override;
     void AcceptUndo(const QString& name) override;
     void CancelUndo() override;
-    void SuperBeginUndo() override;
-    void SuperAcceptUndo(const QString& name) override;
-    void SuperCancelUndo() override;
     void SuspendUndo() override;
     void ResumeUndo() override;
     void Undo() override;

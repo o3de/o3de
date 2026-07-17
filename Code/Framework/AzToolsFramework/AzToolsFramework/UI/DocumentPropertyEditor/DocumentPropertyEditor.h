@@ -231,6 +231,7 @@ namespace AzToolsFramework
         void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
         void ClearInstances() override;
         void SetFilterString(AZStd::string str) override; // Only used for linting, filtering is handled by the DocumentAdapter
+        void QueueInvalidation(PropertyModificationRefreshLevel level) override;
         // ~IPropertyEditor overrides
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
@@ -276,6 +277,8 @@ namespace AzToolsFramework
             }
         };
         static HandlerInfo GetInfoFromWidget(const QWidget* widget);
+        void AddDirtyHandler(PropertyHandlerWidgetInterface* dirtyWidget);
+        void ClearDirtyHandler(PropertyHandlerWidgetInterface* toClear);
 
     signals:
         void ExpanderChangedByUser();
@@ -294,6 +297,9 @@ namespace AzToolsFramework
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
+        void RequestExecuteQueuedReset();
+        void UpdateDirtyHandlers();
+        bool m_executeQueuedResetAlreadyQueued = false;
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
@@ -324,6 +330,9 @@ namespace AzToolsFramework
 
         // Co-owns the handler pool that is needed in DPE and the ownership would be released when the DPE is deleted
         AZStd::unordered_map<AZ::Name, AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
+
+        // Widgets that exist and need to requery their attributes.
+        AZStd::unordered_set<PropertyHandlerWidgetInterface*> m_dirtyHandlers;
     };
 } // namespace AzToolsFramework
 

@@ -9,16 +9,22 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#include <AzCore/DOM/DomUtils.h>
-#include <AzCore/DOM/DomValue.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
+class QWidget;
+class QString;
 
-#include <QPointer>
-#include <QWidget>
+namespace AZ
+{
+    struct Uuid;
+    using TypeId = Uuid;
+    namespace Dom
+    {
+        class Value;
+    }
+}
 
 namespace AzToolsFramework
 {
+    class DocumentPropertyEditor;
     //! Base class for all property editor widgets in the DocumentPropertyEditor.
     //! Property handler widgets are registered to the PropertyEditorToolsSystemInterface and
     //! instantiated as part of the DocumentPropertyEditor, with one handler instance being constructed
@@ -26,6 +32,9 @@ namespace AzToolsFramework
     class AZTF_API PropertyHandlerWidgetInterface
     {
     public:
+        friend class DocumentPropertyEditor;
+        friend class DPERowWidget;
+
         virtual ~PropertyHandlerWidgetInterface() = default;
 
         //! Gets the widget that should be added to the DocumentPropertyEditor.
@@ -34,6 +43,11 @@ namespace AzToolsFramework
         //! This should consume both the property value (if applicable) and any attributes, including OnChange.
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
 
+        //! The above SetValueFromDom function could be called repeatedly during updates, to set little pieces
+        //! of the node data.  In order to avoid repeatedly updating the widget, avoid setting any widget UI values
+        //! in SetValueFromDom, and instead wait for this function to be called, which will be called after all DOM updates are complete.
+        virtual void RefreshUI() = 0;
+
         //! Attempts to reset the widget handler to default, typically for recycling. Returns true if successful
         virtual bool ResetToDefaults()
         {
@@ -41,9 +55,7 @@ namespace AzToolsFramework
         }
 
         //! Allow the widget to lint its matching text to outline the current search
-        virtual void SetFilter([[maybe_unused]] const QString& filter)
-        {
-        }
+        virtual void SetFilter([[maybe_unused]] const QString& filter) {}; // optional
 
         //! Returns the first widget in the tab order for this property editor, i.e. the widget that should be selected
         //! when the user hits tab on the widget immediately prior to this.
@@ -81,6 +93,12 @@ namespace AzToolsFramework
         {
             return false;
         }
+
+    protected:
+        // The internal code will call this function, which will call the overridable SetValueFromDOM function.
+        // This allows the internal code to perform any necessary setup and teardown and makes it so that implementors
+        // do not have to remember to call the base class.
+        void SetValueFromDom_Internal(const AZ::Dom::Value& node, AzToolsFramework::DocumentPropertyEditor* owningDPE);
     };
 
     //! Helper class, provides a PropertyHandlerWidgetInterface implementation in which

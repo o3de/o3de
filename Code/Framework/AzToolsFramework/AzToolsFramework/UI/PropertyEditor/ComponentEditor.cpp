@@ -45,7 +45,7 @@ namespace AzToolsFramework
     namespace ComponentEditorConstants
     {
         static const int kPropertyLabelWidth = 160; // Width of property label column in property grid.
-        static const char* kUnknownComponentTitle = "-";
+        static const char* kUnknownComponentTitle = "";
 
         // names for widgets so they can be found in stylesheet
         static const char* kPropertyEditorId = "PropertyEditor";

@@ -1301,9 +1301,17 @@ namespace AzToolsFramework
             searchNode = searchNode->GetParent(); // walk up the tree.
         }
 
-        // note that when resuming an undo batch, we do not pop any values, this allows the node to
-        // continue adding data to nodes without creating new undos.
-        // we only create a new undo node if the one we are trying to resume is not anywhere in the current undo tree.
+        // if we just finished an undo, and its the top operation or contains the resume operation, reopen it.
+        // note that we re-attach the root to the current undo batch, but we return the child found.
+        UndoSystem::URSequencePoint* topOperation = m_undoStack->GetTop();
+        if (topOperation)
+        {
+            if (UndoSystem::URSequencePoint* searcher = topOperation->Find(expected); searcher)
+            {
+                m_currentBatchUndo = m_undoStack->PopTop();
+                return searcher;
+            }
+        }
 
         return BeginUndoBatch(label);
     }

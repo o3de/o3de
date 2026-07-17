@@ -33,6 +33,9 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
 
 #include <QMessageBox>
+#include <QTimer>
+#include <QPointer>
+#include <QWidget>
 
 class QWidget;
 class QColor;
@@ -236,6 +239,12 @@ namespace AzToolsFramework
             return m_widget;
         }
 
+        void RefreshUI() override
+        {
+            m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
+            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
+        }
+
         void SetValueFromDom(const AZ::Dom::Value& node)
         {
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
@@ -250,6 +259,7 @@ namespace AzToolsFramework
             }
 
             m_proxyClassElement.m_attributes.clear();
+
             for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
             {
                 const AZ::Name& name = attributeIt->first;
@@ -261,6 +271,11 @@ namespace AzToolsFramework
                 }
                 else if (name == PropertyEditor::ParentValue.GetName())
                 {
+                    // the "ParentValue" attribute contains the entire parent data, so we need to replace it with
+                    // the new data.  Note that this may be an incremental update, so don't assume the existing data is good.
+
+                    m_proxyParentNode.m_instances.clear();
+
                     auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
                     if (parentValue.has_value())
                     {
@@ -280,14 +295,14 @@ namespace AzToolsFramework
                         AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
 
                         // Only add parent instance if it has not been added previously
-                        if (auto foundParentIt = AZStd::find(m_proxyParentNode.m_instances.begin(), m_proxyParentNode.m_instances.end(), parentValuePtr);
-                            foundParentIt == m_proxyParentNode.m_instances.end())
-                        {
-                            m_proxyParentNode.m_instances.push_back(parentValuePtr);
-                        }
+                        m_proxyParentNode.m_instances.push_back(parentValuePtr);
 
                         // Set up the reference to parent node only if a parent value is available.
                         m_proxyNode.m_parent = &m_proxyParentNode;
+                    }
+                    else
+                    {
+                        m_proxyNode.m_parent = nullptr; // clear it out if unavailable.
                     }
                     continue;
                 }
@@ -450,9 +465,6 @@ namespace AzToolsFramework
                 m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
-            m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
-            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
-
             m_domNode = node;
         }
 
@@ -527,7 +539,13 @@ namespace AzToolsFramework
                     {
                         if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
                         {
-                            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Invalid Assignment", outcome.GetError().c_str(), QMessageBox::Ok);
+                            // do not show a message box inside this call stack - instead, queue it for later so that the property editor can finish reverting the value.
+                            auto MessageBoxFn = [outcome]()
+                            {
+                                QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Invalid Assignment", outcome.GetError().c_str(), QMessageBox::Ok);
+                            };
+
+                            QTimer::singleShot(0, AzToolsFramework::GetActiveWindow(), MessageBoxFn);
 
                             // Force the values to update so that they are correct since something just declined changes and
                             // we want the UI to display the current values and not the invalid ones
