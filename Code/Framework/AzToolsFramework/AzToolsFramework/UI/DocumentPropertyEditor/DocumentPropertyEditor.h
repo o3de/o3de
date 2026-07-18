@@ -231,7 +231,6 @@ namespace AzToolsFramework
         void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
         void ClearInstances() override;
         void SetFilterString(AZStd::string str) override; // Only used for linting, filtering is handled by the DocumentAdapter
-        void QueueInvalidation(PropertyModificationRefreshLevel level) override;
         // ~IPropertyEditor overrides
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
@@ -303,6 +302,7 @@ namespace AzToolsFramework
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler m_resetQueuedHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler m_domMessageHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::FilterEvent::Handler m_filterHandler;

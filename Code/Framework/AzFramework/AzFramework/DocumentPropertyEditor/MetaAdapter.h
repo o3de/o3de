@@ -42,6 +42,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
 
         DocumentAdapter::ResetEvent::Handler m_resetHandler;
+        DocumentAdapter::ResetQueuedEvent::Handler m_resetQueuedHandler;
         ChangedEvent::Handler m_changedHandler;
         MessageEvent::Handler m_domMessageHandler;
 

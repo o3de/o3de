@@ -112,6 +112,7 @@ namespace AZ::DocumentPropertyEditor
     public:
         AZ_RTTI(DocumentAdapter, "{8CEFE485-45C2-4ECC-B9D1-BBE75C7B02AB}");
 
+        using ResetQueuedEvent = Event<>;
         using ResetEvent = Event<>;
         using ChangedEvent = Event<const Dom::Patch&>;
         using MessageEvent = Event<const AdapterMessage&, Dom::Value&>;
@@ -128,7 +129,12 @@ namespace AZ::DocumentPropertyEditor
         //! Connects a listener for the reset event, fired when the contents of this adapter have completely changed.
         //! Any views listening to this adapter will need to call GetContents to retrieve the new contents of the adapter.
         void ConnectResetHandler(ResetEvent::Handler& handler);
-        //! Connects a listener for the changed event, fired when the contents of the adapter have changed.
+        //! Connects a listener for when the data in this adapter is dirty and requires a reset to be executed.
+        //! Views listening to this adapter will need to call ExecuteQueuedReset to start the process, and will get
+        //! either ChangedEvent or ResetEvent notifications when the reset processes.  Ideally that call should come
+        //! from as simple of a call stack as possible (ie, not deep inside rendering, responding to ui callbacks, etc).
+        void ConnectResetQueuedHandler(ResetQueuedEvent::Handler& handler);
+         //! Connects a listener for the changed event, fired when the contents of the adapter have changed.
         //! The provided patch contains all the changes provided (i.e. it shall apply cleanly on top of the last
         //! GetContents() result).
         void ConnectChangedHandler(ChangedEvent::Handler& handler);
@@ -149,7 +155,8 @@ namespace AZ::DocumentPropertyEditor
         //! registered CallbackAttributes.
         Dom::Value SendAdapterMessage(const AdapterMessage& message);
         
-        //! Subclasses can call this to execute any queued reset operations, if any are present.
+        //! The document view using this adapter will call this to actually execute any queued reset operations, if any are present.
+        //! Do so on a clean callstack, not during change or UI rebuild operations.
         virtual void ExecuteQueuedReset();
 
         //! If true, debug mode is enabled for all DocumentAdapters.
@@ -197,6 +204,9 @@ namespace AZ::DocumentPropertyEditor
         //! Where possible, prefer to use NotifyContentsChanged instead.
         void NotifyResetDocument(DocumentResetType resetType = DocumentResetType::SoftReset);
 
+        //! Subclasses that are proxying should call this to forward the event up to the view.
+        void NotifyResetQueued();
+
         //! Subclasses may call this to enqueue a NotifyResetDocument to be executed later when the current call stack unwinds.
         //! Subclasses should call this one in most cases, except when a true clear is required such as when all data is instantly
         //! invalid (during a quit / complete reload).
@@ -209,8 +219,10 @@ namespace AZ::DocumentPropertyEditor
         //! Subclasses may call this to notify the view that this adapter's content has been filtered
         void NotifyFilterChanged(const AZStd::string& filter);
 
+
     private:
         ResetEvent m_resetEvent;
+        ResetQueuedEvent m_resetQueuedEvent;
         ChangedEvent m_changedEvent;
         MessageEvent m_messageEvent;
         FilterEvent m_filterEvent;
