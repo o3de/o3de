@@ -183,6 +183,11 @@ namespace AZ
         //! Linearly interpolates between the two vectors and normalizes the result.
         Vector3 Nlerp(const Vector3& dest, float t) const;
 
+        //! Smooths a value towards a target using a critically damped spring system.
+        //! This function adjusts `value` towards `target` while maintaining continuity of `value` and its rate of change (`valueRate`).
+        //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
+        Vector3 SmoothCriticallyDamped(Vector3& valueRate, float timeDelta, const Vector3& target, float smoothTime) const;
+
         //! Dot product of two vectors.
         float Dot(const Vector3& rhs) const;
 

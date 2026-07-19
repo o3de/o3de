@@ -167,6 +167,13 @@ namespace ScriptCanvas
             return from.Slerp(to, aznumeric_cast<float>(t));
         }
 
+        AZStd::tuple<Vector3Type, Vector3Type> SmoothCriticallyDamped(
+            Vector3Type from, Vector3Type rate, const NumberType deltaTime, const Vector3Type target, const NumberType smoothTime)
+        {
+            Vector3Type smoothedResult = from.SmoothCriticallyDamped(rate, aznumeric_cast<float>(deltaTime), target, aznumeric_cast<float>(smoothTime));
+            return AZStd::make_tuple(smoothedResult, rate);
+        }
+
         AZStd::tuple<Vector3Type, NumberType> DirectionTo(const Vector3Type from, const Vector3Type to, NumberType optionalScale)
         {
             Vector3Type r = to - from;

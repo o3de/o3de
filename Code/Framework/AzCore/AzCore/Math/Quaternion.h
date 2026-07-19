@@ -207,6 +207,11 @@ namespace AZ
         //! Squad(p,a,b,q,t) = Slerp(Slerp(p,q,t), Slerp(a,b,t); 2(1-t)t).
         Quaternion Squad(const Quaternion& dest, const Quaternion& in, const Quaternion& out, float t) const;
 
+        //! Smooths a value towards a target using a critically damped spring system.
+        //! This function adjusts `value` towards `target` while maintaining continuity of `value` and its rate of change (`valueRate`).
+        //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
+        Quaternion SmoothCriticallyDamped(Quaternion& valueRate, float timeDelta, const Quaternion& target, float smoothTime) const;
+
         //! Checks if the quaternion is close to another quaternion with a given floating point tolerance.
         bool IsClose(const Quaternion& q, float tolerance = Constants::Tolerance) const;
 

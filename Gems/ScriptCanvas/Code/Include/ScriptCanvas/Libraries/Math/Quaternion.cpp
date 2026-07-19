@@ -136,6 +136,13 @@ namespace ScriptCanvas
             return from.Squad(to, in, out, aznumeric_cast<float>(t));
         }
 
+        AZStd::tuple<QuaternionType, QuaternionType> SmoothCriticallyDamped(
+            QuaternionType from, QuaternionType rate, const NumberType deltaTime, const QuaternionType target, const NumberType smoothTime)
+        {
+            QuaternionType smoothedResult = from.SmoothCriticallyDamped(rate, aznumeric_cast<float>(deltaTime), target, aznumeric_cast<float>(smoothTime));
+            return AZStd::make_tuple(smoothedResult, rate);
+        }
+
         NumberType ToAngleDegrees(QuaternionType source)
         {
             return aznumeric_caster(AZ::RadToDeg(source.GetAngle()));

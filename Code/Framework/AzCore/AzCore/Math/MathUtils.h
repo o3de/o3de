@@ -452,6 +452,13 @@ namespace AZ
         }
     }
 
+    //! Returns the successive critically dampted value and updated rate..
+    AZ_MATH_INLINE AZStd::tuple<float, float> SmoothCriticallyDamped(float& value, float& valueRate, float timeDelta, const float& target, float smoothTime)
+    {
+        SmoothCriticallyDamped<float>(value, valueRate, timeDelta, target, smoothTime);
+        return AZStd::make_tuple(value, valueRate);
+    }
+
     //! Returns true if the number provided is even.
     template<typename T>
     constexpr AZStd::enable_if_t<AZStd::is_integral<T>::value, bool> IsEven(T a)

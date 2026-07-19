@@ -64,6 +64,9 @@ namespace ScriptCanvas
 
         QuaternionType Squad(QuaternionType from, QuaternionType to, QuaternionType in, QuaternionType out, NumberType t);
 
+        AZStd::tuple<QuaternionType, QuaternionType> SmoothCriticallyDamped(
+            QuaternionType from, QuaternionType rate, const NumberType deltaTime, const QuaternionType target, const NumberType smoothTime);
+
         NumberType ToAngleDegrees(QuaternionType source);
 
         QuaternionType CreateFromEulerAngles(NumberType pitch, NumberType roll, NumberType yaw);
