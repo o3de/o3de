@@ -9,9 +9,10 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
-class QLineEdit;
-class QSettings;
+class QWidget;
 class QStyleOption;
+class QSettings;
+class QLineEdit;
 
 namespace AzQtComponents
 {

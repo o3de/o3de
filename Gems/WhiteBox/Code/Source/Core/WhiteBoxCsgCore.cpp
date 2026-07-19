@@ -9,11 +9,11 @@
 #include "WhiteBoxCsgCore.h"
 
 #include <algorithm>
-#include <cmath>
-#include <AzCore/std/containers/map.h>
-#include <tuple>
-
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/containers/map.h>
+#include <cmath>
+#include <map>
+#include <tuple>
 
 // manifold (Apache-2.0) - see 3rdParty/FindManifold.cmake
 #include <manifold/manifold.h>
