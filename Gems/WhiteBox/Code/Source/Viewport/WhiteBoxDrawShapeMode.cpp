@@ -8,42 +8,40 @@
 
 #include "WhiteBoxDrawShapeMode.h"
 
-#include "WhiteBoxShapeBuilders.h"
-
+#include "EditorWhiteBoxComponent.h"
+#include "EditorWhiteBoxComponentModeBus.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
+#include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
-#include "Util/WhiteBoxMathUtil.h"
+#include "WhiteBoxShapeBuilders.h"
 
-#include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Math/Plane.h>
-#include <AzCore/Math/MathStringConversions.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/Maths/TransformUtils.h>
-#include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <WhiteBox/EditorWhiteBoxComponentBus.h>
-#include <WhiteBox/WhiteBoxToolApi.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
-
-#include <AzFramework/Render/GeometryIntersectionStructures.h>
-#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 #include <Atom/RPI.Public/ViewportContext.h>
-#include <AzFramework/Render/Intersector.h>           // IntersectorBus / IntersectorInterface
-#include <AzFramework/Render/GeometryIntersectionStructures.h>  // RayRequest / RayResult
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
-#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Math/MathStringConversions.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Plane.h>
 #include <AzCore/std/containers/array.h>
-#include "EditorWhiteBoxComponent.h"
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
+#include <AzFramework/Render/Intersector.h>
+#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <cmath>
+#include <WhiteBox/EditorWhiteBoxComponentBus.h>
+#include <WhiteBox/WhiteBoxToolApi.h>
 
 
 namespace WhiteBox

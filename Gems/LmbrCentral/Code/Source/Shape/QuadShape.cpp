@@ -14,6 +14,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 #include <Shape/ShapeDisplay.h>
 
