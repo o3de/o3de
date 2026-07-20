@@ -12,6 +12,7 @@
 #include "WhiteBox/WhiteBoxComponentBus.h"
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzFramework/Visibility/VisibleGeometryBus.h>
@@ -38,11 +39,15 @@ namespace WhiteBox
         WhiteBoxComponent& operator=(WhiteBoxComponent&&) = default;
         ~WhiteBoxComponent();
 
+        void SetPhysicsGeometryData(const WhiteBoxRenderData& physicsData);
+        void SetBooleanPhysicsGeometryData(const WhiteBoxRenderData& physicsData);
+        // Add a getter for the collider to use:
+        const WhiteBoxRenderData& GetPhysicsRenderData() const;
         // WhiteBoxComponentRequestBus ...
         bool WhiteBoxIsVisible() const override;
         void SetLiveBoolean(bool enabled) override;
         bool GetLiveBoolean() const override;
-        void BakeWhiteBox() override;
+        void BakeWhiteBox(bool rebakeCollider = false) override;
 
         //! Set the base (un-boolean) render data. This is the geometry used when the
         //! live-boolean is disabled.
@@ -74,8 +79,15 @@ namespace WhiteBox
 
         WhiteBoxRenderData m_whiteBoxRenderData; //!< Base White Box render data (live-boolean disabled).
         WhiteBoxRenderData m_booleanRenderData; //!< Pre-baked boolean-evaluated render data (live-boolean enabled).
+        WhiteBoxRenderData m_physicsRenderData;
+        WhiteBoxRenderData m_booleanPhysicsRenderData;
+        //! Physics geometry was baked (possibly empty, collision off), so never fall back to the visual geometry.
+        bool m_hasPhysicsData = false;
         bool m_hasBooleanMesh = false; //!< Whether a boolean-evaluated variant was baked.
         bool m_liveBoolean = false; //!< Whether the boolean-evaluated variant is currently selected.
         AZStd::unique_ptr<RenderMeshInterface> m_renderMesh; //!< The render mesh to use for White Box rendering.
+        //! Re-applies the render transform when the entity's Non-Uniform Scale component changes
+        //! (the render mesh reads that scale, but a scale change raises no transform notification).
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler;
     };
 } // namespace WhiteBox

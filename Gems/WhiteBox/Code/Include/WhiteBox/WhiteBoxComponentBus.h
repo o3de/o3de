@@ -30,10 +30,9 @@ namespace WhiteBox
             return false;
         }
 
-        //! Apply the current live-boolean selection: rebuild the render mesh and re-create
-        //! the physics collider from the matching pre-baked geometry. This is the "bake"
-        //! command callable from Lua at runtime.
-        virtual void BakeWhiteBox() {}
+        //! Apply the live-boolean selection to the render mesh and collider.
+        //! @param rebakeCollider also rebuild the collider at the entity's current scale.
+        virtual void BakeWhiteBox([[maybe_unused]] bool rebakeCollider = false) {}
 
     protected:
         ~WhiteBoxComponentRequests() = default;

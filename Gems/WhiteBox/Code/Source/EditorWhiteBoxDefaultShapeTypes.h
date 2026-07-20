@@ -30,6 +30,7 @@ namespace WhiteBox
         Cone,      //!< N-sided base + apex
         Sphere,    //!< UV ellipsoid inscribed in the drawn footprint + pull height (Draw Sides = subdivision)
         Staircase, //!< stepped solid rising along the drawn footprint (Draw Steps = number of stairs)
+        Room,      //!< parametric hollow room with double (cavity) walls + optional floor/ceiling
     };
 
     //! Staircase build parameters the Draw Shape tool reads from the component. Plain data

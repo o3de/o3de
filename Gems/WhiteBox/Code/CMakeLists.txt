@@ -80,6 +80,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
+        AUTOMOC
         FILES_CMAKE
             whitebox_editor_supported_files.cmake
         INCLUDE_DIRECTORIES
@@ -95,6 +96,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 WHITE_BOX_EDITOR
         BUILD_DEPENDENCIES
             PUBLIC
+                3rdParty::Qt::Widgets
                 AZ::AzToolsFramework
                 Legacy::CryCommon
                 Legacy::Editor.Headers

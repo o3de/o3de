@@ -10,6 +10,7 @@
 
 #include "WhiteBoxShapeBuilders.h"
 
+#include "EditorWhiteBoxComponentModeBus.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
@@ -46,7 +47,6 @@
 #include <AzCore/std/containers/array.h>
 #include "EditorWhiteBoxComponent.h"
 #include <cmath>
-#include "EditorWhiteBoxComponentModeBus.h"
 
 
 namespace WhiteBox
@@ -94,6 +94,7 @@ namespace WhiteBox
         case DrawShapeType::Cone:      return "Cone";
         case DrawShapeType::Sphere:    return "Sphere";
         case DrawShapeType::Staircase: return "Staircase";
+        case DrawShapeType::Room:      return "Room";
         default:                       return "Shape";
         }
     }
@@ -180,6 +181,123 @@ namespace WhiteBox
             faces.push_back(Api::FaceVertHandles{ {v0, v1, v2} });
         }
         Api::AddPolygon(whiteBox, faces);
+    }
+
+    // Build a parametric hollow room with double (cavity) walls. Emitted as several closed,
+    // outward-wound solids appended into the mesh: two concentric rectangular wall tubes (the
+    // inner and outer leaves) plus optional floor / ceiling slabs. No CSG is used - a room is a
+    // shell, and shells are exactly where volumetric booleans misbehave, so the geometry is built
+    // directly. The room sits on z in [0, interiorHeight] and is centred at the XY origin.
+    void Detail::BuildRoomSolid(
+        WhiteBoxMesh& mesh, const float interiorWidth, const float interiorDepth, const float interiorHeight,
+        const float wallThicknessIn, const float cavityGapIn, const bool floor, const bool ceiling)
+    {
+        const float iw = AZ::GetMax(interiorWidth, 0.01f);
+        const float id = AZ::GetMax(interiorDepth, 0.01f);
+        const float ih = AZ::GetMax(interiorHeight, 0.01f);
+        const float t = AZ::GetMax(wallThicknessIn, 0.001f);
+        const float gap = AZ::GetMax(cavityGapIn, 0.0f);
+
+        const float ihx = iw * 0.5f; // interior half-extent along X
+        const float ihy = id * 0.5f; // interior half-extent along Y
+
+        // Add an axis-aligned closed box [mn, mx] as 6 outward-wound quads on shared vertices.
+        const auto addBox = [&mesh](const AZ::Vector3& mn, const AZ::Vector3& mx)
+        {
+            const AZStd::vector<AZ::Vector3> pos = {
+                AZ::Vector3(mn.GetX(), mn.GetY(), mn.GetZ()), AZ::Vector3(mx.GetX(), mn.GetY(), mn.GetZ()),
+                AZ::Vector3(mx.GetX(), mx.GetY(), mn.GetZ()), AZ::Vector3(mn.GetX(), mx.GetY(), mn.GetZ()),
+                AZ::Vector3(mn.GetX(), mn.GetY(), mx.GetZ()), AZ::Vector3(mx.GetX(), mn.GetY(), mx.GetZ()),
+                AZ::Vector3(mx.GetX(), mx.GetY(), mx.GetZ()), AZ::Vector3(mn.GetX(), mx.GetY(), mx.GetZ()),
+            };
+            AZStd::vector<Api::VertexHandle> h(pos.size());
+            for (size_t i = 0; i < pos.size(); ++i)
+            {
+                h[i] = Api::AddVertex(mesh, pos[i]);
+            }
+            const AZ::Vector3 center = (mn + mx) * 0.5f;
+            const AZStd::vector<AZStd::vector<AZ::u32>> loops = {
+                { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 0, 1, 5, 4 }, { 1, 2, 6, 5 }, { 2, 3, 7, 6 }, { 3, 0, 4, 7 }
+            };
+            for (const AZStd::vector<AZ::u32>& loop : loops)
+            {
+                Detail::AddOutwardFace(mesh, h, pos, loop, center);
+            }
+        };
+
+        // Add a rectangular tube (extruded rectangular frame) between inner half-extents (hxi, hyi)
+        // and outer half-extents (hxo, hyo), spanning [zMin, zMax]. Inner faces point INTO the hole,
+        // outer faces point out, and the open top/bottom are closed by frame (annulus) rings.
+        const auto addTube =
+            [&mesh](float hxi, float hyi, float hxo, float hyo, float zMin, float zMax)
+        {
+            const float sx[4] = { -1.0f, 1.0f, 1.0f, -1.0f };
+            const float sy[4] = { -1.0f, -1.0f, 1.0f, 1.0f };
+            AZStd::vector<AZ::Vector3> pos;
+            pos.reserve(16);
+            for (int k = 0; k < 4; ++k) // 0-3 inner bottom
+                pos.push_back(AZ::Vector3(sx[k] * hxi, sy[k] * hyi, zMin));
+            for (int k = 0; k < 4; ++k) // 4-7 inner top
+                pos.push_back(AZ::Vector3(sx[k] * hxi, sy[k] * hyi, zMax));
+            for (int k = 0; k < 4; ++k) // 8-11 outer bottom
+                pos.push_back(AZ::Vector3(sx[k] * hxo, sy[k] * hyo, zMin));
+            for (int k = 0; k < 4; ++k) // 12-15 outer top
+                pos.push_back(AZ::Vector3(sx[k] * hxo, sy[k] * hyo, zMax));
+            AZStd::vector<Api::VertexHandle> h(pos.size());
+            for (size_t i = 0; i < pos.size(); ++i)
+            {
+                h[i] = Api::AddVertex(mesh, pos[i]);
+            }
+
+            // Add one quad (a,b,c,d in ring order), fan-triangulated and wound so its normal aligns
+            // with @p outward.
+            const auto quad = [&mesh, &pos, &h](AZ::u32 a, AZ::u32 b, AZ::u32 c, AZ::u32 d, const AZ::Vector3& outward)
+            {
+                const AZ::Vector3 n = (pos[b] - pos[a]).Cross(pos[c] - pos[a]);
+                const bool flip = n.Dot(outward) < 0.0f;
+                Api::FaceVertHandlesList faces;
+                if (!flip)
+                {
+                    faces.push_back(Api::FaceVertHandles{ { h[a], h[b], h[c] } });
+                    faces.push_back(Api::FaceVertHandles{ { h[a], h[c], h[d] } });
+                }
+                else
+                {
+                    faces.push_back(Api::FaceVertHandles{ { h[a], h[c], h[b] } });
+                    faces.push_back(Api::FaceVertHandles{ { h[a], h[d], h[c] } });
+                }
+                Api::AddPolygon(mesh, faces);
+            };
+
+            const AZ::Vector3 sideOut[4] = {
+                AZ::Vector3(0.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f),
+                AZ::Vector3(-1.0f, 0.0f, 0.0f)
+            };
+            for (AZ::u32 k = 0; k < 4; ++k)
+            {
+                const AZ::u32 k1 = (k + 1) % 4;
+                quad(8 + k, 8 + k1, 12 + k1, 12 + k, sideOut[k]);                  // outer wall
+                quad(0 + k, 0 + k1, 4 + k1, 4 + k, -sideOut[k]);                   // inner wall (into the hole)
+                quad(4 + k, 4 + k1, 12 + k1, 12 + k, AZ::Vector3::CreateAxisZ());  // top frame ring
+                quad(0 + k, 0 + k1, 8 + k1, 8 + k, -AZ::Vector3::CreateAxisZ());   // bottom frame ring
+            }
+        };
+
+        // Inner wall leaf: interior boundary out by one wall thickness.
+        addTube(ihx, ihy, ihx + t, ihy + t, 0.0f, ih);
+        // Outer wall leaf: past the cavity gap, out by another wall thickness.
+        addTube(ihx + t + gap, ihy + t + gap, ihx + 2.0f * t + gap, ihy + 2.0f * t + gap, 0.0f, ih);
+
+        const float ox = ihx + 2.0f * t + gap; // full outer half-extents (used by floor/ceiling)
+        const float oy = ihy + 2.0f * t + gap;
+        if (floor)
+        {
+            addBox(AZ::Vector3(-ox, -oy, -t), AZ::Vector3(ox, oy, 0.0f));
+        }
+        if (ceiling)
+        {
+            addBox(AZ::Vector3(-ox, -oy, ih), AZ::Vector3(ox, oy, ih + t));
+        }
     }
 
     // Generate the N-gon footprint ring (world space) for the current shape:
@@ -1130,9 +1248,15 @@ namespace WhiteBox
 
         // Build the chosen shape directly into the mesh: base on the surface
         // (up offset 0), top/apex at the pull height.
+        const size_t vertsBeforeCommit = Api::MeshVertexHandles(*whiteBox).size();
         Detail::BuildShapeSolid(
             *whiteBox, worldFromLocal.GetInverse(), center, uAxis, vAxis, up,
             0.0f, m_height, CurrentShape(), CurrentSides(), EffectiveStairSteps());
+
+        // Map the new geometry into the active layer's space so it shows where it was drawn.
+        EditorWhiteBoxComponentRequestBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::MapMeshToActiveLayerSpace, *whiteBox,
+            vertsBeforeCommit);
 
         Api::CalculateNormals(*whiteBox);
         Api::CalculatePlanarUVs(*whiteBox);
@@ -1221,6 +1345,10 @@ namespace WhiteBox
         Detail::BuildShapeSolid(
             *cutter, worldFromLocal.GetInverse(), center, uAxis, vAxis, up,
             baseUp, topUp, CurrentShape(), CurrentSides(), EffectiveStairSteps());
+        // Map into the active layer's storage space (it may display transformed) so the
+        // carve/boss lands exactly where it was drawn.
+        EditorWhiteBoxComponentRequestBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::MapMeshToActiveLayerSpace, *cutter, size_t{ 0 });
         Api::CalculateNormals(*cutter);
 
         AzToolsFramework::ScopedUndoBatch undoBatch(carve ? "Carve White Box" : "Add White Box");

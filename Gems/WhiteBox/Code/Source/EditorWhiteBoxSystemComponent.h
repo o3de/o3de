@@ -9,6 +9,7 @@
 #pragma once
 
 #include "WhiteBoxSystemComponent.h"
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
 namespace WhiteBox
@@ -17,6 +18,7 @@ namespace WhiteBox
     class EditorWhiteBoxSystemComponent
         : public WhiteBoxSystemComponent
         , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
+        , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
         AZ_COMPONENT(EditorWhiteBoxSystemComponent, "{42D40E84-A8C4-474B-A4D6-B665CCEA8A83}", WhiteBoxSystemComponent);
@@ -28,6 +30,9 @@ namespace WhiteBox
         void OnActionRegistrationHook() override;
         void OnActionContextModeBindingHook() override;
         void OnMenuBindingHook() override;
+
+        // AzToolsFramework::EditorEvents overrides ...
+        void NotifyRegisterViews() override;
 
     private:
         // AZ::Component ...

@@ -27,11 +27,14 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("WhiteBoxRenderData", &WhiteBoxComponent::m_whiteBoxRenderData)
                 ->Field("BooleanRenderData", &WhiteBoxComponent::m_booleanRenderData)
                 ->Field("HasBooleanMesh", &WhiteBoxComponent::m_hasBooleanMesh)
-                ->Field("LiveBoolean", &WhiteBoxComponent::m_liveBoolean);
+                ->Field("LiveBoolean", &WhiteBoxComponent::m_liveBoolean)
+                ->Field("PhysicsRenderData", &WhiteBoxComponent::m_physicsRenderData)
+                ->Field("BooleanPhysicsRenderData", &WhiteBoxComponent::m_booleanPhysicsRenderData)
+                ->Field("HasPhysicsData", &WhiteBoxComponent::m_hasPhysicsData);
         }
 
         // Reflected here (Common scope), not in the Editor-only reflection, so runtime Lua can use it.
@@ -43,7 +46,12 @@ namespace WhiteBox
                 ->Event("WhiteBoxIsVisible", &WhiteBoxComponentRequestBus::Events::WhiteBoxIsVisible)
                 ->Event("SetLiveBoolean", &WhiteBoxComponentRequestBus::Events::SetLiveBoolean)
                 ->Event("GetLiveBoolean", &WhiteBoxComponentRequestBus::Events::GetLiveBoolean)
-                ->Event("BakeWhiteBox", &WhiteBoxComponentRequestBus::Events::BakeWhiteBox);
+                ->Event(
+                    "BakeWhiteBox", &WhiteBoxComponentRequestBus::Events::BakeWhiteBox,
+                    {{AZ::BehaviorParameterOverrides(
+                        "rebakeCollider",
+                        "When true, rebuild the physics collider from the entity's current size/scale",
+                        behaviorContext->MakeDefaultValue(false))}});
         }
     }
 
@@ -62,10 +70,26 @@ namespace WhiteBox
         AzFramework::VisibleGeometryRequestBus::Handler::BusConnect(entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         WhiteBoxComponentRequestBus::Handler::BusConnect(entityId);
+
+        // Re-apply the transform (which pulls in the current non-uniform scale) when the entity's
+        // Non-Uniform Scale component changes - no transform notification is raised for it.
+        m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
+            [this]([[maybe_unused]] const AZ::Vector3& scale)
+            {
+                if (m_renderMesh)
+                {
+                    AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
+                    AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                    m_renderMesh->UpdateTransform(worldFromLocal);
+                }
+            });
+        AZ::NonUniformScaleRequestBus::Event(
+            entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
     }
 
     void WhiteBoxComponent::Deactivate()
     {
+        m_nonUniformScaleChangedHandler.Disconnect();
         WhiteBoxComponentRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::VisibleGeometryRequestBus::Handler::BusDisconnect();
@@ -126,15 +150,14 @@ namespace WhiteBox
         return m_liveBoolean;
     }
 
-    void WhiteBoxComponent::BakeWhiteBox()
+    void WhiteBoxComponent::BakeWhiteBox(const bool rebakeCollider)
     {
         // apply the current selection to the render mesh ...
         RebuildRenderMesh();
 
-        // ... and to the physics collider (no-op if this entity has no White Box collider
-        // or no boolean collider variant was baked).
+        // ... and the collider (forced when rebakeCollider, to pick up the current scale).
         WhiteBoxColliderRequestBus::Event(
-            GetEntityId(), &WhiteBoxColliderRequests::BakeCollider, m_liveBoolean);
+            GetEntityId(), &WhiteBoxColliderRequests::BakeCollider, m_liveBoolean, rebakeCollider);
     }
 
     void WhiteBoxComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -159,4 +182,40 @@ namespace WhiteBox
     {
         return m_renderMesh->IsVisible();
     }
+
+    // Implement the setters:
+    void WhiteBoxComponent::SetPhysicsGeometryData(const WhiteBoxRenderData& physicsData)
+    {
+        m_physicsRenderData = physicsData;
+        // Mark that authoritative physics data was supplied. Even an empty result is meaningful
+        // (collision disabled for every layer) and must not fall back to the visual geometry.
+        m_hasPhysicsData = true;
+    }
+
+    void WhiteBoxComponent::SetBooleanPhysicsGeometryData(const WhiteBoxRenderData& physicsData)
+    {
+        m_booleanPhysicsRenderData = physicsData;
+    }
+
+    // Implement the getter for the physics collider:
+    const WhiteBoxRenderData& WhiteBoxComponent::GetPhysicsRenderData() const
+    {
+        // If the live boolean is toggled ON and we have valid boolean physics data, use it.
+        if (m_liveBoolean && m_hasBooleanMesh && !m_booleanPhysicsRenderData.m_faces.empty())
+        {
+            return m_booleanPhysicsRenderData;
+        }
+
+        // Baked physics data is authoritative even when empty (collision off).
+        if (m_hasPhysicsData)
+        {
+            return m_physicsRenderData;
+        }
+
+        // Failsafe: only legacy data (saved before physics geometry was baked) reaches here -
+        // fall back to the visual geometry. ActiveRenderData() handles base vs boolean automatically.
+        return ActiveRenderData();
+    }
+
+
 } // namespace WhiteBox

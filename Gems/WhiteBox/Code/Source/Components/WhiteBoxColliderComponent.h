@@ -11,7 +11,10 @@
 #include "WhiteBoxColliderConfiguration.h"
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
@@ -48,6 +51,15 @@ namespace WhiteBox
         //! component's "Draw Collider" toggle when the game entity is built).
         void SetDrawCollider(bool draw) { m_drawCollider = draw; }
 
+        //! Supply the actual cooked collider geometry (as a triangle list) so the runtime "Draw
+        //! Collider" overlay shows the real physics shape - e.g. the greedy-merged voxel collider -
+        //! rather than the render mesh. Set from the editor collider when the game entity is built.
+        void SetDebugMesh(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices)
+        {
+            m_debugVertices = vertices;
+            m_debugIndices = indices;
+        }
+
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -61,7 +73,7 @@ namespace WhiteBox
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // WhiteBoxColliderRequestBus ...
-        void BakeCollider(bool useBooleanMesh) override;
+        void BakeCollider(bool useBooleanMesh, bool forceRebuild = false) override;
 
         // EntityDebugDisplayEventBus ...
         void DisplayEntityViewport(
@@ -81,7 +93,13 @@ namespace WhiteBox
         bool m_hasBooleanMesh = false; //!< Whether a boolean-evaluated cooked mesh was baked.
         bool m_useBooleanMesh = false; //!< Whether the boolean-evaluated mesh is currently in use.
         bool m_drawCollider = false; //!< Draw the collision shape as a wireframe at runtime (opt-in).
+        AZStd::vector<AZ::Vector3> m_debugVertices; //!< Cooked collider geometry for the runtime wireframe overlay.
+        AZStd::vector<AZ::u32> m_debugIndices; //!< Triangle indices into m_debugVertices for the wireframe overlay.
         float m_builtScale = 1.0f; //!< Uniform scale the current physics shape was built with.
+        AZ::Vector3 m_builtNonUniformScale = AZ::Vector3::CreateOne(); //!< Non-uniform scale folded into the current shape.
+        //! Rebuilds the body when the entity's Non-Uniform Scale component changes (the cooked
+        //! shape's Vector3 scale is set from it, so a change needs a body rebuild).
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler;
         Physics::ColliderConfiguration
             m_physicsColliderConfiguration; //!< General physics collider configuration information.
         AzPhysics::SimulatedBodyHandle m_simulatedBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Simulated body to represent the White Box Mesh at runtime.

@@ -7,22 +7,9 @@
 --
 
 ----------------------------------------------------------------------------------------------------
--- WhiteBoxLiveBooleanBusTest.lua
---
--- Exercises the runtime WhiteBoxComponentRequestBus that controls the baked live-boolean:
---     SetLiveBoolean(entityId, bool)
---     GetLiveBoolean(entityId) -> bool
---     BakeWhiteBox(entityId)            -- applies the current selection to render + collider
---
--- How to use:
---   1. Add a "Lua Script" component to an entity that also has a White Box Component and a
---      White Box Collider. Set a Boolean Source on the White Box Component and enable its
---      Live Boolean so a boolean variant gets baked.
---   2. (Optional) Enable "Draw Collider" on the White Box Collider to see the collision
---      wireframe switch between the base and boolean shapes.
---   3. Assign this script to the Lua Script component and enter game mode. Watch the Console
---      for the [WhiteBoxBusTest] log lines and, if AutoToggle is on, the collider flipping
---      between shapes every ToggleInterval seconds.
+-- WhiteBoxLiveBooleanBusTest.lua - exercises WhiteBoxComponentRequestBus (SetLiveBoolean,
+-- GetLiveBoolean, BakeWhiteBox). Put it on an entity with a White Box Component and Collider that
+-- has a Live Boolean set up, enter game mode and watch the [WhiteBoxBusTest] log lines.
 ----------------------------------------------------------------------------------------------------
 
 local WhiteBoxLiveBooleanBusTest = {

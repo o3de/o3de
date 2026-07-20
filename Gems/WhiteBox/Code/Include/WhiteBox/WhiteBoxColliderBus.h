@@ -17,13 +17,9 @@ namespace WhiteBox
     class WhiteBoxColliderRequests : public AZ::ComponentBus
     {
     public:
-        //! Rebuild the physics body from one of the pre-baked cooked collision meshes.
-        //! @param useBooleanMesh When true, use the boolean-evaluated mesh baked at build
-        //! time; when false, use the base mesh. If the requested variant was not baked the
-        //! call is a no-op and the current body is left unchanged.
-        //! @note CSG cannot be evaluated at runtime, so this selects between geometry that
-        //! was cooked in the Editor when the game entity was built.
-        virtual void BakeCollider(bool useBooleanMesh) = 0;
+        //! Rebuild the physics body from the base or boolean cooked mesh (CSG cannot run at runtime).
+        //! @param forceRebuild rebuild even if the variant is unchanged, to pick up the current entity scale.
+        virtual void BakeCollider(bool useBooleanMesh, bool forceRebuild = false) = 0;
 
     protected:
         ~WhiteBoxColliderRequests() = default;

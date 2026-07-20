@@ -1,0 +1,863 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ * EditorWhiteBoxComponent - LAYER SYSTEM translation unit: layer storage/loading, the
+ * combine pipeline (per-layer cache + CSG combine modes), layer operations (add / delete /
+ * switch / meta edits / apply transform) and parametric shape layers.
+ */
+
+#include "EditorWhiteBoxComponent.h"
+
+#include "Util/WhiteBoxMeshUtil.h"
+#include "Util/WhiteBoxVoxelUtil.h"
+#include "Viewport/WhiteBoxShapeBuilders.h"
+
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzFramework/Translation/TranslationDef.h>
+
+namespace WhiteBox
+{
+    void EditorWhiteBoxComponent::WhiteBoxLayer::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<WhiteBoxLayer>()
+                ->Version(2)
+                ->Field("Name", &WhiteBoxLayer::m_name)
+                ->Field("Id", &WhiteBoxLayer::m_id)
+                ->Field("Visible", &WhiteBoxLayer::m_visible)
+                ->Field("Collision", &WhiteBoxLayer::m_collision)
+                ->Field("Parametric", &WhiteBoxLayer::m_parametric)
+                ->Field("ParamShape", &WhiteBoxLayer::m_paramShape)
+                ->Field("ParamWidth", &WhiteBoxLayer::m_paramWidth)
+                ->Field("ParamDepth", &WhiteBoxLayer::m_paramDepth)
+                ->Field("ParamHeight", &WhiteBoxLayer::m_paramHeight)
+                ->Field("ParamSides", &WhiteBoxLayer::m_paramSides)
+                ->Field("ParamSteps", &WhiteBoxLayer::m_paramSteps)
+                ->Field("ParamWallThickness", &WhiteBoxLayer::m_paramWallThickness)
+                ->Field("ParamCavityGap", &WhiteBoxLayer::m_paramCavityGap)
+                ->Field("ParamFloor", &WhiteBoxLayer::m_paramFloor)
+                ->Field("ParamCeiling", &WhiteBoxLayer::m_paramCeiling)
+                ->Field("Tint", &WhiteBoxLayer::m_tint)
+                ->Field("Combine", &WhiteBoxLayer::m_combineMode)
+                ->Field("InvertNormals", &WhiteBoxLayer::m_invertNormals)
+                ->Field("EdgesOnly", &WhiteBoxLayer::m_edgesOnly)
+                ->Field("Position", &WhiteBoxLayer::m_position)
+                ->Field("Rotation", &WhiteBoxLayer::m_rotation)
+                ->Field("Scale", &WhiteBoxLayer::m_scale)
+                ->Field("Freeform", &WhiteBoxLayer::m_freeformData)
+                ->Field("Grid", &WhiteBoxLayer::m_gridData)
+                ->Field("GridMerged", &WhiteBoxLayer::m_gridMergedData)
+                ->Field("VoxelCells", &WhiteBoxLayer::m_voxelCells)
+                ->Field("VoxelCellSizes", &WhiteBoxLayer::m_voxelCellSizes)
+                ->Field("VoxelMerged", &WhiteBoxLayer::m_voxelMerged);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<WhiteBoxLayer>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box Layer"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "One editable White Box layer."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_name,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Name"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Layer name."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxLayer::m_visible,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Visible"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Show or hide this layer (hidden layers are excluded from the combined output)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxLayer::m_collision,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Collision"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Include or exclude this layer from the physics collision mesh."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Color, &WhiteBoxLayer::m_tint, QT_TRANSLATE_NOOP("WhiteBox", "Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render colour for this layer (used when 'Use Global Tint' is off)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &WhiteBoxLayer::m_combineMode,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Combine"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "How this layer combines with the layers below it: Separate keeps it as its own island; "
+                        "Union fuses it; Subtract carves it out; Intersect keeps only the overlap."))
+                    ->EnumAttribute(LayerCombineMode::Separate, QT_TRANSLATE_NOOP("WhiteBox", "Separate"))
+                    ->EnumAttribute(LayerCombineMode::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(LayerCombineMode::Subtract, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(LayerCombineMode::Intersect, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxLayer::m_invertNormals,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Invert Normals"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render this layer inside-out (flips its normals / winding). Non-destructive and reversible; "
+                        "applies to existing and new geometry in the layer."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_position,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Position"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Translate this layer's geometry (applied non-destructively at combine time)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_rotation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Rotation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Rotate this layer's geometry, Euler degrees (XYZ)."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &WhiteBoxLayer::m_scale, QT_TRANSLATE_NOOP("WhiteBox", "Scale"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Scale this layer's geometry (non-uniform)."))
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.001f);
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::StoreLayer(const int index)
+    {
+        if (index < 0 || index >= static_cast<int>(m_layers.size()))
+        {
+            return;
+        }
+        // The working streams are kept current by SerializeWhiteBox, so copy them (plus the
+        // occupancy arrays) into the layer.
+        WhiteBoxLayer& layer = m_layers[index];
+        layer.m_freeformData = m_whiteBoxData;
+        layer.m_gridData = m_voxel.m_legacyGridData;
+        layer.m_gridMergedData.clear(); // legacy merged-grid stream, feature removed
+        layer.m_voxelCells = m_voxel.m_cells;
+        layer.m_voxelCellSizes = m_voxel.m_sizes;
+        layer.m_voxelMerged.clear(); // legacy flags, feature removed
+        m_layerRuntime.m_meshCache.erase(layer.m_id); // the stored data changed -> cached display mesh is stale
+    }
+
+    void EditorWhiteBoxComponent::LoadActiveLayer()
+    {
+        if (m_layers.empty())
+        {
+            return;
+        }
+        if (m_activeLayerIndex < 0)
+        {
+            m_activeLayerIndex = 0;
+        }
+        if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        }
+        const WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        m_whiteBoxData = layer.m_freeformData;
+        m_voxel.m_legacyGridData = layer.m_gridData;
+        m_voxel.m_cells = layer.m_voxelCells;
+        m_voxel.m_sizes = layer.m_voxelCellSizes;
+        m_voxel.m_legacyMerged.clear(); // legacy flags, feature removed
+
+        m_whiteBox = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_whiteBox, m_whiteBoxData); // new/empty layers stay empty (no default cube)
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*m_gridMesh, m_voxel.m_legacyGridData);
+        m_layerRuntime.m_loadedIndex = m_activeLayerIndex;
+        m_layerRuntime.m_loadedId = m_layers[m_activeLayerIndex].m_id;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+    }
+
+    void EditorWhiteBoxComponent::ApplyTransformToMesh(
+        WhiteBoxMesh& mesh, const AZ::Vector3& position, const AZ::Vector3& eulerDegrees, const AZ::Vector3& scale)
+    {
+        const bool identity = position.IsZero() && eulerDegrees.IsZero() &&
+            scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        if (identity)
+        {
+            return; // nothing to do - leave the mesh (and its UVs/normals) untouched
+        }
+
+        const AZ::Quaternion rotation = AZ::Quaternion::CreateFromEulerAnglesDegrees(eulerDegrees);
+        for (const Api::VertexHandle vertexHandle : Api::MeshVertexHandles(mesh))
+        {
+            AZ::Vector3 p = Api::VertexPosition(mesh, vertexHandle);
+            p *= scale;                       // component-wise (non-uniform) scale
+            p = rotation.TransformVector(p);  // rotate
+            p += position;                    // translate
+            Api::SetVertexPosition(mesh, vertexHandle, p);
+        }
+        Api::CalculateNormals(mesh);
+        Api::CalculatePlanarUVs(mesh);
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::BuildLayerMesh(const WhiteBoxLayer& layer)
+    {
+        // Deserialize a stored layer and combine its geometry into one display mesh.
+        Api::WhiteBoxMeshPtr freeform = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*freeform, layer.m_freeformData);
+        Api::WhiteBoxMeshPtr grid = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*grid, layer.m_gridData);
+        if (!layer.m_gridMergedData.empty())
+        {
+            // Legacy "Merge With Mesh" cubes (feature removed): fold them into the grid.
+            Api::WhiteBoxMeshPtr gridMerged = Api::CreateWhiteBoxMesh();
+            Api::ReadMesh(*gridMerged, layer.m_gridMergedData);
+            if (!Api::MeshFaceHandles(*gridMerged).empty())
+            {
+                AppendMesh(*grid, *gridMerged);
+            }
+        }
+        Api::WhiteBoxMeshPtr combined = CombineFreeformAndGrids(freeform.get(), grid.get());
+        if (combined)
+        {
+            ApplyTransformToMesh(*combined, layer.m_position, layer.m_rotation, layer.m_scale);
+            if (layer.m_invertNormals)
+            {
+                // Flip the ACTUAL winding (not just the render faces) so rendering, physics
+                // cooking and selection all agree - an inverted "room" collides from inside.
+                combined = FlippedMeshWinding(*combined);
+            }
+        }
+        return combined;
+    }
+
+    AZStd::vector<AZStd::pair<int, AZStd::string>> EditorWhiteBoxComponent::GetLayerNames()
+    {
+        AZStd::vector<AZStd::pair<int, AZStd::string>> names;
+        if (m_layers.empty())
+        {
+            // A placeholder keeps the combo valid (an empty list selects index -1 and logs).
+            names.emplace_back(0, AZStd::string("(no layers)"));
+            return names;
+        }
+        names.reserve(m_layers.size());
+        for (int i = 0; i < static_cast<int>(m_layers.size()); ++i)
+        {
+            const AZStd::string& name = m_layers[i].m_name;
+            names.emplace_back(i, AZStd::string::format("%d: %s", i, name.empty() ? "Layer" : name.c_str()));
+        }
+        return names;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnActiveLayerChange()
+    {
+        // With no layers there is nothing to switch to; force a tree rebuild so a stale dropdown
+        // (still listing deleted layers) is replaced by the "(no layers)" placeholder.
+        if (m_layers.empty())
+        {
+            m_activeLayerIndex = 0;
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+        const int incoming = m_activeLayerIndex;
+        if (m_activeLayerIndex < 0)
+        {
+            m_activeLayerIndex = 0;
+        }
+        if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        }
+        // The combo box can briefly hold entries for layers that were just deleted. If the picked
+        // index was out of range we clamped it, so rebuild the tree to resync the dropdown.
+        const bool wasStale = m_activeLayerIndex != incoming;
+        const AZ::u32 refresh = wasStale ? AZ::Edit::PropertyRefreshLevels::EntireTree
+                                         : AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        if (m_activeLayerIndex == m_layerRuntime.m_loadedIndex)
+        {
+            return refresh;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Switch White Box Layer");
+        SerializeWhiteBox(); // commit the currently loaded layer into m_layers
+        LoadActiveLayer();   // load the newly selected layer into the working members
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return refresh;
+    }
+
+    int EditorWhiteBoxComponent::AddParametricShapeLayer(const DrawShapeType shape)
+    {
+        AzToolsFramework::ScopedUndoBatch undoBatch("Add Parametric Shape");
+        SerializeWhiteBox(); // commit the current layer
+
+        WhiteBoxLayer layer;
+        layer.m_name =
+            AZStd::string::format("%s %d", Detail::DrawShapeName(shape), static_cast<int>(m_layers.size()) + 1);
+        layer.m_id = AllocLayerId();
+        layer.m_parametric = true;
+        layer.m_paramShape = shape;
+        // Shape-appropriate defaults (mirrors the Draw Shape side-count defaults).
+        switch (shape)
+        {
+        case DrawShapeType::Cylinder:
+        case DrawShapeType::Cone:
+            layer.m_paramSides = 24;
+            break;
+        case DrawShapeType::Sphere:
+            layer.m_paramSides = 16;
+            break;
+        case DrawShapeType::Room:
+            // A 1x1x1 interior is uselessly small for a room; start with a walkable box.
+            layer.m_paramSides = 4;
+            layer.m_paramWidth = 4.0f;
+            layer.m_paramDepth = 4.0f;
+            layer.m_paramHeight = 3.0f;
+            break;
+        default:
+            layer.m_paramSides = 4;
+            break;
+        }
+
+        const Api::WhiteBoxMeshPtr mesh = BuildParametricShapeMesh(
+            layer.m_paramShape, layer.m_paramWidth, layer.m_paramDepth, layer.m_paramHeight, layer.m_paramSides,
+            layer.m_paramSteps, layer.m_paramWallThickness, layer.m_paramCavityGap, layer.m_paramFloor,
+            layer.m_paramCeiling);
+        Api::WriteMesh(*mesh, layer.m_freeformData);
+
+        m_layers.push_back(AZStd::move(layer));
+        m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        LoadActiveLayer(); // make the new shape the edit target
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return m_activeLayerIndex;
+    }
+
+    EditorWhiteBoxComponent::ShapeParams EditorWhiteBoxComponent::GetLayerShapeParams(const int index) const
+    {
+        ShapeParams params;
+        if (index >= 0 && index < GetLayerCount())
+        {
+            const WhiteBoxLayer& layer = m_layers[index];
+            params.m_shape = layer.m_paramShape;
+            params.m_width = layer.m_paramWidth;
+            params.m_depth = layer.m_paramDepth;
+            params.m_height = layer.m_paramHeight;
+            params.m_sides = layer.m_paramSides;
+            params.m_steps = layer.m_paramSteps;
+            params.m_wallThickness = layer.m_paramWallThickness;
+            params.m_cavityGap = layer.m_paramCavityGap;
+            params.m_floor = layer.m_paramFloor;
+            params.m_ceiling = layer.m_paramCeiling;
+        }
+        return params;
+    }
+
+    void EditorWhiteBoxComponent::SetLayerShapeParams(const int index, const ShapeParams& params)
+    {
+        if (!IsLayerParametric(index))
+        {
+            return;
+        }
+        WhiteBoxLayer& layer = m_layers[index];
+        layer.m_paramShape = params.m_shape;
+        layer.m_paramWidth = AZStd::max(params.m_width, 0.01f);
+        layer.m_paramDepth = AZStd::max(params.m_depth, 0.01f);
+        layer.m_paramHeight = AZStd::max(params.m_height, 0.01f);
+        layer.m_paramSides = AZStd::clamp(params.m_sides, 3, 128);
+        layer.m_paramSteps = AZStd::clamp(params.m_steps, 1, 128);
+        layer.m_paramWallThickness = AZStd::max(params.m_wallThickness, 0.001f);
+        layer.m_paramCavityGap = AZStd::max(params.m_cavityGap, 0.0f);
+        layer.m_paramFloor = params.m_floor;
+        layer.m_paramCeiling = params.m_ceiling;
+        RegenerateParametricLayer(index);
+    }
+
+    void EditorWhiteBoxComponent::BakeParametricLayer(const int index)
+    {
+        if (IsLayerParametric(index))
+        {
+            // The generated mesh stays exactly as-is; the parameters just stop driving it,
+            // which makes vertex-level edits safe (nothing will regenerate over them).
+            m_layers[index].m_parametric = false;
+        }
+    }
+
+    void EditorWhiteBoxComponent::RegenerateParametricLayer(const int index)
+    {
+        if (!IsLayerParametric(index))
+        {
+            return;
+        }
+        WhiteBoxLayer& layer = m_layers[index];
+        const ShapeParams params = GetLayerShapeParams(index);
+        Api::WhiteBoxMeshPtr mesh = BuildParametricShapeMesh(
+            params.m_shape, params.m_width, params.m_depth, params.m_height, params.m_sides, params.m_steps,
+            params.m_wallThickness, params.m_cavityGap, params.m_floor, params.m_ceiling);
+        if (index == m_layerRuntime.m_loadedIndex)
+        {
+            // The parametric layer is the ACTIVE one: replace the working mesh so viewport
+            // display/selection track the new shape, then flush it into the layer's stream.
+            m_whiteBox = AZStd::move(mesh);
+            SerializeWhiteBox();
+        }
+        else
+        {
+            Api::WriteMesh(*mesh, layer.m_freeformData);
+        }
+        m_layerRuntime.m_meshCache.erase(layer.m_id); // the cached display mesh is stale now
+        RebuildWhiteBox();
+        RefreshComponentMode();
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnNewLayer()
+    {
+        AzToolsFramework::ScopedUndoBatch undoBatch("New White Box Layer");
+        SerializeWhiteBox(); // commit the current layer
+        WhiteBoxLayer layer;
+        layer.m_name = AZStd::string::format("Layer %d", static_cast<int>(m_layers.size()) + 1);
+        layer.m_id = AllocLayerId();
+        m_layers.push_back(AZStd::move(layer));
+        m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        LoadActiveLayer(); // load the new empty layer
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnDeleteLayer()
+    {
+        if (m_layers.empty() || m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Delete White Box Layer");
+        m_layers.erase(m_layers.begin() + m_activeLayerIndex);
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        if (m_layers.empty())
+        {
+            // Deleting the last layer leaves an empty white box (nothing renders, stamps cleared).
+            m_activeLayerIndex = 0;
+            ClearWorkingLayer();
+        }
+        else
+        {
+            if (m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+            {
+                m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
+            }
+            m_layerRuntime.m_loadedIndex = -1; // force a reload of the working members
+            LoadActiveLayer();
+        }
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnLayersMetaChanged()
+    {
+        // If the id order/count changed, the list was added-to, removed-from or reordered (some
+        // O3DE versions deliver these via this ChangeNotify) - do the full structural resync.
+        if (LayerSignature() != m_layerRuntime.m_lastSignature)
+        {
+            SyncLayerStructure();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        // Otherwise this is an in-place edit (name / visibility / combine mode / transform). Keep
+        // the working index pointing at the loaded layer and recombine to reflect the change.
+        const int k = IndexOfLayerId(m_layerRuntime.m_loadedId);
+        if (k >= 0)
+        {
+            m_layerRuntime.m_loadedIndex = k;
+        }
+        RebuildWhiteBox();
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    void EditorWhiteBoxComponent::RefreshComponentMode()
+    {
+        // A full refresh, not just dirty intersection data: sub-modes hold handles into the old mesh
+        // (Transform mode's selection crashes if it survives a layer swap). No-op outside component mode.
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::Refresh,
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+    }
+
+    void EditorWhiteBoxComponent::ClearWorkingLayer()
+    {
+        // Reset the working members to empty geometry. Used when there are zero layers so the
+        // white box shows nothing and the stamp occupancy is cleared.
+        m_whiteBox = Api::CreateWhiteBoxMesh();
+        m_gridMesh = Api::CreateWhiteBoxMesh();
+        m_voxel.m_cells.clear();
+        m_voxel.m_sizes.clear();
+        m_voxel.m_legacyMerged.clear();
+        Api::WriteMesh(*m_whiteBox, m_whiteBoxData);
+        Api::WriteMesh(*m_gridMesh, m_voxel.m_legacyGridData);
+        m_voxel.m_legacyGridMergedData.clear();
+        m_layerRuntime.m_loadedIndex = -1;
+        m_layerRuntime.m_loadedId = 0;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnApplyLayerTransform()
+    {
+        if (m_layers.empty() || m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        const bool identity = layer.m_position.IsZero() && layer.m_rotation.IsZero() &&
+            layer.m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        if (identity)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None; // nothing to bake
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Apply White Box Layer Transform");
+
+        const bool isActive = m_activeLayerIndex == m_layerRuntime.m_loadedIndex;
+        if (isActive)
+        {
+            SerializeWhiteBox(); // flush the working members into this layer's streams first
+        }
+
+        // Fold the grids in and bake the transform; rotated cubes cannot stay voxels, so stamps are frozen.
+        Api::WhiteBoxMeshPtr freeform = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*freeform, layer.m_freeformData);
+        Api::WhiteBoxMeshPtr grid = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*grid, layer.m_gridData);
+        Api::WhiteBoxMeshPtr gridMerged = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*gridMerged, layer.m_gridMergedData);
+        if (!Api::MeshFaceHandles(*grid).empty())
+        {
+            AppendMesh(*freeform, *grid);
+        }
+        if (!Api::MeshFaceHandles(*gridMerged).empty())
+        {
+            AppendMesh(*freeform, *gridMerged);
+        }
+        ApplyTransformToMesh(*freeform, layer.m_position, layer.m_rotation, layer.m_scale);
+
+        Api::WriteMesh(*freeform, layer.m_freeformData);
+        layer.m_gridData.clear();
+        layer.m_gridMergedData.clear();
+        layer.m_voxelCells.clear();
+        layer.m_voxelCellSizes.clear();
+        layer.m_voxelMerged.clear();
+        layer.m_position = AZ::Vector3::CreateZero();
+        layer.m_rotation = AZ::Vector3::CreateZero();
+        layer.m_scale = AZ::Vector3::CreateOne();
+
+        if (isActive)
+        {
+            m_layerRuntime.m_loadedIndex = -1; // force the working members to reload from the baked streams
+            LoadActiveLayer();
+        }
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree; // reset the Position/Rotation/Scale fields
+    }
+
+    AZ::u64 EditorWhiteBoxComponent::AllocLayerId()
+    {
+        if (m_nextLayerId == 0)
+        {
+            m_nextLayerId = 1;
+        }
+        return m_nextLayerId++;
+    }
+
+    int EditorWhiteBoxComponent::IndexOfLayerId(const AZ::u64 id) const
+    {
+        if (id == 0)
+        {
+            return -1;
+        }
+        for (int i = 0; i < static_cast<int>(m_layers.size()); ++i)
+        {
+            if (m_layers[i].m_id == id)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    AZ::u64 EditorWhiteBoxComponent::LayerSignature() const
+    {
+        AZ::u64 h = 1469598103934665603ull ^ static_cast<AZ::u64>(m_layers.size());
+        for (const WhiteBoxLayer& layer : m_layers)
+        {
+            h ^= layer.m_id;
+            h *= 1099511628211ull;
+        }
+        return h;
+    }
+
+    void EditorWhiteBoxComponent::SyncLayerStructure()
+    {
+        // Give any natively-added ("+") layers a stable id first so ids are unique.
+        for (WhiteBoxLayer& layer : m_layers)
+        {
+            if (layer.m_id == 0)
+            {
+                layer.m_id = AllocLayerId();
+            }
+        }
+
+        const int count = static_cast<int>(m_layers.size());
+        if (count == 0)
+        {
+            m_activeLayerIndex = 0;
+            ClearWorkingLayer();
+        }
+        else
+        {
+            const int k = IndexOfLayerId(m_layerRuntime.m_loadedId);
+            if (k >= 0)
+            {
+                // The loaded layer still exists (reordered or added to): reindex only, keeping in-progress edits.
+                m_layerRuntime.m_loadedIndex = k;
+                m_activeLayerIndex = k;
+            }
+            else
+            {
+                // The loaded layer was removed: load whatever the active index now points at.
+                if (m_activeLayerIndex < 0)
+                {
+                    m_activeLayerIndex = 0;
+                }
+                if (m_activeLayerIndex >= count)
+                {
+                    m_activeLayerIndex = count - 1;
+                }
+                m_layerRuntime.m_loadedIndex = -1;
+                LoadActiveLayer();
+            }
+        }
+
+        m_layerRuntime.m_lastCount = count;
+        m_layerRuntime.m_lastSignature = LayerSignature();
+
+        // Prune cached display meshes for layers that no longer exist (ids are never reused).
+        for (auto it = m_layerRuntime.m_meshCache.begin(); it != m_layerRuntime.m_meshCache.end();)
+        {
+            it = (IndexOfLayerId(it->first) < 0) ? m_layerRuntime.m_meshCache.erase(it) : ++it;
+        }
+
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+            AzToolsFramework::Refresh_EntireTree);
+        // Every structural change ends here, including the first layer auto-created by drawing.
+        EditorWhiteBoxComponentNotificationBus::Event(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()),
+            &EditorWhiteBoxComponentNotificationBus::Events::OnLayerStructureChanged);
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::EvaluatedMesh()
+    {
+        // When a stamp/grid layer exists it is combined with the freeform mesh (see
+        // RebuildCombinedMesh) so render / collision / bounds / selection all see both.
+        if (m_combinedMesh)
+        {
+            return m_combinedMesh.get();
+        }
+        // Non-destructive: render/collide/select against the evaluated result while
+        // the editable base (GetWhiteBoxMesh) stays untouched.
+        if (m_boolean.m_live && m_displayMesh)
+        {
+            return m_displayMesh.get();
+        }
+        return GetWhiteBoxMesh();
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::GetEvaluatedWhiteBoxMesh()
+    {
+        return EvaluatedMesh();
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::GridMesh()
+    {
+        if (!m_gridMesh)
+        {
+            m_gridMesh = Api::CreateWhiteBoxMesh();
+        }
+        return m_gridMesh.get();
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::CombinedWithGrid(WhiteBoxMesh* freeform)
+    {
+        const bool hasSeparate = m_gridMesh && !Api::MeshFaceHandles(*m_gridMesh).empty();
+        if (freeform == nullptr || !hasSeparate)
+        {
+            return nullptr; // no grid layer -> caller uses the freeform mesh as-is
+        }
+        Api::WhiteBoxMeshPtr combined = Api::CloneMesh(*freeform);
+        if (!combined)
+        {
+            return nullptr;
+        }
+
+        // Stamped cubes are appended alongside the freeform (their own islands) - plain append,
+        // no CSG; the occupancy mesher already produced a clean watertight cube surface.
+        AppendMesh(*combined, *m_gridMesh);
+
+        Api::CalculateNormals(*combined);
+        Api::CalculatePlanarUVs(*combined);
+        return combined;
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::BuildCombined(WhiteBoxMesh* activeFreeform, bool physicsPass)
+    {
+        const int count = static_cast<int>(m_layers.size());
+        const int activeIdx = m_layerRuntime.m_loadedIndex;
+
+        AZStd::vector<int> visible;
+        visible.reserve(count);
+        for (int i = 0; i < count; ++i)
+        {
+            if (m_layers[i].m_visible)
+            {
+                // Skip this layer if we are building the physics mesh and collision is off
+                if (physicsPass && !m_layers[i].m_collision)
+                {
+                    continue;
+                }
+                visible.push_back(i);
+            }
+        }
+        if (visible.empty())
+        {
+            return Api::CreateWhiteBoxMesh(); // nothing visible -> empty mesh (renders nothing)
+        }
+
+        const bool activeIdentity = activeIdx >= 0 && activeIdx < count &&
+            m_layers[activeIdx].m_position.IsZero() && m_layers[activeIdx].m_rotation.IsZero() &&
+            m_layers[activeIdx].m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
+        const bool activeNoGrid = !(m_gridMesh && !Api::MeshFaceHandles(*m_gridMesh).empty());
+        const bool activeInverted = activeIdx >= 0 && activeIdx < count && m_layers[activeIdx].m_invertNormals;
+
+        // Fast path: a single visible identity layer without grid, inversion or modifiers uses the raw
+        // working mesh. Never on the physics pass, where filtered-out layers would sneak back in.
+        if (!physicsPass && visible.size() == 1 && visible[0] == activeIdx && activeIdentity && activeNoGrid &&
+            !activeInverted)
+        {
+            return nullptr;
+        }
+
+        // Accumulate visible layers bottom-up per combine mode. Inactive layers come from the mesh cache.
+        Api::WhiteBoxMeshPtr acc;
+        for (const int idx : visible)
+        {
+            Api::WhiteBoxMeshPtr ownedMesh; //!< Active layer only - always built fresh from the working mesh.
+            WhiteBoxMesh* operand = nullptr; //!< The layer's display mesh (owned locally or by the cache).
+            if (idx == activeIdx)
+            {
+                ownedMesh = CombinedWithGrid(activeFreeform);
+                if (!ownedMesh && activeFreeform != nullptr)
+                {
+                    ownedMesh = Api::CloneMesh(*activeFreeform);
+                }
+                if (ownedMesh && !activeIdentity)
+                {
+                    ApplyTransformToMesh(
+                        *ownedMesh, m_layers[activeIdx].m_position, m_layers[activeIdx].m_rotation,
+                        m_layers[activeIdx].m_scale);
+                }
+                if (ownedMesh && activeInverted)
+                {
+                    ownedMesh = FlippedMeshWinding(*ownedMesh); // mesh-level flip (see BuildLayerMesh)
+                }
+                operand = ownedMesh.get();
+            }
+            else
+            {
+                const AZ::u64 layerId = m_layers[idx].m_id;
+                auto it = m_layerRuntime.m_meshCache.find(layerId);
+                if (it == m_layerRuntime.m_meshCache.end() || !it->second)
+                {
+                    it = m_layerRuntime.m_meshCache.insert_or_assign(layerId, BuildLayerMesh(m_layers[idx])).first;
+                }
+                operand = it->second.get(); // already transformed; used read-only below
+            }
+            if (operand == nullptr)
+            {
+                continue;
+            }
+            if (!acc)
+            {
+                // First visible layer is the base (its own mode is ignored). The accumulator gets
+                // mutated, so a cached operand must be cloned; the active layer's mesh is moved.
+                acc = ownedMesh ? AZStd::move(ownedMesh) : Api::CloneMesh(*operand);
+                continue;
+            }
+            const AZ::Transform identity = AZ::Transform::CreateIdentity();
+            // Inter-layer booleans run in both tint modes; BuildColoredRenderData re-tints the merged faces.
+            const LayerCombineMode mode = m_layers[idx].m_combineMode;
+            switch (mode)
+            {
+            case LayerCombineMode::Union:
+                if (Api::MeshFaceHandles(*acc).empty() ||
+                    !Api::ApplyMeshBoolean(*acc, *operand, identity, Api::BooleanOperation::Union, m_csgSolver))
+                {
+                    AppendMesh(*acc, *operand);
+                }
+                break;
+            case LayerCombineMode::Subtract:
+                Api::ApplyMeshBoolean(*acc, *operand, identity, Api::BooleanOperation::Subtraction, m_csgSolver);
+                break;
+            case LayerCombineMode::Intersect:
+                Api::ApplyMeshBoolean(*acc, *operand, identity, Api::BooleanOperation::Intersection, m_csgSolver);
+                break;
+            case LayerCombineMode::Separate:
+            default:
+                AppendMesh(*acc, *operand);
+                break;
+            }
+        }
+        if (!acc)
+        {
+            return Api::CreateWhiteBoxMesh();
+        }
+        Api::CalculateNormals(*acc);
+        Api::CalculatePlanarUVs(*acc);
+        return acc;
+    }
+
+    void EditorWhiteBoxComponent::RebuildCombinedMesh()
+    {
+        if (m_boolean.m_live && m_displayMesh && !m_boolean.m_affectActiveOnly)
+        {
+            m_combinedMesh = Api::CloneMesh(*m_displayMesh);
+            // Physics uses the collision-filtered cut result; the visual one only if that was not evaluated.
+            m_physicsCombinedMesh =
+                Api::CloneMesh(m_physicsDisplayMesh ? *m_physicsDisplayMesh : *m_displayMesh);
+            BakeEntityScaleIntoPhysicsMesh();
+            return;
+        }
+
+        WhiteBoxMesh* freeform = (m_boolean.m_live && m_displayMesh) ? m_displayMesh.get() : GetWhiteBoxMesh();
+        m_combinedMesh = BuildCombined(freeform, false);       // Visual Mesh (entity non-uniform scale via render transform)
+        m_physicsCombinedMesh = BuildCombined(freeform, true); // Physics Mesh
+        BakeEntityScaleIntoPhysicsMesh();
+    }
+
+    AZ::Vector3 EditorWhiteBoxComponent::EntityNonUniformScale() const
+    {
+        AZ::Vector3 scale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(scale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+        return scale;
+    }
+
+    void EditorWhiteBoxComponent::BakeEntityScaleIntoPhysicsMesh()
+    {
+        // Bake non-uniform scale into the physics mesh (cooked colliders ignore it; render applies it
+        // via the transform). The physics mesh is always a fresh copy, so this is safe.
+        const AZ::Vector3 scale = EntityNonUniformScale();
+        if (m_physicsCombinedMesh && !scale.IsClose(AZ::Vector3::CreateOne()))
+        {
+            ApplyTransformToMesh(*m_physicsCombinedMesh, AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), scale);
+            Api::CalculateNormals(*m_physicsCombinedMesh);
+        }
+    }
+
+    WhiteBoxMesh* EditorWhiteBoxComponent::GetPhysicsMesh()
+    {
+        if (m_physicsCombinedMesh)
+        {
+            return m_physicsCombinedMesh.get();
+        }
+        return EvaluatedMesh(); // Fallback safely
+    }
+} // namespace WhiteBox

@@ -12,10 +12,13 @@
 #include "Rendering/WhiteBoxRenderData.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
@@ -42,6 +45,14 @@ namespace WhiteBox
         Union,      //!< CSG-union onto the layers below (fuses solids).
         Subtract,   //!< CSG-subtract from the layers below (carves a hole).
         Intersect   //!< CSG-intersect with the layers below (keeps only the overlap).
+    };
+
+    //! What happens to the boolean source entity after a successful Apply Boolean.
+    enum class SourceAfterApply : int
+    {
+        Keep,   //!< Leave the source entity untouched.
+        Hide,   //!< Hide the source entity.
+        Delete  //!< Delete the source entity.
     };
 
     //! Editor representation of White Box Tool.
@@ -93,20 +104,21 @@ namespace WhiteBox
             const DrawStairData& stair = m_drawShapeData.m_stair;
             return DrawStairInfo{stair.m_steps, stair.m_byHeight, stair.m_stepHeight, stair.m_rotation};
         }
-        bool GetDrawCarve() override { return m_drawCarve; }
-        bool GetDrawMergeUnion() override { return m_drawMergeUnion; }
-        bool GetDrawUnitCube() override { return m_drawUnitCube; }
+        bool GetDrawCarve() override { return m_drawShapeData.m_carve; }
+        bool GetDrawMergeUnion() override { return m_drawShapeData.m_mergeUnion; }
+        bool GetDrawUnitCube() override { return m_drawShapeData.m_unitCube; }
         //! Size of the next stamped cube; existing cubes keep their own size.
         float GetDrawUnitCubeSize() override
         {
-            const float s = m_drawUnitCubeSize;
+            const float s = m_drawShapeData.m_unitCubeSize;
             return s < 0.05f ? 0.05f : s;
         }
-        bool GetDrawUnitCubeShowGrid() override { return m_drawUnitCubeShowGrid; }
+        bool GetDrawUnitCubeShowGrid() override { return m_drawShapeData.m_unitCubeShowGrid; }
         void SetVoxelCell(const AZ::Vector3& cellMin, bool filled) override;
         void SetVoxelCells(const AZStd::vector<AZ::Vector3>& cellMins, bool filled) override;
         bool BuildColliderMesh(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices) override;
         bool CarveCubeGrids(const WhiteBoxMesh& cutter, const AZ::Transform& cutterTransform) override;
+        void MapMeshToActiveLayerSpace(WhiteBoxMesh& mesh, size_t firstVertexIndex) override;
 
         // EditorComponentSelectionRequestsBus overrides ...
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
@@ -135,13 +147,244 @@ namespace WhiteBox
         WhiteBoxMesh* GetEvaluatedWhiteBoxMesh();
         //! Evaluate base [op] source into a new mesh regardless of the live flag; null if unset or failed.
         //! Editor only (uses the CSG API). Used to bake the boolean variant.
-        Api::WhiteBoxMeshPtr EvaluateBooleanMesh();
+        Api::WhiteBoxMeshPtr EvaluateBooleanMesh(bool physicsPass = false);
         //! The cached live-boolean result (null when off); safe during the game build, unlike EvaluateBooleanMesh.
         WhiteBoxMesh* GetLiveBooleanDisplayMesh();
         //! Whether the live (non-destructive) boolean is currently enabled.
-        bool GetLiveBoolean() const { return m_liveBoolean; }
+        bool GetLiveBoolean() const { return m_boolean.m_live; }
+        //! Collision-filtered meshes for the collider (layers with Collision off removed). The displayed
+        //! variant; empty when nothing collides, null on a clone.
+        WhiteBoxMesh* GetPhysicsFilteredMesh() { return GetPhysicsMesh(); }
+        //! The cached collision-filtered mesh or null - never the unfiltered fallback - for the game-entity cook.
+        WhiteBoxMesh* GetPhysicsCombinedMeshStrict() { return m_physicsCombinedMesh.get(); }
+        //! The physics-filtered boolean-evaluated mesh (null when no boolean source is set).
+        WhiteBoxMesh* GetPhysicsFilteredBooleanMesh() { return m_physicsDisplayMesh.get(); }
+        //! The uncut collision-filtered base, for the base variant while the live boolean is on. Null on
+        //! the single identity layer fast path.
+        Api::WhiteBoxMeshPtr BuildPhysicsFilteredBaseMesh() { return BuildCombined(GetWhiteBoxMesh(), true); }
         //! Enter White Box component mode (undoable). The entity must be selected and the component active.
         void EnterComponentMode();
+
+        // ---- Pane API -------------------------------------------------------------------
+        // The White Box pane drives all editing through this block.
+
+        //! Metadata for one layer (everything the pane edits - not the mesh data itself).
+        struct LayerMeta
+        {
+            AZStd::string m_name;
+            bool m_visible = true;
+            bool m_collision = true;
+            AZ::Vector3 m_tint = DefaultMaterialTint;
+            LayerCombineMode m_combineMode = LayerCombineMode::Separate;
+            bool m_invertNormals = false;
+            bool m_edgesOnly = false;
+            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
+        };
+
+        // Default shape (SetDefaultShape - the full entry point - is declared above with the bus overrides).
+        DefaultShapeType GetDefaultShape() const { return m_defaultShape; }
+
+        // Draw Shape tool settings.
+        void SetDrawShape(DrawShapeType shape)
+        {
+            m_drawShapeData.m_shape = shape;
+            m_drawShapeData.OnShapeChange(); // resets Draw Sides to a sensible default for the shape
+        }
+        void SetDrawSides(int sides) { m_drawShapeData.m_sides = AZStd::clamp(sides, 3, 128); }
+        void SetDrawStairInfo(const DrawStairInfo& info)
+        {
+            m_drawShapeData.m_stair.m_steps = info.m_steps;
+            m_drawShapeData.m_stair.m_byHeight = info.m_byHeight;
+            m_drawShapeData.m_stair.m_stepHeight = info.m_stepHeight;
+            m_drawShapeData.m_stair.m_rotation = info.m_rotation;
+        }
+        void SetDrawCarve(bool carve) { m_drawShapeData.m_carve = carve; }
+        void SetDrawMergeUnion(bool mergeUnion) { m_drawShapeData.m_mergeUnion = mergeUnion; }
+
+        // Unit Cube Stamp settings.
+        void SetDrawUnitCube(bool unitCube) { m_drawShapeData.m_unitCube = unitCube; }
+        void SetDrawUnitCubeSize(float size) { m_drawShapeData.m_unitCubeSize = AZStd::clamp(size, 0.05f, 100.0f); }
+        void SetDrawUnitCubeShowGrid(bool showGrid) { m_drawShapeData.m_unitCubeShowGrid = showGrid; }
+        void ClearCubeStamp() { ClearVoxelCubes(); }
+
+        // Display settings.
+        bool GetEdgesOnly() const { return m_edgesOnly; }
+        void SetEdgesOnly(bool edgesOnly)
+        {
+            m_edgesOnly = edgesOnly;
+            OnEdgesOnlyChange();
+        }
+        bool GetUseGlobalTint() const { return m_useGlobalTint; }
+        void SetUseGlobalTint(bool useGlobalTint)
+        {
+            m_useGlobalTint = useGlobalTint;
+            OnGlobalTintChange();
+        }
+        bool GetMaterialUseTexture() const { return m_material.m_useTexture; }
+
+        // Layers.
+        int GetLayerCount() const { return static_cast<int>(m_layers.size()); }
+        int GetActiveLayerIndex() const { return m_activeLayerIndex; }
+        void SetActiveLayer(int index)
+        {
+            if (index >= 0 && index < GetLayerCount() && index != m_activeLayerIndex)
+            {
+                m_activeLayerIndex = index;
+                OnActiveLayerChange();
+            }
+        }
+        AZStd::vector<AZStd::pair<int, AZStd::string>> GetLayerNames(); //!< (index, name) pairs.
+        void AddLayer() { OnNewLayer(); }
+
+        //! Parameters of a parametric shape layer (the pane edits these; the mesh regenerates live).
+        struct ShapeParams
+        {
+            DrawShapeType m_shape = DrawShapeType::Box;
+            float m_width = 1.0f;  //!< Full extent along local X. For a Room this is the INTERIOR width.
+            float m_depth = 1.0f;  //!< Full extent along local Y. For a Room this is the INTERIOR depth.
+            float m_height = 1.0f; //!< Full extent along local Z (a tall sphere makes a bullet). Room: INTERIOR height.
+            int m_sides = 4;       //!< Side count (round shapes) / sphere subdivision.
+            int m_steps = 8;       //!< Staircase step count.
+            // Room-only parameters (ignored by the other shapes).
+            float m_wallThickness = 0.15f; //!< Thickness of EACH wall leaf (inner and outer).
+            float m_cavityGap = 0.1f;      //!< Empty gap between the inner and outer wall leaves (double wall).
+            bool m_floor = true;           //!< Add a floor slab beneath the interior.
+            bool m_ceiling = false;        //!< Add a ceiling slab above the interior.
+        };
+        //! Append a new PARAMETRIC layer generating @p shape (made active). Returns its index.
+        int AddParametricShapeLayer(DrawShapeType shape);
+        bool IsLayerParametric(int index) const
+        {
+            return index >= 0 && index < GetLayerCount() && m_layers[index].m_parametric;
+        }
+        ShapeParams GetLayerShapeParams(int index) const;
+        //! Write new shape parameters and regenerate the layer's mesh (live rebuild).
+        void SetLayerShapeParams(int index, const ShapeParams& params);
+        //! Freeze a parametric layer into an ordinary mesh layer (enables vertex editing;
+        //! the shape parameters stop driving it).
+        void BakeParametricLayer(int index);
+        void DeleteActiveLayer() { OnDeleteLayer(); }
+        void ApplyActiveLayerTransform() { OnApplyLayerTransform(); }
+        AZ::Crc32 CreateChildLayer(); //!< New child entity with its own White Box component; edit focus moves to it.
+        LayerMeta GetLayerMeta(int index) const
+        {
+            LayerMeta meta;
+            if (index >= 0 && index < GetLayerCount())
+            {
+                const WhiteBoxLayer& layer = m_layers[index];
+                meta.m_name = layer.m_name;
+                meta.m_visible = layer.m_visible;
+                meta.m_collision = layer.m_collision;
+                meta.m_tint = layer.m_tint;
+                meta.m_combineMode = layer.m_combineMode;
+                meta.m_invertNormals = layer.m_invertNormals;
+                meta.m_edgesOnly = layer.m_edgesOnly;
+                meta.m_position = layer.m_position;
+                meta.m_rotation = layer.m_rotation;
+                meta.m_scale = layer.m_scale;
+            }
+            return meta;
+        }
+        void SetLayerMeta(int index, const LayerMeta& meta)
+        {
+            if (index < 0 || index >= GetLayerCount())
+            {
+                return;
+            }
+            WhiteBoxLayer& layer = m_layers[index];
+            layer.m_name = meta.m_name;
+            layer.m_visible = meta.m_visible;
+            layer.m_collision = meta.m_collision;
+            layer.m_tint = meta.m_tint;
+            layer.m_combineMode = meta.m_combineMode;
+            layer.m_invertNormals = meta.m_invertNormals;
+            layer.m_edgesOnly = meta.m_edgesOnly;
+            layer.m_position = meta.m_position;
+            layer.m_rotation = meta.m_rotation;
+            layer.m_scale = AZ::Vector3(
+                AZStd::max(meta.m_scale.GetX(), 0.001f), AZStd::max(meta.m_scale.GetY(), 0.001f),
+                AZStd::max(meta.m_scale.GetZ(), 0.001f));
+            m_layerRuntime.m_meshCache.erase(layer.m_id); // this layer's cached display mesh is stale now
+            OnLayersMetaChanged(); // recombine + resync
+        }
+
+        // Boolean.
+        AZ::EntityId GetBooleanSourceEntity() const { return m_boolean.m_sourceEntity; }
+        void SetBooleanSourceEntity(AZ::EntityId sourceEntity)
+        {
+            m_boolean.m_sourceEntity = sourceEntity;
+            OnBooleanSourceChange();
+        }
+        Api::BooleanOperation GetBooleanOperation() const { return m_boolean.m_operation; }
+        void SetBooleanOperation(Api::BooleanOperation operation)
+        {
+            m_boolean.m_operation = operation;
+            OnLiveBooleanChange();
+        }
+        void SetLiveBoolean(bool live)
+        {
+            m_boolean.m_live = live;
+            OnLiveBooleanChange();
+        }
+        bool GetBooleanAffectActiveOnly() const { return m_boolean.m_affectActiveOnly; }
+        void SetBooleanAffectActiveOnly(bool activeOnly)
+        {
+            m_boolean.m_affectActiveOnly = activeOnly;
+            OnLiveBooleanChange();
+        }
+        SourceAfterApply GetSourceAfterApply() const { return m_boolean.m_sourceAfterApply; }
+        void SetSourceAfterApply(SourceAfterApply mode) { m_boolean.m_sourceAfterApply = mode; }
+        void ApplyBoolean(); //!< One-shot CSG apply using the source entity's mesh.
+
+        // CSG solver for every boolean of this component: Fast (face-based BSP) or Manifold (volumetric).
+        Api::CsgSolver GetCsgSolver() const { return m_csgSolver; }
+        void SetCsgSolver(Api::CsgSolver solver)
+        {
+            if (m_csgSolver != solver)
+            {
+                m_csgSolver = solver;
+                m_layerRuntime.m_meshCache.clear(); // cached combined layers were built with the old solver
+                RebuildWhiteBox();                  // re-evaluate all booleans with the new solver
+            }
+        }
+
+        // Mesh / entity operations.
+        void AddCollision() { OnAddCollision(); }
+        void FixNonManifold() { FixNonManifoldMesh(); }
+        void SaveMeshAsAsset() { SaveAsAsset(); }
+        void ExportToFile();
+        void ExportDescendantsToFile();
+        bool GetFlipYZForExport() const { return m_flipYZForExport; }
+        void SetFlipYZForExport(bool flip) { m_flipYZForExport = flip; }
+        //! Voxel stamp cell records (for "Clear Cube Stamp") and legacy grid streams folded in on load.
+        struct VoxelData
+        {
+            AZ_TYPE_INFO(VoxelData, "{7D2B4F63-9A11-4E5B-8C27-3A6F0D51B9E2}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            AZStd::vector<AZ::u64> m_cells; //!< Packed integer cell coords of stamped cubes.
+            AZStd::vector<float> m_sizes;   //!< Per-cell world cube size (parallel to m_cells).
+            float m_legacySize = 1.0f;                      //!< LEGACY single baked cell size (migration only).
+            AZStd::vector<AZ::u8> m_legacyMerged;           //!< LEGACY per-cube merged flags (cleared on load).
+            Api::WhiteBoxMeshStream m_legacyGridData;       //!< LEGACY separate-grid stream (folded on load).
+            Api::WhiteBoxMeshStream m_legacyGridMergedData; //!< LEGACY merged-grid stream (folded on load).
+        };
+
+        //! Entity-boolean settings. Public for the version converter, like VoxelData.
+        struct BooleanSettings
+        {
+            AZ_TYPE_INFO(BooleanSettings, "{58E9A1C4-2F76-4B0D-9E3A-B14C7D82F065}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            AZ::EntityId m_sourceEntity; //!< Another entity whose White Box mesh is the boolean operand.
+            Api::BooleanOperation m_operation = Api::BooleanOperation::Subtraction;
+            bool m_live = false;             //!< Non-destructive: evaluate the boolean for display only.
+            bool m_affectActiveOnly = false; //!< Cut only the active layer instead of the whole combined mesh.
+            SourceAfterApply m_sourceAfterApply = SourceAfterApply::Keep; //!< Source entity fate after Apply.
+        };
+        // ---- end Pane API ---------------------------------------------------------------
 
     private:
         //! Staircase-specific settings for the Draw Shape tool (only relevant when the
@@ -172,11 +415,17 @@ namespace WhiteBox
             DrawShapeType m_shape = DrawShapeType::Box; //!< Shape the Draw Shape tool builds.
             int m_sides = 4;        //!< Side count the Draw Shape tool uses for round / N-gon shapes (4 = box/square).
             DrawStairData m_stair;  //!< Staircase-specific settings.
+            bool m_carve = false;           //!< Draw acts as a CSG boolean (same as holding Ctrl).
+            bool m_mergeUnion = false;      //!< Committing a drawn shape CSG-unions it into the mesh.
+            bool m_unitCube = false;        //!< Draw mode click-stamps grid-snapped cubes.
+            float m_unitCubeSize = 1.0f;    //!< Desired world-space size of the next stamped cube.
+            bool m_unitCubeShowGrid = true; //!< Show the per-cube grid in the stamp ghost preview.
 
-        private:
             //! When the Draw Shape changes, set a sensible default Draw Sides for it and
             //! refresh the property grid so the Draw Sides field updates.
             AZ::u32 OnShapeChange();
+
+        private:
             //! Draw Sides only matters for round / N-gon shapes; hide it for a Staircase.
             AZ::Crc32 SidesVisibility() const;
             //! The Staircase-only controls only show when the draw shape is a Staircase.
@@ -193,18 +442,55 @@ namespace WhiteBox
             AZStd::string m_name = "Layer";
             AZ::u64 m_id = 0; //!< Stable unique id so the active/working layer survives list reordering.
             bool m_visible = true;
+            bool m_collision = true;
             AZ::Vector3 m_tint = DefaultMaterialTint; //!< Per-layer render tint (used when 'Use Global Tint' is off).
             LayerCombineMode m_combineMode = LayerCombineMode::Separate; //!< How this layer combines with the ones below it.
-            bool m_invertNormals = false; //!< Render this layer inside-out (reversed winding) - non-destructive.
+            bool m_invertNormals = false; //!< Flip this layer's winding (render + collision + selection) - non-destructive.
+            bool m_edgesOnly = false;     //!< Hide this layer's solid faces and draw only its edges (visual only).
             AZ::Vector3 m_position = AZ::Vector3::CreateZero();       //!< Per-layer translation (applied at combine time).
             AZ::Vector3 m_rotation = AZ::Vector3::CreateZero();       //!< Per-layer rotation, Euler degrees (XYZ).
             AZ::Vector3 m_scale = AZ::Vector3::CreateOne();           //!< Per-layer non-uniform scale.
+            // Parametric: the mesh is generated from the parameters below and rebuilt when they change.
+            bool m_parametric = false;
+            DrawShapeType m_paramShape = DrawShapeType::Box;
+            float m_paramWidth = 1.0f;  //!< Full extent along local X.
+            float m_paramDepth = 1.0f;  //!< Full extent along local Y.
+            float m_paramHeight = 1.0f; //!< Full extent along local Z.
+            int m_paramSides = 4;       //!< Side count (round shapes) / sphere subdivision.
+            int m_paramSteps = 8;       //!< Staircase step count.
+            // Room-only parameters (m_paramShape == DrawShapeType::Room).
+            float m_paramWallThickness = 0.15f; //!< Thickness of each wall leaf.
+            float m_paramCavityGap = 0.1f;      //!< Gap between the inner and outer wall leaves.
+            bool m_paramFloor = true;           //!< Generate a floor slab.
+            bool m_paramCeiling = false;        //!< Generate a ceiling slab.
+
             Api::WhiteBoxMeshStream m_freeformData;   //!< Serialized freeform (drawable) mesh.
-            Api::WhiteBoxMeshStream m_gridData;       //!< Serialized separate-cube grid mesh.
-            Api::WhiteBoxMeshStream m_gridMergedData; //!< Serialized merged-cube grid mesh.
+            Api::WhiteBoxMeshStream m_gridData;       //!< Serialized stamped-cube grid mesh.
+            Api::WhiteBoxMeshStream m_gridMergedData; //!< LEGACY (feature removed): folded into m_gridData on load.
             AZStd::vector<AZ::u64> m_voxelCells;
             AZStd::vector<float> m_voxelCellSizes;
-            AZStd::vector<AZ::u8> m_voxelMerged;
+            AZStd::vector<AZ::u8> m_voxelMerged;      //!< LEGACY (feature removed): cleared on load.
+        };
+
+        //! Runtime rebuild coalescing / debouncing (never serialized).
+        struct RebuildState
+        {
+            bool m_liveBooleanPending = false; //!< Boolean source moved: rebuild once on the next tick.
+            bool m_physicsPending = false;     //!< Physics rebuild deferred until the drag settles.
+            float m_physicsTimer = 0.0f;
+            bool m_bakedDataDirty = false;     //!< Game-mode bake caches need recomputing (debounced).
+            float m_bakedDataDelay = 0.0f;
+        };
+
+        //! Runtime layer bookkeeping (never serialized): which layer the working members hold,
+        //! change detection for the reflected container, and the per-layer display mesh cache.
+        struct LayerRuntime
+        {
+            int m_loadedIndex = -1;      //!< Which layer the working members currently hold (-1 = none).
+            AZ::u64 m_loadedId = 0;      //!< Stable id of the loaded layer (survives reordering).
+            int m_lastCount = -1;        //!< Layer count at the last sync (detects add/remove).
+            AZ::u64 m_lastSignature = 0; //!< Hash of the layer id order (detects reorder as well).
+            AZStd::unordered_map<AZ::u64, Api::WhiteBoxMeshPtr> m_meshCache; //!< Display mesh per NON-ACTIVE layer.
         };
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -231,41 +517,42 @@ namespace WhiteBox
         void HideRenderMesh();
         void RebuildRenderMesh();
         void RebuildPhysicsMesh();
-        void ExportToFile();
-        void ExportDescendantsToFile();
         AZ::Crc32 SaveAsAsset();
         //! Remove every cube placed by the Unit Cube Stamp tool (clears the voxel set and
         //! regenerates the surface, leaving any hand-edited freeform geometry intact).
         AZ::Crc32 ClearVoxelCubes();
         //! Weld coincident vertices and regroup coplanar faces (Api::RepairMesh) so booleans work again.
         AZ::Crc32 FixNonManifoldMesh();
-        //! Create a new White Box "layer": a child entity with its own White Box component, then
-        //! switch edit focus to it (so the next shape/cube is drawn into the child).
-        AZ::Crc32 CreateChildLayer();
-
         // Data-layer plumbing. The working members (m_whiteBox, the two grids, occupancy)
         // always hold the ACTIVE layer; StoreLayer/LoadActiveLayer move data to/from m_layers.
         void StoreLayer(int index);          //!< Working members -> m_layers[index].
         void LoadActiveLayer();              //!< m_layers[m_activeLayerIndex] -> working members.
         Api::WhiteBoxMeshPtr BuildLayerMesh(const WhiteBoxLayer& layer); //!< Combined display mesh for a stored layer.
         AZ::u32 OnActiveLayerChange();       //!< Active Layer control changed: commit current, load new.
-        AZStd::vector<AZStd::pair<int, AZStd::string>> GetLayerNames(); //!< (index, name) pairs for the Active Layer dropdown.
         AZ::Crc32 OnNewLayer();              //!< Append an empty layer and make it active.
         AZ::Crc32 OnDeleteLayer();           //!< Delete the active layer (keeps at least one).
         AZ::u32 OnLayersMetaChanged();       //!< Layer name/visibility edited: recombine + resync.
         void RefreshComponentMode();         //!< Mark the component mode intersection data dirty after a layer swap.
         void ClearWorkingLayer();            //!< Reset the working members to empty (used when there are zero layers).
         AZ::Crc32 OnApplyLayerTransform();   //!< Bake the active layer's transform into its geometry, then reset it.
-        //! Build the full combined mesh from an active-layer freeform: every visible layer
-        //! (active from @p activeFreeform + grids + its transform, others from their stored data),
-        //! CSG-accumulated in list order per each layer's combine mode. Null == the single-active
-        //! identity/no-grid fast path (caller falls back to the raw freeform).
-        Api::WhiteBoxMeshPtr BuildCombined(WhiteBoxMesh* activeFreeform);
+        //! Combine every visible layer in list order per its combine mode (the active one from
+        //! @p activeFreeform). Null on the single identity layer fast path.
+        Api::WhiteBoxMeshPtr BuildCombined(WhiteBoxMesh* activeFreeform, bool physicsPass = false);
         AZ::u64 AllocLayerId();                 //!< Hand out a fresh stable layer id.
         int IndexOfLayerId(AZ::u64 id) const;   //!< Index of the layer with @p id, or -1.
         AZ::u64 LayerSignature() const;         //!< Hash of the current layer id order + count.
         void SyncLayerStructure();              //!< Reconcile working state after the list is reordered / added to / removed from.
-        WhiteBoxRenderData BuildColoredRenderData(); //!< Per-layer-tinted render faces (used when Use Global Tint is off).
+        //! Per-layer render faces with each layer's tint and Invert Normals. @p freeformOverride picks
+        //! the active-layer mesh (null: the live freeform or boolean display mesh).
+        WhiteBoxRenderData BuildColoredRenderData(WhiteBoxMesh* freeformOverride = nullptr);
+        //! Render faces with inter-layer booleans applied, each face tinted by the layer it came from.
+        WhiteBoxRenderData BuildColoredBooleanRenderData(WhiteBoxMesh* freeformOverride);
+        //! True when at least one visible non-base layer uses a boolean (Union/Subtract/Intersect)
+        //! combine mode, so the merged surface must be re-coloured per source layer.
+        bool AnyVisibleLayerBoolean() const;
+        //! True when the render/bake path must build per-layer faces: per-layer tint is on, or any
+        //! visible layer inverts its normals. Both need per-layer geometry (winding flip / vertex colour).
+        bool PerLayerRenderActive() const;
         void BuildLayerRenderMeshes(); //!< Build one tinted render mesh per visible layer (per-layer tint mode).
         AZ::u32 OnGlobalTintChange();           //!< Use Global Tint toggled: rebuild render + show/hide the global tint.
         AZ::Crc32 OnAddCollision();             //!< Add a White Box collider component to this entity.
@@ -274,35 +561,19 @@ namespace WhiteBox
         static void ApplyTransformToMesh(
             WhiteBoxMesh& mesh, const AZ::Vector3& position, const AZ::Vector3& eulerDegrees, const AZ::Vector3& scale);
         AZ::Crc32 OnDefaultShapeChange();
-        //! Apply a CSG boolean using the White Box mesh on m_booleanSourceEntity.
-        void ApplyBoolean();
-        //! Update the voxel-stamped geometry in place: remove the faces belonging to the
-        //! previous voxel surface (@p oldCells at @p oldSizes) and add the surface for the
-        //! new cell set (@p newCells at @p newSizes), leaving all freeform mesh edits
-        //! intact. Each cell carries its own cube size (parallel arrays), so cubes of
-        //! different sizes are meshed on their own grids and can coexist. Also purges any
-        //! vertices orphaned by the removal.
-        void RegenerateVoxelMesh(
-            const AZStd::vector<AZ::u64>& oldCells, const AZStd::vector<float>& oldSizes,
-            const AZStd::vector<AZ::u64>& newCells, const AZStd::vector<float>& newSizes);
-        //! Ensure the per-cell size array (m_voxelCellSizes) is consistent with m_voxelCells,
-        //! migrating legacy data that only stored a single baked size (m_voxelCellSize).
+        //! Ensure the per-cell size array (m_voxel.m_sizes) is consistent with m_voxel.m_cells,
+        //! migrating legacy data that only stored a single baked size (m_voxel.m_legacySize).
         void NormalizeVoxelData();
-        //! Merge (@p add true) or carve (@p add false) the given occupancy cells into the
-        //! base mesh with a CSG boolean, so the accumulated mesh stays watertight and
-        //! 2-manifold with no T-junctions. The cells are built as a per-cell manifold operand.
-        void StampCubeCells(WhiteBoxMesh* grid, const AZStd::unordered_set<AZ::u64>& cells, float cellSize, bool add);
+        //! Regenerate a parametric layer's mesh from its shape parameters, then rebuild.
+        void RegenerateParametricLayer(int index);
 
         //! The mesh used for RENDER / collision / bounds / selection. In live
         //! (non-destructive) boolean mode this is the evaluated result; otherwise
         //! it is the editable base mesh (GetWhiteBoxMesh).
         WhiteBoxMesh* EvaluatedMesh();
-        //! The grid mesh holding stamped cubes that are kept SEPARATE from the freeform mesh
-        //! (appended for output). Created on first use.
+        //! The grid mesh holding the stamped cubes (appended to the freeform for output).
+        //! Created on first use.
         WhiteBoxMesh* GridMesh();
-        //! The grid mesh holding stamped cubes that are MERGED (CSG-unioned) with the freeform
-        //! mesh for output. Created on first use.
-        WhiteBoxMesh* GridMergedMesh();
         //! Rebuild m_combinedMesh (freeform plus grid) for EvaluatedMesh; null when the grid is empty.
         void RebuildCombinedMesh();
         //! Return a new mesh = @p freeform with the grid layer appended, or null if there is
@@ -321,6 +592,8 @@ namespace WhiteBox
         AZ::Crc32 BooleanGroupVisibility() const;
 
         void OnMaterialChange();
+        //! Open the dockable White Box pane (the component card's only button).
+        AZ::Crc32 OnOpenPane();
         AZ::Crc32 AssetVisibility() const;
         //! The Unit Cube "Cube Size" spin box only shows while the Unit Cube Stamp tool is on.
         AZ::Crc32 DrawUnitCubeSizeVisibility() const;
@@ -351,48 +624,47 @@ namespace WhiteBox
             DefaultShapeType::Cube; //!< Used for selecting a default shape for the White Box mesh.
         bool m_flipYZForExport = false; //!< Flips the Y and Z components of white box vertices when exporting for different coordinate systems
         DrawShapeData m_drawShapeData; //!< Draw Shape tool settings (shape, sides and staircase options).
-        bool m_drawCarve = false; //!< When set, draw acts as a CSG boolean (same as holding Ctrl).
-        bool m_drawMergeUnion = false; //!< When set, committing a drawn shape CSG-unions it into the mesh.
+        VoxelData m_voxel;             //!< Stamp cell records + legacy grid streams.
+        BooleanSettings m_boolean;     //!< Entity-boolean settings.
+        Api::CsgSolver m_csgSolver = Api::CsgSolver::Manifold; //!< CSG backend for all of this component's booleans.
+        RebuildState m_rebuild;        //!< Runtime rebuild coalescing/debouncing.
+        LayerRuntime m_layerRuntime;   //!< Runtime layer bookkeeping + display mesh cache.
         bool m_edgesOnly = false; //!< When set, hide the solid render mesh and draw only the mesh edges.
-        bool m_mergeGridWithMesh = false; //!< When set, the grid layer is CSG-unioned with the freeform mesh for OUTPUT only (non-destructive).
         bool m_useGlobalTint = true; //!< When set, every layer renders with the global material tint; otherwise each layer uses its own tint.
         AZ::Data::AssetId m_materialOverrideAssetId; //!< External material asset override (invalid = built-in material).
-        bool m_drawUnitCube = false; //!< Draw mode click-stamps grid-snapped unit cubes (CSG) instead of drag-draw.
-        float m_drawUnitCubeSize = 1.0f; //!< Desired world-space size of the next stamped cube.
-        float m_voxelCellSize = 1.0f; //!< Legacy single baked cell size; only used to migrate old scenes.
-        bool m_drawUnitCubeShowGrid = true; //!< Show the individual cubes (grid) in the stamp ghost preview.
 
-        AZ::EntityId m_booleanSourceEntity; //!< Another entity whose White Box mesh is used as a boolean operand.
-        Api::BooleanOperation m_booleanOperation =
-            Api::BooleanOperation::Subtraction; //!< How to combine the source mesh with this one.
-        bool m_hideSourceAfterApply = false;   //!< Hide the source entity after a successful Apply Boolean.
-        bool m_deleteSourceAfterApply = false; //!< Delete the source entity after a successful Apply Boolean.
-        bool m_booleanAffectActiveOnly = false; //!< When set, the boolean cuts only the active layer; otherwise the whole combined mesh.
 
-        AZStd::vector<AZ::u64> m_voxelCells; //!< Packed integer cell coords filled by the Unit Cube Stamp tool.
-        AZStd::vector<float> m_voxelCellSizes; //!< Per-cell world cube size (parallel to m_voxelCells) so mixed sizes coexist.
-        AZStd::vector<AZ::u8> m_voxelMerged; //!< Per-cell flag (parallel to m_voxelCells): 1 = merged-with-mesh cube, 0 = separate.
 
         AZStd::vector<WhiteBoxLayer> m_layers;  //!< All editable layers (combined for output; edits target the active one).
         int m_activeLayerIndex = 0;             //!< Which layer is the current edit target.
-        int m_loadedLayerIndex = -1;            //!< Runtime: which layer the working members currently hold (-1 = none).
-        int m_lastLayerCount = -1;              //!< Runtime: layer count at the last sync (detects add/remove in the list).
-        AZ::u64 m_loadedLayerId = 0;            //!< Runtime: stable id of the layer whose data is in the working members.
         AZ::u64 m_nextLayerId = 1;              //!< Next stable layer id to hand out (serialized so ids stay unique).
-        AZ::u64 m_lastLayerSignature = 0;       //!< Runtime: hash of the layer id order (detects reorder as well as add/remove).
 
-        bool m_liveBoolean = false; //!< Non-destructive: keep the base editable, evaluate the boolean for display only.
+        //! Recompute m_bakedBaseRenderData / m_bakedBooleanRenderData (the game-mode bake caches).
+        void RebuildBakedRenderData();
+
+        // Add a getter for the new physics mesh:
+        WhiteBoxMesh* GetPhysicsMesh();
+
+        //! The entity's non-uniform scale (from an optional Non-Uniform Scale component); (1,1,1) if none.
+        AZ::Vector3 EntityNonUniformScale() const;
+        //! Bake the entity's non-uniform scale into m_physicsCombinedMesh so the cooked collider (which
+        //! does not reliably honour a non-uniform cooked-shape scale) matches the rendered geometry.
+        void BakeEntityScaleIntoPhysicsMesh();
+
         Api::WhiteBoxMeshPtr m_displayMesh; //!< Evaluated (base [op] source) mesh used for display while live.
+        Api::WhiteBoxMeshPtr m_physicsDisplayMesh;
         Api::WhiteBoxMeshPtr m_gridMesh; //!< Stamped cubes kept SEPARATE from the freeform mesh (appended for output).
-        Api::WhiteBoxMeshStream m_gridMeshData; //!< Serialized separate-cube grid mesh (component-local).
-        Api::WhiteBoxMeshPtr m_gridMergedMesh; //!< Stamped cubes MERGED (CSG-unioned) with the freeform mesh for output.
-        Api::WhiteBoxMeshStream m_gridMergedData; //!< Serialized merged-cube grid mesh (component-local).
         Api::WhiteBoxMeshPtr m_combinedMesh; //!< Non-serialized freeform+grid mesh used for render/collision/bounds/selection.
+        Api::WhiteBoxMeshPtr m_physicsCombinedMesh; // <-- ADD THIS
         //! Boolean render variant for the game-mode bake (serialized for clones). Empty without a boolean.
         WhiteBoxRenderData m_bakedBooleanRenderData;
+        WhiteBoxRenderData m_bakedPhysicsBooleanRenderData;
         //! Uncut base render variant for the game-mode bake (serialized for clones).
         WhiteBoxRenderData m_bakedBaseRenderData;
-
+        WhiteBoxRenderData m_bakedPhysicsBaseRenderData;
+        //! The collision-filtered physics data has been baked, so an empty bake means collision off rather
+        //! than legacy data. Serialized for the game build.
+        bool m_physicsBaked = false;
         //! Re-evaluates this component's live boolean when the source entity moves.
         struct BooleanSourceListener : public AZ::TransformNotificationBus::Handler
         {
@@ -400,6 +672,10 @@ namespace WhiteBox
             EditorWhiteBoxComponent* m_owner = nullptr;
         };
         BooleanSourceListener m_booleanSourceListener;
+
+        //! Refreshes render / physics / bounds when the entity's Non-Uniform Scale component changes
+        //! (that scale is not part of the Transform, so no OnTransformChanged fires for it).
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler;
     };
 
     inline bool EditorWhiteBoxComponent::SupportsEditorRayIntersect()

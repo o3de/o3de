@@ -10,9 +10,11 @@
 #include "Asset/WhiteBoxMeshAssetHandler.h"
 #include "EditorWhiteBoxSystemComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
+#include "Tools/WhiteBoxPaneWidget.h"
 #include "WhiteBoxToolApiReflection.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 
 namespace WhiteBox
 {
@@ -63,15 +65,28 @@ namespace WhiteBox
         EditorWhiteBoxComponentMode::BindActionsToMenus();
     }
 
+    void EditorWhiteBoxSystemComponent::NotifyRegisterViews()
+    {
+        // Register the dockable White Box pane (Tools > White Box). All White Box editing UI
+        // lives in this pane; the component only bridges the data to the entity.
+        AzToolsFramework::ViewPaneOptions options;
+        options.preferedDockingArea = Qt::RightDockWidgetArea;
+        options.showInMenu = true;
+        AzToolsFramework::RegisterViewPane<WhiteBoxPaneWidget>(WhiteBoxPaneWidget::PaneName, "Tools", options);
+    }
+
     void EditorWhiteBoxSystemComponent::Activate()
     {
         WhiteBoxSystemComponent::Activate();
         RegisterAsset<Pipeline::WhiteBoxMeshAssetHandler, Pipeline::WhiteBoxMeshAsset>(m_assetHandlers);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void EditorWhiteBoxSystemComponent::Deactivate()
     {
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::UnregisterViewPane(WhiteBoxPaneWidget::PaneName);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         WhiteBoxSystemComponent::Deactivate();
     }

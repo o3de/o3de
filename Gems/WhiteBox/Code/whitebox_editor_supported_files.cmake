@@ -12,8 +12,23 @@ set(FILES
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
     Source/EditorWhiteBoxComponent.cpp
     Source/EditorWhiteBoxComponent.h
+    Source/EditorWhiteBoxComponentLayers.cpp
+    Source/EditorWhiteBoxComponentVoxel.cpp
+    Source/EditorWhiteBoxComponentBoolean.cpp
+    Source/EditorWhiteBoxComponentRender.cpp
+    Source/EditorWhiteBoxComponentAsset.cpp
+    Source/Util/WhiteBoxMeshUtil.cpp
+    Source/Util/WhiteBoxMeshUtil.h
+    Source/Util/WhiteBoxVoxelUtil.cpp
+    Source/Util/WhiteBoxVoxelUtil.h
     Source/Tools/WhiteBoxLayerUtil.cpp
     Source/Tools/WhiteBoxLayerUtil.h
+    Source/Tools/WhiteBoxPaneWidget.cpp
+    Source/Tools/WhiteBoxPaneWidget.h
+    Source/Tools/WhiteBoxLayerGizmo.cpp
+    Source/Tools/WhiteBoxLayerGizmo.h
+    Source/Tools/WhiteBoxEntityGizmo.cpp
+    Source/Tools/WhiteBoxEntityGizmo.h
     Source/EditorWhiteBoxComponentMode.cpp
     Source/EditorWhiteBoxComponentMode.h
     Source/EditorWhiteBoxComponentModeBus.h
@@ -29,6 +44,7 @@ set(FILES
     Source/Core/WhiteBoxCsg.h
     Source/Core/WhiteBoxCsgCore.cpp
     Source/Core/WhiteBoxCsgCore.h
+    Source/Core/WhiteBoxCsgBsp.cpp
     Source/Components/EditorWhiteBoxColliderComponent.cpp
     Source/Components/EditorWhiteBoxColliderComponent.h
     Source/Util/WhiteBoxTextureUtil.cpp

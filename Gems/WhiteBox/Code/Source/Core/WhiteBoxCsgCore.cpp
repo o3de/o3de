@@ -10,14 +10,15 @@
 
 #include <algorithm>
 #include <cmath>
-#include <AzCore/std/containers/map.h>
+#include <cstdint>
+#include <map>
 #include <tuple>
+#include <AzCore/std/containers/map.h>
 
 #include <AzCore/Debug/Trace.h>
 
 // manifold (Apache-2.0) - see 3rdParty/FindManifold.cmake
 #include <manifold/manifold.h>
-#include <map>
 
 namespace WhiteBox
 {
