@@ -145,6 +145,11 @@ namespace ScriptCanvas
             return AZStd::make_tuple(smoothedResult, rate);
         }
 
+        Vector2Type SmoothStep(const Vector2Type& from, const Vector2Type& to, NumberType t)
+        {
+            return from.SmoothStep(to, aznumeric_cast<float>(t));
+        }
+
         Vector2Type ToPerpendicular(const Vector2Type source)
         {
             return source.GetPerpendicular();

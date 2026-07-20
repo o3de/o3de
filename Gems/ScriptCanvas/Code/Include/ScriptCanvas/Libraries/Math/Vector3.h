@@ -78,6 +78,8 @@ namespace ScriptCanvas
         AZStd::tuple<Vector3Type, Vector3Type> SmoothCriticallyDamped(
             Vector3Type from, Vector3Type rate, const NumberType deltaTime, const Vector3Type target, const NumberType smoothTime);
 
+        Vector3Type SmoothStep(const Vector3Type& from, const Vector3Type& to, NumberType t);
+
         AZStd::tuple<Vector3Type, NumberType> DirectionTo(const Vector3Type from, const Vector3Type to, NumberType optionalScale = 1.f);
     } // namespace Vector3Functions
 } // namespace ScriptCanvas

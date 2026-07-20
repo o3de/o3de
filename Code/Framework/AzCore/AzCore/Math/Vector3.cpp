@@ -270,6 +270,7 @@ namespace AZ
                 Method("Lerp", &Vector3::Lerp)->
                 Method("Slerp", &Vector3::Slerp)->
                 Method("SmoothCriticallyDamped", &Vector3::SmoothCriticallyDamped)->
+                Method("SmoothStep", &Vector3::SmoothStep)->
                 Method("Dot", &Vector3::Dot)->
                 Method("Cross", &Vector3::Cross)->
                 Method("CrossXAxis", &Vector3::CrossXAxis)->

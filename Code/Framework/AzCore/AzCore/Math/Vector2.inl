@@ -310,6 +310,11 @@ namespace AZ
         return result;
     }
 
+    AZ_MATH_INLINE Vector2 Vector2::SmoothStep(const Vector2& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
     AZ_MATH_INLINE Vector2 Vector2::GetPerpendicular() const
     {
         return Vector2(-m_y, m_x);

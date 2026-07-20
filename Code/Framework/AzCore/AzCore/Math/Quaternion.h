@@ -212,6 +212,9 @@ namespace AZ
         //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
         Quaternion SmoothCriticallyDamped(Quaternion& valueRate, float timeDelta, const Quaternion& target, float smoothTime) const;
 
+        //! Performs a smooth S-curve interpolation between this quaternion and a desination.
+        Quaternion SmoothStep(const Quaternion& dest, float t) const;
+
         //! Checks if the quaternion is close to another quaternion with a given floating point tolerance.
         bool IsClose(const Quaternion& q, float tolerance = Constants::Tolerance) const;
 

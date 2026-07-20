@@ -251,6 +251,7 @@ namespace AZ
                 Method("Lerp", &Vector2::Lerp)->
                 Method("Slerp", &Vector2::Slerp)->
                 Method("SmoothCriticallyDamped", &Vector2::SmoothCriticallyDamped)->
+                Method("SmoothStep", &Vector2::SmoothStep)->
                 Method("Dot", &Vector2::Dot)->
                 Method("GetPerpendicular", &Vector2::GetPerpendicular)->
                 Method("IsClose", &Vector2::IsClose, behaviorContext->MakeDefaultValues(Constants::Tolerance))->

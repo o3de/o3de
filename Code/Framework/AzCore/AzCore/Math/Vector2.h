@@ -164,6 +164,9 @@ namespace AZ
         //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
         Vector2 SmoothCriticallyDamped(Vector2& valueRate, float timeDelta, const Vector2& target, float smoothTime) const;
 
+        //! Performs a smooth S-curve interpolation between this vector and a desination.
+        Vector2 SmoothStep(const Vector2& dest, float t) const;
+
         //! Gets perpendicular vector, i.e. rotates through 90 degrees.
         //! The positive rotation direction is defined such that the x-axis is rotated into the y-axis.
         Vector2 GetPerpendicular() const;

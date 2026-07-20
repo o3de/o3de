@@ -413,6 +413,12 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Quaternion Quaternion::SmoothStep(const Quaternion& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
+
     AZ_MATH_INLINE bool Quaternion::IsClose(const Quaternion& q, float tolerance) const
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR

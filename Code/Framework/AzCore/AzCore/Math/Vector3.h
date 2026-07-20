@@ -188,6 +188,9 @@ namespace AZ
         //! The smoothing is controlled by `smoothTime`, with `timeDelta` representing the time since the last update.
         Vector3 SmoothCriticallyDamped(Vector3& valueRate, float timeDelta, const Vector3& target, float smoothTime) const;
 
+        //! Performs a smooth S-curve interpolation between this vector and a desination.
+        Vector3 SmoothStep(const Vector3& dest, float t) const;
+
         //! Dot product of two vectors.
         float Dot(const Vector3& rhs) const;
 

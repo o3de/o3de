@@ -339,6 +339,11 @@ namespace AZ
         return result;
     }
 
+    AZ_MATH_INLINE Vector3 Vector3::SmoothStep(const Vector3& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
     AZ_MATH_INLINE Vector3 Vector3::Nlerp(const Vector3& dest, float t) const
     {
         return Lerp(dest, t).GetNormalizedSafe(Constants::Tolerance);

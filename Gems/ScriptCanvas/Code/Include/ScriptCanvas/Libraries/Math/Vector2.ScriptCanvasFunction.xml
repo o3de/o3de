@@ -130,6 +130,12 @@
             <Parameter Name="SmoothTime"/>
         </Function>
         
+        <Function Name="SmoothStep">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
         <Function Name="ToPerpendicular">
             <Parameter Name="Source"/>
         </Function>

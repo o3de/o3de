@@ -891,6 +891,48 @@
                     ]
                 },
                 {
+                    "base": "SmoothStep",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Smooth Step"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Smooth Step is invoked"
+                    },
+                    "details": {
+                        "name": "Smooth Step"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "GetSinCos",
                     "entry": {
                         "name": "In",

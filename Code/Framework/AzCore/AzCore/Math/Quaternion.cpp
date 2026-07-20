@@ -229,6 +229,7 @@ namespace AZ
                 Method("Slerp", &Quaternion::Slerp)->
                 Method("Squad", &Quaternion::Squad)->
                 Method("SmoothCriticallyDamped", &Quaternion::SmoothCriticallyDamped)->
+                Method("SmoothStep", &Quaternion::SmoothStep)->
                 Method("GetConjugate", &Quaternion::GetConjugate)->
                 Method("GetInverseFast", &Quaternion::GetInverseFast)->
                     Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->

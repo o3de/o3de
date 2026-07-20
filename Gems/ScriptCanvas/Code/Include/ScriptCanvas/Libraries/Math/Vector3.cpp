@@ -174,6 +174,11 @@ namespace ScriptCanvas
             return AZStd::make_tuple(smoothedResult, rate);
         }
 
+        Vector3Type SmoothStep(const Vector3Type& from, const Vector3Type& to, NumberType t)
+        {
+            return from.SmoothStep(to, aznumeric_cast<float>(t));
+        }
+
         AZStd::tuple<Vector3Type, NumberType> DirectionTo(const Vector3Type from, const Vector3Type to, NumberType optionalScale)
         {
             Vector3Type r = to - from;
