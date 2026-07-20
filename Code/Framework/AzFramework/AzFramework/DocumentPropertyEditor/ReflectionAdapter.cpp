@@ -1309,14 +1309,13 @@ namespace AZ::DocumentPropertyEditor
     {
         using Nodes::PropertyEditor;
         using Nodes::PropertyRefreshLevel;
-
         // Trigger ChangeNotify
         auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
         if (changeNotify.IsSuccess())
         {
             // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
             PropertyRefreshLevel level = changeNotify.GetValue();
-            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
+            if (level != Nodes::PropertyRefreshLevels::None)
             {
                 PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
             }

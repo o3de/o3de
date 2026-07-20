@@ -23,6 +23,7 @@
 #include <AzCore/Math/VectorN.h>
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
+#include <AzCore/Math/CrcSerializer.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorGradient.h>
 #include <AzCore/Math/ColorSerializer.h>
@@ -352,6 +353,7 @@ namespace AZ
 
     void MathReflect(JsonRegistrationContext& context)
     {
+        context.Serializer<JsonCrcSerializer>()->HandlesType<Crc32>();
         context.Serializer<JsonColorSerializer>()->HandlesType<Color>();
         context.Serializer<JsonUuidSerializer>()->HandlesType<Uuid>();
         context.Serializer<JsonMatrix3x3Serializer>()->HandlesType<Matrix3x3>();
