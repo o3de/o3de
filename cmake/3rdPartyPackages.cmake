@@ -818,10 +818,11 @@ function(o3de_fetch_content arg_NAME)
     set(url_download_succeeded FALSE)
     if(arg_URL AND NOT O3DE_FETCHCONTENT_FORCE_GIT)
         foreach(current_url IN LISTS arg_URL)
+            get_filename_component(url_filename "${current_url}" NAME)
             if(download_cache_dir)
-                set(target_file "${download_cache_dir}/${arg_URL_HASH}")
+                set(target_file "${download_cache_dir}/${arg_URL_HASH}-${url_filename}")
             else()
-                set(target_file "${CMAKE_BINARY_DIR}/downloads/${arg_NAME}/${arg_URL_HASH}")
+                set(target_file "${CMAKE_BINARY_DIR}/downloads/${arg_NAME}/${arg_URL_HASH}-${url_filename}")
             endif()
 
             # Check if we already have the file with the correct hash
