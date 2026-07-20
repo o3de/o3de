@@ -10,6 +10,7 @@
 
 #include "WhiteBoxShapeBuilders.h"
 
+#include "EditorWhiteBoxComponentModeBus.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "Viewport/WhiteBoxViewportConstants.h"

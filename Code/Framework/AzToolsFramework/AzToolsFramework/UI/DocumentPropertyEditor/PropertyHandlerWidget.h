@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 class QWidget;
 class QString;

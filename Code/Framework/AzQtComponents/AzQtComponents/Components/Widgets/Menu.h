@@ -12,6 +12,7 @@
 class QLineEdit;
 class QSettings;
 class QStyleOption;
+class QWidget;
 
 namespace AzQtComponents
 {

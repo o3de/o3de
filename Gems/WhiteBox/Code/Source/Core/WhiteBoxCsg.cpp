@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/hash.h>
+#include <AzCore/std/sort.h>
 #include <AzCore/std/utils.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 

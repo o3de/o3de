@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <AzCore/std/containers/map.h>
 #include <tuple>
 
