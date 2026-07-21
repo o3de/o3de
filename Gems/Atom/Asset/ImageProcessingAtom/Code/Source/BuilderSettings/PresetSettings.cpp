@@ -83,6 +83,7 @@ namespace ImageProcessingAtom
                 ->Value("Gaussian", MipGenType::gaussian)
                 ->Value("BlackmanHarris", MipGenType::blackmanHarris)
                 ->Value("KaiserSinc", MipGenType::kaiserSinc)
+                ->Value("AlphaWeighted", MipGenType::alphaWeighted)
                 ;
 
             serialize->Enum<EPixelFormat>()

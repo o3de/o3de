@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"mode", "alphaSource", "textureMap"}
+    return {"mode", "alphaSource", "textureMap", "edgeSoftness", "alphaToCoverage"}
 end
  
 OpacityMode_Opaque = 0
@@ -28,10 +28,29 @@ function Process(context)
     if context:HasMaterialProperty("mode") then
         opacityMode = context:GetMaterialPropertyValue_enum("mode")
     end
-    
-    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout)
-    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
+
+    local edgeSoftness = 0.0
+    if context:HasMaterialProperty("edgeSoftness") then
+        edgeSoftness = context:GetMaterialPropertyValue_float("edgeSoftness")
+    end
+
+    local alphaToCoverage = false
+    if context:HasMaterialProperty("alphaToCoverage") then
+        alphaToCoverage = context:GetMaterialPropertyValue_bool("alphaToCoverage")
+    end
+
+    -- When edgeSoftness > 0 and mode is Cutout, switch to the transparent (blended) pipeline
+    -- so the smoothed alpha can blend with the background for anti-aliased cutout edges.
+    -- hasPerPixelClip is false in this case because clipping is handled by the shader's
+    -- smoothstep + clip logic, not the per-pixel clip flag that switches to customZ shaders.
+    local useSoftEdge = (opacityMode == OpacityMode_Cutout and edgeSoftness > 0.0)
+
+    local useA2C = (opacityMode == OpacityMode_Cutout and alphaToCoverage and not useSoftEdge)
+
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout and not useSoftEdge)
+    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended or useSoftEdge)
     context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
+    context:SetInternalMaterialPropertyValue_bool("useAlphaToCoverage", useA2C)
 end
 
 function ProcessEditor(context)
@@ -48,6 +67,14 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("textureMap", mainVisibility)
     context:SetMaterialPropertyVisibility("textureMapUv", mainVisibility)
     context:SetMaterialPropertyVisibility("factor", mainVisibility)
+
+    if(opacityMode == OpacityMode_Cutout) then
+        context:SetMaterialPropertyVisibility("edgeSoftness", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("alphaToCoverage", MaterialPropertyVisibility_Enabled)
+    else
+        context:SetMaterialPropertyVisibility("edgeSoftness", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("alphaToCoverage", MaterialPropertyVisibility_Hidden)
+    end
 
     if(opacityMode == OpacityMode_Blended or opacityMode == OpacityMode_TintedTransparent) then
         context:SetMaterialPropertyVisibility("alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)

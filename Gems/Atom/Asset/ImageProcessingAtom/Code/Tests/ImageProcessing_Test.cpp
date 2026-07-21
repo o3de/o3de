@@ -939,7 +939,8 @@ namespace UnitTest
                 { MipGenType::triangle, "triangle" },
                 { MipGenType::quadratic, "Quadratic" },
                 { MipGenType::blackmanHarris, "blackmanHarris" },
-                { MipGenType::kaiserSinc, "kaiserSinc" }
+                { MipGenType::kaiserSinc, "kaiserSinc" },
+                { MipGenType::alphaWeighted, "alphaWeighted" }
             }
         };
 
