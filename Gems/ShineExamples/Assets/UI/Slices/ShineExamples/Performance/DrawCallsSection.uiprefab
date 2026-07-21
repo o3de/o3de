@@ -1,0 +1,1950 @@
+{
+    "Entities": {
+        "Entity_[2948666965027]": {
+            "Id": {
+                "id": 2948666965027
+            },
+            "Name": "DrawCallsSection",
+            "Components": {
+                "Component_[13132641403234346769]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13132641403234346769
+                },
+                "Component_[2545890811843604313]": {
+                    "$type": "UiElementComponent",
+                    "Id": 2545890811843604313,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 2970141801507
+                            }
+                        }
+                    ]
+                },
+                "Component_[2786371881633306577]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 2786371881633306577,
+                    "Offsets": {
+                        "left": -150.0,
+                        "top": -150.0,
+                        "right": 150.0,
+                        "bottom": 150.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2952961932323]": {
+            "Id": {
+                "id": 2952961932323
+            },
+            "Name": "TiledImage",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 12
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 61.00200271606445,
+                        "top": 0.0,
+                        "right": 117.0040054321289,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/pattern02.dds"
+                    },
+                    "ImageType": 3
+                },
+                "Component_[5443832728831487664]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5443832728831487664
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2957256899619]": {
+            "Id": {
+                "id": 2957256899619
+            },
+            "Name": "ImageTexture9",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 33
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 56.00200271606445,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_1.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2961551866915]": {
+            "Id": {
+                "id": 2961551866915
+            },
+            "Name": "ImageTexture12",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 36
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 183.00601196289063,
+                        "top": 0.0,
+                        "right": 239.0080108642578,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_4.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2965846834211]": {
+            "Id": {
+                "id": 2965846834211
+            },
+            "Name": "ImageTexture16",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 41
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 122.0040054321289,
+                        "top": 0.0,
+                        "right": 178.00601196289063,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_8.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2970141801507]": {
+            "Id": {
+                "id": 2970141801507
+            },
+            "Name": "Mask",
+            "Components": {
+                "Component_[15056934378293096921]": {
+                    "$type": "UiImageComponent",
+                    "Id": 15056934378293096921,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/circlegradient.dds"
+                    }
+                },
+                "Component_[17036419684438957968]": {
+                    "$type": "UiMaskComponent",
+                    "Id": 17036419684438957968,
+                    "EnableMasking": false,
+                    "MaskInteraction": false,
+                    "UseAlphaTest": true
+                },
+                "Component_[17090573922267627442]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 17090573922267627442,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[3118560866607790941]": {
+                    "$type": "UiElementComponent",
+                    "Id": 3118560866607790941,
+                    "Id": 3,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 12610429328201
+                            }
+                        }
+                    ]
+                },
+                "Component_[3529283832214700693]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 3529283832214700693
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2974436768803]": {
+            "Id": {
+                "id": 2974436768803
+            },
+            "Name": "SlicedFilledImage",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 13
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 122.0040054321289,
+                        "top": 0.0,
+                        "right": 178.00601196289063,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/buttonslider.dds"
+                    },
+                    "ImageType": 1,
+                    "FillType": 2,
+                    "FillAmount": 0.699999988079071
+                },
+                "Component_[5443832728831487664]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5443832728831487664
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2978731736099]": {
+            "Id": {
+                "id": 2978731736099
+            },
+            "Name": "ImageTexture11",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 35
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 122.0040054321289,
+                        "top": 0.0,
+                        "right": 178.00601196289063,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_3.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2983026703395]": {
+            "Id": {
+                "id": 2983026703395
+            },
+            "Name": "ImageTexture14",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 39
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 56.00200271606445,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_6.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2987321670691]": {
+            "Id": {
+                "id": 2987321670691
+            },
+            "Name": "BlendModeImage",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 14,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 8465785887561
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 8470080854857
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 183.00601196289063,
+                        "top": 0.0,
+                        "right": 239.0080108642578,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[5443832728831487664]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5443832728831487664
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2991616637987]": {
+            "Id": {
+                "id": 2991616637987
+            },
+            "Name": "NormalText",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 147.5050048828125,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[13999010954449839508]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13999010954449839508
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 19,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 19521031707465
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19525326674761
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19529621642057
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19533916609353
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19538211576649
+                            },
+                            "SortIndex": 4
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[2995911605283]": {
+            "Id": {
+                "id": 2995911605283
+            },
+            "Name": "ImageTexture10",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 34
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 61.00200271606445,
+                        "top": 0.0,
+                        "right": 117.0040054321289,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_2.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3000206572579]": {
+            "Id": {
+                "id": 3000206572579
+            },
+            "Name": "SlicedImage",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 11
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 56.00200271606445,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/button.dds"
+                    },
+                    "ImageType": 1
+                },
+                "Component_[5443832728831487664]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5443832728831487664
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3004501539875]": {
+            "Id": {
+                "id": 3004501539875
+            },
+            "Name": "RttImage",
+            "Components": {
+                "Component_[10958817017373357765]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 10958817017373357765,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 244.0080108642578,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[12165296395358116263]": {
+                    "$type": "UiImageComponent",
+                    "Id": 12165296395358116263,
+                    "SpriteType": 1,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_3.dds"
+                    }
+                },
+                "Component_[18044165165882742307]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18044165165882742307,
+                    "Id": 17
+                },
+                "Component_[421991703673444728]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 421991703673444728
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3008796507171]": {
+            "Id": {
+                "id": 3008796507171
+            },
+            "Name": "ParticleEmitter",
+            "Components": {
+                "Component_[15962687237313566942]": {
+                    "$type": "UiElementComponent",
+                    "Id": 15962687237313566942,
+                    "Id": 31,
+                    "IsEnabled": false
+                },
+                "Component_[16319163746000928453]": {
+                    "$type": "UiParticleEmitterComponent",
+                    "Id": 16319163746000928453,
+                    "SpritePathname": {
+                        "AssetPath": "ui/textures/shineexamples/CircleMask.dds"
+                    },
+                    "ParticleColorBrightnessVariation": 0.5,
+                    "ParticleColorTintVariation": 1.0
+                },
+                "Component_[3071183494617209136]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3071183494617209136,
+                    "Offsets": {
+                        "left": -30.0,
+                        "top": -30.0,
+                        "right": 30.0,
+                        "bottom": 30.0
+                    }
+                },
+                "Component_[6556310670090168552]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 6556310670090168552
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3013091474467]": {
+            "Id": {
+                "id": 3013091474467
+            },
+            "Name": "ImageTexture17",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 42,
+                    "IsEnabled": false
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 183.00601196289063,
+                        "top": 0.0,
+                        "right": 239.0080108642578,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_9.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3017386441763]": {
+            "Id": {
+                "id": 3017386441763
+            },
+            "Name": "ItalicText",
+            "Components": {
+                "Component_[10786645901438971493]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10786645901438971493
+                },
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "0123456789\\nABCDEFGHIJKL",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.xml"
+                    },
+                    "FontSize": 24.0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 9
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3021681409059]": {
+            "Id": {
+                "id": 3021681409059
+            },
+            "Name": "ImageTexture15",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 40
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 61.00200271606445,
+                        "top": 0.0,
+                        "right": 117.0040054321289,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_7.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3025976376355]": {
+            "Id": {
+                "id": 3025976376355
+            },
+            "Name": "NormalText",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[13999010954449839508]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13999010954449839508
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "0123456789\\nABCDEFGHIJKLI",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 24.0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 7
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3030271343651]": {
+            "Id": {
+                "id": 3030271343651
+            },
+            "Name": "ItalicText",
+            "Components": {
+                "Component_[10786645901438971493]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10786645901438971493
+                },
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 152.5050048828125,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 25,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 19542506543945
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19546801511241
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19551096478537
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19555391445833
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 19559686413129
+                            },
+                            "SortIndex": 4
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3034566310947]": {
+            "Id": {
+                "id": 3034566310947
+            },
+            "Name": "ImageRow3",
+            "Components": {
+                "Component_[16063260418856380849]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16063260418856380849
+                },
+                "Component_[2241515064157555091]": {
+                    "$type": "UiElementComponent",
+                    "Id": 2241515064157555091,
+                    "Id": 38,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 2983026703395
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3021681409059
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2965846834211
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3013091474467
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3060336114723
+                            },
+                            "SortIndex": 4
+                        }
+                    ]
+                },
+                "Component_[3902373712825923359]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3902373712825923359,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 90.0,
+                        "right": 0.0,
+                        "bottom": 150.0
+                    }
+                },
+                "Component_[9790689246870979866]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 9790689246870979866
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3038861278243]": {
+            "Id": {
+                "id": 3038861278243
+            },
+            "Name": "TextRow1",
+            "Components": {
+                "Component_[13999507497082754970]": {
+                    "$type": "UiElementComponent",
+                    "Id": 13999507497082754970,
+                    "Id": 5,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 20818111830857
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 20822406798153
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[15637690138928986277]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15637690138928986277,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -150.0,
+                        "right": 0.0,
+                        "bottom": -90.0
+                    }
+                },
+                "Component_[18421150348572604877]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 18421150348572604877
+                },
+                "Component_[835961500239408767]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 835961500239408767
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3043156245539]": {
+            "Id": {
+                "id": 3043156245539
+            },
+            "Name": "ImageRow1",
+            "Components": {
+                "Component_[16063260418856380849]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16063260418856380849
+                },
+                "Component_[2241515064157555091]": {
+                    "$type": "UiElementComponent",
+                    "Id": 2241515064157555091,
+                    "Id": 10,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 3000206572579
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2952961932323
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2974436768803
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2987321670691
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3004501539875
+                            },
+                            "SortIndex": 4
+                        }
+                    ]
+                },
+                "Component_[3902373712825923359]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3902373712825923359,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -90.0,
+                        "right": 0.0,
+                        "bottom": -30.0
+                    }
+                },
+                "Component_[9790689246870979866]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 9790689246870979866
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3047451212835]": {
+            "Id": {
+                "id": 3047451212835
+            },
+            "Name": "TextRow2",
+            "Components": {
+                "Component_[13999507497082754970]": {
+                    "$type": "UiElementComponent",
+                    "Id": 13999507497082754970,
+                    "Id": 18,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 2991616637987
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3030271343651
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[15637690138928986277]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15637690138928986277,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -30.0,
+                        "right": 0.0,
+                        "bottom": 30.0
+                    }
+                },
+                "Component_[18421150348572604877]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 18421150348572604877
+                },
+                "Component_[835961500239408767]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 835961500239408767
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3051746180131]": {
+            "Id": {
+                "id": 3051746180131
+            },
+            "Name": "ImageRow2",
+            "Components": {
+                "Component_[16063260418856380849]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16063260418856380849
+                },
+                "Component_[2241515064157555091]": {
+                    "$type": "UiElementComponent",
+                    "Id": 2241515064157555091,
+                    "Id": 32,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 2957256899619
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2995911605283
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2978731736099
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 2961551866915
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3056041147427
+                            },
+                            "SortIndex": 4
+                        }
+                    ]
+                },
+                "Component_[3902373712825923359]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3902373712825923359,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 30.0,
+                        "right": 0.0,
+                        "bottom": 90.0
+                    }
+                },
+                "Component_[9790689246870979866]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 9790689246870979866
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3056041147427]": {
+            "Id": {
+                "id": 3056041147427
+            },
+            "Name": "ImageTexture13",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 37
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 244.0080108642578,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_5.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[3060336114723]": {
+            "Id": {
+                "id": 3060336114723
+            },
+            "Name": "ImageTexture18",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 43,
+                    "IsEnabled": false
+                },
+                "Component_[14880867230705108259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14880867230705108259
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 244.0080108642578,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_10.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[8465785887561]": {
+            "Id": {
+                "id": 8465785887561
+            },
+            "Name": "BlendModeNormal",
+            "Components": {
+                "Component_[13260345735373757053]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13260345735373757053
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/CircleMask.dds"
+                    },
+                    "Color": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                },
+                "Component_[5723967087488107194]": {
+                    "$type": "UiElementComponent",
+                    "Id": 5723967087488107194,
+                    "Id": 15
+                },
+                "Component_[8667964881747253110]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 8667964881747253110,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[8470080854857]": {
+            "Id": {
+                "id": 8470080854857
+            },
+            "Name": "BlendModeAdd",
+            "Components": {
+                "Component_[13260345735373757053]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13260345735373757053
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/CircleMask.dds"
+                    },
+                    "Color": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "BlendMode": 1
+                },
+                "Component_[5723967087488107194]": {
+                    "$type": "UiElementComponent",
+                    "Id": 5723967087488107194,
+                    "Id": 16,
+                    "IsEnabled": false
+                },
+                "Component_[8667964881747253110]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 8667964881747253110,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[12610429328201]": {
+            "Id": {
+                "id": 12610429328201
+            },
+            "Name": "InnerFader",
+            "Components": {
+                "Component_[10730880705848622673]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 10730880705848622673,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[1328221512954740424]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1328221512954740424,
+                    "Id": 4,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 3038861278243
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3043156245539
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3047451212835
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3008796507171
+                            },
+                            "SortIndex": 3
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3051746180131
+                            },
+                            "SortIndex": 4
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 3034566310947
+                            },
+                            "SortIndex": 5
+                        }
+                    ]
+                },
+                "Component_[15469412358446133772]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15469412358446133772
+                },
+                "Component_[2338135699809582590]": {
+                    "$type": "UiImageComponent",
+                    "Id": 2338135699809582590,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/pattern02vertical.dds"
+                    },
+                    "Color": [
+                        0.250980406999588,
+                        0.250980406999588,
+                        1.0
+                    ],
+                    "ImageType": 3
+                },
+                "Component_[4173496972068134207]": {
+                    "$type": "UiFaderComponent",
+                    "Id": 4173496972068134207
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19521031707465]": {
+            "Id": {
+                "id": 19521031707465
+            },
+            "Name": "DropShadow20_1",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -30.0,
+                        "right": 0.0,
+                        "bottom": -18.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 20
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19525326674761]": {
+            "Id": {
+                "id": 19525326674761
+            },
+            "Name": "DropShadow20_2",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": -18.0,
+                        "bottom": -6.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 21
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19529621642057]": {
+            "Id": {
+                "id": 19529621642057
+            },
+            "Name": "DropShadow20_3",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": -6.0,
+                        "bottom": 6.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 22
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19533916609353]": {
+            "Id": {
+                "id": 19533916609353
+            },
+            "Name": "DropShadow20_4",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": 6.0,
+                        "bottom": 18.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 23
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19538211576649]": {
+            "Id": {
+                "id": 19538211576649
+            },
+            "Name": "DropShadow20_5",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": 18.0,
+                        "bottom": 30.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 24
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19542506543945]": {
+            "Id": {
+                "id": 19542506543945
+            },
+            "Name": "DropShadow20_1",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -30.0,
+                        "right": 0.0,
+                        "bottom": -18.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 26
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.font"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19546801511241]": {
+            "Id": {
+                "id": 19546801511241
+            },
+            "Name": "DropShadow20_2",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": -18.0,
+                        "bottom": -6.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 27
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.font"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19551096478537]": {
+            "Id": {
+                "id": 19551096478537
+            },
+            "Name": "DropShadow20_3",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": -6.0,
+                        "bottom": 6.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 28
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.font"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19555391445833]": {
+            "Id": {
+                "id": 19555391445833
+            },
+            "Name": "DropShadow20_4",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": 6.0,
+                        "bottom": 18.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 29
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.font"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[19559686413129]": {
+            "Id": {
+                "id": 19559686413129
+            },
+            "Name": "DropShadow20_5",
+            "Components": {
+                "Component_[11164097603065824364]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11164097603065824364
+                },
+                "Component_[13201224117048072241]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13201224117048072241,
+                    "Offsets": {
+                        "top": 18.0,
+                        "bottom": 30.0
+                    }
+                },
+                "Component_[18330884673297936846]": {
+                    "$type": "UiElementComponent",
+                    "Id": 18330884673297936846,
+                    "Id": 30
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "01234567890ABCDEFGHIJ",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera-italic.font"
+                    },
+                    "FontSize": 12.0,
+                    "EffectIndex": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[20818111830857]": {
+            "Id": {
+                "id": 20818111830857
+            },
+            "Name": "NormalBG",
+            "Components": {
+                "Component_[11106214690936229464]": {
+                    "$type": "UiImageComponent",
+                    "Id": 11106214690936229464,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/pattern02.dds"
+                    },
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "ImageType": 3
+                },
+                "Component_[11965665438793708689]": {
+                    "$type": "UiElementComponent",
+                    "Id": 11965665438793708689,
+                    "Id": 6,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 3025976376355
+                            }
+                        }
+                    ]
+                },
+                "Component_[17323186461118248059]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 17323186461118248059
+                },
+                "Component_[6619725952253079000]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 6619725952253079000,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 147.5050048828125,
+                        "bottom": 60.0099983215332
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[20822406798153]": {
+            "Id": {
+                "id": 20822406798153
+            },
+            "Name": "ItalicBG",
+            "Components": {
+                "Component_[11106214690936229464]": {
+                    "$type": "UiImageComponent",
+                    "Id": 11106214690936229464,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/pattern02.dds"
+                    },
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "ImageType": 3
+                },
+                "Component_[15138365860641398983]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15138365860641398983
+                },
+                "Component_[8273496157555991433]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 8273496157555991433,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 152.5050048828125,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 60.0099983215332
+                    }
+                },
+                "Component_[8914863207820983090]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8914863207820983090,
+                    "Id": 8,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 3017386441763
+                            }
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

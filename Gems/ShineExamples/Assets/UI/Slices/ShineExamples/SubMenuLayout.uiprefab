@@ -1,0 +1,457 @@
+{
+    "Entities": {
+        "Entity_[17262498111327752840]": {
+            "Id": {
+                "id": 17262498111327752840
+            },
+            "Name": "Background",
+            "Components": {
+                "Component_[10576364381664338482]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 10576364381664338482,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[11665710602697670455]": {
+                    "$type": "UiButtonComponent",
+                    "Id": 11665710602697670455,
+                    "NavigationSettings": {
+                        "NavigationMode": 2
+                    }
+                },
+                "Component_[14056115298103258996]": {
+                    "$type": "UiElementComponent",
+                    "Id": 14056115298103258996,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17262498588069122696
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17262500396250354312
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17262501190819304072
+                            },
+                            "SortIndex": 2
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17262502213021520520
+                            },
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[5780771333250319935]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5780771333250319935
+                },
+                "Component_[914543401131595578]": {
+                    "$type": "UiImageComponent",
+                    "Id": 914543401131595578
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262502208726553224]": {
+            "Id": {
+                "id": 17262502208726553224
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": 5.0,
+                        "right": -10.0,
+                        "bottom": -5.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Tooltip Text",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "WrapTextSetting": 1
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 8
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262502213021520520]": {
+            "Id": {
+                "id": 17262502213021520520
+            },
+            "Name": "TooltipDisplay",
+            "Components": {
+                "Component_[10724594435242471471]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10724594435242471471
+                },
+                "Component_[15622388059513698455]": {
+                    "$type": "UiTooltipDisplayComponent",
+                    "Id": 15622388059513698455,
+                    "Text": {
+                        "id": 17262502208726553224
+                    },
+                    "ShowSequence": "<None>",
+                    "HideSequence": "<None>"
+                },
+                "Component_[4402490242805119414]": {
+                    "$type": "UiImageComponent",
+                    "Id": 4402490242805119414,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/tooltip_sliced.tif.streamingimage"
+                    },
+                    "Color": [
+                        1.0,
+                        1.0,
+                        0.498039186000824
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[9036244856088839610]": {
+                    "$type": "UiElementComponent",
+                    "Id": 9036244856088839610,
+                    "Id": 7,
+                    "IsVisibleInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17262502208726553224
+                            }
+                        }
+                    ]
+                },
+                "Component_[9535417654131057344]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 9535417654131057344,
+                    "Anchors": {
+                        "top": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": -125.0,
+                        "top": -40.0,
+                        "right": 125.0,
+                        "bottom": 0.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        1.0
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262501190819304072]": {
+            "Id": {
+                "id": 17262501190819304072
+            },
+            "Name": "BackButton",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 5,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17262501195114271368
+                            }
+                        }
+                    ]
+                },
+                "Component_[15020870486214455972]": {
+                    "$type": "UiTooltipComponent",
+                    "Id": 15020870486214455972,
+                    "Text": "Return to previous menu"
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 1.0,
+                        "right": 0.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": -60.0,
+                        "right": 110.0,
+                        "bottom": -10.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/button_normal.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.6039215922355652,
+                        0.7803922295570374,
+                        0.8392156958580017
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[730661876298277362]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 730661876298277362,
+                    "ScriptComponent": {
+                        "Script": {
+                            "assetId": {
+                                "guid": "{4FE1AF1B-EA3A-5B11-BAAC-EE1F079F7C7A}",
+                                "subId": 1
+                            },
+                            "assetHint": "ui/scripts/ShineExamples/unloadthiscanvasbutton.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{4FE1AF1B-EA3A-5B11-BAAC-EE1F079F7C7A}",
+                            "subId": 1
+                        },
+                        "assetHint": "ui/scripts/ShineExamples/unloadthiscanvasbutton.luac"
+                    }
+                },
+                "Component_[8757450508939430504]": {
+                    "$type": "UiButtonComponent",
+                    "Id": 8757450508939430504,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17262501190819304072
+                            },
+                            "Color": [
+                                0.3803921937942505,
+                                0.7450981140136719,
+                                0.8705881834030151
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17262501190819304072
+                            },
+                            "Color": [
+                                0.05490199849009514,
+                                0.6745098233222961,
+                                0.886274516582489
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17262501190819304072
+                            },
+                            "Color": [
+                                0.8313726186752319,
+                                0.9137254953384399,
+                                0.9372549057006836
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17262501190819304072
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/button_disabled.tif.streamingimage"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17262501195114271368
+                            },
+                            "Color": [
+                                0.9882352948188782,
+                                0.9882352948188782,
+                                0.9882352948188782
+                            ]
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262501195114271368]": {
+            "Id": {
+                "id": 17262501195114271368
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": 10.0,
+                        "right": -10.0,
+                        "bottom": -10.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Back",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    }
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 6
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262500396250354312]": {
+            "Id": {
+                "id": 17262500396250354312
+            },
+            "Name": "Title",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "top": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": -250.0,
+                        "top": 0.0,
+                        "right": 250.0,
+                        "bottom": 60.0
+                    },
+                    "Pivot": [
+                        0.5,
+                        0.0
+                    ]
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Title",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    }
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 4
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17262498588069122696]": {
+            "Id": {
+                "id": 17262498588069122696
+            },
+            "Name": "ScreenContent",
+            "Components": {
+                "Component_[10522140734128415812]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10522140734128415812,
+                    "Id": 3
+                },
+                "Component_[13478433840165354079]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13478433840165354079,
+                    "Offsets": {
+                        "left": -610.0,
+                        "top": -300.0,
+                        "right": 610.0,
+                        "bottom": 300.0
+                    },
+                    "ScaleToDevice": 1
+                },
+                "Component_[15378177780641608439]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15378177780641608439
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

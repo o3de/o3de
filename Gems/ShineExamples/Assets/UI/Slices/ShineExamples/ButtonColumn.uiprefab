@@ -1,0 +1,40 @@
+{
+    "Entities": {
+        "Entity_[17276760370572874376]": {
+            "Id": {
+                "id": 17276760370572874376
+            },
+            "Name": "ButtonColumn",
+            "Components": {
+                "Component_[11263140435238516808]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11263140435238516808
+                },
+                "Component_[14522267302105544966]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 14522267302105544966
+                },
+                "Component_[4870728266742469310]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4870728266742469310,
+                    "Anchors": {
+                        "top": 0.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": -250.0,
+                        "top": 0.0,
+                        "right": 250.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[8367175238151439726]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8367175238151439726,
+                    "Id": 2
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

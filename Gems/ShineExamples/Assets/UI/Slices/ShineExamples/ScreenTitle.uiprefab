@@ -1,0 +1,54 @@
+{
+    "Entities": {
+        "Entity_[17239193631664558728]": {
+            "Id": {
+                "id": 17239193631664558728
+            },
+            "Name": "Title",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "top": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": -250.0,
+                        "top": 0.0,
+                        "right": 250.0,
+                        "bottom": 60.0
+                    },
+                    "Pivot": [
+                        0.5,
+                        0.0
+                    ]
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Title",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    }
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 2
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

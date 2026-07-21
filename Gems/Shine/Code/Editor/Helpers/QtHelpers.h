@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <AzCore/Math/Vector2.h>
+
+class QWidget;
+class QPoint;
+class QPointF;
+
+namespace QtHelpers
+{
+    AZ::Vector2 QPointFToVector2(const QPointF& point);
+
+    AZ::Vector2 MapGlobalPosToLocalVector2(const QWidget* widget, const QPoint& pos);
+
+    bool IsGlobalPosInWidget(const QWidget* widget, const QPoint& pos);
+} // namespace QtHelpers

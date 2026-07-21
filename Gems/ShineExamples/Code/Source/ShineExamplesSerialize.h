@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Shine/IDraw2d.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace ShineExamplesSerialize
+{
+    //! Define the UI types for the AZ Serialize system
+    void ReflectTypes(AZ::ReflectContext* context);
+}
