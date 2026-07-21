@@ -1,0 +1,36 @@
+{
+    "Entities": {
+        "Entity_[17217463996249723528]": {
+            "Id": {
+                "id": 17217463996249723528
+            },
+            "Name": "LayoutColumn",
+            "Components": {
+                "Component_[11263140435238516808]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11263140435238516808
+                },
+                "Component_[14522267302105544966]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 14522267302105544966
+                },
+                "Component_[4870728266742469310]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4870728266742469310,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -250.0,
+                        "right": 100.0,
+                        "bottom": 250.0
+                    }
+                },
+                "Component_[8367175238151439726]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8367175238151439726,
+                    "Id": 2
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

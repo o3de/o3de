@@ -1,0 +1,850 @@
+{
+    "Entities": {
+        "Entity_[77855445159]": {
+            "Id": {
+                "id": 77855445159
+            },
+            "Name": "Dropdown",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 2,
+                    "IsExpandedInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 82150412455
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 86445379751
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 113810952483
+                            },
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[13331169582178713376]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13331169582178713376
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -25.0,
+                        "right": 100.0,
+                        "bottom": 25.0
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/dropdown_button.dds"
+                    },
+                    "Color": [
+                        0.6039215922355652,
+                        0.7803922295570374,
+                        0.8392156958580017
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[7122104351735240275]": {
+                    "$type": "UiDropdownComponent",
+                    "Id": 7122104351735240275,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 77855445159
+                            },
+                            "Color": [
+                                0.3803921937942505,
+                                0.7450981140136719,
+                                0.8705881834030151
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 77855445159
+                            },
+                            "Color": [
+                                0.05490199849009514,
+                                0.6745098233222961,
+                                0.886274516582489
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 77855445159
+                            },
+                            "Color": [
+                                0.8313726186752319,
+                                0.9137254953384399,
+                                0.9372549057006836
+                            ]
+                        }
+                    ],
+                    "Content": {
+                        "id": 86445379751
+                    },
+                    "TextElement": {
+                        "id": 82150412455
+                    },
+                    "ExpandedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 77855445159
+                            },
+                            "Color": [
+                                0.3960784077644348,
+                                0.7843136787414551,
+                                0.9137254953384399
+                            ]
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[99330281639]": {
+            "Id": {
+                "id": 99330281639
+            },
+            "Name": "Image",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 7
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": -15.0,
+                        "right": 40.0,
+                        "bottom": 15.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "textures/basic/checkbox_check.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ]
+                },
+                "Component_[2038626832382948735]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2038626832382948735
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[95035314343]": {
+            "Id": {
+                "id": 95035314343
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[10744590006033849941]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10744590006033849941
+                },
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Offsets": {
+                        "left": -48.0050048828125,
+                        "top": -30.334991455078125,
+                        "right": 60.0050048828125,
+                        "bottom": 30.334991455078125
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Option1",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 6
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[125100085415]": {
+            "Id": {
+                "id": 125100085415
+            },
+            "Name": "Image",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 13
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": -15.0,
+                        "right": 40.0,
+                        "bottom": 15.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "textures/basic/checkbox_check.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ]
+                },
+                "Component_[4633131413574108195]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4633131413574108195
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[103625248935]": {
+            "Id": {
+                "id": 103625248935
+            },
+            "Name": "Option2",
+            "Components": {
+                "Component_[11339752769676331162]": {
+                    "$type": "UiImageComponent",
+                    "Id": 11339752769676331162,
+                    "Color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Alpha": 0.0,
+                    "ImageType": 1
+                },
+                "Component_[1385417330579471054]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1385417330579471054,
+                    "Id": 8,
+                    "IsExpandedInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 107920216231
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 112215183527
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[1679128615664484290]": {
+                    "$type": "UiDropdownOptionComponent",
+                    "Id": 1679128615664484290,
+                    "OwningDropdown": {
+                        "id": 77855445159
+                    },
+                    "TextElement": {
+                        "id": 107920216231
+                    }
+                },
+                "Component_[2120723739280243011]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2120723739280243011
+                },
+                "Component_[5561546572159806389]": {
+                    "$type": "UiRadioButtonComponent",
+                    "Id": 5561546572159806389,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 103625248935
+                            },
+                            "Alpha": 0.10000000149011612
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 103625248935
+                            },
+                            "Alpha": 0.25
+                        }
+                    ],
+                    "OptionalCheckedEntity": {
+                        "id": 112215183527
+                    },
+                    "Group": {
+                        "id": 86445379751
+                    }
+                },
+                "Component_[948020824279796190]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 948020824279796190,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 70.33666229248047,
+                        "right": 196.00999450683594,
+                        "bottom": 140.67332458496094
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[90740347047]": {
+            "Id": {
+                "id": 90740347047
+            },
+            "Name": "Option1",
+            "Components": {
+                "Component_[11339752769676331162]": {
+                    "$type": "UiImageComponent",
+                    "Id": 11339752769676331162,
+                    "Color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Alpha": 0.0,
+                    "ImageType": 1
+                },
+                "Component_[1385417330579471054]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1385417330579471054,
+                    "Id": 5,
+                    "IsExpandedInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 95035314343
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 99330281639
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[1679128615664484290]": {
+                    "$type": "UiDropdownOptionComponent",
+                    "Id": 1679128615664484290,
+                    "OwningDropdown": {
+                        "id": 77855445159
+                    },
+                    "TextElement": {
+                        "id": 95035314343
+                    }
+                },
+                "Component_[2582724920120493262]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2582724920120493262
+                },
+                "Component_[5561546572159806389]": {
+                    "$type": "UiRadioButtonComponent",
+                    "Id": 5561546572159806389,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 90740347047
+                            },
+                            "Alpha": 0.10000000149011612
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 90740347047
+                            },
+                            "Alpha": 0.25
+                        }
+                    ],
+                    "OptionalCheckedEntity": {
+                        "id": 99330281639
+                    },
+                    "Group": {
+                        "id": 86445379751
+                    }
+                },
+                "Component_[948020824279796190]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 948020824279796190,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 196.00999450683594,
+                        "bottom": 70.33666229248047
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[120805118119]": {
+            "Id": {
+                "id": 120805118119
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Offsets": {
+                        "left": -48.0050048828125,
+                        "top": -30.334991455078125,
+                        "right": 60.0050048828125,
+                        "bottom": 30.334991455078125
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Option3",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[5882173507218438145]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5882173507218438145
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 12
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[86445379751]": {
+            "Id": {
+                "id": 86445379751
+            },
+            "Name": "Content",
+            "Components": {
+                "Component_[16229239065182434139]": {
+                    "$type": "UiElementComponent",
+                    "Id": 16229239065182434139,
+                    "Id": 4,
+                    "IsExpandedInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 90740347047
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 103625248935
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 116510150823
+                            },
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[16781946022832530846]": {
+                    "$type": "UiRadioButtonGroupComponent",
+                    "Id": 16781946022832530846
+                },
+                "Component_[16920398711346802649]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 16920398711346802649,
+                    "Anchors": {
+                        "top": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": -98.0,
+                        "top": 48.0,
+                        "right": 98.0,
+                        "bottom": 259.0
+                    },
+                    "Pivot": [
+                        0.5,
+                        0.0
+                    ]
+                },
+                "Component_[18163005161557955705]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 18163005161557955705
+                },
+                "Component_[3217003575235063729]": {
+                    "$type": "UiLayoutColumnComponent",
+                    "Id": 3217003575235063729,
+                    "Spacing": 0.0
+                },
+                "Component_[3669256585261796593]": {
+                    "$type": "UiImageComponent",
+                    "Id": 3669256585261796593,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/dropdown_menu.dds"
+                    },
+                    "ImageType": 1
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[116510150823]": {
+            "Id": {
+                "id": 116510150823
+            },
+            "Name": "Option3",
+            "Components": {
+                "Component_[11339752769676331162]": {
+                    "$type": "UiImageComponent",
+                    "Id": 11339752769676331162,
+                    "Color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Alpha": 0.0,
+                    "ImageType": 1
+                },
+                "Component_[1385417330579471054]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1385417330579471054,
+                    "Id": 11,
+                    "IsExpandedInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 120805118119
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 125100085415
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[1679128615664484290]": {
+                    "$type": "UiDropdownOptionComponent",
+                    "Id": 1679128615664484290,
+                    "OwningDropdown": {
+                        "id": 77855445159
+                    },
+                    "TextElement": {
+                        "id": 120805118119
+                    }
+                },
+                "Component_[2411836639143452259]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2411836639143452259
+                },
+                "Component_[5561546572159806389]": {
+                    "$type": "UiRadioButtonComponent",
+                    "Id": 5561546572159806389,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 116510150823
+                            },
+                            "Alpha": 0.10000000149011612
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 116510150823
+                            },
+                            "Alpha": 0.25
+                        }
+                    ],
+                    "OptionalCheckedEntity": {
+                        "id": 125100085415
+                    },
+                    "Group": {
+                        "id": 86445379751
+                    }
+                },
+                "Component_[948020824279796190]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 948020824279796190,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 140.67332458496094,
+                        "right": 196.00999450683594,
+                        "bottom": 211.00997924804688
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[82150412455]": {
+            "Id": {
+                "id": 82150412455
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[11783177755025626320]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11783177755025626320
+                },
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 19.0,
+                        "top": 10.0,
+                        "right": -19.0,
+                        "bottom": -10.0
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Select...",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        -107374176.0
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 3
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[112215183527]": {
+            "Id": {
+                "id": 112215183527
+            },
+            "Name": "Image",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 10
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": -15.0,
+                        "right": 40.0,
+                        "bottom": 15.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "textures/basic/checkbox_check.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ]
+                },
+                "Component_[8505728120438608474]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 8505728120438608474
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[107920216231]": {
+            "Id": {
+                "id": 107920216231
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Offsets": {
+                        "left": -48.0050048828125,
+                        "top": -30.334991455078125,
+                        "right": 60.0050048828125,
+                        "bottom": 30.334991455078125
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Option2",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[6528058245647083200]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 6528058245647083200
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 9
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[113810952483]": {
+            "Id": {
+                "id": 113810952483
+            },
+            "Name": "Arrow",
+            "Components": {
+                "Component_[16933709596246056599]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 16933709596246056599
+                },
+                "Component_[3132397459572100784]": {
+                    "$type": "UiElementComponent",
+                    "Id": 3132397459572100784,
+                    "Id": 14
+                },
+                "Component_[435153624277885618]": {
+                    "$type": "UiImageComponent",
+                    "Id": 435153624277885618,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/dropdown_arrow.dds"
+                    },
+                    "ImageType": 2
+                },
+                "Component_[5985777925985884658]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 5985777925985884658,
+                    "Offsets": {
+                        "left": 60.0,
+                        "top": -6.0,
+                        "right": 80.0,
+                        "bottom": 6.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

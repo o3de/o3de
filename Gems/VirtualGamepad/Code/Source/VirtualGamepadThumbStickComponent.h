@@ -10,7 +10,7 @@
 
 #include "VirtualGamepadThumbStickRequestBus.h"
 
-#include <LyShine/Bus/UiInteractableBus.h>
+#include <Shine/Bus/UiInteractableBus.h>
 
 #include <AzCore/Component/Component.h>
 

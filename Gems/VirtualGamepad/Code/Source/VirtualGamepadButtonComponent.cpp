@@ -10,7 +10,7 @@
 
 #include <VirtualGamepad/VirtualGamepadBus.h>
 
-#include <LyShine/Bus/UiInteractableBus.h>
+#include <Shine/Bus/UiInteractableBus.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

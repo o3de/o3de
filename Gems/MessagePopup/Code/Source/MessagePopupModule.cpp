@@ -8,7 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <MessagePopupSystemComponent.h>
-#include <LyShineMessagePopup.h>
+#include <ShineMessagePopup.h>
 #include <IGem.h>
 
 namespace MessagePopup
@@ -29,7 +29,7 @@ namespace MessagePopup
             });
 
             m_descriptors.insert(m_descriptors.end(), {
-                LyShineMessagePopup::CreateDescriptor(),
+                ShineMessagePopup::CreateDescriptor(),
             });
         }
 
@@ -40,7 +40,7 @@ namespace MessagePopup
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<MessagePopupSystemComponent>(),
-                azrtti_typeid<LyShineMessagePopup>(),
+                azrtti_typeid<ShineMessagePopup>(),
             };
         }
     };

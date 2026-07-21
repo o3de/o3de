@@ -1,0 +1,380 @@
+{
+    "Entities": {
+        "Entity_[17225676437576143496]": {
+            "Id": {
+                "id": 17225676437576143496
+            },
+            "Name": "Image3",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 7
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 401.67333984375,
+                        "top": 5.0,
+                        "right": 595.010009765625,
+                        "bottom": 195.00999450683594
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "Color": [
+                        0.19607840478420258,
+                        0.19607840478420258,
+                        1.0
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225658806735393416]": {
+            "Id": {
+                "id": 17225658806735393416
+            },
+            "Name": "Image1",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 5
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 5.0,
+                        "top": 5.0,
+                        "right": 198.336669921875,
+                        "bottom": 195.00999450683594
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "Color": [
+                        1.0,
+                        0.19607840478420258,
+                        0.19607840478420258
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225671824781267592]": {
+            "Id": {
+                "id": 17225671824781267592
+            },
+            "Name": "Image2",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 6
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 203.336669921875,
+                        "top": 5.0,
+                        "right": 396.67333984375,
+                        "bottom": 195.00999450683594
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "Color": [
+                        0.19607840478420258,
+                        1.0,
+                        0.19607840478420258
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225648997030089352]": {
+            "Id": {
+                "id": 17225648997030089352
+            },
+            "Name": "ScrollBox",
+            "Components": {
+                "Component_[10118797495901390053]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 10118797495901390053,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -100.0,
+                        "right": 100.0,
+                        "bottom": 100.0
+                    }
+                },
+                "Component_[11826709669771551895]": {
+                    "$type": "UiScrollBoxComponent",
+                    "Id": 11826709669771551895,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225648997030089352
+                            },
+                            "Color": [
+                                0.615686297416687,
+                                0.7921568751335144,
+                                0.8509804010391235
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225648997030089352
+                            },
+                            "Color": [
+                                0.05490199849009514,
+                                0.6745098233222961,
+                                0.886274516582489
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225648997030089352
+                            },
+                            "Color": [
+                                0.5019999742507935,
+                                0.5019999742507935,
+                                0.5019999742507935
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17225648988440154760
+                            },
+                            "Alpha": 0.5
+                        }
+                    ],
+                    "ContentEntity": {
+                        "id": 17225648984145187464
+                    },
+                    "SnapMode": 1
+                },
+                "Component_[16487536221418091165]": {
+                    "$type": "UiImageComponent",
+                    "Id": 16487536221418091165
+                },
+                "Component_[17811845864135115827]": {
+                    "$type": "UiElementComponent",
+                    "Id": 17811845864135115827,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225648992735122056
+                            }
+                        }
+                    ]
+                },
+                "Component_[520013134190722379]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 520013134190722379
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225648992735122056]": {
+            "Id": {
+                "id": 17225648992735122056
+            },
+            "Name": "Mask",
+            "Components": {
+                "Component_[10765149697483922464]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10765149697483922464
+                },
+                "Component_[15963190293002001126]": {
+                    "$type": "UiElementComponent",
+                    "Id": 15963190293002001126,
+                    "Id": 3,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225648984145187464
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225648988440154760
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[17994983655619504306]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17994983655619504306
+                },
+                "Component_[6179587798072984084]": {
+                    "$type": "UiMaskComponent",
+                    "Id": 6179587798072984084
+                },
+                "Component_[6291884044133254722]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 6291884044133254722,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 5.0,
+                        "top": 5.0,
+                        "right": -5.0,
+                        "bottom": -5.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225648984145187464]": {
+            "Id": {
+                "id": 17225648984145187464
+            },
+            "Name": "Content",
+            "Components": {
+                "Component_[16066255006594168601]": {
+                    "$type": "UiImageComponent",
+                    "Id": 16066255006594168601
+                },
+                "Component_[16628884899569065329]": {
+                    "$type": "UiElementComponent",
+                    "Id": 16628884899569065329,
+                    "Id": 4,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225658806735393416
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225671824781267592
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225676437576143496
+                            },
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[17793227173939768325]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 17793227173939768325,
+                    "Offsets": {
+                        "left": -300.0,
+                        "top": -100.0,
+                        "right": 300.0,
+                        "bottom": 100.0
+                    }
+                },
+                "Component_[6211659602098912314]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 6211659602098912314
+                },
+                "Component_[7793982782023555681]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 7793982782023555681,
+                    "Padding": {
+                        "left": 5,
+                        "top": 5,
+                        "right": 5,
+                        "bottom": 5
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225648988440154760]": {
+            "Id": {
+                "id": 17225648988440154760
+            },
+            "Name": "DisableFilter",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 8
+                },
+                "Component_[10852580966405431299]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10852580966405431299
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Offsets": {
+                        "left": -150.0,
+                        "top": -150.0,
+                        "right": 150.0,
+                        "bottom": 150.0
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "Color": [
+                        0.498039186000824,
+                        0.498039186000824,
+                        0.498039186000824
+                    ],
+                    "Alpha": 0.0
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

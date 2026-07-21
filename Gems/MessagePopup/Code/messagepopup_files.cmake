@@ -12,6 +12,6 @@ set(FILES
     Source/MessagePopupSystemComponent.h
     Source/MessagePopupManager.h
     Source/MessagePopupManager.cpp
-    Source/LyShineMessagePopup.h
-    Source/LyShineMessagePopup.cpp
+    Source/ShineMessagePopup.h
+    Source/ShineMessagePopup.cpp
 )

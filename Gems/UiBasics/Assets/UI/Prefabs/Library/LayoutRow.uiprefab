@@ -1,0 +1,36 @@
+{
+    "Entities": {
+        "Entity_[17217487257792598664]": {
+            "Id": {
+                "id": 17217487257792598664
+            },
+            "Name": "LayoutRow",
+            "Components": {
+                "Component_[11825280273400243061]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11825280273400243061
+                },
+                "Component_[3424534919233379658]": {
+                    "$type": "UiLayoutRowComponent",
+                    "Id": 3424534919233379658
+                },
+                "Component_[4782712980104099246]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4782712980104099246,
+                    "Offsets": {
+                        "left": -250.0,
+                        "top": -100.0,
+                        "right": 250.0,
+                        "bottom": 100.0
+                    }
+                },
+                "Component_[8627246374072350663]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8627246374072350663,
+                    "Id": 2
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -1,0 +1,282 @@
+{
+    "Entities": {
+        "Entity_[17225706347728392840]": {
+            "Id": {
+                "id": 17225706347728392840
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 6.0,
+                        "top": 6.0,
+                        "right": -6.0,
+                        "bottom": -6.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0,
+                    "OverflowMode": 1
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 4
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225707533139366536]": {
+            "Id": {
+                "id": 17225707533139366536
+            },
+            "Name": "Placeholder",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 6.0,
+                        "top": 6.0,
+                        "right": -6.0,
+                        "bottom": -6.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Type here...",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 5
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225703251056972424]": {
+            "Id": {
+                "id": 17225703251056972424
+            },
+            "Name": "Text Input",
+            "Components": {
+                "Component_[16339829923336444153]": {
+                    "$type": "UiElementComponent",
+                    "Id": 16339829923336444153,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225703238172070536
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225706347728392840
+                            },
+                            "SortIndex": 1
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225707533139366536
+                            },
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[18175506801291288015]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 18175506801291288015
+                },
+                "Component_[18295482324565764378]": {
+                    "$type": "UiTextInputComponent",
+                    "Id": 18295482324565764378,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17225703238172070536
+                            }
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17225703238172070536
+                            }
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225703251056972424
+                            },
+                            "Color": [
+                                0.9882352948188782,
+                                0.9882352948188782,
+                                0.9882352948188782
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225706347728392840
+                            },
+                            "Color": [
+                                0.800000011920929,
+                                0.800000011920929,
+                                0.800000011920929
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225707533139366536
+                            },
+                            "Color": [
+                                0.800000011920929,
+                                0.800000011920929,
+                                0.800000011920929
+                            ]
+                        }
+                    ],
+                    "Text": {
+                        "id": 17225706347728392840
+                    },
+                    "PlaceHolderText": {
+                        "id": 17225707533139366536
+                    },
+                    "TextSelectionColor": [
+                        0.7411764860153198,
+                        0.8666666746139526,
+                        1.0
+                    ],
+                    "TextCursorColor": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ]
+                },
+                "Component_[3849249799119453915]": {
+                    "$type": "UiImageComponent",
+                    "Id": 3849249799119453915,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/textinput_normal.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.9882352948188782,
+                        0.9882352948188782,
+                        0.9882352948188782
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[5295950372157630944]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 5295950372157630944,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -25.0,
+                        "right": 100.0,
+                        "bottom": 25.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225703238172070536]": {
+            "Id": {
+                "id": 17225703238172070536
+            },
+            "Name": "Hover",
+            "Components": {
+                "Component_[10460464683330458570]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10460464683330458570,
+                    "Id": 3
+                },
+                "Component_[14255303197297370557]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 14255303197297370557,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": -1.0,
+                        "top": -1.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    }
+                },
+                "Component_[16876824375947588185]": {
+                    "$type": "UiImageComponent",
+                    "Id": 16876824375947588185,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/textinput_hover.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.615686297416687,
+                        0.7921568751335144,
+                        0.8509804010391235
+                    ],
+                    "Alpha": 0.0,
+                    "ImageType": 1
+                },
+                "Component_[4355606609456489935]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4355606609456489935
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

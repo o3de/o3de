@@ -11,8 +11,8 @@
 #include <GameStateSamples/GameStatePrimaryUserSelection.h>
 #include <GameStateSamples/GameStatePrimaryUserMonitor.h>
 
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
 
 #include <LocalUser/LocalUserRequestBus.h>
 
