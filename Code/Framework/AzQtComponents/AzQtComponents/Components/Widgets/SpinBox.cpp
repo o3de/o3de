@@ -526,9 +526,16 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
 
         case QEvent::DynamicPropertyChange:
         {
-            auto styleSheet = StyleManager::styleSheetStyle(spinBox);
-            styleSheet->unpolish(spinBox);
-            styleSheet->polish(spinBox);
+            // ignore properties coming from inside the style sheet system itself, which are all by convention
+            // prefixed with _q_
+            QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+            QString propertyName = QString::fromUtf8(eventFull->propertyName());
+            if (!propertyName.startsWith(QStringLiteral("_q_")))
+            {
+                auto styleSheet = StyleManager::styleSheetStyle(spinBox);
+                styleSheet->unpolish(spinBox);
+                styleSheet->polish(spinBox);
+            }
             break;
         }
 

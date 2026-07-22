@@ -1347,6 +1347,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectResetHandler(m_resetHandler);
 
+        m_resetQueuedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler(
+            [this]()
+            {
+                this->RequestExecuteQueuedReset();
+            });
+        m_adapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
+
         m_changedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
             [this](const AZ::Dom::Patch& patch)
             {
@@ -1551,15 +1558,6 @@ namespace AzToolsFramework
             applyFilterRecursively(m_rootNode, applyFilterRecursively);
             update(); // Need to redraw for the linting to be applied
         }
-    }
-
-    // this happens when something *outside* of the control of the DPE has changed the underlying data.
-    // for example, clicking a manipulator in the viewport and changing it.  Since the change
-    // does not originate anywhere in the DPE's domain, it cannot know that the value has changed and that the
-    // tree needs to be refreshed, except by listening for this event which is spontaneous.
-    void DocumentPropertyEditor::QueueInvalidation([[maybe_unused]] PropertyModificationRefreshLevel level)
-    {
-        RequestExecuteQueuedReset();
     }
 
     void DocumentPropertyEditor::SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
@@ -1901,18 +1899,11 @@ namespace AzToolsFramework
             }
         };
 
-        auto handlePropertyEditorChanged = [&](const AZ::Dom::Value&, AZ::DocumentPropertyEditor::Nodes::ValueChangeType)
-        {
-            RequestExecuteQueuedReset();
-        };
-
         message.Match(
             AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey,
             showKeyQueryDialog,
             AZ::DocumentPropertyEditor::Nodes::Adapter::QuerySubclass,
-            showQuerySubclassDialog,
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged,
-            handlePropertyEditorChanged);
+            showQuerySubclassDialog);
     }
 
     void DocumentPropertyEditor::RequestExecuteQueuedReset()
@@ -1923,15 +1914,15 @@ namespace AzToolsFramework
         }
 
         m_executeQueuedResetAlreadyQueued = true;
+
         // When a value changes, we'd like to queue the execution of any property editor tree updates.
-        QTimer::singleShot(
-            1,  // 1 to place it AFTER all other 0 timer or queued events.
-            this,
-            [this]()
-            {
-                m_executeQueuedResetAlreadyQueued = false;
-                m_adapter->ExecuteQueuedReset();
-            });
+        // It should happen *soon* but not immediately, so queue it on the invoke method queue to happen
+        // once the event pump resumes.
+        QMetaObject::invokeMethod(this, [this]() {
+            m_executeQueuedResetAlreadyQueued = false;
+            m_adapter->ExecuteQueuedReset();
+            },
+            Qt::QueuedConnection);
     }
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
