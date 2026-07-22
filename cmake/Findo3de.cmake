@@ -10,6 +10,7 @@
 # Once we have the install step, this file will be generated and wont require adding subdirectories
 
 include(FindPackageHandleStandardArgs)
+include(${CMAKE_CURRENT_LIST_DIR}/AssetProcessorBuildExclude.cmake)
 
 
 # Use CMAKE_CURRENT_FUNCTION_LIST_DIR in case an older projects used add_directory()
@@ -62,6 +63,7 @@ set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cm
 macro(o3de_initialize)
     set(INSTALLED_ENGINE FALSE)
     set(LY_PROJECTS ${CMAKE_CURRENT_LIST_DIR})
+    o3de_exclude_build_dir_from_asset_processor(${CMAKE_CURRENT_LIST_DIR})
     o3de_current_file_path(current_path)
     enable_testing()
     add_subdirectory(${current_path}/.. o3de)
