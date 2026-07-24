@@ -352,6 +352,18 @@ namespace AzToolsFramework::Prefab
         {
             PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged,
                 previousFocusedInstanceContainerEntityId, currentFocusedInstanceContainerEntityId);
+
+            AZ::EntityId instanceToFocusOn = currentFocusedInstanceContainerEntityId.IsValid() ? currentFocusedInstanceContainerEntityId
+                                                                                               : previousFocusedInstanceContainerEntityId;
+            if (instanceToFocusOn.IsValid())
+            {
+                ScopedUndoBatch undoBatch("Select Prefab");
+                // For convenience, select the instance root you just opened.
+                const EntityIdList selectedEntities = EntityIdList{ instanceToFocusOn };
+                auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Open Prefab");
+                selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+            }
         }
 
         // Force propagation on both the previous and the new focused instances to ensure they are represented correctly.

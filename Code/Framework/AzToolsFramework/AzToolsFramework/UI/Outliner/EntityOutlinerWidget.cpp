@@ -1138,10 +1138,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationEnd()
     {
-        QTimer::singleShot(1, this, [this]() {
-            m_gui->m_objectTree->setUpdatesEnabled(true);
+        // Prevent GUI flicker - allow repaint immediately
+        m_gui->m_objectTree->setUpdatesEnabled(true);
+        QTimer::singleShot(1, this, [this]()
+            {
             m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
-        });
+            });
     }
 
     void EntityOutlinerWidget::OnPrefabTemplateDirtyFlagUpdated(
