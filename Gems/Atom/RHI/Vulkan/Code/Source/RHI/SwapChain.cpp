@@ -77,6 +77,17 @@ namespace AZ
         {
             if (m_pendingRecreation)
             {
+                // Drain all in-flight GPU work before recreating (see ResizeInternal for the
+                // rationale): rotating the frame context's binary semaphores while a frame is
+                // still in flight causes non-acquired-image / unsignalable-semaphore device-lost
+                // hangs.
+                auto& device = static_cast<Device&>(GetDevice());
+                if (m_presentationQueue)
+                {
+                    m_presentationQueue->FlushCommands();
+                }
+                device.GetCommandQueueContext().WaitForIdle();
+
                 VkSwapchainKHR oldSwapchain = m_nativeSwapChain;
                 ShutdownImages();
                 CreateSwapchain();
@@ -213,6 +224,18 @@ namespace AZ
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
 
+            // Make sure no GPU work is still in flight referencing the binary semaphores and
+            // swapchain images we are about to rotate/destroy. A window resize (e.g. a drag)
+            // recreates the swapchain out of lockstep with an already-compiled frame; without
+            // fully draining first, submits end up waiting on a semaphore that can no longer be
+            // signaled (VUID-vkQueueSubmit-pWaitSemaphores-03238), rendering to a non-acquired
+            // swapchain image, or re-signaling a recycled semaphore (VUID-...-00067) -> the
+            // observed Vulkan device-lost hang. This is especially reproducible with a second
+            // window (e.g. the Animation Editor), which shares the per-device swapchain
+            // semaphore pool with the main viewport.
+            m_presentationQueue->FlushCommands();
+            device.GetCommandQueueContext().WaitForIdle();
+
             CreateSwapchain();
 
             if (nativeDimensions)
@@ -340,6 +363,20 @@ namespace AZ
             RHI::ResultCode result = AcquireNewImage(&acquiredImageIndex);
             if (result == RHI::ResultCode::Fail)
             {
+                // Acquire failed, so we skip queuing the present command below. This frame's
+                // submit already signaled m_presentableSemaphore, and it will never be waited
+                // (no present happens). Mark the current pair non-recyclable so the still-
+                // signaled binary semaphore is not handed back to the shared pool and signaled
+                // again (VUID-vkQueueSubmit-pSignalSemaphores-00067). The swapchain is recreated
+                // (and these semaphores deleted) via ProcessRecreation.
+                if (m_currentFrameContext.m_imageAvailableSemaphore)
+                {
+                    m_currentFrameContext.m_imageAvailableSemaphore->SetRecycleValue(false);
+                }
+                if (m_currentFrameContext.m_presentableSemaphore)
+                {
+                    m_currentFrameContext.m_presentableSemaphore->SetRecycleValue(false);
+                }
                 m_pendingRecreation = true;
                 return 0;
             }
