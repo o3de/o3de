@@ -26,6 +26,7 @@
 #include <QStackedLayout>
 #include <QVector>
 #include <QWindow>
+#include <QScreen>
 
 namespace AzQtComponents
 {
@@ -199,10 +200,34 @@ namespace AzQtComponents
     void TitleBar::handleMaximize()
     {
         QWidget* w = window();
+        if (!w)
+        {
+            return;
+        }
+
+#if defined(Q_OS_LINUX)
+        // On X11, AzQtComponents' custom-decorated floating windows do not honor
+        // setWindowState(Qt::WindowMaximized): the window manager silently ignores it for a
+        // frameless/customized top-level, so the maximize button appears to do nothing (e.g.
+        // the floating EMotion FX Animation Editor). Emulate maximize/restore by resizing to
+        // the available screen geometry and restoring the previous geometry instead.
+        if (m_emulatedMaximized)
+        {
+            w->setGeometry(m_normalGeometryBeforeMaximize);
+            m_emulatedMaximized = false;
+        }
+        else if (QScreen* screen = w->screen())
+        {
+            m_normalGeometryBeforeMaximize = w->geometry();
+            w->setGeometry(screen->availableGeometry());
+            m_emulatedMaximized = true;
+        }
+#else
         if (w->windowState() & Qt::WindowMaximized)
             w->setWindowState(Qt::WindowNoState);
         else
             w->setWindowState(Qt::WindowMaximized);
+#endif
     }
 
     void TitleBar::handleMinimize()
@@ -1100,6 +1125,14 @@ namespace AzQtComponents
 
     bool TitleBar::isMaximized() const
     {
+#if defined(Q_OS_LINUX)
+        // On Linux the maximize button is emulated (see handleMaximize), so reflect that state
+        // here too. This also lets dragWindow() restore an emulated-maximized window on drag.
+        if (m_emulatedMaximized)
+        {
+            return true;
+        }
+#endif
         return window() && window()->isMaximized();
     }
 

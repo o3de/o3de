@@ -247,6 +247,8 @@ namespace AzQtComponents
         bool m_resizingTop = false;
         bool m_resizingRight = false;
         bool m_resizingLeft = false;
+        bool m_emulatedMaximized = false; // Linux: maximize is emulated via geometry (see handleMaximize)
+        QRect m_normalGeometryBeforeMaximize;
         qreal m_relativeDragPos = 0.0;
         qreal m_lastLocalPosX = 0.0;
         QMenu* m_tabsContextMenu = nullptr;
