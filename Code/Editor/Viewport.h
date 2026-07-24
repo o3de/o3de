@@ -476,9 +476,6 @@ protected:
     virtual void OnRButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
     virtual void OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
     virtual void OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
-#if defined(AZ_PLATFORM_WINDOWS)
-    void OnRawInput(UINT wParam, HRAWINPUT lParam);
-#endif
     void OnSetCursor();
 
     virtual void BuildDragDropContext(

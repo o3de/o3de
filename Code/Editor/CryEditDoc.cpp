@@ -35,7 +35,6 @@
 // Editor
 #include "Settings.h"
 
-#include "PluginManager.h"
 #include "Util/Variable.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
@@ -471,16 +470,8 @@ bool CCryEditDoc::CanCloseFrame()
     }
 
     // Ask the base class to ask for saving, which also includes the save
-    // status of the plugins. Additionaly we query if all the plugins can exit
-    // now. A reason for a failure might be that one of the plugins isn't
-    // currently processing data or has other unsaved information which
-    // are not serialized in the project file
+    // status of the level and its documents.
     if (!SaveModified())
-    {
-        return false;
-    }
-
-    if (!GetIEditor()->GetPluginManager()->CanAllPluginsExitNow())
     {
         return false;
     }

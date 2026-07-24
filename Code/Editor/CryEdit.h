@@ -26,6 +26,9 @@ class CConsoleDialog;
 class QAction;
 class MainWindow;
 class QSharedMemory;
+class ComponentEntityEditorTool;
+class ProjectSettingsEditorTool;
+class AssetImporterTool;
 
 namespace AzToolsFramework
 {
@@ -136,7 +139,8 @@ public:
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
     AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
     void CreateSplashScreen();
-    void InitPlugins();
+    void InitEditorTools();
+    void ShutdownEditorTools();
     bool InitGame();
 
     bool InitConsole();
@@ -307,6 +311,10 @@ private:
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
 
     CCryDocManager* m_pDocManager = nullptr;
+
+    AZStd::unique_ptr<ComponentEntityEditorTool> m_componentEntityEditor;
+    AZStd::unique_ptr<ProjectSettingsEditorTool> m_projectSettingsTool;
+    AZStd::unique_ptr<AssetImporterTool> m_assetImporter;
 
 // Disable warning for dll export since this member won't be used outside this class
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
