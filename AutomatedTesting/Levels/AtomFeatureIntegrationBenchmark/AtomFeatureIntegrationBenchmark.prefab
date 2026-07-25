@@ -1588,7 +1588,7 @@
                                     "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
                                     "subId": 277889906
                                 },
-                                "assetHint": "objects/groudplane/groundplane_512x512m.azmodel"
+                                "assetHint": "objects/groundplane/groundplane_512x512m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1637,7 +1637,7 @@
                                                 "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
                                                 "subId": 803645540
                                             },
-                                            "assetHint": "objects/groudplane/groundplane_512x512m_groundplane_10871786180989855844.azmaterial"
+                                            "assetHint": "objects/groundplane/groundplane_512x512m_groundplane_10871786180989855844.azmaterial"
                                         }
                                     }
                                 },
