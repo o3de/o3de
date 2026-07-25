@@ -11,8 +11,6 @@ name: AR Canary
 run-name: ${{ format('AR Canary - {0}', github.ref_name) }}
 
 on:
-  schedule:
-    - cron: '0 4 * * *'   # Nightly at 04:00 UTC
   workflow_dispatch:
     inputs:
       android_build:
