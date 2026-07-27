@@ -17,6 +17,7 @@
         "ScriptOnlyProject"
     ],
     "icon_path": "preview.png",
+    "inherits": "EngineFinder",
     "copyFiles": [
         {
             "file": ".gitignore",
