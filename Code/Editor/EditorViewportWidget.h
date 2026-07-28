@@ -182,7 +182,6 @@ private:
     void SetViewTM(const AZ::Matrix3x4& tm) override;
     const AZ::Matrix3x4& GetViewTM() const override;
     void Update() override;
-    void UpdateContent(int flags) override;
 
     // SceneNotificationBus overrides ...
     void OnBeginPrepareRender() override;
@@ -261,8 +260,6 @@ private:
     // passed to BuildMousePick.
     AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
-    bool CheckRespondToInput() const;
-
     void BuildDragDropContext(
         AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
@@ -324,9 +321,6 @@ private:
 
     // The name to use for the default editor camera
     const QString m_defaultViewName;
-
-    // Reentrancy guard for on paint events
-    bool m_isOnPaint = false;
 
     // Guard against calling UpdateVisibility multiple times a frame
     bool m_hasUpdatedVisibility = false;

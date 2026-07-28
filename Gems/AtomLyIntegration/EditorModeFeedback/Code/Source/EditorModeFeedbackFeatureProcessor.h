@@ -22,6 +22,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -110,14 +111,18 @@ namespace AZ
                 AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
             };
 
-            struct PipelinePasses
+            //! Injection order; each pass is added after the previous one.
+            enum ViewModePass : size_t
             {
-                RPI::Ptr<RPI::Pass> m_background;
-                RPI::Ptr<RPI::Pass> m_wireframeHidden;
-                RPI::Ptr<RPI::Pass> m_wireframe;
-                RPI::Ptr<RPI::Pass> m_count;
-                RPI::Ptr<RPI::Pass> m_resolve;
+                Background,
+                WireframeHidden,
+                Wireframe,
+                OverdrawCount,
+                OverdrawResolve,
+                ViewModePassCount
             };
+
+            using PipelinePasses = AZStd::array<RPI::Ptr<RPI::Pass>, ViewModePassCount>;
 
             bool AnyViewModePassEnabled() const;
             void QueueAssetLoads();

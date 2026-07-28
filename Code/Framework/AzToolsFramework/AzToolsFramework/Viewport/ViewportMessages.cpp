@@ -6,8 +6,10 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MouseViewportRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
@@ -85,12 +87,9 @@ namespace AzToolsFramework
 
         // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
         // (each editor world owns an intersector at its own context id; picking targets the focused viewport's world)
-        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
-
         AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
         IntersectorBus::EventResult(
-            renderGeometryIntersectionResult, worldId, &IntersectorBus::Events::RayIntersect, rayRequest);
+            renderGeometryIntersectionResult, GetActiveWorldId(), &IntersectorBus::Events::RayIntersect, rayRequest);
         TerrainDataRequestBus::BroadcastResult(
             renderGeometryIntersectionResult, &TerrainDataRequestBus::Events::GetClosestIntersection, rayRequest);
 
@@ -197,21 +196,37 @@ namespace AzToolsFramework
         return entityContextId;
     }
 
+    AzFramework::EntityContextId GetActiveWorldId()
+    {
+        auto worldId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
+        return worldId;
+    }
+
+    AzFramework::EntityContextId GetEntityWorldId(const AZ::EntityId entityId)
+    {
+        auto worldId = AzFramework::EntityContextId::CreateNull();
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+        return worldId.IsNull() ? GetActiveWorldId() : worldId;
+    }
+
+    PrefabEditorEntityOwnershipInterface* GetWorldOwnershipService(const AzFramework::EntityContextId worldId)
+    {
+        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
+        EditorEntityContextRequestBus::BroadcastResult(
+            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
+
+        // Outside the editor there is no world registry, but world 0's service is still registered.
+        return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+    }
+
     bool IsEditedWorldVisibleInViewport(const AzFramework::ViewportId viewportId)
     {
         EntityIdList selectedEntities;
         ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
 
-        auto editedWorldId = AzFramework::EntityContextId::CreateNull();
-        if (!selectedEntities.empty())
-        {
-            AzFramework::EntityIdContextQueryBus::EventResult(
-                editedWorldId, selectedEntities.front(), &AzFramework::EntityIdContextQueries::GetOwningContextId);
-        }
-        if (editedWorldId.IsNull())
-        {
-            EditorEntityContextRequestBus::BroadcastResult(editedWorldId, &EditorEntityContextRequests::GetActiveWorldId);
-        }
+        const auto editedWorldId = selectedEntities.empty() ? GetActiveWorldId() : GetEntityWorldId(selectedEntities.front());
 
         // Outside the editor there is no world registry and everything stays visible.
         AzFramework::EntityContextId viewportWorldId = editedWorldId;

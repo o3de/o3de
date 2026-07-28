@@ -11,6 +11,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -35,21 +36,7 @@ namespace AzToolsFramework
     //! A null id addresses the active world; the editor context id addresses world 0 itself.
     static AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId)
     {
-        AzFramework::EntityContextId worldId = entityContextId;
-        if (worldId.IsNull())
-        {
-            EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
-        }
-        return worldId;
-    }
-
-    //! Returns the world owning the entity, or the active world for entities outside every context.
-    static AzFramework::EntityContextId GetEntityWorldId(AZ::EntityId entityId)
-    {
-        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(
-            worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-        return ResolveWorldId(worldId);
+        return entityContextId.IsNull() ? GetActiveWorldId() : entityContextId;
     }
 
     void FocusModeSystemComponent::Init()

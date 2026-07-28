@@ -192,20 +192,24 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
-    TEST_F(EditorFocusModeFixture, ContainerEntityClearFailsIfContainersAreStillRegistered)
+    TEST_F(EditorFocusModeFixture, ContainerEntityClearKeepsRegisteredContainers)
     {
-        // The Clear function fails if a container is registered.
+        // Clear only sweeps the open states of containers that no longer exist, so a container that is
+        // still registered - it may belong to another world - keeps its open state.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
+        m_containerEntityInterface->SetContainerOpen(m_entityMap[Passenger1EntityName], true);
+
         auto outcome = m_containerEntityInterface->Clear(m_editorEntityContextId);
-        EXPECT_FALSE(outcome.IsSuccess());
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_TRUE(m_containerEntityInterface->IsContainerOpen(m_entityMap[Passenger1EntityName]));
 
         // Restore default state for other tests.
+        m_containerEntityInterface->SetContainerOpen(m_entityMap[Passenger1EntityName], false);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
     }
 
     TEST_F(EditorFocusModeFixture, ContainerEntityClearSucceedsIfContainersAreUnregistered)
     {
-        // The Clear function fails if a container is registered.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
         auto outcome = m_containerEntityInterface->Clear(m_editorEntityContextId);

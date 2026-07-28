@@ -373,6 +373,16 @@ namespace AzToolsFramework
     //! Utility function to return EntityContextId.
     AZTF_API AzFramework::EntityContextId GetEntityContextId();
 
+    //! Utility function to return the active world's EntityContextId.
+    AZTF_API AzFramework::EntityContextId GetActiveWorldId();
+
+    //! Returns the world owning the entity, or the active world for entities outside every world.
+    AZTF_API AzFramework::EntityContextId GetEntityWorldId(AZ::EntityId entityId);
+
+    //! Returns the ownership service holding a world's root level. A null id addresses the active world.
+    AZTF_API PrefabEditorEntityOwnershipInterface* GetWorldOwnershipService(
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull());
+
     //! Returns true if the viewport shows the world being edited: the world owning the current
     //! selection, or the active world when nothing is selected.
     AZTF_API bool IsEditedWorldVisibleInViewport(AzFramework::ViewportId viewportId);

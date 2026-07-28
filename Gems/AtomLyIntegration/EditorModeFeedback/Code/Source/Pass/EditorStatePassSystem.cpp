@@ -15,8 +15,11 @@
 #include <Pass/Child/EditorModeBlurPass.h>
 #include <Pass/Child/EditorModeOutlinePass.h>
 
+#include <EditorModeFeedbackFeatureProcessor.h>
+
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace AZ::Render
 {
@@ -272,5 +275,13 @@ namespace AZ::Render
         {
             state->RemoveParentPassForPipeline(renderPipeline->GetId());
         }
+    }
+
+    bool IsEditorStateEnabledForPass(const RPI::Pass& pass, EditorState editorState)
+    {
+        RPI::Scene* scene = pass.GetRenderPipeline() ? pass.GetRenderPipeline()->GetScene() : nullptr;
+        auto* featureProcessor = scene ? scene->GetFeatureProcessor<EditorModeFeatureProcessor>() : nullptr;
+        const EditorStateBase* state = featureProcessor ? featureProcessor->GetEditorState(editorState) : nullptr;
+        return state && state->IsEnabled();
     }
 } // namespace AZ::Render

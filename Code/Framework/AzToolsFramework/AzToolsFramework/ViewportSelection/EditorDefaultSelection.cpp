@@ -344,17 +344,19 @@ namespace AzToolsFramework
         }
 
         // manipulators act on the world being edited only
-        if (IsEditedWorldVisibleInViewport(viewportInfo.m_viewportId))
+        if (!IsEditedWorldVisibleInViewport(viewportInfo.m_viewportId))
         {
-            // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
-            m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
-
-            // draw the manipulators
-            const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
-            debugDisplay.DepthTestOff();
-            m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
-            debugDisplay.DepthTestOn();
+            return;
         }
+
+        // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
+        m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+
+        // draw the manipulators
+        const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
+        debugDisplay.DepthTestOff();
+        m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
+        debugDisplay.DepthTestOn();
     }
 
     void EditorDefaultSelection::DisplayViewportSelection2d(

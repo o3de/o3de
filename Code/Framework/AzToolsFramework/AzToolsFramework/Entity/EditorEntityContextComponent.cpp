@@ -26,6 +26,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/algorithm.h>
 
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -104,7 +105,7 @@ namespace AzToolsFramework
                 m_sceneName = AZStd::string::format("Editor World %s", GetContextId().ToFixedString().c_str());
                 auto sceneOutcome = sceneSystem->CreateSceneWithParent(m_sceneName, mainScene);
                 AZ_Assert(sceneOutcome.IsSuccess(), "Failed to create an editor world scene: %s",
-                    sceneOutcome.IsSuccess() ? "" : sceneOutcome.GetError().c_str());
+                    sceneOutcome.GetError().c_str());
                 if (sceneOutcome.IsSuccess())
                 {
                     m_scene = sceneOutcome.GetValue();
@@ -394,11 +395,8 @@ namespace AzToolsFramework
 
     PrefabEditorEntityOwnershipService* EditorEntityContextComponent::GetActiveWorldOwnershipService()
     {
-        const AzFramework::EntityContextId activeWorldId = GetActiveWorldId();
-        auto worldIt = m_worlds.find(activeWorldId);
-        return worldIt != m_worlds.end()
-            ? worldIt->second->GetOwnershipService()
-            : static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+        return static_cast<PrefabEditorEntityOwnershipService*>(
+            GetWorldEntityOwnershipService(AzFramework::EntityContextId::CreateNull()));
     }
 
     //=========================================================================
@@ -435,12 +433,6 @@ namespace AzToolsFramework
     void EditorEntityContextComponent::HandleEntitiesAdded(const EntityList& entities)
     {
         // Entities register with the context of the world whose prefab instance owns them.
-        if (m_worlds.empty())
-        {
-            m_entityOwnershipService->HandleEntitiesAdded(entities);
-            return;
-        }
-
         AZStd::unordered_map<AzFramework::EntityContextId, EntityList> entitiesPerWorld;
         for (AZ::Entity* entity : entities)
         {
@@ -802,11 +794,12 @@ namespace AzToolsFramework
         // A world whose last viewport unbound is torn down.
         if (!previousWorldId.IsNull() && previousWorldId != GetContextId() && previousWorldId != worldId)
         {
-            bool worldStillBound = false;
-            for (const auto& [boundViewportId, boundWorldId] : m_viewportWorlds)
-            {
-                worldStillBound = worldStillBound || boundWorldId == previousWorldId;
-            }
+            const bool worldStillBound = AZStd::any_of(
+                m_viewportWorlds.begin(), m_viewportWorlds.end(),
+                [&previousWorldId](const auto& binding)
+                {
+                    return binding.second == previousWorldId;
+                });
             if (!worldStillBound)
             {
                 m_worlds.erase(previousWorldId);

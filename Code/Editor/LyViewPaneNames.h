@@ -27,6 +27,7 @@ namespace LyViewPane
 
     // Putting these names here so that when view panes are opened
     // from other areas of Editor code, they still work when the name changes.
+    static const char* const EditorViewport = QT_TRANSLATE_NOOP("LyViewPane", "Editor Viewport");
     static const char* const AssetBrowser = QT_TRANSLATE_NOOP("LyViewPane", "Asset Browser");
     static const char* const AssetEditor = QT_TRANSLATE_NOOP("LyViewPane", "Asset Editor");
     static const char* const AssetBrowserInspector = QT_TRANSLATE_NOOP("LyViewPane", "Asset Browser Inspector");
@@ -54,3 +55,4 @@ namespace LyViewPane
 
     const int NO_BUILTIN_ACTION = -1;
 }
+

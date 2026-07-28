@@ -183,27 +183,23 @@ namespace AZ
             }
         }
 
+        Name ViewportContext::MirroredContextName() const
+        {
+            const bool mirrors = m_mirrorNotificationsToDefaultContextName && m_manager;
+            return mirrors ? m_manager->GetDefaultViewportContextName() : Name();
+        }
+
         void ViewportContext::OnBeginPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
-            if (m_mirrorNotificationsToDefaultContextName && m_manager)
-            {
-                ViewportContextNotificationBus::Event(
-                    m_manager->GetDefaultViewportContextName(), &ViewportContextNotificationBus::Events::OnRenderTick);
-            }
+            NotifyByName(&ViewportContextNotificationBus::Events::OnRenderTick);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
         void ViewportContext::OnEndPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
-            if (m_mirrorNotificationsToDefaultContextName && m_manager)
-            {
-                ViewportContextNotificationBus::Event(
-                    m_manager->GetDefaultViewportContextName(), &ViewportContextNotificationBus::Events::WaitForRender);
-            }
+            NotifyByName(&ViewportContextNotificationBus::Events::WaitForRender);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
         }
 

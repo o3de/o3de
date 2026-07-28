@@ -191,8 +191,7 @@ namespace AzToolsFramework
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
 
-        //! Additional editor worlds: real entity contexts, each owning one level root prefab and
-        //! rendering in its own scene. This component itself is world 0.
+        //! Editor worlds other than world 0, which is this component itself.
         class EditorWorld;
         AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<EditorWorld>> m_worlds;
         AZStd::unordered_map<AzFramework::ViewportId, AzFramework::EntityContextId> m_viewportWorlds;

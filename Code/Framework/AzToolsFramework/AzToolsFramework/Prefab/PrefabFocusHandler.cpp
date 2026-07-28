@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -123,43 +124,8 @@ namespace AzToolsFramework::Prefab
     //! A null id or the editor entity context id addresses the active world; world ids pass through.
     AzFramework::EntityContextId PrefabFocusHandler::ResolveWorldId(const AzFramework::EntityContextId& entityContextId)
     {
-        AzFramework::EntityContextId editorContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            editorContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        AzFramework::EntityContextId worldId = entityContextId;
-        if (worldId.IsNull() || worldId == editorContextId)
-        {
-            EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
-        }
-        return worldId;
-    }
-
-    //! Returns the world owning the entity, or the active world for entities outside every context.
-    AzFramework::EntityContextId PrefabFocusHandler::GetEntityWorldId(AZ::EntityId entityId)
-    {
-        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(
-            worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-        return worldId.IsNull() ? ResolveWorldId(worldId) : worldId;
-    }
-
-    PrefabEditorEntityOwnershipInterface* PrefabFocusHandler::GetWorldOwnershipService(const AzFramework::EntityContextId& worldId)
-    {
-        AzFramework::EntityContextId editorContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            editorContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        // World 0 owns the global interface registration, which also serves use outside the editor.
-        if (worldId.IsNull() || worldId == editorContextId)
-        {
-            return AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-        }
-
-        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
-        return ownershipService;
+        const bool addressesActiveWorld = entityContextId.IsNull() || entityContextId == GetEntityContextId();
+        return addressesActiveWorld ? GetActiveWorldId() : entityContextId;
     }
 
     PrefabFocusHandler::WorldFocus& PrefabFocusHandler::GetWorldFocus(const AzFramework::EntityContextId& worldId) const
@@ -618,10 +584,7 @@ namespace AzToolsFramework::Prefab
     void PrefabFocusHandler::OnPrepareForContextReset()
     {
         // World 0 reloads its level: park its focus back on its root prefab.
-        AzFramework::EntityContextId editorContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            editorContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-        FocusOnWorldRootInstance(editorContextId);
+        FocusOnWorldRootInstance(GetEntityContextId());
     }
 
     void PrefabFocusHandler::OnActiveWorldChanged(

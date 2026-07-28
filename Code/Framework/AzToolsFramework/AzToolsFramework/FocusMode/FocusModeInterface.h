@@ -19,13 +19,12 @@ namespace AzToolsFramework
 {
     //! FocusModeInterface
     //! Interface to handle the Editor Focus Mode.
+    //! Each world (editor entity context) keeps its own focus root: entity ids resolve to their
+    //! owning world's focus, and a null context id addresses the active world.
     class FocusModeInterface
     {
     public:
         AZ_RTTI(FocusModeInterface, "{437243B0-F86B-422F-B7B8-4A21CC000702}");
-
-        //! Each world (editor entity context) keeps its own focus root; entity ids resolve to
-        //! their owning world's focus, and a null context id addresses the active world.
 
         //! Sets the root entity the Editor should focus on.
         //! The Editor will only allow the user to select entities that are descendants of the EntityId provided.

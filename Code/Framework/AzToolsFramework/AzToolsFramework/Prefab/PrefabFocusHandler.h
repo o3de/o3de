@@ -106,8 +106,6 @@ namespace AzToolsFramework::Prefab
         };
 
         static AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId);
-        static AzFramework::EntityContextId GetEntityWorldId(AZ::EntityId entityId);
-        static PrefabEditorEntityOwnershipInterface* GetWorldOwnershipService(const AzFramework::EntityContextId& worldId);
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;

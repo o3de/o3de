@@ -120,6 +120,22 @@ static void SetFocusedViewportViewModes(bool normal, bool wireframe, bool overdr
     }
 }
 
+//! The pass whose state each view mode toggles, in the order SetFocusedViewportViewModes takes them.
+static constexpr const char* ViewModePasses[] = { "OpaquePass", "ViewModeWireframePass", "ViewModeOverdrawCountPass" };
+static constexpr size_t ViewModeCount = AZ_ARRAY_SIZE(ViewModePasses);
+
+static void ToggleFocusedViewportViewMode(size_t viewMode)
+{
+    bool enabled[ViewModeCount];
+    for (size_t index = 0; index < ViewModeCount; ++index)
+    {
+        enabled[index] = IsFocusedViewportPassEnabled(ViewModePasses[index]);
+    }
+
+    enabled[viewMode] = !enabled[viewMode];
+    SetFocusedViewportViewModes(enabled[0], enabled[1], enabled[2]);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CLayoutViewPane
 //////////////////////////////////////////////////////////////////////////
@@ -173,16 +189,19 @@ CLayoutViewPane::~CLayoutViewPane()
     OnDestroy(); 
 }
 
+bool CLayoutViewPane::OwnsSharedDefinitions()
+{
+    static const CLayoutViewPane* owner = nullptr;
+    owner = owner ? owner : this;
+    return owner == this;
+}
+
 void CLayoutViewPane::OnMenuRegistrationHook()
 {
-    // The viewport menus, actions and toolbar definitions are shared by every CLayoutViewPane
-    // instance; only the first pane registers them.
-    static bool menusRegistered = false;
-    if (menusRegistered)
+    if (!OwnsSharedDefinitions())
     {
         return;
     }
-    menusRegistered = true;
 
     {
         AzToolsFramework::MenuProperties menuProperties;
@@ -228,29 +247,27 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
-    // Register top viewport toolbar. The definition is shared; each pane generates its own instance.
-    static bool toolBarRegistered = false;
-    if (!toolBarRegistered)
+    // The definition is shared; each pane generates its own toolbar instance from it.
+    if (OwnsSharedDefinitions())
     {
-        toolBarRegistered = true;
         AzToolsFramework::ToolBarProperties toolBarProperties;
         toolBarProperties.m_name = "Viewport ToolBar";
         m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
     }
 
     // Add toolbar to top of viewport.
-    QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
-    addToolBar(Qt::TopToolBarArea, toolBar);
+    if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
+    {
+        addToolBar(Qt::TopToolBarArea, toolBar);
+    }
 }
 
 void CLayoutViewPane::OnActionRegistrationHook()
 {
-    static bool actionsRegistered = false;
-    if (actionsRegistered)
+    if (!OwnsSharedDefinitions())
     {
         return;
     }
-    actionsRegistered = true;
 
     // Dummy Action with Resize Icon
     {
@@ -305,73 +322,31 @@ void CLayoutViewPane::OnActionRegistrationHook()
 
     // Viewport View Mode
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.normal";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Normal";
-        actionProperties.m_category = "Viewport View Mode";
+        constexpr AZStd::string_view actionIdentifiers[] = { "o3de.action.viewport.viewMode.normal",
+                                                            "o3de.action.viewport.viewMode.wireframe",
+                                                            "o3de.action.viewport.viewMode.overdraw" };
+        constexpr const char* names[] = { "Normal", "Wireframe", "Quad Overdraw" };
 
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SetFocusedViewportViewModes(
-                    !IsFocusedViewportPassEnabled("OpaquePass"),
-                    IsFocusedViewportPassEnabled("ViewModeWireframePass"),
-                    IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
-            },
-            []() -> bool
-            {
-                return IsFocusedViewportPassEnabled("OpaquePass");
-            }
-        );
-    }
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.wireframe";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Wireframe";
-        actionProperties.m_category = "Viewport View Mode";
+        for (size_t viewMode = 0; viewMode < ViewModeCount; ++viewMode)
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = names[viewMode];
+            actionProperties.m_category = "Viewport View Mode";
 
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SetFocusedViewportViewModes(
-                    IsFocusedViewportPassEnabled("OpaquePass"),
-                    !IsFocusedViewportPassEnabled("ViewModeWireframePass"),
-                    IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
-            },
-            []() -> bool
-            {
-                return IsFocusedViewportPassEnabled("ViewModeWireframePass");
-            }
-        );
-    }
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.overdraw";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Quad Overdraw";
-        actionProperties.m_category = "Viewport View Mode";
-
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                SetFocusedViewportViewModes(
-                    IsFocusedViewportPassEnabled("OpaquePass"),
-                    IsFocusedViewportPassEnabled("ViewModeWireframePass"),
-                    !IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
-            },
-            []() -> bool
-            {
-                return IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass");
-            }
-        );
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifiers[viewMode],
+                actionProperties,
+                [viewMode]
+                {
+                    ToggleFocusedViewportViewMode(viewMode);
+                },
+                [viewMode]() -> bool
+                {
+                    return IsFocusedViewportPassEnabled(ViewModePasses[viewMode]);
+                }
+            );
+        }
     }
 
     // Viewport Debug Information
@@ -606,12 +581,10 @@ void CLayoutViewPane::OnActionRegistrationHook()
 
 void CLayoutViewPane::OnMenuBindingHook()
 {
-    static bool menusBound = false;
-    if (menusBound)
+    if (!OwnsSharedDefinitions())
     {
         return;
     }
-    menusBound = true;
 
     // Camera
     {
@@ -701,12 +674,10 @@ void CLayoutViewPane::OnMenuBindingHook()
 
 void CLayoutViewPane::OnToolBarBindingHook()
 {
-    static bool toolBarBound = false;
-    if (toolBarBound)
+    if (!OwnsSharedDefinitions())
     {
         return;
     }
-    toolBarBound = true;
 
     m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
     m_toolBarManagerInterface->AddWidgetToToolBar(

@@ -160,19 +160,10 @@ namespace AzToolsFramework
         return AZStd::string::format("/%.*s/LastKnownLocation", AZ_STRING_ARG(bookmarkFileName.Native()));
     }
 
-    //! View bookmarks belong to the level being viewed: the active world's root prefab.
-    static PrefabEditorEntityOwnershipInterface* GetActiveWorldOwnershipService()
-    {
-        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService,
-            AzFramework::EntityContextId::CreateNull());
-        return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-    }
-
     static AZ::IO::Path GenerateBookmarkFileName()
     {
-        auto* prefabEditorEntityOwnershipInterface = GetActiveWorldOwnershipService();
+        // View bookmarks belong to the level being viewed: the active world's root prefab.
+        auto* prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
         Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
@@ -526,7 +517,7 @@ namespace AzToolsFramework
 
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
-        auto prefabEditorEntityOwnershipInterface = GetActiveWorldOwnershipService();
+        auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
         if (!prefabEditorEntityOwnershipInterface)
         {
             return nullptr;

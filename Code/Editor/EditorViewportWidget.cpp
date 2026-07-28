@@ -389,12 +389,6 @@ bool EditorViewportWidget::event(QEvent* event)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::UpdateContent(int flags)
-{
-    QtViewport::UpdateContent(flags);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::Update()
 {
     if (Editor::EditorQtApplication::instance()->isMovingOrResizing())
@@ -641,9 +635,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    m_isOnPaint = true;
     Update();
-    m_isOnPaint = false;
 
     if (GetIEditor()->IsInGameMode())
     {
@@ -1351,21 +1343,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
     return 1.f;
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::CheckRespondToInput() const
-{
-    if (!Editor::EditorQtApplication::IsActive())
-    {
-        return false;
-    }
-
-    if (!hasFocus() && !m_renderViewport->hasFocus())
-    {
-        return false;
-    }
-
-    return true;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)

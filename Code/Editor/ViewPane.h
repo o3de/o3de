@@ -54,6 +54,11 @@ public:
     void OnMenuBindingHook() override;
     void OnToolBarBindingHook() override;
 
+    //! The viewport menus, actions and toolbar definitions are shared by every pane; the pane whose
+    //! registration hooks run first owns them. Ownership is claimed here rather than on construction
+    //! because panes built before the Action Manager exists never connect and never see the hooks.
+    bool OwnsSharedDefinitions();
+
     // Set get this pane id.
     void SetId(int id) { m_id = id; }
     int GetId() { return m_id; }

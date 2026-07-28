@@ -59,11 +59,7 @@ namespace AZ
                     auto viewportContext = GetViewportContextById(viewportId);
                     if (viewportContext)
                     {
-                        ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
-                        if (viewportContext->m_mirrorNotificationsToDefaultContextName)
-                        {
-                            ViewportContextNotificationBus::Event(m_defaultViewportContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
-                        }
+                        viewportContext->NotifyByName(&ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
                     }
                     ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportSizeChanged, size);
                 };
@@ -73,16 +69,12 @@ namespace AZ
                     auto viewportContext = GetViewportContextById(viewportId);
                     if (viewportContext)
                     {
-                        ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
-                        if (viewportContext->m_mirrorNotificationsToDefaultContextName)
-                        {
-                            ViewportContextNotificationBus::Event(m_defaultViewportContextName, &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
-                        }
+                        viewportContext->NotifyByName(
+                            &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
                     }
                     ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);
                 };
                 viewportContext->m_name = contextName;
-                viewportContext->m_mirrorNotificationsToDefaultContextName = false;
                 viewportData.sizeChangedHandler = ViewportContext::SizeChangedEvent::Handler(onSizeChanged);
                 viewportData.dpiScalingChangedHandler = ViewportContext::ScalarChangedEvent::Handler(onDpiScalingChanged);
                 viewportContext->ConnectSizeChangedHandler(viewportData.sizeChangedHandler);
@@ -247,14 +239,8 @@ namespace AZ
 
         ViewportContextPtr ViewportContextManager::GetDefaultViewportContext() const
         {
-            if (m_defaultViewportContextId != AzFramework::InvalidViewportId)
-            {
-                if (auto viewportContext = GetViewportContextById(m_defaultViewportContextId))
-                {
-                    return viewportContext;
-                }
-            }
-            return GetViewportContextById(GetViewportIdFromName(m_defaultViewportContextName));
+            // GetViewportContextByName resolves the default name onto the designated context.
+            return GetViewportContextByName(m_defaultViewportContextName);
         }
 
         void ViewportContextManager::SetDefaultViewportContext(AzFramework::ViewportId viewportId)
@@ -340,8 +326,7 @@ namespace AZ
                 AZ_Assert(!associatedViews.empty(), "There are no associated views for context %s", contextName.GetCStr());
                 if (viewGroup == associatedViews[0])
                 {
-                    // AZ_Error("ViewportContextManager", false, "Attempted to pop the root view for context \"%s\"", contextName.GetCStr());
-                    // Letting the return value dictate root view pop instead of error logging on focus change.
+                    // A root view pop is reported through the return value; it happens routinely on focus change.
                     return false;
                 }
 

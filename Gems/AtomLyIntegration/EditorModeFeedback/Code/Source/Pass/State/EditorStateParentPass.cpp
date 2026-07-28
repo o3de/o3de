@@ -9,11 +9,9 @@
 #include <Pass/State/EditorStateParentPass.h>
 #include <Pass/State/EditorStateParentPassData.h>
 
-#include <EditorModeFeedbackFeatureProcessor.h>
+#include <Pass/EditorStatePassSystem.h>
 
 #include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/Scene.h>
 
 namespace AZ::Render
 {
@@ -40,11 +38,6 @@ namespace AZ::Render
                 return false;
         }
 
-        // Pass templates are shared by every scene's pipelines; consult this pass's scene's state.
-        RPI::Scene* scene = GetRenderPipeline() ? GetRenderPipeline()->GetScene() : nullptr;
-        auto* featureProcessor = scene ? scene->GetFeatureProcessor<EditorModeFeatureProcessor>() : nullptr;
-        const EditorStateBase* editorState =
-            featureProcessor ? featureProcessor->GetEditorState(passData->editorState) : nullptr;
-        return editorState && editorState->IsEnabled();
+        return IsEditorStateEnabledForPass(*this, passData->editorState);
     }
 } // namespace AZ::Render

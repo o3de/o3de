@@ -87,14 +87,9 @@ CViewManager::CViewManager()
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
 
-    // Additional dockable viewports: each instance is a self-hosting CLayoutViewPane (toolbar included)
-    // wrapping its own EditorViewportWidget on the lowest free viewport id.
-    QtViewOptions dockableViewportOptions;
+    QtViewOptions dockableViewportOptions = viewportOptions;
     dockableViewportOptions.paneRect = QRect(0, 0, 800, 450);
-    dockableViewportOptions.canHaveMultipleInstances = true;
-    dockableViewportOptions.viewportType = ET_ViewportCamera;
-    dockableViewportOptions.isDisabledInComponentMode = false;
-    dockableViewportOptions.isDisabledInImGuiMode = false;
+    dockableViewportOptions.showInMenu = true;
     QtViewPaneManager::instance()->RegisterPane(
         LyViewPane::EditorViewport,
         LyViewPane::CategoryViewport,
@@ -102,9 +97,9 @@ CViewManager::CViewManager()
         {
             auto* pane = new CLayoutViewPane(parent);
 
-            // The first pane adopts the live viewport born in the boot layout window: moved within
-            // the same toplevel and reattached under its existing id, its native window, swapchain,
-            // viewport context and camera all survive (the Hammer gem shipped this maneuver).
+            // The first pane adopts the viewport the boot layout window created. Moving it within the
+            // same toplevel and reattaching it under its existing id keeps its native window, and with
+            // it the swapchain, viewport context and camera.
             MainWindow* mainWindow = MainWindow::instance();
             if (QWidget* adopted = mainWindow ? mainWindow->TakeCentralViewportForDocking() : nullptr)
             {
@@ -113,10 +108,9 @@ CViewManager::CViewManager()
                 return pane;
             }
 
-            // Fresh viewports are created one event-loop tick later, once the pane is wrapped in
-            // its dock: the swapchain binds to the native window that exists at attach time, and
-            // reparenting afterwards would recreate that window and orphan the swapchain (the
-            // viewport then shows stale surface garbage while input still works).
+            // Fresh viewports wait one event-loop tick, until the pane is wrapped in its dock: the
+            // swapchain binds to the native window present at attach time, and reparenting afterwards
+            // recreates that window and orphans the swapchain.
             QTimer::singleShot(
                 0, pane,
                 [pane]
@@ -166,26 +160,40 @@ void CViewManager::RegisterViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
-    // Park the viewport UI overlay back on its owner before its anchor viewport goes away.
     const bool viewportUiAnchorClosing = m_pSelectedView == pViewport;
+    m_pSelectedView = viewportUiAnchorClosing ? nullptr : m_pSelectedView;
 
-    if (m_pSelectedView == pViewport)
-    {
-        m_pSelectedView = nullptr;
-    }
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
 
     if (viewportUiAnchorClosing)
     {
-        for (CViewport* viewport : m_viewports)
+        // Park the viewport UI overlay back on its owner now that its anchor viewport is going away.
+        AnchorViewportUiTo(GetViewportUiOwner());
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+QtViewport* CViewManager::GetViewportUiOwner() const
+{
+    for (CViewport* viewport : m_viewports)
+    {
+        if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
         {
-            if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
-            {
-                static_cast<QtViewport*>(viewport)->AnchorViewportUiTo(static_cast<QtViewport*>(viewport));
-                break;
-            }
+            return static_cast<QtViewport*>(viewport);
         }
+    }
+    return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CViewManager::AnchorViewportUiTo(CViewport* pViewport)
+{
+    // The editor keeps one viewport UI widget set and it rides the viewport it is anchored to.
+    QtViewport* owner = GetViewportUiOwner();
+    if (owner && pViewport)
+    {
+        owner->AnchorViewportUiTo(static_cast<QtViewport*>(pViewport));
     }
 }
 
@@ -370,15 +378,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequests::SetFocusedViewport, m_pSelectedView->GetViewportId());
 
-        // The single viewport UI widget set rides the selected viewport.
-        for (CViewport* viewport : m_viewports)
-        {
-            if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
-            {
-                static_cast<QtViewport*>(viewport)->AnchorViewportUiTo(static_cast<QtViewport*>(m_pSelectedView));
-                break;
-            }
-        }
+        AnchorViewportUiTo(m_pSelectedView);
     }
 }
 

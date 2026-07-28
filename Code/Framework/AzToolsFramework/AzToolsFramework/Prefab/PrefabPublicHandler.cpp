@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -99,22 +100,6 @@ namespace AzToolsFramework
             m_instanceEntityMapperInterface = nullptr;
 
             m_prefabFocusHandler.UnregisterPrefabFocusInterface();
-        }
-
-        //! Returns the ownership service of the world owning the entity; an invalid id addresses the active world.
-        static PrefabEditorEntityOwnershipInterface* GetWorldOwnershipService(AZ::EntityId entityId = AZ::EntityId())
-        {
-            AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-            if (entityId.IsValid())
-            {
-                AzFramework::EntityIdContextQueryBus::EventResult(
-                    worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-            }
-
-            PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
-            EditorEntityContextRequestBus::BroadcastResult(
-                ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
-            return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
         }
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
@@ -245,7 +230,7 @@ namespace AzToolsFramework
 
                 // Create new prefab instance in the world owning the common root.
                 auto prefabEditorEntityOwnershipInterface =
-                    GetWorldOwnershipService(commonRootEntityOwningInstance->get().GetContainerEntityId());
+                    GetWorldOwnershipService(GetEntityWorldId(commonRootEntityOwningInstance->get().GetContainerEntityId()));
                 if (!prefabEditorEntityOwnershipInterface)
                 {
                     return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
@@ -505,7 +490,7 @@ namespace AzToolsFramework
             }
 
             // The instantiation targets the world owning the parent instance.
-            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(parentId);
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(GetEntityWorldId(parentId));
             if (!prefabEditorEntityOwnershipInterface)
             {
                 return AZ::Failure(AZStd::string("Could not instantiate prefab - internal error "
@@ -780,7 +765,7 @@ namespace AzToolsFramework
             // below would pass and undo DOM generation would then crash in FindTemplateDom. Reject
             // early, mirroring the guard InstantiatePrefab already uses, so the request fails
             // gracefully instead.
-            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(parentId);
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(GetEntityWorldId(parentId));
             if (!prefabEditorEntityOwnershipInterface || !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
             {
                 return AZ::Failure(AZStd::string(

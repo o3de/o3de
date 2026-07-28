@@ -65,4 +65,8 @@ namespace AZ::Render
         //! Set of all masks used by this pass system.
         AZStd::unordered_set<Name> m_masks;
     };
+
+    //! Pass templates are shared by every scene's pipelines, so a pass must consult the editor state
+    //! owned by its own scene's feature processor rather than one baked into the template.
+    bool IsEditorStateEnabledForPass(const RPI::Pass& pass, EditorState editorState);
 } // namespace AZ::Render

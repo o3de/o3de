@@ -407,11 +407,9 @@ void MainWindow::InitCentralWidget()
 
     if (!MainWindow::instance()->IsPreview())
     {
-        // Re-home the viewport the layout window just created into a dockable "Editor Viewport"
-        // pane and clear the fixed central slot, so the center becomes dock space. The pane factory
-        // adopts the live viewport — moved within the same toplevel and without a rebuild, its
-        // swapchain, viewport context and camera stay intact (the Hammer gem shipped this exact
-        // maneuver for months).
+        // Re-home the viewport the layout window just created into a dockable "Editor Viewport" pane
+        // and clear the fixed central slot, so the center becomes dock space. The pane factory adopts
+        // the live viewport rather than rebuilding one.
         if (const QtViewPane* viewportPane = m_viewPaneManager->OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState))
         {
             m_viewPaneHost->addDockWidget(Qt::LeftDockWidgetArea, viewportPane->m_dockWidget);

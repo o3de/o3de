@@ -157,28 +157,23 @@ namespace AzToolsFramework
         /// \return true if runtime Id was found in the Id map
         virtual bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) = 0;
 
-        //! Editor worlds: additional edit-time entity contexts, each owning one level as its root
-        //! prefab and rendering in its own scene. World 0 is the editor entity context itself.
+        //! A world is an edit-time entity context owning one level as its root prefab and rendering in
+        //! its own scene. World 0 is the editor entity context itself. Throughout this API a null world
+        //! id addresses the active world, and the editor context id addresses world 0.
 
-        //! Loads the level at the given source path as a world, or returns the world already
-        //! showing it — a level is never loaded into two worlds. Null on failure.
+        //! Returns the world already showing this level if there is one - a level is never loaded twice.
         virtual AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) = 0;
 
-        //! Binds a viewport to a world; unbound viewports show world 0. A world whose last
-        //! viewport unbinds is torn down.
+        //! Unbound viewports show world 0; a world whose last viewport unbinds is torn down.
         virtual void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) = 0;
         virtual AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) = 0;
 
-        //! The world of the focused viewport. Purely derived state: recording the focused viewport
-        //! has no side effects beyond the OnActiveWorldChanged notification when the world differs.
+        //! The focused viewport's world. Derived state: recording the focused viewport has no side
+        //! effects beyond the OnActiveWorldChanged notification when the world differs.
         virtual AzFramework::EntityContextId GetActiveWorldId() = 0;
         virtual void SetFocusedViewport(AzFramework::ViewportId viewportId) = 0;
 
-        //! The ownership service holding a world's root level. A null id resolves to the active
-        //! world; the editor context id addresses world 0 itself.
         virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
-
-        //! The scene a world's entities live and render in (world 0 = the editor scene).
         virtual AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) = 0;
     };
 

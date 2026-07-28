@@ -49,6 +49,58 @@ namespace AZ
             constexpr const char* ViewModeSrgShaderProductPath = "shaders/viewmode/viewmodewireframe.azshader";
 
             bool g_viewModePassTemplatesLoaded = false;
+
+            struct ViewModePassConnection
+            {
+                const char* m_slot = nullptr;
+                const char* m_sourcePass = nullptr;
+                const char* m_sourceSlot = nullptr;
+            };
+
+            struct ViewModePassDescriptor
+            {
+                const char* m_passName;
+                const char* m_templateName;
+                ViewModePassConnection m_connections[2];
+            };
+
+            //! Indexed by ViewModeFeatureProcessor::ViewModePass.
+            constexpr ViewModePassDescriptor ViewModePassDescriptors[] = {
+                { "ViewModeBackgroundPass",
+                  "ViewModeBackgroundPassTemplate",
+                  { { "ColorInputOutput", "PostProcessPass", "Output" } } },
+                { "ViewModeWireframeHiddenPass",
+                  "ViewModeWireframeHiddenPassTemplate",
+                  { { "ColorInputOutput", "ViewModeBackgroundPass", "ColorInputOutput" },
+                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
+                { "ViewModeWireframePass",
+                  "ViewModeWireframePassTemplate",
+                  { { "ColorInputOutput", "ViewModeWireframeHiddenPass", "ColorInputOutput" },
+                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
+                { "ViewModeOverdrawCountPass",
+                  "ViewModeOverdrawCountPassTemplate",
+                  { { "DepthInputOutput", "DepthPrePass", "Depth" } } },
+                { "ViewModeOverdrawResolvePass",
+                  "ViewModeOverdrawResolvePassTemplate",
+                  { { "Count", "ViewModeOverdrawCountPass", "Count" },
+                    { "ColorInputOutput", "ViewModeWireframePass", "ColorInputOutput" } } },
+            };
+
+            //! Each pass is inserted after the one created before it; the first anchors on the pipeline.
+            constexpr const char* ViewModePassPredecessor(size_t index)
+            {
+                return index == 0 ? "PostProcessPass" : ViewModePassDescriptors[index - 1].m_passName;
+            }
+
+            //! The templates are process-wide; whichever feature processor gets there first loads them.
+            void LoadPassTemplates()
+            {
+                auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+                if (!g_viewModePassTemplatesLoaded && passSystem)
+                {
+                    g_viewModePassTemplatesLoaded = passSystem->LoadPassTemplateMappings(ViewModePassTemplatesAssetPath);
+                }
+            }
         }
 
         // Creates the material for the mask pass shader
@@ -92,23 +144,12 @@ namespace AZ
                 return m_worldId;
             }
 
-            // The framework scene owning this render scene names the world rendered here.
-            AZStd::shared_ptr<AzFramework::Scene> owningScene;
-            if (auto* sceneSystem = AzFramework::SceneSystemInterface::Get())
-            {
-                sceneSystem->IterateActiveScenes(
-                    [this, &owningScene](const AZStd::shared_ptr<AzFramework::Scene>& scene)
-                    {
-                        auto* renderScene = scene->FindSubsystemInScene<RPI::ScenePtr>();
-                        const bool owns = renderScene && renderScene->get() == GetParentScene();
-                        if (owns)
-                        {
-                            owningScene = scene;
-                        }
-                        return !owns;
-                    });
-            }
-            if (!owningScene)
+            // Render scenes are named after the framework scene that owns them (see Atom Bootstrap).
+            auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
+            AZStd::shared_ptr<AzFramework::Scene> owningScene =
+                sceneSystem ? sceneSystem->GetScene(GetParentScene()->GetName().GetStringView()) : nullptr;
+            auto* renderScene = owningScene ? owningScene->FindSubsystemInScene<RPI::ScenePtr>() : nullptr;
+            if (!renderScene || renderScene->get() != GetParentScene())
             {
                 return AzToolsFramework::GetEntityContextId();
             }
@@ -258,18 +299,15 @@ namespace AZ
 
         void ViewModeFeatureProcessor::Reflect(AZ::ReflectContext* context)
         {
-            auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            serializeContext &&
-                (serializeContext->Class<ViewModeFeatureProcessor, AZ::RPI::FeatureProcessor>()->Version(0), true);
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<ViewModeFeatureProcessor, AZ::RPI::FeatureProcessor>()->Version(0);
+            }
         }
 
         void ViewModeFeatureProcessor::Activate()
         {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-            AZ_Assert(passSystem, "ViewModeFeatureProcessor activated before the pass system");
-
-            (!g_viewModePassTemplatesLoaded && passSystem) &&
-                (g_viewModePassTemplatesLoaded = passSystem->LoadPassTemplateMappings(ViewModePassTemplatesAssetPath), true);
+            LoadPassTemplates();
             AZ_Error(
                 Window, g_viewModePassTemplatesLoaded, "Failed to load '%s'; the viewport view modes are unavailable",
                 ViewModePassTemplatesAssetPath);
@@ -288,36 +326,36 @@ namespace AZ
             m_srgShaderAsset.Release();
         }
 
+        template<typename AssetType>
+        static void QueueAssetLoad(AZ::Data::Asset<AssetType>& asset, const char* productPath)
+        {
+            if (asset.GetId().IsValid())
+            {
+                return;
+            }
+
+            const AZ::Data::AssetId assetId =
+                AZ::RPI::AssetUtils::GetAssetIdForProductPath(productPath, AZ::RPI::AssetUtils::TraceLevel::None);
+            if (assetId.IsValid())
+            {
+                asset = AZ::Data::AssetManager::Instance().GetAsset<AssetType>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            }
+        }
+
         void ViewModeFeatureProcessor::QueueAssetLoads()
         {
-            const bool needMaterialAsset = !m_materialAsset.GetId().IsValid();
-            AZ::Data::AssetId materialAssetId;
-            needMaterialAsset &&
-                (materialAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(
-                     ViewModeMaterialProductPath, AZ::RPI::AssetUtils::TraceLevel::None),
-                 true);
-            (needMaterialAsset && materialAssetId.IsValid()) &&
-                (m_materialAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(
-                     materialAssetId, AZ::Data::AssetLoadBehavior::PreLoad),
-                 true);
-
-            const bool needSrgShaderAsset = !m_srgShaderAsset.GetId().IsValid();
-            AZ::Data::AssetId srgShaderAssetId;
-            needSrgShaderAsset &&
-                (srgShaderAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(
-                     ViewModeSrgShaderProductPath, AZ::RPI::AssetUtils::TraceLevel::None),
-                 true);
-            (needSrgShaderAsset && srgShaderAssetId.IsValid()) &&
-                (m_srgShaderAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ShaderAsset>(
-                     srgShaderAssetId, AZ::Data::AssetLoadBehavior::PreLoad),
-                 true);
+            QueueAssetLoad(m_materialAsset, ViewModeMaterialProductPath);
+            QueueAssetLoad(m_srgShaderAsset, ViewModeSrgShaderProductPath);
         }
 
         bool ViewModeFeatureProcessor::EnsureAssets()
         {
             QueueAssetLoads();
 
-            (!m_material && m_materialAsset.IsReady()) && (m_material = AZ::RPI::Material::FindOrCreate(m_materialAsset), true);
+            if (!m_material && m_materialAsset.IsReady())
+            {
+                m_material = AZ::RPI::Material::FindOrCreate(m_materialAsset);
+            }
 
             return m_material && m_srgShaderAsset.IsReady();
         }
@@ -326,99 +364,72 @@ namespace AZ
         {
             AZ_Assert(renderPipeline, "AddRenderPasses called with a null render pipeline");
 
-            (!g_viewModePassTemplatesLoaded) &&
-                (g_viewModePassTemplatesLoaded =
-                     AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(ViewModePassTemplatesAssetPath),
-                 true);
+            LoadPassTemplates();
 
-            const bool defaultView = renderPipeline->GetViewType() == AZ::RPI::ViewType::Default;
+            if (renderPipeline->GetViewType() != AZ::RPI::ViewType::Default)
+            {
+                return;
+            }
+
             auto existingFilter =
                 AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeWireframePassTemplate"), renderPipeline);
-            const bool alreadyInjected = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(existingFilter) != nullptr;
+            if (AZ::RPI::PassSystemInterface::Get()->FindFirstPass(existingFilter))
+            {
+                return;
+            }
+
             const bool anchorsPresent = renderPipeline->FindFirstPass(AZ::Name("PostProcessPass")) != nullptr &&
                 renderPipeline->FindFirstPass(AZ::Name("DepthPrePass")) != nullptr;
-
             AZ_Warning(
-                Window, !defaultView || alreadyInjected || anchorsPresent,
+                Window, anchorsPresent,
                 "Pipeline '%s' has no PostProcessPass/DepthPrePass anchors; the viewport view modes are unavailable in it",
                 renderPipeline->GetId().GetCStr());
 
-            (defaultView && !alreadyInjected && anchorsPresent && g_viewModePassTemplatesLoaded) &&
-                (InjectPasses(*renderPipeline), true);
+            if (anchorsPresent && g_viewModePassTemplatesLoaded)
+            {
+                InjectPasses(*renderPipeline);
+            }
         }
 
         void ViewModeFeatureProcessor::InjectPasses(AZ::RPI::RenderPipeline& renderPipeline)
         {
+            static_assert(AZ_ARRAY_SIZE(ViewModePassDescriptors) == ViewModePassCount, "Descriptors must match ViewModePass");
+
             auto* passSystem = AZ::RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "InjectPasses called without a pass system");
 
-            AZ::RPI::PassRequest backgroundRequest;
-            backgroundRequest.m_passName = AZ::Name("ViewModeBackgroundPass");
-            backgroundRequest.m_templateName = AZ::Name("ViewModeBackgroundPassTemplate");
-            backgroundRequest.m_passEnabled = false;
-            backgroundRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("ColorInputOutput"), AZ::RPI::PassAttachmentRef{ AZ::Name("PostProcessPass"), AZ::Name("Output") } });
-            AZ::RPI::Ptr<AZ::RPI::Pass> backgroundPass = passSystem->CreatePassFromRequest(&backgroundRequest);
-            backgroundPass && (renderPipeline.AddPassAfter(backgroundPass, AZ::Name("PostProcessPass")), true);
+            PipelinePasses passes;
+            for (size_t index = 0; index < ViewModePassCount; ++index)
+            {
+                const ViewModePassDescriptor& descriptor = ViewModePassDescriptors[index];
 
-            AZ::RPI::PassRequest wireframeHiddenRequest;
-            wireframeHiddenRequest.m_passName = AZ::Name("ViewModeWireframeHiddenPass");
-            wireframeHiddenRequest.m_templateName = AZ::Name("ViewModeWireframeHiddenPassTemplate");
-            wireframeHiddenRequest.m_passEnabled = false;
-            wireframeHiddenRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("ColorInputOutput"),
-                AZ::RPI::PassAttachmentRef{ AZ::Name("ViewModeBackgroundPass"), AZ::Name("ColorInputOutput") } });
-            wireframeHiddenRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("DepthInputOutput"), AZ::RPI::PassAttachmentRef{ AZ::Name("DepthPrePass"), AZ::Name("Depth") } });
-            AZ::RPI::Ptr<AZ::RPI::Pass> wireframeHiddenPass;
-            backgroundPass && (wireframeHiddenPass = passSystem->CreatePassFromRequest(&wireframeHiddenRequest), true);
-            wireframeHiddenPass &&
-                (renderPipeline.AddPassAfter(wireframeHiddenPass, AZ::Name("ViewModeBackgroundPass")), true);
+                AZ::RPI::PassRequest request;
+                request.m_passName = AZ::Name(descriptor.m_passName);
+                request.m_templateName = AZ::Name(descriptor.m_templateName);
+                request.m_passEnabled = false;
+                for (const ViewModePassConnection& connection : descriptor.m_connections)
+                {
+                    if (connection.m_slot)
+                    {
+                        request.AddInputConnection(AZ::RPI::PassConnection{
+                            AZ::Name(connection.m_slot),
+                            AZ::RPI::PassAttachmentRef{ AZ::Name(connection.m_sourcePass), AZ::Name(connection.m_sourceSlot) } });
+                    }
+                }
 
-            AZ::RPI::PassRequest wireframeRequest;
-            wireframeRequest.m_passName = AZ::Name("ViewModeWireframePass");
-            wireframeRequest.m_templateName = AZ::Name("ViewModeWireframePassTemplate");
-            wireframeRequest.m_passEnabled = false;
-            wireframeRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("ColorInputOutput"),
-                AZ::RPI::PassAttachmentRef{ AZ::Name("ViewModeWireframeHiddenPass"), AZ::Name("ColorInputOutput") } });
-            wireframeRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("DepthInputOutput"), AZ::RPI::PassAttachmentRef{ AZ::Name("DepthPrePass"), AZ::Name("Depth") } });
-            AZ::RPI::Ptr<AZ::RPI::Pass> wireframePass;
-            wireframeHiddenPass && (wireframePass = passSystem->CreatePassFromRequest(&wireframeRequest), true);
-            wireframePass && (renderPipeline.AddPassAfter(wireframePass, AZ::Name("ViewModeWireframeHiddenPass")), true);
+                passes[index] = passSystem->CreatePassFromRequest(&request);
+                if (!passes[index])
+                {
+                    AZ_Error(
+                        Window, false, "Could not create the view-mode passes for pipeline '%s'",
+                        renderPipeline.GetId().GetCStr());
+                    return;
+                }
 
-            AZ::RPI::PassRequest countRequest;
-            countRequest.m_passName = AZ::Name("ViewModeOverdrawCountPass");
-            countRequest.m_templateName = AZ::Name("ViewModeOverdrawCountPassTemplate");
-            countRequest.m_passEnabled = false;
-            countRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("DepthInputOutput"), AZ::RPI::PassAttachmentRef{ AZ::Name("DepthPrePass"), AZ::Name("Depth") } });
-            AZ::RPI::Ptr<AZ::RPI::Pass> countPass;
-            wireframePass && (countPass = passSystem->CreatePassFromRequest(&countRequest), true);
-            countPass && (renderPipeline.AddPassAfter(countPass, AZ::Name("ViewModeWireframePass")), true);
+                renderPipeline.AddPassAfter(passes[index], AZ::Name(ViewModePassPredecessor(index)));
+            }
 
-            AZ::RPI::PassRequest resolveRequest;
-            resolveRequest.m_passName = AZ::Name("ViewModeOverdrawResolvePass");
-            resolveRequest.m_templateName = AZ::Name("ViewModeOverdrawResolvePassTemplate");
-            resolveRequest.m_passEnabled = false;
-            resolveRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("Count"), AZ::RPI::PassAttachmentRef{ AZ::Name("ViewModeOverdrawCountPass"), AZ::Name("Count") } });
-            resolveRequest.AddInputConnection(AZ::RPI::PassConnection{
-                AZ::Name("ColorInputOutput"),
-                AZ::RPI::PassAttachmentRef{ AZ::Name("ViewModeWireframePass"), AZ::Name("ColorInputOutput") } });
-            AZ::RPI::Ptr<AZ::RPI::Pass> resolvePass;
-            countPass && (resolvePass = passSystem->CreatePassFromRequest(&resolveRequest), true);
-            resolvePass && (renderPipeline.AddPassAfter(resolvePass, AZ::Name("ViewModeOverdrawCountPass")), true);
-
-            AZ_Error(
-                Window, backgroundPass && wireframeHiddenPass && wireframePass && countPass && resolvePass,
-                "Could not create the view-mode passes for pipeline '%s'", renderPipeline.GetId().GetCStr());
-
-            (backgroundPass && wireframeHiddenPass && wireframePass && countPass && resolvePass) &&
-                (m_pipelinePasses[&renderPipeline] =
-                     PipelinePasses{ backgroundPass, wireframeHiddenPass, wireframePass, countPass, resolvePass },
-                 true);
+            m_pipelinePasses[&renderPipeline] = passes;
         }
 
         void ViewModeFeatureProcessor::RefreshPipelinePasses(AZ::RPI::RenderPipeline& renderPipeline)
@@ -426,27 +437,19 @@ namespace AZ
             m_pipelinePasses.erase(&renderPipeline);
 
             auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-            auto backgroundFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeBackgroundPassTemplate"), &renderPipeline);
-            auto wireframeHiddenFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeWireframeHiddenPassTemplate"), &renderPipeline);
-            auto wireframeFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeWireframePassTemplate"), &renderPipeline);
-            auto countFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeOverdrawCountPassTemplate"), &renderPipeline);
-            auto resolveFilter =
-                AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ViewModeOverdrawResolvePassTemplate"), &renderPipeline);
+            PipelinePasses passes;
+            for (size_t index = 0; index < ViewModePassCount; ++index)
+            {
+                auto filter = AZ::RPI::PassFilter::CreateWithTemplateName(
+                    AZ::Name(ViewModePassDescriptors[index].m_templateName), &renderPipeline);
+                passes[index] = passSystem->FindFirstPass(filter);
+                if (!passes[index])
+                {
+                    return;
+                }
+            }
 
-            AZ::RPI::Ptr<AZ::RPI::Pass> backgroundPass = passSystem->FindFirstPass(backgroundFilter);
-            AZ::RPI::Ptr<AZ::RPI::Pass> wireframeHiddenPass = passSystem->FindFirstPass(wireframeHiddenFilter);
-            AZ::RPI::Ptr<AZ::RPI::Pass> wireframePass = passSystem->FindFirstPass(wireframeFilter);
-            AZ::RPI::Ptr<AZ::RPI::Pass> countPass = passSystem->FindFirstPass(countFilter);
-            AZ::RPI::Ptr<AZ::RPI::Pass> resolvePass = passSystem->FindFirstPass(resolveFilter);
-
-            (backgroundPass && wireframeHiddenPass && wireframePass && countPass && resolvePass) &&
-                (m_pipelinePasses[&renderPipeline] =
-                     PipelinePasses{ backgroundPass, wireframeHiddenPass, wireframePass, countPass, resolvePass },
-                 true);
+            m_pipelinePasses[&renderPipeline] = passes;
         }
 
         void ViewModeFeatureProcessor::OnRenderPipelineChanged(
@@ -454,27 +457,41 @@ namespace AZ
         {
             AZ_Assert(renderPipeline, "OnRenderPipelineChanged called with a null render pipeline");
 
-            const bool removed = changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Removed;
-            removed && (m_pipelinePasses.erase(renderPipeline), true);
-            !removed && (RefreshPipelinePasses(*renderPipeline), true);
+            if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_pipelinePasses.erase(renderPipeline);
+                return;
+            }
+
+            RefreshPipelinePasses(*renderPipeline);
         }
 
         bool ViewModeFeatureProcessor::AnyViewModePassEnabled() const
         {
-            bool anyEnabled = false;
             for (const auto& [pipeline, passes] : m_pipelinePasses)
             {
-                anyEnabled = anyEnabled || (passes.m_wireframe && passes.m_wireframe->IsEnabled()) ||
-                    (passes.m_count && passes.m_count->IsEnabled());
+                if (passes[Wireframe]->IsEnabled() || passes[OverdrawCount]->IsEnabled())
+                {
+                    return true;
+                }
             }
-            return anyEnabled;
+            return false;
         }
 
         void ViewModeFeatureProcessor::OnBeginPrepareRender()
         {
-            const bool active = AnyViewModePassEnabled();
-            (!active && !m_meshes.empty()) && (m_meshes.clear(), m_meshes.shrink_to_fit(), true);
-            (active && EnsureAssets()) && (RefreshTrackedMeshes(), RefreshTransforms(), true);
+            if (!AnyViewModePassEnabled())
+            {
+                m_meshes.clear();
+                m_meshes.shrink_to_fit();
+                return;
+            }
+
+            if (EnsureAssets())
+            {
+                RefreshTrackedMeshes();
+                RefreshTransforms();
+            }
         }
 
         void ViewModeFeatureProcessor::RefreshTrackedMeshes()
@@ -496,15 +513,21 @@ namespace AZ
                     AZ::Render::MeshComponentRequestBus::EventResult(
                         model, entity->GetId(), &AZ::Render::MeshComponentRequests::GetModel);
 
-                    const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle = nullptr;
-                    (!model && meshFeatureProcessor) &&
-                        (AZ::Render::MeshHandleStateRequestBus::EventResult(
-                             meshHandle, entity->GetId(), &AZ::Render::MeshHandleStateRequests::GetMeshHandle),
-                         true);
-                    (!model && meshHandle && meshHandle->IsValid()) &&
-                        (model = meshFeatureProcessor->GetModel(*meshHandle), true);
+                    if (!model && meshFeatureProcessor)
+                    {
+                        const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle = nullptr;
+                        AZ::Render::MeshHandleStateRequestBus::EventResult(
+                            meshHandle, entity->GetId(), &AZ::Render::MeshHandleStateRequests::GetMeshHandle);
+                        if (meshHandle && meshHandle->IsValid())
+                        {
+                            model = meshFeatureProcessor->GetModel(*meshHandle);
+                        }
+                    }
 
-                    model && (current.emplace_back(entity->GetId(), model), true);
+                    if (model)
+                    {
+                        current.emplace_back(entity->GetId(), model);
+                    }
                 });
 
             bool changed = current.size() != m_meshes.size();
@@ -513,7 +536,10 @@ namespace AZ
                 changed = current[i].first != m_meshes[i].m_entityId || current[i].second != m_meshes[i].m_model;
             }
 
-            changed && (RebuildTrackedMeshes(current), true);
+            if (changed)
+            {
+                RebuildTrackedMeshes(current);
+            }
 
             for (TrackedMesh& mesh : m_meshes)
             {
@@ -550,10 +576,14 @@ namespace AZ
                 const float blue = AZ::GetClamp(2.0f - fabsf(hue * 6.0f - 4.0f), 0.0f, 1.0f);
                 const AZ::Vector4 wireColor(
                     red * 0.75f + 0.25f, green * 0.75f + 0.25f, blue * 0.75f + 0.25f, 0.85f);
-                mesh.m_objectSrg && (mesh.m_objectSrg->SetConstant(mesh.m_colorIndex, wireColor), true);
+                if (!mesh.m_objectSrg)
+                {
+                    continue;
+                }
+                mesh.m_objectSrg->SetConstant(mesh.m_colorIndex, wireColor);
 
                 const auto lods = model->GetLods();
-                const size_t meshCount = (mesh.m_objectSrg && !lods.empty()) ? lods[0]->GetMeshes().size() : 0;
+                const size_t meshCount = lods.empty() ? 0 : lods[0]->GetMeshes().size();
                 for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
                 {
                     AZ::RPI::MeshDrawPacket drawPacket(*lods[0], meshIndex, -1, m_material, mesh.m_objectSrg);
@@ -561,7 +591,7 @@ namespace AZ
                     mesh.m_drawPackets.push_back(AZStd::move(drawPacket));
                 }
 
-                mesh.m_objectSrg && (m_meshes.push_back(AZStd::move(mesh)), true);
+                m_meshes.push_back(AZStd::move(mesh));
             }
         }
 
@@ -572,33 +602,37 @@ namespace AZ
                 AZ::Transform world = AZ::Transform::CreateIdentity();
                 AZ::TransformBus::EventResult(world, mesh.m_entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-                const bool changed = !world.IsClose(mesh.m_transform);
-                changed &&
-                    (mesh.m_transform = world,
-                     mesh.m_objectSrg->SetConstant(mesh.m_worldIndex, AZ::Matrix4x4::CreateFromTransform(world)),
-                     mesh.m_objectSrg->Compile(), true);
+                if (world.IsClose(mesh.m_transform))
+                {
+                    continue;
+                }
+
+                mesh.m_transform = world;
+                mesh.m_objectSrg->SetConstant(mesh.m_worldIndex, AZ::Matrix4x4::CreateFromTransform(world));
+                mesh.m_objectSrg->Compile();
             }
         }
 
         void ViewModeFeatureProcessor::Render(const RenderPacket& packet)
         {
-            const bool active = AnyViewModePassEnabled() && !m_meshes.empty();
-            active &&
-                ([this, &packet]
-                 {
-                     for (const AZ::RPI::ViewPtr& view : packet.m_views)
-                     {
-                         for (const TrackedMesh& mesh : m_meshes)
-                         {
-                             for (const AZ::RPI::MeshDrawPacket& drawPacket : mesh.m_drawPackets)
-                             {
-                                 const AZ::RHI::DrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
-                                 rhiDrawPacket && (view->AddDrawPacket(rhiDrawPacket), true);
-                             }
-                         }
-                     }
-                 }(),
-                 true);
+            if (m_meshes.empty() || !AnyViewModePassEnabled())
+            {
+                return;
+            }
+
+            for (const AZ::RPI::ViewPtr& view : packet.m_views)
+            {
+                for (const TrackedMesh& mesh : m_meshes)
+                {
+                    for (const AZ::RPI::MeshDrawPacket& drawPacket : mesh.m_drawPackets)
+                    {
+                        if (const AZ::RHI::DrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket())
+                        {
+                            view->AddDrawPacket(rhiDrawPacket);
+                        }
+                    }
+                }
+            }
         }
     } // namespace Render
 } // namespace AZ
