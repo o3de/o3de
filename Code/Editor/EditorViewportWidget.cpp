@@ -78,6 +78,7 @@
 #include "ViewportManipulatorController.h"
 
 // Atom
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -2000,6 +2001,21 @@ void EditorViewportWidget::UpdateScene()
         if (auto previousPipeline = previousRenderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
         {
             previousRenderScene->RemoveRenderPipeline(previousPipeline->GetId());
+        }
+
+        // The BRDF generation pipeline is named after the viewport rather than attached to its window, so the
+        // scene being left behind keeps one under the name the new scene is about to use. It only removes itself
+        // once it has executed, so until then both exist and the frame scheduler rejects the duplicate scope.
+        // Name format paired with BootstrapSystemComponent::RunBRDFPipeline.
+        const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
+        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            const AZ::RPI::RenderPipelineId brdfPipelineId(
+                AZStd::string::format("BRDFTexturePipeline_%d_%d", GetViewportId(), deviceIndex));
+            if (previousRenderScene->GetRenderPipeline(brdfPipelineId))
+            {
+                previousRenderScene->RemoveRenderPipeline(brdfPipelineId);
+            }
         }
     }
 

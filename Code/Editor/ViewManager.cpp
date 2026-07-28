@@ -74,6 +74,11 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
             }
 
             viewPane->SetId(viewportId);
+
+            // Layout persistence reads the id off the dock's own widget, which is the host rather than the view
+            // pane whenever the two differ, and without it the pane reopens on world 0 instead of its prefab.
+            pendingLevelHost->setProperty("ViewportId", viewportId);
+
             auto* viewport = new EditorViewportWidget("Perspective", viewPane);
             viewport->setProperty("IsViewportWidget", true);
             viewPane->AttachViewport(viewport);

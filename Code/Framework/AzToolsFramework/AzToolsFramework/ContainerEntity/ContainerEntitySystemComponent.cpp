@@ -9,6 +9,8 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/algorithm.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
@@ -225,16 +227,26 @@ namespace AzToolsFramework
         }
     }
 
-    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear([[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
-        // A world reset unregisters its containers; sweep open states whose containers no longer
-        // exist so other worlds' containers keep their state.
-        AZStd::erase_if(
-            m_openContainers,
-            [this](const AZ::EntityId& containerEntityId)
-            {
-                return !m_containers.contains(containerEntityId);
-            });
+        // Only the given context's containers are this call's business. Another world's containers outlive a
+        // world 0 level load, so counting them would fail a clear that has nothing to do with them; an entity
+        // whose context no longer resolves has been destroyed and is still this call's to sweep.
+        auto belongsToContext = [&entityContextId](const AZ::EntityId& containerEntityId)
+        {
+            auto owningContextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                owningContextId, containerEntityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            return owningContextId.IsNull() || owningContextId == entityContextId;
+        };
+
+        if (AZStd::any_of(m_containers.begin(), m_containers.end(), belongsToContext))
+        {
+            return AZ::Failure(AZStd::string(
+                "ContainerEntitySystemComponent: Clear called while this context still has registered containers."));
+        }
+
+        AZStd::erase_if(m_openContainers, belongsToContext);
 
         return AZ::Success();
     }

@@ -141,10 +141,14 @@ void PrefabEditorPane::ApplyLightingPreset()
 
     const AzFramework::CameraState cameraState = GetViewportCameraState();
 
+    // The frustum extents are what give the configuration its aspect ratio; leaving them zero makes shadow
+    // cascade fitting reject it outright.
     Camera::Configuration cameraConfig;
     cameraConfig.m_fovRadians = cameraState.m_fovOrZoom;
     cameraConfig.m_nearClipDistance = cameraState.m_nearClip;
     cameraConfig.m_farClipDistance = cameraState.m_farClip;
+    cameraConfig.m_frustumWidth = AZStd::max(aznumeric_cast<float>(cameraState.m_viewportSize.m_width), 1.0f);
+    cameraConfig.m_frustumHeight = AZStd::max(aznumeric_cast<float>(cameraState.m_viewportSize.m_height), 1.0f);
 
     m_lightingPreset.ApplyLightingPreset(
         imageBasedLightFeatureProcessor, skyBoxFeatureProcessor, exposureControlSettingInterface,
