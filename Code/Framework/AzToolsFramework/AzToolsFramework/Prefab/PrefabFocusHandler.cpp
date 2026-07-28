@@ -161,7 +161,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, instance.GetContainerEntityId());
+        EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, instance.GetTemplateSourcePath().Native());
         return true;
     }
 

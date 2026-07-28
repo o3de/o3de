@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/UserSettings/UserSettings.h>
 namespace AZ
 {
@@ -17,6 +18,7 @@ namespace AZ
 }
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -41,6 +43,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class InstanceEntityMapperInterface;
+        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
@@ -69,6 +72,7 @@ namespace AzToolsFramework
             , public AzQtComponents::DragAndDropEventsBus::Handler
             , public AzQtComponents::DragAndDropItemViewEventsBus::Handler
             , private AzToolsFramework::AssetSystemBus::Handler
+            , private AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator);
@@ -133,6 +137,13 @@ namespace AzToolsFramework
             void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
             //! @}
 
+            // AssetBrowserInteractionNotificationBus overrides ...
+            AZ::s32 GetPriority() const override;
+            void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
+
+            //! Returns the container entity of this prefab's instance in the world currently being edited, if any.
+            AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;
+
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
@@ -149,6 +160,7 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
+            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
 
             bool CanDragAndDropData(
                 const QMimeData* data,

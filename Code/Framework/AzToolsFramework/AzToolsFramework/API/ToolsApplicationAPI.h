@@ -18,6 +18,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/Slice/SliceComponent.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -781,10 +782,11 @@ namespace AzToolsFramework
         /// Opens a new instance of an Editor window by name and returns the dock widget container
         virtual QDockWidget* InstanceViewPane(const char* /*paneName*/) { return nullptr; }
 
-        //! Opens the prefab owning this container entity as a world of its own in an additional viewport.
+        //! Opens the prefab at this source path as a world of its own in an additional viewport.
         //! Editing a prefab in place is confined to the world being viewed, so this is how a prefab living in
-        //! another world is edited; its edits reach every world instantiating it through template propagation.
-        virtual void OpenPrefabInNewViewport(AZ::EntityId /*containerEntityId*/) {}
+        //! another world - or in no world at all - is edited; its edits reach every world instantiating it
+        //! through template propagation.
+        virtual void OpenPrefabInNewViewport(AZStd::string_view /*prefabPath*/) {}
 
         /// Closes an Editor window by name.
         /// If the view pane was registered with the ViewPaneOptions.isDeletable set to true (the default), this will delete the view pane, if it was open.

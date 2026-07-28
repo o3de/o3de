@@ -114,7 +114,7 @@ private:
     QWidget* GetViewPaneWidget(const char* viewPaneName) override;
     void OpenViewPane(const char* paneName) override;
     QDockWidget* InstanceViewPane(const char* paneName) override;
-    void OpenPrefabInNewViewport(AZ::EntityId containerEntityId) override;
+    void OpenPrefabInNewViewport(AZStd::string_view prefabPath) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;

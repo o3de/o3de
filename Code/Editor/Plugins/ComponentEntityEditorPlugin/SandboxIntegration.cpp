@@ -45,8 +45,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -76,6 +75,7 @@
 #include <Editor/DisplaySettings.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/LevelRoots.h>
 #include <Editor/LyViewPaneNames.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
@@ -85,6 +85,7 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QDir>
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
@@ -911,23 +912,45 @@ QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
     return QtViewPaneManager::instance()->InstancePane(paneName);
 }
 
-void SandboxIntegrationManager::OpenPrefabInNewViewport(AZ::EntityId containerEntityId)
+// A level is a prefab that lives under one of the folders the editor treats as a Levels root - the same set its
+// Open Level and New Level dialogs browse. Nothing inside the file distinguishes the two.
+static bool IsLevelSourcePath(AZStd::string_view prefabPath)
 {
-    auto* instanceEntityMapper = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
-    AzToolsFramework::Prefab::InstanceOptionalReference owningInstance = instanceEntityMapper
-        ? instanceEntityMapper->FindOwningInstance(containerEntityId)
-        : AzToolsFramework::Prefab::InstanceOptionalReference();
-    if (!owningInstance.has_value())
+    auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    if (!prefabLoader)
     {
-        AZ_Error(
-            "PrefabViewport", false, "Could not find the prefab instance owning entity %s.",
-            containerEntityId.ToString().c_str());
+        return false;
+    }
+
+    const QString absolutePath =
+        QDir::cleanPath(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(prefabPath)).c_str()));
+
+    for (const LevelRoots::Root& root : LevelRoots::Enumerate())
+    {
+        if (absolutePath.startsWith(QDir::cleanPath(root.absolutePath) + '/', Qt::CaseInsensitive))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefabPath)
+{
+    if (prefabPath.empty())
+    {
+        AZ_Error("PrefabViewport", false, "Could not open a prefab viewport without a prefab source path.");
         return;
     }
 
-    const QString prefabPath = QString::fromUtf8(owningInstance->get().GetTemplateSourcePath().c_str());
+    const QString prefabPathText = QString::fromUtf8(prefabPath.data(), aznumeric_cast<int>(prefabPath.size()));
 
-    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(LyViewPane::PrefabEditor);
+    // A level carries its own environment and belongs in the ordinary editing surface. Only a prefab, which has
+    // neither sun nor sky of its own, needs the Prefab Editor and the lighting preset it supplies.
+    const char* paneName = IsLevelSourcePath(prefabPath) ? LyViewPane::EditorViewport : LyViewPane::PrefabEditor;
+
+    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(paneName);
     if (!viewportPane)
     {
         return;
@@ -951,7 +974,7 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZ::EntityId containerEn
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
 
-        if (prefabPath == QString::fromUtf8(levelPath.c_str()))
+        if (prefabPathText == QString::fromUtf8(levelPath.c_str()))
         {
             dockWidget->raise();
             dockWidget->activateWindow();
@@ -960,7 +983,7 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZ::EntityId containerEn
     }
 
     const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
-        LyViewPane::PrefabEditor, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
+        paneName, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
 
     // The viewport widget is created a tick after its pane, so the prefab rides on the pane until then; the
     // deferred creation loads it as a world of its own and binds the new viewport to it.
@@ -968,7 +991,7 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZ::EntityId containerEn
     {
         if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())
         {
-            paneWidget->setProperty("PendingLevelPath", prefabPath);
+            paneWidget->setProperty("PendingLevelPath", prefabPathText);
         }
     }
 }

@@ -284,7 +284,9 @@ namespace AzToolsFramework
                         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                             selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-                        EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, selectedEntities.front());
+                        EditorRequestBus::Broadcast(
+                            &EditorRequests::OpenPrefabInNewViewport,
+                            s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntities.front()).Native());
                     }
                 );
 
