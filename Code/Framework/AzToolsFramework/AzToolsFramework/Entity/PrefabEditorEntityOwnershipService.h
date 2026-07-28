@@ -102,6 +102,8 @@ namespace AzToolsFramework
         
         void StartPlayInEditor() override;
         void StopPlayInEditor() override;
+        void SuspendEditorEntities() override;
+        void ResumeEditorEntities() override;
 
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
         bool IsRootPrefabAssigned() const override;

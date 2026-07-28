@@ -31,6 +31,7 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 // Editor
 #include "Settings.h"
@@ -931,6 +932,9 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
     // Commit changes to the disk.
     _flushall();
+
+    // The level just written is world 0's; other viewports may be editing levels of their own.
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequests::SaveWorlds);
 
     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::OnSaveLevel);
 

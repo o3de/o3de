@@ -31,13 +31,8 @@
 
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
 #include <Core/Widgets/ViewportSettingsWidgets.h>
-#include <AzCore/Utils/Utils.h>
-
-#include <QFileDialog>
-
 #include <CryEdit.h>
 #include <EditorCoreAPI.h>
-#include <ViewManager.h>
 #include <LevelRoots.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/EditorViewportSettings.h>
@@ -1325,58 +1320,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
     }
 
-    // Load Level Into Viewport
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.loadLevelIntoViewport";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Load Level Into Viewport";
-        actionProperties.m_description = "Load a level into the focused viewport as its own world.";
-        actionProperties.m_category = "View";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                CViewport* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-                if (!viewport)
-                {
-                    return;
-                }
-
-                const auto levelsFolder = AZ::IO::Path(AZ::Utils::GetProjectPath()) / "Levels";
-                const QString filePath = QFileDialog::getOpenFileName(
-                    MainWindow::instance(),
-                    QObject::tr("Load Level Into Viewport"),
-                    QString::fromUtf8(levelsFolder.c_str()),
-                    QObject::tr("Level prefab (*.prefab)"));
-                if (filePath.isEmpty())
-                {
-                    return;
-                }
-                const QByteArray filePathUtf8 = filePath.toUtf8();
-
-                AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                    worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
-                    AZ::IO::PathView(filePathUtf8.constData()));
-                AZ_Error("EditorWorld", !worldId.IsNull(), "Could not load '%s' as an editor world", filePathUtf8.constData());
-                if (worldId.IsNull())
-                {
-                    return;
-                }
-
-                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                    &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewport->GetViewportId(), worldId);
-            }
-        );
-
-        m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
-        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
-    }
-
     // View Bookmarks
     InitializeViewBookmarkActions();
 
@@ -2035,7 +1978,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::ViewportMenuIdentifier, 200);
         {
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.addViewport", 50);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.loadLevelIntoViewport", 60);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.goToPosition", 100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.centerOnSelection", 200);
             m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportMenuIdentifier, EditorIdentifiers::GoToLocationMenuIdentifier, 300);

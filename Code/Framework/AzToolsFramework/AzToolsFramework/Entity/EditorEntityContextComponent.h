@@ -117,6 +117,8 @@ namespace AzToolsFramework
         void SetFocusedViewport(AzFramework::ViewportId viewportId) override;
         PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) override;
         AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) override;
+        AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) override;
+        void SaveWorlds() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -167,6 +169,9 @@ namespace AzToolsFramework
         //! Returns the active world's ownership service.
         PrefabEditorEntityOwnershipService* GetActiveWorldOwnershipService();
 
+        //! Re-sends OnViewportWorldChanged to the world's viewports so they pick up its current scene.
+        void RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId);
+
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
         void OnStopGameModeRequest() override;
@@ -178,6 +183,9 @@ namespace AzToolsFramework
 
         //! List of selected entities prior to entering game.
         EntityIdList m_selectedBeforeStartingGame;
+
+        //! The world game mode is playing, so the matching stop reaches it even if the focus moved.
+        AzFramework::EntityContextId m_playingWorldId = AzFramework::EntityContextId::CreateNull();
 
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
         using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;

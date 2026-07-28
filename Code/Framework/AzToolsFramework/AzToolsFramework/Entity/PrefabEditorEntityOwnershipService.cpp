@@ -602,9 +602,23 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_rootInstance->GetAllEntitiesInHierarchy([this](AZStd::unique_ptr<AZ::Entity>& entity)
+            SuspendEditorEntities();
+
+            m_playInEditorData.m_isEnabled = true;
+        }
+    }
+
+    void PrefabEditorEntityOwnershipService::SuspendEditorEntities()
+    {
+        if (!m_rootInstance || !m_playInEditorData.m_deactivatedEntities.empty())
+        {
+            return;
+        }
+
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [this](AZStd::unique_ptr<AZ::Entity>& entity)
             {
-                AZ_Assert(entity, "Invalid entity found in root instance while starting play in editor.");
+                AZ_Assert(entity, "Invalid entity found in root instance while suspending editor entities.");
                 if (entity->GetState() == AZ::Entity::State::Active)
                 {
                     entity->Deactivate();
@@ -612,9 +626,18 @@ namespace AzToolsFramework
                 }
                 return true;
             });
+    }
 
-            m_playInEditorData.m_isEnabled = true;
+    void PrefabEditorEntityOwnershipService::ResumeEditorEntities()
+    {
+        auto& deactivatedEntities = m_playInEditorData.m_deactivatedEntities;
+        for (auto it = deactivatedEntities.rbegin(); it != deactivatedEntities.rend(); ++it)
+        {
+            AZ_Assert(*it, "Invalid entity added to list for re-activation after suspending editor entities.");
+            (*it)->Activate();
         }
+
+        deactivatedEntities.clear();
     }
 
     void PrefabEditorEntityOwnershipService::StopPlayInEditor()

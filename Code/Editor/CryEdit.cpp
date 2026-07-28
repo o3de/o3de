@@ -67,6 +67,8 @@ AZ_POP_DISABLE_WARNING
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
@@ -2833,6 +2835,25 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
 {
     if (m_openingLevel)
     {
+        return GetIEditor()->GetDocument();
+    }
+
+    // The main viewport holds the editor's level, so opening one there is the editor-wide open it has
+    // always been. Every additional viewport is a view of a world of its own and takes the level alone.
+    // Startup and command line opens run before any viewport is selected and fall through to that.
+    CViewport* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
+    if (viewport && viewport->GetViewportId() != AzToolsFramework::ViewportUi::DefaultViewportId)
+    {
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(filename));
+        AZ_Error("EditorWorld", !worldId.IsNull(), "Could not load '%s' as an editor world", filename);
+
+        if (!worldId.IsNull())
+        {
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewport->GetViewportId(), worldId);
+        }
         return GetIEditor()->GetDocument();
     }
 

@@ -126,6 +126,20 @@ CViewManager::CViewManager()
                     auto* viewport = new EditorViewportWidget("Perspective", pane);
                     viewport->setProperty("IsViewportWidget", true);
                     pane->AttachViewport(viewport);
+
+                    // A pane restored from a layout reopens on the level it was showing.
+                    const QByteArray levelPath = pane->property("PendingLevelPath").toString().toUtf8();
+                    if (levelPath.isEmpty())
+                    {
+                        return;
+                    }
+
+                    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                        worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
+                        AZ::IO::PathView(levelPath.constData()));
+                    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                        &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
                 });
             return pane;
         },

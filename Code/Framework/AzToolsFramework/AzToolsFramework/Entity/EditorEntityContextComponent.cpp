@@ -40,6 +40,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
@@ -630,12 +631,31 @@ namespace AzToolsFramework
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::MarkEntitiesDeselected, m_selectedBeforeStartingGame);
         }
 
-        auto* service = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        // Game mode plays the world being edited, and must stop the same one even if the focus moves.
+        m_playingWorldId = GetActiveWorldId();
+
+        auto* service = GetWorldEntityOwnershipService(m_playingWorldId);
         AZ_Assert(service, "Start play in editor could not start because there was no implementation for "
             "PrefabEditorEntityOwnershipInterface");
         service->StartPlayInEditor();
 
         m_isRunningGame = true;
+
+        // Game mode is editor-wide: every world but the one playing goes quiet. Their entities would
+        // otherwise keep rendering and debug-drawing into the main scene the session spawns into.
+        if (m_playingWorldId != GetContextId())
+        {
+            GetWorldEntityOwnershipService(GetContextId())->SuspendEditorEntities();
+        }
+        for (const auto& [worldId, world] : m_worlds)
+        {
+            if (worldId != m_playingWorldId)
+            {
+                world->GetOwnershipService()->SuspendEditorEntities();
+            }
+        }
+
+        RebindViewportsShowingWorld(m_playingWorldId);
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditor);
     }
@@ -650,10 +670,28 @@ namespace AzToolsFramework
 
         m_isRunningGame = false;
 
-        auto* service = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        // A stop may arrive without a matching start; that addresses world 0, as it always did.
+        const AzFramework::EntityContextId playedWorldId = m_playingWorldId.IsNull() ? GetContextId() : m_playingWorldId;
+        m_playingWorldId = AzFramework::EntityContextId::CreateNull();
+
+        auto* service = GetWorldEntityOwnershipService(playedWorldId);
         AZ_Assert(service, "Stop play in editor could not complete because there was no implementation for "
             "PrefabEditorEntityOwnershipInterface");
         service->StopPlayInEditor();
+
+        if (playedWorldId != GetContextId())
+        {
+            GetWorldEntityOwnershipService(GetContextId())->ResumeEditorEntities();
+        }
+        for (const auto& [worldId, world] : m_worlds)
+        {
+            if (worldId != playedWorldId)
+            {
+                world->GetOwnershipService()->ResumeEditorEntities();
+            }
+        }
+
+        RebindViewportsShowingWorld(playedWorldId);
 
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, m_selectedBeforeStartingGame);
         m_selectedBeforeStartingGame.clear();
@@ -836,6 +874,57 @@ namespace AzToolsFramework
         return viewportWorldIt != m_viewportWorlds.end() ? viewportWorldIt->second : GetContextId();
     }
 
+    AZStd::string EditorEntityContextComponent::GetWorldLevelPath(const AzFramework::EntityContextId& worldId)
+    {
+        auto worldIt = m_worlds.find(worldId);
+        return worldIt != m_worlds.end() ? worldIt->second->GetLevelPath().Native() : AZStd::string();
+    }
+
+    void EditorEntityContextComponent::SaveWorlds()
+    {
+        auto* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        if (!prefabPublicInterface)
+        {
+            return;
+        }
+
+        for (const auto& [worldId, world] : m_worlds)
+        {
+            const AZ::IO::Path& levelPath = world->GetLevelPath();
+
+            const auto unsavedChanges = prefabPublicInterface->HasUnsavedChanges(levelPath);
+            if (!unsavedChanges.IsSuccess() || !unsavedChanges.GetValue())
+            {
+                continue;
+            }
+
+            const auto saveResult = prefabPublicInterface->SavePrefab(levelPath);
+            AZ_Error(
+                "EditorWorld", saveResult.IsSuccess(), "Could not save the level '%s': %s", levelPath.c_str(),
+                saveResult.GetError().c_str());
+        }
+    }
+
+    void EditorEntityContextComponent::RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId)
+    {
+        // World 0 renders in the main scene whether or not it is playing, so it never needs rebinding;
+        // only viewports bound to a secondary world do, and those are exactly the map's entries.
+        if (worldId == GetContextId())
+        {
+            return;
+        }
+
+        for (const auto& [viewportId, boundWorldId] : m_viewportWorlds)
+        {
+            if (boundWorldId == worldId)
+            {
+                // The binding does not change; the scene GetWorldScene hands out for the world does.
+                EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnViewportWorldChanged, viewportId, worldId);
+            }
+        }
+    }
+
     AzFramework::EntityContextId EditorEntityContextComponent::GetActiveWorldId()
     {
         return GetViewportWorld(m_focusedViewportId);
@@ -871,7 +960,8 @@ namespace AzToolsFramework
     {
         const AzFramework::EntityContextId resolvedWorldId = worldId.IsNull() ? GetActiveWorldId() : worldId;
 
-        if (resolvedWorldId == GetContextId())
+        // The played world's entities are respawned into the main scene for the session.
+        if (resolvedWorldId == GetContextId() || resolvedWorldId == m_playingWorldId)
         {
             // World 0 renders in the main scene, as the stock viewport always bound.
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();

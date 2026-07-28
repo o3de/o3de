@@ -175,6 +175,14 @@ namespace AzToolsFramework
 
         virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
         virtual AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) = 0;
+
+        //! The source path of the level a world holds, empty for world 0 (whose level the editor owns).
+        virtual AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) = 0;
+
+        //! Saves every world with unsaved changes except world 0, whose level the editor saves itself.
+        //! Every dirty world is written, not just the active one: losing another viewport's edits silently
+        //! is worse than writing a file the user did not think about.
+        virtual void SaveWorlds() = 0;
     };
 
     using EditorEntityContextRequestBus = AZ::EBus<EditorEntityContextRequests>;

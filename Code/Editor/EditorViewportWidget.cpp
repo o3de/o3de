@@ -712,13 +712,8 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 
     // The visibility octree spans every world; only entities owned by this viewport's world are
-    // visible here. Game mode spawns runtime entities outside any editor world, so everything
-    // stays visible while it runs.
-    if (GetIEditor()->IsInGameMode())
-    {
-        return;
-    }
-
+    // visible here. This holds in game mode too: the other worlds stay loaded and active, and
+    // without the filter their helpers draw over the session.
     AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());

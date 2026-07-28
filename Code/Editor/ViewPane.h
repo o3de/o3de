@@ -60,7 +60,8 @@ public:
     bool OwnsSharedDefinitions();
 
     // Set get this pane id.
-    void SetId(int id) { m_id = id; }
+    //! The property lets EditorCore identify a viewport pane without depending on this type.
+    void SetId(int id) { m_id = id; setProperty("ViewportId", id); }
     int GetId() { return m_id; }
 
     void SetViewClass(const QString& sClass);

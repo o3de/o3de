@@ -30,6 +30,8 @@
 
 #include "MainWindow.h"
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
 #include <algorithm>
 #include <QScopedValueRollback>
 
@@ -96,13 +98,16 @@ struct ViewLayoutState
     QVector<QString> viewPanes;
     QByteArray mainWindowState;
     QMap<QString, QRect> fakeDockWidgetGeometries;
+    //! Level each viewport pane was showing, by pane object name, so panes reopen on their own world.
+    QMap<QString, QString> viewportLevels;
 };
 Q_DECLARE_METATYPE(ViewLayoutState)
 
 static QDataStream &operator<<(QDataStream & out, const ViewLayoutState&myObj)
 {
-    int placeHolderVersion = 1;
-    out << myObj.viewPanes << myObj.mainWindowState << placeHolderVersion << myObj.fakeDockWidgetGeometries;
+    int placeHolderVersion = 2;
+    out << myObj.viewPanes << myObj.mainWindowState << placeHolderVersion << myObj.fakeDockWidgetGeometries
+        << myObj.viewportLevels;
     return out;
 }
 
@@ -116,6 +121,11 @@ static QDataStream& operator>>(QDataStream& in, ViewLayoutState& myObj)
     {
         in >> version;
         in >> myObj.fakeDockWidgetGeometries;
+    }
+
+    if (version >= 2 && !in.atEnd())
+    {
+        in >> myObj.viewportLevels;
     }
 
     return in;
@@ -1345,6 +1355,31 @@ bool QtViewPaneManager::DeserializeLayout(const XmlNodeRef& parentNode)
     return RestoreLayout(state);
 }
 
+//! Notes the level a viewport dock is showing, so the pane reopens on that world rather than world 0.
+//! Keyed by the same name the pane is saved under in viewPanes.
+static void RecordViewportLevel(ViewLayoutState& state, DockWidget* dockWidget, const QString& paneKey)
+{
+    QWidget* paneWidget = dockWidget->widget();
+    const QVariant viewportId = paneWidget ? paneWidget->property("ViewportId") : QVariant();
+    if (!viewportId.isValid() || viewportId.toInt() < 0)
+    {
+        return;
+    }
+
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
+
+    AZStd::string levelPath;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
+
+    if (!levelPath.empty())
+    {
+        state.viewportLevels.insert(paneKey, QString::fromUtf8(levelPath.c_str()));
+    }
+}
+
 ViewLayoutState QtViewPaneManager::GetLayout() const
 {
     ViewLayoutState state;
@@ -1357,6 +1392,7 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
         if (pane.IsVisible() || AzQtComponents::DockTabWidget::IsTabbed(pane.m_dockWidget))
         {
             state.viewPanes.push_back(pane.m_dockWidget->PaneName());
+            RecordViewportLevel(state, pane.m_dockWidget, pane.m_dockWidget->PaneName());
         }
 
         // Additional multi-instance docks are saved under their unique object names.
@@ -1366,6 +1402,7 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
                 (dockWidget->isVisible() || AzQtComponents::DockTabWidget::IsTabbed(dockWidget)))
             {
                 state.viewPanes.push_back(dockWidget->objectName());
+                RecordViewportLevel(state, dockWidget, dockWidget->objectName());
             }
         }
     }
@@ -1377,11 +1414,20 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
     return state;
 }
 
-void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName)
+void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath)
 {
+    // The viewport widget is created a tick after its pane, so the level rides on the pane until then.
+    auto assignLevel = [&levelPath](const QtViewPane* openedPane)
+    {
+        if (openedPane && openedPane->Widget() && !levelPath.isEmpty())
+        {
+            openedPane->Widget()->setProperty("PendingLevelPath", levelPath);
+        }
+    };
+
     if (GetPane(paneName))
     {
-        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        assignLevel(OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen));
         return;
     }
 
@@ -1395,7 +1441,12 @@ void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName)
             baseName, QtViewPane::OpenMode::OnlyOpen | QtViewPane::OpenMode::MultiplePanes | QtViewPane::OpenMode::RestoreLayout);
         if (openedPane && !basePane->m_dockWidgetInstances.isEmpty())
         {
-            basePane->m_dockWidgetInstances.last()->setObjectName(paneName);
+            DockWidget* dockWidget = basePane->m_dockWidgetInstances.last();
+            dockWidget->setObjectName(paneName);
+            if (dockWidget->widget() && !levelPath.isEmpty())
+            {
+                dockWidget->widget()->setProperty("PendingLevelPath", levelPath);
+            }
         }
     }
 }
@@ -1491,7 +1542,7 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPaneForLayoutRestore(paneName);
+        OpenPaneForLayoutRestore(paneName, state.viewportLevels.value(paneName));
     }
 
     // must do this after opening all of the panes!
@@ -1523,7 +1574,7 @@ bool QtViewPaneManager::RestoreLayout(const ViewLayoutState& state)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPaneForLayoutRestore(paneName);
+        OpenPaneForLayoutRestore(paneName, state.viewportLevels.value(paneName));
     }
 
     // must do this after opening all of the panes!
