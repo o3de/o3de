@@ -9,7 +9,6 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -22,13 +21,9 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        AzFramework::EntityContextId InstanceDomGenerator::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-
         void InstanceDomGenerator::RegisterInstanceDomGeneratorInterface()
         {
             AZ::Interface<InstanceDomGeneratorInterface>::Register(this);
-
-            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "Prefab - InstanceDomGenerator::RegisterInstanceDomGeneratorInterface - "
@@ -49,8 +44,6 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface = nullptr;
             m_instanceEntityMapperInterface = nullptr;
 
-            s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
@@ -67,11 +60,18 @@ namespace AzToolsFramework
                 return;
             }
 
-            InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            // A container entity is momentarily unregistered from its context during propagation, which leaves
+            // the world unresolvable and the focus with it. Callers tolerate a null output DOM, as the sibling
+            // GetEntityDomFromTemplate already assumes for the same transient state.
+            InstanceOptionalReference focusedInstance =
+                prefabFocusInterface->GetFocusedPrefabInstanceForEntity(instance.GetContainerEntityId());
             if (!focusedInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
-                    "Could not get the focused instance. It should not be null.");
+                AZ_Warning(
+                    "Prefab",
+                    false,
+                    "InstanceDomGenerator::GetInstanceDomFromTemplate - "
+                    "Could not get the focused instance. Output DOM will be null.");
                 return;
             }
 
@@ -156,7 +156,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entity.GetId());
             if (!focusedInstance.has_value())
             {
                 AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "

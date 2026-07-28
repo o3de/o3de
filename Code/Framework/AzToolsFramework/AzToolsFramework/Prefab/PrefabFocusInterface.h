@@ -50,6 +50,13 @@ namespace AzToolsFramework::Prefab
         //! @return The focused instance.
         virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
 
+        //! Returns a reference to the focused instance of the world owning the entity. Callers holding an entity or an
+        //! instance must use this rather than the context id overload: that one resolves to the active world, which is
+        //! the wrong world whenever the edit targets a world other than the one being viewed.
+        //! @param EntityId The entity whose world's focus is wanted.
+        //! @return The focused instance.
+        virtual InstanceOptionalReference GetFocusedPrefabInstanceForEntity(AZ::EntityId entityId) const = 0;
+
         //! Returns whether the currently focused prefab instance is read-only.
         //! @param EntityContextId The entity context id.
         //! @return True if the currently focused prefab instance is read-only, false otherwise.

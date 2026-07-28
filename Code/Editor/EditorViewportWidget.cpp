@@ -2213,9 +2213,17 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 {
     if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
     {
-        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
-        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
-            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        // Focus mode is tracked per world, so a viewport borders on the prefab focus of the world it shows;
+        // component mode is a single editor-wide session and borders every viewport. Untracked ids return null.
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+        const auto* worldEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ worldId });
+        const auto* editorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+
+        if ((worldEditorModes && worldEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus)) ||
+            (editorModes && editorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component)))
         {
             AzFramework::ViewportBorderPadding viewportBorderPadding = {};
             viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;

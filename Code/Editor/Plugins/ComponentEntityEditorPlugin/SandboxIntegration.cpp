@@ -41,9 +41,12 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -51,6 +54,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
@@ -72,6 +76,7 @@
 #include <Editor/DisplaySettings.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/LyViewPaneNames.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
@@ -501,6 +506,15 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
 }
 
+void SandboxIntegrationManager::OnWorldDestroyed([[maybe_unused]] const AzFramework::EntityContextId& worldId)
+{
+    // Tearing a world down destroys its entities and its root prefab instance, but every undo node that world
+    // produced stays on the stack holding template ids, link ids and entity ids that no longer resolve - undoing
+    // past that point serialises freed memory. Closing a level already flushes for the same reason
+    // (CCryEditDoc::OnNewDocument / Fetch), and this flushes both stacks through the legacy manager.
+    GetIEditor()->FlushUndo();
+}
+
 void SandboxIntegrationManager::OnActionRegistrationHook()
 {
     auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
@@ -638,12 +652,23 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
     AZ::Vector3 center;
     aabb.GetAsSphere(center, radius);
 
+    // Only the viewports showing the entities' own world can go to them; the rest would fly to an empty point.
+    const AzFramework::EntityContextId entitiesWorldId = AzToolsFramework::GetEntityWorldId(entityIds.front());
+
     auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
     const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
     for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
     {
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
+            AzFramework::EntityContextId viewportWorldId = entitiesWorldId;
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportContext->GetId());
+            if (viewportWorldId != entitiesWorldId)
+            {
+                continue;
+            }
+
             if (const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
                     viewportContext->GetCameraTransform(),
                     AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix()),
@@ -651,7 +676,9 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                     radius);
                 nextCameraTransform.has_value())
             {
-                SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(*nextCameraTransform);
+                // Each viewport moves its own camera: the transform above was computed from its camera, and the
+                // default-context variant would apply every viewport's result to one camera.
+                SandboxEditor::HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), *nextCameraTransform);
             }
         }
     }
@@ -882,6 +909,68 @@ void SandboxIntegrationManager::OpenViewPane(const char* paneName)
 QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
 {
     return QtViewPaneManager::instance()->InstancePane(paneName);
+}
+
+void SandboxIntegrationManager::OpenPrefabInNewViewport(AZ::EntityId containerEntityId)
+{
+    auto* instanceEntityMapper = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
+    AzToolsFramework::Prefab::InstanceOptionalReference owningInstance = instanceEntityMapper
+        ? instanceEntityMapper->FindOwningInstance(containerEntityId)
+        : AzToolsFramework::Prefab::InstanceOptionalReference();
+    if (!owningInstance.has_value())
+    {
+        AZ_Error(
+            "PrefabViewport", false, "Could not find the prefab instance owning entity %s.",
+            containerEntityId.ToString().c_str());
+        return;
+    }
+
+    const QString prefabPath = QString::fromUtf8(owningInstance->get().GetTemplateSourcePath().c_str());
+
+    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(LyViewPane::PrefabEditor);
+    if (!viewportPane)
+    {
+        return;
+    }
+
+    // A prefab already open as a world is shown by raising its viewport rather than adding a second view of it.
+    for (DockWidget* dockWidget : viewportPane->m_dockWidgetInstances)
+    {
+        QWidget* paneWidget = dockWidget->widget();
+        const QVariant viewportId = paneWidget ? paneWidget->property("ViewportId") : QVariant();
+        if (!viewportId.isValid())
+        {
+            continue;
+        }
+
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
+
+        AZStd::string levelPath;
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
+
+        if (prefabPath == QString::fromUtf8(levelPath.c_str()))
+        {
+            dockWidget->raise();
+            dockWidget->activateWindow();
+            return;
+        }
+    }
+
+    const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
+        LyViewPane::PrefabEditor, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
+
+    // The viewport widget is created a tick after its pane, so the prefab rides on the pane until then; the
+    // deferred creation loads it as a world of its own and binds the new viewport to it.
+    if (openedPane && !openedPane->m_dockWidgetInstances.isEmpty())
+    {
+        if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())
+        {
+            paneWidget->setProperty("PendingLevelPath", prefabPath);
+        }
+    }
 }
 
 void SandboxIntegrationManager::CloseViewPane(const char* paneName)

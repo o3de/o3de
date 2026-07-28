@@ -36,6 +36,7 @@
 #include "LayoutWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
+#include "PrefabEditorPane.h"
 #include "QtViewPaneManager.h"
 #include "ViewPane.h"
 
@@ -54,6 +55,43 @@ bool CViewManager::IsMultiViewportEnabled()
     }
 
     return isMultiViewportEnabled;
+}
+
+//! Gives a pane its viewport one event-loop tick late, once the pane is wrapped in its dock: the swapchain
+//! binds to the native window present at attach time, and reparenting afterwards recreates that window and
+//! orphans the swapchain. The pending level rides on the host widget until the viewport has an id to bind.
+static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
+{
+    QTimer::singleShot(
+        0, viewPane,
+        [viewPane, pendingLevelHost]
+        {
+            auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            int viewportId = 0;
+            while (viewportContextManager && viewportContextManager->GetViewportContextById(viewportId))
+            {
+                ++viewportId;
+            }
+
+            viewPane->SetId(viewportId);
+            auto* viewport = new EditorViewportWidget("Perspective", viewPane);
+            viewport->setProperty("IsViewportWidget", true);
+            viewPane->AttachViewport(viewport);
+
+            // A pane restored from a layout, or opened onto a prefab, reopens on the level it was showing.
+            const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
+            if (levelPath.isEmpty())
+            {
+                return;
+            }
+
+            AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
+                AZ::IO::PathView(levelPath.constData()));
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
+        });
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -108,42 +146,25 @@ CViewManager::CViewManager()
                 return pane;
             }
 
-            // Fresh viewports wait one event-loop tick, until the pane is wrapped in its dock: the
-            // swapchain binds to the native window present at attach time, and reparenting afterwards
-            // recreates that window and orphans the swapchain.
-            QTimer::singleShot(
-                0, pane,
-                [pane]
-                {
-                    auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-                    int viewportId = 0;
-                    while (viewportContextManager && viewportContextManager->GetViewportContextById(viewportId))
-                    {
-                        ++viewportId;
-                    }
-
-                    pane->SetId(viewportId);
-                    auto* viewport = new EditorViewportWidget("Perspective", pane);
-                    viewport->setProperty("IsViewportWidget", true);
-                    pane->AttachViewport(viewport);
-
-                    // A pane restored from a layout reopens on the level it was showing.
-                    const QByteArray levelPath = pane->property("PendingLevelPath").toString().toUtf8();
-                    if (levelPath.isEmpty())
-                    {
-                        return;
-                    }
-
-                    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                        worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
-                        AZ::IO::PathView(levelPath.constData()));
-                    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                        &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
-                });
+            AttachDeferredViewport(pane, pane);
             return pane;
         },
         dockableViewportOptions);
+
+    // A prefab opened for edit is a world of its own shown by a tool of its own, so that its lighting and its
+    // toolbar are not those of an ordinary viewport onto the level.
+    QtViewOptions prefabEditorOptions = dockableViewportOptions;
+    prefabEditorOptions.viewportType = -1;
+    QtViewPaneManager::instance()->RegisterPane(
+        LyViewPane::PrefabEditor,
+        LyViewPane::CategoryTools,
+        [](QWidget* parent = nullptr) -> QWidget*
+        {
+            auto* pane = new PrefabEditorPane(parent);
+            AttachDeferredViewport(pane->GetViewPane(), pane);
+            return pane;
+        },
+        prefabEditorOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }

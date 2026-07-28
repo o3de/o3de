@@ -197,11 +197,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-            // Retrieve currently focused prefab instance.
-            AzFramework::EntityContextId editorEntityContextId;
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+            // Retrieve the focused prefab instance of the world owning the entity.
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
 
             // If the entity was owned by the focused instance, there's not much to push...
             if (&focusedInstance->get() == &owningInstance->get())
@@ -254,10 +251,7 @@ namespace AzToolsFramework
 
         AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetEntityPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId)
         {
-            AzFramework::EntityContextId editorEntityContextId;
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
 
             AZ::Dom::Path absoluteEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityPathFromFocusedPrefab(entityId);
 

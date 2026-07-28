@@ -51,7 +51,7 @@ namespace AzToolsFramework
             const PrefabDomValue& afterStateOfComponentProperty)
         {
             InstanceOptionalReference focusedInstance =
-                m_prefabFocusInterface->GetFocusedPrefabInstance(AzFramework::EntityContextId::CreateNull());
+                m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(owningInstance.GetContainerEntityId());
 
             AZ_Assert(focusedInstance.has_value(), "PrefabUndoComponentPropertyOverride::CaptureAndRedo - Focused instance not found.");
 

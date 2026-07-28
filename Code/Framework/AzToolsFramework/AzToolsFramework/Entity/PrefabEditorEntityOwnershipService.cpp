@@ -73,8 +73,14 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance =
-            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
+        // The placeholder root's path is its key in the template registry, which every world's service shares,
+        // so each world needs its own or the registry rejects the second one. World 0 keeps the historical name.
+        const AZStd::string placeholderPath = m_ownsInterface
+            ? AZStd::string("newLevel.prefab")
+            : AZStd::string::format("newLevel_%s.prefab", m_entityContextId.ToFixedString().c_str());
+
+        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(
+            m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, placeholderPath.c_str()));
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -112,7 +118,13 @@ namespace AzToolsFramework
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
-                m_prefabSystemComponent->RemoveAllTemplates();
+
+                // The template registry is shared by every world's service, and a world reaches here
+                // whenever its last viewport unbinds; only the editor's primary service may clear it.
+                if (m_ownsInterface)
+                {
+                    m_prefabSystemComponent->RemoveAllTemplates();
+                }
             }
             m_rootInstance->SetContainerEntityName("Level");
         }
@@ -128,8 +140,10 @@ namespace AzToolsFramework
         // Setup undo node.
         ScopedUndoBatch undoBatch("Add entity");
 
-        // Determine which prefab instance should own this entity.
-        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
+        // Determine which prefab instance should own this entity. The root instance addresses this service's own world;
+        // world 0's context id would alias to whichever world is active.
+        Prefab::InstanceOptionalReference newOwningInstance =
+            m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(m_rootInstance->GetContainerEntityId());
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
@@ -155,7 +169,8 @@ namespace AzToolsFramework
         ScopedUndoBatch undoBatch("Add entities");
 
         // Determine which prefab instance should own these entities.
-        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
+        Prefab::InstanceOptionalReference newOwningInstance =
+            m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(m_rootInstance->GetContainerEntityId());
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
@@ -472,9 +487,10 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
+        // The container keeps the name its own file gives it: a world may be rooted on a prefab rather
+        // than a level, and renaming the live container would write that name back out on save.
         rootPrefabInstance->SetTemplateId(templateId);
         rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
-        rootPrefabInstance->SetContainerEntityName("Level");
 
         m_rootInstance = AZStd::move(rootPrefabInstance);
         m_isRootPrefabAssigned = true;

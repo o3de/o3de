@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -121,8 +122,10 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    //! A null id or the editor entity context id addresses the active world; world ids pass through.
-    AzFramework::EntityContextId PrefabFocusHandler::ResolveWorldId(const AzFramework::EntityContextId& entityContextId)
+    //! A null id or the editor entity context id addresses the active world; world ids pass through. The editor-wide
+    //! prefab edit UI can only show one world, which is why a prefab is never focused from a pane showing another:
+    //! that gesture opens the prefab in its own world and viewport instead (see FocusOnPrefabInstance).
+    AzFramework::EntityContextId PrefabFocusHandler::ResolveWorldId(const AzFramework::EntityContextId& entityContextId) const
     {
         const bool addressesActiveWorld = entityContextId.IsNull() || entityContextId == GetEntityContextId();
         return addressesActiveWorld ? GetActiveWorldId() : entityContextId;
@@ -147,8 +150,33 @@ namespace AzToolsFramework::Prefab
         return focus;
     }
 
+    //! A prefab living in a world other than the one being viewed is never focused in place: the editor-wide prefab
+    //! edit UI can only show one world, so the prefab opens as a world of its own in an additional viewport instead.
+    //! A world's root is exempt - it carries no prefab edit state, and world load, context reset and undo target it.
+    bool PrefabFocusHandler::RedirectFocusToOwnViewport(const Instance& instance) const
+    {
+        if (instance.GetParentInstance() == AZStd::nullopt ||
+            GetEntityWorldId(instance.GetContainerEntityId()) == GetActiveWorldId())
+        {
+            return false;
+        }
+
+        EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, instance.GetContainerEntityId());
+        return true;
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
+        // Redirect before the undo batch below, or a prefab that never gets focused still clears the selection and
+        // leaves an undo node that would re-open its viewport when undone.
+        if (InstanceOptionalReference instance =
+                entityId.IsValid() ? m_instanceEntityMapperInterface->FindOwningInstance(entityId) : InstanceOptionalReference();
+            instance.has_value() && RedirectFocusToOwnViewport(instance->get()))
+        {
+            return AZ::Failure(AZStd::string("Prefab Focus Handler: the prefab belongs to another world, "
+                                             "so it opens in a viewport of its own instead of being focused here."));
+        }
+
         // Initialize Undo Batch object
         ScopedUndoBatch undoBatch("Edit Prefab");
 
@@ -312,6 +340,12 @@ namespace AzToolsFramework::Prefab
         if (!focusedInstance.has_value())
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
+        }
+
+        if (RedirectFocusToOwnViewport(focusedInstance->get()))
+        {
+            return AZ::Failure(AZStd::string("Prefab Focus Handler: the prefab belongs to another world, "
+                                             "so it opens in a viewport of its own instead of being focused here."));
         }
 
         const AzFramework::EntityContextId worldId = GetEntityWorldId(focusedInstance->get().GetContainerEntityId());

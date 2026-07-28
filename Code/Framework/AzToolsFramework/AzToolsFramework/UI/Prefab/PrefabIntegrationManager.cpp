@@ -247,6 +247,56 @@ namespace AzToolsFramework
                 m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "+");
             }
 
+            // Edit Prefab in New Viewport
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.editInNewViewport";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Edit Prefab in New Viewport";
+                actionProperties.m_description =
+                    "Open the prefab as a world of its own in an additional viewport. Edits made there reach every "
+                    "level instantiating it.";
+                actionProperties.m_category = "Prefabs";
+
+                auto isEditableInOwnViewport = []() -> bool
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    return selectedEntities.size() == 1 &&
+                        s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                        !s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntities.front()) &&
+                        selectedEntities.front() != s_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                };
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [isEditableInOwnViewport]()
+                    {
+                        if (!isEditableInOwnViewport())
+                        {
+                            return;
+                        }
+
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, selectedEntities.front());
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, isEditableInOwnViewport);
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
             // Inspect Procedural Prefab
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.inspect";
@@ -1011,6 +1061,7 @@ namespace AzToolsFramework
         {
             // Entity Outliner Context Menu
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.editInNewViewport", 10550);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.inspect", 10600);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.close", 10700);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.openInstance", 10800);
@@ -1025,6 +1076,7 @@ namespace AzToolsFramework
 
             // Viewport Context Menu
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.editInNewViewport", 10550);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.inspect", 10600);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.close", 10700);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.openInstance", 10800);

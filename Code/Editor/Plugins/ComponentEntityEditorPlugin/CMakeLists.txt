@@ -33,6 +33,7 @@ ly_add_target(
             Legacy::EditorLib
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::Atom_Feature_Common.Public
             Gem::AtomToolsFramework.Static
             Gem::LmbrCentral.Editor
     RUNTIME_DEPENDENCIES

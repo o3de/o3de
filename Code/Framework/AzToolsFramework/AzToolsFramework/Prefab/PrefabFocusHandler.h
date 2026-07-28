@@ -60,6 +60,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
+        InstanceOptionalReference GetFocusedPrefabInstanceForEntity(AZ::EntityId entityId) const override;
         bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const override;
         LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const override;
 
@@ -69,10 +70,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
-        
-        //! Returns the focused instance of the world owning the entity.
-        InstanceOptionalReference GetFocusedPrefabInstanceForEntity(AZ::EntityId entityId) const;
-
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
@@ -105,10 +102,12 @@ namespace AzToolsFramework::Prefab
             int m_rootAliasFocusPathLength = 0;
         };
 
-        static AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId);
+        AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId) const;
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
+
+        bool RedirectFocusToOwnViewport(const Instance& instance) const;
 
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         PrefabFocusOperationResult FocusOnWorldRootInstance(const AzFramework::EntityContextId& worldId);
