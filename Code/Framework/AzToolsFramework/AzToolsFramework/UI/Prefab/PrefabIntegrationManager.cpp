@@ -286,7 +286,8 @@ namespace AzToolsFramework
 
                         EditorRequestBus::Broadcast(
                             &EditorRequests::OpenPrefabInNewViewport,
-                            s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntities.front()).Native());
+                            s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntities.front()).Native(),
+                            EditorRequests::PrefabSurface::PrefabEditor);
                     }
                 );
 

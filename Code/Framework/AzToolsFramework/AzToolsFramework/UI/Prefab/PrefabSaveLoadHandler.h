@@ -139,7 +139,11 @@ namespace AzToolsFramework
 
             // AssetBrowserInteractionNotificationBus overrides ...
             AZ::s32 GetPriority() const override;
+            void AddContextMenuActions(
+                QWidget* caller, QMenu* menu, const AZStd::vector<const AssetBrowser::AssetBrowserEntry*>& entries) override;
             void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
+
+            static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
 
             //! Returns the container entity of this prefab's instance in the world currently being edited, if any.
             AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;

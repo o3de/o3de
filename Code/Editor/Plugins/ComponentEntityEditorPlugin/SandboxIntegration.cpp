@@ -86,6 +86,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QDir>
+#include <QFileInfo>
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
@@ -912,8 +913,9 @@ QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
     return QtViewPaneManager::instance()->InstancePane(paneName);
 }
 
-// A level is a prefab that lives under one of the folders the editor treats as a Levels root - the same set its
-// Open Level and New Level dialogs browse. Nothing inside the file distinguishes the two.
+// Nothing inside a prefab file says whether it is a level, so this reproduces the shape CLevelFileDialog gives
+// every level it saves: a .prefab named after its own folder, under one of the roots the Open Level and New Level
+// dialogs browse. Prefabs saved alongside a level are therefore not mistaken for one.
 static bool IsLevelSourcePath(AZStd::string_view prefabPath)
 {
     auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -922,9 +924,13 @@ static bool IsLevelSourcePath(AZStd::string_view prefabPath)
         return false;
     }
 
-    const QString absolutePath =
-        QDir::cleanPath(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(prefabPath)).c_str()));
+    const QFileInfo levelFile(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(prefabPath)).c_str()));
+    if (levelFile.completeBaseName().compare(levelFile.dir().dirName(), Qt::CaseInsensitive) != 0)
+    {
+        return false;
+    }
 
+    const QString absolutePath = QDir::cleanPath(levelFile.absoluteFilePath());
     for (const LevelRoots::Root& root : LevelRoots::Enumerate())
     {
         if (absolutePath.startsWith(QDir::cleanPath(root.absolutePath) + '/', Qt::CaseInsensitive))
@@ -936,7 +942,7 @@ static bool IsLevelSourcePath(AZStd::string_view prefabPath)
     return false;
 }
 
-void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefabPath)
+void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefabPath, PrefabSurface surface)
 {
     if (prefabPath.empty())
     {
@@ -948,7 +954,12 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
 
     // A level carries its own environment and belongs in the ordinary editing surface. Only a prefab, which has
     // neither sun nor sky of its own, needs the Prefab Editor and the lighting preset it supplies.
-    const char* paneName = IsLevelSourcePath(prefabPath) ? LyViewPane::EditorViewport : LyViewPane::PrefabEditor;
+    if (surface == PrefabSurface::Auto)
+    {
+        surface = IsLevelSourcePath(prefabPath) ? PrefabSurface::Viewport : PrefabSurface::PrefabEditor;
+    }
+
+    const char* paneName = surface == PrefabSurface::Viewport ? LyViewPane::EditorViewport : LyViewPane::PrefabEditor;
 
     QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(paneName);
     if (!viewportPane)

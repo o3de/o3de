@@ -47,6 +47,7 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMenu>
 #include <QMessageBox>
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -156,6 +157,50 @@ namespace AzToolsFramework
             return 1;
         }
 
+        bool PrefabSaveHandler::IsPrefabSourcePath(const AZStd::string& sourcePath)
+        {
+            AZStd::string extension;
+            AZ::StringFunc::Path::GetExtension(sourcePath.c_str(), extension);
+            return AZ::StringFunc::Equal(s_prefabFileExtension, extension.c_str());
+        }
+
+        void PrefabSaveHandler::AddContextMenuActions(
+            [[maybe_unused]] QWidget* caller, QMenu* menu, const AZStd::vector<const AssetBrowser::AssetBrowserEntry*>& entries)
+        {
+            if (entries.size() != 1)
+            {
+                return;
+            }
+
+            const auto* source = azrtti_cast<const AssetBrowser::SourceAssetBrowserEntry*>(entries.front());
+            if (!source || !IsPrefabSourcePath(source->GetFullPath()))
+            {
+                return;
+            }
+
+            // Whether a prefab is a level can only be guessed from where it sits, so both surfaces stay reachable
+            // for the cases the guess gets wrong.
+            const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
+
+            menu->addAction(
+                QObject::tr("Open in Viewport"),
+                menu,
+                [prefabPath]()
+                {
+                    EditorRequestBus::Broadcast(
+                        &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::Viewport);
+                });
+
+            menu->addAction(
+                QObject::tr("Open in Prefab Editor"),
+                menu,
+                [prefabPath]()
+                {
+                    EditorRequestBus::Broadcast(
+                        &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::PrefabEditor);
+                });
+        }
+
         void PrefabSaveHandler::OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled)
         {
             if (alreadyHandled)
@@ -165,23 +210,14 @@ namespace AzToolsFramework
 
             const AssetBrowser::SourceAssetBrowserEntry* source =
                 AssetBrowser::SourceAssetBrowserEntry::GetSourceByUuid(assetId.m_guid);
-            if (!source)
-            {
-                return;
-            }
-
-            const AZStd::string sourcePath = source->GetFullPath();
-
-            AZStd::string extension;
-            AZ::StringFunc::Path::GetExtension(sourcePath.c_str(), extension);
-            if (!AZ::StringFunc::Equal(s_prefabFileExtension, extension.c_str()))
+            if (!source || !IsPrefabSourcePath(source->GetFullPath()))
             {
                 return;
             }
 
             alreadyHandled = true;
 
-            const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(sourcePath.c_str());
+            const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
 
             // Focusing a prefab is confined to the world being viewed, so it is only offered when this prefab is
             // instantiated in that world. Anything else - another world's prefab, or one not loaded at all - opens
@@ -192,7 +228,8 @@ namespace AzToolsFramework
                 return;
             }
 
-            EditorRequestBus::Broadcast(&EditorRequests::OpenPrefabInNewViewport, prefabPath.Native());
+            EditorRequestBus::Broadcast(
+                &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::Auto);
         }
 
         AZ::EntityId PrefabSaveHandler::FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const
