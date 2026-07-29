@@ -115,13 +115,7 @@ namespace AZ::DocumentPropertyEditor
 
         // Upgrade the reset type to HardReset in case its already queued as a soft reset.
         m_queuedResetType = m_queuedResetType == DocumentResetType::HardReset ? DocumentResetType::HardReset : resetType;
-
-        // De-bounce the reset event.
-        if (!m_isResetQueued)
-        {
-            m_isResetQueued = true;
-            NotifyResetQueued();
-        }
+        NotifyResetQueued();
     }
 
     void DocumentAdapter::NotifyResetQueued()
@@ -131,25 +125,29 @@ namespace AZ::DocumentPropertyEditor
         // The filtered adapter may be a proxy on top of the "Real adapter".  There are two Adapters involved, the "underlying" real one
         // and a filter.  The GUI is watching the filtered one, the filtered one watching the underlying one.
         // This means that for the document to get these kind of events, the filtered adapter needs to pass any events relevant up the chain
+        m_isResetQueued = true;
         m_resetQueuedEvent.Signal();
     }
 
     void DocumentAdapter::ExecuteQueuedReset()
     {
-        // Called by the view when its a good time to execute the queued reset, like when the callstack is short and simple.
-        if (m_isResetQueued)
-        {
-            NotifyResetDocument(m_queuedResetType);
-        }
+        // This is invoked by the document (which is the GUI widget itself) when it knows that the callstack is no longer
+        // deep inside some event handling callstack such as undo or value change, and its safe to rebuild the document out from
+        // under it.
+        NotifyResetDocument(m_queuedResetType);
     }
 
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
     {
         // this is the actual reset function, which overrides any queuing, so reset it.
+        if (!m_isResetQueued)
+        {
+            return;
+        }
         m_isResetQueued = false;
-
         if (resetType == DocumentResetType::HardReset || m_cachedContents.IsNull())
         {
+            m_queuedResetType = DocumentResetType::SoftReset;
             // If it's a hard reset, or we don't have any lazily cached contents, just send the reset signal.
             m_cachedContents.SetNull();
             m_resetEvent.Signal();

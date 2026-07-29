@@ -231,6 +231,7 @@ namespace AzToolsFramework
         void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
         void ClearInstances() override;
         void SetFilterString(AZStd::string str) override; // Only used for linting, filtering is handled by the DocumentAdapter
+        void InvalidateAll(const char* filter) override;
         // ~IPropertyEditor overrides
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
@@ -241,6 +242,7 @@ namespace AzToolsFramework
         void SetSpawnDebugView(bool shouldSpawn);
 
         static bool ShouldReplaceCVarEditor();
+        static bool ShouldUseWidgetPooling();
 
         static constexpr const char* GetEnableCVarEditorName()
         {
@@ -287,6 +289,7 @@ namespace AzToolsFramework
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
         void Clear();
+        void ExecuteQueuedReset();
 
     protected:
         QVBoxLayout* GetVerticalLayout();
@@ -298,6 +301,7 @@ namespace AzToolsFramework
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
         void RequestExecuteQueuedReset();
         void UpdateDirtyHandlers();
+
         bool m_executeQueuedResetAlreadyQueued = false;
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;

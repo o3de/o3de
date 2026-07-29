@@ -104,7 +104,15 @@ namespace AZ::DocumentPropertyEditor
         if (!AZ::EntitySystemBus::Handler::BusIsConnected())
         {
             AZ::EntitySystemBus::Handler::BusConnect(); // listens for "On Entity Destruction" / "On Entity Initialized".
+        }
+
+        if (!AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusIsConnected())
+        {
             AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
+        }
+
+        if (!AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusIsConnected())
+        {
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         }
 
@@ -216,6 +224,8 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::OnEntityDeactivated(const AZ::EntityId& entityId)
     {
+        // There is no "Component is destroyed" event, so we have to listen for the entity deactivation
+        // and make no assumptions from that point until we get our entity back.
         if (entityId == m_entityId)
         {
             // stop listening for all events except Entity Initialized, which will be reconnected when the entity is re-initialized
@@ -235,6 +245,9 @@ namespace AZ::DocumentPropertyEditor
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
             AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
             AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
+
+            // We can't assume that its the same component, even if the component id AND memory is the same.
+            // The component could have been destroyed and recreated, so we need to re-fetch the component instance from the entity.
             SetComponent(GetComponentInstanceFromId());
         }
     }
