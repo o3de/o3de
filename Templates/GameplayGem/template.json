@@ -224,6 +224,10 @@
             "isTemplated": true
         },
         {
+            "file": "Levels/DefaultLevel/DefaultLevel.prefab",
+            "isTemplated": true
+        },
+        {
             "file": "Code/Tests/Clients/${Name}Test.cpp",
             "isTemplated": true
         },
