@@ -82,7 +82,7 @@ namespace AZ::DocumentPropertyEditor
     {
         if (!componentInstance) // This happens if the entity we're attached to is destroyed and becomes invalid.
         {
-            SetValue(nullptr, AZ::Uuid::CreateNull());
+            ClearValue();
             return;
         }
 

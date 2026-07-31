@@ -1312,6 +1312,11 @@ namespace AZ::DocumentPropertyEditor
         QueueResetDocument(DocumentResetType::HardReset);
     }
 
+    void ReflectionAdapter::ClearValue()
+    {
+        m_instance = nullptr;
+    }
+
     void ReflectionAdapter::InvokeChangeNotify(const AZ::Dom::Value& domNode)
     {
         using Nodes::PropertyEditor;
