@@ -10,8 +10,6 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-add_subdirectory(Plugins)
-
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
@@ -95,29 +93,31 @@ ly_add_target(
             SANDBOX_IMPORTS
     BUILD_DEPENDENCIES
         PRIVATE
+            3rdParty::Qt::Concurrent
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
-            3rdParty::Qt::Concurrent
             3rdParty::TIFF
-            Legacy::CryCommon
-            Legacy::EditorCommon
+            AZ::AtomCore
             AZ::AzCore
             AZ::AzToolsFramework
-            Gem::LmbrCentral.Static
-            AZ::AtomCore
+            AZ::SceneCore
+            AZ::SceneData
+            AZ::SceneUI
+            Gem::Atom_Feature_Common.Public
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Public
             Gem::AtomToolsFramework.Static
             Gem::AtomViewportDisplayInfo
             Gem::EditorModeFeedback.Editor.Static
+            Gem::LmbrCentral.Static
+            Legacy::CryCommon
             ${additional_dependencies}
         PUBLIC
             3rdParty::Qt::Network
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES
-        Legacy::EditorCommon
+        Gem::LmbrCentral.Editor
 )
 
 if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
@@ -135,16 +135,8 @@ ly_add_source_properties(
 ly_add_source_properties(
     SOURCES
         MainWindow.cpp
-    PROPERTY COMPILE_DEFINITIONS 
+    PROPERTY COMPILE_DEFINITIONS
     VALUES ${LY_PAL_TOOLS_DEFINES}
-)
-
-get_property(editor_plugins GLOBAL PROPERTY LY_EDITOR_PLUGINS)
-string (REPLACE ";" "," editor_plugins "${editor_plugins}")
-ly_add_source_properties(
-    SOURCES PluginManager.cpp
-    PROPERTY COMPILE_DEFINITIONS 
-    VALUES LY_EDITOR_PLUGINS="${editor_plugins}"
 )
 
 ################################################################################
