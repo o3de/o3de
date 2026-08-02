@@ -169,18 +169,6 @@ CViewManager::CViewManager()
         [](QWidget* parent = nullptr) -> QWidget*
         {
             auto* pane = new CLayoutViewPane(parent);
-
-            // The first pane adopts the viewport the boot layout window created. Moving it within the
-            // same toplevel and reattaching it under its existing id keeps its native window, and with
-            // it the swapchain, viewport context and camera.
-            MainWindow* mainWindow = MainWindow::instance();
-            if (QWidget* adopted = mainWindow ? mainWindow->TakeCentralViewportForDocking() : nullptr)
-            {
-                pane->SetId(qobject_cast<QtViewport*>(adopted)->GetViewportId());
-                pane->AttachViewport(adopted);
-                return pane;
-            }
-
             AttachDeferredViewport(pane, pane);
             return pane;
         },

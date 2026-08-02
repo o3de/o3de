@@ -47,7 +47,6 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QMenu>
 #include <QMessageBox>
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -161,43 +160,6 @@ namespace AzToolsFramework
             AZStd::string extension;
             AZ::StringFunc::Path::GetExtension(sourcePath.c_str(), extension);
             return AZ::StringFunc::Equal(s_prefabFileExtension, extension.c_str());
-        }
-
-        void PrefabSaveHandler::AddContextMenuActions(
-            [[maybe_unused]] QWidget* caller, QMenu* menu, const AZStd::vector<const AssetBrowser::AssetBrowserEntry*>& entries)
-        {
-            if (entries.size() != 1)
-            {
-                return;
-            }
-
-            const auto* source = azrtti_cast<const AssetBrowser::SourceAssetBrowserEntry*>(entries.front());
-            if (!source || !IsPrefabSourcePath(source->GetFullPath()))
-            {
-                return;
-            }
-
-            // Whether a prefab is a level can only be guessed from where it sits, so both surfaces stay reachable
-            // for the cases the guess gets wrong.
-            const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
-
-            menu->addAction(
-                QObject::tr("Open in Viewport"),
-                menu,
-                [prefabPath]()
-                {
-                    EditorRequestBus::Broadcast(
-                        &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::Viewport);
-                });
-
-            menu->addAction(
-                QObject::tr("Open in Prefab Editor"),
-                menu,
-                [prefabPath]()
-                {
-                    EditorRequestBus::Broadcast(
-                        &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::PrefabEditor);
-                });
         }
 
         void PrefabSaveHandler::OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled)

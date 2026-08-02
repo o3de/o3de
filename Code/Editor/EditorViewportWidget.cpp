@@ -758,13 +758,6 @@ bool EditorViewportWidget::ShowingWorldSpace()
 
 void EditorViewportWidget::SetViewportId(int id)
 {
-    // Reattaching under the same id (e.g. a pane adopting a live viewport) must not rebuild the
-    // render viewport: that would destroy its swapchain, viewport context and camera state.
-    if (m_renderViewport && id == GetViewportId())
-    {
-        return;
-    }
-
     CViewport::SetViewportId(id);
 
     // Clear the cached DebugDisplay pointer. we're about to delete that render viewport, and deleting the render

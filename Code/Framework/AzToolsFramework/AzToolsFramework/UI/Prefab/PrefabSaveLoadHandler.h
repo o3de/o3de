@@ -139,8 +139,6 @@ namespace AzToolsFramework
 
             // AssetBrowserInteractionNotificationBus overrides ...
             AZ::s32 GetPriority() const override;
-            void AddContextMenuActions(
-                QWidget* caller, QMenu* menu, const AZStd::vector<const AssetBrowser::AssetBrowserEntry*>& entries) override;
             void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
 
             static bool IsPrefabSourcePath(const AZStd::string& sourcePath);

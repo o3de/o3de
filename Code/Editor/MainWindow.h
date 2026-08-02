@@ -111,10 +111,6 @@ public:
     MainStatusBar* StatusBar() const;
     CLayoutWnd* GetLayout() const;
 
-    //! Detaches the viewport created by the fixed layout window and removes that window from the
-    //! central slot, so the viewport can be adopted by a dockable pane. Returns null once taken.
-    QWidget* TakeCentralViewportForDocking();
-
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
 

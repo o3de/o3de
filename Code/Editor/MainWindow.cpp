@@ -393,23 +393,18 @@ void MainWindow::InitCentralWidget()
     setCentralWidget(m_viewPaneHost);
     m_viewPaneHost->setCentralWidget(m_pLayoutWnd);
 
-    if (MainWindow::instance()->IsPreview())
+    if (IsPreview())
     {
         m_pLayoutWnd->CreateLayout(ET_Layout0, true, ET_ViewportModel);
+        connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
     }
     else
     {
-        if (!m_pLayoutWnd->LoadConfig())
-        {
-            m_pLayoutWnd->CreateLayout(ET_Layout0);
-        }
-    }
+        // The viewport is a dockable pane of its own, so the centre becomes dock space rather than a
+        // fixed layout: empty the central slot and let the pane build its own viewport.
+        m_viewPaneHost->takeCentralWidget();
+        m_pLayoutWnd->hide();
 
-    if (!MainWindow::instance()->IsPreview())
-    {
-        // Re-home the viewport the layout window just created into a dockable "Editor Viewport" pane
-        // and clear the fixed central slot, so the center becomes dock space. The pane factory adopts
-        // the live viewport rather than rebuilding one.
         if (const QtViewPane* viewportPane = m_viewPaneManager->OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState))
         {
             m_viewPaneHost->addDockWidget(Qt::LeftDockWidgetArea, viewportPane->m_dockWidget);
@@ -417,35 +412,7 @@ void MainWindow::InitCentralWidget()
         }
     }
 
-    if (m_viewPaneHost->centralWidget() == m_pLayoutWnd)
-    {
-        // Only while the layout window still occupies the central slot (preview mode, or the
-        // viewport pane failed to adopt): resetting the layout would otherwise rebuild a viewport
-        // inside the hidden layout window and collide with the adopted one's viewport id.
-        connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
-    }
-
     AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
-}
-
-QWidget* MainWindow::TakeCentralViewportForDocking()
-{
-    if (!m_pLayoutWnd || m_viewPaneHost->centralWidget() != m_pLayoutWnd)
-    {
-        return nullptr;
-    }
-
-    CLayoutViewPane* bootPane = m_pLayoutWnd->GetViewPaneByIndex(0);
-    QWidget* viewport = bootPane ? bootPane->GetViewport() : nullptr;
-    if (!viewport)
-    {
-        return nullptr;
-    }
-
-    bootPane->DetachViewport();
-    m_viewPaneHost->takeCentralWidget();
-    m_pLayoutWnd->hide();
-    return viewport;
 }
 
 void MainWindow::Initialize()
