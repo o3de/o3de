@@ -2110,9 +2110,10 @@ AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
-    // Doesn't work with split layout
+    // Doesn't work with split layout. The layout window builds no layout at all now that the viewport is a
+    // dockable pane, which leaves its layout unset rather than ET_Layout0 - that is single-viewport too.
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
-    if (layout && layout->GetLayout() != EViewLayout::ET_Layout0)
+    if (layout && layout->GetLayout() > EViewLayout::ET_Layout0)
     {
         return false;
     }

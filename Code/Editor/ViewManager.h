@@ -114,8 +114,6 @@ private:
     void RegisterViewport(CViewport* vp);
     void UnregisterViewport(CViewport* vp);
 
-    //! The viewport owning the editor's single viewport UI widget set.
-    QtViewport* GetViewportUiOwner() const;
     void AnchorViewportUiTo(CViewport* pViewport);
 
 private:
