@@ -12,8 +12,7 @@
 
 #include "ViewPane.h"
 
-// LightingPreset.h only forward declares the feature processors it applies to, so the definitions have to
-// come from here for Scene::GetFeatureProcessor to resolve them.
+// LightingPreset.h only forward declares these, but Scene::GetFeatureProcessor needs the definitions.
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
@@ -27,8 +26,7 @@
 
 #include <QVBoxLayout>
 
-//! The lighting preset a prefab world is shown in. Every project has this one: it ships with Atom. The gem
-//! alias is what makes it resolvable - a bare product path does not load.
+//! The lighting preset a prefab world is shown in. The gem alias is what makes it resolvable.
 static constexpr const char* DefaultLightingPresetPath =
     "@gemroot:Atom_Feature_Common@/Assets/LightingPresets/default.lightingpreset.azasset";
 
@@ -83,8 +81,7 @@ void PrefabEditorPane::ApplyLightingPreset()
     AZ::TickBus::Handler::BusDisconnect();
     m_lightHandles.clear();
 
-    // Own-scene-only lookup: AzFramework::Scene::FindSubsystem walks the parent chain and every world scene is a
-    // child of Main, so a scene-system query would light the main scene instead of this prefab's.
+    // FindSubsystem walks up to Main, so query this scene only or the main scene gets lit instead.
     AZStd::shared_ptr<AzFramework::Scene> worldScene;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, m_worldId);
@@ -111,8 +108,7 @@ void PrefabEditorPane::ApplyLightingPreset()
 
     const AzFramework::CameraState cameraState = GetViewportCameraState();
 
-    // The frustum extents are what give the configuration its aspect ratio; leaving them zero makes shadow
-    // cascade fitting reject it outright.
+    // The frustum extents give the configuration its aspect ratio; zero makes cascade fitting reject it.
     Camera::Configuration cameraConfig;
     cameraConfig.m_fovRadians = cameraState.m_fovOrZoom;
     cameraConfig.m_nearClipDistance = cameraState.m_nearClip;

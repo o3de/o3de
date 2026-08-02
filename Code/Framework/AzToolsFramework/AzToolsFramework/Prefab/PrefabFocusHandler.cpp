@@ -122,9 +122,7 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    //! A null id or the editor entity context id addresses the active world; world ids pass through. The editor-wide
-    //! prefab edit UI can only show one world, which is why a prefab is never focused from a pane showing another:
-    //! that gesture opens the prefab in its own world and viewport instead (see FocusOnPrefabInstance).
+    //! A null id or the editor entity context id addresses the active world; world ids pass through.
     PrefabFocusHandler::WorldFocus& PrefabFocusHandler::GetWorldFocus(const AzFramework::EntityContextId& worldId) const
     {
         WorldFocus& focus = m_worldFocus[worldId];
@@ -144,9 +142,8 @@ namespace AzToolsFramework::Prefab
         return focus;
     }
 
-    //! A prefab living in a world other than the one being viewed is never focused in place: the editor-wide prefab
-    //! edit UI can only show one world, so the prefab opens as a world of its own in an additional viewport instead.
-    //! A world's root is exempt - it carries no prefab edit state, and world load, context reset and undo target it.
+    //! The prefab edit UI shows one world, so a prefab in another opens as a world of its own instead.
+    //! A world's root is exempt: it carries no prefab edit state, and load, reset and undo target it.
     bool PrefabFocusHandler::RedirectFocusToOwnViewport(const Instance& instance) const
     {
         if (instance.GetParentInstance() == AZStd::nullopt ||
@@ -164,8 +161,7 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
-        // Redirect before the undo batch below, or a prefab that never gets focused still clears the selection and
-        // leaves an undo node that would re-open its viewport when undone.
+        // Redirect before the undo batch, or an unfocused prefab still leaves an undo node behind.
         if (InstanceOptionalReference instance =
                 entityId.IsValid() ? m_instanceEntityMapperInterface->FindOwningInstance(entityId) : InstanceOptionalReference();
             instance.has_value() && RedirectFocusToOwnViewport(instance->get()))
@@ -764,8 +760,7 @@ namespace AzToolsFramework::Prefab
                 rootAliasPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
-                    // A root instance is a level, and a level container is never closed; closing one would strand
-                    // every entity in it under a closed container when focus moves to another root.
+                    // A level container is never closed; closing one strands its entities when focus moves.
                     if (openState || instance->get().GetParentInstance().has_value())
                     {
                         m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);

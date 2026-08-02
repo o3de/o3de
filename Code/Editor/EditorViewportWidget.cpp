@@ -246,8 +246,7 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
-    // Stop listening before unbinding: a dying viewport must not rebind its scene, or it would
-    // leave a pipeline for a vanishing window behind in the target scene.
+    // Stop listening before unbinding, or a dying viewport rebinds its scene and leaves a pipeline behind.
     m_editorEntityNotifications.reset();
 
     // A world whose last viewport goes away is torn down.
@@ -393,8 +392,7 @@ bool EditorViewportWidget::event(QEvent* event)
         break;
 
     case QEvent::Show:
-        // Tabbing a viewport's pane to the front shows it, which is how selecting a tab reaches here.
-        // Window activation does not fire for tab switches within the same window.
+        // Window activation does not fire for tab switches within the same window, but Show does.
         GetIEditor()->GetViewManager()->SelectViewport(this);
         break;
 
@@ -730,9 +728,7 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 
-    // The visibility octree spans every world; only entities owned by this viewport's world are
-    // visible here. This holds in game mode too: the other worlds stay loaded and active, and
-    // without the filter their helpers draw over the session.
+    // The visibility octree spans every world, so drop the entities this viewport's world does not own.
     AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
@@ -1517,8 +1513,7 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     // if they've picked the same camera, then that means they want to toggle
     if (viewEntityId.IsValid())
     {
-        // The camera view group was pushed onto the focused viewport's context; only that viewport adopts
-        // the camera entity. Any other viewport still displaying an older camera resets to its own camera.
+        // Only the viewport the camera pushed its view group onto adopts the camera entity.
         if (!IsSelectedViewport())
         {
             if (m_viewEntityId.IsValid())
@@ -1678,7 +1673,7 @@ void EditorViewportWidget::CycleCamera()
     auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
     if (currentCameraIterator != results.values.end())
     {
-        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ...
+        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ... 
         {
             SetEntityAsCamera(*currentCameraIterator); // ... and then select it.
             return;
@@ -1691,8 +1686,7 @@ void EditorViewportWidget::CycleCamera()
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
-    // Camera view changes target the focused viewport; the camera component pushes its view group onto that
-    // viewport's context when it activates.
+    // Camera view changes target the focused viewport, whose context the camera pushed its view group onto.
     if (!IsSelectedViewport())
     {
         return;
@@ -2043,8 +2037,7 @@ void EditorViewportWidget::UpdateScene()
 
     AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene();
 
-    // SetScene installs this viewport's pipeline in the new scene but leaves the previous scene's
-    // behind, still presenting to this window; a window's pipeline may only live in one scene.
+    // SetScene leaves the previous scene's pipeline presenting to this window, and it may only live in one scene.
     if (previousRenderScene && previousRenderScene != renderScene)
     {
         if (auto previousPipeline = previousRenderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
@@ -2052,10 +2045,8 @@ void EditorViewportWidget::UpdateScene()
             previousRenderScene->RemoveRenderPipeline(previousPipeline->GetId());
         }
 
-        // The BRDF generation pipeline is named after the viewport rather than attached to its window, so the
-        // scene being left behind keeps one under the name the new scene is about to use. It only removes itself
-        // once it has executed, so until then both exist and the frame scheduler rejects the duplicate scope.
-        // Name format paired with BootstrapSystemComponent::RunBRDFPipeline.
+        // The BRDF pipeline is named after the viewport, so the scene being left behind holds the name the new
+        // one needs until it executes. Name format paired with BootstrapSystemComponent::RunBRDFPipeline.
         const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
         for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
         {
@@ -2278,8 +2269,7 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 {
     if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
     {
-        // Focus mode is tracked per world, so a viewport borders on the prefab focus of the world it shows;
-        // component mode is a single editor-wide session and borders every viewport. Untracked ids return null.
+        // Focus mode is per world, so a viewport borders on its own world's focus; component mode is editor-wide.
         AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());

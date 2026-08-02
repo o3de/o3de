@@ -168,8 +168,8 @@ namespace AzToolsFramework
         virtual void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) = 0;
         virtual AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) = 0;
 
-        //! The focused viewport's world. Derived state: recording the focused viewport has no side
-        //! effects beyond the OnActiveWorldChanged notification when the world differs.
+        //! The focused viewport's world. Derived state, so recording the focused viewport has no side
+        //! effects beyond the OnActiveWorldChanged notification.
         virtual AzFramework::EntityContextId GetActiveWorldId() = 0;
         virtual void SetFocusedViewport(AzFramework::ViewportId viewportId) = 0;
 
@@ -180,8 +180,6 @@ namespace AzToolsFramework
         virtual AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) = 0;
 
         //! Saves every world with unsaved changes except world 0, whose level the editor saves itself.
-        //! Every dirty world is written, not just the active one: losing another viewport's edits silently
-        //! is worse than writing a file the user did not think about.
         virtual void SaveWorlds() = 0;
     };
 

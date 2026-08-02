@@ -510,10 +510,8 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
 
 void SandboxIntegrationManager::OnWorldDestroyed([[maybe_unused]] const AzFramework::EntityContextId& worldId)
 {
-    // Tearing a world down destroys its entities and its root prefab instance, but every undo node that world
-    // produced stays on the stack holding template ids, link ids and entity ids that no longer resolve - undoing
-    // past that point serialises freed memory. Closing a level already flushes for the same reason
-    // (CCryEditDoc::OnNewDocument / Fetch), and this flushes both stacks through the legacy manager.
+    // Undo nodes the world produced hold template, link and entity ids that stop resolving once it is gone.
+    // Closing a level already flushes for the same reason (CCryEditDoc::OnNewDocument / Fetch).
     GetIEditor()->FlushUndo();
 }
 
@@ -678,8 +676,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                     radius);
                 nextCameraTransform.has_value())
             {
-                // Each viewport moves its own camera: the transform above was computed from its camera, and the
-                // default-context variant would apply every viewport's result to one camera.
+                // The transform was computed from this viewport's camera, so it must go back to that one.
                 SandboxEditor::HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), *nextCameraTransform);
             }
         }
@@ -913,9 +910,8 @@ QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
     return QtViewPaneManager::instance()->InstancePane(paneName);
 }
 
-// Nothing inside a prefab file says whether it is a level, so this reproduces the shape CLevelFileDialog gives
-// every level it saves: a .prefab named after its own folder, under one of the roots the Open Level and New Level
-// dialogs browse. Prefabs saved alongside a level are therefore not mistaken for one.
+// Nothing in a prefab file says whether it is a level, so match the shape CLevelFileDialog saves them in:
+// a .prefab named after its own folder, under one of the roots the Open Level dialog browses.
 static bool IsLevelSourcePath(AZStd::string_view prefabPath)
 {
     auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -952,8 +948,7 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
 
     const QString prefabPathText = QString::fromUtf8(prefabPath.data(), aznumeric_cast<int>(prefabPath.size()));
 
-    // A level carries its own environment and belongs in the ordinary editing surface. Only a prefab, which has
-    // neither sun nor sky of its own, needs the Prefab Editor and the lighting preset it supplies.
+    // A level carries its own environment; only a prefab needs the Prefab Editor's lighting preset.
     if (surface == PrefabSurface::Auto)
     {
         surface = IsLevelSourcePath(prefabPath) ? PrefabSurface::Viewport : PrefabSurface::PrefabEditor;
@@ -996,8 +991,7 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
     const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
         paneName, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
 
-    // The viewport widget is created a tick after its pane, so the prefab rides on the pane until then; the
-    // deferred creation loads it as a world of its own and binds the new viewport to it.
+    // The viewport widget is created a tick after its pane, so the prefab rides on the pane until then.
     if (openedPane && !openedPane->m_dockWidgetInstances.isEmpty())
     {
         if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())

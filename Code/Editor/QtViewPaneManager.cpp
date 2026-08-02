@@ -1078,8 +1078,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         }
     }
 
-    // First, close all the open panes. The viewport pane stays open: destroying it would tear down
-    // the live render viewport it hosts; the default layout re-docks it instead.
+    // The viewport pane stays open: destroying it would tear down the live render viewport it hosts.
     if (!ClosePanesWithRollback(QVector<QString>{ QString(LyViewPane::EditorViewport) }))
     {
         return;
@@ -1515,9 +1514,8 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
         }
     }
 
-    // Layout states saved before the viewport became a dockable pane cannot position it (the dock
-    // manager hides docks it does not know). Save the old layout aside and fall back to the default
-    // layout, which docks the viewport pane and saves a state that includes it.
+    // Layout states saved before the viewport became a dockable pane hide it, so fall back to the
+    // default layout, which docks the viewport pane and saves a state that includes it.
     if (layoutName == s_lastLayoutName && !state.viewPanes.contains(LyViewPane::EditorViewport))
     {
         static const QString preViewportPaneLayout = "User Pre-Viewport-Pane Layout";

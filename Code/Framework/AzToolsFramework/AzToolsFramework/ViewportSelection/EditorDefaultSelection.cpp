@@ -261,34 +261,40 @@ namespace AzToolsFramework
             IsEditedWorldVisibleInViewport(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
 
         bool handled = false;
-        if (!componentModeBefore)
+        if (!editedWorldVisible)
         {
-            if (editedWorldVisible)
+            // Clicking into another world's viewport leaves component mode; camera navigation does not.
+            if (componentModeBefore && mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
+                mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
-                ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
-                    [&mouseInteraction, &enterComponentModeAttempted](
-                        ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
-                    {
-                        // detect if a double click happened on any Component in the viewport, attempting
-                        // to move it into ComponentMode (note: this is not guaranteed to succeed as an
-                        // incompatible multi-selection may prevent it)
-                        enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
-                        return !enterComponentModeAttempted;
-                    });
-
-                // here we know ComponentMode was entered successfully and was not prohibited
-                if (m_componentModeCollection.ModesAdded())
-                {
-                    // for other entities in current selection, if they too support the same
-                    // ComponentMode, add them as well (same effect as pressing Component
-                    // Mode button in the Property Grid)
-                    m_componentModeCollection.AddOtherSelectedEntityModes();
-                    TransitionToComponentMode();
-                }
+                EndComponentMode();
             }
         }
-        else if (editedWorldVisible)
+        else if (!componentModeBefore)
+        {
+            // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
+            ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
+                [&mouseInteraction, &enterComponentModeAttempted](
+                    ComponentModeFramework::ComponentModeDelegateRequestBus::InterfaceType* componentModeMouseRequests)
+                {
+                    // detect if a double click happened on any Component in the viewport, attempting
+                    // to move it into ComponentMode (note: this is not guaranteed to succeed as an
+                    // incompatible multi-selection may prevent it)
+                    enterComponentModeAttempted = componentModeMouseRequests->DetectEnterComponentModeInteraction(mouseInteraction);
+                    return !enterComponentModeAttempted;
+                });
+
+            // here we know ComponentMode was entered successfully and was not prohibited
+            if (m_componentModeCollection.ModesAdded())
+            {
+                // for other entities in current selection, if they too support the same
+                // ComponentMode, add them as well (same effect as pressing Component
+                // Mode button in the Property Grid)
+                m_componentModeCollection.AddOtherSelectedEntityModes();
+                TransitionToComponentMode();
+            }
+        }
+        else
         {
             ComponentModeFramework::ComponentModeRequestBus::EnumerateHandlers(
                 [&mouseInteraction, &handled](ComponentModeFramework::ComponentModeRequestBus::InterfaceType* componentModeRequest)
@@ -310,13 +316,6 @@ namespace AzToolsFramework
                         return !componentModeDelegateRequests->DetectLeaveComponentModeInteraction(mouseInteraction);
                     });
             }
-        }
-        else if (
-            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
-            mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-        {
-            // Clicking into another world's viewport leaves component mode; camera navigation does not.
-            EndComponentMode();
         }
 
         // we do not want a double click on a Component while attempting to enter ComponentMode

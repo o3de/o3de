@@ -148,8 +148,8 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
-        //! Signal the editor-wide game mode event on whichever service owns the interface registration,
-        //! since that is the instance handlers connect to via RegisterGameModeEventHandler.
+        //! Signal the game mode event on the service owning the interface registration, which is the
+        //! instance handlers connect to via RegisterGameModeEventHandler.
         static void SignalGameModeEvent(GameModeState state);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
@@ -159,8 +159,7 @@ namespace AzToolsFramework
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
 
-        //! Only the first service instance (world 0) owns the global interface registration and the
-        //! single-address override handler; per-world services coexist without them.
+        //! Only world 0's service owns the global interface registration and the override handler.
         AZStd::unique_ptr<Prefab::PrefabOverridePublicHandler> m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
@@ -170,11 +169,8 @@ namespace AzToolsFramework
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
 
-        //! Game mode is a single editor-wide session that any world's service may run; handlers
-        //! registered against the interface must hear it regardless of which service signals, so
-        //! SignalGameModeEvent routes to the interface registrant rather than to this instance.
-        //! Deliberately not static: a static event outlives every service and leaks its handler
-        //! storage past shutdown, which the unit test memory tracker catches.
+        //! Any world's service may run game mode, so SignalGameModeEvent routes to the interface
+        //! registrant. Deliberately not static: a static event leaks its handler storage past shutdown.
         AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
         bool m_ownsInterface = false;

@@ -82,9 +82,8 @@ namespace AzToolsFramework
         };
     }
 
-    //! An additional editor world: a real entity context owning one level as its root prefab and
-    //! living in its own scene (child of Main). Entities added here receive the same editor
-    //! treatment as world 0's; a render scene is attached by the first viewport that binds.
+    //! An additional editor world: an entity context owning one level as its root prefab and living in its
+    //! own scene (child of Main). The first viewport to bind attaches a render scene.
     class EditorEntityContextComponent::EditorWorld
         : public AzFramework::EntityContext
     {
@@ -96,8 +95,7 @@ namespace AzToolsFramework
             m_entityOwnershipService = AZStd::make_unique<PrefabEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
             InitContext();
 
-            // The scene (with this context as its subsystem) must exist before the level's entities
-            // activate, so their render components resolve to this world's scene and not Main's.
+            // The scene must exist before the level's entities activate, or they resolve to Main's.
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             AZStd::shared_ptr<AzFramework::Scene> mainScene =
                 sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;
@@ -127,8 +125,7 @@ namespace AzToolsFramework
                 editorModeTracker->ActivateMode({ GetContextId() }, ViewportEditorMode::Default);
             }
 
-            // Only the level's template loads now; instantiation waits until a viewport has bound
-            // and attached a render scene, or entities would resolve to the Main scene instead.
+            // Instantiation waits for a viewport to bind a render scene, or entities resolve to Main.
             auto* prefabLoader = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
             auto* prefabSystem = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
             AZ_Assert(prefabLoader && prefabSystem, "Editor world created without the prefab system");
@@ -656,8 +653,7 @@ namespace AzToolsFramework
 
         m_isRunningGame = true;
 
-        // Game mode is editor-wide: every world but the one playing goes quiet. Their entities would
-        // otherwise keep rendering and debug-drawing into the main scene the session spawns into.
+        // Game mode is editor-wide: other worlds would keep drawing into the scene the session spawns into.
         if (m_playingWorldId != GetContextId())
         {
             GetWorldEntityOwnershipService(GetContextId())->SuspendEditorEntities();
@@ -689,8 +685,7 @@ namespace AzToolsFramework
         const AzFramework::EntityContextId playedWorldId = m_playingWorldId.IsNull() ? GetContextId() : m_playingWorldId;
         m_playingWorldId = AzFramework::EntityContextId::CreateNull();
 
-        // The world that started game mode can be gone by now - its viewport may have been closed while
-        // the game was running - so the editor entities still have to be resumed either way.
+        // The world that started game mode may be gone, but its editor entities still have to be resumed.
         if (auto* service = GetWorldEntityOwnershipService(playedWorldId))
         {
             service->StopPlayInEditor();
@@ -811,8 +806,7 @@ namespace AzToolsFramework
         }
         const AZ::IO::Path relativePath = prefabLoader->GenerateRelativePath(levelPrefabPath);
 
-        // A level is never loaded into two worlds: the editor's own level is world 0, and a world
-        // already showing the level is returned as-is.
+        // A level is never loaded into two worlds; one already showing it is returned as-is.
         if (auto* ownService = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
         {
             Prefab::InstanceOptionalReference rootInstance = ownService->GetRootPrefabInstance();
@@ -866,15 +860,13 @@ namespace AzToolsFramework
                 });
             if (!worldStillBound)
             {
-                // Notify before the erase: handlers clean up state keyed by this world, and once it is
-                // gone its id no longer resolves, so that cleanup would be misattributed to world 0.
+                // Notify before the erase, or the id stops resolving and cleanup lands on world 0.
                 EditorEntityContextNotificationBus::Broadcast(
                     &EditorEntityContextNotification::OnWorldDestroyed, previousWorldId);
 
                 if (m_playingWorldId == previousWorldId)
                 {
-                    // Game mode outlived the world that started it, so StopPlayInEditor must not go
-                    // looking for an ownership service that no longer exists.
+                    // Game mode outlived the world that started it; its ownership service is gone.
                     m_playingWorldId = AzFramework::EntityContextId::CreateNull();
                 }
 
@@ -888,8 +880,7 @@ namespace AzToolsFramework
             EditorEntityContextNotificationBus::Broadcast(
                 &EditorEntityContextNotification::OnViewportWorldChanged, viewportId, newWorldId);
 
-            // The viewport's synchronous rebind above attached a render scene to the world's scene;
-            // the world's level instantiates only now so its entities resolve there, not to Main.
+            // The rebind above attached a render scene, so the level's entities now resolve there.
             if (auto worldIt = m_worlds.find(newWorldId); worldIt != m_worlds.end() && worldIt->second->LoadPendingLevel())
             {
                 EditorEntityContextNotificationBus::Broadcast(
@@ -943,8 +934,7 @@ namespace AzToolsFramework
 
     void EditorEntityContextComponent::RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId)
     {
-        // World 0 renders in the main scene whether or not it is playing, so it never needs rebinding;
-        // only viewports bound to a secondary world do, and those are exactly the map's entries.
+        // World 0 always renders in the main scene; only viewports bound to a secondary world rebind.
         if (worldId == GetContextId())
         {
             return;

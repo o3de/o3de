@@ -92,9 +92,8 @@ static void ShowViewportPane(const CViewport* viewport)
     }
 }
 
-//! Gives a pane its viewport one event-loop tick late, once the pane is wrapped in its dock: the swapchain
-//! binds to the native window present at attach time, and reparenting afterwards recreates that window and
-//! orphans the swapchain. The pending level rides on the host widget until the viewport has an id to bind.
+//! Gives a pane its viewport one event-loop tick late, once it is wrapped in its dock: the swapchain binds to
+//! the native window present at attach time, and reparenting afterwards recreates that window and orphans it.
 static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
 {
     QTimer::singleShot(
@@ -110,13 +109,10 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
 
             viewPane->SetId(viewportId);
 
-            // Layout persistence reads the id off the dock's own widget, which is the host rather than the view
-            // pane whenever the two differ, and without it the pane reopens on world 0 instead of its prefab.
+            // Layout persistence reads the id off the dock's own widget, which is the host when the two differ.
             pendingLevelHost->setProperty("ViewportId", viewportId);
 
-            auto* viewport = new EditorViewportWidget("Perspective", viewPane);
-            viewport->setProperty("IsViewportWidget", true);
-            viewPane->AttachViewport(viewport);
+            viewPane->AttachViewport(new EditorViewportWidget("Perspective", viewPane));
 
             // A pane restored from a layout, or opened onto a prefab, reopens on the level it was showing.
             const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
@@ -155,11 +151,9 @@ CViewManager::CViewManager()
     QtViewOptions viewportOptions;
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
-    // The raw widget registration only serves CLayoutViewPane::SetViewClass (preview mode); a bare
-    // EditorViewportWidget never receives a viewport id, so opening it as a pane would be inert.
+    // Only CLayoutViewPane::SetViewClass (preview mode) uses this; a bare widget never gets a viewport id.
     viewportOptions.showInMenu = false;
-    // Viewports stay interactive in component/ImGui modes: disabling one freezes its camera and
-    // drops input releases, latching stale modifier state in ViewportManipulatorController.
+    // Disabling a viewport freezes its camera and drops input releases, latching stale modifier state.
     viewportOptions.isDisabledInComponentMode = false;
     viewportOptions.isDisabledInImGuiMode = false;
 
@@ -192,8 +186,7 @@ CViewManager::CViewManager()
         },
         dockableViewportOptions);
 
-    // A prefab opened for edit is a world of its own shown by a tool of its own, so that its lighting and its
-    // toolbar are not those of an ordinary viewport onto the level.
+    // A prefab opened for edit is a world of its own, with its own lighting rather than the level's.
     QtViewOptions prefabEditorOptions = dockableViewportOptions;
     prefabEditorOptions.viewportType = -1;
     QtViewPaneManager::instance()->RegisterPane(
@@ -471,8 +464,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
     {
         m_pSelectedView->SetSelected(true);
 
-        // The focused viewport is what the default viewport context alias resolves to, and its
-        // world is the active world for selection, undo and focus.
+        // The default viewport context alias resolves to the focused viewport, whose world is the active one.
         if (auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
             if (viewportContextManager->GetViewportContextById(m_pSelectedView->GetViewportId()))
@@ -528,8 +520,7 @@ void CViewManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         UpdateViews();
         break;
     case eNotify_OnBeginGameMode:
-        // Game mode plays the selected viewport's world, and a prefab world has no game in it. This runs
-        // before StartPlayInEditor, so moving the selection is enough to redirect what gets played.
+        // A prefab world has no game in it. This runs before StartPlayInEditor, so re-selecting redirects it.
         if (IsPrefabEditorViewport(m_pSelectedView) && m_pLastEditorView)
         {
             ShowViewportPane(m_pLastEditorView);

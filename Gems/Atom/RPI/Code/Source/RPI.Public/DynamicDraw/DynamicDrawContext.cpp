@@ -249,7 +249,7 @@ namespace AZ
             // The scope may already be set to a different scene, and this bus is addressed by scene id.
             SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
-
+                        
             ReInit();
         }
 
@@ -274,7 +274,7 @@ namespace AZ
             // The scope may already be set to a pipeline in a different scene, and this bus is addressed by scene id.
             SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
-
+            
             ReInit();
         }
 

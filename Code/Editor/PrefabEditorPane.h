@@ -18,9 +18,8 @@
 
 class CLayoutViewPane;
 
-//! Hosts a viewport showing a prefab that was opened as a world of its own. A prefab carries no sun or sky -
-//! those belong to a level - so the world is lit by a fixed preset instead. The lights are applied to the
-//! world's scene rather than as entities, so nothing is ever written into the prefab file.
+//! Hosts a viewport showing a prefab opened as a world of its own. A prefab carries no sun or sky, so the
+//! world is lit by a fixed preset applied to its scene - nothing is written into the prefab file.
 class PrefabEditorPane
     : public QWidget
     , private AZ::TickBus::Handler

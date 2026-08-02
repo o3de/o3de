@@ -758,13 +758,8 @@ namespace AzToolsFramework
                 parentId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
             }
 
-            // A root prefab (level) must be assigned in the parent's world before entities can be
-            // created. During an async level load the root instance already exists with a container
-            // entity but its template is reset to InvalidTemplateId (see
-            // PrefabEditorEntityOwnershipService::Reset), so the "owning instance exists" check
-            // below would pass and undo DOM generation would then crash in FindTemplateDom. Reject
-            // early, mirroring the guard InstantiatePrefab already uses, so the request fails
-            // gracefully instead.
+            // During an async level load the root instance exists but its template is InvalidTemplateId, so
+            // the check below would pass and undo DOM generation would then crash in FindTemplateDom.
             auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(GetEntityWorldId(parentId));
             if (!prefabEditorEntityOwnershipInterface || !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
             {

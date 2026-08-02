@@ -260,13 +260,9 @@ namespace AzToolsFramework
         EnumerateToolBars(
             [](QToolBar* toolBar) -> bool
             {
-                // clear() only detaches actions, it does not delete them. The separators and widget
-                // wrappers built below are parented to the toolbar and would otherwise accumulate on
-                // every refresh - and refreshes are frequent (selection changes, level loads, entering
-                // and leaving component mode). Actions owned by the Action Manager are parented
-                // elsewhere and must survive; deleting a QWidgetAction also deletes the widget it owns.
-                const auto actions = toolBar->actions();
-                for (QAction* action : actions)
+                // clear() only detaches actions, so the separators and widget wrappers parented here would
+                // accumulate on every refresh. Action Manager actions are parented elsewhere and must survive.
+                for (QAction* action : toolBar->actions())
                 {
                     if (action->parent() == toolBar)
                     {
@@ -323,8 +319,7 @@ namespace AzToolsFramework
                         break;
                     case ToolBarItemType::ActionAndSubMenu:
                         {
-                            // Widgets can only live in one container, so each toolbar gets its own
-                            // button; the action and menu are shared.
+                            // Widgets live in one container only, so each toolbar gets its own button.
                             QAction* action = s_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier);
                             QMenu* subMenu = s_menuManagerInternalInterface->GetMenu(toolBarItem.m_subMenuIdentifier);
 

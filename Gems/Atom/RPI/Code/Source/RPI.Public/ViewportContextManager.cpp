@@ -310,13 +310,13 @@ namespace AZ
             }
             UpdateViewForContext(contextName);
         }
-
+        
         bool ViewportContextManager::PopViewGroup(const Name& rawContextName, ViewGroupPtr viewGroup)
         {
             const Name contextName = ResolveViewportContextName(rawContextName);
             {
                 AZStd::lock_guard lock(m_containerMutex);
-
+                
                 auto viewStackIt = m_viewportViews.find(contextName);
                 if (viewStackIt == m_viewportViews.end())
                 {
@@ -337,7 +337,7 @@ namespace AZ
                     return false;
                 }
             }
-
+            
             UpdateViewForContext(contextName);
             return true;
         }
