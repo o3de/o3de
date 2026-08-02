@@ -134,7 +134,10 @@ namespace AZ::ViewportHelpers
 
         void OnViewportWorldChanged(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId&) override
         {
-            m_editorViewportWidget.OnViewportWorldChanged(viewportId);
+            if (viewportId == m_editorViewportWidget.GetViewportId())
+            {
+                m_editorViewportWidget.UpdateScene();
+            }
         }
 
     private:
@@ -178,31 +181,21 @@ AZ::RPI::ViewGroupPtr EditorViewportWidget::ViewGroupForThisViewport() const
 
 void EditorViewportWidget::PopViewGroupForThisViewport()
 {
-    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
-    if (!atomViewportRequests || !viewportContext)
+    // A non-null view group means the interface and the viewport context both resolved.
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
-        return;
-    }
-
-    if (auto viewGroup = atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName()))
-    {
-        atomViewportRequests->PopViewGroup(viewportContext->GetName(), viewGroup);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PopViewGroup(
+            m_renderViewport->GetViewportContext()->GetName(), viewGroup);
     }
 }
 
 void EditorViewportWidget::PushViewGroupForThisViewport()
 {
-    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
-    if (!atomViewportRequests || !viewportContext)
+    // A non-null view group means the interface and the viewport context both resolved.
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
-        return;
-    }
-
-    if (auto viewGroup = atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName()))
-    {
-        atomViewportRequests->PushViewGroup(viewportContext->GetName(), viewGroup);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(
+            m_renderViewport->GetViewportContext()->GetName(), viewGroup);
     }
 }
 
@@ -914,54 +907,23 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
 
-    // We may have been the sole cursor constraint handler. Without handing it on, the input system
-    // would lose its constraint window for the rest of the session and the cursor would stop being
-    // clamped to a viewport during camera look.
-    AssignCursorConstraintOwner(this);
+    // Single-handler bus: hand it to another live viewport, or the input system loses its constraint
+    // window for the rest of the session and the cursor stops being clamped during camera look.
+    CViewManager* viewManager = GetIEditor() ? GetIEditor()->GetViewManager() : nullptr;
+    for (int index = 0, count = viewManager ? viewManager->GetViewCount() : 0;
+         index < count && !AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers();
+         ++index)
+    {
+        if (auto* viewport = viewport_cast<EditorViewportWidget*>(viewManager->GetView(index)); viewport && viewport != this)
+        {
+            viewport->AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+        }
+    }
 }
 
 bool EditorViewportWidget::IsSelectedViewport() const
 {
     return GetIEditor()->GetViewManager()->GetSelectedViewport() == this;
-}
-
-void EditorViewportWidget::AssignCursorConstraintOwner(const EditorViewportWidget* leaving)
-{
-    if (AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers())
-    {
-        return;
-    }
-
-    CViewManager* viewManager = GetIEditor() ? GetIEditor()->GetViewManager() : nullptr;
-    if (!viewManager)
-    {
-        return;
-    }
-
-    auto claim = [leaving](CViewport* candidate)
-    {
-        EditorViewportWidget* viewport = viewport_cast<EditorViewportWidget*>(candidate);
-        if (!viewport || viewport == leaving)
-        {
-            return false;
-        }
-
-        viewport->AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
-        return true;
-    };
-
-    if (claim(viewManager->GetSelectedViewport()))
-    {
-        return;
-    }
-
-    for (int index = 0, count = viewManager->GetViewCount(); index < count; ++index)
-    {
-        if (claim(viewManager->GetView(index)))
-        {
-            return;
-        }
-    }
 }
 
 namespace AZ::ViewportHelpers
@@ -1838,14 +1800,6 @@ void EditorViewportWidget::OnStartPlayInEditor()
 void EditorViewportWidget::OnStopPlayInEditor()
 {
     m_playInEditorState = PlayInEditorState::Stopping;
-}
-
-void EditorViewportWidget::OnViewportWorldChanged(AzFramework::ViewportId viewportId)
-{
-    if (viewportId == GetViewportId())
-    {
-        UpdateScene();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

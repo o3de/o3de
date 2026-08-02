@@ -54,11 +54,6 @@ public:
     void OnMenuBindingHook() override;
     void OnToolBarBindingHook() override;
 
-    //! The viewport menus, actions and toolbar definitions are shared by every pane; the pane whose
-    //! registration hooks run first owns them. Ownership is claimed here rather than on construction
-    //! because panes built before the Action Manager exists never connect and never see the hooks.
-    bool OwnsSharedDefinitions();
-
     // Set get this pane id.
     //! The property lets EditorCore identify a viewport pane without depending on this type.
     void SetId(int id) { m_id = id; setProperty("ViewportId", id); }
@@ -142,8 +137,6 @@ private:
     QScrollArea* m_viewportScrollArea = nullptr;
     ViewportExpansionPolicy m_viewportPolicy = ViewportExpansionPolicy::AutoExpand;
     bool m_active;
-    //! Set by OwnsSharedDefinitions() on the pane that claims the shared menu/toolbar definitions.
-    bool m_ownsSharedDefinitions = false;
 
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;

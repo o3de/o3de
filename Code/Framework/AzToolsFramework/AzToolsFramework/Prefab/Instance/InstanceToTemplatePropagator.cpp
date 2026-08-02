@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -154,7 +155,7 @@ namespace AzToolsFramework
                 return AZ::Dom::Path();
             }
 
-            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
+            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
             if (!focusedInstance.has_value())
             {

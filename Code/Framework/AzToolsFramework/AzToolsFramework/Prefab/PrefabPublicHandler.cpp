@@ -841,7 +841,7 @@ namespace AzToolsFramework
             }
 
             InstanceOptionalReference focusedInstance =
-                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(parentId);
+                m_prefabFocusHandler.GetFocusedPrefabInstance(GetEntityWorldId(parentId));
             if (!focusedInstance.has_value())
             {
                 return AZ::Failure<AZStd::string>("Can't find current focused prefab instance.");
@@ -992,7 +992,7 @@ namespace AzToolsFramework
                     else
                     {
                         InstanceOptionalReference focusedInstance =
-                            m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(entityId);
+                            m_prefabFocusHandler.GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
                         AZ::Entity* entityToUpdate = GetEntityById(entityId);
                         PrefabUndoHelpers::UpdateEntitiesAsOverrides(
@@ -1427,7 +1427,7 @@ namespace AzToolsFramework
             }
 
             // We only allow explicit deletions for entities inside their world's focused prefab.
-            InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(firstEntityIdToDelete);
+            InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstance(GetEntityWorldId(firstEntityIdToDelete));
             if (!focusedInstance.has_value())
             {
                 return AZ::Failure(AZStd::string("Cannot get the focused instance."));
@@ -1593,11 +1593,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Cannot detach Prefab Instance with invalid container entity."));
             }
 
-            InstanceOptionalReference focusedInstanceOfContainer =
-                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(containerEntityId);
-
-            if (focusedInstanceOfContainer.has_value() &&
-                containerEntityId == focusedInstanceOfContainer->get().GetContainerEntityId())
+            if (containerEntityId == m_prefabFocusHandler.GetFocusedPrefabContainerEntityId(GetEntityWorldId(containerEntityId)))
             {
                 return AZ::Failure(AZStd::string("Cannot detach focused Prefab Instance."));
             }
@@ -1947,10 +1943,8 @@ namespace AzToolsFramework
             AZStd::queue<AZ::Entity*> entityQueue;
 
             // The inputs share one owning instance, so the first entity names the relevant world.
-            InstanceOptionalReference focusedInstance =
-                m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(inputEntities.front()->GetId());
-            AZ::EntityId focusedPrefabContainerEntityId =
-                focusedInstance.has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
+            const AZ::EntityId focusedPrefabContainerEntityId =
+                m_prefabFocusHandler.GetFocusedPrefabContainerEntityId(GetEntityWorldId(inputEntities.front()->GetId()));
             for (auto inputEntity : inputEntities)
             {
                 if (inputEntity && inputEntity->GetId() != focusedPrefabContainerEntityId)
@@ -2071,8 +2065,7 @@ namespace AzToolsFramework
                 outEntityIds,
                 [this](const AZ::EntityId& entityId)
                 {
-                    InstanceOptionalReference focusedInstance = m_prefabFocusHandler.GetFocusedPrefabInstanceForEntity(entityId);
-                    return focusedInstance.has_value() && focusedInstance->get().GetContainerEntityId() == entityId;
+                    return m_prefabFocusHandler.GetFocusedPrefabContainerEntityId(GetEntityWorldId(entityId)) == entityId;
                 });
 
             return outEntityIds;

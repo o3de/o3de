@@ -28,6 +28,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -138,7 +139,7 @@ namespace AzToolsFramework
 
         // The root instance addresses this service's own world; world 0's id would alias to the active one.
         Prefab::InstanceOptionalReference newOwningInstance =
-            m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(m_rootInstance->GetContainerEntityId());
+            m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(m_rootInstance->GetContainerEntityId()));
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
@@ -165,7 +166,7 @@ namespace AzToolsFramework
 
         // Determine which prefab instance should own these entities.
         Prefab::InstanceOptionalReference newOwningInstance =
-            m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(m_rootInstance->GetContainerEntityId());
+            m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(m_rootInstance->GetContainerEntityId()));
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");

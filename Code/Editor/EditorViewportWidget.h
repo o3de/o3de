@@ -200,7 +200,6 @@ private:
     void OnStartPlayInEditor();
     void OnStopPlayInEditor();
     void OnStartPlayInEditorBegin();
-    void OnViewportWorldChanged(AzFramework::ViewportId viewportId);
 
     // IUndoManagerListener
     void BeginUndoTransaction() override;
@@ -208,10 +207,6 @@ private:
 
     // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
     void* GetSystemCursorConstraintWindow() const override;
-
-    //! The cursor constraint bus accepts a single handler, so exactly one viewport owns it at a time.
-    //! Give it to a live viewport whenever the current owner gives it up, preferring the selected one.
-    static void AssignCursorConstraintOwner(const EditorViewportWidget* leaving);
 
     //! True when this viewport is the one the view manager currently has selected.
     bool IsSelectedViewport() const;

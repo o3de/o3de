@@ -166,9 +166,6 @@ namespace AzToolsFramework
         //! Returns the world whose root prefab instance owns the entity (world 0 when none does).
         AzFramework::EntityContextId FindEntityWorldId(AZ::EntityId entityId);
 
-        //! Returns the active world's ownership service.
-        PrefabEditorEntityOwnershipService* GetActiveWorldOwnershipService();
-
         //! Re-sends OnViewportWorldChanged to the world's viewports so they pick up its current scene.
         void RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId);
 

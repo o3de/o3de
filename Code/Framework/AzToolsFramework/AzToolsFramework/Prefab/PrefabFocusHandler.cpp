@@ -457,12 +457,6 @@ namespace AzToolsFramework::Prefab
         return GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
     }
 
-    InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstanceForEntity(AZ::EntityId entityId) const
-    {
-        const AzFramework::EntityContextId worldId = GetEntityWorldId(entityId);
-        return GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
-    }
-
     bool PrefabFocusHandler::IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const
     {
         const AzFramework::EntityContextId worldId = ResolveWorldId(entityContextId);
@@ -604,14 +598,8 @@ namespace AzToolsFramework::Prefab
         const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
     {
         // The notification restores the new world's remembered focus in the UI.
-        auto focusedContainerOf = [this](const AzFramework::EntityContextId& worldId)
-        {
-            InstanceOptionalReference instance = GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
-            return instance.has_value() ? instance->get().GetContainerEntityId() : AZ::EntityId();
-        };
-
-        const AZ::EntityId previousContainerEntityId = focusedContainerOf(previousWorldId);
-        const AZ::EntityId newContainerEntityId = focusedContainerOf(newWorldId);
+        const AZ::EntityId previousContainerEntityId = GetFocusedPrefabContainerEntityId(previousWorldId);
+        const AZ::EntityId newContainerEntityId = GetFocusedPrefabContainerEntityId(newWorldId);
         if (previousContainerEntityId != newContainerEntityId)
         {
             PrefabFocusNotificationBus::Broadcast(
@@ -817,7 +805,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::SwitchToEditScope() const
     {
-        const AzFramework::EntityContextId worldId = ResolveWorldId(AzFramework::EntityContextId::CreateNull());
+        const AzFramework::EntityContextId worldId = GetActiveWorldId();
         auto focusInstance = GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
 
         switch (m_prefabEditScope)

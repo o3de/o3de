@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -64,7 +65,7 @@ namespace AzToolsFramework
             // the world unresolvable and the focus with it. Callers tolerate a null output DOM, as the sibling
             // GetEntityDomFromTemplate already assumes for the same transient state.
             InstanceOptionalReference focusedInstance =
-                prefabFocusInterface->GetFocusedPrefabInstanceForEntity(instance.GetContainerEntityId());
+                prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(instance.GetContainerEntityId()));
             if (!focusedInstance.has_value())
             {
                 AZ_Warning(
@@ -156,7 +157,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entity.GetId());
+            InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entity.GetId()));
             if (!focusedInstance.has_value())
             {
                 AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "

@@ -96,8 +96,13 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+    // The viewport menus, actions and toolbar definitions are shared by every pane, so only the pane that
+    // claims them registers; the others pick the toolbar up from GenerateToolBar below. Claimed here rather
+    // than on construction because panes built before the Action Manager exists never see the hooks.
+    static bool sharedDefinitionsClaimed = false;
+    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface && !sharedDefinitionsClaimed)
     {
+        sharedDefinitionsClaimed = true;
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
@@ -127,28 +132,8 @@ CLayoutViewPane::~CLayoutViewPane()
     OnDestroy(); 
 }
 
-bool CLayoutViewPane::OwnsSharedDefinitions()
-{
-    // Track the claim as a flag rather than a pointer to the owning pane: the owner can be destroyed
-    // while other panes are still asking, and comparing against a freed pointer is undefined behaviour
-    // that can hand ownership to a second pane if the allocator reuses the address.
-    static bool claimed = false;
-    if (!claimed)
-    {
-        claimed = true;
-        m_ownsSharedDefinitions = true;
-    }
-
-    return m_ownsSharedDefinitions;
-}
-
 void CLayoutViewPane::OnMenuRegistrationHook()
 {
-    if (!OwnsSharedDefinitions())
-    {
-        return;
-    }
-
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Camera Settings";
@@ -189,12 +174,9 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
     // The definition is shared; each pane generates its own toolbar instance from it.
-    if (OwnsSharedDefinitions())
-    {
-        AzToolsFramework::ToolBarProperties toolBarProperties;
-        toolBarProperties.m_name = "Viewport ToolBar";
-        m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
-    }
+    AzToolsFramework::ToolBarProperties toolBarProperties;
+    toolBarProperties.m_name = "Viewport ToolBar";
+    m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
 
     // Add toolbar to top of viewport.
     if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
@@ -205,11 +187,6 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
 
 void CLayoutViewPane::OnActionRegistrationHook()
 {
-    if (!OwnsSharedDefinitions())
-    {
-        return;
-    }
-
     // Dummy Action with Resize Icon
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.resizeIcon";
@@ -459,11 +436,6 @@ void CLayoutViewPane::OnActionRegistrationHook()
 
 void CLayoutViewPane::OnMenuBindingHook()
 {
-    if (!OwnsSharedDefinitions())
-    {
-        return;
-    }
-
     // Camera
     {
         m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
@@ -545,11 +517,6 @@ void CLayoutViewPane::OnMenuBindingHook()
 
 void CLayoutViewPane::OnToolBarBindingHook()
 {
-    if (!OwnsSharedDefinitions())
-    {
-        return;
-    }
-
     m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
     m_toolBarManagerInterface->AddWidgetToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);

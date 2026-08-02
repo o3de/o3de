@@ -72,7 +72,6 @@ namespace AzToolsFramework
             EntityIdList m_focusedEntityIdList;
         };
 
-        WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId);
         void SetFocusRootForWorld(const AzFramework::EntityContextId& worldId, AZ::EntityId entityId);
         static void RefreshFocusedEntityIdList(WorldFocus& focus);
 

@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -198,7 +199,7 @@ namespace AzToolsFramework
             }
 
             // Retrieve the focused prefab instance of the world owning the entity.
-            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
             // If the entity was owned by the focused instance, there's not much to push...
             if (&focusedInstance->get() == &owningInstance->get())
@@ -251,7 +252,7 @@ namespace AzToolsFramework
 
         AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetEntityPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId)
         {
-            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
+            InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
             AZ::Dom::Path absoluteEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityPathFromFocusedPrefab(entityId);
 

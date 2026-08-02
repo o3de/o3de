@@ -15,6 +15,7 @@
 namespace AzToolsFramework::Prefab
 {
     class PrefabFocusInterface;
+    class PrefabFocusPublicInterface;
 
     //! Undo node for prefab focus change operations.
     class AZTF_API PrefabFocusUndo
@@ -32,6 +33,7 @@ namespace AzToolsFramework::Prefab
 
     protected:
         PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
 
         AZ::EntityId m_beforeEntityId;
         AZ::EntityId m_afterEntityId;

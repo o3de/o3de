@@ -10,6 +10,8 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -18,6 +20,9 @@ namespace AzToolsFramework::Prefab
     {
         m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
         AZ_Assert(m_prefabFocusInterface, "PrefabFocusUndo - Failed to grab prefab focus interface");
+
+        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        AZ_Assert(m_prefabFocusPublicInterface, "PrefabFocusUndo - Failed to grab prefab focus public interface");
     }
 
     bool PrefabFocusUndo::Changed() const
@@ -27,10 +32,8 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusUndo::Capture(AZ::EntityId entityId)
     {
-        // The focus being replaced is the one of the world the entity lives in, not the one of the world being viewed.
-        const InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstanceForEntity(entityId);
-
-        m_beforeEntityId = focusedInstance.has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
+        // The focus being replaced is the one of the world the entity lives in, not the one being viewed.
+        m_beforeEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(GetEntityWorldId(entityId));
         m_afterEntityId = entityId;
     }
 

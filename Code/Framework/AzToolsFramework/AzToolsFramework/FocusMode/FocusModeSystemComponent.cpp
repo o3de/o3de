@@ -78,13 +78,13 @@ namespace AzToolsFramework
     void FocusModeSystemComponent::SetFocusRoot(AZ::EntityId entityId)
     {
         const AzFramework::EntityContextId worldId =
-            entityId.IsValid() ? GetEntityWorldId(entityId) : ResolveWorldId(AzFramework::EntityContextId::CreateNull());
+            entityId.IsValid() ? GetEntityWorldId(entityId) : GetActiveWorldId();
         SetFocusRootForWorld(worldId, entityId);
     }
 
     void FocusModeSystemComponent::SetFocusRootForWorld(const AzFramework::EntityContextId& worldId, AZ::EntityId entityId)
     {
-        WorldFocus& focus = GetWorldFocus(worldId);
+        WorldFocus& focus = m_worldFocus[worldId];
         const AZ::EntityId previousFocusEntityId = focus.m_focusRoot;
         focus.m_focusRoot = entityId;
 
@@ -123,7 +123,7 @@ namespace AzToolsFramework
 
     const EntityIdList& FocusModeSystemComponent::GetFocusedEntities(AzFramework::EntityContextId entityContextId)
     {
-        WorldFocus& focus = GetWorldFocus(ResolveWorldId(entityContextId));
+        WorldFocus& focus = m_worldFocus[ResolveWorldId(entityContextId)];
         if (focus.m_focusedEntityIdList.empty())
         {
             RefreshFocusedEntityIdList(focus);
@@ -222,11 +222,6 @@ namespace AzToolsFramework
         {
             RefreshFocusedEntityIdList(focus);
         }
-    }
-
-    FocusModeSystemComponent::WorldFocus& FocusModeSystemComponent::GetWorldFocus(const AzFramework::EntityContextId& worldId)
-    {
-        return m_worldFocus[worldId];
     }
 
     void FocusModeSystemComponent::RefreshFocusedEntityIdList(WorldFocus& focus)

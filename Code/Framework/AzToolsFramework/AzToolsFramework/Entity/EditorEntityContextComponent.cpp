@@ -353,20 +353,7 @@ namespace AzToolsFramework
     //=========================================================================
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
-        // New loose entities are created in the active world.
-        PrefabEditorEntityOwnershipService* ownershipService = GetActiveWorldOwnershipService();
-        if (!ownershipService)
-        {
-            AZ_Warning("EditorEntityContextComponent", false, "Cannot create entity '%s': the active world has no ownership service.", name);
-            return AZ::EntityId();
-        }
-
-        AZ::Entity* entity = aznew AZ::Entity(name);
-        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
-        ownershipService->AddEntity(entity);
-        FinalizeEditorEntity(entity);
-
-        return entity->GetId();
+        return CreateNewEditorEntityWithId(name, AZ::Entity::MakeId());
     }
 
     //=========================================================================
@@ -391,7 +378,9 @@ namespace AzToolsFramework
                 entityId.ToString().c_str());
             return AZ::EntityId();
         }
-        PrefabEditorEntityOwnershipService* ownershipService = GetActiveWorldOwnershipService();
+        // New loose entities are created in the active world.
+        auto* ownershipService = static_cast<PrefabEditorEntityOwnershipService*>(
+            GetWorldEntityOwnershipService(AzFramework::EntityContextId::CreateNull()));
         if (!ownershipService)
         {
             AZ_Warning("EditorEntityContextComponent", false, "Cannot create entity '%s': the active world has no ownership service.", name);
@@ -404,12 +393,6 @@ namespace AzToolsFramework
         FinalizeEditorEntity(entity);
 
         return entity->GetId();
-    }
-
-    PrefabEditorEntityOwnershipService* EditorEntityContextComponent::GetActiveWorldOwnershipService()
-    {
-        return static_cast<PrefabEditorEntityOwnershipService*>(
-            GetWorldEntityOwnershipService(AzFramework::EntityContextId::CreateNull()));
     }
 
     //=========================================================================

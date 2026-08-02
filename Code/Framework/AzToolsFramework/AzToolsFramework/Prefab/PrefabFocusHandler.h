@@ -61,7 +61,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
-        InstanceOptionalReference GetFocusedPrefabInstanceForEntity(AZ::EntityId entityId) const override;
         bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const override;
         LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const override;
 
