@@ -148,6 +148,10 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
+        //! Signal the editor-wide game mode event on whichever service owns the interface registration,
+        //! since that is the instance handlers connect to via RegisterGameModeEventHandler.
+        static void SignalGameModeEvent(GameModeState state);
+
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
         ValidateEntitiesCallback m_validateEntitiesCallback;
@@ -167,8 +171,11 @@ namespace AzToolsFramework
         AZ::SerializeContext m_serializeContext;
 
         //! Game mode is a single editor-wide session that any world's service may run; handlers
-        //! registered against the interface must hear it regardless of which service signals.
-        static inline AZ::Event<GameModeState> m_gameModeEvent;
+        //! registered against the interface must hear it regardless of which service signals, so
+        //! SignalGameModeEvent routes to the interface registrant rather than to this instance.
+        //! Deliberately not static: a static event outlives every service and leaks its handler
+        //! storage past shutdown, which the unit test memory tracker catches.
+        AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
         bool m_ownsInterface = false;
     };

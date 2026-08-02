@@ -569,11 +569,21 @@ namespace AzToolsFramework
         }
     }
 
+    void PrefabEditorEntityOwnershipService::SignalGameModeEvent(GameModeState state)
+    {
+        // Any world's service can start game mode, but handlers register through the interface, so the
+        // registrant owns the event that everyone is listening to.
+        if (auto* registrant = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
+        {
+            static_cast<PrefabEditorEntityOwnershipService*>(registrant)->m_gameModeEvent.Signal(state);
+        }
+    }
+
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
         // This is a workaround until the replacement for GameEntityContext is done
         AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
-        m_gameModeEvent.Signal(GameModeState::Started);
+        SignalGameModeEvent(GameModeState::Started);
 
         if (m_rootInstance && !m_playInEditorData.m_isEnabled)
         {
@@ -690,7 +700,7 @@ namespace AzToolsFramework
 
                     // This is a workaround until the replacement for GameEntityContext is done
                     AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
-                    m_gameModeEvent.Signal(GameModeState::Stopped);
+                    SignalGameModeEvent(GameModeState::Stopped);
                 });
             m_playInEditorData.m_entities.Clear();
 
