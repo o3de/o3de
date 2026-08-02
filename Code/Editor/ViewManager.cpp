@@ -15,11 +15,15 @@
 #include "ViewManager.h"
 
 // Qt
+#include <QDockWidget>
 #include <QTimer>
 
 // AzCore
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+
+// AzQtComponents
+#include <AzQtComponents/Components/DockTabWidget.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -55,6 +59,37 @@ bool CViewManager::IsMultiViewportEnabled()
     }
 
     return isMultiViewportEnabled;
+}
+
+static bool IsPrefabEditorViewport(const CViewport* viewport)
+{
+    const CLayoutViewPane* viewPane = viewport ? viewport->GetViewPane() : nullptr;
+    return viewPane && qobject_cast<PrefabEditorPane*>(viewPane->parentWidget()) != nullptr;
+}
+
+//! Brings the pane hosting a viewport to the front, the same way opening a pane does.
+static void ShowViewportPane(const CViewport* viewport)
+{
+    const CLayoutViewPane* viewPane = viewport ? viewport->GetViewPane() : nullptr;
+    for (QWidget* widget = viewPane ? viewPane->parentWidget() : nullptr; widget; widget = widget->parentWidget())
+    {
+        auto* dockWidget = qobject_cast<QDockWidget*>(widget);
+        if (!dockWidget)
+        {
+            continue;
+        }
+
+        if (AzQtComponents::DockTabWidget* tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget))
+        {
+            tabWidget->setCurrentIndex(tabWidget->indexOf(dockWidget));
+        }
+        else
+        {
+            dockWidget->show();
+            dockWidget->raise();
+        }
+        return;
+    }
 }
 
 //! Gives a pane its viewport one event-loop tick late, once the pane is wrapped in its dock: the swapchain
@@ -112,6 +147,7 @@ CViewManager::CViewManager()
     m_updateRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100000, -100000, -100000), AZ::Vector3(100000, 100000, 100000));
 
     m_pSelectedView = nullptr;
+    m_pLastEditorView = nullptr;
 
     m_nGameViewports = 0;
     m_bGameViewportsUpdated = false;
@@ -208,6 +244,11 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
     if (anchorClosing)
     {
         m_pSelectedView = nullptr;
+    }
+
+    if (m_pLastEditorView == pViewport)
+    {
+        m_pLastEditorView = nullptr;
     }
 
     stl::find_and_erase(m_viewports, pViewport);
@@ -416,6 +457,11 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
+    if (!IsPrefabEditorViewport(m_pSelectedView))
+    {
+        m_pLastEditorView = m_pSelectedView;
+    }
+
     if (MainWindow* mainWindow = MainWindow::instance())
     {
         mainWindow->SetActiveView(m_pSelectedView ? m_pSelectedView->GetViewPane() : nullptr);
@@ -480,6 +526,15 @@ void CViewManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
     case eNotify_OnUpdateViewports:
         UpdateViews();
+        break;
+    case eNotify_OnBeginGameMode:
+        // Game mode plays the selected viewport's world, and a prefab world has no game in it. This runs
+        // before StartPlayInEditor, so moving the selection is enough to redirect what gets played.
+        if (IsPrefabEditorViewport(m_pSelectedView) && m_pLastEditorView)
+        {
+            ShowViewportPane(m_pLastEditorView);
+            SelectViewport(m_pLastEditorView);
+        }
         break;
     }
 }

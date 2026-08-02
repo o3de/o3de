@@ -250,6 +250,19 @@ EditorViewportWidget::~EditorViewportWidget()
     // leave a pipeline for a vanishing window behind in the target scene.
     m_editorEntityNotifications.reset();
 
+    // The viewport context tears its own pipeline down, but this widget's window dies first and a
+    // surviving viewport keeps ticking the scene in between, preparing a pipeline with no swapchain.
+    if (auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr)
+    {
+        if (AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene())
+        {
+            if (auto pipeline = renderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
+            {
+                renderScene->RemoveRenderPipeline(pipeline->GetId());
+            }
+        }
+    }
+
     // A world whose last viewport goes away is torn down.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
         &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
