@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/functional.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -103,6 +104,10 @@ namespace AzToolsFramework::Prefab
         };
 
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
+
+        //! Refresh the focus path of every world whose focus hierarchy holds a matching instance, and
+        //! notify once if any did.
+        void RefreshWorldsWithMatchingInstance(const AZStd::function<bool(const Instance&)>& predicate);
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
 

@@ -357,9 +357,16 @@ namespace AzToolsFramework
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
         // New loose entities are created in the active world.
+        PrefabEditorEntityOwnershipService* ownershipService = GetActiveWorldOwnershipService();
+        if (!ownershipService)
+        {
+            AZ_Warning("EditorEntityContextComponent", false, "Cannot create entity '%s': the active world has no ownership service.", name);
+            return AZ::EntityId();
+        }
+
         AZ::Entity* entity = aznew AZ::Entity(name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
-        GetActiveWorldOwnershipService()->AddEntity(entity);
+        ownershipService->AddEntity(entity);
         FinalizeEditorEntity(entity);
 
         return entity->GetId();
@@ -387,9 +394,16 @@ namespace AzToolsFramework
                 entityId.ToString().c_str());
             return AZ::EntityId();
         }
+        PrefabEditorEntityOwnershipService* ownershipService = GetActiveWorldOwnershipService();
+        if (!ownershipService)
+        {
+            AZ_Warning("EditorEntityContextComponent", false, "Cannot create entity '%s': the active world has no ownership service.", name);
+            return AZ::EntityId();
+        }
+
         entity = aznew AZ::Entity(entityId, name);
         AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
-        GetActiveWorldOwnershipService()->AddEntity(entity);
+        ownershipService->AddEntity(entity);
         FinalizeEditorEntity(entity);
 
         return entity->GetId();
@@ -675,14 +689,25 @@ namespace AzToolsFramework
         const AzFramework::EntityContextId playedWorldId = m_playingWorldId.IsNull() ? GetContextId() : m_playingWorldId;
         m_playingWorldId = AzFramework::EntityContextId::CreateNull();
 
-        auto* service = GetWorldEntityOwnershipService(playedWorldId);
-        AZ_Assert(service, "Stop play in editor could not complete because there was no implementation for "
-            "PrefabEditorEntityOwnershipInterface");
-        service->StopPlayInEditor();
+        // The world that started game mode can be gone by now - its viewport may have been closed while
+        // the game was running - so the editor entities still have to be resumed either way.
+        if (auto* service = GetWorldEntityOwnershipService(playedWorldId))
+        {
+            service->StopPlayInEditor();
+        }
+        else
+        {
+            AZ_Warning(
+                "EditorEntityContextComponent", false,
+                "Stop play in editor could not complete: the world that started game mode no longer exists.");
+        }
 
         if (playedWorldId != GetContextId())
         {
-            GetWorldEntityOwnershipService(GetContextId())->ResumeEditorEntities();
+            if (auto* editorWorldService = GetWorldEntityOwnershipService(GetContextId()))
+            {
+                editorWorldService->ResumeEditorEntities();
+            }
         }
         for (const auto& [worldId, world] : m_worlds)
         {
@@ -841,9 +866,19 @@ namespace AzToolsFramework
                 });
             if (!worldStillBound)
             {
-                m_worlds.erase(previousWorldId);
+                // Notify before the erase: handlers clean up state keyed by this world, and once it is
+                // gone its id no longer resolves, so that cleanup would be misattributed to world 0.
                 EditorEntityContextNotificationBus::Broadcast(
                     &EditorEntityContextNotification::OnWorldDestroyed, previousWorldId);
+
+                if (m_playingWorldId == previousWorldId)
+                {
+                    // Game mode outlived the world that started it, so StopPlayInEditor must not go
+                    // looking for an ownership service that no longer exists.
+                    m_playingWorldId = AzFramework::EntityContextId::CreateNull();
+                }
+
+                m_worlds.erase(previousWorldId);
             }
         }
 
