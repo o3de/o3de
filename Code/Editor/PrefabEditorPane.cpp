@@ -18,7 +18,6 @@
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Scene/Scene.h>
@@ -26,10 +25,9 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <QToolBar>
 #include <QVBoxLayout>
 
-//! The lighting preset a prefab world starts on. Every project has this one: it ships with Atom. The gem
+//! The lighting preset a prefab world is shown in. Every project has this one: it ships with Atom. The gem
 //! alias is what makes it resolvable - a bare product path does not load.
 static constexpr const char* DefaultLightingPresetPath =
     "@gemroot:Atom_Feature_Common@/Assets/LightingPresets/default.lightingpreset.azasset";
@@ -37,35 +35,14 @@ static constexpr const char* DefaultLightingPresetPath =
 PrefabEditorPane::PrefabEditorPane(QWidget* parent)
     : QWidget(parent)
 {
-    m_lightingPresetComboBox = new AtomToolsFramework::AssetSelectionComboBox(
-        [](const AZStd::string& path)
-        {
-            return path.ends_with(AZ::Render::LightingPreset::Extension);
-        },
-        this);
-    m_lightingPresetComboBox->setToolTip(tr("The lighting environment this prefab is shown in. It is not saved into the prefab."));
-
-    connect(
-        m_lightingPresetComboBox, &AtomToolsFramework::AssetSelectionComboBox::PathSelected, this,
-        [this](const AZStd::string& path)
-        {
-            LoadLightingPreset(path);
-            ApplyLightingPreset();
-        });
-
-    auto* toolBar = new QToolBar(this);
-    toolBar->addWidget(m_lightingPresetComboBox);
-
     m_viewPane = new CLayoutViewPane(this);
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    layout->addWidget(toolBar);
     layout->addWidget(m_viewPane, 1);
 
-    LoadLightingPreset(DefaultLightingPresetPath);
-    m_lightingPresetComboBox->SelectPath(DefaultLightingPresetPath);
+    LoadLightingPreset();
 
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 }
@@ -88,24 +65,17 @@ void PrefabEditorPane::OnViewportWorldChanged(
     ApplyLightingPreset();
 }
 
-void PrefabEditorPane::LoadLightingPreset(const AZStd::string& path)
+void PrefabEditorPane::LoadLightingPreset()
 {
-    // The combo box lists catalog paths while presets load from their source file, so a relative path has to be
-    // resolved before it will open - the same pairing EntityPreviewViewportToolBar and LoadLightingPreset use.
-    AZStd::string resolvedPath = AtomToolsFramework::GetPathWithoutAlias(path);
-    if (!resolvedPath.empty() && AZ::IO::PathView(resolvedPath).IsRelative())
-    {
-        resolvedPath = AtomToolsFramework::GetPathWithoutAlias(AZStd::string::format("@products@/%s", resolvedPath.c_str()));
-    }
-
-    auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(resolvedPath);
+    auto loadResult =
+        AZ::JsonSerializationUtils::LoadAnyObjectFromFile(AtomToolsFramework::GetPathWithoutAlias(DefaultLightingPresetPath));
     if (loadResult && loadResult.GetValue().is<AZ::Render::LightingPreset>())
     {
         m_lightingPreset = AZStd::any_cast<AZ::Render::LightingPreset>(loadResult.GetValue());
         return;
     }
 
-    AZ_Warning("PrefabEditor", false, "Could not load the lighting preset '%s'.", path.c_str());
+    AZ_Warning("PrefabEditor", false, "Could not load the lighting preset '%s'.", DefaultLightingPresetPath);
 }
 
 void PrefabEditorPane::ApplyLightingPreset()

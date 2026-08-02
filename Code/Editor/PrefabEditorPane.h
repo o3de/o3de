@@ -18,15 +18,9 @@
 
 class CLayoutViewPane;
 
-namespace AtomToolsFramework
-{
-    class AssetSelectionComboBox;
-}
-
-//! Hosts a viewport showing a prefab that was opened as a world of its own, plus the picker for the lighting
-//! preset that world is lit by. A prefab carries no sun or sky - those belong to a level - so without a preset
-//! its world renders unlit. The lights are applied to the world's scene rather than as entities, so nothing is
-//! ever written into the prefab file.
+//! Hosts a viewport showing a prefab that was opened as a world of its own. A prefab carries no sun or sky -
+//! those belong to a level - so the world is lit by a fixed preset instead. The lights are applied to the
+//! world's scene rather than as entities, so nothing is ever written into the prefab file.
 class PrefabEditorPane
     : public QWidget
     , private AZ::TickBus::Handler
@@ -51,11 +45,10 @@ private:
         AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) override;
 
     AzFramework::CameraState GetViewportCameraState() const;
-    void LoadLightingPreset(const AZStd::string& path);
+    void LoadLightingPreset();
     void ApplyLightingPreset();
 
     CLayoutViewPane* m_viewPane = nullptr;
-    AtomToolsFramework::AssetSelectionComboBox* m_lightingPresetComboBox = nullptr;
 
     AzFramework::EntityContextId m_worldId = AzFramework::EntityContextId::CreateNull();
     AZ::Render::LightingPreset m_lightingPreset;
