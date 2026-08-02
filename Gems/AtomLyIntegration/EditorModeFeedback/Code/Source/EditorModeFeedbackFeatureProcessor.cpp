@@ -70,21 +70,25 @@ namespace AZ
                 { "ViewModeBackgroundPass",
                   "ViewModeBackgroundPassTemplate",
                   { { "ColorInputOutput", "PostProcessPass", "Output" } } },
-                { "ViewModeWireframeHiddenPass",
-                  "ViewModeWireframeHiddenPassTemplate",
-                  { { "ColorInputOutput", "ViewModeBackgroundPass", "ColorInputOutput" },
-                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
-                { "ViewModeWireframePass",
-                  "ViewModeWireframePassTemplate",
-                  { { "ColorInputOutput", "ViewModeWireframeHiddenPass", "ColorInputOutput" },
-                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
                 { "ViewModeOverdrawCountPass",
                   "ViewModeOverdrawCountPassTemplate",
                   { { "DepthInputOutput", "DepthPrePass", "Depth" } } },
                 { "ViewModeOverdrawResolvePass",
                   "ViewModeOverdrawResolvePassTemplate",
                   { { "Count", "ViewModeOverdrawCountPass", "Count" },
-                    { "ColorInputOutput", "ViewModeWireframePass", "ColorInputOutput" } } },
+                    { "ColorInputOutput", "ViewModeBackgroundPass", "ColorInputOutput" } } },
+                { "ViewModeOverdrawWireframePass",
+                  "ViewModeOverdrawWireframePassTemplate",
+                  { { "ColorInputOutput", "ViewModeOverdrawResolvePass", "ColorInputOutput" },
+                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
+                { "ViewModeWireframeHiddenPass",
+                  "ViewModeWireframeHiddenPassTemplate",
+                  { { "ColorInputOutput", "ViewModeOverdrawWireframePass", "ColorInputOutput" },
+                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
+                { "ViewModeWireframePass",
+                  "ViewModeWireframePassTemplate",
+                  { { "ColorInputOutput", "ViewModeWireframeHiddenPass", "ColorInputOutput" },
+                    { "DepthInputOutput", "DepthPrePass", "Depth" } } },
             };
 
             //! Each pass is inserted after the one created before it; the first anchors on the pipeline.
@@ -579,6 +583,8 @@ namespace AZ
                 wireColor.SetFromHSVRadians(hue * AZ::Constants::TwoPi, 0.75f, 1.0f);
                 wireColor.SetA(0.85f);
                 mesh.m_objectSrg->SetConstant(mesh.m_colorIndex, wireColor.GetAsVector4());
+
+                mesh.m_objectSrg->SetConstant(mesh.m_idSeedIndex, static_cast<uint32_t>(entityHash));
 
                 const auto lods = model->GetLods();
                 const size_t meshCount = lods.empty() ? 0 : lods[0]->GetMeshes().size();

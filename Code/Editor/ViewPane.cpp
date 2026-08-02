@@ -124,6 +124,7 @@ static void SetFocusedViewportViewModes(bool normal, bool wireframe, bool overdr
         { "ViewModeWireframePass", wireframe },
         { "ViewModeOverdrawCountPass", overdraw },
         { "ViewModeOverdrawResolvePass", overdraw },
+        { "ViewModeOverdrawWireframePass", overdraw },
     };
     for (const auto& entry : passes)
     {

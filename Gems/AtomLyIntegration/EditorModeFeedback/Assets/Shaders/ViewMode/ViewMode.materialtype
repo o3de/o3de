@@ -16,6 +16,10 @@
         {
             "file": "ViewModeOverdrawCount.shader",
             "tag": "viewmodeoverdraw"
+        },
+        {
+            "file": "ViewModeOverdrawWireframe.shader",
+            "tag": "viewmodeoverdrawwireframe"
         }
     ]
 }

@@ -23,6 +23,10 @@
             {
                 "Name": "ViewModeOverdrawResolvePassTemplate",
                 "Path": "Passes/ViewModeOverdrawResolve.pass"
+            },
+            {
+                "Name": "ViewModeOverdrawWireframePassTemplate",
+                "Path": "Passes/ViewModeOverdrawWireframe.pass"
             }
         ]
     }

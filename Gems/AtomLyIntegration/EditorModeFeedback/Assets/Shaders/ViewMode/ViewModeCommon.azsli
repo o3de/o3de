@@ -8,6 +8,7 @@ ShaderResourceGroup ViewModeObjectSrg : SRG_PerObject
 {
     row_major float4x4 m_world;
     float4 m_color;
+    uint m_idSeed;
 }
 
 struct VsInput

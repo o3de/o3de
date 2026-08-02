@@ -8,5 +8,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 [earlydepthstencil]
 void MainPS(VsOutput IN, uint primitiveId : SV_PrimitiveID)
 {
-    InterlockedOr(PassSrg::m_mask[uint2(IN.m_position.xy)], 1u << (primitiveId & 31u));
+    const uint triangleId = primitiveId + ViewModeObjectSrg::m_idSeed;
+    const uint scrambled = triangleId * 2654435761u;
+    InterlockedOr(PassSrg::m_mask[uint2(IN.m_position.xy)], 1u << ((scrambled >> 27) & 31u));
 }

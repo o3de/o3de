@@ -107,6 +107,7 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> m_objectSrg;
                 RHI::ShaderInputNameIndex m_worldIndex = "m_world";
                 RHI::ShaderInputNameIndex m_colorIndex = "m_color";
+                RHI::ShaderInputNameIndex m_idSeedIndex = "m_idSeed";
                 Transform m_transform = Transform::CreateUniformScale(0.0f);
                 AZStd::vector<RPI::MeshDrawPacket> m_drawPackets;
             };
@@ -115,10 +116,11 @@ namespace AZ
             enum ViewModePass : size_t
             {
                 Background,
-                WireframeHidden,
-                Wireframe,
                 OverdrawCount,
                 OverdrawResolve,
+                OverdrawWireframe,
+                WireframeHidden,
+                Wireframe,
                 ViewModePassCount
             };
 

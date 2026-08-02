@@ -20,3 +20,11 @@ PsOutput HiddenPS(VsOutput IN)
     OUT.m_color = float4(ViewModeObjectSrg::m_color.rgb, ViewModeObjectSrg::m_color.a * 0.25 * fade);
     return OUT;
 }
+
+PsOutput OverdrawPS(VsOutput IN)
+{
+    PsOutput OUT;
+    const float fade = saturate(16.0 / (IN.m_viewDepth + 4.0));
+    OUT.m_color = float4(0.02, 0.02, 0.03, 0.8 * fade);
+    return OUT;
+}
