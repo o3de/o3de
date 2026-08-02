@@ -250,19 +250,6 @@ EditorViewportWidget::~EditorViewportWidget()
     // leave a pipeline for a vanishing window behind in the target scene.
     m_editorEntityNotifications.reset();
 
-    // The viewport context tears its own pipeline down, but this widget's window dies first and a
-    // surviving viewport keeps ticking the scene in between, preparing a pipeline with no swapchain.
-    if (auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr)
-    {
-        if (AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene())
-        {
-            if (auto pipeline = renderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
-            {
-                renderScene->RemoveRenderPipeline(pipeline->GetId());
-            }
-        }
-    }
-
     // A world whose last viewport goes away is torn down.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
         &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
@@ -403,6 +390,12 @@ bool EditorViewportWidget::event(QEvent* event)
         // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
         // get the keyrelease event anyways)
         m_keyDown.clear();
+        break;
+
+    case QEvent::Show:
+        // Tabbing a viewport's pane to the front shows it, which is how selecting a tab reaches here.
+        // Window activation does not fire for tab switches within the same window.
+        GetIEditor()->GetViewManager()->SelectViewport(this);
         break;
 
     case QEvent::Shortcut:

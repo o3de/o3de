@@ -251,8 +251,11 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->setSortIndicatorShown(false);
         m_gui->m_objectTree->header()->setStretchLastSection(false);
 
-        // Always expand root entity (level entity) - needed if the widget is re-created while a level is already open.
-        m_gui->m_objectTree->expand(m_proxyModel->index(0, 0));
+        // Always expand root entities - needed if the widget is re-created while a level is already open.
+        for (int row = 0; row < m_proxyModel->rowCount(); ++row)
+        {
+            m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));
+        }
 
         // resize the icon columns so that the Visibility and Lock toggle icon columns stay right-justified
         m_gui->m_objectTree->header()->setStretchLastSection(false);
@@ -1140,7 +1143,11 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
+            // Every world has a root, not just the level.
+            for (int row = 0; row < m_proxyModel->rowCount(); ++row)
+            {
+                m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));
+            }
         });
     }
 

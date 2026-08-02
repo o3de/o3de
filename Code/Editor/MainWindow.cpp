@@ -533,11 +533,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     SaveConfig();
 
+    // Closing the panes below destroys the windows their render pipelines present to, so rendering
+    // has to stop first or the scene prepares a pipeline whose swapchain is already gone.
+    Editor::EditorQtApplication::instance()->EnableOnIdle(false);
+
     // Some of the panes may ask for confirmation to save changes before closing.
     if (!QtViewPaneManager::instance()->ClosePanesWithRollback(QVector<QString>()) ||
         !GetIEditor() ||
         !GetIEditor()->GetLevelIndependentFileMan()->PromptChangedFiles())
     {
+        Editor::EditorQtApplication::instance()->EnableOnIdle(true);
+
         if (isInGameMode)
         {
             // make sure the mouse is turned back off if returning to the game.
@@ -549,8 +555,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
-
-    Editor::EditorQtApplication::instance()->EnableOnIdle(false);
 
     if (GetIEditor()->GetDocument())
     {

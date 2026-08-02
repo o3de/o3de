@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
@@ -254,6 +255,12 @@ namespace AtomToolsFramework
                 QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
                 if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
                 {
+                    // The swapchain goes with the surface. A pipeline left in the scene presenting to it
+                    // keeps being validated with nothing behind it.
+                    if (auto pipeline = m_viewportContext->GetCurrentPipeline())
+                    {
+                        pipeline->RemoveFromScene();
+                    }
                     SendWindowCloseEvent();
                 }
                 break;

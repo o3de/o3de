@@ -223,10 +223,10 @@ namespace AZ::Render
        
         AZStd::string defaultAA = "MSAA";
         bool hasAAMethod = false;
-        if (pScene != nullptr)
+        // A scene has no default pipeline between a viewport's surface being destroyed and rebuilt.
+        AZ::RPI::RenderPipelinePtr pPipeline = pScene ? pScene->GetDefaultRenderPipeline() : nullptr;
+        if (pPipeline != nullptr)
         {
-            AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
- 
             AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
             defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
             hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
