@@ -164,6 +164,18 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
     undoBatch.MarkEntityDirty(entityId);
 }
 
+AZ::RPI::ViewGroupPtr EditorViewportWidget::ViewGroupForThisViewport() const
+{
+    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+    if (!atomViewportRequests || !viewportContext)
+    {
+        return nullptr;
+    }
+
+    return atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName());
+}
+
 void EditorViewportWidget::PopViewGroupForThisViewport()
 {
     auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -798,7 +810,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     UpdateScene();
 
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
+    if (IsSelectedViewport())
     {
         if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
@@ -884,8 +896,11 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
     AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
-    (void)((!AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers()) &&
-    (AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect(), true));
+    // Single-handler bus, so only claim it when no other viewport already owns it.
+    if (!AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers())
+    {
+        AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+    }
 }
 
 void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
@@ -896,6 +911,55 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
+
+    // We may have been the sole cursor constraint handler. Without handing it on, the input system
+    // would lose its constraint window for the rest of the session and the cursor would stop being
+    // clamped to a viewport during camera look.
+    AssignCursorConstraintOwner(this);
+}
+
+bool EditorViewportWidget::IsSelectedViewport() const
+{
+    return GetIEditor()->GetViewManager()->GetSelectedViewport() == this;
+}
+
+void EditorViewportWidget::AssignCursorConstraintOwner(const EditorViewportWidget* leaving)
+{
+    if (AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers())
+    {
+        return;
+    }
+
+    CViewManager* viewManager = GetIEditor() ? GetIEditor()->GetViewManager() : nullptr;
+    if (!viewManager)
+    {
+        return;
+    }
+
+    auto claim = [leaving](CViewport* candidate)
+    {
+        EditorViewportWidget* viewport = viewport_cast<EditorViewportWidget*>(candidate);
+        if (!viewport || viewport == leaving)
+        {
+            return false;
+        }
+
+        viewport->AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+        return true;
+    };
+
+    if (claim(viewManager->GetSelectedViewport()))
+    {
+        return;
+    }
+
+    for (int index = 0, count = viewManager->GetViewCount(); index < count; ++index)
+    {
+        if (claim(viewManager->GetView(index)))
+        {
+            return;
+        }
+    }
 }
 
 namespace AZ::ViewportHelpers
@@ -1401,14 +1465,7 @@ void EditorViewportWidget::SetFOV(const float fov)
     }
     else
     {
-        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
-        if (!viewSystem || !viewportContext)
-        {
-            return;
-        }
-
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
+        if (auto viewGroup = ViewGroupForThisViewport())
         {
             auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
             AZ::SetPerspectiveMatrixFOV(viewToClip, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
@@ -1428,14 +1485,7 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
-        if (!viewSystem || !viewportContext)
-        {
-            return AZ::Constants::HalfPi; // 90 degrees (default)
-        }
-
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
+        if (auto viewGroup = ViewGroupForThisViewport())
         {
             return AZ::GetPerspectiveMatrixFOV(viewGroup->GetView()->GetViewToClipMatrix());
         }
@@ -1463,7 +1513,7 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     {
         // The camera view group was pushed onto the focused viewport's context; only that viewport adopts
         // the camera entity. Any other viewport still displaying an older camera resets to its own camera.
-        if (GetIEditor()->GetViewManager()->GetSelectedViewport() != this)
+        if (!IsSelectedViewport())
         {
             if (m_viewEntityId.IsValid())
             {
@@ -1521,14 +1571,7 @@ void EditorViewportWidget::SetDefaultCamera()
 
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
-    if (!viewSystem || !viewportContext)
-    {
-        return;
-    }
-
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
         auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
@@ -1644,7 +1687,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 {
     // Camera view changes target the focused viewport; the camera component pushes its view group onto that
     // viewport's context when it activates.
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() != this)
+    if (!IsSelectedViewport())
     {
         return;
     }
@@ -1685,7 +1728,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 
 bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 {
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
+    if (IsSelectedViewport())
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1705,7 +1748,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 
 AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 {
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
+    if (IsSelectedViewport())
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1722,7 +1765,7 @@ AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 
 AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 {
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
+    if (IsSelectedViewport())
     {
         return GetFOV();
     }
@@ -1731,7 +1774,7 @@ AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
 {
-    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
+    if (IsSelectedViewport())
     {
         cameraState = m_renderViewport->GetCameraState();
         return true;

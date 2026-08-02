@@ -141,7 +141,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         //! The optional callback for when the viewport highlight border back button is pressed.
         AZStd::optional<ViewportUiBackButtonCallback> m_viewportBorderBackButtonCallback;
 
-        QWidget* m_renderOverlay;
+        //! The viewport this overlay is anchored over. Guarded because that viewport can be destroyed
+        //! while the overlay outlives it - closing a viewport pane leaves the anchor dangling otherwise.
+        QPointer<QWidget> m_renderOverlay;
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
         int64_t m_numViewportElements = 0;
         int m_viewportId = 0;

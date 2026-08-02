@@ -502,7 +502,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
             // if the user changes the size of their window, release the width of the border so the
             // overlay can resize
-            if (m_viewportBorderText.width() != m_renderOverlay->width())
+            if (m_renderOverlay && m_viewportBorderText.width() != m_renderOverlay->width())
             {
                 m_viewportBorderText.setMinimumWidth(0);
                 m_viewportBorderText.setMaximumWidth(m_renderOverlay->width());
@@ -522,6 +522,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::PositionUiOverlayOverRenderViewport()
     {
+        if (!m_renderOverlay)
+        {
+            return;
+        }
+
         QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
         m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
         m_uiOverlay.setGeometry(m_uiMainWindow.rect());

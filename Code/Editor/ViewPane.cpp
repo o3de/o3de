@@ -66,6 +66,20 @@ static const std::pair<int, int> ViewportResolutions[] =
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
 static constexpr int SortKeySpacing = 100;
 
+static AZ::AtomBridge::ViewportInfoDisplayState CurrentViewportInfoDisplayState()
+{
+    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+        state, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+    return state;
+}
+
+static void SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState state)
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, state);
+}
+
 static AZ::RPI::RenderPipelinePtr FocusedViewportPipeline()
 {
     auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -143,7 +157,6 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     : AzQtComponents::ToolBarArea(parent)
 {
     m_viewport = nullptr;
-    m_viewportTitleDlg = nullptr;
     m_active = false;
     m_nBorder = VIEW_BORDER;
 
@@ -191,9 +204,17 @@ CLayoutViewPane::~CLayoutViewPane()
 
 bool CLayoutViewPane::OwnsSharedDefinitions()
 {
-    static const CLayoutViewPane* owner = nullptr;
-    owner = owner ? owner : this;
-    return owner == this;
+    // Track the claim as a flag rather than a pointer to the owning pane: the owner can be destroyed
+    // while other panes are still asking, and comparing against a freed pointer is undefined behaviour
+    // that can hand ownership to a second pane if the allocator reuses the address.
+    static bool claimed = false;
+    if (!claimed)
+    {
+        claimed = true;
+        m_ownsSharedDefinitions = true;
+    }
+
+    return m_ownsSharedDefinitions;
 }
 
 void CLayoutViewPane::OnMenuRegistrationHook()
@@ -361,17 +382,16 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->OnToggleDisplayInfo();
+                // SetDisplayState fires OnViewportInfoDisplayStateChanged, so listeners refresh themselves.
+                SetViewportInfoDisplayState(aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
+                    (aznumeric_cast<int>(CurrentViewportInfoDisplayState()) + 1) %
+                    aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid)));
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                return CurrentViewportInfoDisplayState() != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
             }
         );
 
@@ -387,17 +407,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetNormalViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
             }
         );
 
@@ -414,17 +430,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetFullViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::FullInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
             }
         );
 
@@ -441,17 +453,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetCompactViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
             }
         );
 
@@ -468,17 +476,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetNoViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
             });
 
         m_actionManagerInterface->AddActionToUpdater(

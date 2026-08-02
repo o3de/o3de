@@ -260,6 +260,20 @@ namespace AzToolsFramework
         EnumerateToolBars(
             [](QToolBar* toolBar) -> bool
             {
+                // clear() only detaches actions, it does not delete them. The separators and widget
+                // wrappers built below are parented to the toolbar and would otherwise accumulate on
+                // every refresh - and refreshes are frequent (selection changes, level loads, entering
+                // and leaving component mode). Actions owned by the Action Manager are parented
+                // elsewhere and must survive; deleting a QWidgetAction also deletes the widget it owns.
+                const auto actions = toolBar->actions();
+                for (QAction* action : actions)
+                {
+                    if (action->parent() == toolBar)
+                    {
+                        delete action;
+                    }
+                }
+
                 toolBar->clear();
                 return false;
             }

@@ -200,30 +200,49 @@ void CViewManager::RegisterViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
-    const bool viewportUiAnchorClosing = m_pSelectedView == pViewport;
-    m_pSelectedView = viewportUiAnchorClosing ? nullptr : m_pSelectedView;
+    const bool anchorClosing = m_pSelectedView == pViewport;
+    // The viewport hosting the UI widget set can close while other viewports remain, in which case the
+    // overlay has to move to a surviving host or it is lost for the rest of the session.
+    const bool uiHostClosing = GetViewportUiOwner() == pViewport;
+
+    if (anchorClosing)
+    {
+        m_pSelectedView = nullptr;
+    }
 
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
 
-    if (viewportUiAnchorClosing)
+    if (anchorClosing || uiHostClosing)
     {
-        // Park the viewport UI overlay back on its owner now that its anchor viewport is going away.
-        AnchorViewportUiTo(GetViewportUiOwner());
+        AnchorViewportUiTo(m_pSelectedView ? m_pSelectedView : GetViewportUiOwner());
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 QtViewport* CViewManager::GetViewportUiOwner() const
 {
+    // Prefer the default viewport, but fall back to any live one. The default viewport can be closed
+    // while others remain, and returning nullptr there would leave the editor with no viewport UI at
+    // all - no component mode clusters, no sub-mode switchers - until it is restarted.
+    QtViewport* fallback = nullptr;
     for (CViewport* viewport : m_viewports)
     {
+        QtViewport* qtViewport = viewport_cast<QtViewport*>(viewport);
+        if (!qtViewport)
+        {
+            continue;
+        }
+
         if (viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
         {
-            return static_cast<QtViewport*>(viewport);
+            return qtViewport;
         }
+
+        fallback = fallback ? fallback : qtViewport;
     }
-    return nullptr;
+
+    return fallback;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -231,9 +250,10 @@ void CViewManager::AnchorViewportUiTo(CViewport* pViewport)
 {
     // The editor keeps one viewport UI widget set and it rides the viewport it is anchored to.
     QtViewport* owner = GetViewportUiOwner();
-    if (owner && pViewport)
+    QtViewport* target = viewport_cast<QtViewport*>(pViewport);
+    if (owner && target)
     {
-        owner->AnchorViewportUiTo(static_cast<QtViewport*>(pViewport));
+        owner->AnchorViewportUiTo(target);
     }
 }
 

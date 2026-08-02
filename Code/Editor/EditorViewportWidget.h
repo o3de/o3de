@@ -209,6 +209,16 @@ private:
     // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
     void* GetSystemCursorConstraintWindow() const override;
 
+    //! The cursor constraint bus accepts a single handler, so exactly one viewport owns it at a time.
+    //! Give it to a live viewport whenever the current owner gives it up, preferring the selected one.
+    static void AssignCursorConstraintOwner(const EditorViewportWidget* leaving);
+
+    //! True when this viewport is the one the view manager currently has selected.
+    bool IsSelectedViewport() const;
+
+    //! The Atom view group for this viewport's context, or nullptr if either is unavailable.
+    AZ::RPI::ViewGroupPtr ViewGroupForThisViewport() const;
+
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;

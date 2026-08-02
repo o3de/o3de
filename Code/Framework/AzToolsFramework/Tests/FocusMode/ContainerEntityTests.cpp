@@ -194,6 +194,7 @@ namespace UnitTest
 
     TEST_F(EditorFocusModeFixture, ContainerEntityClearFailsIfContainersAreStillRegistered)
     {
+        // The Clear function fails if a container is registered.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
         auto outcome = m_containerEntityInterface->Clear(m_editorEntityContextId);
         EXPECT_FALSE(outcome.IsSuccess());
@@ -204,6 +205,7 @@ namespace UnitTest
 
     TEST_F(EditorFocusModeFixture, ContainerEntityClearSucceedsIfContainersAreUnregistered)
     {
+        // The Clear function fails if a container is registered.
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[Passenger1EntityName]);
         auto outcome = m_containerEntityInterface->Clear(m_editorEntityContextId);

@@ -135,7 +135,6 @@ private:
     QString m_viewPaneClass;
     bool m_bFullscreen;
 
-    CViewportTitleDlg* m_viewportTitleDlg;
     int m_id;
     int m_nBorder;
 
@@ -143,6 +142,8 @@ private:
     QScrollArea* m_viewportScrollArea = nullptr;
     ViewportExpansionPolicy m_viewportPolicy = ViewportExpansionPolicy::AutoExpand;
     bool m_active;
+    //! Set by OwnsSharedDefinitions() on the pane that claims the shared menu/toolbar definitions.
+    bool m_ownsSharedDefinitions = false;
 
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
