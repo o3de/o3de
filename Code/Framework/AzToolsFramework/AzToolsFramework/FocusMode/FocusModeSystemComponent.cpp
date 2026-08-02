@@ -34,11 +34,6 @@ namespace AzToolsFramework
     }
 
     //! A null id addresses the active world; the editor context id addresses world 0 itself.
-    static AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId)
-    {
-        return entityContextId.IsNull() ? GetActiveWorldId() : entityContextId;
-    }
-
     void FocusModeSystemComponent::Init()
     {
     }

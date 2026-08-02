@@ -203,6 +203,11 @@ namespace AzToolsFramework
         return worldId;
     }
 
+    AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& worldId)
+    {
+        return worldId.IsNull() ? GetActiveWorldId() : worldId;
+    }
+
     AzFramework::EntityContextId GetEntityWorldId(const AZ::EntityId entityId)
     {
         auto worldId = AzFramework::EntityContextId::CreateNull();

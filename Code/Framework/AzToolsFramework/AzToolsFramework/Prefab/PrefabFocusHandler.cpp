@@ -125,12 +125,6 @@ namespace AzToolsFramework::Prefab
     //! A null id or the editor entity context id addresses the active world; world ids pass through. The editor-wide
     //! prefab edit UI can only show one world, which is why a prefab is never focused from a pane showing another:
     //! that gesture opens the prefab in its own world and viewport instead (see FocusOnPrefabInstance).
-    AzFramework::EntityContextId PrefabFocusHandler::ResolveWorldId(const AzFramework::EntityContextId& entityContextId) const
-    {
-        const bool addressesActiveWorld = entityContextId.IsNull() || entityContextId == GetEntityContextId();
-        return addressesActiveWorld ? GetActiveWorldId() : entityContextId;
-    }
-
     PrefabFocusHandler::WorldFocus& PrefabFocusHandler::GetWorldFocus(const AzFramework::EntityContextId& worldId) const
     {
         WorldFocus& focus = m_worldFocus[worldId];

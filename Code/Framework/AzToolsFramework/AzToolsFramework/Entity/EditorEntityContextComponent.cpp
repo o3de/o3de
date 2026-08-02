@@ -49,6 +49,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
@@ -945,7 +946,7 @@ namespace AzToolsFramework
     PrefabEditorEntityOwnershipInterface* EditorEntityContextComponent::GetWorldEntityOwnershipService(
         const AzFramework::EntityContextId& worldId)
     {
-        const AzFramework::EntityContextId resolvedWorldId = worldId.IsNull() ? GetActiveWorldId() : worldId;
+        const AzFramework::EntityContextId resolvedWorldId = ResolveWorldId(worldId);
 
         if (resolvedWorldId == GetContextId())
         {
@@ -958,7 +959,7 @@ namespace AzToolsFramework
 
     AZStd::shared_ptr<AzFramework::Scene> EditorEntityContextComponent::GetWorldScene(const AzFramework::EntityContextId& worldId)
     {
-        const AzFramework::EntityContextId resolvedWorldId = worldId.IsNull() ? GetActiveWorldId() : worldId;
+        const AzFramework::EntityContextId resolvedWorldId = ResolveWorldId(worldId);
 
         // The played world's entities are respawned into the main scene for the session.
         if (resolvedWorldId == GetContextId() || resolvedWorldId == m_playingWorldId)

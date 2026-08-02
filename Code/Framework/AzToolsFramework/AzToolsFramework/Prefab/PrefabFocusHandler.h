@@ -102,7 +102,6 @@ namespace AzToolsFramework::Prefab
             int m_rootAliasFocusPathLength = 0;
         };
 
-        AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& entityContextId) const;
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;

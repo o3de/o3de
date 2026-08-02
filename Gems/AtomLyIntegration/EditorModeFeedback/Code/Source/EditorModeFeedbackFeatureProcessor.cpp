@@ -27,6 +27,8 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Constants.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector4.h>
@@ -565,22 +567,19 @@ namespace AZ
                 mesh.m_entityId = entityId;
                 mesh.m_model = model;
                 mesh.m_objectSrg = AZ::RPI::ShaderResourceGroup::Create(m_srgShaderAsset, AZ::Name("ViewModeObjectSrg"));
-                AZ_Error(
-                    Window, mesh.m_objectSrg, "Failed to create a ViewModeObjectSrg for entity %s",
-                    entityId.ToString().c_str());
-
-                const AZ::u64 entityHash = AZStd::hash<AZ::u64>{}(static_cast<AZ::u64>(entityId));
-                const float hue = static_cast<float>(entityHash % 3600u) / 3600.0f;
-                const float red = AZ::GetClamp(fabsf(hue * 6.0f - 3.0f) - 1.0f, 0.0f, 1.0f);
-                const float green = AZ::GetClamp(2.0f - fabsf(hue * 6.0f - 2.0f), 0.0f, 1.0f);
-                const float blue = AZ::GetClamp(2.0f - fabsf(hue * 6.0f - 4.0f), 0.0f, 1.0f);
-                const AZ::Vector4 wireColor(
-                    red * 0.75f + 0.25f, green * 0.75f + 0.25f, blue * 0.75f + 0.25f, 0.85f);
                 if (!mesh.m_objectSrg)
                 {
+                    AZ_Error(Window, false, "Failed to create a ViewModeObjectSrg for entity %s", entityId.ToString().c_str());
                     continue;
                 }
-                mesh.m_objectSrg->SetConstant(mesh.m_colorIndex, wireColor);
+
+                // Give each entity a stable, well separated wireframe colour.
+                const AZ::u64 entityHash = AZStd::hash<AZ::u64>{}(static_cast<AZ::u64>(entityId));
+                const float hue = static_cast<float>(entityHash % 3600u) / 3600.0f;
+                AZ::Color wireColor;
+                wireColor.SetFromHSVRadians(hue * AZ::Constants::TwoPi, 0.75f, 1.0f);
+                wireColor.SetA(0.85f);
+                mesh.m_objectSrg->SetConstant(mesh.m_colorIndex, wireColor.GetAsVector4());
 
                 const auto lods = model->GetLods();
                 const size_t meshCount = lods.empty() ? 0 : lods[0]->GetMeshes().size();

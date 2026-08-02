@@ -376,6 +376,12 @@ namespace AzToolsFramework
     //! Utility function to return the active world's EntityContextId.
     AZTF_API AzFramework::EntityContextId GetActiveWorldId();
 
+    //! Resolves a world id argument to the world it addresses. Per the EditorEntityContextRequests
+    //! contract a null id addresses the active world; every other id, including the editor entity
+    //! context id (world 0), addresses itself. Use this rather than resolving ids locally, so that
+    //! callers passing the same id to different subsystems always reach the same world.
+    AZTF_API AzFramework::EntityContextId ResolveWorldId(const AzFramework::EntityContextId& worldId);
+
     //! Returns the world owning the entity, or the active world for entities outside every world.
     AZTF_API AzFramework::EntityContextId GetEntityWorldId(AZ::EntityId entityId);
 
