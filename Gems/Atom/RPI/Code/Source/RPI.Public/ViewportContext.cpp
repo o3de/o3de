@@ -185,8 +185,13 @@ namespace AZ
 
         Name ViewportContext::MirroredContextName() const
         {
-            const bool mirrors = m_mirrorNotificationsToDefaultContextName && m_manager;
-            return mirrors ? m_manager->GetDefaultViewportContextName() : Name();
+            if (!m_manager || m_id != m_manager->m_defaultViewportContextId)
+            {
+                return Name();
+            }
+
+            const Name defaultName = m_manager->GetDefaultViewportContextName();
+            return m_name != defaultName ? defaultName : Name();
         }
 
         void ViewportContext::OnBeginPrepareRender()

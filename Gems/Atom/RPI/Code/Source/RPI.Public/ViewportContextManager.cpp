@@ -250,11 +250,6 @@ namespace AZ
                 return;
             }
 
-            if (auto previousContext = GetViewportContextById(m_defaultViewportContextId))
-            {
-                previousContext->m_mirrorNotificationsToDefaultContextName = false;
-            }
-
             m_defaultViewportContextId = viewportId;
 
             auto viewportContext = GetViewportContextById(viewportId);
@@ -263,8 +258,6 @@ namespace AZ
                 m_defaultViewportContextId = AzFramework::InvalidViewportId;
                 return;
             }
-            viewportContext->m_mirrorNotificationsToDefaultContextName = viewportContext->GetName() != m_defaultViewportContextName;
-
             // Replay the designated context's current state for listeners bound to the default context name,
             // matching what renaming a context onto that name used to broadcast.
             ViewportContextNotificationBus::Event(
@@ -273,13 +266,7 @@ namespace AZ
                 m_defaultViewportContextName,
                 &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged,
                 viewportContext->GetDpiScalingFactor());
-            if (auto viewGroup = GetCurrentViewGroup(viewportContext->GetName()))
-            {
-                ViewportContextNotificationBus::Event(
-                    m_defaultViewportContextName,
-                    &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
-                    viewGroup->GetView(ViewType::Default));
-            }
+            UpdateViewForContext(viewportContext->GetName());
         }
 
         AZ::Name ViewportContextManager::ResolveViewportContextName(const Name& contextName) const
@@ -401,31 +388,36 @@ namespace AZ
         void ViewportContextManager::UpdateViewForContext(const Name& context)
         {
             auto currentViewGroup = GetCurrentViewGroup(context);
+            ViewportContextPtr namedContext;
 
             for (const auto& viewportData : m_viewportContexts)
             {
                 ViewportContextPtr viewportContext = viewportData.second.context.lock();
                 if (viewportContext && viewportContext->GetName() == context)
                 {
-                    viewportContext->SetViewGroup(currentViewGroup);
+                    namedContext = viewportContext;
+                    namedContext->SetViewGroup(currentViewGroup);
 
                     ViewportContextIdNotificationBus::Event(
-                        viewportContext->GetId(),
+                        namedContext->GetId(),
                         &ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged,
                         currentViewGroup->GetView(ViewType::Default));
                     break;
                 }
             }
 
-            ViewportContextNotificationBus::Event(
-                context,
-                &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
-                currentViewGroup->GetView(ViewType::Default));
-
-            if (context != m_defaultViewportContextName && context == ResolveViewportContextName(m_defaultViewportContextName))
+            // NotifyByName carries the mirroring rule: the context's own name, plus the default context
+            // name while it is the designated default.
+            if (namedContext)
+            {
+                namedContext->NotifyByName(
+                    &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
+                    currentViewGroup->GetView(ViewType::Default));
+            }
+            else
             {
                 ViewportContextNotificationBus::Event(
-                    m_defaultViewportContextName,
+                    context,
                     &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
                     currentViewGroup->GetView(ViewType::Default));
             }
