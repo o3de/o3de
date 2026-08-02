@@ -13,7 +13,7 @@
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
 
-ShaderResourceGroup PassSrg : SRG_PerPass
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_inputColor;
     Texture2D<float4> m_linearDepth;
@@ -24,9 +24,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     struct Constants
     {
-        uint m_sampleNumber;
-        float m_strength; // Multiplier for sampling offset
-        uint2 m_outputSize; // Texture size of output
+        // Texture size of output
+        uint2 m_outputSize;
+
+        // Multiplier for sampling offset
+        float m_strength;
+        [[pad_to(16)]]
     };
     Constants m_constants;
 
@@ -41,6 +44,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 }
+
+// 0 - Low, 6 samples per pixel
+// 1 - Medium, 14 samples per pixel
+// 2 - High, 24 samples per pixel
+// 3 - Ultra, 36 samples per pixel
+[[range(0, 3)]]
+option int o_sampleQuality = 2;
 
 float2 DepthCmp(float centerDepth, float sampleDepth, float depthScale)
 {
@@ -131,12 +141,33 @@ void MainCS(
     int2 ditherCoord = int2(pixelCoord.x % 2, pixelCoord.y % 2);
     float samplingDither = (-0.25 + 2.0 * 0.25 * ditherCoord.x) * (-1.0 + 2.0 * ditherCoord.y);
     
-    const uint iterationCount = PassSrg::m_constants.m_sampleNumber;
+    uint iterationCount;
+    switch (o_sampleQuality){
+        case 0:
+            iterationCount = 6;
+            break;
+        case 1:
+            iterationCount = 14;
+            break;
+        case 2:
+            iterationCount = 24;
+            break;
+        case 3:
+            iterationCount = 36;
+            break;
+    }
+
+    if (o_sampleQuality == 3){
+        PassSrg::m_outputColor[pixelCoord].rgb = float3(0, 1, 0);
+        return;
+    }
+    
     const float invIterationCount = 1 / (float)iterationCount;
     const float2 sampleStep = tileVelocity * invIterationCount;
     const float pixelToSampleUnitsScale = rsqrt(dot(sampleStep, sampleStep));
     float4 accumulatedColor = float4(0.0, 0.0, 0.0, 0.0);
     
+    [unroll]
     for (int i = 0; i < iterationCount; ++i)
     {
         int2 offset = int2((i + samplingDither) * sampleStep);

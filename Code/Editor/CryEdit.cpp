@@ -100,7 +100,6 @@ AZ_POP_DISABLE_WARNING
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
-#include "PluginManager.h"
 
 #include "IEditorImpl.h"
 #include "StartupLogoDialog.h"
@@ -122,7 +121,10 @@ AZ_POP_DISABLE_WARNING
 
 #include "ScopedVariableSetter.h"
 
-#include "Util/3DConnexionDriver.h"
+#include "ComponentEntityEditor/ComponentEntityEditorTool.h"
+#include "ProjectSettingsTool/ProjectSettingsEditorTool.h"
+#include "AssetImporter/AssetImporterTool.h"
+
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
@@ -954,18 +956,27 @@ bool CCryEditApp::InitGame()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CCryEditApp::InitPlugins()
+void CCryEditApp::InitEditorTools()
 {
-    OutputStartupMessage("Loading Plugins...");
-    // Load the plugins
-    {
-        GetIEditor()->LoadPlugins();
+    OutputStartupMessage("Initializing Editor Tools...");
 
-#if defined(AZ_PLATFORM_WINDOWS)
-        C3DConnexionDriver* p3DConnexionDriver = new C3DConnexionDriver;
-        GetIEditor()->GetPluginManager()->RegisterPlugin(0, p3DConnexionDriver);
-#endif
-    }
+    // Constructors register view panes, so these must run before MainWindow restores its layout.
+    m_componentEntityEditor = AZStd::make_unique<ComponentEntityEditorTool>(GetIEditor());
+    m_projectSettingsTool = AZStd::make_unique<ProjectSettingsEditorTool>();
+    m_assetImporter = AZStd::make_unique<AssetImporterTool>(GetIEditor());
+}
+
+/////////////////////////////////////////////////////////////////////////////
+void CCryEditApp::ShutdownEditorTools()
+{
+    AZ::TickBus::ExecuteQueuedEvents();
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
+    // Reverse creation order.
+    // ComponentEntityEditor's SandboxIntegrationManager provides the EditorRequests bus the other tools use during teardown.
+    m_assetImporter.reset();
+    m_projectSettingsTool.reset();
+    m_componentEntityEditor.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1601,7 +1612,7 @@ bool CCryEditApp::InitInstance()
     }
 
     // Meant to be called before MainWindow::Initialize
-    InitPlugins();
+    InitEditorTools();
 
     CCryEditApp::OutputStartupMessage(QString("Initializing Main Window..."));
 
@@ -2043,13 +2054,13 @@ int CCryEditApp::ExitInstance(int exitCode)
 
     if (m_pEditor)
     {
-        // Ensure component entities are wiped prior to unloading plugins,
-        // since components may be implemented in those plugins.
+        // Ensure component entities are wiped prior to tearing down the editor tools,
+        // since components may be implemented by those tools.
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
         // vital, so that the Qt integration can unhook itself!
-        m_pEditor->UnloadPlugins();
+        ShutdownEditorTools();
         m_pEditor->Uninitialize();
     }
 

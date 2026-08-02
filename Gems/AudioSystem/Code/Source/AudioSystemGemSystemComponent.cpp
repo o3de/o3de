@@ -228,12 +228,9 @@ namespace AudioSystemGem
     {
         if (g_editor)
         {
-            if (m_editorPlugin)
-            {
-                m_editorPlugin->Release();
-            }
-
-            m_editorPlugin.reset(new CAudioControlsEditorPlugin(g_editor));
+            // Destroy any previous instance before creating a new one. Its destructor releases ATL connections.
+            m_editorPlugin.reset();
+            m_editorPlugin = AZStd::make_unique<CAudioControlsEditorPlugin>(g_editor);
         }
     }
 

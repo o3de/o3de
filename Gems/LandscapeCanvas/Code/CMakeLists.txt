@@ -31,7 +31,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Legacy::CryCommon
                 Legacy::Editor.Headers
-                Legacy::EditorCommon
                 Gem::GraphModel.Editor.Static
                 Gem::GradientSignal.Editor
                 Gem::SurfaceData.Editor
