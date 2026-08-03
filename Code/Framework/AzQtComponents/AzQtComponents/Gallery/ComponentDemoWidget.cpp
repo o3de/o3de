@@ -43,9 +43,12 @@
 #include "TypographyPage.h"
 
 #include <QAction>
+#include <QCoreApplication>
+#include <QDir>
 #include <QMap>
 #include <QMenu>
 #include <QMenuBar>
+#include <QPixmap>
 #include <QSettings>
 
 #include <cctype>
@@ -149,6 +152,35 @@ void ComponentDemoWidget::addPage(QWidget* widget, const QString& title)
 {
     ui->demoSelector->addItem(title);
     ui->demoWidgetStack->addWidget(widget);
+}
+
+void ComponentDemoWidget::captureAllPages(const QString& outputDirPath)
+{
+    QDir().mkpath(outputDirPath);
+
+    for (int pageIndex = 0; pageIndex < ui->demoSelector->count(); ++pageIndex)
+    {
+        ui->demoSelector->setCurrentIndex(pageIndex);
+
+        // let polish, layout and paint settle before grabbing
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+
+        QString pageName = ui->demoSelector->itemText(pageIndex).toLower();
+        for (int charIndex = 0; charIndex < pageName.size(); ++charIndex)
+        {
+            if (!pageName.at(charIndex).isLetterOrNumber())
+            {
+                pageName[charIndex] = QLatin1Char('-');
+            }
+        }
+
+        const QPixmap pageGrab = window()->grab();
+        pageGrab.save(QStringLiteral("%1/%2_%3.png")
+                          .arg(outputDirPath)
+                          .arg(pageIndex, 2, 10, QLatin1Char('0'))
+                          .arg(pageName));
+    }
 }
 
 void ComponentDemoWidget::setupMenuBar()

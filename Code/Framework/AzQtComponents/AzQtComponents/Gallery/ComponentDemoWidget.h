@@ -24,6 +24,11 @@ public:
     explicit ComponentDemoWidget(QWidget* parent = nullptr);
     ~ComponentDemoWidget() override;
 
+    //! Rasterizes every gallery page into outputDirPath as numbered PNGs
+    //! (whole window, including the custom title bar chrome). Used by the
+    //! --screenshot-dir command line mode for style parity evaluation.
+    void captureAllPages(const QString& outputDirPath);
+
 Q_SIGNALS:
     void styleChanged(bool enableLegacyUI);
     void refreshStyle();
