@@ -358,7 +358,8 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
 {
     if (GetIEditor() && GetIEditor()->GetViewManager())
     {
-        CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+        CViewManager* viewManager = GetIEditor()->GetViewManager();
+        CViewport* view = viewManager->GetSelectedViewport() ? viewManager->GetSelectedViewport() : viewManager->GetGameViewport();
         if (view)
         {
             int width, height;
@@ -503,15 +504,33 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
 
 void SandboxIntegrationManager::OnPrepareForContextReset()
 {
-    // Deselect everything.
+    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
+    AzToolsFramework::EntityIdList selectedEntities;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+    AzToolsFramework::EntityIdList selectionInOtherWorlds;
+    for (const AZ::EntityId& entityId : selectedEntities)
+    {
+        auto owningWorldId = AzFramework::EntityContextId::CreateNull();
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            owningWorldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+
+        if (!owningWorldId.IsNull() && owningWorldId != editorWorldId)
+        {
+            selectionInOtherWorlds.push_back(entityId);
+        }
+    }
+
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectionInOtherWorlds);
 }
 
 void SandboxIntegrationManager::OnWorldDestroyed([[maybe_unused]] const AzFramework::EntityContextId& worldId)
 {
-    // Undo nodes the world produced hold template, link and entity ids that stop resolving once it is gone.
-    // Closing a level already flushes for the same reason (CCryEditDoc::OnNewDocument / Fetch).
     GetIEditor()->FlushUndo();
 }
 
@@ -622,7 +641,8 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+    CViewManager* viewManager = GetIEditor()->GetViewManager();
+    if (CViewport* view = viewManager->GetSelectedViewport() ? viewManager->GetSelectedViewport() : viewManager->GetGameViewport();
         view && m_contextMenuViewPoint.has_value())
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
@@ -652,7 +672,6 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
     AZ::Vector3 center;
     aabb.GetAsSphere(center, radius);
 
-    // Only the viewports showing the entities' own world can go to them; the rest would fly to an empty point.
     const AzFramework::EntityContextId entitiesWorldId = AzToolsFramework::GetEntityWorldId(entityIds.front());
 
     auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -676,7 +695,6 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                     radius);
                 nextCameraTransform.has_value())
             {
-                // The transform was computed from this viewport's camera, so it must go back to that one.
                 SandboxEditor::HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), *nextCameraTransform);
             }
         }
@@ -910,8 +928,6 @@ QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
     return QtViewPaneManager::instance()->InstancePane(paneName);
 }
 
-// Nothing in a prefab file says whether it is a level, so match the shape CLevelFileDialog saves them in:
-// a .prefab named after its own folder, under one of the roots the Open Level dialog browses.
 static bool IsLevelSourcePath(AZStd::string_view prefabPath)
 {
     auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -948,7 +964,6 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
 
     const QString prefabPathText = QString::fromUtf8(prefabPath.data(), aznumeric_cast<int>(prefabPath.size()));
 
-    // A level carries its own environment; only a prefab needs the Prefab Editor's lighting preset.
     if (surface == PrefabSurface::Auto)
     {
         surface = IsLevelSourcePath(prefabPath) ? PrefabSurface::Viewport : PrefabSurface::PrefabEditor;
@@ -962,7 +977,6 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
         return;
     }
 
-    // A prefab already open as a world is shown by raising its viewport rather than adding a second view of it.
     for (DockWidget* dockWidget : viewportPane->m_dockWidgetInstances)
     {
         QWidget* paneWidget = dockWidget->widget();
@@ -991,7 +1005,6 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
     const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
         paneName, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
 
-    // The viewport widget is created a tick after its pane, so the prefab rides on the pane until then.
     if (openedPane && !openedPane->m_dockWidgetInstances.isEmpty())
     {
         if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())

@@ -239,7 +239,6 @@ namespace AZ
 
         ViewportContextPtr ViewportContextManager::GetDefaultViewportContext() const
         {
-            // GetViewportContextByName resolves the default name onto the designated context.
             return GetViewportContextByName(m_defaultViewportContextName);
         }
 
@@ -258,8 +257,6 @@ namespace AZ
                 m_defaultViewportContextId = AzFramework::InvalidViewportId;
                 return;
             }
-            // Replay the designated context's current state for listeners bound to the default context name,
-            // matching what renaming a context onto that name used to broadcast.
             ViewportContextNotificationBus::Event(
                 m_defaultViewportContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
             ViewportContextNotificationBus::Event(
@@ -313,7 +310,6 @@ namespace AZ
                 AZ_Assert(!associatedViews.empty(), "There are no associated views for context %s", contextName.GetCStr());
                 if (viewGroup == associatedViews[0])
                 {
-                    // A root view pop is reported through the return value; it happens routinely on focus change.
                     return false;
                 }
 
@@ -406,8 +402,6 @@ namespace AZ
                 }
             }
 
-            // NotifyByName carries the mirroring rule: the context's own name, plus the default context
-            // name while it is the designated default.
             if (namedContext)
             {
                 namedContext->NotifyByName(

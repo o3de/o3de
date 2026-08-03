@@ -37,7 +37,6 @@ namespace AZ::Render
     {
         m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
 
-        // Pass creators and template mappings are process-wide; only the first instance registers them.
         static bool passCreatorsRegistered = false;
         if (passCreatorsRegistered)
         {

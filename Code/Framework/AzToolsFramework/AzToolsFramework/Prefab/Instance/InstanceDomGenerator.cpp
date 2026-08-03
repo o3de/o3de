@@ -61,9 +61,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            // A container entity is momentarily unregistered from its context during propagation, which leaves
-            // the world unresolvable and the focus with it. Callers tolerate a null output DOM, as the sibling
-            // GetEntityDomFromTemplate already assumes for the same transient state.
             InstanceOptionalReference focusedInstance =
                 prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(instance.GetContainerEntityId()));
             if (!focusedInstance.has_value())

@@ -2664,40 +2664,13 @@ void CCryEditApp::OnCreateLevel()
 //////////////////////////////////////////////////////////////////////////
 bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 {
-    bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
-    if (GetIEditor()->GetDocument()->IsDocumentReady() && bIsDocModified)
+    if (!GetIEditor()->GetDocument()->SaveModified())
     {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
-        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
-
-        if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
-        {
-            return false;
-        }
-
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-        int prefabSaveSelection = prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
-
-        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
-        // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
-        // QDialogButtonBox::AcceptRole(0).
-        switch (1 - prefabSaveSelection)
-        {
-        case QDialogButtonBox::AcceptRole:
-            bIsDocModified = false;
-            break;
-        case QDialogButtonBox::RejectRole:
-            wasCreateLevelOperationCancelled = true;
-            return false;
-        case QDialogButtonBox::InvalidRole:
-            // Set Modified flag to false to prevent show Save unchanged dialog again
-            GetIEditor()->GetDocument()->SetModifiedFlag(false);
-            break;
-        }
-
+        wasCreateLevelOperationCancelled = true;
+        return false;
     }
+
+    const bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
 
     const char* temporaryLevelName = GetIEditor()->GetDocument()->GetTemporaryLevelName();
 
@@ -2849,9 +2822,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
         return GetIEditor()->GetDocument();
     }
 
-    // The main viewport holds the editor's level, so opening one there is the editor-wide open it has
-    // always been. Every additional viewport is a view of a world of its own and takes the level alone.
-    // Startup and command line opens run before any viewport is selected and fall through to that.
     CViewport* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
     if (viewport && viewport->GetViewportId() != AzToolsFramework::ViewportUi::DefaultViewportId)
     {

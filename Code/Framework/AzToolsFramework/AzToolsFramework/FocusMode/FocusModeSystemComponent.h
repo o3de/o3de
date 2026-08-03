@@ -65,7 +65,6 @@ namespace AzToolsFramework
         void OnPrefabInstancePropagationEnd() override;
 
     private:
-        //! Each world remembers its own focus root; entities resolve to their owning world's focus.
         struct WorldFocus
         {
             AZ::EntityId m_focusRoot;

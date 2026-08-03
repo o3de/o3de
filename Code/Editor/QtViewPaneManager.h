@@ -227,8 +227,6 @@ private:
     ViewLayoutState GetLayout() const;
     bool RestoreLayout(const ViewLayoutState& state);
     void SaveStateToLayout(const ViewLayoutState& state, const QString& layoutName);
-    //! Opens a saved layout entry: a pane name, or "Name (N)" for an additional multi-instance pane.
-    //! A viewport pane reopens on the level it was showing when the layout was saved.
     void OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath);
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE

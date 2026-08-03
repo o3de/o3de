@@ -32,7 +32,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusUndo::Capture(AZ::EntityId entityId)
     {
-        // The focus being replaced is the one of the world the entity lives in, not the one being viewed.
         m_beforeEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(GetEntityWorldId(entityId));
         m_afterEntityId = entityId;
     }

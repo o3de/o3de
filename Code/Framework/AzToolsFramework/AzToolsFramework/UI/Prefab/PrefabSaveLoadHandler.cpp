@@ -149,7 +149,6 @@ namespace AzToolsFramework
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
         }
 
-        // The editor opens prefabs itself, so run before the fallback that hands the file to the OS.
         AZ::s32 PrefabSaveHandler::GetPriority() const
         {
             return 1;
@@ -180,8 +179,6 @@ namespace AzToolsFramework
 
             const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
 
-            // Focus is confined to the world being viewed, so a prefab outside it opens as a world of its own.
-            // Its edits still reach every instance through template propagation.
             if (const AZ::EntityId containerEntityId = FindInstanceContainerInActiveWorld(prefabPath); containerEntityId.IsValid())
             {
                 m_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntityId);

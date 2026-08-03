@@ -246,7 +246,6 @@ namespace AZ
             m_pass = nullptr;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
-            // The scope may already be set to a different scene, and this bus is addressed by scene id.
             SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
                         
@@ -271,7 +270,6 @@ namespace AZ
             m_pass = nullptr;
             m_drawFilter = pipeline->GetPipelineInstanceDrawFilterMask();
 
-            // The scope may already be set to a pipeline in a different scene, and this bus is addressed by scene id.
             SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
             

@@ -98,7 +98,6 @@ struct ViewLayoutState
     QVector<QString> viewPanes;
     QByteArray mainWindowState;
     QMap<QString, QRect> fakeDockWidgetGeometries;
-    //! Level each viewport pane was showing, by pane object name, so panes reopen on their own world.
     QMap<QString, QString> viewportLevels;
 };
 Q_DECLARE_METATYPE(ViewLayoutState)
@@ -739,7 +738,6 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
             }
             else
             {
-                // Unique object names let the dock manager save and restore additional instances.
                 auto instanceName = [&name](int number)
                 {
                     return QStringLiteral("%1 (%2)").arg(name).arg(number);
@@ -1078,7 +1076,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         }
     }
 
-    // The viewport pane stays open: destroying it would tear down the live render viewport it hosts.
     if (!ClosePanesWithRollback(QVector<QString>{ QString(LyViewPane::EditorViewport) }))
     {
         return;
@@ -1145,7 +1142,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // so that the inspector will be to the right of the viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
 
-        // The viewport pane docks first so it claims the central dock space; the other panes split around it.
         if (viewportViewPane)
         {
             m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, viewportViewPane->m_dockWidget);
@@ -1354,8 +1350,6 @@ bool QtViewPaneManager::DeserializeLayout(const XmlNodeRef& parentNode)
     return RestoreLayout(state);
 }
 
-//! Notes the level a viewport dock is showing, so the pane reopens on that world rather than world 0.
-//! Keyed by the same name the pane is saved under in viewPanes.
 static void RecordViewportLevel(ViewLayoutState& state, DockWidget* dockWidget, const QString& paneKey)
 {
     QWidget* paneWidget = dockWidget->widget();
@@ -1394,7 +1388,6 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
             RecordViewportLevel(state, pane.m_dockWidget, pane.m_dockWidget->PaneName());
         }
 
-        // Additional multi-instance docks are saved under their unique object names.
         for (DockWidget* dockWidget : pane.m_dockWidgetInstances)
         {
             if (dockWidget != pane.m_dockWidget &&
@@ -1415,7 +1408,6 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
 
 void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath)
 {
-    // The viewport widget is created a tick after its pane, so the level rides on the pane until then.
     auto assignLevel = [&levelPath](const QtViewPane* openedPane)
     {
         if (openedPane && openedPane->Widget() && !levelPath.isEmpty())
@@ -1430,7 +1422,6 @@ void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName, const 
         return;
     }
 
-    // "Name (N)" entries recreate additional instances under their saved object names.
     const int suffixStart = paneName.lastIndexOf(QStringLiteral(" ("));
     const QString baseName = suffixStart > 0 && paneName.endsWith(QLatin1Char(')')) ? paneName.left(suffixStart) : QString();
     QtViewPane* basePane = baseName.isEmpty() ? nullptr : GetPane(baseName);
@@ -1514,8 +1505,6 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
         }
     }
 
-    // Layout states saved before the viewport became a dockable pane hide it, so fall back to the
-    // default layout, which docks the viewport pane and saves a state that includes it.
     if (layoutName == s_lastLayoutName && !state.viewPanes.contains(LyViewPane::EditorViewport))
     {
         static const QString preViewportPaneLayout = "User Pre-Viewport-Pane Layout";

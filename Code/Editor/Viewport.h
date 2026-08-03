@@ -488,8 +488,6 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 public:
-    //! Re-anchors this viewport's UI overlay onto another viewport; the editor's single set of
-    //! viewport UI widgets rides the selected viewport.
     void AnchorViewportUiTo(QtViewport* viewport);
 
 protected:

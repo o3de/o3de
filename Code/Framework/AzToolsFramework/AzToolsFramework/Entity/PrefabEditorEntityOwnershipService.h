@@ -148,8 +148,6 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
-        //! Signal the game mode event on the service owning the interface registration, which is the
-        //! instance handlers connect to via RegisterGameModeEventHandler.
         static void SignalGameModeEvent(GameModeState state);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
@@ -159,7 +157,6 @@ namespace AzToolsFramework
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
 
-        //! Only world 0's service owns the global interface registration and the override handler.
         AZStd::unique_ptr<Prefab::PrefabOverridePublicHandler> m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
@@ -169,8 +166,6 @@ namespace AzToolsFramework
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
 
-        //! Any world's service may run game mode, so SignalGameModeEvent routes to the interface
-        //! registrant. Deliberately not static: a static event leaks its handler storage past shutdown.
         AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
         bool m_ownsInterface = false;

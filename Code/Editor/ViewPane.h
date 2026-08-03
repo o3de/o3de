@@ -55,7 +55,6 @@ public:
     void OnToolBarBindingHook() override;
 
     // Set get this pane id.
-    //! The property lets EditorCore identify a viewport pane without depending on this type.
     void SetId(int id) { m_id = id; setProperty("ViewportId", id); }
     int GetId() { return m_id; }
 

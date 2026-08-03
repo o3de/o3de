@@ -219,7 +219,6 @@ namespace AzToolsFramework
             return false;
         }
 
-        // Manipulators act on the world being edited only.
         if (!IsEditedWorldVisibleInViewport(mouseInteractionEvent.m_mouseInteraction.m_interactionId.m_viewportId))
         {
             return false;
@@ -256,14 +255,12 @@ namespace AzToolsFramework
         bool enterComponentModeAttempted = false;
         const bool componentModeBefore = InComponentMode();
 
-        // Component modes edit one world; other worlds' viewports keep normal selection.
         const bool editedWorldVisible =
             IsEditedWorldVisibleInViewport(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
 
         bool handled = false;
         if (!editedWorldVisible)
         {
-            // Clicking into another world's viewport leaves component mode; camera navigation does not.
             if (componentModeBefore && mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
                 mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
@@ -342,7 +339,6 @@ namespace AzToolsFramework
             m_transformComponentSelection->DisplayViewportSelection(viewportInfo, debugDisplay);
         }
 
-        // manipulators act on the world being edited only
         if (!IsEditedWorldVisibleInViewport(viewportInfo.m_viewportId))
         {
             return;

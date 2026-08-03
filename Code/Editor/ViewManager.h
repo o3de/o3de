@@ -137,7 +137,6 @@ private:
     std::vector<CViewport*> m_viewports;
 
     CViewport* m_pSelectedView;
-    //! The last selected viewport outside the Prefab Editor, which game mode plays instead of a prefab world.
     CViewport* m_pLastEditorView;
 
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;

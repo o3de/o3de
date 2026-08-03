@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
@@ -181,7 +182,6 @@ AZ::RPI::ViewGroupPtr EditorViewportWidget::ViewGroupForThisViewport() const
 
 void EditorViewportWidget::PopViewGroupForThisViewport()
 {
-    // A non-null view group means the interface and the viewport context both resolved.
     if (auto viewGroup = ViewGroupForThisViewport())
     {
         AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PopViewGroup(
@@ -191,7 +191,6 @@ void EditorViewportWidget::PopViewGroupForThisViewport()
 
 void EditorViewportWidget::PushViewGroupForThisViewport()
 {
-    // A non-null view group means the interface and the viewport context both resolved.
     if (auto viewGroup = ViewGroupForThisViewport())
     {
         AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(
@@ -239,10 +238,8 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
-    // Stop listening before unbinding, or a dying viewport rebinds its scene and leaves a pipeline behind.
     m_editorEntityNotifications.reset();
 
-    // A world whose last viewport goes away is torn down.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
         &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
         static_cast<AzFramework::ViewportId>(GetViewportId()),
@@ -385,7 +382,6 @@ bool EditorViewportWidget::event(QEvent* event)
         break;
 
     case QEvent::Show:
-        // Window activation does not fire for tab switches within the same window, but Show does.
         GetIEditor()->GetViewManager()->SelectViewport(this);
         break;
 
@@ -413,7 +409,6 @@ void EditorViewportWidget::Update()
 
     if (!isVisible())
     {
-        // The viewport UI overlay rides the selected viewport; keep it updating while its owner is tabbed away.
         m_viewportUi.Update();
         return;
     }
@@ -721,7 +716,6 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 
-    // The visibility octree spans every world, so drop the entities this viewport's world does not own.
     AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
@@ -884,7 +878,6 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
     AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
-    // Single-handler bus, so only claim it when no other viewport already owns it.
     if (!AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers())
     {
         AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
@@ -900,8 +893,6 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
 
-    // Single-handler bus: hand it to another live viewport, or the input system loses its constraint
-    // window for the rest of the session and the cursor stops being clamped during camera look.
     CViewManager* viewManager = GetIEditor() ? GetIEditor()->GetViewManager() : nullptr;
     for (int index = 0, count = viewManager ? viewManager->GetViewCount() : 0;
          index < count && !AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers();
@@ -1003,16 +994,19 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     // Set ourself as the active viewport so the following actions create a camera from this view
     GetIEditor()->GetViewManager()->SelectViewport(this);
 
-    CGameEngine* gameEngine = GetIEditor()->GetGameEngine();
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto prefabEditorEntityOwnershipInterface = AzToolsFramework::GetWorldOwnershipService(worldId);
+    const bool worldHasLevel = prefabEditorEntityOwnershipInterface && prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned();
 
     if (Camera::EditorCameraSystemRequestBus::HasHandlers())
     {
         action = menu->addAction(tr("Create camera entity from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
-        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        if (!gameEngine || !gameEngine->IsLevelLoaded() ||
-            (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
+        if (!worldHasLevel)
         {
             action->setEnabled(false);
             action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1020,7 +1014,7 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         }
     }
 
-    if (!gameEngine || !gameEngine->IsLevelLoaded())
+    if (!worldHasLevel)
     {
         action->setEnabled(false);
         action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1468,7 +1462,6 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     // if they've picked the same camera, then that means they want to toggle
     if (viewEntityId.IsValid())
     {
-        // Only the viewport the camera pushed its view group onto adopts the camera entity.
         if (!IsSelectedViewport())
         {
             if (m_viewEntityId.IsValid())
@@ -1641,7 +1634,6 @@ void EditorViewportWidget::CycleCamera()
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
-    // Camera view changes target the focused viewport, whose context the camera pushed its view group onto.
     if (!IsSelectedViewport())
     {
         return;
@@ -1984,7 +1976,6 @@ void EditorViewportWidget::UpdateScene()
 
     AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene();
 
-    // SetScene leaves the previous scene's pipeline presenting to this window, and it may only live in one scene.
     if (previousRenderScene && previousRenderScene != renderScene)
     {
         if (auto previousPipeline = previousRenderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
@@ -1992,8 +1983,6 @@ void EditorViewportWidget::UpdateScene()
             previousRenderScene->RemoveRenderPipeline(previousPipeline->GetId());
         }
 
-        // The BRDF pipeline is named after the viewport, so the scene being left behind holds the name the new
-        // one needs until it executes. Name format paired with BootstrapSystemComponent::RunBRDFPipeline.
         const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
         for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
         {
@@ -2110,8 +2099,6 @@ AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
-    // Doesn't work with split layout. The layout window builds no layout at all now that the viewport is a
-    // dockable pane, which leaves its layout unset rather than ET_Layout0 - that is single-viewport too.
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
     if (layout && layout->GetLayout() > EViewLayout::ET_Layout0)
     {
@@ -2174,7 +2161,6 @@ void EditorViewportWidget::StopFullscreenPreview()
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(50, 50);
 
-    // Attach this viewport back to its own dockable view pane.
     if (m_viewPane)
     {
         m_viewPane->DetachViewport();
@@ -2217,7 +2203,6 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 {
     if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
     {
-        // Focus mode is per world, so a viewport borders on its own world's focus; component mode is editor-wide.
         AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());

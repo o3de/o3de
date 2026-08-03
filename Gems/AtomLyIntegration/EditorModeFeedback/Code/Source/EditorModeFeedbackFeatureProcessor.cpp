@@ -74,7 +74,6 @@ namespace AZ
                 return m_worldId;
             }
 
-            // Render scenes are named after the framework scene that owns them (see Atom Bootstrap).
             auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
             AZStd::shared_ptr<AzFramework::Scene> owningScene =
                 sceneSystem ? sceneSystem->GetScene(GetParentScene()->GetName().GetStringView()) : nullptr;
@@ -91,8 +90,6 @@ namespace AZ
                 worldId = (*entityContext)->GetContextId();
             }
 
-            // Only registered worlds (and world 0 itself) resolve to a scene; anything else (the
-            // main scene carries the game context) is world 0, the editor context.
             m_worldId = AzToolsFramework::GetEntityContextId();
             if (!worldId.IsNull())
             {
@@ -168,7 +165,6 @@ namespace AZ
                 if(auto it = m_maskRenderers.find(mask);
                     it != m_maskRenderers.end())
                 {
-                    // Every scene's feature processor sees the same editor state; each renders only its own entities.
                     auto sceneEntities = entities;
                     AZStd::erase_if(
                         sceneEntities,

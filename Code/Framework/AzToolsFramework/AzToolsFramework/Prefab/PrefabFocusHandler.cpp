@@ -122,7 +122,6 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    //! A null id or the editor entity context id addresses the active world; world ids pass through.
     PrefabFocusHandler::WorldFocus& PrefabFocusHandler::GetWorldFocus(const AzFramework::EntityContextId& worldId) const
     {
         WorldFocus& focus = m_worldFocus[worldId];
@@ -142,8 +141,6 @@ namespace AzToolsFramework::Prefab
         return focus;
     }
 
-    //! The prefab edit UI shows one world, so a prefab in another opens as a world of its own instead.
-    //! A world's root is exempt: it carries no prefab edit state, and load, reset and undo target it.
     bool PrefabFocusHandler::RedirectFocusToOwnViewport(const Instance& instance) const
     {
         if (instance.GetParentInstance() == AZStd::nullopt ||
@@ -161,7 +158,6 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
-        // Redirect before the undo batch, or an unfocused prefab still leaves an undo node behind.
         if (InstanceOptionalReference instance =
                 entityId.IsValid() ? m_instanceEntityMapperInterface->FindOwningInstance(entityId) : InstanceOptionalReference();
             instance.has_value() && RedirectFocusToOwnViewport(instance->get()))
@@ -297,7 +293,6 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
     {
-        // An invalid entity means "focus the active world's root".
         if (!entityId.IsValid())
         {
             return FocusOnWorldRootInstance(GetActiveWorldId());
@@ -477,7 +472,6 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(owningInstance.has_value(), "PrefabFocusHandler::ClimbUpToFocusedOrRootInstanceFromEntity - "
             "The owning instance of the given entity id is null.");
 
-        // Retrieve the path from the entity's world's focused instance to the owningInstance of the given entity id.
         const AzFramework::EntityContextId worldId = GetEntityWorldId(entityId);
         InstanceOptionalReference focusedInstance = GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
         AZ_Assert(focusedInstance.has_value(), "PrefabFocusHandler::ClimbUpToFocusedOrRootInstanceFromEntity - "
@@ -590,14 +584,12 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnPrepareForContextReset()
     {
-        // World 0 reloads its level: park its focus back on its root prefab.
         FocusOnWorldRootInstance(GetEntityContextId());
     }
 
     void PrefabFocusHandler::OnActiveWorldChanged(
         const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
     {
-        // The notification restores the new world's remembered focus in the UI.
         const AZ::EntityId previousContainerEntityId = GetFocusedPrefabContainerEntityId(previousWorldId);
         const AZ::EntityId newContainerEntityId = GetFocusedPrefabContainerEntityId(newWorldId);
         if (previousContainerEntityId != newContainerEntityId)
@@ -609,7 +601,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnWorldLoaded(const AzFramework::EntityContextId& worldId)
     {
-        // Focusing the root opens the world's level container (containers default closed).
         FocusOnWorldRootInstance(worldId);
     }
 
@@ -653,7 +644,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnEntityInfoUpdatedName(AZ::EntityId entityId, [[maybe_unused]]const AZStd::string& name)
     {
-        // Refresh any world whose focus path contains the renamed container.
         RefreshWorldsWithMatchingInstance(
             [entityId](const Instance& instance)
             {
@@ -663,7 +653,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnPrefabInstancePropagationEnd()
     {
-        // Refresh the paths and notify changes in case propagation updated any container names.
         for (auto& [worldId, focus] : m_worldFocus)
         {
             RefreshInstanceFocusPath(worldId, focus);
@@ -678,7 +667,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
     {
-        // The same template can be instantiated in more than one world, so refresh all that match.
         RefreshWorldsWithMatchingInstance(
             [templateId](const Instance& instance)
             {
@@ -748,7 +736,6 @@ namespace AzToolsFramework::Prefab
                 rootAliasPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
-                    // A level container is never closed; closing one strands its entities when focus moves.
                     if (openState || instance->get().GetParentInstance().has_value())
                     {
                         m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);

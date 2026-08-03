@@ -208,10 +208,8 @@ private:
     // AzFramework::InputSystemCursorConstraintRequestBus overrides ...
     void* GetSystemCursorConstraintWindow() const override;
 
-    //! True when this viewport is the one the view manager currently has selected.
     bool IsSelectedViewport() const;
 
-    //! The Atom view group for this viewport's context, or nullptr if either is unavailable.
     AZ::RPI::ViewGroupPtr ViewGroupForThisViewport() const;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...

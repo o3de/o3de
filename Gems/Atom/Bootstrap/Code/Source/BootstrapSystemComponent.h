@@ -118,7 +118,6 @@ namespace AZ
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
-                //! Unregister render scenes of additional framework scenes (editor worlds) on removal.
                 AZStd::vector<AzFramework::Scene::RemovalEvent::Handler> m_atomSceneRemovalHandlers;
 
                 AZStd::unique_ptr<AzFramework::NativeWindow> m_nativeWindow;

@@ -1033,12 +1033,8 @@ namespace AzToolsFramework
             // If this is the container entity for the currently focused prefab, utilize a separate layout.
             if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
             {
-                AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-                EditorEntityContextRequestBus::BroadcastResult(
-                    editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
                 AZ::EntityId focusedPrefabContainerEntityId =
-                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId::CreateNull());
                 if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), focusedPrefabContainerEntityId) !=
                     m_selectedEntityIds.end())
                 {

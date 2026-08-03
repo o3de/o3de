@@ -653,8 +653,6 @@ namespace AZ
 
         void View::UpdateSrg()
         {
-            // A view reachable from several Scenes is updated by each of them; only the first update per frame may
-            // run, or the previous frame matrices collapse onto this frame's and the jittered clip offset is lost.
             if (m_shaderResourceGroup && m_shaderResourceGroup->IsQueuedForCompile())
             {
                 return;

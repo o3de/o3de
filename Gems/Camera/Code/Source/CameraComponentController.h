@@ -172,8 +172,6 @@ namespace Camera
         // Atom integration
         AZ::RPI::ViewGroupPtr m_atomCameraViewGroup = nullptr;
 
-        // The concrete viewport context name the view group was pushed to, so deactivation pops the
-        // same context even if the default-context designation changed in between.
         AZ::Name m_activeViewportContextName;
 
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;

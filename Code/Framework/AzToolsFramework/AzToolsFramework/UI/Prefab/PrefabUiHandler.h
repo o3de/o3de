@@ -74,8 +74,6 @@ namespace AzToolsFramework
             const QModelIndex& descendantIndex,
             const QColor borderColor) const;
 
-        static AzFramework::EntityContextId s_editorEntityContextId;
-
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
         QColor m_backgroundSelectedColor = QColor("#656565");

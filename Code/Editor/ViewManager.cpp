@@ -67,7 +67,6 @@ static bool IsPrefabEditorViewport(const CViewport* viewport)
     return viewPane && qobject_cast<PrefabEditorPane*>(viewPane->parentWidget()) != nullptr;
 }
 
-//! Brings the pane hosting a viewport to the front, the same way opening a pane does.
 static void ShowViewportPane(const CViewport* viewport)
 {
     const CLayoutViewPane* viewPane = viewport ? viewport->GetViewPane() : nullptr;
@@ -92,8 +91,6 @@ static void ShowViewportPane(const CViewport* viewport)
     }
 }
 
-//! Gives a pane its viewport one event-loop tick late, once it is wrapped in its dock: the swapchain binds to
-//! the native window present at attach time, and reparenting afterwards recreates that window and orphans it.
 static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
 {
     QTimer::singleShot(
@@ -109,12 +106,10 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
 
             viewPane->SetId(viewportId);
 
-            // Layout persistence reads the id off the dock's own widget, which is the host when the two differ.
             pendingLevelHost->setProperty("ViewportId", viewportId);
 
             viewPane->AttachViewport(new EditorViewportWidget("Perspective", viewPane));
 
-            // A pane restored from a layout, or opened onto a prefab, reopens on the level it was showing.
             const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
             if (levelPath.isEmpty())
             {
@@ -151,9 +146,7 @@ CViewManager::CViewManager()
     QtViewOptions viewportOptions;
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
-    // Only CLayoutViewPane::SetViewClass (preview mode) uses this; a bare widget never gets a viewport id.
     viewportOptions.showInMenu = false;
-    // Disabling a viewport freezes its camera and drops input releases, latching stale modifier state.
     viewportOptions.isDisabledInComponentMode = false;
     viewportOptions.isDisabledInImGuiMode = false;
 
@@ -174,7 +167,6 @@ CViewManager::CViewManager()
         },
         dockableViewportOptions);
 
-    // A prefab opened for edit is a world of its own, with its own lighting rather than the level's.
     QtViewOptions prefabEditorOptions = dockableViewportOptions;
     prefabEditorOptions.viewportType = -1;
     QtViewPaneManager::instance()->RegisterPane(
@@ -230,15 +222,12 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
 
-    // The closing viewport may have been hosting the overlay, so put it back over the selection.
     AnchorViewportUiTo(m_pSelectedView);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::AnchorViewportUiTo(CViewport* pViewport)
 {
-    // ViewportUiRequestBus takes a single handler per id, so every caller addressing DefaultViewportId
-    // reaches that one viewport's widget set. It rides the target rather than being rebuilt there.
     QtViewport* target = viewport_cast<QtViewport*>(pViewport);
     for (CViewport* viewport : m_viewports)
     {
@@ -312,10 +301,20 @@ m_viewports[i]->ResetContent();
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::IdleUpdate()
 {
+    const bool documentReady = GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady();
+
+    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
     // Update each attached view,
     for (int i = 0; i < m_viewports.size(); i++)
     {
-        if (m_viewports[i]->GetType() != ET_ViewportCamera || (GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady()))
+        AzFramework::EntityContextId viewportWorldId = editorWorldId;
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, m_viewports[i]->GetViewportId());
+
+        if (m_viewports[i]->GetType() != ET_ViewportCamera || documentReady || viewportWorldId != editorWorldId)
         {
             m_viewports[i]->Update();
         }
@@ -426,7 +425,6 @@ void CViewManager::SelectViewport(CViewport* pViewport)
     {
         m_pSelectedView->SetSelected(true);
 
-        // The default viewport context alias resolves to the focused viewport, whose world is the active one.
         if (auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
             if (viewportContextManager->GetViewportContextById(m_pSelectedView->GetViewportId()))
@@ -482,7 +480,6 @@ void CViewManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         UpdateViews();
         break;
     case eNotify_OnBeginGameMode:
-        // A prefab world has no game in it. This runs before StartPlayInEditor, so re-selecting redirects it.
         if (IsPrefabEditorViewport(m_pSelectedView) && m_pLastEditorView)
         {
             ShowViewportPane(m_pLastEditorView);

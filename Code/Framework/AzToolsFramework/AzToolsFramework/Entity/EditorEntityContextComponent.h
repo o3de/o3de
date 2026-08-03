@@ -164,10 +164,8 @@ namespace AzToolsFramework
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
 
-        //! Returns the world whose root prefab instance owns the entity (world 0 when none does).
         AzFramework::EntityContextId FindEntityWorldId(AZ::EntityId entityId);
 
-        //! Re-sends OnViewportWorldChanged to the world's viewports so they pick up its current scene.
         void RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId);
 
         // EditorLegacyGameModeNotificationBus ...
@@ -182,7 +180,6 @@ namespace AzToolsFramework
         //! List of selected entities prior to entering game.
         EntityIdList m_selectedBeforeStartingGame;
 
-        //! The world game mode is playing, so the matching stop reaches it even if the focus moved.
         AzFramework::EntityContextId m_playingWorldId = AzFramework::EntityContextId::CreateNull();
 
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
@@ -197,10 +194,8 @@ namespace AzToolsFramework
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
 
-        //! Editor worlds other than world 0, which is this component itself.
         class EditorWorld;
 
-        //! The worlds holding unsaved changes, world 0 aside - the editor tracks its own level.
         AZStd::vector<EditorWorld*> ModifiedWorlds() const;
         AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<EditorWorld>> m_worlds;
         AZStd::unordered_map<AzFramework::ViewportId, AzFramework::EntityContextId> m_viewportWorlds;

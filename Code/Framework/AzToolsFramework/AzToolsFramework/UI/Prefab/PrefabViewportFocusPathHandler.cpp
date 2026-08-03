@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QTimer>
 
@@ -37,7 +38,7 @@ namespace AzToolsFramework::Prefab
             this,
             [&](const QString&, int linkIndex)
             {
-                m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+                m_prefabFocusPublicInterface->FocusOnPathIndex(GetActiveWorldId(), linkIndex);
 
                 // Manually refresh path
                 QTimer::singleShot(
@@ -110,7 +111,7 @@ namespace AzToolsFramework::Prefab
         }
         
         // Push new Path
-        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(GetActiveWorldId()).c_str());
 
         // Add icons to the widget
         setDefaultIcon(QString(":/Entity/prefab_edit.svg"));

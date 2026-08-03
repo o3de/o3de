@@ -162,7 +162,6 @@ namespace AzToolsFramework
 
     static AZ::IO::Path GenerateBookmarkFileName()
     {
-        // View bookmarks belong to the level being viewed: the active world's root prefab.
         auto* prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
         Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();

@@ -251,7 +251,6 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->setSortIndicatorShown(false);
         m_gui->m_objectTree->header()->setStretchLastSection(false);
 
-        // Always expand root entities - needed if the widget is re-created while a level is already open.
         for (int row = 0; row < m_proxyModel->rowCount(); ++row)
         {
             m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));
@@ -1143,7 +1142,6 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            // Every world has a root, not just the level.
             for (int row = 0; row < m_proxyModel->rowCount(); ++row)
             {
                 m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));

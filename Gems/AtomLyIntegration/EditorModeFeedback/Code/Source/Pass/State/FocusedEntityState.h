@@ -16,7 +16,6 @@
 namespace AZ::Render
 {
     //! Class for the Focused Entity editor state effect.
-    //! Prefab focus is tracked per world; the state follows the world its scene renders.
     class FocusedEntityState
         : public EditorStateBase
     {

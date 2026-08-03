@@ -37,7 +37,6 @@ namespace AZ::Render
         //! Returns the map of masks to the entities to be rendered to those masks.
         EntityMaskMap GetEntitiesForEditorStates() const;
 
-        //! Returns this instance's state for the given editor state effect (null if not found).
         const EditorStateBase* GetEditorState(EditorState editorState) const;
 
         //! Configures the editor state pass instances for the specified render pipeline.
@@ -66,7 +65,5 @@ namespace AZ::Render
         AZStd::unordered_set<Name> m_masks;
     };
 
-    //! Pass templates are shared by every scene's pipelines, so a pass must consult the editor state
-    //! owned by its own scene's feature processor rather than one baked into the template.
     bool IsEditorStateEnabledForPass(const RPI::Pass& pass, EditorState editorState);
 } // namespace AZ::Render

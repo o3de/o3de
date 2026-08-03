@@ -131,7 +131,6 @@ namespace AzToolsFramework
 
             static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
 
-            //! Returns the container entity of this prefab's instance in the world currently being edited, if any.
             AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;
 
         private:

@@ -49,12 +49,9 @@ namespace AZ
             //! Enable or disable the rendering editor mode feedback.
             void SetEnableRender(bool enableRender);
 
-            //! Returns this scene's instance of the given editor state effect (null if not found).
             const EditorStateBase* GetEditorState(EditorState editorState) const;
 
         private:
-            //! Returns the world this scene's effects follow. Resolved lazily: the owning
-            //! framework scene links to the render scene only after feature processor activation.
             AzFramework::EntityContextId GetWorldId();
 
             AzFramework::EntityContextId m_worldId = AzFramework::EntityContextId::CreateNull();

@@ -484,8 +484,6 @@ bool CCryEditDoc::SaveModified()
 {
     const AzToolsFramework::Prefab::TemplateId levelTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
-    // The document's modified flag only tracks world 0; other viewports may be editing levels of their own, and
-    // losing their edits silently is worse than one more prompt.
     AZStd::vector<AzToolsFramework::Prefab::TemplateId> modifiedTemplateIds;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         modifiedTemplateIds, &AzToolsFramework::EditorEntityContextRequests::GetModifiedWorldTemplateIds);
@@ -511,7 +509,6 @@ bool CCryEditDoc::SaveModified()
             return false;
         }
 
-        // Only world 0's dirty state is the document's to clear.
         if (prefabSaveSelection == QDialogButtonBox::InvalidRole && templateId == levelTemplateId)
         {
             SetModifiedFlag(false);
@@ -934,7 +931,6 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     // Commit changes to the disk.
     _flushall();
 
-    // The level just written is world 0's; other viewports may be editing levels of their own.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequests::SaveWorlds);
 
     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::OnSaveLevel);

@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Prefab/Constants.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -29,8 +30,6 @@
 namespace AzToolsFramework
 {
     static const QPoint EditIconOffset = { -18, 3 };
-
-    AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
     PrefabUiHandler::PrefabUiHandler()
     {
@@ -67,9 +66,6 @@ namespace AzToolsFramework
         m_editEntityOverrideImage = editOverrideIcon.pixmap(s_overrideImageSize);
         QIcon addOverrideIcon = QIcon(m_addEntityOverrideImagePath);
         m_addEntityOverrideImage = addOverrideIcon.pixmap(s_overrideImageSize);
-
-        // Get EditorEntityContextId
-        EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
 
     QString PrefabUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -547,7 +543,7 @@ namespace AzToolsFramework
             if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
             {
                 // Close this prefab and focus on the parent
-                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityWorldId(entityId));
             }
 
             // Don't propagate event.
@@ -568,8 +564,8 @@ namespace AzToolsFramework
             // working with unaltered tree indices after it has sent the "on collapsed" event.
             // Changing focus can remove/add tree rows which would invalidate any tree indices
             // used by Qt when returning from the handler
-            QTimer::singleShot(0, [this] {
-                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(AzToolsFramework::PrefabUiHandler::s_editorEntityContextId);
+            QTimer::singleShot(0, [this, entityId] {
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityWorldId(entityId));
             });
         }
     }
@@ -586,7 +582,7 @@ namespace AzToolsFramework
         else
         {
             // Close this prefab and focus on the parent
-            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityWorldId(entityId));
         }
 
         // Don't propagate event.

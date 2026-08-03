@@ -198,7 +198,6 @@ namespace AzToolsFramework
                 return false;
             }
 
-            // Retrieve the focused prefab instance of the world owning the entity.
             InstanceOptionalReference focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
             // If the entity was owned by the focused instance, there's not much to push...

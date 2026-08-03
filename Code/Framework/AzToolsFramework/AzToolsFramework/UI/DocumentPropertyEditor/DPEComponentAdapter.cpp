@@ -215,9 +215,6 @@ namespace AZ::DocumentPropertyEditor
             AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
 
-            // The reflected component dies with the entity. A reset is queued and executed later, so without
-            // dropping the instance here GenerateContents would walk freed memory when it runs - the validity
-            // check the rest of this class makes before touching the instance cannot cover that window.
             SetValue(nullptr, AZ::TypeId::CreateNull());
         }
     }
@@ -231,8 +228,6 @@ namespace AZ::DocumentPropertyEditor
             AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
             AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
 
-            // Prefab propagation and undo rebuild the entity, so re-point at the component that replaced the one
-            // dropped above rather than leaving the editor showing nothing.
             if (const AZ::Entity* entity = AzToolsFramework::GetEntity(m_entityId); entity)
             {
                 if (AZ::Component* component = entity->FindComponent(m_componentId); component)

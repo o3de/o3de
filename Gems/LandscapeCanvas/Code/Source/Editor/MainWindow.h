@@ -276,7 +276,6 @@ namespace LandscapeCanvasEditor
 
         AZ::SerializeContext* m_serializeContext = nullptr;
 
-        static AzFramework::EntityContextId s_editorEntityContextId;
         AzToolsFramework::Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         AzToolsFramework::Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;

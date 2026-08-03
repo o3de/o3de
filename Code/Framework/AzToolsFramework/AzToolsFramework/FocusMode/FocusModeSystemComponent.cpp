@@ -33,7 +33,6 @@ namespace AzToolsFramework
         return IsInFocusSubTree(parentId, focusRootId);
     }
 
-    //! A null id addresses the active world; the editor context id addresses world 0 itself.
     void FocusModeSystemComponent::Init()
     {
     }
@@ -202,7 +201,6 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::OnEntityInfoUpdatedRemoveChildEnd([[maybe_unused]] AZ::EntityId parentId, AZ::EntityId childId)
     {
-        // The removed entity's world may already be gone, so sweep every world's list.
         for (auto& [worldId, focus] : m_worldFocus)
         {
             if (auto iter = AZStd::find(focus.m_focusedEntityIdList.begin(), focus.m_focusedEntityIdList.end(), childId);
@@ -217,7 +215,6 @@ namespace AzToolsFramework
 
     void FocusModeSystemComponent::OnPrefabInstancePropagationEnd()
     {
-        // Can't rely on any of the entities in the lists to still exist, refresh everything.
         for (auto& [worldId, focus] : m_worldFocus)
         {
             RefreshFocusedEntityIdList(focus);

@@ -223,7 +223,6 @@ namespace AZ::Render
        
         AZStd::string defaultAA = "MSAA";
         bool hasAAMethod = false;
-        // A scene has no default pipeline between a viewport's surface being destroyed and rebuilt.
         AZ::RPI::RenderPipelinePtr pPipeline = pScene ? pScene->GetDefaultRenderPipeline() : nullptr;
         if (pPipeline != nullptr)
         {

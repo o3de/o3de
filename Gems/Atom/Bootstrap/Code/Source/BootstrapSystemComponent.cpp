@@ -572,8 +572,6 @@ namespace AZ
                     return atomSceneHandle.lock();
                 }
 
-                // Create and register a scene with all available feature processors. The render
-                // scene carries its framework scene's name so several can coexist (editor worlds).
                 RPI::SceneDescriptor sceneDesc;
                 sceneDesc.m_nameId = AZ::Name(scene->GetName());
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
@@ -584,8 +582,6 @@ namespace AZ
                 RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
                 scene->SetSubsystem(atomScene);
 
-                // Scenes created for additional framework scenes (editor worlds) unregister when
-                // their framework scene is removed; the default scene uses DestroyDefaultScene.
                 if (scene != m_defaultFrameworkScene.get())
                 {
                     auto& removalHandler = m_atomSceneRemovalHandlers.emplace_back(

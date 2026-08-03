@@ -38,8 +38,6 @@ namespace AzToolsFramework::Prefab
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
-    //! Each world keeps its own focus: entity ids resolve to their owning world, and a null id or
-    //! the editor entity context id in the context id parameters addresses the active world.
     class AZTF_API PrefabFocusHandler final
         : public PrefabFocusPublicRequestBus::Handler
         , private PrefabFocusInterface
@@ -91,21 +89,16 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
 
     private:
-        //! One world's focus state.
         struct WorldFocus
         {
-            //! The alias path for the instance the world is focusing on, starting from its root instance.
             RootAliasPath m_rootAliasFocusPath = RootAliasPath();
             //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
             AZ::IO::Path m_filenameFocusPath;
-            //! The length of the focus path. Stored to simplify internal checks.
             int m_rootAliasFocusPathLength = 0;
         };
 
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
 
-        //! Refresh the focus path of every world whose focus hierarchy holds a matching instance, and
-        //! notify once if any did.
         void RefreshWorldsWithMatchingInstance(const AZStd::function<bool(const Instance&)>& predicate);
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
@@ -125,7 +118,6 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference GetInstanceReference(
             const AzFramework::EntityContextId& worldId, RootAliasPath rootAliasPath) const;
 
-        //! Focus state per world; entries initialize to the world's root instance on first use.
         mutable AZStd::unordered_map<AzFramework::EntityContextId, WorldFocus> m_worldFocus;
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;

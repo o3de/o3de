@@ -86,7 +86,6 @@ namespace AzToolsFramework
         using AzFramework::Terrain::TerrainDataRequestBus;
 
         // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
-        // (each editor world owns an intersector at its own context id; picking targets the focused viewport's world)
         AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
         IntersectorBus::EventResult(
             renderGeometryIntersectionResult, GetActiveWorldId(), &IntersectorBus::Events::RayIntersect, rayRequest);
@@ -222,7 +221,6 @@ namespace AzToolsFramework
         EditorEntityContextRequestBus::BroadcastResult(
             ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
 
-        // Outside the editor there is no world registry, but world 0's service is still registered.
         return ownershipService ? ownershipService : AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
     }
 
@@ -233,7 +231,6 @@ namespace AzToolsFramework
 
         const auto editedWorldId = selectedEntities.empty() ? GetActiveWorldId() : GetEntityWorldId(selectedEntities.front());
 
-        // Outside the editor there is no world registry and everything stays visible.
         AzFramework::EntityContextId viewportWorldId = editedWorldId;
         EditorEntityContextRequestBus::BroadcastResult(
             viewportWorldId, &EditorEntityContextRequests::GetViewportWorld, viewportId);

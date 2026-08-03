@@ -179,7 +179,7 @@ namespace AzToolsFramework
                 AzFramework::EntityIdContextQueryBus::EventResult(
                     owningWorldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
 
-                if (entityId.IsValid() && owningWorldId == worldId)
+                if (owningWorldId == worldId)
                 {
                     if (rootInfo.HasChild(entityId))
                     {

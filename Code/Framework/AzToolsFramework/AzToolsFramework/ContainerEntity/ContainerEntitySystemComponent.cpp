@@ -229,9 +229,6 @@ namespace AzToolsFramework
 
     ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
-        // Only the given context's containers are this call's business. Another world's containers outlive a
-        // world 0 level load, so counting them would fail a clear that has nothing to do with them; an entity
-        // whose context no longer resolves has been destroyed and is still this call's to sweep.
         auto belongsToContext = [&entityContextId](const AZ::EntityId& containerEntityId)
         {
             auto owningContextId = AzFramework::EntityContextId::CreateNull();

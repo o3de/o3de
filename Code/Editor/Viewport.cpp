@@ -22,6 +22,7 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -53,7 +54,10 @@ void QtViewport::BuildDragDropContext(
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    GetIEditor()->GetViewManager()->SelectViewport(this);
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }
@@ -76,7 +80,8 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 
 void QtViewport::dragMoveEvent(QDragMoveEvent* event)
 {
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }
@@ -100,7 +105,10 @@ void QtViewport::dragMoveEvent(QDragMoveEvent* event)
 void QtViewport::dropEvent(QDropEvent* event)
 {
     using namespace AzQtComponents;
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    GetIEditor()->GetViewManager()->SelectViewport(this);
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }

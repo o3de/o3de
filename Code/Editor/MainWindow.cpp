@@ -400,8 +400,6 @@ void MainWindow::InitCentralWidget()
     }
     else
     {
-        // The viewport is a dockable pane of its own, so the centre becomes dock space rather than a
-        // fixed layout: empty the central slot and let the pane build its own viewport.
         m_viewPaneHost->takeCentralWidget();
         m_pLayoutWnd->hide();
 
@@ -500,8 +498,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     SaveConfig();
 
-    // Closing the panes below destroys the windows their render pipelines present to, so rendering
-    // has to stop first or the scene prepares a pipeline whose swapchain is already gone.
     Editor::EditorQtApplication::instance()->EnableOnIdle(false);
 
     // Some of the panes may ask for confirmation to save changes before closing.

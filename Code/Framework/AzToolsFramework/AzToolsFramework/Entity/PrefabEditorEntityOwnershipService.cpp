@@ -10,7 +10,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -28,7 +27,6 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -37,7 +35,6 @@ namespace AzToolsFramework
         : m_entityContextId(entityContextId)
         , m_serializeContext(serializeContext)
     {
-        // Only world 0's service owns the global interface and the single-address override handler.
         m_ownsInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get() == nullptr;
         if (m_ownsInterface)
         {
@@ -73,7 +70,6 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        // The shared template registry keys on this path, so each world needs its own placeholder name.
         const AZStd::string placeholderPath = m_ownsInterface
             ? AZStd::string("newLevel.prefab")
             : AZStd::string::format("newLevel_%s.prefab", m_entityContextId.ToFixedString().c_str());
@@ -95,7 +91,6 @@ namespace AzToolsFramework
         {
             m_rootInstance.reset();
 
-            // The template registry is shared by every world's service; only world 0's tears it down.
             if (m_ownsInterface)
             {
                 m_prefabSystemComponent->RemoveAllTemplates();
@@ -133,9 +128,8 @@ namespace AzToolsFramework
         // Setup undo node.
         ScopedUndoBatch undoBatch("Add entity");
 
-        // The root instance addresses this service's own world; world 0's id would alias to the active one.
-        Prefab::InstanceOptionalReference newOwningInstance =
-            m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(m_rootInstance->GetContainerEntityId()));
+        // Determine which prefab instance should own this entity.
+        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
@@ -161,8 +155,7 @@ namespace AzToolsFramework
         ScopedUndoBatch undoBatch("Add entities");
 
         // Determine which prefab instance should own these entities.
-        Prefab::InstanceOptionalReference newOwningInstance =
-            m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(m_rootInstance->GetContainerEntityId()));
+        Prefab::InstanceOptionalReference newOwningInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(m_entityContextId);
         if (!newOwningInstance.has_value())
         {
             AZ_Assert(false, "Entity Ownership Service could not retrieve currently focused prefab.");
@@ -469,7 +462,6 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
-        // A template DOM has no Source field for its own top level, so apply it before the entities activate.
         AZStd::unique_ptr<Prefab::Instance> rootPrefabInstance =
             m_prefabSystemComponent->InstantiatePrefab(templateId, AZStd::nullopt, {});
 
@@ -478,7 +470,6 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
-        // A world may be rooted on a prefab; renaming its container would write that name back out on save.
         rootPrefabInstance->SetTemplateId(templateId);
         rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
 
@@ -561,7 +552,6 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::SignalGameModeEvent(GameModeState state)
     {
-        // Handlers register through the interface, so the registrant owns the event everyone listens to.
         if (auto* registrant = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
         {
             static_cast<PrefabEditorEntityOwnershipService*>(registrant)->m_gameModeEvent.Signal(state);

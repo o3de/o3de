@@ -41,18 +41,6 @@ namespace UnitTest
 
         void GenerateWorldTemplates()
         {
-            /*
-             *  worldA.prefab (level)      worldB.prefab (level)
-             *  |_ worldA_nested.prefab    |_ EntityInWorldB
-             *     |_ NestedA
-             *
-             *  Only world A nests a prefab. Redirect is about the prefab's world differing from the active one,
-             *  so the tests make world B active and reach for world A's nested prefab.
-             *
-             *  The instances are dropped once their templates are registered, leaving the copy each world
-             *  instantiates as the only instance of each template.
-             */
-
             AZ::Entity* nestedEntityA = CreateEntity("NestedA");
             AZ::Entity* entityInWorldB = CreateEntity("EntityInWorldB");
             ASSERT_TRUE(nestedEntityA != nullptr);

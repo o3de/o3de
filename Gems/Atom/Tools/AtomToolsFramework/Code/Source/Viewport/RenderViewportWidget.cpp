@@ -153,9 +153,6 @@ namespace AtomToolsFramework
             return;
         }
 
-        // Check if the scene itself already has an atom scene attached. In this case we don't need to create a new atom scene.
-        // Deliberately not consulting parent scenes: binding a child scene means it renders in its own
-        // atom scene (callers wanting an ancestor's atom scene pass that ancestor instead).
         if (auto existingScene = scene->FindSubsystemInScene<AZ::RPI::ScenePtr>())
         {
             m_viewportContext->SetRenderScene(*existingScene);
@@ -255,8 +252,6 @@ namespace AtomToolsFramework
                 QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
                 if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
                 {
-                    // The swapchain goes with the surface. A pipeline left in the scene presenting to it
-                    // keeps being validated with nothing behind it.
                     if (auto pipeline = m_viewportContext->GetCurrentPipeline())
                     {
                         pipeline->RemoveFromScene();

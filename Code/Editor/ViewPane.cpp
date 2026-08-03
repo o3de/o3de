@@ -96,9 +96,6 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-    // The viewport menus, actions and toolbar definitions are shared by every pane, so only the pane that
-    // claims them registers; the others pick the toolbar up from GenerateToolBar below. Claimed here rather
-    // than on construction because panes built before the Action Manager exists never see the hooks.
     static bool sharedDefinitionsClaimed = false;
     if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface && !sharedDefinitionsClaimed)
     {
@@ -173,7 +170,6 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
-    // The definition is shared; each pane generates its own toolbar instance from it.
     AzToolsFramework::ToolBarProperties toolBarProperties;
     toolBarProperties.m_name = "Viewport ToolBar";
     m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
@@ -235,7 +231,6 @@ void CLayoutViewPane::OnActionRegistrationHook()
             actionProperties,
             []
             {
-                // SetDisplayState fires OnViewportInfoDisplayStateChanged, so listeners refresh themselves.
                 SetViewportInfoDisplayState(aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
                     (aznumeric_cast<int>(CurrentViewportInfoDisplayState()) + 1) %
                     aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid)));

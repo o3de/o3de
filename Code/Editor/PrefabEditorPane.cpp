@@ -12,7 +12,6 @@
 
 #include "ViewPane.h"
 
-// LightingPreset.h only forward declares these, but Scene::GetFeatureProcessor needs the definitions.
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
@@ -26,7 +25,6 @@
 
 #include <QVBoxLayout>
 
-//! The lighting preset a prefab world is shown in. The gem alias is what makes it resolvable.
 static constexpr const char* DefaultLightingPresetPath =
     "@gemroot:Atom_Feature_Common@/Assets/LightingPresets/default.lightingpreset.azasset";
 
@@ -81,7 +79,6 @@ void PrefabEditorPane::ApplyLightingPreset()
     AZ::TickBus::Handler::BusDisconnect();
     m_lightHandles.clear();
 
-    // FindSubsystem walks up to Main, so query this scene only or the main scene gets lit instead.
     AZStd::shared_ptr<AzFramework::Scene> worldScene;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, m_worldId);
@@ -102,13 +99,11 @@ void PrefabEditorPane::ApplyLightingPreset()
         return;
     }
 
-    // The exposure settings belong to the scene rather than to an entity, as the asset thumbnail renderer also does.
     auto* exposureControlSettingInterface =
         postProcessFeatureProcessor->GetOrCreateSettingsInterface(AZ::EntityId())->GetOrCreateExposureControlSettingsInterface();
 
     const AzFramework::CameraState cameraState = GetViewportCameraState();
 
-    // The frustum extents give the configuration its aspect ratio; zero makes cascade fitting reject it.
     Camera::Configuration cameraConfig;
     cameraConfig.m_fovRadians = cameraState.m_fovOrZoom;
     cameraConfig.m_nearClipDistance = cameraState.m_nearClip;
@@ -120,7 +115,6 @@ void PrefabEditorPane::ApplyLightingPreset()
         imageBasedLightFeatureProcessor, skyBoxFeatureProcessor, exposureControlSettingInterface,
         directionalLightFeatureProcessor, cameraConfig, m_lightHandles, false);
 
-    // Shadow cascades are fitted to the camera, so they have to follow it.
     AZ::TickBus::Handler::BusConnect();
 }
 
