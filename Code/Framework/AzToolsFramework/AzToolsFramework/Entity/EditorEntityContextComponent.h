@@ -119,6 +119,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) override;
         AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) override;
         void SaveWorlds() override;
+        AZStd::vector<Prefab::TemplateId> GetModifiedWorldTemplateIds() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -198,6 +199,9 @@ namespace AzToolsFramework
 
         //! Editor worlds other than world 0, which is this component itself.
         class EditorWorld;
+
+        //! The worlds holding unsaved changes, world 0 aside - the editor tracks its own level.
+        AZStd::vector<EditorWorld*> ModifiedWorlds() const;
         AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<EditorWorld>> m_worlds;
         AZStd::unordered_map<AzFramework::ViewportId, AzFramework::EntityContextId> m_viewportWorlds;
         AzFramework::ViewportId m_focusedViewportId = AzFramework::InvalidViewportId;

@@ -890,29 +890,55 @@ namespace AzToolsFramework
         return worldIt != m_worlds.end() ? worldIt->second->GetLevelPath().Native() : AZStd::string();
     }
 
-    void EditorEntityContextComponent::SaveWorlds()
+    AZStd::vector<EditorEntityContextComponent::EditorWorld*> EditorEntityContextComponent::ModifiedWorlds() const
     {
+        AZStd::vector<EditorWorld*> modifiedWorlds;
+
         auto* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         if (!prefabPublicInterface)
         {
-            return;
+            return modifiedWorlds;
         }
 
         for (const auto& [worldId, world] : m_worlds)
         {
-            const AZ::IO::Path& levelPath = world->GetLevelPath();
-
-            const auto unsavedChanges = prefabPublicInterface->HasUnsavedChanges(levelPath);
-            if (!unsavedChanges.IsSuccess() || !unsavedChanges.GetValue())
+            const auto unsavedChanges = prefabPublicInterface->HasUnsavedChanges(world->GetLevelPath());
+            if (unsavedChanges.IsSuccess() && unsavedChanges.GetValue())
             {
-                continue;
+                modifiedWorlds.push_back(world.get());
             }
+        }
+
+        return modifiedWorlds;
+    }
+
+    void EditorEntityContextComponent::SaveWorlds()
+    {
+        auto* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+
+        for (EditorWorld* world : ModifiedWorlds())
+        {
+            const AZ::IO::Path& levelPath = world->GetLevelPath();
 
             const auto saveResult = prefabPublicInterface->SavePrefab(levelPath);
             AZ_Error(
                 "EditorWorld", saveResult.IsSuccess(), "Could not save the level '%s': %s", levelPath.c_str(),
                 saveResult.GetError().c_str());
         }
+    }
+
+    AZStd::vector<Prefab::TemplateId> EditorEntityContextComponent::GetModifiedWorldTemplateIds()
+    {
+        AZStd::vector<Prefab::TemplateId> templateIds;
+
+        for (EditorWorld* world : ModifiedWorlds())
+        {
+            // GetRootPrefabTemplateId is only public on the interface.
+            PrefabEditorEntityOwnershipInterface* ownershipService = world->GetOwnershipService();
+            templateIds.push_back(ownershipService->GetRootPrefabTemplateId());
+        }
+
+        return templateIds;
     }
 
     void EditorEntityContextComponent::RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId)

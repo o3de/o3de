@@ -17,6 +17,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
@@ -181,6 +182,10 @@ namespace AzToolsFramework
 
         //! Saves every world with unsaved changes except world 0, whose level the editor saves itself.
         virtual void SaveWorlds() = 0;
+
+        //! Root prefab template ids of the worlds with unsaved changes, world 0 aside - the editor prompts
+        //! for its own level. Closing the editor asks about each of these before letting it go.
+        virtual AZStd::vector<Prefab::TemplateId> GetModifiedWorldTemplateIds() = 0;
     };
 
     using EditorEntityContextRequestBus = AZ::EBus<EditorEntityContextRequests>;

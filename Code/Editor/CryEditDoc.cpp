@@ -482,33 +482,43 @@ bool CCryEditDoc::CanCloseFrame()
 
 bool CCryEditDoc::SaveModified()
 {
-    if (!IsModified())
+    const AzToolsFramework::Prefab::TemplateId levelTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+
+    // The document's modified flag only tracks world 0; other viewports may be editing levels of their own, and
+    // losing their edits silently is worse than one more prompt.
+    AZStd::vector<AzToolsFramework::Prefab::TemplateId> modifiedTemplateIds;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        modifiedTemplateIds, &AzToolsFramework::EditorEntityContextRequests::GetModifiedWorldTemplateIds);
+
+    if (IsModified())
     {
-        return true;
+        modifiedTemplateIds.insert(modifiedTemplateIds.begin(), levelTemplateId);
     }
 
-    AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-    if (!m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId))
+    for (const AzToolsFramework::Prefab::TemplateId templateId : modifiedTemplateIds)
     {
-        return true;
+        if (!m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(templateId))
+        {
+            continue;
+        }
+
+        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
+        // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
+        // QDialogButtonBox::AcceptRole(0).
+        const int prefabSaveSelection = 1 - m_prefabIntegrationInterface->HandleRootPrefabClosure(templateId);
+        if (prefabSaveSelection == QDialogButtonBox::RejectRole)
+        {
+            return false;
+        }
+
+        // Only world 0's dirty state is the document's to clear.
+        if (prefabSaveSelection == QDialogButtonBox::InvalidRole && templateId == levelTemplateId)
+        {
+            SetModifiedFlag(false);
+        }
     }
 
-    int prefabSaveSelection = m_prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
-
-    // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
-    // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
-    // QDialogButtonBox::AcceptRole(0).
-    switch (1 - prefabSaveSelection)
-    {
-    case QDialogButtonBox::AcceptRole:
-        return true;
-    case QDialogButtonBox::RejectRole:
-        return false;
-    case QDialogButtonBox::InvalidRole:
-        SetModifiedFlag(false);
-        return true;
-    }
-    Q_UNREACHABLE();
+    return true;
 }
 
 void CCryEditDoc::OnFileSaveAs()
