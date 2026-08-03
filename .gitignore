@@ -4,6 +4,7 @@
 .vscode/
 .gradle/
 __pycache__
+dist/
 /[Bb]uild
 [Oo]ut/**
 CMakeUserPresets.json
