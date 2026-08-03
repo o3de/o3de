@@ -839,6 +839,61 @@ namespace UnitTest
             << "The prefab editor world's root prefab is no longer a root entry in the outliner";
     }
 
+    TEST_F(MultiWorldTests, DestroyingAPrefabEditorWorldKeepsInstancesOfThatPrefabInOtherWorlds)
+    {
+        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
+        ASSERT_FALSE(worldA.IsNull());
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
+
+        PrefabEditorEntityOwnershipInterface* ownershipServiceForWorldA = nullptr;
+        EditorEntityContextRequestBus::BroadcastResult(
+            ownershipServiceForWorldA, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldA);
+        ASSERT_NE(ownershipServiceForWorldA, nullptr);
+
+        InstanceOptionalReference rootOfWorldA = ownershipServiceForWorldA->GetRootPrefabInstance();
+        ASSERT_TRUE(rootOfWorldA.has_value());
+
+        AZ::EntityId nestedContainerInWorldA;
+        rootOfWorldA->get().GetNestedInstances(
+            [&nestedContainerInWorldA](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                nestedContainerInWorldA = nestedInstance->GetContainerEntityId();
+            });
+        ASSERT_TRUE(nestedContainerInWorldA.IsValid());
+        ASSERT_TRUE(AzToolsFramework::EditorEntityInfoRequestBus::HasHandlers(nestedContainerInWorldA));
+
+        AzFramework::EntityContextId prefabWorld = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(
+            prefabWorld, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(NestedPathA));
+        ASSERT_FALSE(prefabWorld.IsNull());
+        ASSERT_NE(prefabWorld, worldA);
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, prefabWorld);
+
+        const AZ::IO::Path nestedPath = m_prefabLoaderInterface->GenerateRelativePath(AZ::IO::PathView(NestedPathA));
+        const TemplateId nestedTemplateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(nestedPath);
+        ASSERT_NE(nestedTemplateId, InvalidTemplateId);
+
+        EditorEntityContextRequestBus::Broadcast(
+            &EditorEntityContextRequests::BindViewportToWorld, ViewportB, AzFramework::EntityContextId::CreateNull());
+        PropagateAllTemplateChanges();
+
+        EXPECT_NE(m_prefabSystemComponent->GetTemplateIdFromFilePath(nestedPath), InvalidTemplateId)
+            << "Closing the prefab editor's world removed the shared template of the prefab it was editing";
+        EXPECT_TRUE(AzToolsFramework::EditorEntityInfoRequestBus::HasHandlers(nestedContainerInWorldA))
+            << "Closing the prefab editor's world deleted that prefab's instance from another world's level";
+
+        AZ::EntityId nestedContainerAfterClose;
+        rootOfWorldA->get().GetNestedInstances(
+            [&nestedContainerAfterClose](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                nestedContainerAfterClose = nestedInstance->GetContainerEntityId();
+            });
+        EXPECT_EQ(nestedContainerAfterClose, nestedContainerInWorldA)
+            << "The level's nested prefab instance did not survive closing the prefab editor's world";
+    }
+
     TEST_F(MultiWorldTests, ResettingTheEditorContextLeavesTheOtherWorldsIntact)
     {
         AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();

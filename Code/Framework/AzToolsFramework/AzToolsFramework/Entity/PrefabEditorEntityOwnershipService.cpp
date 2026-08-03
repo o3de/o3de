@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -112,7 +113,12 @@ namespace AzToolsFramework
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
 
-                m_prefabSystemComponent->RemoveTemplate(templateId);
+                const Prefab::InstanceSetConstReference remainingInstances =
+                    AZ::Interface<Prefab::TemplateInstanceMapperInterface>::Get()->FindInstancesOwnedByTemplate(templateId);
+                if (!remainingInstances.has_value() || remainingInstances->get().empty())
+                {
+                    m_prefabSystemComponent->RemoveTemplate(templateId);
+                }
             }
             m_rootInstance->SetContainerEntityName("Level");
         }
