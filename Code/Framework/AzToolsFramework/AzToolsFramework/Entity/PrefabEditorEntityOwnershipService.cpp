@@ -117,11 +117,7 @@ namespace AzToolsFramework
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
 
-                // Any world reaches here when its last viewport unbinds; only world 0's may clear the registry.
-                if (m_ownsInterface)
-                {
-                    m_prefabSystemComponent->RemoveAllTemplates();
-                }
+                m_prefabSystemComponent->RemoveTemplate(templateId);
             }
             m_rootInstance->SetContainerEntityName("Level");
         }

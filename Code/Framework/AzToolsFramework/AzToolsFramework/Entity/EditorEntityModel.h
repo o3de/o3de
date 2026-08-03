@@ -138,7 +138,7 @@ namespace AzToolsFramework
         void RemoveFromChildrenWithOverrides(const EntityIdList& parentEntityIds, const AZ::EntityId& entityId) override;
 
     private:
-        void Reset();
+        void Reset(const AzFramework::EntityContextId& worldId = AzFramework::EntityContextId::CreateNull());
         void ProcessQueuedEntityAdds();
         void ClearQueuedEntityAdds();
         void AddEntity(AZ::EntityId entityId);
@@ -360,5 +360,7 @@ namespace AzToolsFramework
         AZ::EntityId m_postInstantiateSliceParent;
         bool m_gotInstantiateSliceDetails = false;
         bool m_isPrefabPropagationInProgress = false;
+
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
     };
 }

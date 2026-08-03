@@ -129,6 +129,11 @@ namespace AzToolsFramework
             static void GenerateSuggestedPrefabPath(
                 const AZStd::string& prefabName, const AZStd::string& targetDirectory, AZStd::string& suggestedFullPath);
 
+            static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
+
+            //! Returns the container entity of this prefab's instance in the world currently being edited, if any.
+            AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;
+
         private:
 
             //! AssetSystemBus notification handlers
@@ -140,11 +145,6 @@ namespace AzToolsFramework
             // AssetBrowserInteractionNotificationBus overrides ...
             AZ::s32 GetPriority() const override;
             void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
-
-            static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
-
-            //! Returns the container entity of this prefab's instance in the world currently being edited, if any.
-            AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;
 
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);

@@ -248,6 +248,11 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("GetEditorEntityContextId", &EditorEntityContextRequests::GetEditorEntityContextId)
+                ->Event("BindViewportToWorld", &EditorEntityContextRequests::BindViewportToWorld)
+                ->Event("GetViewportWorld", &EditorEntityContextRequests::GetViewportWorld)
+                ->Event("GetActiveWorldId", &EditorEntityContextRequests::GetActiveWorldId)
+                ->Event("SetFocusedViewport", &EditorEntityContextRequests::SetFocusedViewport)
+                ->Event("GetWorldLevelPath", &EditorEntityContextRequests::GetWorldLevelPath)
                 ;
 
             behaviorContext->EBus<EditorEntityContextNotificationBus>("EditorEntityContextNotificationBus")

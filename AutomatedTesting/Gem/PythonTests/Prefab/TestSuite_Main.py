@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorSingleTest, EditorTestSuite
 
 
 @pytest.mark.SUITE_main
@@ -208,3 +208,21 @@ class TestAutomationOverrides(EditorTestSuite):
 
     class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
         from .tests.overrides import EditEntity_UnderNestedInstance as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationMultiViewport(EditorTestSuite):
+
+    # These tests drive viewport panes and the Asset Browser, so they cannot run in -BatchMode.
+    global_extra_cmdline_args = ["-autotest_mode"]
+
+    class test_MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport as test_module
+
+    class test_MultiViewport_ReopeningALevel_RaisesTheExistingViewport(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ReopeningALevel_RaisesTheExistingViewport as test_module
+
+    class test_MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld as test_module
