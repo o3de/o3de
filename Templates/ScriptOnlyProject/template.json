@@ -36,10 +36,6 @@
             "isTemplated": true
         },
         {
-            "file": "cmake/EngineFinder.cmake",
-            "isTemplated": true
-        },
-        {
             "file": "Config/shader_global_build_options.json",
             "isTemplated": false
         },
