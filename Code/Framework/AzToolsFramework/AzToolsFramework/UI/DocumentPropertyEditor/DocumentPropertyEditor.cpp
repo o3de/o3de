@@ -470,7 +470,7 @@ namespace AzToolsFramework
                     GetDPE()->ClearDirtyHandler(handlerInfo.handlerInterface);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
-                else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
+                else if (auto* rowWidget = qobject_cast<DPERowWidget*>(childWidget); rowWidget)
                 {
                     if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                     {
@@ -481,21 +481,25 @@ namespace AzToolsFramework
                         delete rowWidget;
                     }
                 }
-                else // if it's not a row or a PropertyHandler, it must be a label
+                else if (auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget); label)
                 {
                     if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                     {
-                        auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                        AZ_Assert(label, "unknown widget in DPERowWidget!");
-                        if (label)
-                        {
-                            DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
-                        }
+                        DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
                     }
                     else
                     {
-                        delete rowWidget;
+                        delete label;
                     }
+                }
+                else
+                {
+                    // likely someone introduced a new type of widget but hasn't handled all the cases
+                    // for its housekeeping.
+                    AZ_Assert(false, "unknown widget type discovered in DPE row.");
+                    // we still have a valid childWidget pointer, though, so we can at least delete it
+                    // to avoid memory leak.
+                    delete childWidget;
                 }
             }
         }
