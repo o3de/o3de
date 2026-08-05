@@ -1737,36 +1737,41 @@ namespace ScriptCanvasEditor
             selectedFile = suggestedFilename.c_str();
         }
 
-        QString filter = suggestedFileFilter.c_str();
-
-        AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
-
-        QDir dir(suggestedDirectoryPath.c_str());
-        if (!dir.exists())
+        // Only prompt for a destination (Save As) when we do not already have a valid target. For an
+        // in-place save the Save::InPlace branch above fills selectedFile from the existing absolute
+        // path and sets isValidFileName, so skip the dialog and overwrite the existing file. Prior to
+        // #19850 the surrounding while(!isValidFileName) loop provided this guard; removing that loop
+        // (to fix the Save As cancel infinite loop) also made the dialog fire for in-place saves.
+        if (!isValidFileName)
         {
-            auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
-            if (!result)
+            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+            QDir dir(suggestedDirectoryPath.c_str());
+            if (!dir.exists())
             {
-                AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
-                return false;
+                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                    return false;
+                }
             }
-        }
 
-        AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
-        AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
-        fullPath /= suggestedFileName;
+            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+            fullPath /= suggestedFileName;
 
-        QString localSelectedFilter;
-        QFileDialog::Options options;
-        QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+            QString localSelectedFilter;
+            QFileDialog::Options options;
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
 
-        selectedFile = filePath.toUtf8().toStdString().c_str();
+            selectedFile = filePath.toUtf8().toStdString().c_str();
 
-        // If the selected file is empty that means we just cancelled.
-        // So we want to break out.
-        if (!selectedFile.isEmpty())
-        {
-            isValidFileName = true;
+            // If the selected file is empty that means we just cancelled.
+            if (!selectedFile.isEmpty())
+            {
+                isValidFileName = true;
+            }
         }
 
         if (isValidFileName)
