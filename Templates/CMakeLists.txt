@@ -23,5 +23,6 @@ ly_install_directory(
         UnifiedMultiplayerGem
         GraphicsGem
         ScriptOnlyProject
+        EngineFinder
     VERBATIM
 )

@@ -28,6 +28,7 @@ namespace AzToolsFramework
     class FocusModeInterface;
     class ReadOnlyEntityPublicInterface;
     class ReadOnlyEntityQueryInterface;
+    class SelectionCommand;
 }
 
 namespace AzToolsFramework::Prefab
@@ -108,6 +109,11 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         PrefabFocusOperationResult FocusOnWorldRootInstance(const AzFramework::EntityContextId& worldId);
         void RefreshInstanceFocusPath(const AzFramework::EntityContextId& worldId, WorldFocus& focus) const;
+
+        // helper function.  Finds out which prefab instance is currently focused, and creates
+        // a selection command that will select the container entity.
+        // uses the reference entity Id to figure out which context should be queried.
+        SelectionCommand* CreateSelectionCommandForFocusedPrefab(AZ::EntityId referenceId);
 
         void SetInstanceContainersOpenState(
             const AzFramework::EntityContextId& worldId, const RootAliasPath& rootAliasPath, bool openState) const;

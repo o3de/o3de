@@ -11,6 +11,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -156,6 +157,28 @@ namespace AzToolsFramework::Prefab
         return true;
     }
 
+    SelectionCommand* PrefabFocusHandler::CreateSelectionCommandForFocusedPrefab(AZ::EntityId referenceId)
+    {
+        using AzFramework::EntityContextId;
+        using AzFramework::EntityIdContextQueryBus;
+
+        // update selection - if there is a focused instance, select its container.  Default to the editor context.
+        EntityContextId contextId = AZ::Uuid::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(contextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+        if (referenceId.IsValid())
+        {
+            EntityIdContextQueryBus::EventResult(contextId, referenceId, &EntityIdContextQueryBus::Events::GetOwningContextId);
+        }
+
+        EntityIdList selectedEntities;
+        if (AZ::EntityId focusedId = GetFocusedPrefabContainerEntityId(contextId); focusedId.IsValid())
+        {
+            selectedEntities.push_back(focusedId);
+        }
+        return new SelectionCommand(selectedEntities, "Select entities");
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
         if (InstanceOptionalReference instance =
@@ -167,22 +190,20 @@ namespace AzToolsFramework::Prefab
         }
 
         // Initialize Undo Batch object
-        ScopedUndoBatch undoBatch("Edit Prefab");
-
-        // Clear selection
-        {
-            const EntityIdList selectedEntities = EntityIdList{};
-            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
-            selectionUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
-        }
+        ScopedUndoBatch undoBatch("Focus on Prefab");
 
         // Add undo element
         {
             auto editUndo = aznew PrefabFocusUndo("Focus Prefab");
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
-            FocusOnPrefabInstanceOwningEntityId(entityId);
+            editUndo->Redo();
+        }
+       
+        if (auto selectionUndo = CreateSelectionCommandForFocusedPrefab(entityId); selectionUndo)
+        {
+            selectionUndo->SetParent(undoBatch.GetUndoBatch());
+            selectionUndo->Redo();
         }
 
         return AZ::Success();
@@ -218,24 +239,21 @@ namespace AzToolsFramework::Prefab
         AZ::EntityId entityId = parentInstance->get().GetContainerEntityId();
 
         // Initialize Undo Batch object
-        ScopedUndoBatch undoBatch("Edit Prefab");
-
-        // Clear selection
-        {
-            const EntityIdList selectedEntities = EntityIdList{};
-            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
-            selectionUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
-        }
+        ScopedUndoBatch undoBatch("Focus step up");
 
         // Add undo element
         {
             auto editUndo = aznew PrefabFocusUndo("Focus Prefab");
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
-            FocusOnPrefabInstanceOwningEntityId(entityId);
+            editUndo->Redo();
         }
 
+        if (auto selectionUndo = CreateSelectionCommandForFocusedPrefab(entityId); selectionUndo)
+        {
+            selectionUndo->SetParent(undoBatch.GetUndoBatch());
+            selectionUndo->Redo();
+        }
         return AZ::Success();
     }
 

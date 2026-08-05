@@ -566,6 +566,12 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
+        if (auto* instanceUpdateExecutor = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get(); instanceUpdateExecutor)
+        {
+            // flush any remaining template instance updates in the queue, before we start play.
+            instanceUpdateExecutor->UpdateTemplateInstancesInQueue();
+            instanceUpdateExecutor->SetShouldPauseInstancePropagation(true);
+        }
         // This is a workaround until the replacement for GameEntityContext is done
         AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
         SignalGameModeEvent(GameModeState::Started);
@@ -705,6 +711,12 @@ namespace AzToolsFramework
         }
 
         m_playInEditorData.m_isEnabled = false;
+        
+        if (auto* instanceUpdateExecutor = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get();
+            instanceUpdateExecutor)
+        {
+            instanceUpdateExecutor->SetShouldPauseInstancePropagation(false);
+        }
     }
 
     bool PrefabEditorEntityOwnershipService::IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const
