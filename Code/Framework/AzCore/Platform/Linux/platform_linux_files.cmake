@@ -45,6 +45,8 @@ set(FILES
     AzCore/IO/SystemFile_Linux.cpp
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
+    AzCore/IPC/SharedMemory_Linux.h
+    AzCore/IPC/SharedMemory_Linux.cpp
     ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Linux.cpp
