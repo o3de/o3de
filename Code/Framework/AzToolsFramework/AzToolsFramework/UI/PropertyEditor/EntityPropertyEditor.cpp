@@ -5512,6 +5512,11 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::OnContextReset()
+    {
+        ClearInstances(true);
+    }
+
     void EntityPropertyEditor::CloseInspectorWindow()
     {
         for (auto& entityId : m_overrideSelectedEntityIds)

@@ -86,12 +86,13 @@ namespace AZ::DocumentPropertyEditor
 
     void MetaAdapter::ExecuteQueuedReset()
     {
-        DocumentAdapter::ExecuteQueuedReset();
         // if we're told to execute a queued reset, we need to forward that to our source.
         if (m_sourceAdapter)
         {
             m_sourceAdapter->ExecuteQueuedReset();
         }
+        // and then update ourselves since we're probably some sort of filtered map or view of the source we just reset.
+        DocumentAdapter::ExecuteQueuedReset();
     }
 
 } // namespace AZ::DocumentPropertyEditor

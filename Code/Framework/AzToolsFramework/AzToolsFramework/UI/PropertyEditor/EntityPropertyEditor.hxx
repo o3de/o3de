@@ -218,6 +218,7 @@ namespace AzToolsFramework
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
         void OnPrepareForContextReset() override;
+        void OnContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
         // PropertyEditorEntityChangeNotificationBus overrides ...
