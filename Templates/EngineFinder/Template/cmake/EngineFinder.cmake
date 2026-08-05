@@ -15,6 +15,15 @@ include_guard()
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/project.json)
 
+# before proceeding, check and set a global variable if its a "script only" project
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json o3de_project_json)
+string(JSON project_is_script_only ERROR_VARIABLE json_error GET ${o3de_project_json} "script_only")
+if(project_is_script_only AND NOT json_error)
+    # we only set it if there's no error and it is a script only project
+    message(STATUS "This is a script-only project, no C++ compiler will be used")
+    set_property(GLOBAL PROPERTY "O3DE_SCRIPT_ONLY" TRUE)
+endif()
+
 # Option 1: Use engine manually set in CMAKE_MODULE_PATH
 # CMAKE_MODULE_PATH must contain a path to an engine's cmake folder 
 if(CMAKE_MODULE_PATH)
@@ -31,15 +40,6 @@ if(CMAKE_MODULE_PATH)
         endif()
     endforeach()
     message(VERBOSE "No compatible engine found from CMAKE_MODULE_PATH '${CMAKE_MODULE_PATH}'.")
-endif()
-
-# before proceeding, check and set a global variable if its a "script only" project
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json o3de_project_json)
-string(JSON project_is_script_only ERROR_VARIABLE json_error GET ${o3de_project_json} "script_only")
-if(project_is_script_only AND NOT json_error)
-    # we only set it if there's no error and it is a script only project
-    message(STATUS "This is a script-only project, no C++ compiler will be used")
-    set_property(GLOBAL PROPERTY "O3DE_SCRIPT_ONLY" TRUE)
 endif()
 
 # Option 2: Use the engine from the 'engine_path' field in <project>/user/project.json
@@ -163,6 +163,7 @@ if(user_project_json)
 endif()
 
 if(NOT user_project_engine)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json o3de_project_json)
     string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} engine)
     if(json_error AND ${project_engine} STREQUAL "NOTFOUND")
         message(FATAL_ERROR "Unable to read key 'engine' from 'project.json'\nError: ${json_error}")

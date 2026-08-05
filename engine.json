@@ -117,6 +117,7 @@
         "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
+        "Templates/EngineFinder",
         "Templates/GemRepo",
         "Templates/GraphicsGem",
         "Templates/MinimalProject",
