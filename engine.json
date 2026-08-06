@@ -111,6 +111,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/GameplayGem",
         "Templates/AssetGem",
         "Templates/AddTestsToProject",
         "Templates/CppToolGem",
