@@ -700,7 +700,7 @@ namespace ImGui
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
             ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 255, 255, 255));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(128, 128, 128, 255));
-            if (ImGui::SmallButton("home"))
+            if (ImGui::SmallButton("Return [~]"))
             {
                 ImGuiManagerBus::Broadcast(&IImGuiManager::ToggleThroughImGuiVisibleState);
             }
