@@ -42,3 +42,4 @@ ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac-arm64            
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-mac-arm64                          TARGETS lz4                         PACKAGE_HASH d85fe35ce176967199fe6e11fce684e6c05f0c5533892a3785a458872a1d5229)
 ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-mac-arm64                       TARGETS azslc                       PACKAGE_HASH ff7c0bb755ae1fc7f2f5e2b02bb4ddfdf85deea5b22ba2f8baae4ff7b0fc8374)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac-arm64                      TARGETS SQLite                      PACKAGE_HASH 6fa05df3f97fed97bdef293ac85b250ffe443a43e776ad54312b7b356d41fccb)
+ly_associate_package(PACKAGE_NAME yaml-cpp-0.9.0-rev1-mac-arm64                     TARGETS yaml                        PACKAGE_HASH 7cb79358f40d33f63f06fdc9d5a2e4e7495deb57847da3d904c21aeb6689469f
