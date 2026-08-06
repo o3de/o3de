@@ -29,3 +29,4 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev2-android                   
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android                          TARGETS ZLIB                    PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-android                            TARGETS lz4                     PACKAGE_HASH 97a4758f07bea6792dc68d7e9b84952800628bc482b33d9a93e2c52f9e758662)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.3.261-rev1-android      TARGETS vulkan-validationlayers PACKAGE_HASH bb0742fef8e46069e027b57534da71c6cd176d9b3e129f4cf2a2194e3fad75ea)
+ly_associate_package(PACKAGE_NAME Imath-3.2.2-rev1-android                          TARGETS Imath                       PACKAGE_HASH 7f0025151a955c80140b8eb34674bd19aa6264f4b6682866bfe88964b66d4530
