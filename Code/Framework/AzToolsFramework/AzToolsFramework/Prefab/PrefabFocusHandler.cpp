@@ -159,20 +159,12 @@ namespace AzToolsFramework::Prefab
 
     SelectionCommand* PrefabFocusHandler::CreateSelectionCommandForFocusedPrefab(AZ::EntityId referenceId)
     {
-        using AzFramework::EntityContextId;
-        using AzFramework::EntityIdContextQueryBus;
-
-        // update selection - if there is a focused instance, select its container.  Default to the editor context.
-        EntityContextId contextId = AZ::Uuid::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(contextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        if (referenceId.IsValid())
-        {
-            EntityIdContextQueryBus::EventResult(contextId, referenceId, &EntityIdContextQueryBus::Events::GetOwningContextId);
-        }
+        // update selection - if there is a focused instance, select its container.
+        const AzFramework::EntityContextId worldId =
+            referenceId.IsValid() ? GetEntityWorldId(referenceId) : GetActiveWorldId();
 
         EntityIdList selectedEntities;
-        if (AZ::EntityId focusedId = GetFocusedPrefabContainerEntityId(contextId); focusedId.IsValid())
+        if (AZ::EntityId focusedId = GetFocusedPrefabContainerEntityId(worldId); focusedId.IsValid())
         {
             selectedEntities.push_back(focusedId);
         }
