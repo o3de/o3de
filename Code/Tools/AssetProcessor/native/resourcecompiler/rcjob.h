@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCJOB_H
-#define RCJOB_H
+
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -287,5 +287,3 @@ namespace AssetProcessor
 Q_DECLARE_METATYPE(AssetProcessor::BuilderParams);
 Q_DECLARE_METATYPE(AssetProcessor::JobOutputInfo);
 Q_DECLARE_METATYPE(AssetProcessor::RCParams);
-
-#endif // RCJOB_H

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ABSTRACTGROUPPROXYMODEL_H
-#define ABSTRACTGROUPPROXYMODEL_H
+
+#pragma once
 
 #include <QAbstractProxyModel>
 #include <QPixmap>
@@ -75,5 +75,3 @@ private:
 
     GroupItem m_rootItem;
 };
-
-#endif // ABSTRACTGROUPPROXYMODEL_H

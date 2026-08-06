@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_DATA_PATCH_FIELD_H
-#define AZCORE_DATA_PATCH_FIELD_H
+
+#pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -398,5 +398,3 @@ namespace AZ
     };
 
 }   // namespace AZ
-
-#endif

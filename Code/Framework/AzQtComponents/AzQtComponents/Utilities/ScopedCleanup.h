@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef SCOPEDCLEANUP_H
-#define SCOPEDCLEANUP_H
+#pragma once
 
 #include <qglobal.h>
 
@@ -67,5 +66,3 @@ ScopedCleanup<F> scopedCleanup(F f)
 {
     return ScopedCleanup<F>(std::move(f));
 }
-
-#endif

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef THREADHELPER_H
-#define THREADHELPER_H
+
+#pragma once
 
 #include <QObject>
 #include <QMutex>
@@ -133,6 +133,3 @@ Q_SIGNALS:
         FactoryFunctionType m_function;
     };
 }
-
-#endif // THREADHELPER_H
-

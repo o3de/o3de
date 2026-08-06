@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRLEX_H
-#define CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRLEX_H
 #pragma once
 
 #include <ISplines.h>
@@ -414,5 +411,3 @@ protected:
 protected:
     QRubberBand* m_rubberBand;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRLEX_H

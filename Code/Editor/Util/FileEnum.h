@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_FILEENUM_H
-#define CRYINCLUDE_EDITOR_UTIL_FILEENUM_H
 #pragma once
 
 #include <QDirIterator>
@@ -34,4 +31,3 @@ public:
 protected:
     QDirIterator* m_hEnumFile;
 };
-#endif // CRYINCLUDE_EDITOR_UTIL_FILEENUM_H

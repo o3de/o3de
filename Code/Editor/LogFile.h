@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LOGFILE_H
-#define CRYINCLUDE_EDITOR_LOGFILE_H
-
 #pragma once
 
 #include "SandboxAPI.h"
@@ -86,5 +82,3 @@ private:
     static bool m_bShowMemUsage;
     static bool m_bIsQuitting;
 };
-
-#endif // CRYINCLUDE_EDITOR_LOGFILE_H

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_LUA
-#define AZCORE_LUA
+
+#pragma once
 
 extern "C" {
 #   include <Lua/lua.h>
@@ -30,5 +30,3 @@ extern "C" {
 #define AZ_LUA_CLASS_METATABLE_STORAGE_CREATOR_INDEX 6
 #define AZ_LUA_CLASS_METATABLE_WRAPPED_TYPEID 7
 #define AZ_LUA_CLASS_METATABLE_VALUE_CLONE 8
-
-#endif // AZCORE_LUA

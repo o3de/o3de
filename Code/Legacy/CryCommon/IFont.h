@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : CryFont interface.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IFONT_H
-#define CRYINCLUDE_CRYCOMMON_IFONT_H
-#pragma once
 
 #include <AzCore/PlatformDef.h>
 
@@ -367,5 +364,3 @@ public:
 };
 
 using FontNotificationBus = AZ::EBus<FontNotifications>;
-
-#endif // CRYINCLUDE_CRYCOMMON_IFONT_H

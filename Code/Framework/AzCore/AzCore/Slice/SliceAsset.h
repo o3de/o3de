@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SLICE_ASSET_H
-#define AZCORE_SLICE_ASSET_H
+
+#pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -137,5 +137,3 @@ namespace AZStd
         }
     };
 }
-#endif // AZCORE_SLICE_ASSET_H
-#pragma once

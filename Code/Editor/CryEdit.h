@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CRYEDIT_H
-#define CRYINCLUDE_EDITOR_CRYEDIT_H
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
@@ -458,5 +455,3 @@ namespace AzToolsFramework
 
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
-
-#endif // CRYINCLUDE_EDITOR_CRYEDIT_H

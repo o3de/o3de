@@ -6,13 +6,7 @@
  *
  */
 
-
-#ifndef CRY_HALF_INL
-#define CRY_HALF_INL
-
 #pragma once
-
-
 
 typedef uint16 CryHalf;
 
@@ -190,5 +184,3 @@ struct CryHalf4
         return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
     }
 };
-
-#endif // #ifndef CRY_HALF_INL

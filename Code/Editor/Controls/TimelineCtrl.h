@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_TIMELINECTRL_H
-#define CRYINCLUDE_EDITOR_CONTROLS_TIMELINECTRL_H
 #pragma once
 
 #include "Range.h"
@@ -166,5 +163,3 @@ private:
     bool m_bTrackingSnapToFrames;
     std::function<void()> m_playCallback;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_TIMELINECTRL_H

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef WINDOWSCREEN_H
-#define WINDOWSCREEN_H
+
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -91,6 +91,3 @@ private:
     WindowScreenInfo m_windowPreviousInfo;
     QString m_windowName = QString();
 };
-
-
-#endif // WINDOWSCREEN_H

@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : ToolBox Macro System
 
-
-#ifndef CRYINCLUDE_EDITOR_TOOLBOX_H
-#define CRYINCLUDE_EDITOR_TOOLBOX_H
-#pragma once
 
 #define TOOLBOXMACROS_NODE "toolboxmacros"
 #define INVALID_TOOLBAR_ID -1
@@ -157,5 +154,3 @@ private:
     std::vector<CToolBoxMacro*> m_macros;
     std::vector<CToolBoxMacro*> m_shelveMacros;
 };
-
-#endif // CRYINCLUDE_EDITOR_TOOLBOX_H

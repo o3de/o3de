@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Linux declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H
-#pragma once
 
 
 #if !defined(__ARM_ARCH)
@@ -113,5 +110,3 @@ typedef uint8               byte;
 #define __assume(x)
 
 #define _msize(p) malloc_usable_size(p)
-
-#endif // CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H
