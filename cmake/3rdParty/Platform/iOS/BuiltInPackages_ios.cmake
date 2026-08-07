@@ -16,7 +16,7 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform            TARGETS zst
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform TARGETS glad       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-ios           TARGETS expat           PACKAGE_HASH 7c2635422aec23610f1633d5ed69189eb7704647133e009276c5dc566b5dedc1)
+ly_associate_package(PACKAGE_NAME expat-2.8.2-rev1-ios           TARGETS expat                       PACKAGE_HASH 6fef08496b14f3aaf1876202f11ce84df38ed6b131b16ef76140a0597336ef44)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-ios         TARGETS TIFF            PACKAGE_HASH e9067e88649fb6e93a926d9ed38621a9fae360a2e6f6eb24ebca63c1bc7761ea)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-ios       TARGETS Freetype        PACKAGE_HASH b619eaa7da16469ae455a6418fbcd7bae8be406b69a46f5bc1706b275fb3558f)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev2-ios TARGETS AWSNativeSDK                PACKAGE_HASH bea50bcade9f322bdc540bdf84dba9103cb993b6e021c8836cc7777ef4a44015)

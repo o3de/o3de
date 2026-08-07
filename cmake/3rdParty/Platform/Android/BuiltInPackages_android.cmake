@@ -16,7 +16,7 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                       
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                    PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-android                          TARGETS expat                   PACKAGE_HASH ddeb8e6e0e81714e9addc58d370b3b4360a7ac2935e51f05b00ed2df447d1c21)
+ly_associate_package(PACKAGE_NAME expat-2.8.2-rev1-android                          TARGETS expat                       PACKAGE_HASH caf35f6fae6b44fb51b6102fe7fa308175c3a5ba190090e01e58a2ecba8194f9)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android                        TARGETS TIFF                    PACKAGE_HASH 2c62cdf34a8ee6c7eb091d05d98f60b4da7634c74054d4dbb8736886182f4589)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android                      TARGETS Freetype                PACKAGE_HASH 31cd0411425f3d69064849190c3cafb09fc3cdd64507f40bf49342630d76f861)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev2-android                TARGETS AWSNativeSDK                PACKAGE_HASH 61620cb4c79f752328e4722fa36020dabe04167d83c94a0d302c08f3efa367b7)
