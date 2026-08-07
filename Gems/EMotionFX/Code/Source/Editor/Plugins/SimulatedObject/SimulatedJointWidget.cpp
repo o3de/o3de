@@ -326,8 +326,8 @@ namespace EMotionFX
         : QScrollArea(parent)
         , m_plugin(plugin)
         , m_contentsWidget(new QWidget(this))
-        , m_removeButton(new QPushButton("Remove from simulated object", this))
-        , m_backButton(new QPushButton("Back to simulated object", this))
+        , m_removeButton(new QPushButton(tr("Remove from simulated object"), this))
+        , m_backButton(new QPushButton(tr("Back to simulated object"), this))
         , m_simulatedObjectEditorCard(new AzQtComponents::Card(this))
         , m_simulatedJointEditorCard(new AzQtComponents::Card(this))
         , m_nameLeftLabel(new QLabel(this))
@@ -347,8 +347,8 @@ namespace EMotionFX
             QWidget* objectCardContents = new QWidget(this);
             QVBoxLayout* objectCardLayout = new QVBoxLayout(objectCardContents);
             objectCardLayout->addWidget(m_simulatedObjectEditor);
-            m_simulatedObjectNotification1 = new NotificationWidget(m_simulatedObjectEditorCard, "To add a joint to this simulated object, right click a joint in the outliner, choose Add to Simulated Object, and select this object.");
-            m_simulatedObjectNotification2 = new NotificationWidget(m_simulatedObjectEditorCard, "There are no simulated object colliders. To add a collider, right click a joint in the outliner, choose Add Collider, and select a primitive shape. Simulated objects will collide with the primitive shape.");
+            m_simulatedObjectNotification1 = new NotificationWidget(m_simulatedObjectEditorCard, tr("To add a joint to this simulated object, right click a joint in the outliner, choose Add to Simulated Object, and select this object."));
+            m_simulatedObjectNotification2 = new NotificationWidget(m_simulatedObjectEditorCard, tr("There are no simulated object colliders. To add a collider, right click a joint in the outliner, choose Add Collider, and select a primitive shape. Simulated objects will collide with the primitive shape."));
             objectCardLayout->addWidget(m_simulatedObjectNotification1);
             objectCardLayout->addWidget(m_simulatedObjectNotification2);
             m_simulatedObjectNotification1->hide();
@@ -361,7 +361,7 @@ namespace EMotionFX
             m_simulatedJointEditor = new ObjectEditor(serializeContext, m_propertyNotify.get());
             m_simulatedJointEditor->setObjectName("EMFX.SimulatedJointWidget.SimulatedJointEditor");
 
-            NotificationWidget* notif = new NotificationWidget(m_simulatedJointEditorCard, "To have the selected joints to collider against other primitive shape, set up 'collide with' setting in their Simulated Object.");
+            NotificationWidget* notif = new NotificationWidget(m_simulatedJointEditorCard, tr("To have the selected joints to collider against other primitive shape, set up 'collide with' setting in their Simulated Object."));
             notif->addFeature(m_backButton);
 
             QWidget* jointCardContents = new QWidget(this);
@@ -387,9 +387,9 @@ namespace EMotionFX
         }
         else
         {
-            QLabel* noColliders = new QLabel(
+            QLabel* noColliders = new QLabel(tr(
                 "To adjust the properties of the Simulated Object Colliders, "
-                "enable the PhysX gem via the Project Manager");
+                "enable the PhysX gem via the Project Manager"));
 
             colliderWidgetLayout->addWidget(noColliders);
         }
@@ -514,7 +514,7 @@ namespace EMotionFX
             numSelectedObjects = selectedSimulatedObjects->second.size();
             if (numSelectedObjects == 1)
             {
-                m_simulatedObjectEditorCard->setTitle("Simulated Object Settings");
+                m_simulatedObjectEditorCard->setTitle(tr("Simulated Object Settings"));
             }
             else
             {
@@ -533,7 +533,7 @@ namespace EMotionFX
             numSelectedJoints = selectedSimulatedJoints->second.size();
             if (numSelectedJoints == 1)
             {
-                m_simulatedJointEditorCard->setTitle("Simulated Joint Settings");
+                m_simulatedJointEditorCard->setTitle(tr("Simulated Joint Settings"));
             }
             else
             {
@@ -568,12 +568,12 @@ namespace EMotionFX
             QString jointPlural = numSelectedJoints == 1 ? "" : "s";
             if (numSelectedObjects > 0 && numSelectedJoints > 0)
             {
-                m_nameLeftLabel->setText("Multiple selected");
+                m_nameLeftLabel->setText(tr("Multiple selected"));
                 m_nameRightLabel->setText(QString("%1 object%2, %3 joint%4 selected").arg(numSelectedObjects).arg(objectPlural).arg(numSelectedJoints).arg(jointPlural));
             }
             else if (numSelectedObjects > 0)
             {
-                m_nameLeftLabel->setText("Object name");
+                m_nameLeftLabel->setText(tr("Object name"));
                 if (numSelectedObjects == 1)
                 {
                     m_nameRightLabel->setText(objectName);
@@ -585,7 +585,7 @@ namespace EMotionFX
             }
             else if (numSelectedJoints > 0)
             {
-                m_nameLeftLabel->setText("Joint name");
+                m_nameLeftLabel->setText(tr("Joint name"));
                 if (numSelectedJoints == 1)
                 {
                     m_nameRightLabel->setText(jointName);

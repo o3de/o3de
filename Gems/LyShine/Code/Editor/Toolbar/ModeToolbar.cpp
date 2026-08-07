@@ -21,7 +21,7 @@
 #include <QToolBar>
 
 ModeToolbar::ModeToolbar(EditorWindow* parent)
-    : QToolBar("Mode Toolbar", parent)
+    : QToolBar(tr("Mode Toolbar"), parent)
     , m_group(nullptr)
     , m_previousAction(nullptr)
     , m_alignToolbarSection(new AlignToolbarSection)
@@ -71,7 +71,7 @@ void ModeToolbar::AddModes(EditorWindow* parent)
         QIcon icon(iconImageDefault);
 
         QAction* action = new QAction(
-            icon, (QString("%1 (%2)").arg(ViewportHelpers::InteractionModeToString(mode), QString(static_cast<char>(key)))), this);
+            icon, (QString("%1 (%2)").arg(tr(ViewportHelpers::InteractionModeToString(mode)), QString(static_cast<char>(key)))), this);
 
         action->setData(mode);
         action->setShortcut(QKeySequence(key));

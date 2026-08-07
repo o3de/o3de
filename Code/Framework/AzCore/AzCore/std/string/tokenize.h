@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_TOKENIZE_CONVERSIONS_H
-#define AZSTD_TOKENIZE_CONVERSIONS_H
+
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -91,8 +91,3 @@ namespace AZStd
         }
     }
 }
-
-
-
-#endif // AZSTD_TOKENIZE_CONVERSIONS_H
-#pragma once

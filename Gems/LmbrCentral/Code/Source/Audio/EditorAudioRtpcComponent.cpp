@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 
 namespace LmbrCentral
@@ -27,7 +28,9 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorAudioRtpcComponent>("Audio Rtpc", "The Audio Rtpc component provides basic Real-Time Parameter Control (RTPC) functionality allowing you to tweak sounds in real time")
+                editContext->Class<EditorAudioRtpcComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Rtpc"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Rtpc component provides basic Real-Time Parameter Control (RTPC) functionality allowing you to tweak sounds in real time"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioRtpc.svg")
@@ -35,7 +38,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/rtpc/")
-                    ->DataElement("AudioControl", &EditorAudioRtpcComponent::m_defaultRtpc, "Default Rtpc", "The default ATL Rtpc control to use")
+                    ->DataElement("AudioControl", &EditorAudioRtpcComponent::m_defaultRtpc,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default Rtpc"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL Rtpc control to use"))
                     ;
             }
         }

@@ -1348,7 +1348,7 @@ namespace UnitTest
         auto TestUnique = []() constexpr
         {
             AZStd::array<int, 6> localArray{ { 1, 2, 2, 5, 5, 6} };
-            AZStd::unique(localArray.begin(), localArray.end());
+            AZ_UNUSED(AZStd::unique(localArray.begin(), localArray.end()));
             return localArray;
         };
 

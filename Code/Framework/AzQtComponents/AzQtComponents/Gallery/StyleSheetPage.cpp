@@ -67,21 +67,21 @@ StyleSheetPage::StyleSheetPage(QWidget* parent)
     , ui(new Ui::StyleSheetPage)
 {
     ui->setupUi(this);
-    ui->qrcLabel->setText("Styled using qrc: \":/Gallery/StyleSheetPage.qss\"");
-    ui->absolutePathLabel->setText("Style using: \"<path/to>/StyleSheetPage.qss\"");
-    ui->noPrefixLabel->setText("Styled without a prefix: \"StyleSheetPage.qss\"");
-    ui->exampleLabel->setText("Styled using a prefix: \"gallery:StyleSheetPage.qss\"");
+    ui->qrcLabel->setText(tr("Styled using qrc: \":/Gallery/StyleSheetPage.qss\""));
+    ui->absolutePathLabel->setText(tr("Style using: \"<path/to>/StyleSheetPage.qss\""));
+    ui->noPrefixLabel->setText(tr("Styled without a prefix: \"StyleSheetPage.qss\""));
+    ui->exampleLabel->setText(tr("Styled using a prefix: \"gallery:StyleSheetPage.qss\""));
 
     // Add demo tabs to segmentBar
     for (int i = 0; i < 4; i++)
     {
-        ui->segmentBar->addTab(QStringLiteral("Segment Bar %1").arg(i));
+        ui->segmentBar->addTab(tr("Segment Bar %1").arg(i));
     }
 
     // Add demo filters to filteredSearchWidget
-    const auto fruitList = {"Apple", "Orange", "Pear", "Banana"};
+    const auto fruitList = {tr("Apple"), tr("Orange"), tr("Pear"), tr("Banana")};
     const auto category = tr("Fruit");
-    for (const auto fruit : fruitList)
+    for (const auto& fruit : fruitList)
     {
         ui->filteredSearchWidget->AddTypeFilter(category, fruit);
     }

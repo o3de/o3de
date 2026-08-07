@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_ENABLE_SHARED_FROM_THIS2_H
-#define AZSTD_ENABLE_SHARED_FROM_THIS2_H
+
+#pragma once
 
 //
 //  enable_shared_from_this2.hpp
@@ -128,6 +128,3 @@ namespace AZStd
         }
     };
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_ENABLE_SHARED_FROM_THIS2_H
-#pragma once

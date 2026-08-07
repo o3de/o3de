@@ -22,6 +22,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -70,7 +71,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorMaterialSystemComponent>("EditorMaterialSystemComponent", "System component that manages launching and maintaining connections the material editor.")
+                    ec->Class<EditorMaterialSystemComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMaterialSystemComponent"), QT_TRANSLATE_NOOP("AtomLyIntegration", "System component that manages launching and maintaining connections the material editor."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
@@ -409,7 +410,7 @@ namespace AZ
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Editor";
+                actionProperties.m_name = QObject::tr("Material Editor").toUtf8().constData();
                 actionProperties.m_iconPath = ":/Menu/material_editor.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(
@@ -428,7 +429,7 @@ namespace AZ
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Canvas";
+                actionProperties.m_name = QObject::tr("Material Canvas").toUtf8().constData();
                 actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(

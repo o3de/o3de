@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Atom/Feature/SkyBox/SkyBoxFogBus.h>
 #include <Atom/Feature/SkyBox/SkyBoxFogSettings.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -32,15 +33,15 @@ namespace AZ
                 {
                     editContext->Class<SkyBoxFogSettings>("SkyBoxFogSettings", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_enable, "Enable Fog", "Toggle fog on or off")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_color, "Fog Color", "Color of the fog")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_enable, QT_TRANSLATE_NOOP("Atom::Feature", "Enable Fog"), QT_TRANSLATE_NOOP("Atom::Feature", "Toggle fog on or off"))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_color, QT_TRANSLATE_NOOP("Atom::Feature", "Fog Color"), QT_TRANSLATE_NOOP("Atom::Feature", "Color of the fog"))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_topHeight, "Fog Top Height", "Height of the fog upwards from the horizon")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_topHeight, QT_TRANSLATE_NOOP("Atom::Feature", "Fog Top Height"), QT_TRANSLATE_NOOP("Atom::Feature", "Height of the fog upwards from the horizon"))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.0)
                                 ->Attribute(AZ::Edit::Attributes::Max, 0.5)
                                 ->Attribute(AZ::Edit::Attributes::Step, 0.01)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_bottomHeight, "Fog Bottom Height", "Height of the fog downwards from the horizon")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_bottomHeight, QT_TRANSLATE_NOOP("Atom::Feature", "Fog Bottom Height"), QT_TRANSLATE_NOOP("Atom::Feature", "Height of the fog downwards from the horizon"))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.0)
                                 ->Attribute(AZ::Edit::Attributes::Max, 0.3)

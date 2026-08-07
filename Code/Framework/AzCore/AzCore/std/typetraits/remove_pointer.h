@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
 #include <AzCore/std/typetraits/config.h>
 
 namespace AZStd
 {
     using std::remove_pointer;
-    template<class Type>
-    using remove_pointer_t = std::remove_pointer_t<Type>;
+    using std::remove_pointer_t;
 }

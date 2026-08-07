@@ -11,6 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Achievements
 {
@@ -55,7 +56,9 @@ namespace Achievements
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AchievementDetails>("AchievementDetails", "Struct to hold platform agnostic achievement details for query results")
+                ec->Class<AchievementDetails>(
+                    QT_TRANSLATE_NOOP("Achievements", "AchievementDetails"),
+                    QT_TRANSLATE_NOOP("Achievements", "Struct to hold platform agnostic achievement details for query results"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
@@ -99,7 +102,9 @@ namespace Achievements
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AchievementsSystemComponent>("Achievements", "Platform agnostic interface for retrieving achievement details and unlocking achievements")
+                ec->Class<AchievementsSystemComponent>(
+                    QT_TRANSLATE_NOOP("Achievements", "Achievements"),
+                    QT_TRANSLATE_NOOP("Achievements", "Platform agnostic interface for retrieving achievement details and unlocking achievements"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

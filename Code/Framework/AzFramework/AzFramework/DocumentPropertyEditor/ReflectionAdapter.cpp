@@ -161,10 +161,11 @@ namespace AZ::DocumentPropertyEditor
                 // notify the new value in the container so that listeners can update dom / store overrides / undo redo
                 AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
-                AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
 
-                impl->m_adapter->NotifyResetDocument();
+                // the "this pointer" is actually deleted by notifyResetDocument, and we'd prefer if that did NOT happen
+                // within this same callstack which is likely responding to a button click, so we queue a reset instead.
+                impl->m_adapter->QueueResetDocument();
             }
 
             void StoreReservedInstance(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
@@ -176,11 +177,11 @@ namespace AZ::DocumentPropertyEditor
                 // Notify that the document has changed with the new value in the container:
                 AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
-                AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
-                // rebuild the view based on the new contents, which could be many rows.
-                // This deletes the 'this' pointer!
-                impl->m_adapter->NotifyResetDocument(); 
+
+                // the "this pointer" is actually deleted by notifyResetDocument, and we'd prefer if that did NOT happen
+                // within this same callstack which is likely responding to a button click, so we queue a reset instead.
+                impl->m_adapter->QueueResetDocument();
             }
 
             void OnAddElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
@@ -475,10 +476,11 @@ namespace AZ::DocumentPropertyEditor
                 // notify about the new values in the container:
                 AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
-                AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
 
-                impl->m_adapter->NotifyResetDocument();
+                // the "this pointer" is actually deleted by notifyResetDocument, and we'd prefer if that did NOT happen
+                // within this same callstack which is likely responding to a button click, so we queue a reset instead.
+                impl->m_adapter->QueueResetDocument();
             }
 
             void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, bool moveForward)
@@ -489,10 +491,11 @@ namespace AZ::DocumentPropertyEditor
                 //  notify about the new values in the container:
                 AZ::Dom::Value newValue = impl->GetContainerValue(m_containerInstance, containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::InProgressEdit);
-                AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(containerNode);
                 Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(containerNode, newValue, Nodes::ValueChangeType::FinishedEdit);
 
-                impl->m_adapter->NotifyResetDocument();
+                // the "this pointer" is actually deleted by notifyResetDocument, and we'd prefer if that did NOT happen
+                // within this same callstack which is likely responding to a button click, so we queue a reset instead.
+                impl->m_adapter->QueueResetDocument();
             }
 
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
@@ -1306,21 +1309,25 @@ namespace AZ::DocumentPropertyEditor
         m_typeId = AZStd::move(typeId);
 
         // new top-value, do a full reset
-        NotifyResetDocument(DocumentResetType::HardReset);
+        QueueResetDocument(DocumentResetType::HardReset);
+    }
+
+    void ReflectionAdapter::ClearValue()
+    {
+        m_instance = nullptr;
     }
 
     void ReflectionAdapter::InvokeChangeNotify(const AZ::Dom::Value& domNode)
     {
         using Nodes::PropertyEditor;
         using Nodes::PropertyRefreshLevel;
-
         // Trigger ChangeNotify
         auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
         if (changeNotify.IsSuccess())
         {
             // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
             PropertyRefreshLevel level = changeNotify.GetValue();
-            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
+            if (level != Nodes::PropertyRefreshLevels::None)
             {
                 PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
             }

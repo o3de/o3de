@@ -192,7 +192,7 @@ namespace O3DE::ProjectManager
         gemDownloadLayout->setContentsMargins(0, 0, 0, 0);
         gemDownloadLayout->setAlignment(Qt::AlignTop);
         downloadingGemsWidget->setLayout(gemDownloadLayout);
-        QLabel* processingQueueLabel = new QLabel("Processing Queue");
+        QLabel* processingQueueLabel = new QLabel(tr("Processing Queue"));
         gemDownloadLayout->addWidget(processingQueueLabel);
 
         m_downloadingListWidget = new QWidget();

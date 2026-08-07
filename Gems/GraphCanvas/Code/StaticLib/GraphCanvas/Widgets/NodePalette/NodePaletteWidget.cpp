@@ -232,7 +232,6 @@ namespace GraphCanvas
             m_ui->searchFilter->clear();
 
             m_model->ClearFilter();
-            m_model->invalidate();
         }
 
         {
@@ -659,7 +658,6 @@ namespace GraphCanvas
         QString text = m_ui->searchFilter->userInputText();
 
         m_model->SetFilter(text);
-        m_model->invalidate();
 
         if (!m_model->HasFilter())
         {

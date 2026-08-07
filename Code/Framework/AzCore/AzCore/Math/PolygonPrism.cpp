@@ -12,6 +12,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     void PolygonPrismReflect(ReflectContext* context)
@@ -31,15 +33,21 @@ namespace AZ
 
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PolygonPrism>("PolygonPrism", "Polygon prism shape")
+                editContext->Class<PolygonPrism>(
+                    QT_TRANSLATE_NOOP("AzCore", "PolygonPrism"),
+                    QT_TRANSLATE_NOOP("AzCore", "Polygon prism shape"))
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(Edit::UIHandlers::Default, &PolygonPrism::m_height, "Height", "Shape Height")
+                    ->DataElement(Edit::UIHandlers::Default, &PolygonPrism::m_height,
+                        QT_TRANSLATE_NOOP("AzCore", "Height"),
+                        QT_TRANSLATE_NOOP("AzCore", "Shape Height"))
                         ->Attribute(Edit::Attributes::Suffix, " m")
                         ->Attribute(Edit::Attributes::Step, 0.05f)
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, &PolygonPrism::OnChangeHeight)
-                    ->DataElement(Edit::UIHandlers::Default, &PolygonPrism::m_vertexContainer, "Vertices", "Data representing the polygon, in the entity's local coordinate space")
+                    ->DataElement(Edit::UIHandlers::Default, &PolygonPrism::m_vertexContainer,
+                        QT_TRANSLATE_NOOP("AzCore", "Vertices"),
+                        QT_TRANSLATE_NOOP("AzCore", "Data representing the polygon, in the entity's local coordinate space"))
                         ->Attribute(Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;

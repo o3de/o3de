@@ -245,11 +245,11 @@ namespace LUAEditor
 
         if (m_bWasFindInAll)
         {
-            this->setWindowTitle("Find in files...");
+            this->setWindowTitle(tr("Find in files..."));
         }
         else
         {
-            this->setWindowTitle("Find...");
+            this->setWindowTitle(tr("Find..."));
         }
     }
 
@@ -348,12 +348,12 @@ namespace LUAEditor
         }
         else
         {
-            QMessageBox::warning(this, "Error!", "You may not search for an empty string!");
+            QMessageBox::warning(this, tr("Error!"), tr("You may not search for an empty string!"));
         }
 
         if (!m_findOperation)
         {
-            QMessageBox::warning(this, "Search failed!", tr("Could not find \"%1\" within/further this context.").arg(m_gui->txtFind->text()));
+            QMessageBox::warning(this, tr("Search failed!"), tr("Could not find \"%1\" within/further this context.").arg(m_gui->txtFind->text()));
         }
     }
 
@@ -424,7 +424,7 @@ namespace LUAEditor
     {
         if (m_bReplaceThreadRunning)
         {
-            QMessageBox::warning(this, "Error!", "You may not run Find ALL while a Replace All is running!");
+            QMessageBox::warning(this, tr("Error!"), tr("You may not run Find ALL while a Replace All is running!"));
             return;
         }
 
@@ -491,7 +491,7 @@ namespace LUAEditor
         }
         else
         {
-            QMessageBox::warning(this, "Error!", "You may not search for an empty string!");
+            QMessageBox::warning(this, tr("Error!"), tr("You may not search for an empty string!"));
         }
     }
 
@@ -841,28 +841,15 @@ namespace LUAEditor
 
         int currentLine = 0;
         m_FIFData.m_resultsWidget->Clear();
-        QString hits;
-        if (m_FIFData.m_TotalMatchesFound == 1)
-        {
-            hits.append("hit");
-        }
-        else
-        {
-            hits.append("hits");
-        }
+        // Use Qt's %n plural forms for proper internationalization.
+        // Languages like Russian, Arabic, etc. have more than 2 plural forms.
+        //: %n is the number of search matches found
+        QString hits = tr("%n hit(s)", "", m_FIFData.m_TotalMatchesFound);
+        //: %n is the number of files containing matches
+        QString files = tr("%n file(s)", "", static_cast<int>(m_resultList.size()));
 
-        QString files;
-        if (m_resultList.size() == 1)
-        {
-            files.append("file");
-        }
-        else
-        {
-            files.append("files");
-        }
-
-        QString header("Find \"%1\" (%2 %4 in %3 %5)");
-        header = header.arg(m_FIFData.m_SearchText).arg(m_FIFData.m_TotalMatchesFound).arg(m_resultList.size()).arg(hits).arg(files);
+        QString header = tr("Find \"%1\" (%2 in %3)")
+            .arg(m_FIFData.m_SearchText, hits, files);
         m_FIFData.m_resultsWidget->AppendPlainText(header);
         setFoldLevel(currentLine, 0, 0);
 
@@ -974,7 +961,7 @@ namespace LUAEditor
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
             {
-                QMessageBox::warning(this, "Error!", "Can not check out file for replace!");
+                QMessageBox::warning(this, tr("Error!"), tr("Can not check out file for replace!"));
             }
             else
             {
@@ -1300,7 +1287,7 @@ namespace LUAEditor
         }
         else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
         {
-            QMessageBox::warning(this, "Can not check out file!", (pLUAViewWidget->m_Info.m_assetName + ".lua").c_str());
+            QMessageBox::warning(this, tr("Can not check out file!"), (pLUAViewWidget->m_Info.m_assetName + ".lua").c_str());
             return -1;
         }
 
@@ -1351,7 +1338,7 @@ namespace LUAEditor
     {
         if (m_bFindThreadRunning)
         {
-            QMessageBox::warning(this, "Error!", "You may not run Replace ALL while a Find All is running!");
+            QMessageBox::warning(this, tr("Error!"), tr("You may not run Replace ALL while a Find All is running!"));
             return;
         }
 
@@ -1391,24 +1378,24 @@ namespace LUAEditor
         }
         else
         {
-            QMessageBox::warning(this, "Error!", "You may not replace an empty string!");
+            QMessageBox::warning(this, tr("Error!"), tr("You may not replace an empty string!"));
         }
     }
 
     void LUAEditorFindDialog::BusyOn()
     {
         m_gui->cancelButton->setEnabled(true);
-        m_gui->busyLabel->setText("Working");
+        m_gui->busyLabel->setText(tr("Working"));
     }
     void LUAEditorFindDialog::BusyOff()
     {
         m_gui->cancelButton->setEnabled(false);
-        m_gui->busyLabel->setText("Idle");
+        m_gui->busyLabel->setText(tr("Idle"));
     }
     void LUAEditorFindDialog::PostProcessOn()
     {
         m_gui->cancelButton->setEnabled(false);
-        m_gui->busyLabel->setText("List Prep");
+        m_gui->busyLabel->setText(tr("List Prep"));
     }
     void LUAEditorFindDialog::PostReplaceOn()
     {
@@ -1416,7 +1403,7 @@ namespace LUAEditor
         m_bReplaceThreadRunning = false;
 
         m_gui->cancelButton->setEnabled(true);
-        m_gui->busyLabel->setText("Replacing");
+        m_gui->busyLabel->setText(tr("Replacing"));
     }
 
     void LUAEditorFindDialog::showEvent(QShowEvent* event)

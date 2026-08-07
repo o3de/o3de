@@ -69,7 +69,7 @@ namespace AZ
                 allocations.data(),
                 nullptr);
 
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             if (vkResult == VK_SUCCESS)
             {
                 // Initialize all vma allocations as Vulkan::Allocations
@@ -109,7 +109,7 @@ namespace AZ
             heapMemoryUsage.m_usedResidentInBytes -= usedMem;
             heapMemoryUsage.m_totalResidentInBytes -= usedMem;
             blocks.clear();
-        }        
+        }
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
@@ -118,9 +118,9 @@ namespace AZ
             m_enableTileResource = device.GetFeatures().m_tiledResource;
 
 #ifndef AZ_RHI_VULKAN_USE_TILED_RESOURCES
-            // Disable tile resource for all 
+            // Disable tile resource for all
             m_enableTileResource = false;
-#endif 
+#endif
             return RHI::ResultCode::Success;
         }
 
@@ -238,7 +238,7 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            
+
             if (newBudget == 0)
             {
                 return RHI::ResultCode::Success;
@@ -267,10 +267,10 @@ namespace AZ
             {
                 heapMemoryUsage.m_budgetInBytes = newBudget;
             }
-            
+
             return RHI::ResultCode::Success;
         }
-        
+
         bool StreamingImagePool::SupportTiledImageInternal() const
         {
             return m_enableTileResource;

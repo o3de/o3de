@@ -13,7 +13,5 @@
 namespace AZStd
 {
     using std::is_volatile;
-
-    template<class T>
-    constexpr bool is_volatile_v = std::is_volatile<T>::value;
+    using std::is_volatile_v;
 }

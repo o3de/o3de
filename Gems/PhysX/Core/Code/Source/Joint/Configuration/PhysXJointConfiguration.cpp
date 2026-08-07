@@ -9,6 +9,7 @@
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Joint/PhysXJointUtils.h>
 
 namespace PhysX
@@ -55,27 +56,27 @@ namespace PhysX
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<D6JointLimitConfiguration>(
-                    "PhysX D6 Joint Configuration", "")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX D6 Joint Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitY, "Swing limit Y",
-                        "The rotation angle limit around the joint's Y axis.")
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitY, QT_TRANSLATE_NOOP("PhysX", "Swing limit Y"),
+                        QT_TRANSLATE_NOOP("PhysX", "The rotation angle limit around the joint's Y axis."))
+                    ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("PhysX", " degrees"))
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitZ, "Swing limit Z",
-                        "The rotation angle limit around the joint's Z axis.")
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitZ, QT_TRANSLATE_NOOP("PhysX", "Swing limit Z"),
+                        QT_TRANSLATE_NOOP("PhysX", "The rotation angle limit around the joint's Z axis."))
+                    ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("PhysX", " degrees"))
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitLower, "Twist lower limit",
-                        "The lower rotation angle limit around the joint's X axis.")
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitLower, QT_TRANSLATE_NOOP("PhysX", "Twist lower limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "The lower rotation angle limit around the joint's X axis."))
+                    ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("PhysX", " degrees"))
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitUpper, "Twist upper limit",
-                        "The upper rotation angle limit around the joint's X axis.")
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitUpper, QT_TRANSLATE_NOOP("PhysX", "Twist upper limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "The upper rotation angle limit around the joint's X axis."))
+                    ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("PhysX", " degrees"))
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                 ;
@@ -259,12 +260,12 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::JointMotorProperties>("PhysX Joint Motor Configuration", "")
+                editContext->Class<PhysX::JointMotorProperties>(QT_TRANSLATE_NOOP("PhysX", "PhysX Joint Motor Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &PhysX::JointMotorProperties::m_useMotor, "Use Motor", "Enable motor in the joint")
-                    ->DataElement(0, &PhysX::JointMotorProperties::m_driveForceLimit, "Force Limit Value", "Sets force limit value");
+                    ->DataElement(0, &PhysX::JointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint"))
+                    ->DataElement(0, &PhysX::JointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value"));
             }
         }
     }

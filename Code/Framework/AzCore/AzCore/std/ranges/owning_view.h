@@ -5,23 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/ranges/ranges_adaptor.h>
 
 namespace AZStd::ranges
 {
-    template<class R, class = void>
-    class owning_view;
-
-    template<class R>
-    class owning_view<R, enable_if_t<ranges::range<R> && movable<R> &&
-        !Internal::is_initializer_list<remove_cvref_t<R>> >>
+    template<ranges::range R>
+        requires movable<R>
+            && (!Internal::is_initializer_list<remove_cvref_t<R>>)
+    class owning_view
         : public ranges::view_interface<owning_view<R>>
     {
     public:
 
-        template<class T = R, enable_if_t<default_initializable<T>>>
+        template<default_initializable T = R>
         constexpr owning_view() {}
 
         constexpr owning_view(R&& t)
@@ -58,45 +57,53 @@ namespace AZStd::ranges
         }
 
         template<class Rn = R>
-        constexpr auto begin() const -> enable_if_t<range<const R>, decltype(ranges::begin(declval<Rn>()))>
+            requires range<const R>
+        constexpr auto begin() const -> decltype(ranges::begin(declval<Rn>()))
         {
             return ranges::begin(m_range);
         }
         template<class Rn = R>
-        constexpr auto end() const -> enable_if_t<range<const R>, decltype(ranges::end(declval<Rn>()))>
+            requires range<const R>
+        constexpr auto end() const -> decltype(ranges::end(declval<Rn>()))
         {
             return ranges::end(m_range);
         }
 
         template<class Rn = R>
-        constexpr auto empty() -> enable_if_t<Internal::sfinae_trigger_v<decltype(ranges::empty(declval<Rn>()))>, bool>
+            requires requires { ranges::empty(declval<Rn>()); }
+        constexpr bool empty()
         {
             return ranges::empty(m_range);
         }
         template<class Rn = R>
-        constexpr auto empty() const -> enable_if_t<Internal::sfinae_trigger_v<decltype(ranges::empty(declval<Rn>()))>, bool>
+            requires requires { ranges::empty(declval<Rn>()); }
+        constexpr bool empty() const
         {
             return ranges::empty(m_range);
         }
 
         template<class Rn = R>
-        constexpr auto size() -> enable_if_t<sized_range<R>, decltype(ranges::size(declval<Rn>()))>
+            requires sized_range<R>
+        constexpr auto size() -> decltype(ranges::size(declval<Rn>()))
         {
             return ranges::size(m_range);
         }
         template<class Rn = R>
-        constexpr auto size() const -> enable_if_t<sized_range<const R>, decltype(ranges::size(declval<Rn>()))>
+            requires sized_range<const R>
+        constexpr auto size() const -> decltype(ranges::size(declval<Rn>()))
         {
             return ranges::size(m_range);
         }
 
         template<class Rn = R>
-        constexpr auto data() -> enable_if_t<contiguous_range<R>, decltype(ranges::data(declval<Rn>()))>
+            requires contiguous_range<R>
+        constexpr auto data() -> decltype(ranges::data(declval<Rn>()))
         {
             return ranges::data(m_range);
         }
         template<class Rn = R>
-        constexpr auto data() const -> enable_if_t<contiguous_range<const R>, decltype(ranges::data(declval<Rn>()))>
+            requires contiguous_range<const R>
+        constexpr auto data() const -> decltype(ranges::data(declval<Rn>()))
         {
             return ranges::data(m_range);
         }

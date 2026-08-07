@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_TYPE_TRAITS_UNDERLYING_TYPE_INCLUDED
-#define AZSTD_TYPE_TRAITS_UNDERLYING_TYPE_INCLUDED
+
+#pragma once
 
 #include <AzCore/std/typetraits/config.h>
 
@@ -15,6 +15,3 @@ namespace AZStd
     using std::underlying_type;
     using std::underlying_type_t;
 }
-
-#endif // AZSTD_TYPE_TRAITS_UNDERLYING_TYPE_INCLUDED
-#pragma once

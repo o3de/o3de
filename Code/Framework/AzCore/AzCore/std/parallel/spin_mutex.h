@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_PARALLEL_SPIN_MUTEX_H
-#define AZSTD_PARALLEL_SPIN_MUTEX_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
@@ -62,6 +62,3 @@ namespace AZStd
         atomic<bool> m_flag;
     };
 }
-
-#endif
-#pragma once

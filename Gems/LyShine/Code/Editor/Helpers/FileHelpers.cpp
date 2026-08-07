@@ -112,15 +112,15 @@ namespace FileHelpers
         if (result == FileHelpers::SourceControlResult::kSourceControlResult_SourceControlDown)
         {
             QMessageBox(QMessageBox::Critical,
-                "Error",
-                "Source control is down",
+                QObject::tr("Error"),
+                QObject::tr("Source control is down"),
                 QMessageBox::Ok, parent).exec();
         }
         else if (result == FileHelpers::SourceControlResult::kSourceControlResult_SourceControlError)
         {
             QMessageBox(QMessageBox::Critical,
-                "Error",
-                "Source control system error. Is your session still valid?",
+                QObject::tr("Error"),
+                QObject::tr("Source control system error. Is your session still valid?"),
                 QMessageBox::Ok, parent).exec();
         }
 

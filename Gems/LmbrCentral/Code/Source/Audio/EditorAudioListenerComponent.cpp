@@ -11,6 +11,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -29,7 +30,9 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorAudioListenerComponent>("Audio Listener", "The Audio Listener component allows a virtual microphone to be placed in the environment")
+                editContext->Class<EditorAudioListenerComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Listener"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Listener component allows a virtual microphone to be placed in the environment"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioListener.svg")
@@ -38,13 +41,17 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/listener/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_rotationEntity,
-                        "Rotation Entity", "The Entity whose rotation the audio listener will adopt.  If none set, will assume 'this' Entity")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Rotation Entity"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The Entity whose rotation the audio listener will adopt.  If none set, will assume 'this' Entity"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_positionEntity,
-                        "Position Entity", "The Entity whose position the audio listener will adopt.  If none set, will assume 'this' Entity")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Position Entity"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The Entity whose position the audio listener will adopt.  If none set, will assume 'this' Entity"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_fixedOffset,
-                        "Fixed offset", "A fixed world-space offset to add to the listener position.")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Fixed offset"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "A fixed world-space offset to add to the listener position."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioListenerComponent::m_defaultListenerState,
-                        "Listener Enabled", "Controls the initial state of this AudioListener on Component Activation.")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Listener Enabled"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Controls the initial state of this AudioListener on Component Activation."))
                     ;
             }
         }

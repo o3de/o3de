@@ -11,11 +11,12 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QPaintEvent>
+#include <QResizeEvent>
+#include <QShowEvent>
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextDocument>
-
-
 namespace AzQtComponents
 {
     ElidingLabel::ElidingLabel(const QString& text, QWidget* parent /* = nullptr */)
@@ -29,19 +30,6 @@ namespace AzQtComponents
         setText(text);
     }
 
-    void ElidingLabel::handleElision()
-    {
-        m_elidedText.clear();
-
-        elide();
-
-        if (m_updateGeomentry)
-        {
-            updateGeometry();
-            m_updateGeomentry = false;
-        }
-    }
-
     void ElidingLabel::setText(const QString& text)
     {
         if (text == m_text)
@@ -51,8 +39,8 @@ namespace AzQtComponents
 
         m_text = text;
         m_metricsLabel->setText(m_text);
-
-        requestElide(true);
+        updateGeometry();
+        requestElide();
     }
 
     void ElidingLabel::setDescription(const QString& description)
@@ -68,18 +56,38 @@ namespace AzQtComponents
         }
 
         m_elideMode = mode;
-        update();
+        requestElide();
     }
 
+    // This event also happens if the label is resized due to a layout update
+    // In that case, we should re-elide the text to fit the new size.
     void ElidingLabel::resizeEvent(QResizeEvent* event)
     {
-        QWidget::resizeEvent(event);
-        requestElide(false);
+        QLabel::resizeEvent(event);
+        requestElide();
+    }
+
+    void ElidingLabel::showEvent([[maybe_unused]] QShowEvent* event)
+    {
+        QLabel::showEvent(event);
+        requestElide();
     }
 
     void ElidingLabel::elide()
     {
+        if (isHidden())
+        {
+            return;
+        }
         ensurePolished();
+
+        if (m_text.isEmpty())
+        {
+            m_elidedText.clear();
+            QLabel::setText(QString());
+            setToolTip(m_description);
+            return;
+        }
 
         if (Qt::mightBeRichText(m_text))
         {
@@ -252,39 +260,13 @@ namespace AzQtComponents
         QLabel::paintEvent(event);
     }
 
-    void ElidingLabel::timerEvent([[maybe_unused]] QTimerEvent* event)
+    void ElidingLabel::requestElide()
     {
-        if (m_elideDeferred)
+        if (isHidden())
         {
-            // do the elision, but keep the timer running in case another request comes in too quickly
-            handleElision();
-            m_elideDeferred = false;
+            return;
         }
-        else
-        {
-            // s_minTimeBetweenUpdates has elapsed since the last elide, and no new requests have come in
-            killTimer(m_elideTimerId);
-            m_elideTimerId = 0;
-        }
-    }
-
-    void ElidingLabel::requestElide(bool updateGeometry)
-    {
-        if (!m_updateGeomentry && updateGeometry)
-        {
-            m_updateGeomentry = true;
-        }
-        if (!m_elideTimerId)
-        {
-            // do the elision immediately, but start a timer to make sure we don't elide again too quickly
-            handleElision();
-            m_elideTimerId = startTimer(s_minTimeBetweenUpdates);
-        }
-        else
-        {
-            // the timer's already running
-            m_elideDeferred = true;
-        }
+        elide();
     }
 
 } // namespace AzQtComponents

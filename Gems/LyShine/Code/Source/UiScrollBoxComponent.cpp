@@ -24,6 +24,8 @@
 #include <LyShine/UiSerializeHelpers.h>
 #include "UiSerialize.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiScrollBoxNotificationBus Behavior context handler class
 class BehaviorUiScrollBoxNotificationBusHandler
@@ -1405,7 +1407,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiScrollBoxComponent>("ScrollBox", "An interactable component for scrolling a child element.");
+            auto editInfo = ec->Class<UiScrollBoxComponent>(QT_TRANSLATE_NOOP("LyShine", "ScrollBox"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for scrolling a child element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -1416,77 +1418,77 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
             // Content group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Content")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Content"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_contentEntity, "Content element", "The child element that is the scrollable content.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_contentEntity, QT_TRANSLATE_NOOP("LyShine", "Content element"), QT_TRANSLATE_NOOP("LyShine", "The child element that is the scrollable content."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiScrollBoxComponent::PopulateChildEntityList);
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffset, "Initial scroll offset", "The initial offset of the scroll box content.")
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffset, QT_TRANSLATE_NOOP("LyShine", "Initial scroll offset"), QT_TRANSLATE_NOOP("LyShine", "The initial offset of the scroll box content."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isScrollingConstrained, "Constrain scrolling",
-                    "Check this box to prevent the content from being scrolled beyond its edges.");
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_snapMode, "Snap",
-                    "Sets the snapping behavior when the control is released.")
-                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::None, "None")
-                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::Children, "To children")
-                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::Grid, "To grid")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isScrollingConstrained, QT_TRANSLATE_NOOP("LyShine", "Constrain scrolling"),
+                    QT_TRANSLATE_NOOP("LyShine", "Check this box to prevent the content from being scrolled beyond its edges."));
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_snapMode, QT_TRANSLATE_NOOP("LyShine", "Snap"),
+                    QT_TRANSLATE_NOOP("LyShine", "Sets the snapping behavior when the control is released."))
+                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::None, QT_TRANSLATE_NOOP("LyShine", "None"))
+                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::Children, QT_TRANSLATE_NOOP("LyShine", "To children"))
+                    ->EnumAttribute(UiScrollBoxInterface::SnapMode::Grid, QT_TRANSLATE_NOOP("LyShine", "To grid"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_snapGrid, "Grid spacing",
-                    "The scroll offset will be snapped to multiples of these values.")
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_snapGrid, QT_TRANSLATE_NOOP("LyShine", "Grid spacing"),
+                    QT_TRANSLATE_NOOP("LyShine", "The scroll offset will be snapped to multiples of these values."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::IsSnapToGrid);
             }
 
             // Horizontal scrolling group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Horizontal scrolling")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Horizontal scrolling"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isHorizontalScrollingEnabled, "Enabled",
-                    "Check this box to allow the scroll box to be scrolled horizontally.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isHorizontalScrollingEnabled, QT_TRANSLATE_NOOP("LyShine", "Enabled"),
+                    QT_TRANSLATE_NOOP("LyShine", "Check this box to allow the scroll box to be scrolled horizontally."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_hScrollBarEntity, "Scrollbar element",
-                    "The element that is the horizontal scrollbar.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_hScrollBarEntity, QT_TRANSLATE_NOOP("LyShine", "Scrollbar element"),
+                    QT_TRANSLATE_NOOP("LyShine", "The element that is the horizontal scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::m_isHorizontalScrollingEnabled)
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiScrollBoxComponent::PopulateHScrollBarEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_hScrollBarVisibility, "Scrollbar visibility",
-                    "Sets visibility behavior of the horizontal scrollbar.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_hScrollBarVisibility, QT_TRANSLATE_NOOP("LyShine", "Scrollbar visibility"),
+                    QT_TRANSLATE_NOOP("LyShine", "Sets visibility behavior of the horizontal scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::m_isHorizontalScrollingEnabled)
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AlwaysShow, "Always visible")
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHide, "Auto hide")
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, "Auto hide and resize view area");
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AlwaysShow, QT_TRANSLATE_NOOP("LyShine", "Always visible"))
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHide, QT_TRANSLATE_NOOP("LyShine", "Auto hide"))
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, QT_TRANSLATE_NOOP("LyShine", "Auto hide and resize view area"));
             }
 
             // Vertical scrolling group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Vertical scrolling")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Vertical scrolling"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isVerticalScrollingEnabled, "Enabled",
-                    "Check this box to allow the scroll box to be scrolled vertically.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isVerticalScrollingEnabled, QT_TRANSLATE_NOOP("LyShine", "Enabled"),
+                    QT_TRANSLATE_NOOP("LyShine", "Check this box to allow the scroll box to be scrolled vertically."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_vScrollBarEntity, "Scrollbar element",
-                    "The element that is the vertical scrollbar.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_vScrollBarEntity, QT_TRANSLATE_NOOP("LyShine", "Scrollbar element"),
+                    QT_TRANSLATE_NOOP("LyShine", "The element that is the vertical scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::m_isVerticalScrollingEnabled)
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiScrollBoxComponent::PopulateVScrollBarEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_vScrollBarVisibility, "Scrollbar visibility",
-                    "Sets visibility behavior of the vertical scrollbar.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_vScrollBarVisibility, QT_TRANSLATE_NOOP("LyShine", "Scrollbar visibility"),
+                    QT_TRANSLATE_NOOP("LyShine", "Sets visibility behavior of the vertical scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::m_isVerticalScrollingEnabled)
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AlwaysShow, "Always visible")
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHide, "Auto hide")
-                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, "Auto hide and resize view area");
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AlwaysShow, QT_TRANSLATE_NOOP("LyShine", "Always visible"))
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHide, QT_TRANSLATE_NOOP("LyShine", "Auto hide"))
+                    ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, QT_TRANSLATE_NOOP("LyShine", "Auto hide and resize view area"));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangingActionName, "Change", "The action triggered while the offset is changing.");
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangedActionName, "End change", "The action triggered when the offset is done changing.");
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the offset is changing."));
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the offset is done changing."));
             }
         }
     }

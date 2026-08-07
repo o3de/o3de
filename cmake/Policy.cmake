@@ -34,3 +34,10 @@ if(POLICY CMP0179)
     # keep the first occurrence and discard later duplicates.
     cmake_policy(SET CMP0179 NEW)
 endif()
+
+# https://cmake.org/cmake/help/latest/policy/CMP0218.html
+if(POLICY CMP0218)
+    # Keep honoring the CMAKE_WARN_DEPRECATED/CMAKE_ERROR_DEPRECATED variables that O3DE
+    # and its 3rdparty Find*.cmake files use, and avoid a policy warning whenever one is set.
+    cmake_policy(SET CMP0218 OLD)
+endif()

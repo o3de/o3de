@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Material/EditorMaterialComponentExporter.h>
 #include <Material/EditorMaterialComponentInspector.h>
@@ -91,11 +92,11 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorMaterialComponentSlot>(
-                        "EditorMaterialComponentSlot", "")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMaterialComponentSlot"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponentSlot::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponentSlot::m_materialAsset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Asset"), "")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponentSlot::OnMaterialChangedFromRPE)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorMaterialComponentSlot::GetDefaultAssetId)

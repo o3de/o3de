@@ -11,6 +11,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ::Render
 {
     void AtomRenderOptionsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -22,7 +24,7 @@ namespace AZ::Render
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<AtomRenderOptionsSystemComponent>(
-                      "Atom Render Options", "Allow to toggle and edit render passes inside the Editor viewport")
+                      QT_TRANSLATE_NOOP("AtomRenderOptions", "Atom Render Options"), QT_TRANSLATE_NOOP("AtomRenderOptions", "Allow to toggle and edit render passes inside the Editor viewport"))
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->Attribute(Edit::Attributes::AutoExpand, true);
             }

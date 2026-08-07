@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <version>
 #include <AzCore/std/containers/array_fwd.h>
 #include <AzCore/std/ranges/subrange_fwd.h>
 #include <AzCore/std/utility/tuple_fwd.h>
@@ -51,49 +52,53 @@ namespace AZStd
 {
     // Add tuple specialization for common_type and common_reference so that it can be used in range algorithms
     template<class T>
-    /*concept*/ constexpr bool tuple_like = Internal::is_tuple_like<remove_cvref_t<T>>;
-
-    template<class T, class = void>
-    /*concept*/ constexpr bool pair_like = false;
+    concept tuple_like = Internal::is_tuple_like<remove_cvref_t<T>>;
 
     template<class T>
-    /*concept*/ constexpr bool
-        pair_like<T, enable_if_t<tuple_like<T>>> = tuple_size_v<remove_cvref_t<T>> == 2;
+    concept pair_like =
+        tuple_like<T>
+        && tuple_size_v<remove_cvref_t<T>> == 2;
+}
 
+//! common_type/basic_common_reference live in std, so the AZStd fallbacks must be specialized there too.
+//! C++23 adds these same pair/tuple specializations to the stdlib (P2321 "zip", then P2165 tuple-like),
+//! and since AZStd::pair/tuple alias std::pair/tuple, keeping ours would be a duplicate partial specialization.
+//! So only define them when the stdlib doesn't.
+#if !((defined(__cpp_lib_ranges_zip) && __cpp_lib_ranges_zip >= 202110L) \
+    || (defined(__cpp_lib_tuple_like) && __cpp_lib_tuple_like >= 202207L))
+namespace std
+{
     template<class... TTypes, class... UTypes, template<class> class TQual, template<class> class UQual>
-    struct basic_common_reference<tuple<TTypes...>, tuple<UTypes...>, TQual, UQual>
-        : enable_if_t<Internal::sfinae_trigger_v<tuple<common_reference_t<TQual<TTypes>, UQual<UTypes>>...>>,
-        Internal::requirements_fulfilled>
+        requires requires { typename AZStd::tuple<AZStd::common_reference_t<TQual<TTypes>, UQual<UTypes>>...>; }
+    struct basic_common_reference<AZStd::tuple<TTypes...>, AZStd::tuple<UTypes...>, TQual, UQual>
     {
-        using type = tuple<common_reference_t<TQual<TTypes>, UQual<UTypes>>...>;
+        using type = AZStd::tuple<AZStd::common_reference_t<TQual<TTypes>, UQual<UTypes>>...>;
     };
 
     template<class T1, class T2, class U1, class U2, template<class> class TQual, template<class> class UQual>
-    struct basic_common_reference<pair<T1, T2>, pair<U1, U2>, TQual, UQual>
-        : enable_if_t<Internal::sfinae_trigger_v<common_reference_t<TQual<T1>, UQual<U1>>, common_reference_t<TQual<T2>, UQual<U2>>>,
-        Internal::requirements_fulfilled>
+        requires requires {
+            typename AZStd::common_reference_t<TQual<T1>, UQual<U1>>;
+            typename AZStd::common_reference_t<TQual<T2>, UQual<U2>>;
+        }
+    struct basic_common_reference<AZStd::pair<T1, T2>, AZStd::pair<U1, U2>, TQual, UQual>
     {
-        using type = pair<common_reference_t<TQual<T1>, UQual<U1>>, common_reference_t<TQual<T2>, UQual<U2>>>;
+        using type = AZStd::pair<AZStd::common_reference_t<TQual<T1>, UQual<U1>>, AZStd::common_reference_t<TQual<T2>, UQual<U2>>>;
     };
-}
 
-//! common_type is from the std namespace.
-//! Its name was brought into the AZStd namespace via a "using" directive.
-//! Therefore it needs to be specialized in its original namespace.
-namespace std
-{
     template<class... TTypes, class... UTypes>
+        requires requires { typename tuple<common_type_t<TTypes, UTypes>...>; }
     struct common_type<tuple<TTypes...>, tuple<UTypes...>>
-        : AZStd::enable_if_t<AZStd::Internal::sfinae_trigger_v<tuple<common_type_t<TTypes, UTypes>...>>,
-        AZStd::Internal::requirements_fulfilled>
     {
         using type = tuple<common_type_t<TTypes, UTypes>...>;
     };
     template<class T1, class T2, class U1, class U2>
+        requires requires {
+            typename common_type_t<T1, U1>;
+            typename common_type_t<T2, U2>;
+        }
     struct common_type<AZStd::pair<T1, T2>, AZStd::pair<U1, U2>>
-        : AZStd::enable_if_t<AZStd::Internal::sfinae_trigger_v<common_type_t<T1, U1>, common_type_t<T2, U2>>,
-        AZStd::Internal::requirements_fulfilled>
     {
         using type = AZStd::pair<common_type_t<T1, U1>, common_type_t<T2, U2>>;
     };
 }
+#endif // stdlib provides pair/tuple common_type/common_reference (P2321 / P2165)

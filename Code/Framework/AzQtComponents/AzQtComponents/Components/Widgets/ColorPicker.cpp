@@ -505,7 +505,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     m_toggleHueGridButton->setAutoRaise(true);
     m_toggleHueGridButton->setCheckable(true);
     m_toggleHueGridButton->setChecked(true);
-    m_toggleHueGridButton->setToolTip("Click this to toggle the color grid between Saturation/Value mode and Hue/Saturation mode");
+    m_toggleHueGridButton->setToolTip(tr("Click this to toggle the color grid between Saturation/Value mode and Hue/Saturation mode"));
     m_hsvPickerLayout->addWidget(m_toggleHueGridButton, 1, 2);
 
     connect(m_toggleHueGridButton, &QAbstractButton::toggled, this, [this](bool checked) {
@@ -597,9 +597,9 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     containerLayout->addWidget(tabWidgetSeparator);
 
     m_slidersTabWidget = new TabWidget(this);
-    m_slidersTabWidget->addTab(m_rgbSliders, QObject::tr("RGB"));
-    m_slidersTabWidget->addTab(m_hslSliders, QObject::tr("HSL"));
-    m_slidersTabWidget->addTab(m_hsvSliders, QObject::tr("HSV"));
+    m_slidersTabWidget->addTab(m_rgbSliders, tr("RGB"));
+    m_slidersTabWidget->addTab(m_hslSliders, tr("HSL"));
+    m_slidersTabWidget->addTab(m_hsvSliders, tr("HSV"));
 
     TabWidget::applySecondaryStyle(m_slidersTabWidget, false);
     containerLayout->addWidget(m_slidersTabWidget);
@@ -667,16 +667,16 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     // Final color space comment
     m_commentSeparator = makePaddedSeparator(this);
     containerLayout->addWidget(m_commentSeparator);
-    m_commentLabel = new QLabel(QObject::tr("Color space: sRGB"), this);
+    m_commentLabel = new QLabel(tr("Color space: sRGB"), this);
     containerLayout->addWidget(m_commentLabel);
 
     // Alternate color space info
 
     // These widgets will be updated as needed in setAlternateColorspace* functions
-    m_alternateColorSpaceIntLabel = new QLabel(QObject::tr("Alternate Int"), this);
-    m_alternateColorSpaceFloatLabel = new QLabel(QObject::tr("Alternate Float"), this);
-    m_alternateColorSpaceIntValue = new QLineEdit(QObject::tr("Unspecified"), this);
-    m_alternateColorSpaceFloatValue = new QLineEdit(QObject::tr("Unspecified"), this);
+    m_alternateColorSpaceIntLabel = new QLabel(tr("Alternate Int"), this);
+    m_alternateColorSpaceFloatLabel = new QLabel(tr("Alternate Float"), this);
+    m_alternateColorSpaceIntValue = new QLineEdit(tr("Unspecified"), this);
+    m_alternateColorSpaceFloatValue = new QLineEdit(tr("Unspecified"), this);
     m_alternateColorSpaceIntValue->setDisabled(true);
     m_alternateColorSpaceFloatValue->setDisabled(true);
 
@@ -703,7 +703,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     initContextMenu(configuration);
 
     // Add a settings menu button on the slider tab widget
-    QAction* settingsMenuAction = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), QObject::tr("Settings"), this);
+    QAction* settingsMenuAction = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), tr("Settings"), this);
     settingsMenuAction->setMenu(m_menu);
     m_slidersTabWidget->setActionToolBarVisible();
     m_slidersTabWidget->addAction(settingsMenuAction);
@@ -1283,7 +1283,7 @@ void ColorPicker::setQuickPaletteVisibility(bool show)
     m_quickPaletteCard->setVisible(show);
     m_quickPaletteSeparator->setVisible(show);
 
-    m_toggleQuickPaletteAction->setText(tr(show ? "Hide Quick Palette" : "Show Quick Palette"));
+    m_toggleQuickPaletteAction->setText(show ? tr("Hide Quick Palette") : tr("Show Quick Palette"));
 }
 
 void ColorPicker::paletteContextMenuRequested(QSharedPointer<PaletteCard> paletteCard, const QPoint& point)

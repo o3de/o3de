@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/sort.h>
 
@@ -35,29 +36,29 @@ namespace AZ::RHI
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
-                ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
+                ec->Class<FactoryManagerSystemComponent>(QT_TRANSLATE_NOOP("Atom::RHI", "Atom RHI Manager"), QT_TRANSLATE_NOOP("Atom::RHI", "Atom Renderer"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FactoryManagerSystemComponent::m_factoriesPriority,
-                        "RHI Priority list",
-                        "Priorities for RHI Implementations")
+                        QT_TRANSLATE_NOOP("Atom::RHI", "RHI Priority list"),
+                        QT_TRANSLATE_NOOP("Atom::RHI", "Priorities for RHI Implementations"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &FactoryManagerSystemComponent::m_validationMode,
-                        "Validation Layer Mode",
-                        "Set the validation mode for the RHI. It only applies for non release builds")
+                        QT_TRANSLATE_NOOP("Atom::RHI", "Validation Layer Mode"),
+                        QT_TRANSLATE_NOOP("Atom::RHI", "Set the validation mode for the RHI. It only applies for non release builds"))
                     ->Attribute(
                         AZ::Edit::Attributes::EnumValues,
                         AZStd::vector<AZ::Edit::EnumConstant<RHI::ValidationMode>>{
                             AZ::Edit::EnumConstant<RHI::ValidationMode>(
-                                RHI::ValidationMode::Disabled, "Disable - Disables any validation."),
+                                RHI::ValidationMode::Disabled, QT_TRANSLATE_NOOP("Atom::RHI", "Disable - Disables any validation.")),
                             AZ::Edit::EnumConstant<RHI::ValidationMode>(
-                                RHI::ValidationMode::Enabled, "Enable - Enables warnings and errors validation messages."),
+                                RHI::ValidationMode::Enabled, QT_TRANSLATE_NOOP("Atom::RHI", "Enable - Enables warnings and errors validation messages.")),
                             AZ::Edit::EnumConstant<RHI::ValidationMode>(
-                                RHI::ValidationMode::Verbose, "Verbose - Enables warnings, error and information messages."),
-                            AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::GPU, "GPU - Enables based validation."),
+                                RHI::ValidationMode::Verbose, QT_TRANSLATE_NOOP("Atom::RHI", "Verbose - Enables warnings, error and information messages.")),
+                            AZ::Edit::EnumConstant<RHI::ValidationMode>(RHI::ValidationMode::GPU, QT_TRANSLATE_NOOP("Atom::RHI", "GPU - Enables based validation.")),
                         });
             }
                 

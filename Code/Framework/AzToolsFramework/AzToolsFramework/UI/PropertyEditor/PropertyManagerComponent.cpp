@@ -7,6 +7,7 @@
  */
 #include "PropertyManagerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -186,19 +187,7 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
         {
-            if (m_currentUndoBatch)
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch,
-                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                    m_currentUndoBatch,
-                    "Modify Property");
-            }
-            else
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
-            }
+            ScopedUndoBatch undoBatch("Modify Property", &m_currentUndoBatch);
 
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
@@ -207,15 +196,12 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
         {
+            ScopedUndoBatch undoBatch("Modify Property", &m_currentUndoBatch);
+
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
-
-            if (m_currentUndoBatch)
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
-                m_currentUndoBatch = nullptr;
-            }
+            m_currentUndoBatch = nullptr;
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
@@ -343,9 +329,10 @@ namespace AzToolsFramework
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<PropertyManagerComponent>(
-                        "Property Manager", "Provides services for registration of property editors")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Property Manager"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Provides services for registration of property editors"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                            ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                         ;
                 }
             }

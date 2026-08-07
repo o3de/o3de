@@ -20,6 +20,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -41,16 +42,16 @@ namespace AZ
                 if (editContext)
                 {
                     editContext->Class<AssetCollectionAsyncLoaderTestComponent>(
-                        "AssetCollectionAsyncLoaderTest", "The AssetCollectionAsyncLoaderTest component allows you to test the API provided by AssetCollectionAsyncLoader")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "AssetCollectionAsyncLoaderTest"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The AssetCollectionAsyncLoaderTest component allows you to test the API provided by AssetCollectionAsyncLoader"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Test")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level"), AZ_CRC_CE("Game"), AZ_CRC_CE("Layer") }))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::LineEdit, &AssetCollectionAsyncLoaderTestComponent::m_pathToAssetListJson, "", "Path To Asset List")
-                            ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Path to a JSON file")
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "", "Starts/Stop the test")
+                        ->DataElement(AZ::Edit::UIHandlers::LineEdit, &AssetCollectionAsyncLoaderTestComponent::m_pathToAssetListJson, "", QT_TRANSLATE_NOOP("AtomLyIntegration", "Path To Asset List"))
+                            ->Attribute(AZ::Edit::Attributes::PlaceholderText, QT_TRANSLATE_NOOP("AtomLyIntegration", "Path to a JSON file"))
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "", QT_TRANSLATE_NOOP("AtomLyIntegration", "Starts/Stop the test"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AssetCollectionAsyncLoaderTestComponent::OnStartCancelButtonClicked)
                             ->Attribute(AZ::Edit::Attributes::ButtonText, &AssetCollectionAsyncLoaderTestComponent::GetStartCancelButtonText);
                 }

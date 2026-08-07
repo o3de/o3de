@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <System/SystemComponent.h>
 #include <Utils/Allocators.h>
@@ -145,7 +146,9 @@ namespace NvCloth
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SystemComponent>("NvCloth", "Provides functionality for simulating cloth using NvCloth")
+                editContext->Class<SystemComponent>(
+                    QT_TRANSLATE_NOOP("NvCloth", "NvCloth"),
+                    QT_TRANSLATE_NOOP("NvCloth", "Provides functionality for simulating cloth using NvCloth"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -19,10 +19,18 @@ AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ViewPaneCallbacks)
 
 namespace AzToolsFramework
 {
-    ScopedUndoBatch::ScopedUndoBatch(const char* batchName)
+    ScopedUndoBatch::ScopedUndoBatch(const char* batchName, UndoSystem::URSequencePoint** resumeHandle)
+        : m_undoBatch(nullptr)
     {
-        ToolsApplicationRequests::Bus::BroadcastResult(
-            m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, batchName);
+        if (resumeHandle)
+        {
+            m_undoBatch = *resumeHandle;
+        }
+        ToolsApplicationRequests::Bus::BroadcastResult(m_undoBatch, &ToolsApplicationRequests::Bus::Events::ResumeUndoBatch, m_undoBatch, batchName);
+        if (resumeHandle)
+        {
+            *resumeHandle = m_undoBatch;
+        }
     }
 
     ScopedUndoBatch::~ScopedUndoBatch()

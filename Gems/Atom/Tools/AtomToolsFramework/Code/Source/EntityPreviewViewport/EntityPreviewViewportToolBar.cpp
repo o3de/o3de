@@ -33,7 +33,7 @@ namespace AtomToolsFramework
         AzQtComponents::ToolBar::addMainToolBarStyle(this);
 
         // Add toggle grid button
-        m_toggleGrid = addAction(QIcon(":/Icons/grid.svg"), "Toggle Grid");
+        m_toggleGrid = addAction(QIcon(":/Icons/grid.svg"), tr("Toggle Grid"));
         m_toggleGrid->setCheckable(true);
         connect(m_toggleGrid, &QAction::triggered, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -41,7 +41,7 @@ namespace AtomToolsFramework
         });
 
         // Add toggle shadow catcher button
-        m_toggleShadowCatcher = addAction(QIcon(":/Icons/shadow.svg"), "Toggle Shadow Catcher");
+        m_toggleShadowCatcher = addAction(QIcon(":/Icons/shadow.svg"), tr("Toggle Shadow Catcher"));
         m_toggleShadowCatcher->setCheckable(true);
         connect(m_toggleShadowCatcher, &QAction::triggered, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -49,7 +49,7 @@ namespace AtomToolsFramework
         });
 
         // Add toggle alternate skybox button
-        m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), "Toggle Alternate Skybox");
+        m_toggleAlternateSkybox = addAction(QIcon(":/Icons/skybox.svg"), tr("Toggle Alternate Skybox"));
         m_toggleAlternateSkybox->setCheckable(true);
         connect(m_toggleAlternateSkybox, &QAction::triggered, [this]() {
             EntityPreviewViewportSettingsRequestBus::Event(
@@ -57,7 +57,7 @@ namespace AtomToolsFramework
         });
 
         // Add mapping selection button
-        auto displayMapperAction = addAction(QIcon(":/Icons/toneMapping.svg"), "Tone Mapping", this, [this]() {
+        auto displayMapperAction = addAction(QIcon(":/Icons/toneMapping.svg"), tr("Tone Mapping"), this, [this]() {
             AZ::Render::DisplayMapperOperationType currentOperationType = {};
             EntityPreviewViewportSettingsRequestBus::EventResult(
                 currentOperationType, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetDisplayMapperOperationType);

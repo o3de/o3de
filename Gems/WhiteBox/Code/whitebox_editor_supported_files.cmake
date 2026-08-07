@@ -23,6 +23,10 @@ set(FILES
     Source/WhiteBoxToolApiReflection.cpp
     Source/WhiteBoxToolApiReflection.h
     Source/Core/WhiteBoxToolApi.cpp
+    Source/Core/WhiteBoxCsg.cpp
+    Source/Core/WhiteBoxCsg.h
+    Source/Core/WhiteBoxCsgCore.cpp
+    Source/Core/WhiteBoxCsgCore.h
     Source/Components/EditorWhiteBoxColliderComponent.cpp
     Source/Components/EditorWhiteBoxColliderComponent.h
     Source/Util/WhiteBoxTextureUtil.cpp
@@ -49,6 +53,10 @@ set(FILES
     Source/Viewport/WhiteBoxViewportConstants.h
     Source/Viewport/WhiteBoxVertexTranslationModifier.cpp
     Source/Viewport/WhiteBoxVertexTranslationModifier.h
+    Source/Viewport/WhiteBoxDrawShapeMode.cpp
+    Source/Viewport/WhiteBoxDrawShapeMode.h
+    Source/Viewport/WhiteBoxShapeBuilders.h
+    Source/Viewport/WhiteBoxDrawShapeModeBus.h
     Source/Asset/EditorWhiteBoxMeshAsset.cpp
     Source/Asset/EditorWhiteBoxMeshAsset.h
     Source/Asset/WhiteBoxMeshAsset.h

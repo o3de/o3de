@@ -419,8 +419,8 @@ void CTrackViewTrackPropsDlg::OnUpdateTime()
                     // so work around it by blocking signal before we do it.
 
                     ui->TIME->blockSignals(true);
-                    QString msgBody = "There is an existing key at the specified time. If you continue, the existing key will be removed.";
-                    if (QMessageBox::warning(this, "Overwrite Existing Key?", msgBody, QMessageBox::Cancel | QMessageBox::Yes) ==
+                    QString msgBody = tr("There is an existing key at the specified time. If you continue, the existing key will be removed.");
+                    if (QMessageBox::warning(this, tr("Overwrite Existing Key?"), msgBody, QMessageBox::Cancel | QMessageBox::Yes) ==
                         QMessageBox::Cancel)
                     {
                         // Restore the old value and return.

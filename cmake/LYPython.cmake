@@ -12,7 +12,7 @@ include(cmake/LySet.cmake)
 include(cmake/3rdPartyPackages.cmake)
 
 # this script exists to make sure a python interpreter is immediately available
-# it will both locate and run pip on python for our requirements.txt
+# it will both locate and run pip on python for our requirements.txt 
 # but you can also call update_pip_requirements(filename) at any time after.
 
 # this is different from the usual package usage, because even if we are targeting
@@ -267,19 +267,33 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
 
     # now install the new one:
 
-    # Pick the install target. For an installed (read-only) engine, prefer
-    # a pre-built sdist under <package>/dist/ if one exists; pip then runs
-    # entirely from the sdist tarball and doesn't try to write .egg-info
-    # into the read-only source. Falls back to plain (non-editable) install
-    # of the source dir if no sdist is shipped. For development builds
-    # (engine source tree, NOT installed), use the original editable mode.
+    # Pick the install target. Editable mode (-e) is the default: it links the
+    # package into site-packages without copying, so any files that setup.py does
+    # not explicitly package (e.g. pyside6's native .pyd/.dll, which live beside
+    # the source) stay importable.
+    #
+    # The only reason to avoid -e is that it writes .egg-info next to setup.py,
+    # which fails when the package sits inside a READ-ONLY installed engine source
+    # tree. That concern applies ONLY to packages under the engine root (e.g.
+    # Tools/*, scripts/o3de) -- NOT to 3rdParty packages such as pyside6, which
+    # live in the writable 3rdParty cache. So gate the non-editable path on the
+    # package actually being inside the engine root; otherwise keep -e. A blanket
+    # non-editable install (previous behaviour) copied only the .py files of
+    # pyside6 and dropped its native modules, producing a broken venv import
+    # ("No module named 'shiboken6.Shiboken'").
     set(_pip_install_target ${package_folder_path})
     set(_pip_install_mode_args "-e")
     if (INSTALLED_ENGINE)
-        set(_pip_install_mode_args "")
-        file(GLOB _pip_sdist_candidates "${package_folder_path}/dist/*.tar.gz")
-        if (_pip_sdist_candidates)
-            list(GET _pip_sdist_candidates 0 _pip_install_target)
+        cmake_path(IS_PREFIX LY_ROOT_FOLDER "${package_folder_path}" NORMALIZE _pkg_in_engine_source)
+        if (_pkg_in_engine_source)
+            # In the read-only engine source: prefer a pre-built sdist under
+            # <package>/dist/ (pip runs entirely from the tarball, never touching
+            # the source), else fall back to a plain non-editable install.
+            set(_pip_install_mode_args "")
+            file(GLOB _pip_sdist_candidates "${package_folder_path}/dist/*.tar.gz")
+            if (_pip_sdist_candidates)
+                list(GET _pip_sdist_candidates 0 _pip_install_target)
+            endif()
         endif()
     endif()
 

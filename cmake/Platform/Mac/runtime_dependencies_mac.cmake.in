@@ -176,12 +176,15 @@ function(o3de_copy_file_to_bundle)
         cmake_path(APPEND target_file "${target_bundle_framework_dir}" "${relative_target_directory}" "${target_filename}")
     elseif("${source_file}" IN_LIST target_target_files)
         unset(target_file)
-        # copy the target dependencies to the directory containing the bundle
-        cmake_path(APPEND target_file "${target_bundle_parent_dir}" "${relative_target_directory}" "${target_filename}")
         if(is_dylib)
-            # These are dynamic load dependencies that are triggered by the application,
-            # they should not be copied to the bundle
-            set(explicit_copy_to_bundle FALSE)
+            # Dynamic load dependencies (gems, EditorLib, etc.) loaded via dlopen at runtime.
+            # Copy them into the bundle Frameworks directory so the app is fully relocatable.
+            # The O3DE DynamicModuleHandle on Apple platforms already checks
+            # <bundle>/Contents/Frameworks as a fallback search path.
+            cmake_path(APPEND target_file "${target_bundle_framework_dir}" "${target_filename}")
+        else()
+            # Non-dylib target dependencies (executables, etc.) go alongside the bundle
+            cmake_path(APPEND target_file "${target_bundle_parent_dir}" "${relative_target_directory}" "${target_filename}")
         endif()
     endif()
 
@@ -206,7 +209,7 @@ function(o3de_copy_file_to_bundle)
         # otherwise the target_file is within a Mac framework so append to the bundle directory property
         if(is_dylib)
             # Also skip adding symlinks to the list of libraries to fix up
-            if(NOT "${source_file}" IN_LIST target_target_files AND NOT IS_SYMLINK "${source_file}")
+            if(NOT IS_SYMLINK "${source_file}")
                 set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" APPEND PROPERTY BUNDLE_LIBS "${target_file}")
             endif()
         else()
@@ -386,10 +389,207 @@ if(target_bundle_content_dir)
             endif()
         endforeach()
         list(REMOVE_DUPLICATES plugin_dirs)
-        # Add the Frameworks directory so fixup_bundle can resolve @rpath references
-        # between dylibs that have been copied into the bundle
+        # Add the Frameworks directory and flat output dir so fixup_bundle can
+        # resolve @rpath references between dylibs and Qt frameworks
         list(APPEND plugin_dirs "${target_bundle_framework_dir}")
+        list(APPEND plugin_dirs "${target_bundle_parent_dir}")
+
+        # Pre-step: Move Qt frameworks to the flat output directory and create
+        # symlinks in the bundle BEFORE fixup_bundle runs. This ensures a single
+        # physical copy of Qt is shared by all bundles and flat-dir gems.
+        # We also add the Qt binary names to the ignore list so fixup_bundle
+        # doesn't attempt to process them (we handle install names in Step A).
+        file(GLOB bundle_qt_frameworks_pre "${target_bundle_framework_dir}/Qt*.framework")
+        foreach(bundle_qt_fw IN LISTS bundle_qt_frameworks_pre)
+            if(IS_SYMLINK "${bundle_qt_fw}")
+                continue()  # Already a symlink from a previous run or another target
+            endif()
+            cmake_path(GET bundle_qt_fw FILENAME qt_fw_name)
+            cmake_path(SET flat_qt_fw "${target_bundle_parent_dir}/${qt_fw_name}")
+            if(NOT EXISTS "${flat_qt_fw}" OR IS_SYMLINK "${flat_qt_fw}")
+                # First bundle to process this framework — move it to flat dir
+                if(IS_SYMLINK "${flat_qt_fw}")
+                    file(REMOVE "${flat_qt_fw}")
+                endif()
+                file(RENAME "${bundle_qt_fw}" "${flat_qt_fw}")
+            else()
+                # Flat-dir already has a real copy (from another bundle or previous build)
+                # Just remove the bundle copy
+                file(REMOVE_RECURSE "${bundle_qt_fw}")
+            endif()
+            # Create the symlink in the bundle
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink
+                "../../../${qt_fw_name}" "${bundle_qt_fw}")
+            # Add the Qt binary name to the ignore list so fixup_bundle skips it
+            string(REGEX REPLACE "\\.framework$" "" qt_binary_name "${qt_fw_name}")
+            list(APPEND fixup_bundle_ignore "${qt_binary_name}")
+        endforeach()
+
         fixup_bundle("${target_bundle_dir}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
+
+        # ──────────────────────────────────────────────────────────────────────
+        # Eliminate duplicate Qt loading between bundled apps and flat-dir gems.
+        #
+        # Problem: gem modules in the flat bin/<config>/ directory are loaded at
+        # runtime via dlopen. They reference Qt via @rpath/QtFoo.framework/...
+        # The bundle ALSO has its own copy of Qt in Contents/Frameworks/. When a
+        # bundled app loads a flat-dir gem, dyld maps BOTH Qt images because they
+        # are different physical files — producing "Class ... is implemented in
+        # both ..." ObjC warnings and potential crashes.
+        #
+        # Solution: after fixup_bundle copies Qt into the bundle, REPLACE those
+        # framework directories with symlinks pointing back to the flat output
+        # directory. That way the bundle's @executable_path/../Frameworks/QtFoo
+        # and the gem's @loader_path/QtFoo resolve to the SAME physical file,
+        # and dyld loads it only once.
+        # ──────────────────────────────────────────────────────────────────────
+
+        # Get the main executable path inside the bundle
+        get_bundle_main_executable("${target_bundle_dir}" main_executable)
+
+        # Step A: Fix Qt install names to @rpath. fixup_bundle rewrites them to
+        # @executable_path/../Frameworks/... but we need @rpath/... so that both
+        # the bundle's main binary and flat-dir gems resolve to the same identity.
+        # The Qt frameworks now live in the flat output dir (symlinked from bundle).
+        file(GLOB qt_framework_binaries "${target_bundle_parent_dir}/Qt*.framework/Versions/*/Qt*")
+        if(qt_framework_binaries)
+            foreach(qt_fw_binary IN LISTS qt_framework_binaries)
+                if(IS_DIRECTORY "${qt_fw_binary}" OR IS_SYMLINK "${qt_fw_binary}")
+                    continue()
+                endif()
+                string(REGEX MATCH "(Qt[^/]+\\.framework/Versions/[^/]+/Qt[^/.]+)$" _match "${qt_fw_binary}")
+                if(NOT _match)
+                    continue()
+                endif()
+                set(fw_relative_path "${CMAKE_MATCH_1}")
+                set(old_id "@executable_path/../Frameworks/${fw_relative_path}")
+                set(new_id "@rpath/${fw_relative_path}")
+
+                # Fix the framework's own install name
+                execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -id "${new_id}" "${qt_fw_binary}"
+                    OUTPUT_QUIET ERROR_QUIET)
+
+                # Update the main binary's reference
+                if(EXISTS "${main_executable}")
+                    execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                        -change "${old_id}" "${new_id}" "${main_executable}"
+                        OUTPUT_QUIET ERROR_QUIET)
+                endif()
+
+                # Update all bundled dylibs
+                file(GLOB bundle_dylibs "${target_bundle_framework_dir}/*.dylib")
+                foreach(bundle_dylib IN LISTS bundle_dylibs)
+                    if(NOT IS_SYMLINK "${bundle_dylib}")
+                        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                            -change "${old_id}" "${new_id}" "${bundle_dylib}"
+                            OUTPUT_QUIET ERROR_QUIET)
+                    endif()
+                endforeach()
+
+                # Update cross-references between Qt frameworks
+                foreach(other_qt_fw IN LISTS qt_framework_binaries)
+                    if(NOT IS_DIRECTORY "${other_qt_fw}" AND NOT IS_SYMLINK "${other_qt_fw}"
+                       AND NOT "${other_qt_fw}" STREQUAL "${qt_fw_binary}")
+                        execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                            -change "${old_id}" "${new_id}" "${other_qt_fw}"
+                            OUTPUT_QUIET ERROR_QUIET)
+                    endif()
+                endforeach()
+            endforeach()
+
+            # Add rpaths to each Qt framework binary so it can resolve sibling
+            # Qt frameworks. From QtFoo.framework/Versions/A/QtFoo, ../../.. reaches
+            # the flat output dir containing all Qt*.framework directories.
+            foreach(qt_fw_binary IN LISTS qt_framework_binaries)
+                if(IS_DIRECTORY "${qt_fw_binary}" OR IS_SYMLINK "${qt_fw_binary}")
+                    continue()
+                endif()
+                string(REGEX MATCH "(Qt[^/]+\\.framework/Versions/[^/]+/Qt[^/.]+)$" _match "${qt_fw_binary}")
+                if(NOT _match)
+                    continue()
+                endif()
+                # @loader_path/../../.. goes from Versions/A/QtFoo up to bin/<config>/
+                execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                    -add_rpath "@loader_path/../../.." "${qt_fw_binary}"
+                    OUTPUT_QUIET ERROR_QUIET)
+            endforeach()
+
+            message(STATUS "Fixed Qt framework install names to use @rpath in ${target_bundle_dir}")
+        endif()
+
+        # Step B: Add @loader_path rpath to bundled dylibs
+        file(GLOB bundle_dylibs "${target_bundle_framework_dir}/*.dylib")
+        foreach(bundle_dylib IN LISTS bundle_dylibs)
+            if(NOT IS_SYMLINK "${bundle_dylib}")
+                execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                    -add_rpath "@loader_path" "${bundle_dylib}"
+                    OUTPUT_QUIET ERROR_QUIET)
+            endif()
+        endforeach()
+
+        # Add @executable_path/../Frameworks rpath to the main binary
+        if(EXISTS "${main_executable}")
+            execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                -add_rpath "@executable_path/../Frameworks" "${main_executable}"
+                OUTPUT_QUIET ERROR_QUIET)
+        endif()
+
+        # Note: Qt framework symlinks were already created in the pre-step above
+        # (before fixup_bundle). The symlinks point to the flat output directory
+        # so that all bundles and gems share a single physical copy of Qt.
+
+        # Step D: Remove absolute rpaths from flat-dir dylibs and executables.
+        # After this, gems find Qt via @loader_path (same directory) — which
+        # through the bundle symlink is the same file the app loaded.
+        file(GLOB flat_dir_binaries "${target_bundle_parent_dir}/*.dylib")
+        # Also include non-dylib executables (e.g. AssetBuilder)
+        file(GLOB flat_dir_executables "${target_bundle_parent_dir}/*")
+        foreach(flat_exe IN LISTS flat_dir_executables)
+            if(IS_SYMLINK "${flat_exe}" OR IS_DIRECTORY "${flat_exe}")
+                continue()
+            endif()
+            cmake_path(GET flat_exe EXTENSION LAST_ONLY flat_ext)
+            # Skip non-binary files
+            if(flat_ext MATCHES "\\.(prl|plist|sh|py|qm|setreg|azsli|conf|so)$")
+                continue()
+            endif()
+            # Skip .app bundles and .framework directories (handled separately)
+            cmake_path(GET flat_exe FILENAME flat_name)
+            if(flat_name MATCHES "\\.(app|framework)$")
+                continue()
+            endif()
+            list(APPEND flat_dir_binaries "${flat_exe}")
+        endforeach()
+        list(REMOVE_DUPLICATES flat_dir_binaries)
+
+        foreach(flat_binary IN LISTS flat_dir_binaries)
+            if(IS_SYMLINK "${flat_binary}")
+                continue()
+            endif()
+            execute_process(COMMAND otool -l "${flat_binary}"
+                OUTPUT_VARIABLE flat_binary_loadcmds ERROR_QUIET
+                RESULT_VARIABLE otool_result)
+            if(NOT otool_result EQUAL 0)
+                continue()  # Not a Mach-O file
+            endif()
+            # Delete absolute rpaths
+            string(REGEX MATCHALL "path ([^ \n]+) \\(offset" flat_rpath_matches "${flat_binary_loadcmds}")
+            foreach(flat_rpath_match IN LISTS flat_rpath_matches)
+                string(REGEX REPLACE "path ([^ \n]+) \\(offset" "\\1" flat_rpath "${flat_rpath_match}")
+                if(NOT flat_rpath MATCHES "^@")
+                    execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                        -delete_rpath "${flat_rpath}" "${flat_binary}"
+                        OUTPUT_QUIET ERROR_QUIET)
+                endif()
+            endforeach()
+            # Ensure @loader_path is present
+            if(NOT flat_binary_loadcmds MATCHES "path @loader_path \\(offset")
+                execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                    -add_rpath "@loader_path" "${flat_binary}"
+                    OUTPUT_QUIET ERROR_QUIET)
+            endif()
+        endforeach()
+        message(STATUS "Stripped absolute rpaths from flat-dir binaries")
 
         # fix the rpath for the DirectXShaderCompiler `dxc-3.7` to point at
         # <bundle-app>/Contents/Frameworks/libDirectXShaderCompiler.dylib
@@ -433,6 +633,33 @@ if(target_bundle_content_dir)
             if(remove_file_list)
                 message(STATUS "Removal of files has failed: ${remove_file_list}")
             endif()
+        endif()
+
+        # Re-sign all modified binaries. Our post-fixup steps (Step A, Step D)
+        # modify install names and rpaths AFTER fixup_bundle's signing pass,
+        # invalidating code signatures. Without re-signing, the debugger (and
+        # macOS code signature enforcement) will SIGKILL the process.
+        find_program(LY_CODESIGN codesign)
+        if(LY_CODESIGN)
+            # Sign flat-dir Qt framework binaries (modified in Step A)
+            file(GLOB qt_fw_bins_to_sign "${target_bundle_parent_dir}/Qt*.framework/Versions/*/Qt*")
+            foreach(qt_bin IN LISTS qt_fw_bins_to_sign)
+                if(NOT IS_DIRECTORY "${qt_bin}" AND NOT IS_SYMLINK "${qt_bin}")
+                    execute_process(COMMAND "${LY_CODESIGN}" --force --sign - "${qt_bin}"
+                        OUTPUT_QUIET ERROR_QUIET)
+                endif()
+            endforeach()
+            # Sign flat-dir dylibs and executables (modified in Step D)
+            foreach(flat_binary IN LISTS flat_dir_binaries)
+                if(NOT IS_SYMLINK "${flat_binary}" AND NOT IS_DIRECTORY "${flat_binary}")
+                    execute_process(COMMAND "${LY_CODESIGN}" --force --sign - "${flat_binary}"
+                        OUTPUT_QUIET ERROR_QUIET)
+                endif()
+            endforeach()
+            # Re-sign the bundle itself
+            execute_process(COMMAND "${LY_CODESIGN}" --force --deep --sign - "${target_bundle_dir}"
+                OUTPUT_QUIET ERROR_QUIET)
+            message(STATUS "Re-signed modified binaries and bundle: ${target_bundle_dir}")
         endif()
 
         file(TOUCH "${target_bundle_dir}")

@@ -23,6 +23,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/ConsoleBus.h>
@@ -132,7 +133,9 @@ namespace AZ::ScriptAutomation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ScriptAutomationSystemComponent>("ScriptAutomation", "Provides a mechanism for automating various tasks through Lua scripting in the game launchers")
+                ec->Class<ScriptAutomationSystemComponent>(
+                    QT_TRANSLATE_NOOP("ScriptAutomation", "ScriptAutomation"),
+                    QT_TRANSLATE_NOOP("ScriptAutomation", "Provides a mechanism for automating various tasks through Lua scripting in the game launchers"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

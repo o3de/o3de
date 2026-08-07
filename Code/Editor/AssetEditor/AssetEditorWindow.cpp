@@ -141,7 +141,7 @@ void AssetEditorWindow::OnAssetOpened(const AZ::Data::Asset<AZ::Data::AssetData>
 
         AZStd::string windowTitle = asset.GetHint();
 
-        qobject_cast<QWidget*>(parent())->setWindowTitle(tr(windowTitle.c_str()));
+        qobject_cast<QWidget*>(parent())->setWindowTitle(QString::fromUtf8(windowTitle.c_str()));
     }
     else
     {
@@ -160,5 +160,5 @@ void AssetEditorWindow::closeEvent(QCloseEvent* event)
 void AssetEditorWindow::OnAssetSaveFailed(const AZStd::string& error)
 {
     QMessageBox::warning(this, tr("Unable to Save Asset"),
-        tr(error.c_str()), QMessageBox::Ok, QMessageBox::Ok);
+        QString::fromUtf8(error.c_str()), QMessageBox::Ok, QMessageBox::Ok);
 }

@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -29,14 +30,14 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<ThresholdGradientConfig>(
-                    "Threshold Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Threshold Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ThresholdGradientConfig::m_threshold, "Threshold", "Specifies the value used to convert lower or higher gradient samples to 0 or 1 respectively.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ThresholdGradientConfig::m_threshold, QT_TRANSLATE_NOOP("GradientSignal", "Threshold"), QT_TRANSLATE_NOOP("GradientSignal", "Specifies the value used to convert lower or higher gradient samples to 0 or 1 respectively."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThresholdGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be transformed in relation to threshold.")
+                    ->DataElement(0, &ThresholdGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

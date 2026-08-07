@@ -14,30 +14,25 @@ if (TARGET 3rdParty::assimp)
     return()
 endif()
 
-# Variables inside a local function are scoped to the function body.
-# Putting all of this inside a function lets us basically ensure that any variables set by the 
+# Variables inside a block are scoped to the block body.
+# Putting all of this inside a block lets us basically ensure that any variables set by the
 # external 3rdParty CMake file do not have any effect on the outside world.
 # and allows us not to have to save and restore anything.
 
-function(GetAssimp)
+block()
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    include(FetchContent)
-
-    set(ASSIMP_GIT_REPO "https://github.com/assimp/assimp.git")
-    set(ASSIMP_GIT_TAG "e0b52347c6e52de2827ec957a9ebf00ce3c54f79")
     set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
 
-    FetchContent_Declare(
-            assimp
-            GIT_REPOSITORY ${ASSIMP_GIT_REPO}
-            GIT_TAG ${ASSIMP_GIT_TAG}
-            PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
-            GIT_SHALLOW
-            EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
+    o3de_fetch_content(assimp
+        VERSION "v6.0.4"
+        LICENSE "Custom BSD-3-Clause"
+        URL "https://github.com/assimp/assimp/archive/e0b52347c6e52de2827ec957a9ebf00ce3c54f79.tar.gz"
+        URL_HASH "00e4bf0b9d9d8e9b346fa3dd859c3ce5f3438451822d5933c07f65a76fc04745"
+        GIT "https://github.com/assimp/assimp.git"
+        GIT_HASH "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"
+        PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
+        EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
-
-    # please always be really clear about what third parties your gem uses.
-    message(STATUS "SDKWrapper Tool uses Assimp v6.0.4 (Custom BSD-3-Clause) ${ASSIMP_GIT_REPO}")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
 
@@ -113,12 +108,7 @@ function(GetAssimp)
     ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findassimp.cmake DESTINATION cmake/3rdParty)
 
     # signal that find_package(Assimp) has succeeded.
-    # we have to set it on the PARENT_SCOPE since we're in a function 
+    # we have to set it on the PARENT_SCOPE since we're in a block scope
     set(assimp_FOUND TRUE PARENT_SCOPE)
 
-endfunction()
-
-GetAssimp()
-
-# for extra safety, we'll remove the function from the global scope, so that it can't be called again.
-unset(GetAssimp)
+endblock()

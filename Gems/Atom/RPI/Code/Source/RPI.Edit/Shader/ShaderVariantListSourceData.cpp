@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -40,22 +41,22 @@ namespace AZ
                     editContext->Class<VariantInfo>("VariantInfo", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_stableId, "Stable Id", "Unique identifier for this shader variant within the list")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_stableId, QT_TRANSLATE_NOOP("Atom::RPI", "Stable Id"), QT_TRANSLATE_NOOP("Atom::RPI", "Unique identifier for this shader variant within the list"))
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_options, "Options", "Table of shader options for configuring this variant")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_options, QT_TRANSLATE_NOOP("Atom::RPI", "Options"), QT_TRANSLATE_NOOP("Atom::RPI", "Table of shader options for configuring this variant"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_enableRegisterAnalysis, "Register Analysis", "Whether to output analysis data from Radeon GPU Analyzer")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_asic, "GPU target", "The GPU target to use on register analysis")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_enableRegisterAnalysis, QT_TRANSLATE_NOOP("Atom::RPI", "Register Analysis"), QT_TRANSLATE_NOOP("Atom::RPI", "Whether to output analysis data from Radeon GPU Analyzer"))
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_asic, QT_TRANSLATE_NOOP("Atom::RPI", "GPU target"), QT_TRANSLATE_NOOP("Atom::RPI", "The GPU target to use on register analysis"))
                         ;
 
                     editContext->Class<ShaderVariantListSourceData>("ShaderVariantListSourceData", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderFilePath, "Shader File Path", "Path to the shader source this variant list represents")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderFilePath, QT_TRANSLATE_NOOP("Atom::RPI", "Shader File Path"), QT_TRANSLATE_NOOP("Atom::RPI", "Path to the shader source this variant list represents"))
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderVariants, "Shader Variants", "Container of all variants and options configured for the shader")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderVariants, QT_TRANSLATE_NOOP("Atom::RPI", "Shader Variants"), QT_TRANSLATE_NOOP("Atom::RPI", "Container of all variants and options configured for the shader"))
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
                         ;

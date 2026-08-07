@@ -18,7 +18,6 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const char* const s_settingsDocumentationLink = "Learn more about <a href=%0>configuring PhysX.</a>";
         static const char* const s_settingsDocumentationAddress = "configuring/configuration-global";
 
         SettingsWidget::SettingsWidget(QWidget* parent)
@@ -51,7 +50,7 @@ namespace PhysX
             verticalLayout->setContentsMargins(0, 0, 0, 0);
             verticalLayout->setSpacing(0);
 
-            m_documentationLinkWidget = new DocumentationLinkWidget(s_settingsDocumentationLink, (UXNameConstants::GetPhysXDocsRoot() + s_settingsDocumentationAddress).c_str());
+            m_documentationLinkWidget = new DocumentationLinkWidget(tr("Learn more about <a href=%0>configuring PhysX.</a>"), (UXNameConstants::GetPhysXDocsRoot() + s_settingsDocumentationAddress).c_str());
 
             AZ::SerializeContext* m_serializeContext;
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);

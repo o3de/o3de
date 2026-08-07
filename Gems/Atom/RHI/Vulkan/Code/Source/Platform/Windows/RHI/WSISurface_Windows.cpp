@@ -26,11 +26,11 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.hinstance = hinstance;
             createInfo.hwnd = reinterpret_cast<HWND>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = instance.GetContext().CreateWin32SurfaceKHR(
+            const VkResult vkResult = instance.GetContext().CreateWin32SurfaceKHR(
                 instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(vkResult);
 
-            return ConvertResult(result);
+            return ConvertResult(vkResult);
         }
     }
 }

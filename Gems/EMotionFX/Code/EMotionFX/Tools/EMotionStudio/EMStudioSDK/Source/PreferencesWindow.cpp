@@ -27,7 +27,7 @@ namespace EMStudio
 
     void PreferencesWindow::Init()
     {
-        setWindowTitle("Preferences");
+        setWindowTitle(tr("Preferences"));
         setSizeGripEnabled(false);
 
         m_categorySegmentBar = new AzQtComponents::SegmentBar(this);

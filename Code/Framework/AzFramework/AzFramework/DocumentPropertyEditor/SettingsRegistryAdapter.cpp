@@ -321,7 +321,7 @@ namespace AZ::DocumentPropertyEditor
         {
             // For now just trigger a soft reset.
             // This will still only send the view patches for what's actually changed.
-            NotifyResetDocument();
+            QueueResetDocument();
         };
 
         return message.Match(

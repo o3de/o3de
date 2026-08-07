@@ -445,7 +445,7 @@ void CLogFile::AboutSystem()
     Gestalt(gestaltSystemVersionMinor, &minorVersion);
     AZ_POP_DISABLE_WARNING
 
-    CryLog("%s - %d.%d", qPrintable(operatingSystemName), majorVersion, minorVersion);
+    CryLog("%s - %d.%d", qUtf8Printable(operatingSystemName), majorVersion, minorVersion);
 #else
     CryLog("Unknown Operating System");
 #endif
@@ -476,7 +476,7 @@ void CLogFile::AboutSystem()
 #else
     clock_gettime(CLOCK_MONOTONIC, &ts);
 #endif
-    CryLog("Local time is %s, system running for %ld minutes", qPrintable(QTime::currentTime().toString("hh:mm:ss")), ts.tv_sec / 60);
+    CryLog("Local time is %s, system running for %ld minutes", qUtf8Printable(QTime::currentTime().toString("hh:mm:ss")), ts.tv_sec / 60);
 #endif
 
     //////////////////////////////////////////////////////////////////////
@@ -505,7 +505,7 @@ void CLogFile::AboutSystem()
     auto screen = QGuiApplication::primaryScreen();
     if (screen)
     {
-        CryLog("Current display mode is %dx%dx%d, %s", screen->size().width(), screen->size().height(), screen->depth(), qPrintable(screen->name()));
+        CryLog("Current display mode is %dx%dx%d, %s", screen->size().width(), screen->size().height(), screen->depth(), qUtf8Printable(screen->name()));
     }
 #endif
 

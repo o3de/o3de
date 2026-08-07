@@ -9,6 +9,7 @@
 #include <Rendering/HairGlobalSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -37,21 +38,21 @@ namespace AZ
 
                     if (auto editContext = serializeContext->GetEditContext())
                     {
-                        editContext->Class<HairGlobalSettings>("Hair Global Settings", "Shared settings across all hair components")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableShadows, "Enable Shadows", "Enable shadows for hair.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableDirectionalLights, "Enable Directional Lights", "Enable directional lights for hair.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enablePunctualLights, "Enable Punctual Lights", "Enable punctual lights for hair.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAreaLights, "Enable Area Lights", "Enable area lights for hair.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableIBL, "Enable IBL", "Enable imaged-based lighting for hair.")
-                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &HairGlobalSettings::m_hairLightingModel, "Hair Lighting Model", "Determines which lighting equation to use")
-                                ->EnumAttribute(Hair::HairLightingModel::GGX, "GGX")
-                                ->EnumAttribute(Hair::HairLightingModel::Marschner, "Marschner")
-                                ->EnumAttribute(Hair::HairLightingModel::Kajiya, "Kajiya")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_R, "Enable Marschner R", "Enable Marschner R.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TRT, "Enable Marschner TRT", "Enable Marschner TRT.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TT, "Enable Marschner TT", "Enable Marschner TT.")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableLongtitudeCoeff, "Enable Longitude", "Enable Longitude Contribution")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAzimuthCoeff, "Enable Azimuth", "Enable Azimuth Contribution")
+                        editContext->Class<HairGlobalSettings>(QT_TRANSLATE_NOOP("AtomTressFX", "Hair Global Settings"), QT_TRANSLATE_NOOP("AtomTressFX", "Shared settings across all hair components"))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableShadows, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Shadows"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable shadows for hair."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableDirectionalLights, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Directional Lights"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable directional lights for hair."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enablePunctualLights, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Punctual Lights"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable punctual lights for hair."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAreaLights, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Area Lights"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable area lights for hair."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableIBL, QT_TRANSLATE_NOOP("AtomTressFX", "Enable IBL"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable imaged-based lighting for hair."))
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &HairGlobalSettings::m_hairLightingModel, QT_TRANSLATE_NOOP("AtomTressFX", "Hair Lighting Model"), QT_TRANSLATE_NOOP("AtomTressFX", "Determines which lighting equation to use"))
+                                ->EnumAttribute(Hair::HairLightingModel::GGX, QT_TRANSLATE_NOOP("AtomTressFX", "GGX"))
+                                ->EnumAttribute(Hair::HairLightingModel::Marschner, QT_TRANSLATE_NOOP("AtomTressFX", "Marschner"))
+                                ->EnumAttribute(Hair::HairLightingModel::Kajiya, QT_TRANSLATE_NOOP("AtomTressFX", "Kajiya"))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_R, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner R"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner R."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TRT, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner TRT"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner TRT."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableMarschner_TT, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner TT"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable Marschner TT."))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableLongtitudeCoeff, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Longitude"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable Longitude Contribution"))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairGlobalSettings::m_enableAzimuthCoeff, QT_TRANSLATE_NOOP("AtomTressFX", "Enable Azimuth"), QT_TRANSLATE_NOOP("AtomTressFX", "Enable Azimuth Contribution"))
                             ;
                     }
                 }

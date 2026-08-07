@@ -36,7 +36,8 @@ namespace AZStd
             return seed;
         }
 
-        template<typename... TupleTypes, typename = AZStd::enable_if_t<hash_enabled_concept_v<TupleTypes...>>>
+        template<typename... TupleTypes>
+            requires hash_enabled_concept_v<TupleTypes...>
         constexpr size_t operator()(const AZStd::tuple<TupleTypes...>& value) const
         {
             return ElementHasher(value, AZStd::make_index_sequence<sizeof...(Types)>{});
@@ -62,7 +63,8 @@ namespace AZStd
     // as the purpose of allowing swap is to allow the references to the integers to be swapped,
     // not the entire tuple itself
     template<class... Types>
-    auto swap(const tuple<Types...>& left, const tuple<Types...>& right) -> enable_if_t<(is_swappable_v<const Types> && ...)>
+        requires (is_swappable_v<const Types> && ...)
+    auto swap(const tuple<Types...>& left, const tuple<Types...>& right) -> void
     {
         Internal::swap_tuple_elements(left, right, AZStd::index_sequence_for<Types...>{});
     }
@@ -84,11 +86,11 @@ namespace AZStd
 {
     template<class Fn, class Tuple>
     constexpr auto apply(Fn&& f, Tuple&& tupleObj) -> decltype(Internal::apply_impl(
-        AZStd::declval<Fn>(), AZStd::declval<Tuple>(), AZStd::make_index_sequence<AZStd::tuple_size<AZStd::decay_t<Tuple>>::value>{}))
+        AZStd::declval<Fn>(), AZStd::declval<Tuple>(), AZStd::make_index_sequence<AZStd::tuple_size_v<AZStd::decay_t<Tuple>>>{}))
     {
         return Internal::apply_impl(
             AZStd::forward<Fn>(f),
             AZStd::forward<Tuple>(tupleObj),
-            AZStd::make_index_sequence<AZStd::tuple_size<AZStd::decay_t<Tuple>>::value>{});
+            AZStd::make_index_sequence<AZStd::tuple_size_v<AZStd::decay_t<Tuple>>>{});
     }
 } // namespace AZStd

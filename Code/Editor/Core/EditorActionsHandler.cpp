@@ -413,15 +413,27 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 // window holding keyboard focus, so editor shortcuts (e.g. Ctrl+Z) are not delivered until the
                 // user clicks back into the interface. Focusing the viewport both commits the edit and keeps
                 // keyboard focus inside the editor's shortcut scope.
+                //
+                // Only redirect focus when it is currently OUTSIDE the viewport. GetActiveViewport() returns the
+                // outer EditorViewportWidget, but keyboard input is owned by its child render viewport (the input
+                // mapper's source widget). If focus is already inside the viewport, moving it to the wrapper
+                // strands the in-flight modifier-key release (e.g. the Ctrl of Ctrl+S) on the wrong widget,
+                // leaving the viewport's Ctrl state latched on. There is also no field edit to commit in that case.
                 if (QWidget* focusWidget = QApplication::focusWidget())
                 {
-                    if (QtViewport* viewport = mainWindow ? mainWindow->GetActiveViewport() : nullptr)
+                    QtViewport* viewport = mainWindow ? mainWindow->GetActiveViewport() : nullptr;
+                    const bool focusInViewport =
+                        viewport && (focusWidget == viewport || viewport->isAncestorOf(focusWidget));
+                    if (!focusInViewport)
                     {
-                        viewport->setFocus(Qt::OtherFocusReason);
-                    }
-                    else
-                    {
-                        focusWidget->clearFocus();
+                        if (viewport)
+                        {
+                            viewport->setFocus(Qt::OtherFocusReason);
+                        }
+                        else
+                        {
+                            focusWidget->clearFocus();
+                        }
                     }
                 }
                 cryEdit->OnFileSave();
@@ -1693,8 +1705,7 @@ void EditorActionsHandler::OnMenuRegistrationHook()
             menuProperties.m_name = "Open Recent";
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::RecentFilesMenuIdentifier, menuProperties);
 
-            // Legacy - the menu should update when the files list is changed.
-            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::FileMenuIdentifier);
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::RecentFilesMenuIdentifier);
             QObject::connect(
                 menu,
                 &QMenu::aboutToShow,

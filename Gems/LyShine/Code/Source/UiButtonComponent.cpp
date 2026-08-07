@@ -24,6 +24,7 @@
 
 #include "UiSerialize.h"
 #include "Sprite.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiButtonNotificationBus Behavior context handler class
@@ -145,7 +146,7 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiButtonComponent>("Button", "An interactable component for button behavior");
+            auto editInfo = ec->Class<UiButtonComponent>(QT_TRANSLATE_NOOP("LyShine", "Button"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for button behavior"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -156,10 +157,10 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiButtonComponent::m_actionName, "Click", "The action name triggered when the button is released");
+                editInfo->DataElement(0, &UiButtonComponent::m_actionName, QT_TRANSLATE_NOOP("LyShine", "Click"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when the button is released"));
             }
         }
     }

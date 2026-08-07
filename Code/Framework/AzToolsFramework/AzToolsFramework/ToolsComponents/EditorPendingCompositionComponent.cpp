@@ -13,6 +13,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -106,7 +108,8 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorPendingCompositionComponent>("Pending Components", "")
+                    editContext->Class<EditorPendingCompositionComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Pending Components"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::HideIcon, true)

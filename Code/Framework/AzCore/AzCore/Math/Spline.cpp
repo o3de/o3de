@@ -15,6 +15,8 @@
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     const float Spline::s_splineEpsilon = 0.00001f;
@@ -549,14 +551,20 @@ namespace AZ
 
         if (EditContext* editContext = context.GetEditContext())
         {
-            editContext->Class<Spline>("Spline", "Spline Data")
+            editContext->Class<Spline>(
+                QT_TRANSLATE_NOOP("AzCore", "Spline"),
+                QT_TRANSLATE_NOOP("AzCore", "Spline Data"))
                 ->ClassElement(Edit::ClassElements::EditorData, "")
                     //->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                     ->Attribute(Edit::Attributes::AutoExpand, true)
                     ->Attribute(Edit::Attributes::ContainerCanBeModified, false)
-                ->DataElement(Edit::UIHandlers::Default, &Spline::m_vertexContainer, "Vertices", "Data representing the spline, in the entity's local coordinate space")
+                ->DataElement(Edit::UIHandlers::Default, &Spline::m_vertexContainer,
+                    QT_TRANSLATE_NOOP("AzCore", "Vertices"),
+                    QT_TRANSLATE_NOOP("AzCore", "Data representing the spline, in the entity's local coordinate space"))
                     ->Attribute(Edit::Attributes::AutoExpand, true)
-                ->DataElement(Edit::UIHandlers::CheckBox, &Spline::m_closed, "Closed", "Determine whether a spline is self closing (looping) or not")
+                ->DataElement(Edit::UIHandlers::CheckBox, &Spline::m_closed,
+                    QT_TRANSLATE_NOOP("AzCore", "Closed"),
+                    QT_TRANSLATE_NOOP("AzCore", "Determine whether a spline is self closing (looping) or not"))
                     ->Attribute(Edit::Attributes::ChangeNotify, &Spline::OnOpenCloseChanged)
                 ;
         }
@@ -799,7 +807,9 @@ namespace AZ
 
         if (EditContext* editContext = context.GetEditContext())
         {
-            editContext->Class<LinearSpline>("Linear Spline", "Spline data")
+            editContext->Class<LinearSpline>(
+                QT_TRANSLATE_NOOP("AzCore", "Linear Spline"),
+                QT_TRANSLATE_NOOP("AzCore", "Spline data"))
                 ->ClassElement(Edit::ClassElements::EditorData, "")
                 ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
                 ->Attribute(Edit::Attributes::AutoExpand, true)
@@ -1286,14 +1296,20 @@ namespace AZ
 
         if (EditContext* editContext = context.GetEditContext())
         {
-            editContext->Class<BezierSpline>("Bezier Spline", "Spline data")
+            editContext->Class<BezierSpline>(
+                QT_TRANSLATE_NOOP("AzCore", "Bezier Spline"),
+                QT_TRANSLATE_NOOP("AzCore", "Spline data"))
                 ->ClassElement(Edit::ClassElements::EditorData, "")
                     //->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                     ->Attribute(Edit::Attributes::AutoExpand, true)
                     ->Attribute(Edit::Attributes::ContainerCanBeModified, false)
-                ->DataElement(Edit::UIHandlers::Default, &BezierSpline::m_bezierData, "Bezier Data", "Data defining the bezier curve")
+                ->DataElement(Edit::UIHandlers::Default, &BezierSpline::m_bezierData,
+                    QT_TRANSLATE_NOOP("AzCore", "Bezier Data"),
+                    QT_TRANSLATE_NOOP("AzCore", "Data defining the bezier curve"))
                     ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::Hide)
-                ->DataElement(Edit::UIHandlers::Slider, &BezierSpline::m_granularity, "Granularity", "Parameter specifying the granularity of each segment in the spline")
+                ->DataElement(Edit::UIHandlers::Slider, &BezierSpline::m_granularity,
+                    QT_TRANSLATE_NOOP("AzCore", "Granularity"),
+                    QT_TRANSLATE_NOOP("AzCore", "Parameter specifying the granularity of each segment in the spline"))
                     ->Attribute(Edit::Attributes::Min, s_minGranularity)
                     ->Attribute(Edit::Attributes::Max, s_maxGranularity)
                     ;
@@ -1542,15 +1558,21 @@ namespace AZ
 
         if (EditContext* editContext = context.GetEditContext())
         {
-            editContext->Class<CatmullRomSpline>("Catmull Rom Spline", "Spline data")
+            editContext->Class<CatmullRomSpline>(
+                QT_TRANSLATE_NOOP("AzCore", "Catmull Rom Spline"),
+                QT_TRANSLATE_NOOP("AzCore", "Spline data"))
                 ->ClassElement(Edit::ClassElements::EditorData, "")
                     //->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                     ->Attribute(Edit::Attributes::AutoExpand, true)
                     ->Attribute(Edit::Attributes::ContainerCanBeModified, false)
-                ->DataElement(Edit::UIHandlers::Slider, &CatmullRomSpline::m_knotParameterization, "Knot Parameterization", "Parameter specifying interpolation of the spline")
+                ->DataElement(Edit::UIHandlers::Slider, &CatmullRomSpline::m_knotParameterization,
+                    QT_TRANSLATE_NOOP("AzCore", "Knot Parameterization"),
+                    QT_TRANSLATE_NOOP("AzCore", "Parameter specifying interpolation of the spline"))
                     ->Attribute(Edit::Attributes::Min, 0.0f)
                     ->Attribute(Edit::Attributes::Max, 1.0f)
-                ->DataElement(Edit::UIHandlers::Slider, &CatmullRomSpline::m_granularity, "Granularity", "Parameter specifying the granularity of each segment in the spline")
+                ->DataElement(Edit::UIHandlers::Slider, &CatmullRomSpline::m_granularity,
+                    QT_TRANSLATE_NOOP("AzCore", "Granularity"),
+                    QT_TRANSLATE_NOOP("AzCore", "Parameter specifying the granularity of each segment in the spline"))
                     ->Attribute(Edit::Attributes::Min, s_minGranularity)
                     ->Attribute(Edit::Attributes::Max, s_maxGranularity)
                     ;

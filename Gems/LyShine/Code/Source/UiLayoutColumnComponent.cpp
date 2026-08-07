@@ -17,6 +17,8 @@
 
 #include "UiSerialize.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +323,7 @@ void UiLayoutColumnComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiLayoutColumnComponent>("LayoutColumn", "A layout component that arranges its children in a column");
+            auto editInfo = ec->Class<UiLayoutColumnComponent>(QT_TRANSLATE_NOOP("LyShine", "LayoutColumn"), QT_TRANSLATE_NOOP("LyShine", "A layout component that arranges its children in a column"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
@@ -330,47 +332,47 @@ void UiLayoutColumnComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutColumnComponent::m_padding, "Padding", "The layout padding")
+            editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutColumnComponent::m_padding, QT_TRANSLATE_NOOP("LyShine", "Padding"), QT_TRANSLATE_NOOP("LyShine", "The layout padding"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiLayoutColumnComponent::m_spacing, "Spacing", "The spacing between children")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiLayoutColumnComponent::m_spacing, QT_TRANSLATE_NOOP("LyShine", "Spacing"), QT_TRANSLATE_NOOP("LyShine", "The spacing between children"))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_order, "Order", "Which direction the column fills")
-                ->EnumAttribute(UiLayoutInterface::VerticalOrder::TopToBottom, "Top to bottom")
-                ->EnumAttribute(UiLayoutInterface::VerticalOrder::BottomToTop, "Bottom to top")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_order, QT_TRANSLATE_NOOP("LyShine", "Order"), QT_TRANSLATE_NOOP("LyShine", "Which direction the column fills"))
+                ->EnumAttribute(UiLayoutInterface::VerticalOrder::TopToBottom, QT_TRANSLATE_NOOP("LyShine", "Top to bottom"))
+                ->EnumAttribute(UiLayoutInterface::VerticalOrder::BottomToTop, QT_TRANSLATE_NOOP("LyShine", "Bottom to top"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutColumnComponent::m_ignoreDefaultLayoutCells, "Ignore Default Cells",
-                "When checked, fixed default layout cell values are used for child elements with no LayoutCell\n"
-                "component rather than using defaults calculated by other components on the child.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutColumnComponent::m_ignoreDefaultLayoutCells, QT_TRANSLATE_NOOP("LyShine", "Ignore Default Cells"),
+                QT_TRANSLATE_NOOP("LyShine", "When checked, fixed default layout cell values are used for child elements with no LayoutCell\n"
+                "component rather than using defaults calculated by other components on the child."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
             // Alignment
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Child Alignment")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Child Alignment"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_childHAlignment, "Horizontal",
-                    "How to align the children if they don't take up all the available width")
-                    ->EnumAttribute(IDraw2d::HAlign::Left, "Left")
-                    ->EnumAttribute(IDraw2d::HAlign::Center, "Center")
-                    ->EnumAttribute(IDraw2d::HAlign::Right, "Right")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_childHAlignment, QT_TRANSLATE_NOOP("LyShine", "Horizontal"),
+                    QT_TRANSLATE_NOOP("LyShine", "How to align the children if they don't take up all the available width"))
+                    ->EnumAttribute(IDraw2d::HAlign::Left, QT_TRANSLATE_NOOP("LyShine", "Left"))
+                    ->EnumAttribute(IDraw2d::HAlign::Center, QT_TRANSLATE_NOOP("LyShine", "Center"))
+                    ->EnumAttribute(IDraw2d::HAlign::Right, QT_TRANSLATE_NOOP("LyShine", "Right"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_childVAlignment, "Vertical",
-                    "How to align the children if they don't take up all the available height")
-                    ->EnumAttribute(IDraw2d::VAlign::Top, "Top")
-                    ->EnumAttribute(IDraw2d::VAlign::Center, "Center")
-                    ->EnumAttribute(IDraw2d::VAlign::Bottom, "Bottom")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutColumnComponent::m_childVAlignment, QT_TRANSLATE_NOOP("LyShine", "Vertical"),
+                    QT_TRANSLATE_NOOP("LyShine", "How to align the children if they don't take up all the available height"))
+                    ->EnumAttribute(IDraw2d::VAlign::Top, QT_TRANSLATE_NOOP("LyShine", "Top"))
+                    ->EnumAttribute(IDraw2d::VAlign::Center, QT_TRANSLATE_NOOP("LyShine", "Center"))
+                    ->EnumAttribute(IDraw2d::VAlign::Bottom, QT_TRANSLATE_NOOP("LyShine", "Bottom"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutColumnComponent::InvalidateLayout);
             }
         }

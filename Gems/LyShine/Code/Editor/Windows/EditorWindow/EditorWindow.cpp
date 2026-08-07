@@ -220,7 +220,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Hierarchy pane.
     {
-        m_hierarchyDockWidget = new AzQtComponents::StyledDockWidget("Hierarchy");
+        m_hierarchyDockWidget = new AzQtComponents::StyledDockWidget(tr("Hierarchy"));
         m_hierarchyDockWidget->setObjectName("HierarchyDockWidget");    // needed to save state
         m_hierarchyDockWidget->setWidget(m_hierarchy);
         // needed to get keyboard shortcuts properly
@@ -230,7 +230,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Properties pane.
     {
-        m_propertiesDockWidget = new AzQtComponents::StyledDockWidget("Properties");
+        m_propertiesDockWidget = new AzQtComponents::StyledDockWidget(tr("Properties"));
         m_propertiesDockWidget->setObjectName("PropertiesDockWidget");    // needed to save state
         m_propertiesDockWidget->setWidget(m_properties);
         m_properties->setFocusPolicy(Qt::StrongFocus);
@@ -239,7 +239,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Animation pane.
     {
-        m_animationDockWidget = new AzQtComponents::StyledDockWidget("Animation Editor");
+        m_animationDockWidget = new AzQtComponents::StyledDockWidget(tr("Animation Editor"));
         m_animationDockWidget->setObjectName("AnimationDockWidget");    // needed to save state
         m_animationDockWidget->setWidget(m_animationWidget);
         m_animationWidget->setFocusPolicy(Qt::StrongFocus);
@@ -248,7 +248,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Preview action log pane (only shown in preview mode)
     {
-        m_previewActionLogDockWidget = new AzQtComponents::StyledDockWidget("Action Log");
+        m_previewActionLogDockWidget = new AzQtComponents::StyledDockWidget(tr("Action Log"));
         m_previewActionLogDockWidget->setObjectName("PreviewActionLog");    // needed to save state
         m_previewActionLogDockWidget->setWidget(m_previewActionLog);
         m_previewActionLog->setFocusPolicy(Qt::StrongFocus);
@@ -257,7 +257,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Preview animation list pane (only shown in preview mode)
     {
-        m_previewAnimationListDockWidget = new AzQtComponents::StyledDockWidget("Animation List");
+        m_previewAnimationListDockWidget = new AzQtComponents::StyledDockWidget(tr("Animation List"));
         m_previewAnimationListDockWidget->setObjectName("PreviewAnimationList");    // needed to save state
         m_previewAnimationListDockWidget->setWidget(m_previewAnimationList);
         m_previewAnimationList->setFocusPolicy(Qt::StrongFocus);
@@ -836,8 +836,8 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
     }
 
     QMessageBox(QMessageBox::Critical,
-        "Error",
-        tr("Unable to save %1. Is the file read-only?").arg(sourceAssetPathName.empty() ? "file" : sourceAssetPathName.c_str()),
+        tr("Error"),
+        tr("Unable to save %1. Is the file read-only?").arg(sourceAssetPathName.empty() ? tr("file") : sourceAssetPathName.c_str()),
         QMessageBox::Ok, this).exec();
 
     return false;
@@ -851,7 +851,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
-        QMessageBox::critical(this, QObject::tr("Slice Push Failed"), "Slice entity not found in canvas.");
+        QMessageBox::critical(this, tr("Slice Push Failed"), tr("Slice entity not found in canvas."));
         return false;
     }
 
@@ -862,7 +862,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     // if false then something is wrong. The user could have done a detach slice for example
     if (!sliceAddress.IsValid() || !sliceAddress.GetReference()->GetSliceAsset())
     {
-        QMessageBox::critical(this, QObject::tr("Slice Push Failed"), "Slice entity no longer appears to be a slice instance.");
+        QMessageBox::critical(this, tr("Slice Push Failed"), tr("Slice entity no longer appears to be a slice instance."));
         return false;
     }
 
@@ -883,7 +883,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     {
         QMessageBox::critical(
             this,
-            QObject::tr("Slice Push Failed"), 
+            tr("Slice Push Failed"), 
             outcome.GetError().c_str());
 
         return false;
@@ -1682,7 +1682,7 @@ void EditorWindow::ToggleEditorMode()
             }
             else
             {
-                QMessageBox::critical(this, "Preview Mode Error", GetEntityContext()->GetErrorMessage().c_str());
+                QMessageBox::critical(this, tr("Preview Mode Error"), GetEntityContext()->GetErrorMessage().c_str());
 
                 // A zero-msec timeout will cause the single-shot timer to execute
                 // once all events currently in the queue have processed. This allows
@@ -2069,7 +2069,7 @@ void EditorWindow::OnCanvasTabContextMenuRequested(const QPoint &point)
         menu.addAction(CreateCloseAllOtherCanvasesAction(canvasEntityId, true));
         menu.addSeparator();
 
-        QAction* action = new QAction("Copy Full Path", this);
+        QAction* action = new QAction(tr("Copy Full Path"), this);
         action->setEnabled(canvasMetadata && !canvasMetadata->m_canvasSourceAssetPathname.empty());
         QObject::connect(action,
             &QAction::triggered,
@@ -2382,7 +2382,7 @@ void EditorWindow::ShowEntitySearchModal()
     mainLayout->setContentsMargins(5, 5, 5, 5);
     FindEntityWidget* findEntityWidget = new FindEntityWidget(m_activeCanvasEntityId, dialog);
     mainLayout->addWidget(findEntityWidget);
-    dialog->setWindowTitle(QObject::tr("Find Elements"));
+    dialog->setWindowTitle(tr("Find Elements"));
     dialog->setMinimumSize(QSize(500, 500));
     dialog->resize(QSize(600, 600));
     dialog->setLayout(mainLayout);

@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/Utils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
@@ -39,23 +40,34 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CharacterControllerConfiguration>(
-                    "PhysX Character Controller Configuration", "PhysX Character Controller Configuration")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Character Controller Configuration"), QT_TRANSLATE_NOOP("PhysX", "PhysX Character Controller Configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CharacterControllerConfiguration::m_slopeBehaviour,
-                        "Slope Behavior", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle.")
+                        QT_TRANSLATE_NOOP("PhysX", "Slope Behavior"), QT_TRANSLATE_NOOP("PhysX", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->EnumAttribute(SlopeBehaviour::PreventClimbing, "Prevent Climbing")
-                    ->EnumAttribute(SlopeBehaviour::ForceSliding, "Force Sliding")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_contactOffset,
-                        "Contact Offset",
-                        "Distance from the controller boundary where contact with surfaces can be resolved. Default value is 0.1, but a common value is around 10% of the radius.\n"
-                        "If the character is getting stuck often, consider increasing this value.")
+                    ->EnumAttribute(SlopeBehaviour::PreventClimbing, QT_TRANSLATE_NOOP("PhysX", "Prevent Climbing"))
+                    ->EnumAttribute(SlopeBehaviour::ForceSliding, QT_TRANSLATE_NOOP("PhysX", "Force Sliding"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CharacterControllerConfiguration::m_contactOffset,
+                        QT_TRANSLATE_NOOP("PhysX", "Contact Offset"),
+                        QT_TRANSLATE_NOOP(
+                            "PhysX",
+                            "Distance from the controller boundary where contact with surfaces can be resolved. Default "
+                            "value is 0.1, but a common value is around 10% of the radius.\n"
+                            "If the character is getting stuck often, consider increasing this value."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_scaleCoefficient,
-                        "Internal Body Scale",
-                        "Scales the internal kinematic body. A scale < 1 means the underlying kinematic body will not touch surrounding rigid bodies and only interact with the character controller's shapes.\n"
-                        "A scale >=1 means the kinematic body will touch and push surrounding rigid bodies, potentially resulting in wall tunneling or sudden movement explosion.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CharacterControllerConfiguration::m_scaleCoefficient,
+                        QT_TRANSLATE_NOOP("PhysX", "Internal Body Scale"),
+                        QT_TRANSLATE_NOOP(
+                            "PhysX",
+                            "Scales the internal kinematic body. A scale < 1 means the underlying kinematic body will not "
+                            "touch surrounding rigid bodies and only interact with the character controller's shapes.\n"
+                            "A scale >=1 means the kinematic body will touch and push surrounding rigid bodies, potentially resulting in "
+                            "wall tunneling or sudden movement explosion."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ;

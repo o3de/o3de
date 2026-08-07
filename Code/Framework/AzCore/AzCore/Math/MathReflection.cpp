@@ -23,6 +23,7 @@
 #include <AzCore/Math/VectorN.h>
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
+#include <AzCore/Math/CrcSerializer.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorGradient.h>
 #include <AzCore/Math/ColorSerializer.h>
@@ -269,6 +270,14 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::ToolTip, "Returns a linear interpolation between two values 'a' and 'b'")
             ->Method<float(float, float, float)>("LerpInverse", &AZ::LerpInverse, { { { "a", "" },{ "b", "" },{ "value", "" } } })
                 ->Attribute(AZ::Script::Attributes::ToolTip, "Returns a value t where Lerp(a,b,t)==value (or 0 if a==b)")
+            ->Method<AZStd::tuple<float, float>(float&, float&, float, const float&, float)>(
+                "SmoothCriticallyDamped",
+                &AZ::SmoothCriticallyDamped,
+                { { { "From", "" }, { "Rate", "" }, { "DeltaTime", "" }, { "Target", "" }, { "SmoothTime", "" } } })
+            ->Attribute(
+                AZ::Script::Attributes::ToolTip, "Returns a smoothed value towards a target using a critically damped spring system")
+            ->Method<float(const float&, const float&, float)>("SmoothStep", &AZ::SmoothStep, { { { "a", "" },{ "b", "" },{ "t", "" } } })
+                ->Attribute(AZ::Script::Attributes::ToolTip, "Returns a smooth S-curve interpolation between two values 'a' and 'b'")
             ->Method("Clamp", &GetClamp<float>)
             ->Method("IsEven", &IsEven<int>)
             ->Method<bool(int)>("IsOdd", &IsOdd<int>, {{{"Value",""}}})
@@ -352,6 +361,7 @@ namespace AZ
 
     void MathReflect(JsonRegistrationContext& context)
     {
+        context.Serializer<JsonCrcSerializer>()->HandlesType<Crc32>();
         context.Serializer<JsonColorSerializer>()->HandlesType<Color>();
         context.Serializer<JsonUuidSerializer>()->HandlesType<Uuid>();
         context.Serializer<JsonMatrix3x3Serializer>()->HandlesType<Matrix3x3>();

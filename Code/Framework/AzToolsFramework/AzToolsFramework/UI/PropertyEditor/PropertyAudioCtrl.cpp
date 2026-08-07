@@ -38,7 +38,9 @@ namespace AzToolsFramework
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CReflectedVarAudioControl>("VarAudioControl", "AudioControl")
+                editContext->Class<CReflectedVarAudioControl>(
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "VarAudioControl"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "AudioControl"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ;
             }

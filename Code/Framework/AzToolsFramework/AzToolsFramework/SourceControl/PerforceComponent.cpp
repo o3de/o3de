@@ -12,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/lock.h>
 
@@ -123,9 +124,10 @@ namespace AzToolsFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PerforceComponent>(
-                    "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Perforce Connectivity"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Manages Perforce connectivity and executes Perforce commands."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                 ;
             }
         }

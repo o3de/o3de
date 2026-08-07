@@ -40,7 +40,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool a
 
     if (showMask & (Show::kNew_EmptyElement | Show::kNew_EmptyElementAtRoot))
     {
-        QMenu* menu = (addMenuForNewElement ? addMenu("&New...") : this);
+        QMenu* menu = (addMenuForNewElement ? addMenu(tr("&New...")) : this);
 
         if (showMask & (Show::kNew_EmptyElement | Show::kNew_EmptyElementAtRoot))
         {
@@ -100,7 +100,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Cut element.
     {
-        action = new QAction("Cut", this);
+        action = new QAction(tr("Cut"), this);
         action->setShortcut(QKeySequence::Cut);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -123,7 +123,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Copy element.
     {
-        action = new QAction("Copy", this);
+        action = new QAction(tr("Copy"), this);
         action->setShortcut(QKeySequence::Copy);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -148,7 +148,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Paste element.
     {
-        action = new QAction(QIcon(":/Icons/Eye_Open.png"), (itemsAreSelected ? "Paste as sibling" : "Paste"), this);
+        action = new QAction(QIcon(":/Icons/Eye_Open.png"), (itemsAreSelected ? tr("Paste as sibling") : tr("Paste")), this);
         action->setShortcut(QKeySequence::Paste);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -170,7 +170,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
         if (itemsAreSelected)
         {
-            action = new QAction(QIcon(":/Icons/Eye_Open.png"), ("Paste as child"), this);
+            action = new QAction(QIcon(":/Icons/Eye_Open.png"), tr("Paste as child"), this);
             {
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V), QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V) });
@@ -261,7 +261,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
             selectedPushEntities.insert(
                 selectedPushEntities.begin(), selectedTransformHierarchyEntities.begin(), selectedTransformHierarchyEntities.end());
 
-            QAction* action = addAction(QObject::tr("&Push to Slice..."));
+            QAction* action = addAction(tr("&Push to Slice..."));
             QObject::connect(
                 action,
                 &QAction::triggered,
@@ -274,7 +274,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
 
         if (showMask & Show::kNewSlice)
         {
-            QAction* action = addAction("Make Cascaded Slice from Selected Slices && Entities...");
+            QAction* action = addAction(tr("Make Cascaded Slice from Selected Slices && Entities..."));
             QObject::connect(
                 action,
                 &QAction::triggered,
@@ -284,7 +284,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, true);
                 });
 
-            action = addAction(QObject::tr("Make Detached Slice from Selected Entities..."));
+            action = addAction(tr("Make Detached Slice from Selected Entities..."));
             QObject::connect(
                 action,
                 &QAction::triggered,
@@ -310,11 +310,11 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
                 QString detachEntitiesActionText;
                 if (selectedDetachEntities.size() == 1)
                 {
-                    detachEntitiesActionText = QObject::tr("Detach slice entity...");
+                    detachEntitiesActionText = tr("Detach slice entity...");
                 }
                 else
                 {
-                    detachEntitiesActionText = QObject::tr("Detach slice entities...");
+                    detachEntitiesActionText = tr("Detach slice entities...");
                 }
                 QAction* action = addAction(detachEntitiesActionText);
                 QObject::connect(
@@ -333,11 +333,11 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
                 QString detachSlicesActionText;
                 if (sliceInstances.size() == 1)
                 {
-                    detachSlicesActionText = QObject::tr("Detach slice instance...");
+                    detachSlicesActionText = tr("Detach slice instance...");
                 }
                 else
                 {
-                    detachSlicesActionText = QObject::tr("Detach slice instances...");
+                    detachSlicesActionText = tr("Detach slice instances...");
                 }
                 QAction* action = addAction(detachSlicesActionText);
                 QObject::connect(
@@ -353,7 +353,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
 
             // Edit slice in new tab
             {
-                QMenu* menu = addMenu("Edit slice in new tab");
+                QMenu* menu = addMenu(tr("Edit slice in new tab"));
 
                 // Catalog all unique slices to which any of the selected entities are associated (anywhere in their ancestry).
                 // This is used to make a menu allowing any of them to be edited in a new tab
@@ -401,7 +401,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRa
     {
         if (showMask & Show::kNewSlice)
         {
-            QAction* action = addAction(QObject::tr("Make New &Slice from Selection..."));
+            QAction* action = addAction(tr("Make New &Slice from Selection..."));
             QObject::connect(
                 action,
                 &QAction::triggered,
@@ -440,7 +440,7 @@ void HierarchyMenu::New_ElementFromSlice(
 
     SliceMenuHelpers::CreateInstantiateSliceMenu(hierarchy, selectedItems, menu, addAtRoot, viewportPosition);
 
-    QAction* action = menu->addAction(QObject::tr("Element from Slice &Browser..."));
+    QAction* action = menu->addAction(tr("Element from Slice &Browser..."));
     QObject::connect(
         action,
         &QAction::triggered,
@@ -475,7 +475,7 @@ void HierarchyMenu::DeleteElement(HierarchyWidget* hierarchy, QTreeWidgetItemRaw
 
     // Delete element.
     {
-        action = new QAction("Delete", this);
+        action = new QAction(tr("Delete"), this);
         action->setShortcut(QKeySequence::Delete);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -503,7 +503,7 @@ void HierarchyMenu::FindElements(HierarchyWidget* hierarchy, [[maybe_unused]] QT
 
     // Find elements
     {
-        action = new QAction("Find Elements...", this);
+        action = new QAction(tr("Find Elements..."), this);
         action->setShortcut(QKeySequence::Find);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -524,7 +524,7 @@ void HierarchyMenu::EditorOnly(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtr
 
     // Toggle editor only state.
     {
-        action = new QAction("Editor Only", this);
+        action = new QAction(tr("Editor Only"), this);
         action->setCheckable(true);
 
         if (selectedItems.empty())

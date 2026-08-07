@@ -18,6 +18,7 @@
 
 #include <LyShine/UiSerializeHelpers.h>
 #include "UiSerialize.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiRadioButtonGroupNotificationBus Behavior context handler class
@@ -198,7 +199,7 @@ void UiRadioButtonGroupComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiRadioButtonGroupComponent>("RadioButtonGroup", "A component for RadioButtonGroup behavior.");
+            auto editInfo = ec->Class<UiRadioButtonGroupComponent>(QT_TRANSLATE_NOOP("LyShine", "RadioButtonGroup"), QT_TRANSLATE_NOOP("LyShine", "A component for RadioButtonGroup behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -209,18 +210,18 @@ void UiRadioButtonGroupComponent::Reflect(AZ::ReflectContext* context)
 
             // Settings group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Settings")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Settings"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_allowUncheck, "Allow uncheck", "Allow clicking on the selected radio button to uncheck it.");
+                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_allowUncheck, QT_TRANSLATE_NOOP("LyShine", "Allow uncheck"), QT_TRANSLATE_NOOP("LyShine", "Allow clicking on the selected radio button to uncheck it."));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_changedActionName, "Change", "The action triggered when value changes.");
+                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes."));
             }
         }
     }

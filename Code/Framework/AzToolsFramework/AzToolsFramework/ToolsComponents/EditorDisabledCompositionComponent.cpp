@@ -12,6 +12,8 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -105,7 +107,8 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorDisabledCompositionComponent>("Disabled Components", "")
+                    editContext->Class<EditorDisabledCompositionComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Disabled Components"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::HideIcon, true)

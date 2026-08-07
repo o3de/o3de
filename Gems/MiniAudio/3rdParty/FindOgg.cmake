@@ -14,34 +14,28 @@ if (TARGET 3rdParty::ogg)
     return()
 endif()
 
-function(Getogg)
+block()
     # Variables inside a local function are scoped to the function body.
     # Putting all of this inside a function lets us basically ensure that any variables set by the
     # external 3rdParty CMake file do not have any effect on the outside world.
     # and allows us not to have to save and restore anything except variables that escape scope like CACHE variables.
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    include(FetchContent)
-
-    set(ogg_GIT_REPO "https://github.com/xiph/ogg.git")
-    set(ogg_GIT_TAG "v1.3.6")
-    set(ogg_GIT_HASH "be05b13e98b048f0b5a0f5fa8ce514d56db5f822") # Better to use pinned hashes for security.
-
-    FetchContent_Declare(
-            ogg
-            GIT_REPOSITORY ${ogg_GIT_REPO}
-            GIT_TAG ${ogg_GIT_HASH}
-            GIT_SHALLOW TRUE
-            EXCLUDE_FROM_ALL # prevent it from executing its install commands.
+    o3de_fetch_content(ogg
+        VERSION "v1.3.6"
+        LICENSE "BSD-3-Clause"
+        URL "https://github.com/xiph/ogg/archive/refs/tags/v1.3.6.tar.gz"
+        URL_HASH "95b643da661155d79db9de2fca55daed3a8d491039829def246aacb3d9201c81"
+        GIT "https://github.com/xiph/ogg.git"
+        GIT_HASH "be05b13e98b048f0b5a0f5fa8ce514d56db5f822"
+        EXCLUDE_FROM_ALL
     )
-
-    # please always be really clear about what third parties your gem uses.
-    message(STATUS "MiniAudio Gem uses ${ogg_GIT_REPO} ${ogg_GIT_TAG} (BSD-3-Clause)")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
     # Note that CMAKE_ARGS does NOT WORK for FetchContent_*, only ExternalProject.
     # Thus, you must set any configuration settings here, in the scope in which you call FetchContent_MakeAvailable.
     set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
     set(BUILD_SHARED_LIBS OFF)
     set(BUILD_FRAMEWORK OFF)
@@ -52,15 +46,10 @@ function(Getogg)
 
     # the below line is what actualy runs its CMakeList.txt file and executes targets and so on:
     FetchContent_MakeAvailable(ogg)
-    
+
     # restore any CACHE settings changed:
     set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
-endfunction()
-
-Getogg()
-
-# for extra safety, we'll remove the function from the global scope, so that it can't be called again.
-unset(Getogg)
+endblock()
 
 get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
 ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)

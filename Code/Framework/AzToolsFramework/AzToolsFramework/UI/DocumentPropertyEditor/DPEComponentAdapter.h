@@ -60,12 +60,13 @@ namespace AZ::DocumentPropertyEditor
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
         //! Gets notification from the EntitySystemBus before destroying an entity.
-        void OnEntityDestruction(const AZ::EntityId&) override;
-        void OnEntityInitialized(const AZ::EntityId&) override;
+        void OnEntityDeactivated(const AZ::EntityId&) override;
+        void OnEntityActivated(const AZ::EntityId&) override;
 
     private:
         //! Checks if the component is still valid in the entity.
         bool IsComponentValid() const;
+        AZ::Component* GetComponentInstanceFromId() const;
         void DoRefresh();
 
     protected:
@@ -81,6 +82,9 @@ namespace AZ::DocumentPropertyEditor
 
         //! object, used in conjunction with a QPointer, to track if this component is still alive
         QObject m_stillAlive;
+        // for debugging, detect if someone makes a control that sends a "finished edit" without an
+        // in progress edit.
+        bool m_gotInProgressEdit = false;
     };
 
 } // namespace AZ::DocumentPropertyEditor

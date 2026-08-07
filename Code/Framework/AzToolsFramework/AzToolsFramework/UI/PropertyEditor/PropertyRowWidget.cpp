@@ -14,6 +14,8 @@
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyCheckBoxCtrl.hxx>
 
+#include <QTimer>
+
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
@@ -464,10 +466,8 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::SetOverridden(bool overridden)
     {
-        bool currentOverrideValue = property("IsOverridden").toBool();
-        if (currentOverrideValue != overridden)
+        if (AzQtComponents::StyleManager::setObjectProperty(this, "IsOverridden", overridden))
         {
-            setProperty("IsOverridden", overridden);
             RefreshStyle();
         }
     }
@@ -1519,7 +1519,13 @@ namespace AzToolsFramework
                         {
                             if (!outcome.IsSuccess())
                             {
-                                QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Invalid Assignment", outcome.GetError().c_str(), QMessageBox::Ok);
+                                // do not show a message box inside this call stack - instead, queue it for later so that the property editor can finish reverting the value.
+                                auto MessageBoxFn = [outcome]()
+                                {
+                                    QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Invalid Assignment", outcome.GetError().c_str(), QMessageBox::Ok);
+                                };
+
+                                QTimer::singleShot(0, AzToolsFramework::GetActiveWindow(), MessageBoxFn);
                                 return false;
                             }
                         }

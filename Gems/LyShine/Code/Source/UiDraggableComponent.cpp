@@ -23,6 +23,8 @@
 
 #include "UiNavigationHelpers.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiDraggableNotificationBus Behavior context handler class
 class UiDraggableNotificationBusBehaviorHandler
@@ -521,7 +523,7 @@ void UiDraggableComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDraggableComponent>("Draggable", "An interactable component for drag and drop behavior");
+            auto editInfo = ec->Class<UiDraggableComponent>(QT_TRANSLATE_NOOP("LyShine", "Draggable"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for drag and drop behavior"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -530,16 +532,16 @@ void UiDraggableComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Drag States")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Drag States"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiDraggableComponent::m_dragNormalStateActions, "Normal", "The normal drag state actions")
+            editInfo->DataElement(0, &UiDraggableComponent::m_dragNormalStateActions, QT_TRANSLATE_NOOP("LyShine", "Normal"), QT_TRANSLATE_NOOP("LyShine", "The normal drag state actions"))
                 ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDraggableComponent::OnDragNormalStateActionsChanged);
 
-            editInfo->DataElement(0, &UiDraggableComponent::m_dragValidStateActions, "Valid", "The valid drag state actions")
+            editInfo->DataElement(0, &UiDraggableComponent::m_dragValidStateActions, QT_TRANSLATE_NOOP("LyShine", "Valid"), QT_TRANSLATE_NOOP("LyShine", "The valid drag state actions"))
                 ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDraggableComponent::OnDragValidStateActionsChanged);
 
-            editInfo->DataElement(0, &UiDraggableComponent::m_dragInvalidStateActions, "Invalid", "The invalid drag state actions")
+            editInfo->DataElement(0, &UiDraggableComponent::m_dragInvalidStateActions, QT_TRANSLATE_NOOP("LyShine", "Invalid"), QT_TRANSLATE_NOOP("LyShine", "The invalid drag state actions"))
                 ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDraggableComponent::OnDragInvalidStateActionsChanged);
         }
     }

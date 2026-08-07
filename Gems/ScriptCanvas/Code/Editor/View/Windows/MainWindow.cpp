@@ -1737,9 +1737,12 @@ namespace ScriptCanvasEditor
             selectedFile = suggestedFilename.c_str();
         }
 
-        QString filter = suggestedFileFilter.c_str();
-
-        while (!isValidFileName)
+        // Only prompt for a destination (Save As) when we do not already have a valid target. For an
+        // in-place save the Save::InPlace branch above fills selectedFile from the existing absolute
+        // path and sets isValidFileName, so skip the dialog and overwrite the existing file. Prior to
+        // #19850 the surrounding while(!isValidFileName) loop provided this guard; removing that loop
+        // (to fix the Save As cancel infinite loop) also made the dialog fire for in-place saves.
+        if (!isValidFileName)
         {
             AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
 
@@ -1765,15 +1768,9 @@ namespace ScriptCanvasEditor
             selectedFile = filePath.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
-            // So we want to break out.
-            if (selectedFile.isEmpty())
-            {
-                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-            }
-            else
+            if (!selectedFile.isEmpty())
             {
                 isValidFileName = true;
-                break;
             }
         }
 

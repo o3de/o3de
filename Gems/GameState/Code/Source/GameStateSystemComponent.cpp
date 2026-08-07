@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/i18n/TranslationMacros.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameState
@@ -26,7 +27,9 @@ namespace GameState
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<GameStateSystemComponent>("GameState", "A generic framework for managing game states and the transitions between them.")
+                ec->Class<GameStateSystemComponent>(
+                    QT_TRANSLATE_NOOP("GameState", "GameState"),
+                    QT_TRANSLATE_NOOP("GameState", "A generic framework for managing game states and the transitions between them."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

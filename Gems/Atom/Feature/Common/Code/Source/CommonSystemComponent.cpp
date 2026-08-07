@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <LookupTable/LookupTableAsset.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -75,6 +76,8 @@
 #include <PostProcessing/SMAAFeatureProcessor.h>
 #include <PostProcessing/SMAANeighborhoodBlendingPass.h>
 #include <PostProcessing/SsaoPasses.h>
+#include <PostProcessing/GtaoPasses.h>
+#include <PostProcessing/AoParentPass.h>
 #include <PostProcessing/SubsurfaceScatteringPass.h>
 #include <PostProcessing/TaaPass.h>
 #include <PostProcessing/VignettePass.h>
@@ -167,7 +170,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<CommonSystemComponent>("CommonSystemComponent", "System Component for common render features")
+                    ec->Class<CommonSystemComponent>(QT_TRANSLATE_NOOP("Atom::Feature", "CommonSystemComponent"), QT_TRANSLATE_NOOP("Atom::Feature", "System Component for common render features"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
@@ -277,10 +280,17 @@ namespace AZ
             // Add FastDepthAwareBlur passes
             passSystem->AddPassCreator(Name("FastDepthAwareBlurHorPass"), &FastDepthAwareBlurHorPass::Create);
             passSystem->AddPassCreator(Name("FastDepthAwareBlurVerPass"), &FastDepthAwareBlurVerPass::Create);
+            
+            // Add AO parent passes
+            passSystem->AddPassCreator(Name("AoParentPass"), &AoParentPass::Create);
 
             // Add SSAO passes
             passSystem->AddPassCreator(Name("SsaoParentPass"), &SsaoParentPass::Create);
             passSystem->AddPassCreator(Name("SsaoComputePass"), &SsaoComputePass::Create);
+
+            // Add GTAO passes
+            passSystem->AddPassCreator(Name("GtaoParentPass"), &GtaoParentPass::Create);
+            passSystem->AddPassCreator(Name("GtaoComputePass"), &GtaoComputePass::Create);
 
             // Add Subsurface Scattering pass
             passSystem->AddPassCreator(Name("SubsurfaceScatteringPass"), &RPI::SubsurfaceScatteringPass::Create);

@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace
 {
@@ -454,7 +455,7 @@ void UiMarkupButtonComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiMarkupButtonComponent>("MarkupButton", "An interactable component for enabling clicks from markup text (mouse support only).");
+            auto editInfo = ec->Class<UiMarkupButtonComponent>(QT_TRANSLATE_NOOP("LyShine", "MarkupButton"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for enabling clicks from markup text (mouse support only)."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -464,10 +465,10 @@ void UiMarkupButtonComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkColor, "Link Color", "Link text color.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkColor, QT_TRANSLATE_NOOP("LyShine", "Link Color"), QT_TRANSLATE_NOOP("LyShine", "Link text color."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMarkupButtonComponent::OnLinkColorChanged);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkHoverColor, "Link Hover Color", "Link text hover color.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkHoverColor, QT_TRANSLATE_NOOP("LyShine", "Link Hover Color"), QT_TRANSLATE_NOOP("LyShine", "Link text hover color."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMarkupButtonComponent::OnLinkHoverColorChanged);
         }
     }

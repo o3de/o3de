@@ -156,11 +156,8 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
 
     using AzToolsFramework::ToolsApplicationRequests;
 
-    AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;
-    ToolsApplicationRequests::Bus::BroadcastResult(
-        undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "EditorCameraComponentEntityChange");
-    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
-    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+    AzToolsFramework::ScopedUndoBatch undoBatch("EditorCameraComponentEntityChange");
+    undoBatch.MarkEntityDirty(entityId);
 }
 
 static void PopViewGroupForDefaultContext()

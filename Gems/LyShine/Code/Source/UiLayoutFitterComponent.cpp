@@ -18,6 +18,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +181,7 @@ void UiLayoutFitterComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiLayoutFitterComponent>("LayoutFitter", "A component that resizes its element to its content.");
+            auto editInfo = ec->Class<UiLayoutFitterComponent>(QT_TRANSLATE_NOOP("LyShine", "LayoutFitter"), QT_TRANSLATE_NOOP("LyShine", "A component that resizes its element to its content."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
@@ -188,13 +190,13 @@ void UiLayoutFitterComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutFitterComponent::m_horizontalFit, "Horizontal Fit",
-                "When checked, this element will be resized according to the target width of its content.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutFitterComponent::m_horizontalFit, QT_TRANSLATE_NOOP("LyShine", "Horizontal Fit"),
+                QT_TRANSLATE_NOOP("LyShine", "When checked, this element will be resized according to the target width of its content."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutFitterComponent::CheckFitterAndInvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutFitterComponent::RefreshEditorTransformProperties);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutFitterComponent::m_verticalFit, "Vertical Fit",
-                "When checked, this element will be resized according to the target height of its content.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutFitterComponent::m_verticalFit, QT_TRANSLATE_NOOP("LyShine", "Vertical Fit"),
+                QT_TRANSLATE_NOOP("LyShine", "When checked, this element will be resized according to the target height of its content."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutFitterComponent::CheckFitterAndInvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutFitterComponent::RefreshEditorTransformProperties);
         }

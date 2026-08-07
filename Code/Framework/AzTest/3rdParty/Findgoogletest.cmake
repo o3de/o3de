@@ -23,14 +23,8 @@ if (NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
     return()
 endif()
 
-function(get_google_test)
+block()
 
-
-    set(GOOGLETEST_GIT_REPOSITORY "https://github.com/google/googletest.git")
-    set(GOOGLETEST_GIT_TAG b514bdc898e2951020cbdca1304b75f5950d1f59) # tag name is v1.15.2
-    set(GOOGLETEST_VERSION_STRING "v1.15.2")
-
-    message(STATUS "AzTest uses googletest ${GOOGLETEST_VERSION_STRING} (BSD-3-Clause) from ${GOOGLETEST_GIT_REPOSITORY}")
 
     # there are optional flags you can pass FetchContent that make the project cleaner but require newer versions of cmake
 
@@ -43,13 +37,14 @@ function(get_google_test)
     set(CMAKE_POLICY_DEFAULT_CMP0148 OLD)
     set(OLD_CMAKE_WARN_DEPRECATED ${CMAKE_WARN_DEPRECATED})
     set(CMAKE_WARN_DEPRECATED FALSE CACHE BOOL "" FORCE)
-    include(FetchContent)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY ${GOOGLETEST_GIT_REPOSITORY}
-        GIT_TAG ${GOOGLETEST_GIT_TAG}
+    o3de_fetch_content(googletest
+        VERSION "v1.15.2"
+        LICENSE "BSD-3-Clause"
+        URL "https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz"
+        URL_HASH "7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926"
+        GIT "https://github.com/google/googletest.git"
+        GIT_HASH "b514bdc898e2951020cbdca1304b75f5950d1f59"
         ${ADDITIONAL_FETCHCONTENT_FLAGS}
-        GIT_SHALLOW TRUE
     )
 
     # CMAKE_ARGS don't actually affect FetchContent (currently by design) https://gitlab.kitware.com/cmake/cmake/-/issues/20799
@@ -167,8 +162,6 @@ function(get_google_test)
     add_library(3rdParty::googletest::GTest ALIAS gtest)
     add_library(3rdParty::googletest::GMock ALIAS gmock)
 
-endfunction() # get_google_test
-
-get_google_test()
+endblock()
 
 set(googletest_FOUND TRUE)

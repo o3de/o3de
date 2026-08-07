@@ -59,7 +59,7 @@ namespace EMStudio
 
         QToolButton* addButton = new QToolButton();
         addButton->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"));
-        addButton->setToolTip("Add a new event track");
+        addButton->setToolTip(tr("Add a new event track"));
         connect(addButton, &QToolButton::clicked, this, &TrackHeaderWidget::OnAddTrackButtonClicked);
         mainAddWidgetLayout->addWidget(addButton);
 
@@ -80,14 +80,14 @@ namespace EMStudio
         contentsLayout->setContentsMargins(0, 0, 0, 0);
         contentsWidget->setLayout(contentsLayout);
 
-        m_nodeNamesCheckBox = new QCheckBox("Show Node Names");
+        m_nodeNamesCheckBox = new QCheckBox(tr("Show Node Names"));
         m_nodeNamesCheckBox->setChecked(true);
         m_nodeNamesCheckBox->setCheckable(true);
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_nodeNamesCheckBox);
         connect(m_nodeNamesCheckBox, &QCheckBox::checkStateChanged, this, &TrackHeaderWidget::OnCheckBox);
         contentsLayout->addWidget(m_nodeNamesCheckBox);
 
-        m_motionFilesCheckBox = new QCheckBox("Show Motion Files");
+        m_motionFilesCheckBox = new QCheckBox(tr("Show Motion Files"));
         m_motionFilesCheckBox->setChecked(false);
         m_motionFilesCheckBox->setCheckable(true);
         AzQtComponents::CheckBox::applyToggleSwitchStyle(m_motionFilesCheckBox);
@@ -95,30 +95,30 @@ namespace EMStudio
         contentsLayout->addWidget(m_motionFilesCheckBox);
 
         QHBoxLayout* comboLayout = new QHBoxLayout();
-        comboLayout->addWidget(new QLabel("Nodes:"));
+        comboLayout->addWidget(new QLabel(tr("Nodes:")));
         m_nodeContentsComboBox = new QComboBox();
         m_nodeContentsComboBox->setEditable(false);
-        m_nodeContentsComboBox->addItem("Global Weights");
-        m_nodeContentsComboBox->addItem("Local Weights");
-        m_nodeContentsComboBox->addItem("Local Time");
+        m_nodeContentsComboBox->addItem(tr("Global Weights"));
+        m_nodeContentsComboBox->addItem(tr("Local Weights"));
+        m_nodeContentsComboBox->addItem(tr("Local Time"));
         m_nodeContentsComboBox->setCurrentIndex(0);
         connect(m_nodeContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
         comboLayout->addWidget(m_nodeContentsComboBox);
         contentsLayout->addLayout(comboLayout);
 
         comboLayout = new QHBoxLayout();
-        comboLayout->addWidget(new QLabel("Graph:"));
+        comboLayout->addWidget(new QLabel(tr("Graph:")));
         m_graphContentsComboBox = new QComboBox();
         m_graphContentsComboBox->setEditable(false);
-        m_graphContentsComboBox->addItem("Global Weights");
-        m_graphContentsComboBox->addItem("Local Weights");
-        m_graphContentsComboBox->addItem("Local Time");
+        m_graphContentsComboBox->addItem(tr("Global Weights"));
+        m_graphContentsComboBox->addItem(tr("Local Weights"));
+        m_graphContentsComboBox->addItem(tr("Local Time"));
         m_graphContentsComboBox->setCurrentIndex(0);
         connect(m_graphContentsComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TrackHeaderWidget::OnComboBoxIndexChanged);
         comboLayout->addWidget(m_graphContentsComboBox);
         contentsLayout->addLayout(comboLayout);
 
-        m_stackWidget->Add(contentsWidget, "Contents", false, false, true);
+        m_stackWidget->Add(contentsWidget, tr("Contents"), false, false, true);
 
         //-----------
 

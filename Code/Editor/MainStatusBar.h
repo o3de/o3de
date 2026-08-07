@@ -56,9 +56,10 @@ protected:
 
 private:
     QIcon m_icon;
+    qint64 m_iconCacheKey = 0;
     QString m_text;
-    bool m_isClickable;
-    bool m_hasLeadingSpacer;
+    bool m_isClickable = false;
+    bool m_hasLeadingSpacer = false;
 };
 
 class MainStatusBar

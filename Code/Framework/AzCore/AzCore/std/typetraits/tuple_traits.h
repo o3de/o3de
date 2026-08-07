@@ -22,13 +22,13 @@ namespace AZStd
         struct tuple_elements_sequence_helper<std::tuple<t_Elements...>>
         {
             using TupleType = std::tuple<t_Elements...>;
-            AZSTD_STATIC_CONSTANT(size_t, size = std::tuple_size<TupleType>::value);
+            AZSTD_STATIC_CONSTANT(size_t, size = std::tuple_size_v<TupleType>);
 
             template<size_t index>
             using get_element_t = Internal::pack_traits_get_arg_t<index, t_Elements...>;
             using elements_sequence = Internal::pack_traits_arg_sequence<t_Elements...>;
         };
-    }    
+    }
 
     template<typename Tuple>
     struct tuple_elements_sequence : public Internal::tuple_elements_sequence_helper<Tuple> {};

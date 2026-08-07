@@ -49,6 +49,7 @@
 #include <meshoptimizer.h>
 
 static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/SceneAPI/ModelBuilder/MismatchedVertexLayoutsAreErrors" };
+static constexpr AZStd::string_view ModelCompressionIsEnabledKey{ "/O3DE/SceneAPI/ModelBuilder/ModelCompressionIsEnabled" };
  /**
   * DEBUG DEFINES!
   * These are useful for debugging bad behavior from the builder.
@@ -101,6 +102,7 @@ namespace AZ
                 // v38 - Pad Skinning mesh buffers to respect appropriate alignment
                 // v39 - Automatically generate missing skinning data when skinned and unskinned data is mixed
                 // v40 - Add support for generating missing lods.
+                // v41 - Compress index and vertex buffers
             }
         }
 
@@ -198,6 +200,11 @@ namespace AZ
             meshopt_setAllocator(MeshOptimizerAllocate, MeshOptimizerFree);
 
             {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(m_modelCompressionEnabled, ModelCompressionIsEnabledKey);
+                }
+
                 auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(s_defaultVertexBufferPoolSourcePath, 0);
                 if (!assetIdOutcome.IsSuccess())
                 {
@@ -609,15 +616,16 @@ namespace AZ
 
                     BufferAssetView indexBuffer;
                     AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
+                    AZ::Aabb subMeshAabb = AZ::Aabb::CreateNull();
 
-                    if (!CreateModelLodBuffers(mergedMesh, indexBuffer, streamBuffers, lodAssetCreator))
+                    if (!CreateModelLodBuffers(mergedMesh, indexBuffer, streamBuffers, lodAssetCreator, subMeshAabb))
                     {
                         return AZ::SceneAPI::Events::ProcessingResult::Failure;
                     }
 
                     for (const ProductMeshView& meshView : lodMeshViews)
                     {
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid, subMeshAabb))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -630,16 +638,17 @@ namespace AZ
 
                         BufferAssetView indexBuffer;
                         AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
+                        AZ::Aabb subMeshAabb = AZ::Aabb::CreateNull();
 
                         // Mesh name in ProductMeshContent could be duplicated so generate unique mesh name using index 
                         m_meshName = AZStd::string::format("mesh%d", meshIndex++);
 
-                        if (!CreateModelLodBuffers(mesh, indexBuffer, streamBuffers, lodAssetCreator))
+                        if (!CreateModelLodBuffers(mesh, indexBuffer, streamBuffers, lodAssetCreator, subMeshAabb))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
 
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid, subMeshAabb))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -2187,7 +2196,22 @@ namespace AZ
         {
             AZStd::string bufferName = semantic.ToString();
             size_t floatsPerElement = RHI::GetFormatSize(format) / sizeof(T);
-            Outcome<Data::Asset<BufferAsset>> bufferOutcome = CreateTypedBufferAsset(bufferData.data(), bufferData.size() / floatsPerElement, format, bufferName);
+            Outcome<Data::Asset<BufferAsset>> bufferOutcome;
+            size_t originalSize = bufferData.size() * sizeof(T);
+            if (m_modelCompressionEnabled)
+            {
+                AZStd::vector<AZ::u8> compressedBuffer(meshopt_encodeVertexBufferBound(bufferData.size() / floatsPerElement, RHI::GetFormatSize(format)));
+                compressedBuffer.resize_no_construct(meshopt_encodeVertexBuffer(compressedBuffer.data(), compressedBuffer.size(), bufferData.data(), bufferData.size() / floatsPerElement, RHI::GetFormatSize(format)));
+                AZ_Info(s_builderName, "Vertex buffer %s: original %zu, compressed %zu", bufferName.c_str(), originalSize, compressedBuffer.size());
+
+                bufferOutcome = compressedBuffer.size() < originalSize ?
+                    CreateTypedBufferAsset(compressedBuffer.data(), compressedBuffer.size(), bufferData.size() / floatsPerElement, format, bufferName, BufferAsset::CompressionFormat::Vertex) :
+                    CreateTypedBufferAsset(bufferData.data(), originalSize, bufferData.size() / floatsPerElement, format, bufferName);
+            }
+            else
+            {
+                bufferOutcome = CreateTypedBufferAsset(bufferData.data(), originalSize, bufferData.size() / floatsPerElement, format, bufferName);
+            }
 
             if (!bufferOutcome.IsSuccess())
             {
@@ -2215,7 +2239,7 @@ namespace AZ
             }
 
             AZStd::string bufferName = semantic.ToString();
-            Outcome<Data::Asset<BufferAsset>> bufferOutcome = CreateTypedBufferAsset(bufferData.data(), vertexCount, format, bufferName);
+            Outcome<Data::Asset<BufferAsset>> bufferOutcome = CreateTypedBufferAsset(bufferData.data(), bufferData.size() * sizeof(T), vertexCount, format, bufferName);
             if (!bufferOutcome.IsSuccess())
             {
                 AZ_Error(s_builderName, false, "Failed to build %s stream", semantic.ToString().data());
@@ -2230,7 +2254,8 @@ namespace AZ
             const ProductMeshContent& lodBufferContent,
             BufferAssetView& outIndexBuffer,
             AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
-            ModelLodAssetCreator& lodAssetCreator)
+            ModelLodAssetCreator& lodAssetCreator,
+            AZ::Aabb& subMeshAabb)
         {
             const AZStd::vector<uint32_t>& indices = lodBufferContent.m_indices;
             const AZStd::vector<float>& positions = lodBufferContent.m_positions;
@@ -2245,7 +2270,21 @@ namespace AZ
 
             // Build Index Buffer ...
             {
-                Outcome<Data::Asset<BufferAsset>> indexBufferOutcome = CreateTypedBufferAsset(indices.data(), indices.size(), IndicesFormat, "index");
+                Outcome<Data::Asset<BufferAsset>> indexBufferOutcome;
+                size_t originalSize = indices.size() * sizeof(uint32_t);
+                if (m_modelCompressionEnabled)
+                {
+                    AZStd::vector<AZ::u8> compressedIndices(meshopt_encodeIndexBufferBound(indices.size(), positions.size() / RHI::GetFormatComponentCount(PositionFormat)));
+                    compressedIndices.resize_no_construct(meshopt_encodeIndexBuffer(compressedIndices.data(), compressedIndices.size(), indices.data(), indices.size()));
+                    AZ_Info(s_builderName, "Index buffer: original %zu, compressed %zu", originalSize, compressedIndices.size());
+                    indexBufferOutcome = compressedIndices.size() < originalSize ?
+                        CreateTypedBufferAsset(compressedIndices.data(), compressedIndices.size(), indices.size(), IndicesFormat, "index", BufferAsset::CompressionFormat::Index) :
+                        CreateTypedBufferAsset(indices.data(), originalSize, indices.size(), IndicesFormat, "index");
+                }
+                else
+                {
+                    indexBufferOutcome = CreateTypedBufferAsset(indices.data(), originalSize, indices.size(), IndicesFormat, "index");
+                }
                 if (!indexBufferOutcome.IsSuccess())
                 {
                     AZ_Error(s_builderName, false, "Failed to build index stream");
@@ -2340,6 +2379,12 @@ namespace AZ
                 lodAssetCreator.AddLodStreamBuffer(streamBufferInfo.m_bufferAssetView.GetBufferAsset());
             }
 
+            // Calculate SubMesh's AABB from position stream
+            if (!CalculateAABB(positions, subMeshAabb))
+            {
+                AZ_Warning(s_builderName, false, "Failed to calculate AABB for Mesh");
+            }
+
             return true;
         }
 
@@ -2349,7 +2394,8 @@ namespace AZ
             const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
             ModelAssetCreator& modelAssetCreator,
             ModelLodAssetCreator& lodAssetCreator,
-            const MaterialAssetsByUid& materialAssetsByUid)
+            const MaterialAssetsByUid& materialAssetsByUid,
+            const AZ::Aabb& subMeshAabb)
         {
             lodAssetCreator.BeginMesh();
             
@@ -2384,18 +2430,7 @@ namespace AZ
                     return false;
                 }
 
-                const RHI::BufferViewDescriptor& positionBufferViewDescriptor = meshView.m_positionView;
-
-                // Calculate SubMesh's AABB from position stream
-                AZ::Aabb subMeshAabb = AZ::Aabb::CreateNull();
-                if (CalculateAABB(positionBufferViewDescriptor, *positionStreamBufferInfo.m_bufferAssetView.GetBufferAsset().Get(), subMeshAabb))
-                {
-                    lodAssetCreator.SetMeshAabb(subMeshAabb);
-                }
-                else
-                {
-                    AZ_Warning(s_builderName, false, "Failed to calculate AABB for Mesh");
-                }
+                lodAssetCreator.SetMeshAabb(subMeshAabb);
 
                 // Set position buffer
                 BufferAssetView meshPositionBufferAssetView(
@@ -2487,12 +2522,12 @@ namespace AZ
         }
 
         Outcome<Data::Asset<BufferAsset>> ModelAssetBuilderComponent::CreateTypedBufferAsset(
-            const void* data, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName)
+            const void* data, const size_t size, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName, const BufferAsset::CompressionFormat compressionFormat)
         {
             RHI::BufferViewDescriptor bufferViewDescriptor =
                 RHI::BufferViewDescriptor::CreateTyped(0, static_cast<uint32_t>(elementCount), format);
 
-            return CreateBufferAsset(data, bufferViewDescriptor, bufferName);
+            return CreateBufferAsset(data, size, bufferViewDescriptor, bufferName, compressionFormat);
         }
 
         Outcome<Data::Asset<BufferAsset>> ModelAssetBuilderComponent::CreateStructuredBufferAsset(
@@ -2501,7 +2536,7 @@ namespace AZ
             RHI::BufferViewDescriptor bufferViewDescriptor =
                 RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(elementCount), static_cast<uint32_t>(elementSize));
 
-            return CreateBufferAsset(data, bufferViewDescriptor, bufferName);
+            return CreateBufferAsset(data, elementCount * elementSize, bufferViewDescriptor, bufferName);
         }
 
         Outcome<Data::Asset<BufferAsset>> ModelAssetBuilderComponent::CreateRawBufferAsset(
@@ -2510,11 +2545,12 @@ namespace AZ
             RHI::BufferViewDescriptor bufferViewDescriptor =
                 RHI::BufferViewDescriptor::CreateRaw(0, static_cast<uint32_t>(totalSizeInBytes));
 
-            return CreateBufferAsset(data, bufferViewDescriptor, bufferName);
+            return CreateBufferAsset(data, totalSizeInBytes, bufferViewDescriptor, bufferName);
         }
 
         Outcome<Data::Asset<BufferAsset>> ModelAssetBuilderComponent::CreateBufferAsset(
-            const void* data, const RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName)
+            const void* data, const size_t size, const RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName,
+            const BufferAsset::CompressionFormat compressionFormat)
         {
             BufferAssetCreator creator;
             AZStd::string bufferAssetName = GetAssetFullName(BufferAsset::TYPEINFO_Uuid(), bufferName);
@@ -2524,7 +2560,10 @@ namespace AZ
             bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderRead;
             bufferDescriptor.m_byteCount = static_cast<uint64_t>(bufferViewDescriptor.m_elementSize) * static_cast<uint64_t>(bufferViewDescriptor.m_elementCount);
 
-            creator.SetBuffer(data, bufferDescriptor.m_byteCount, bufferDescriptor);
+            creator.SetCompressionFormat(compressionFormat);
+
+            AZ_Assert(size <= bufferDescriptor.m_byteCount, "bufferViewDescriptor is out of range of bufferAsset");
+            creator.SetBuffer(data, size, bufferDescriptor);
 
             creator.SetBufferViewDescriptor(bufferViewDescriptor);
 
@@ -2614,47 +2653,24 @@ namespace AZ
             return assetId;
         }
 
-        bool ModelAssetBuilderComponent::CalculateAABB(const RHI::BufferViewDescriptor& bufferViewDesc, const BufferAsset& bufferAsset, AZ::Aabb& aabb)
+        bool ModelAssetBuilderComponent::CalculateAABB(const AZStd::vector<float>& positions, AZ::Aabb& aabb)
         {
-            const uint32_t elementSize = bufferViewDesc.m_elementSize;
-            const uint32_t elementCount = bufferViewDesc.m_elementCount;
-            const uint32_t elementOffset = bufferViewDesc.m_elementOffset;
-            AZ_Assert(elementOffset + elementCount <= bufferAsset.GetBufferViewDescriptor().m_elementCount, "bufferViewDesc is out of range of bufferAsset");
+            size_t elementCount = positions.size() / 3;
 
-            // Position is 3 floats
-            if (elementSize == sizeof(float) * 3)
+            if (elementCount <= 0)
             {
-                AZ_Assert(bufferViewDesc.m_elementFormat == RHI::Format::R32G32B32_FLOAT, "position buffer format does not match element size");
-                
-                struct Position { float x,y,z; };
-                const Position* buffer = reinterpret_cast<const Position*>(&bufferAsset.GetBuffer()[0]) + elementOffset;
-
-                AZ::Vector3 vpos;    //note: it seems to be fastest to reuse a local Vector3 rather than constructing new ones each loop iteration
-                for (uint32_t i = 0; i < elementCount; ++i)
-                {
-                    vpos.Set(reinterpret_cast<const float*>(&buffer[i]));
-                    aabb.AddPoint(vpos);
-                }
-            }
-            // Position is 4 halfs
-            else if (elementSize == sizeof(uint16_t) * 4)
-            {
-                // Can't handle this yet since we have no way to do math on
-                // halfs
-                AZ_Error(
-                    s_builderName, false,
-                    "Can't calculate AABB for SubMesh; positions stored "
-                    "in halfs not supported.");
+                AZ_Error(s_builderName, false, "Positions are empty!");
                 return false;
             }
-            else
+
+            struct Position { float x,y,z; };
+            const Position* buffer = reinterpret_cast<const Position*>(positions.data());
+
+            AZ::Vector3 vpos;    //note: it seems to be fastest to reuse a local Vector3 rather than constructing new ones each loop iteration
+            for (uint32_t i = 0; i < elementCount; ++i)
             {
-                // No idea what type of position stream this is
-                AZ_Error(
-                    s_builderName, false,
-                    "Can't calculate AABB for SubMesh; can't determine "
-                    "element type of stream.");
-                return false;
+                vpos.Set(reinterpret_cast<const float*>(&buffer[i]));
+                aabb.AddPoint(vpos);
             }
 
             return true;

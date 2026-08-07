@@ -9,6 +9,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -26,7 +27,8 @@ namespace LmbrCentral
             if (editContext)
             {
                 editContext->Class<EditorCommentComponent>(
-                    "Comment", "The Comment component allows you to add long-form text comments for component entities")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Comment"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Comment component allows you to add long-form text comments for component entities"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
@@ -34,7 +36,8 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level"), AZ_CRC_CE("Game"), AZ_CRC_CE("Layer") }))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/editor/comment/")
-                    ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorCommentComponent::m_comment,"", "Comment")
+                    ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorCommentComponent::m_comment, "",
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Comment"))
                         ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Add comment text here");
             }
         }

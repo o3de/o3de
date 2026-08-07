@@ -85,27 +85,27 @@ namespace EMotionFX
             }
         }
 
-        QMenu* contextMenu = menu->addMenu("Ragdoll");
+        QMenu* contextMenu = menu->addMenu(tr("Ragdoll"));
 
         if (ragdollNodeCount < numSelectedNodes)
         {
-            QAction* addToRagdollAction = contextMenu->addAction("Add to ragdoll");
+            QAction* addToRagdollAction = contextMenu->addAction(tr("Add to ragdoll"));
             connect(addToRagdollAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddToRagdoll);
         }
 
         if (ragdollNodeCount == numSelectedNodes)
         {
-            QMenu* addColliderMenu = contextMenu->addMenu("Add collider");
+            QMenu* addColliderMenu = contextMenu->addMenu(tr("Add collider"));
 
-            QAction* addBoxAction = addColliderMenu->addAction("Add box");
+            QAction* addBoxAction = addColliderMenu->addAction(tr("Add box"));
             addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addBoxAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
 
-            QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
+            QAction* addCapsuleAction = addColliderMenu->addAction(tr("Add capsule"));
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addCapsuleAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
 
-            QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
+            QAction* addSphereAction = addColliderMenu->addAction(tr("Add sphere"));
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addSphereAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnAddCollider);
         }
@@ -122,13 +122,13 @@ namespace EMotionFX
 
         if (ragdollNodeCount > 0)
         {
-            QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
+            QAction* removeCollidersAction = contextMenu->addAction(tr("Remove colliders"));
             connect(removeCollidersAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnClearColliders);
 
-            QAction* removeToRagdollAction = contextMenu->addAction("Remove from ragdoll");
+            QAction* removeToRagdollAction = contextMenu->addAction(tr("Remove from ragdoll"));
             connect(removeToRagdollAction, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnRemoveFromRagdoll);
 
-            QAction* pasteJointLimits = contextMenu->addAction("Paste joint limits");
+            QAction* pasteJointLimits = contextMenu->addAction(tr("Paste joint limits"));
             pasteJointLimits->setObjectName("EMFX.RagdollNodeInspectorPlugin.PasteJointLimitsAction");
             connect(pasteJointLimits, &QAction::triggered, this, &RagdollOutlinerNotificationHandler::OnPasteJointLimits);
         }

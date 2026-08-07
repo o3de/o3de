@@ -116,7 +116,7 @@ namespace GradientSignal::ImageCreatorUtils
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PaintableImageAssetHelperBase>("Paintable Image Asset", "")
+                editContext->Class<PaintableImageAssetHelperBase>(QT_TRANSLATE_NOOP("GradientSignal", "Paintable Image Asset"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -125,13 +125,13 @@ namespace GradientSignal::ImageCreatorUtils
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PaintableImageAssetHelperBase::m_autoSaveMode,
-                        "Auto-Save Mode",
-                        "When editing an image, this selects whether to manually prompt for the save location, auto-save on every "
+                        QT_TRANSLATE_NOOP("GradientSignal", "Auto-Save Mode"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "When editing an image, this selects whether to manually prompt for the save location, auto-save on every "
                         "edit, "
-                        "or auto-save with incrementing file names on every edit.")
-                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::SaveAs, "Save As...")
-                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::AutoSave, "Auto Save")
-                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::AutoSaveWithIncrementalNames, "Auto Save With Incrementing Names")
+                        "or auto-save with incrementing file names on every edit."))
+                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::SaveAs, QT_TRANSLATE_NOOP("GradientSignal", "Save As..."))
+                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::AutoSave, QT_TRANSLATE_NOOP("GradientSignal", "Auto Save"))
+                    ->EnumAttribute(PaintableImageAssetAutoSaveMode::AutoSaveWithIncrementalNames, QT_TRANSLATE_NOOP("GradientSignal", "Auto Save With Incrementing Names"))
                     // There's no need to ChangeNotify when this property changes, it doesn't affect the behavior of the comopnent,
                     // it's only queried at the point that an edit is completed.
 
@@ -139,14 +139,14 @@ namespace GradientSignal::ImageCreatorUtils
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PaintableImageAssetHelperBase::m_componentModeDelegate,
-                        "Paint Image",
-                        "Paint into an image asset")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Paint Image"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Paint into an image asset"))
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("GradientSignal", "Paint"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PaintableImageAssetHelperBase::GetPaintModeVisibility)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "CreateImage", "Create a new image asset.")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("GradientSignal", "CreateImage"), QT_TRANSLATE_NOOP("GradientSignal", "Create a new image asset."))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Create New Image...")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("GradientSignal", "Create New Image..."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintableImageAssetHelperBase::CreateNewImage)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintableImageAssetHelperBase::InComponentMode)
 

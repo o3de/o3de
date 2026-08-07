@@ -19,7 +19,6 @@
 #include <vector>
 
 struct IUndoObject;
-class CSuperUndoStep;
 class AssetManagerUndoInterruptor;
 
 //! CUndo is a collection of IUndoObjects instances that forms single undo step.
@@ -161,16 +160,6 @@ public:
     //! Cancel changes and restore undo objects.
     void Cancel();
 
-    //! Normally this is NOT needed but in special cases this can be useful.
-    //! This allows to group a set of Begin()/Accept() sequences to be undone in one operation.
-    void SuperBegin();
-    //! When a SuperBegin() used, this method is used to Accept.
-    //! This leaves the undo database in its modified state and registers the IUndoObjects with the undo system.
-    //! This will allow the user to undo the operation.
-    void SuperAccept(const QString& name);
-    //! Cancel changes and restore undo objects.
-    void SuperCancel();
-
     //! Temporarily suspends recording of undo.
     void Suspend();
     //! Resume recording if was suspended.
@@ -243,7 +232,6 @@ private: // ---------------------------------------------------------------
     void SignalUndoFlushedToListeners();
 
     bool                                            m_bRecording;
-    bool                                            m_bSuperRecording;
     int                                             m_suspendCount;
 
     bool                                            m_bUndoing;
@@ -252,8 +240,6 @@ private: // ---------------------------------------------------------------
     bool                                            m_bClearRedoStackQueued;
 
     CUndoStep*                             m_currentUndo;
-    //! Undo step object created by SuperBegin.
-    CSuperUndoStep*                    m_superUndo;
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 

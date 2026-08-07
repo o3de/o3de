@@ -41,9 +41,9 @@ LineEditPage::LineEditPage(QWidget* parent)
     AzQtComponents::LineEdit::applyDropTargetStyle(ui->validDropTargetLineEdit, true);
     AzQtComponents::LineEdit::applyDropTargetStyle(ui->invalidDropTargetLineEdit, false);
 
-    ui->withData->setToolTip("<b></b>This will be a very very long sentence with an end but not for a long time, spanning an entire screen. I said, spanning an entire screen. No really. An entire screen. A very long, very wide screen.");
+    ui->withData->setToolTip(tr("<b></b>This will be a very very long sentence with an end but not for a long time, spanning an entire screen. I said, spanning an entire screen. No really. An entire screen. A very long, very wide screen."));
 
-    ui->error->setText("Error");
+    ui->error->setText(tr("Error"));
     ui->error->setValidator(new ErrorValidator(ui->error));
 
     auto validator = new QDoubleValidator(ui->longNumber);
@@ -51,14 +51,14 @@ LineEditPage::LineEditPage(QWidget* parent)
     validator->setTop(4.0);
     validator->setBottom(3.0);
     ui->longNumber->setValidator(validator);
-    AzQtComponents::LineEdit::setErrorMessage(ui->longNumber, QStringLiteral("Value must be between 3.0 and 4.0"));
+    AzQtComponents::LineEdit::setErrorMessage(ui->longNumber, tr("Value must be between 3.0 and 4.0"));
     ui->longNumber->setClearButtonEnabled(true);
 
     const auto searchBoxes = {ui->searchBox, ui->emptySearchBox};
     for (auto searchBox : searchBoxes)
     {
         AzQtComponents::LineEdit::applySearchStyle(searchBox);
-        searchBox->setPlaceholderText("Search...");
+        searchBox->setPlaceholderText(tr("Search..."));
     }
 
     QString exampleText = R"(

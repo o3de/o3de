@@ -18,6 +18,7 @@
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -203,7 +204,7 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiImageSequenceComponent>("ImageSequence", "A visual component that displays one of multiple images in a sequence.");
+            auto editInfo = ec->Class<UiImageSequenceComponent>(QT_TRANSLATE_NOOP("LyShine", "ImageSequence"), QT_TRANSLATE_NOOP("LyShine", "A visual component that displays one of multiple images in a sequence."));
 
             // :TODO: update the icon for image sequence
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -213,16 +214,16 @@ void UiImageSequenceComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_imageType, "ImageType", "The image type. Affects how the texture/sprite is mapped to the image rectangle.")
-                ->EnumAttribute(UiImageSequenceInterface::ImageType::Stretched, "Stretched")
-                ->EnumAttribute(UiImageSequenceInterface::ImageType::Fixed, "Fixed")
-                ->EnumAttribute(UiImageSequenceInterface::ImageType::StretchedToFit, "Stretched To Fit")
-                ->EnumAttribute(UiImageSequenceInterface::ImageType::StretchedToFill, "Stretched To Fill")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_imageType, QT_TRANSLATE_NOOP("LyShine", "ImageType"), QT_TRANSLATE_NOOP("LyShine", "The image type. Affects how the texture/sprite is mapped to the image rectangle."))
+                ->EnumAttribute(UiImageSequenceInterface::ImageType::Stretched, QT_TRANSLATE_NOOP("LyShine", "Stretched"))
+                ->EnumAttribute(UiImageSequenceInterface::ImageType::Fixed, QT_TRANSLATE_NOOP("LyShine", "Fixed"))
+                ->EnumAttribute(UiImageSequenceInterface::ImageType::StretchedToFit, QT_TRANSLATE_NOOP("LyShine", "Stretched To Fit"))
+                ->EnumAttribute(UiImageSequenceInterface::ImageType::StretchedToFill, QT_TRANSLATE_NOOP("LyShine", "Stretched To Fill"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageTypeChange);
-            editInfo->DataElement("Directory", &UiImageSequenceComponent::m_imageSequenceDirectory, "Sequence Directory", "A directory containing images of the sequence.")
+            editInfo->DataElement("Directory", &UiImageSequenceComponent::m_imageSequenceDirectory, QT_TRANSLATE_NOOP("LyShine", "Sequence Directory"), QT_TRANSLATE_NOOP("LyShine", "A directory containing images of the sequence."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceDirectoryChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_sequenceIndex, "Sequence Index", "Image index to display.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageSequenceComponent::m_sequenceIndex, QT_TRANSLATE_NOOP("LyShine", "Sequence Index"), QT_TRANSLATE_NOOP("LyShine", "Image index to display."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageSequenceComponent::OnImageSequenceIndexChange)
                 ->Attribute("EnumValues", &UiImageSequenceComponent::PopulateIndexStringList);
         }

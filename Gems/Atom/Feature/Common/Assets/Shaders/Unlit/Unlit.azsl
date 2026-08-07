@@ -19,17 +19,10 @@ ForwardPassOutput MainPS(VertexShaderOutput IN)
 {
     ForwardPassOutput OUT = (ForwardPassOutput)0;
 
-    float3 baseColor = UnlitColorSrg::m_unlitColor;
-    float4 sampledBaseColor = SampleBaseColorTexture(IN);
+    const float4 baseColor = EvaluateBaseColor(IN);
+    ApplyAlphaClip(IN, baseColor.a);
 
-    ApplyAlphaClip(IN, sampledBaseColor.a);
-
-    if (o_baseColor_useTexture)
-    {
-        baseColor *= sampledBaseColor.rgb;
-    }
-
-    OUT.m_diffuseColor = float4(baseColor, -1.0);
+    OUT.m_diffuseColor = float4(baseColor.rgb, -1.0);
     OUT.m_specularColor = float4(0.0, 0.0, 0.0, 0.0);
 
     return OUT;

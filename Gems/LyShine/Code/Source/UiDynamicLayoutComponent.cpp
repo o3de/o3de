@@ -18,6 +18,8 @@
 #include <LyShine/Bus/UiLayoutBus.h>
 #include <LyShine/Bus/UiTransform2dBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -187,8 +189,8 @@ void UiDynamicLayoutComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDynamicLayoutComponent>("DynamicLayout",
-                    "A component that clones the prototype element and resizes the layout. The first child element acts as the prototype element.");
+            auto editInfo = ec->Class<UiDynamicLayoutComponent>(QT_TRANSLATE_NOOP("LyShine", "DynamicLayout"),
+                    QT_TRANSLATE_NOOP("LyShine", "A component that clones the prototype element and resizes the layout. The first child element acts as the prototype element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
@@ -197,8 +199,8 @@ void UiDynamicLayoutComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicLayoutComponent::m_numChildElementsToClone, "Num Cloned Elements",
-                "The number of child elements to initialize the layout with.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicLayoutComponent::m_numChildElementsToClone, QT_TRANSLATE_NOOP("LyShine", "Num Cloned Elements"),
+                QT_TRANSLATE_NOOP("LyShine", "The number of child elements to initialize the layout with."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0);
         }
     }

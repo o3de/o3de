@@ -20,6 +20,7 @@
 #include <LyShine/Bus/UiRadioButtonGroupCommunicationBus.h>
 
 #include <LyShine/UiSerializeHelpers.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiRadioButtonNotificationBus Behavior context handler class
@@ -284,7 +285,7 @@ void UiRadioButtonComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiRadioButtonComponent>("RadioButton", "An interactable component for RadioButton behavior.");
+            auto editInfo = ec->Class<UiRadioButtonComponent>(QT_TRANSLATE_NOOP("LyShine", "RadioButton"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for RadioButton behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -295,35 +296,35 @@ void UiRadioButtonComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_optionalCheckedEntity, "On", "The child element to show when RadioButton is in on state.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_optionalCheckedEntity, QT_TRANSLATE_NOOP("LyShine", "On"), QT_TRANSLATE_NOOP("LyShine", "The child element to show when RadioButton is in on state."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiRadioButtonComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_optionalUncheckedEntity, "Off", "The child element to show when RadioButton is in off state.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_optionalUncheckedEntity, QT_TRANSLATE_NOOP("LyShine", "Off"), QT_TRANSLATE_NOOP("LyShine", "The child element to show when RadioButton is in off state."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiRadioButtonComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_group, "Group", "The group this radio button belongs to.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiRadioButtonComponent::m_group, QT_TRANSLATE_NOOP("LyShine", "Group"), QT_TRANSLATE_NOOP("LyShine", "The group this radio button belongs to."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiRadioButtonComponent::PopulateGroupsEntityList);
             }
 
             // Value group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Value")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Value"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonComponent::m_isOn, "Checked", "The initial state of the radio button.");
+                editInfo->DataElement(0, &UiRadioButtonComponent::m_isOn, QT_TRANSLATE_NOOP("LyShine", "Checked"), QT_TRANSLATE_NOOP("LyShine", "The initial state of the radio button."));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonComponent::m_changedActionName, "Change", "The action triggered when value changes either way.");
-                editInfo->DataElement(0, &UiRadioButtonComponent::m_turnOnActionName, "On", "The action triggered when turned on.");
-                editInfo->DataElement(0, &UiRadioButtonComponent::m_turnOffActionName, "Off", "The action triggered when turned off.");
+                editInfo->DataElement(0, &UiRadioButtonComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes either way."));
+                editInfo->DataElement(0, &UiRadioButtonComponent::m_turnOnActionName, QT_TRANSLATE_NOOP("LyShine", "On"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned on."));
+                editInfo->DataElement(0, &UiRadioButtonComponent::m_turnOffActionName, QT_TRANSLATE_NOOP("LyShine", "Off"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned off."));
             }
         }
     }

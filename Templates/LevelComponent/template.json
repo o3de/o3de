@@ -1,0 +1,114 @@
+{
+    "template_name": "LevelComponent",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Default Level Component Template",
+    "summary": "A component template for a level game component.",
+    "canonical_tags": [
+        "Template"
+    ],
+    "user_tags": [
+        "LevelComponent"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Source/${Name}LevelComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${Name}LevelComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Include/${GemName}/${Name}Interface.h",
+            "isTemplated": true,
+            "isInterface": true,
+            "cleanup_hint": "interface",
+            "condition": "add_bus_interface"
+        },
+        {
+            "file": "Source/Tools/Editor${Name}LevelComponent.h",
+            "isTemplated": true,
+            "isEditor": true,
+            "cleanup_hint": "editor",
+            "condition": "include_editor"
+        },
+        {
+            "file": "Source/Tools/Editor${Name}LevelComponent.cpp",
+            "isTemplated": true,
+            "isEditor": true,
+            "cleanup_hint": "editor",
+            "condition": "include_editor"
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Include/${GemName}"
+        },
+        {
+            "dir": "Source"
+        }
+    ],
+    "class_wizard": {
+        "display_name": "Level Component",
+        "class_name": "level_component",
+        "description": "A component for level-specific functionality",
+        "component_suffix": "LevelComponent",
+
+        "input_vars": [
+            {
+                "input_type": "toggle",
+                "var_name": "add_bus_interface",
+                "title": "Add Bus Interface",
+                "default_value": true,
+                "description": "Create the Interface Bus header file"
+            },
+            {
+                "input_type": "toggle",
+                "var_name": "include_editor",
+                "title": "Add Editor Comp.",
+                "default_value": false,
+                "description": "Generate an EditorComponent wrapper that appears in the Editor Inspector and exports the runtime component at game-mode",
+                "show_if": "hasEditor"
+            }
+        ],
+
+        "process_commands": [
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "args": { "component_name": "${Name}${ComponentSuffix}", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_interface_header",
+                "condition": "add_bus_interface",
+                "args": { "component_name": "${Name}" }
+            },
+            {
+                "command": "register_file_list",
+                "condition": "include_editor",
+                "args": { "component_name": "Editor${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "condition": "include_editor",
+                "args": { "component_name": "Editor${Name}${ComponentSuffix}", "module_kind": "editor" }
+            },
+            {
+                "command": "replace_text",
+                "condition": "include_editor",
+                "args": {
+                    "component_name": "${Name}${ComponentSuffix}.cpp",
+                    "text_to_replace": "AppearsInAddComponentMenu, AZ_CRC_CE(\"Level\"))",
+                    "replacement": "AppearsInAddComponentMenu, AZ_CRC_CE(\"\"))"
+                }
+            }
+        ]
+    }
+}

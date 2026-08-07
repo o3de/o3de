@@ -16,6 +16,8 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiDropTargetNotificationBus Behavior context handler class
 class UiDropTargetNotificationBusBehaviorHandler
@@ -180,7 +182,7 @@ void UiDropTargetComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDropTargetComponent>("DropTarget", "A target component for drag and drop behavior");
+            auto editInfo = ec->Class<UiDropTargetComponent>(QT_TRANSLATE_NOOP("LyShine", "DropTarget"), QT_TRANSLATE_NOOP("LyShine", "A target component for drag and drop behavior"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -190,28 +192,28 @@ void UiDropTargetComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Navigation settings
-            editInfo->DataElement(0, &UiDropTargetComponent::m_navigationSettings, "Navigation",
-                "How to navigate from this drop target to the next drop target");
+            editInfo->DataElement(0, &UiDropTargetComponent::m_navigationSettings, QT_TRANSLATE_NOOP("LyShine", "Navigation"),
+                QT_TRANSLATE_NOOP("LyShine", "How to navigate from this drop target to the next drop target"));
 
             // Drop states group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Drop States")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Drop States"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropTargetComponent::m_dropValidStateActions, "Valid", "The valid drop state actions")
+                editInfo->DataElement(0, &UiDropTargetComponent::m_dropValidStateActions, QT_TRANSLATE_NOOP("LyShine", "Valid"), QT_TRANSLATE_NOOP("LyShine", "The valid drop state actions"))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDropTargetComponent::OnDropValidStateActionsChanged);
 
-                editInfo->DataElement(0, &UiDropTargetComponent::m_dropInvalidStateActions, "Invalid", "The invalid drop state actions")
+                editInfo->DataElement(0, &UiDropTargetComponent::m_dropInvalidStateActions, QT_TRANSLATE_NOOP("LyShine", "Invalid"), QT_TRANSLATE_NOOP("LyShine", "The invalid drop state actions"))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDropTargetComponent::OnDropInvalidStateActionsChanged);
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropTargetComponent::m_onDropActionName, "OnDrop",
-                    "The action name triggered when a draggable is dropped on the drop target");
+                editInfo->DataElement(0, &UiDropTargetComponent::m_onDropActionName, QT_TRANSLATE_NOOP("LyShine", "OnDrop"),
+                    QT_TRANSLATE_NOOP("LyShine", "The action name triggered when a draggable is dropped on the drop target"));
             }
         }
     }

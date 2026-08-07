@@ -159,7 +159,7 @@ namespace AZ
         {
             T builder(*m_descriptor.m_device);
             auto [vkResult, vkRenderPass] = builder.Build(m_descriptor);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             m_nativeRenderPass = vkRenderPass;
             return ConvertResult(vkResult);
         }

@@ -30,7 +30,7 @@ namespace AZStd::Internal
     inline constexpr bool is_std_span<::AZStd::span<U, Extent>> = true;
 
     template <class T, class U>
-    inline constexpr bool is_array_convertible = is_convertible_v<T(*)[], U(*)[]>;
+    concept is_array_convertible = is_convertible_v<T(*)[], U(*)[]>;
 }
 
 namespace AZStd

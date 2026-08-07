@@ -190,7 +190,7 @@ namespace MysticQt
         if (recentFilesAdded > 0)
         {
             m_recentFilesMenu->addSeparator();
-            m_resetRecentFilesAction = m_recentFilesMenu->addAction("Reset Recent Files", this, &RecentFiles::OnClearRecentFiles);
+            m_resetRecentFilesAction = m_recentFilesMenu->addAction(tr("Reset Recent Files"), this, &RecentFiles::OnClearRecentFiles);
             m_resetRecentFilesAction->setObjectName("EMFX.RecentFiles.ResetRecentFilesAction");
         }
     }

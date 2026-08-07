@@ -35,10 +35,10 @@ namespace AZStd
          * Hash table data storage class. It's different for dynamic and fixed hash tables.
          * it's considered part of the hash table. Encapsulation is avoided to avoid too many function calls.
          */
-        template<class Traits, bool IsDynamic = Traits::is_dynamic>
+        template<class Traits>
         class hash_table_storage
         {
-            typedef hash_table_storage<Traits, IsDynamic> this_type;
+            typedef hash_table_storage<Traits> this_type;
 
         public:
             typedef typename Traits::allocator_type                                                 allocator_type;
@@ -288,7 +288,8 @@ namespace AZStd
         * it's considered part of the hash table. Encapsulation is avoided to avoid too many function calls.
         */
         template<class Traits>
-        class hash_table_storage<Traits, false>
+            requires (!Traits::is_dynamic)
+        class hash_table_storage<Traits>
         {
             typedef hash_table_storage this_type;
 
@@ -587,9 +588,9 @@ namespace AZStd
         }
 
         // START UNIQUE
-        template<class Iterator>
-        auto insert(Iterator first, Iterator last)
-            -> enable_if_t<input_iterator<Iterator> && !is_convertible_v<Iterator, size_type>>
+        template<input_iterator Iterator>
+            requires (!is_convertible_v<Iterator, size_type>)
+        void insert(Iterator first, Iterator last)
         {
             // insert [first, last) one at a time
             auto inserter = [this](Iterator it, auto&& valueKey)
@@ -621,8 +622,8 @@ namespace AZStd
 
             m_data.rehash_if_needed(this);
         }
-        template<class R>
-        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        template<Internal::container_compatible_range<value_type> R>
+        void insert_range(R&& rg)
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
@@ -745,29 +746,33 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto find(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator find(const ComparableToKey& key)
         {
             return lower_bound(key);
         }
 
         template<class ComparableToKey>
-        auto find(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator find(const ComparableToKey& key) const
         {
             return lower_bound(key);
         }
 
         template<class ComparableToKey>
-        auto contains(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, bool>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        bool contains(const ComparableToKey& key) const
         {
             return find(key) != end();
         }
 
         template<class ComparableToKey>
-        auto count(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, size_type>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        size_type count(const ComparableToKey& key) const
         {   // count all elements that match keyValue
             pair_citer_citer pair = equal_range(key);
             size_type num = AZStd::distance(pair.first, pair.second);
@@ -776,8 +781,9 @@ namespace AZStd
 
         // START UNIQUE
         template<class ComparableToKey>
-        auto lower_bound(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator lower_bound(const ComparableToKey& key)
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -793,15 +799,17 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator lower_bound(const ComparableToKey& key) const
         {
             return const_iterator(const_cast<hash_table*>(this)->lower_bound(key));
         }
 
         template<class ComparableToKey>
-        auto upper_bound(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator upper_bound(const ComparableToKey& key)
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -822,15 +830,17 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator upper_bound(const ComparableToKey& key) const
         {
             return const_iterator(const_cast<hash_table*>(this)->upper_bound(key));
         }
 
         template<class ComparableToKey>
-        auto equal_range(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<iterator, iterator>>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<iterator, iterator> equal_range(const ComparableToKey& key)
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -860,8 +870,9 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto equal_range(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<const_iterator, const_iterator>>
+            requires (Internal::is_transparent_v<key_equal, ComparableToKey> && Internal::is_transparent_v<hasher, ComparableToKey>)
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<const_iterator, const_iterator> equal_range(const ComparableToKey& key) const
         {
             AZStd::pair<iterator, iterator> non_const_range = const_cast<hash_table*>(this)->equal_range(key);
             return { const_iterator(non_const_range.first), const_iterator(non_const_range.second) };

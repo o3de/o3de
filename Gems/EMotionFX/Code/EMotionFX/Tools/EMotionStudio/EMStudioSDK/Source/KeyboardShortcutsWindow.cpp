@@ -83,7 +83,7 @@ namespace EMStudio
         vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->addWidget(m_tableWidget);
 
-        QLabel* label = new QLabel("Double-click to adjust shortcut");
+        QLabel* label = new QLabel(tr("Double-click to adjust shortcut"));
         label->setAlignment(Qt::AlignCenter);
         vLayout->addWidget(label);
         m_hLayout->addLayout(vLayout);
@@ -130,7 +130,7 @@ namespace EMStudio
         for (uint32 i = 0; i < numGroups; ++i)
         {
             MysticQt::KeyboardShortcutManager::Group* group = shortcutManager->GetGroup(i);
-            m_listWidget->addItem(FromStdString(group->GetName()));
+            m_listWidget->addItem(tr(group->GetName().c_str()));
         }
 
         m_tableWidget->blockSignals(false);
@@ -156,11 +156,11 @@ namespace EMStudio
         // set header item for the table
         m_tableWidget->setColumnCount(2);
 
-        QTableWidgetItem* headerItem = new QTableWidgetItem("Action");
+        QTableWidgetItem* headerItem = new QTableWidgetItem(tr("Action"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(0, headerItem);
 
-        headerItem = new QTableWidgetItem("Shortcut");
+        headerItem = new QTableWidgetItem(tr("Shortcut"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(1, headerItem);
 
@@ -265,7 +265,7 @@ namespace EMStudio
     {
         if (key.isEmpty())
         {
-            return "not set";
+            return tr("not set");
         }
 
         return key.toString(QKeySequence::NativeText);
@@ -321,10 +321,10 @@ namespace EMStudio
         // create the context menu
         QMenu menu(this);
 
-        QAction* defaultAction = menu.addAction("Reset To Default");
+        QAction* defaultAction = menu.addAction(tr("Reset To Default"));
         connect(defaultAction, &QAction::triggered, this, &KeyboardShortcutsWindow::OnResetToDefault);
 
-        QAction* newKeyAction = menu.addAction("Assign New Key");
+        QAction* newKeyAction = menu.addAction(tr("Assign New Key"));
         connect(newKeyAction, &QAction::triggered, this, &KeyboardShortcutsWindow::OnAssignNewKey);
 
         // show the menu at the given position
@@ -341,7 +341,7 @@ namespace EMStudio
         setObjectName("ShortcutReceiverDialog");
 
         setWindowTitle(" ");
-        layout->addWidget(new QLabel("Press the new shortcut on the keyboard:"));
+        layout->addWidget(new QLabel(tr("Press the new shortcut on the keyboard:")));
 
         m_orgAction          = action;
         m_orgGroup           = group;
@@ -367,15 +367,15 @@ namespace EMStudio
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setContentsMargins(0, 0, 0, 0);
 
-        m_okButton = new QPushButton("OK");
+        m_okButton = new QPushButton(tr("OK"));
         buttonLayout->addWidget(m_okButton);
         connect(m_okButton, &QPushButton::clicked, this, &ShortcutReceiverDialog::accept);
 
-        QPushButton* defaultButton = new QPushButton("Default");
+        QPushButton* defaultButton = new QPushButton(tr("Default"));
         buttonLayout->addWidget(defaultButton);
         connect(defaultButton, &QPushButton::clicked, this, &ShortcutReceiverDialog::ResetToDefault);
 
-        QPushButton* cancelButton = new QPushButton("Cancel");
+        QPushButton* cancelButton = new QPushButton(tr("Cancel"));
         buttonLayout->addWidget(cancelButton);
         connect(cancelButton, &QPushButton::clicked, this, &ShortcutReceiverDialog::reject);
 
@@ -421,16 +421,16 @@ namespace EMStudio
 
             if (m_conflictAction)
             {
-                m_okButton->setToolTip(QString("Assigning new shortcut will unassign '%1' automatically.").arg(m_conflictAction->m_qaction->text()));
+                m_okButton->setToolTip(tr("Assigning new shortcut will unassign '%1' automatically.").arg(m_conflictAction->m_qaction->text()));
 
                 MysticQt::KeyboardShortcutManager::Group* conflictGroup = shortcutManager->FindGroupForShortcut(m_conflictAction);
                 if (conflictGroup)
                 {
-                    m_conflictKeyLabel->setText(QString("Conflicts with: %1 -> %2").arg(FromStdString(conflictGroup->GetName())).arg(m_conflictAction->m_qaction->text()));
+                    m_conflictKeyLabel->setText(tr("Conflicts with: %1 -> %2").arg(FromStdString(conflictGroup->GetName())).arg(m_conflictAction->m_qaction->text()));
                 }
                 else
                 {
-                    m_conflictKeyLabel->setText(QString("Conflicts with: %1").arg(m_conflictAction->m_qaction->text()));
+                    m_conflictKeyLabel->setText(tr("Conflicts with: %1").arg(m_conflictAction->m_qaction->text()));
                 }
             }
         }

@@ -17,11 +17,11 @@ namespace AzToolsFramework
         GrowTextEdit* textEdit = aznew GrowTextEdit(parent);
         connect(textEdit, &GrowTextEdit::textChanged, this, [textEdit]()
         {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, textEdit);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, textEdit);
         });
         connect(textEdit, &GrowTextEdit::EditCompleted, this, [textEdit]()
         {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, textEdit);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, textEdit);
         });
 

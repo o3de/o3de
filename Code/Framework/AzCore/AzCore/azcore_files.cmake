@@ -296,6 +296,8 @@ set(FILES
     Math/Crc.inl
     Math/Crc.h
     Math/CrcInternal.h
+    Math/CrcSerializer.h
+    Math/CrcSerializer.cpp
     Math/DocsMath.h
     Math/Frustum.cpp
     Math/Frustum.h
@@ -492,6 +494,7 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
     NativeUI/NativeUIRequests.h
+    i18n/TranslationMacros.h
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp

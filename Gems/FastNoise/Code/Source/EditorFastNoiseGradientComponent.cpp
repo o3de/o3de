@@ -7,6 +7,7 @@
  */
 
 #include "EditorFastNoiseGradientComponent.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace FastNoiseGem
 {
@@ -31,9 +32,9 @@ namespace FastNoiseGem
                     ->Attribute(AZ::Edit::Attributes::Category, EditorFastNoiseGradientComponent::s_categoryName)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "GenerateRandomSeed", "Generate a new random seed")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("FastNoiseGem", "GenerateRandomSeed"), QT_TRANSLATE_NOOP("FastNoiseGem", "Generate a new random seed"))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Generate Random Seed")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("FastNoiseGem", "Generate Random Seed"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorFastNoiseGradientComponent::OnGenerateRandomSeed)
                     ;
             }

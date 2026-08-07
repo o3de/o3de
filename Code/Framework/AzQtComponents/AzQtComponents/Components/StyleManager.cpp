@@ -126,6 +126,28 @@ namespace AzQtComponents
         StyleManager::styleSheetStyle(widget)->polish(widget);
     }
 
+    bool StyleManager::setObjectProperty(QWidget* widget, const char* propertyName, const QVariant& value)
+    {
+        if (!widget)
+        {
+            return false;
+        }
+
+        if (!propertyName)
+        {
+            return false;
+        }
+
+        if (widget->property(propertyName) == value)
+        {
+            return false;
+        }
+
+        widget->setProperty(propertyName, value);
+        return true;
+    }
+
+
     StyleManager::StyleManager(QObject* parent)
         : QObject(parent)
         , m_stylesheetPreprocessor(new StylesheetPreprocessor(this))
@@ -144,7 +166,6 @@ namespace AzQtComponents
 
         if (m_style)
         {
-            delete m_style.data();
             m_style.clear();
         }
     }

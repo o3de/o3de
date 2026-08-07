@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_FUNCTIONAL_H
-#define AZSTD_FUNCTIONAL_H 1
+
+#pragma once
 
 // only the basics used is most of the AZStd
 #include <AzCore/std/functional_basic.h>
@@ -19,6 +19,3 @@
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/function/function_template.h>
-
-#endif // AZSTD_FUNCTIONAL_H
-#pragma once

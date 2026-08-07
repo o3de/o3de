@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Util.h>
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
 
@@ -31,16 +32,16 @@ namespace GradientSignal
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<SmoothStep>("Smooth Step Gradient", "Smooth Step Gradient")
+                edit->Class<SmoothStep>(QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step Gradient"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffMidpoint, "Falloff Midpoint", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffMidpoint, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Midpoint"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffRange, "Falloff Range", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffRange, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Range"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffStrength, "Falloff Softness", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SmoothStep::m_falloffStrength, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Softness"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ;

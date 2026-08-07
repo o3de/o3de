@@ -24,17 +24,17 @@ BrowseEditPage::BrowseEditPage(QWidget* parent)
 
     ui->browseEditEnabled->setAttachedButtonIcon(icon);
     ui->browseEditEnabled->setLineEditReadOnly(true);
-    ui->browseEditEnabled->setPlaceholderText("Some placeholder");
+    ui->browseEditEnabled->setPlaceholderText(tr("Some placeholder"));
     connect(ui->browseEditEnabled, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, [this]() {
-        QString text = QInputDialog::getText(this, "Text Entry", "Enter a number, or some invalid text");
+        QString text = QInputDialog::getText(this, tr("Text Entry"), tr("Enter a number, or some invalid text"));
         ui->browseEditEnabled->setText(text);
     });
 
     ui->browseEditReadOnlyClearButton->setLineEditReadOnly(true);
     ui->browseEditReadOnlyClearButton->setClearButtonEnabled(true);
-    ui->browseEditReadOnlyClearButton->setText(QStringLiteral("Text to clear"));
+    ui->browseEditReadOnlyClearButton->setText(tr("Text to clear"));
     connect(ui->browseEditReadOnlyClearButton, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, [this]() {
-        QString text = QInputDialog::getText(this, "Text Entry", "Enter some text");
+        QString text = QInputDialog::getText(this, tr("Text Entry"), tr("Enter some text"));
         ui->browseEditReadOnlyClearButton->setText(text);
     });
 
@@ -43,9 +43,9 @@ BrowseEditPage::BrowseEditPage(QWidget* parent)
     ui->browseEditDisabled->setLineEditReadOnly(true);
     ui->browseEditDisabled->setEnabled(false);
     ui->browseEditDisabled->setAttachedButtonIcon(icon);
-    ui->browseEditDisabled->setText("Text");
+    ui->browseEditDisabled->setText(tr("Text"));
     connect(ui->browseEditDisabled, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, [this]() {
-        QString text = QInputDialog::getText(this, "Text Entry", "Enter a number, or some invalid text");
+        QString text = QInputDialog::getText(this, tr("Text Entry"), tr("Enter a number, or some invalid text"));
         ui->browseEditDisabled->setText(text);
     });
 
@@ -55,22 +55,22 @@ BrowseEditPage::BrowseEditPage(QWidget* parent)
     ui->browseEditNumberReadOnly->setLineEditReadOnly(true);
     ui->browseEditNumberReadOnly->setValidator(new QIntValidator(this));
     ui->browseEditNumberReadOnly->setAttachedButtonIcon(icon);
-    ui->browseEditNumberReadOnly->setToolTip("Click the attached button to enter a number. Put random characters in to put the control into error state.");
-    ui->browseEditNumberReadOnly->setErrorToolTip("The control only accepts numbers!");
-    ui->browseEditNumberReadOnly->setText("Nan");
+    ui->browseEditNumberReadOnly->setToolTip(tr("Click the attached button to enter a number. Put random characters in to put the control into error state."));
+    ui->browseEditNumberReadOnly->setErrorToolTip(tr("The control only accepts numbers!"));
+    ui->browseEditNumberReadOnly->setText(tr("Nan"));
     connect(ui->browseEditNumberReadOnly, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, [this]() {
         // pop up a dialog box and set the line edit based on the user's input
-        QString text = QInputDialog::getText(this, "Text Entry", "Enter a number, or some invalid text");
+        QString text = QInputDialog::getText(this, tr("Text Entry"), tr("Enter a number, or some invalid text"));
         ui->browseEditNumberReadOnly->setText(text);
     });
 
     ui->browseEditNumberNonReadOnly->setValidator(new QIntValidator(this));
     ui->browseEditNumberNonReadOnly->setAttachedButtonIcon(icon);
-    ui->browseEditNumberNonReadOnly->setToolTip("Click the attached button to enter a number. Put random characters in to put the control into error state.");
-    ui->browseEditNumberNonReadOnly->setErrorToolTip("The control only accepts numbers!");
+    ui->browseEditNumberNonReadOnly->setToolTip(tr("Click the attached button to enter a number. Put random characters in to put the control into error state."));
+    ui->browseEditNumberNonReadOnly->setErrorToolTip(tr("The control only accepts numbers!"));
     connect(ui->browseEditNumberNonReadOnly, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, [this]() {
         // pop up a dialog box and set the line edit based on the user's input
-        QMessageBox::critical(this, "title", "Button attach worked!");
+        QMessageBox::critical(this, tr("title"), tr("Button attach worked!"));
     });
 
     QString exampleText = R"(

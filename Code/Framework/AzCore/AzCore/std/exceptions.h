@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_EXCEPTIONS_H
-#define AZSTD_EXCEPTIONS_H 1
+
+#pragma once
 
 #ifdef AZSTD_HAS_EXEPTIONS
 
@@ -42,9 +42,3 @@
 #define AZSTD_THROW_NCEE(x, y)  _THROW(x, y)
 
 #endif //
-
-#endif // AZSTD_EXCEPTIONS_H
-#pragma once
-
-
-

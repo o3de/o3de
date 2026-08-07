@@ -23,6 +23,7 @@
 #include <LyShine/UiSerializeHelpers.h>
 #include "UiSerialize.h"
 #include "UiNavigationHelpers.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiSliderNotificationBus Behavior context handler class
@@ -555,7 +556,7 @@ void UiSliderComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiSliderComponent>("Slider", "An interactable component for modifying a floating point value with a slider.");
+            auto editInfo = ec->Class<UiSliderComponent>(QT_TRANSLATE_NOOP("LyShine", "Slider"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for modifying a floating point value with a slider."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -566,37 +567,37 @@ void UiSliderComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_trackEntity, "Track", "The child element used to define the range of movement.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_trackEntity, QT_TRANSLATE_NOOP("LyShine", "Track"), QT_TRANSLATE_NOOP("LyShine", "The child element used to define the range of movement."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiSliderComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_fillEntity, "Fill", "The child element used to show the filled part of the range.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_fillEntity, QT_TRANSLATE_NOOP("LyShine", "Fill"), QT_TRANSLATE_NOOP("LyShine", "The child element used to show the filled part of the range."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiSliderComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_manipulatorEntity, "Manipulator", "The child element used as a handle.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiSliderComponent::m_manipulatorEntity, QT_TRANSLATE_NOOP("LyShine", "Manipulator"), QT_TRANSLATE_NOOP("LyShine", "The child element used as a handle."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiSliderComponent::PopulateChildEntityList);
             }
 
             // Value group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Value")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Value"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiSliderComponent::m_value, "Value", "The initial value of the slider.");
-                editInfo->DataElement(0, &UiSliderComponent::m_minValue, "Min", "The minimum slider value.");
-                editInfo->DataElement(0, &UiSliderComponent::m_maxValue, "Max", "The maximum slider value.");
-                editInfo->DataElement(0, &UiSliderComponent::m_stepValue, "Stepping", "The smallest increment allowed between values. Use zero for no restriction.");
+                editInfo->DataElement(0, &UiSliderComponent::m_value, QT_TRANSLATE_NOOP("LyShine", "Value"), QT_TRANSLATE_NOOP("LyShine", "The initial value of the slider."));
+                editInfo->DataElement(0, &UiSliderComponent::m_minValue, QT_TRANSLATE_NOOP("LyShine", "Min"), QT_TRANSLATE_NOOP("LyShine", "The minimum slider value."));
+                editInfo->DataElement(0, &UiSliderComponent::m_maxValue, QT_TRANSLATE_NOOP("LyShine", "Max"), QT_TRANSLATE_NOOP("LyShine", "The maximum slider value."));
+                editInfo->DataElement(0, &UiSliderComponent::m_stepValue, QT_TRANSLATE_NOOP("LyShine", "Stepping"), QT_TRANSLATE_NOOP("LyShine", "The smallest increment allowed between values. Use zero for no restriction."));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiSliderComponent::m_valueChangingActionName, "Change", "The action triggered while the value is changing.");
-                editInfo->DataElement(0, &UiSliderComponent::m_valueChangedActionName, "End change", "The action triggered when the value is done changing.");
+                editInfo->DataElement(0, &UiSliderComponent::m_valueChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the value is changing."));
+                editInfo->DataElement(0, &UiSliderComponent::m_valueChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the value is done changing."));
             }
         }
     }

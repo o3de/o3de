@@ -13,6 +13,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
@@ -39,7 +40,8 @@ namespace EMotionFX
                 if (editContext)
                 {
                     editContext->Class<EditorSimpleMotionComponent>(
-                        "Simple Motion", "The Simple Motion component assigns a single motion to the associated Actor in lieu of an Anim Graph component")
+                        QT_TRANSLATE_NOOP("EMotionFX", "Simple Motion"),
+                        QT_TRANSLATE_NOOP("EMotionFX", "The Simple Motion component assigns a single motion to the associated Actor in lieu of an Anim Graph component"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleMotion.svg")
@@ -48,9 +50,13 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/simple-motion/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor, "Preview In Editor", "Plays motion in Editor")
+                        ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor,
+                            QT_TRANSLATE_NOOP("EMotionFX", "Preview In Editor"),
+                            QT_TRANSLATE_NOOP("EMotionFX", "Plays motion in Editor"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
-                        ->DataElement(0, &EditorSimpleMotionComponent::m_configuration, "Configuration", "Settings for this Simple Motion")
+                        ->DataElement(0, &EditorSimpleMotionComponent::m_configuration,
+                            QT_TRANSLATE_NOOP("EMotionFX", "Configuration"),
+                            QT_TRANSLATE_NOOP("EMotionFX", "Settings for this Simple Motion"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
                         ;
                 }

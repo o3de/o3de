@@ -9,6 +9,7 @@
 #include "EditorEntityInfoBus.h"
 #include "EditorEntityHelpers.h"
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -48,7 +49,8 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorEntitySortComponent>("Child Entity Sort Order", "")
+                    editContext->Class<EditorEntitySortComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Child Entity Sort Order"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                         ->Attribute(AZ::Edit::Attributes::HideIcon, true)
