@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CONNECTIONMANAGER_H
-#define CONNECTIONMANAGER_H
+
+#pragma once
 
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -217,6 +217,3 @@ private:
     QStringList m_allowedListAddresses;
     QStringList m_rejectedAddresses;
 };
-
-
-#endif // CONNECTIONMANAGER_H

@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYITEM_H
-#define CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYITEM_H
 #pragma once
 
 #include "Util/Variable.h"
@@ -160,6 +158,3 @@ protected:
 };
 
 typedef _smart_ptr<ReflectedPropertyItem> ReflectedPropertyItemPtr;
-
-
-#endif // CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYITEM_H

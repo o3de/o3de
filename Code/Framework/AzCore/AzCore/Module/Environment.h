@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ENVIRONMENT_INCLUDE_H
-#define AZCORE_ENVIRONMENT_INCLUDE_H 1
+
+#pragma once
 
 #include <AzCore/std/concepts/concepts_assignable.h>
 #include <AzCore/std/parallel/lock.h>
@@ -616,8 +616,3 @@ namespace AZ
     extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule() { }
 
 #endif // AZ_MONOLITHIC_BUILD
-
-#endif // AZCORE_PLATFORM_INCLUDE_H
-#pragma once
-
-

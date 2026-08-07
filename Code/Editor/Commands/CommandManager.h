@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : the command manager
 
-
-#ifndef CRYINCLUDE_EDITOR_COMMANDS_COMMANDMANAGER_H
-#define CRYINCLUDE_EDITOR_COMMANDS_COMMANDMANAGER_H
-#pragma once
 
 #include "platform.h"
 
@@ -110,5 +107,3 @@ private:
         CommandManagerHelper::RegisterCommand(&cmdMgr, #moduleName, #functionName, description, example, boundFunction);        \
     }                                                                                                                           \
     CAutoRegisterCommandHelper g_AutoRegCmdHelper##moduleName##functionName(RegisterCommand##moduleName##functionName)
-
-#endif // CRYINCLUDE_EDITOR_COMMANDS_COMMANDMANAGER_H

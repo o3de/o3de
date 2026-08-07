@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IKEYTIMESET_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IKEYTIMESET_H
 #pragma once
-
 
 class IKeyTimeSet
 {
@@ -25,5 +21,3 @@ public:
     virtual void BeginEdittingKeyTimes() = 0;
     virtual void EndEdittingKeyTimes() = 0;
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IKEYTIMESET_H

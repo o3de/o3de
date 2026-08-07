@@ -6,13 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : Implements the command line interface ICmdLine.
-
-#ifndef CRYINCLUDE_CRYSYSTEM_CMDLINE_H
-#define CRYINCLUDE_CRYSYSTEM_CMDLINE_H
-
-#pragma once
 
 
 #include <ICmdLine.h>
@@ -38,6 +34,3 @@ private:
     AZStd::string m_sCmdLine;
     std::vector<CCmdLineArg>    m_args;
 };
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_CMDLINE_H

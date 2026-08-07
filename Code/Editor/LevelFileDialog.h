@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LEVELFILEDIALOG_H
-#define CRYINCLUDE_EDITOR_LEVELFILEDIALOG_H
 #pragma once
 
 #include <QDialog>
@@ -78,5 +75,3 @@ private:
     // Save As only: cached root list backing the target combo.
     QVector<LevelRoots::Root> m_saveTargetRoots;
 };
-
-#endif // CRYINCLUDE_EDITOR_LEVELFILEDIALOG_H

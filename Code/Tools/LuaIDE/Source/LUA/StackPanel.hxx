@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef STACK_VIEW_H
-#define STACK_VIEW_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -42,5 +40,3 @@ private:
     public slots:
         void OnDoubleClicked( const QModelIndex & );
 };
-
-#endif

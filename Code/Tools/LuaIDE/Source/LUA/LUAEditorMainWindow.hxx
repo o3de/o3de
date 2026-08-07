@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef LUAEDITOR_LUAEDITORMAINWINDOW_H
-#define LUAEDITOR_LUAEDITORMAINWINDOW_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -449,5 +447,3 @@ namespace LUAEditor
     };
 
 }
-
-#endif //LUAEDITOR_LUAEDITORMAINWINDOW_H

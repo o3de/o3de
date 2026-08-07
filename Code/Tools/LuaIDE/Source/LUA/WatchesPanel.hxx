@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef WATCHES_VIEW_H
-#define WATCHES_VIEW_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -156,5 +154,3 @@ public Q_SLOTS:
     void OnItemChanged();
     void OnDoubleClicked( const QModelIndex & );
 };
-
-#endif

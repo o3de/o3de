@@ -6,16 +6,13 @@
  *
  */
 
-#ifndef LUAEDITOR_CONTEXTMESSAGES_H
-#define LUAEDITOR_CONTEXTMESSAGES_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -110,5 +107,3 @@ namespace LUAEditor
         virtual void RequestAttachDebugger() = 0;
     };
 }
-
-#endif//LUAEDITOR_CONTEXTMESSAGES_H

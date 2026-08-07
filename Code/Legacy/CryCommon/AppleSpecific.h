@@ -6,12 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : Apple specific declarations common amongst its products
-
-#ifndef CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
-#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
@@ -473,5 +470,3 @@ char (*RtlpNumberOf( T (&)[N] ))[N];
 #define SUCCEEDED(x) ((x) >= 0)
 #undef FAILED
 #define FAILED(x) (!(SUCCEEDED(x)))
-
-#endif // CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H

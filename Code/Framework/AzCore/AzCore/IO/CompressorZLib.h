@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_COMPRESSOR_ZLIB_H
-#define AZCORE_COMPRESSOR_ZLIB_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
@@ -137,6 +137,3 @@ namespace AZ
         };
     }   // namespace IO
 }   // namespace AZ
-
-#endif  // AZCORE_COMPRESSOR_ZLIB_H
-#pragma once

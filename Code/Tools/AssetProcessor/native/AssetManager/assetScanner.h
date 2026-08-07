@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETSCANNER_H
-#define ASSETSCANNER_H
+
+#pragma once
 
 #include "native/assetprocessor.h"
 #include "assetScannerWorker.h"
@@ -52,5 +52,3 @@ namespace AssetProcessor
         AZStd::atomic<AssetScanningStatus> m_status;
     };
 }// end namespace AssetProcessor
-
-#endif // ASSETSCANNER_H

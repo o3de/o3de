@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef INICONFIGURATION_H
-#define INICONFIGURATION_H
+
+#pragma once
 
 #include <QDir>
 #include <QString>
@@ -34,5 +34,3 @@ private:
     quint16 m_listeningPort;
     QString m_userConfigFilePath;
 };
-
-#endif // INICONFIGURATION_H
