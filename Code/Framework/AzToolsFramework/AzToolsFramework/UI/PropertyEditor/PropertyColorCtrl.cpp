@@ -282,8 +282,9 @@ namespace AzToolsFramework
         });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
         {
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+            // editing finished implies color changed.
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
         });
         return newCtrl;
     }

@@ -175,6 +175,10 @@ namespace AzToolsFramework
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
+                    // we only need to update the selection if a selected entity got replaced.
+                    // if an entity selected was deleted and stayed deleted, the framework takes care of that.
+                    bool shouldAttemptToUpdateSelection = false;
+
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
                     // during instance processing if the instance gets deleted and it was queued multiple times.  To handle this, we
@@ -267,6 +271,18 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
+                            // was anything in the instance that updated selected?
+                            instanceToUpdate->GetAllEntitiesInHierarchyConst(
+                                [&](const AZ::Entity& entity)
+                                {
+                                    if (AZStd::find(selectedEntityIds.begin(), selectedEntityIds.end(), entity.GetId()) != selectedEntityIds.end())
+                                    {
+                                        shouldAttemptToUpdateSelection = true;
+                                        return false;
+                                    }
+                                    return true; // keep iterating.
+                                });
+
                             if (!m_isRootPrefabInstanceLoaded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
                             {
@@ -275,20 +291,14 @@ namespace AzToolsFramework
                             }
                         }
                     }
-                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
-                    {
-                        // Since entities get recreated during propagation, we need to check whether the entities
-                        // corresponding to the list of selected entity ids are present or not.
-                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
-                        if (entity == nullptr)
-                        {
-                            selectedEntityIds.erase(entityIdIterator--);
-                        }
-                    }
 
                     // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
+
+                    if (shouldAttemptToUpdateSelection)
+                    {
+                        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
+                    }
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

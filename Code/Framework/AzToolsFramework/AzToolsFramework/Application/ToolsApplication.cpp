@@ -186,10 +186,12 @@ namespace AzToolsFramework
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+        AZ::EntitySystemBus::Handler::BusConnect();
     }
 
     ToolsApplication::~ToolsApplication()
     {
+        AZ::EntitySystemBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
@@ -681,14 +683,20 @@ namespace AzToolsFramework
         // * Filter any duplicates.
 
         // Filter out any invalid or non-selectable entities
-        EntityIdList selectedEntitiesFiltered;
-        selectedEntitiesFiltered.reserve(selectedEntities.size());
-
         // if the new viewport interaction model is enabled we do not want to
         // filter out locked entities as this breaks with the logic of being
         // able to select locked entities in the entity outliner
-        selectedEntitiesFiltered.insert(
-            selectedEntitiesFiltered.begin(), selectedEntities.begin(), selectedEntities.end());
+        EntityIdList selectedEntitiesFiltered;
+        selectedEntitiesFiltered.reserve(selectedEntities.size());
+
+        std::copy_if(
+            selectedEntities.begin(),
+            selectedEntities.end(),
+            std::back_inserter(selectedEntitiesFiltered),
+            [this](const AZ::EntityId& entityId)
+            {
+                return EntityExists(entityId);
+            });
 
         EntityIdList newlySelectedIds;
         EntityIdList newlyDeselectedIds;
@@ -1395,6 +1403,19 @@ namespace AzToolsFramework
     void ToolsApplication::OnPrefabInstancePropagationEnd()
     {
         m_freezeSelectionUpdates = false;
+    }
+
+    void ToolsApplication::OnEntityDeactivated(const AZ::EntityId& entityId)
+    {
+        // If the entity in question is in the selection list, then remove it from the selection list and issue a selection updated.
+        EntityIdList::iterator foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
+        if (foundIter != m_selectedEntities.end())
+        {
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
+            m_selectedEntities.erase(foundIter);
+            EntitySelectionEvents::Bus::Event(entityId, &EntitySelectionEvents::OnDeselected);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::AfterEntitySelectionChanged, EntityIdList(), EntityIdList{ entityId } );
+        }
     }
 
     void ToolsApplication::CreateUndosForDirtyEntities()

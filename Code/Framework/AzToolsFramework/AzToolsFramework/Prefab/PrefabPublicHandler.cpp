@@ -1627,6 +1627,10 @@ namespace AzToolsFramework
             // 6.  Reorder entities to maintain the proper order
             // 7.  (If not keeping the container) destroy the container entity.
 
+            // Restore selection if possible, after this operation.
+            AzToolsFramework::EntityIdList selectedEntities;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
             AZ_PROFILE_FUNCTION(AzToolsFramework);
             {
                 ScopedUndoBatch outerUndoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
@@ -1670,22 +1674,39 @@ namespace AzToolsFramework
 
                     RemoveLink(detachedInstance, parentTemplateId, undoBatch.GetUndoBatch());
 
+                    AZStd::vector<const AZ::Entity*> detachedEntitiesToUpdate;
+
                     // Detach container entity from the detached instance
                     AZStd::unique_ptr<AZ::Entity> containerEntity = detachedInstance->DetachContainerEntity();
-                    EditorPrefabComponent* editorPrefabComponent = containerEntity->FindComponent<EditorPrefabComponent>();
-                    containerEntity->Deactivate();
-                    [[maybe_unused]] const bool editorPrefabComponentRemoved = containerEntity->RemoveComponent(editorPrefabComponent);
-                    AZ_Assert(editorPrefabComponentRemoved, "Remove EditorPrefabComponent failed.");
-                    delete editorPrefabComponent;
-                    containerEntity->Activate();
+                    AZ_Assert(containerEntity, "Can't detach container entity from the detached Instance.");
 
-                    AZStd::vector<const AZ::Entity*> detachedEntitiesToUpdate;
+                    // Scope to prevent any escape of raw ptr beyond this point.
+                    if (AZ::Entity* containerEntityRawPtr = containerEntity.get(); containerEntityRawPtr)
+                    {
+                        detachedEntitiesToUpdate.push_back(containerEntityRawPtr);
+                        EditorPrefabComponent* editorPrefabComponent = containerEntityRawPtr->FindComponent<EditorPrefabComponent>();
+                        AZ_Assert(editorPrefabComponent, "Can't find EditorPrefabComponent on the container entity of the detached Instance.");
+                       
+                        if (editorPrefabComponent)
+                        {
+                            containerEntity->Deactivate();
+                            [[maybe_unused]] const bool editorPrefabComponentRemoved =
+                                containerEntityRawPtr->RemoveComponent(editorPrefabComponent);
+                            AZ_Assert(editorPrefabComponentRemoved, "Remove EditorPrefabComponent failed.");
+                            delete editorPrefabComponent;
+                            // Reattach to the parent so that ownership remains intact when it reactivates
+                            // We reassign ownership to the parentInstance here, which invalidates our unique_ptr
+                            // but retains the actual object (no deletion), so the raw ptr stays valid to reactivate afterwards.
+                            [[maybe_unused]] const bool containerEntityAdded = parentInstance.AddEntity(AZStd::move(containerEntity));
+                            AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
+                            containerEntityRawPtr->Activate();
+                        }
+                    }
+
                     AZStd::vector<AZ::EntityId> entitiesToReorder; // entities that need to be moved in the parent order.
                     // Add the container entity to parent instance and add it to list so that we can update it in template as well.
                     // it will be deleted later.
-                    detachedEntitiesToUpdate.push_back(containerEntity.get());
-                    [[maybe_unused]] const bool containerEntityAdded = parentInstance.AddEntity(AZStd::move(containerEntity));
-                    AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
+                    
 
                     // Detach entities and add them to the parent instance.
                     detachedInstance->DetachEntities(
@@ -1826,7 +1847,15 @@ namespace AzToolsFramework
                 // note that this is still within the scope of the "outer" undo batch, so it still counts as one operation.
                 if (!keepContainerEntity)
                 {
+                    // the only entity which actually could get deleted in this operation is the container entity.
                     DeleteFromInstance({containerEntityId});
+                }
+                else
+                {
+                    if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), containerEntityId) != selectedEntities.end())
+                    {
+                        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+                    }
                 }
 
                 // before the current undo batch expires, clear any dirty entities.

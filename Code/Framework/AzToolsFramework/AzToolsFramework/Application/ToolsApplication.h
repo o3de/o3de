@@ -10,6 +10,7 @@
 
 
 #include <AzCore/base.h>
+#include <AzCore/Component/EntityBus.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
@@ -29,6 +30,7 @@ namespace AzToolsFramework
         : public AzFramework::Application
         , private ToolsApplicationRequests::Bus::Handler
         , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
+        , private AZ::EntitySystemBus::Handler
     {
     public:
         AZ_RTTI(ToolsApplication, "{2895561E-BE90-4CC3-8370-DD46FCF74C01}", AzFramework::Application);
@@ -161,13 +163,12 @@ namespace AzToolsFramework
         };
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
         // PrefabPublicNotificationBus::Handler
-
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
 
-        //////////////////////////////////////////////////////////////////////////
+        // EntitySystemBus::MultiHandler
+        void OnEntityDeactivated(const AZ::EntityId&) override;
 
         void CreateUndosForDirtyEntities();
         void ConsistencyCheckUndoCache();
