@@ -113,6 +113,11 @@ namespace O3DE::ProjectManager
          */
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
 
+        /*
+        * Delete a desktop shortcut previously created.
+        * @param filename the name of the desktop fortcut file
+        * @return bool true if deleted false otherwise
+        */
         bool DeleteDesktopShortcut(const QString& filename);
 
         /**
