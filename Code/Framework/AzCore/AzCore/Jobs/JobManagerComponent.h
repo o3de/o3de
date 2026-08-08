@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOB_MANAGER_COMPONENT_H
-#define AZCORE_JOB_MANAGER_COMPONENT_H
+
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -54,6 +54,3 @@ namespace AZ
         int          m_firstThreadCPU;          ///< ID of the first thread, afterwards we just increment. If == -1, no CPU will be set.(TODO: We can have a full array)
     };
 }
-
-#endif // AZCORE_JOB_MANAGER_COMPONENT_H
-#pragma once

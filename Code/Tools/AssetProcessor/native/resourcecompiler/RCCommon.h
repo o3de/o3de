@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETPROCESSOR_RCCOMMON_H
-#define ASSETPROCESSOR_RCCOMMON_H
+
+#pragma once
 
 #include <AzCore/std/functional.h>
 #include <QString>
@@ -50,5 +50,3 @@ namespace AZStd {
         }
     };
 } // namespace AZStd
-
-#endif //ASSETPROCESSOR_RCQUEUESORTMODEL_H

@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XCONSOLE_H
-#define CRYINCLUDE_CRYSYSTEM_XCONSOLE_H
-
 #pragma once
 
 #include <IConsole.h>
@@ -389,5 +385,3 @@ private: // ----------------------------------------------------------
     friend void Command_DumpCommandsVars(IConsoleCmdArgs* Cmd);
     friend void Command_DumpVars(IConsoleCmdArgs* Cmd);
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XCONSOLE_H

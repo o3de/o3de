@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_IMAGEGIF_H
-#define CRYINCLUDE_EDITOR_UTIL_IMAGEGIF_H
 #pragma once
 
 class CImageEx;
@@ -18,6 +15,3 @@ class CImageGif
 public:
     bool Load(const QString& fileName, CImageEx& outImage);
 };
-
-
-#endif // CRYINCLUDE_EDITOR_UTIL_IMAGEGIF_H

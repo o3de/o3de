@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_MAILER_H
-#define CRYINCLUDE_EDITOR_UTIL_MAILER_H
 #pragma once
-
 
 //////////////////////////////////////////////////////////////////////////
 class CMailer
@@ -22,5 +18,3 @@ public:
         const std::vector<const char*>& _attachments, // All File Attachments
         bool bShowDialog);   // Whether to allow editing by user
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_MAILER_H

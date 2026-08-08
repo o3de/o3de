@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Linux declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LINUXSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_LINUXSPECIFIC_H
-#pragma once
 
 
 #include <stdlib.h>
@@ -417,7 +414,4 @@ char (*RtlpNumberOf( T (&)[N] ))[N];
 #undef FAILED
 #define FAILED(x) (!(SUCCEEDED(x)))
 
-#endif // CRYINCLUDE_CRYCOMMON_LINUXSPECIFIC_H
-
 // vim:ts=2:sw=2:tw=78
-

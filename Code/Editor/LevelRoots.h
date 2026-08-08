@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_LEVELROOTS_H
-#define CRYINCLUDE_EDITOR_LEVELROOTS_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -78,5 +76,3 @@ namespace LevelRoots
     //----------------------------------------------------------------------
     QString FormatRelativeDisplay(const QString& absolutePath);
 }
-
-#endif // CRYINCLUDE_EDITOR_LEVELROOTS_H

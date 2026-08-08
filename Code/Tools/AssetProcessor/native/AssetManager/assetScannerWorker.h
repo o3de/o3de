@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETSCANNERWORKER_H
-#define ASSETSCANNERWORKER_H
+
+#pragma once
 
 #include "native/assetprocessor.h"
 #include "assetScanFolderInfo.h"
@@ -56,5 +56,3 @@ Q_SIGNALS:
         PlatformConfiguration* m_platformConfiguration;
     };
 } // end namespace AssetProcessor
-
-#endif // ASSETSCANNERWORKER_H

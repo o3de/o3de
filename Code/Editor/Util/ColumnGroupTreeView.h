@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPTREEVIEW_H
-#define COLUMNGROUPTREEVIEW_H
+
+#pragma once
 
 #include <QTreeView>
 #include <QPainter>
@@ -70,5 +70,3 @@ private:
     ColumnGroupProxyModel* m_groupModel;
     QSet<QString> m_openNodes;
 };
-
-#endif // COLUMNGROUPTREEVIEW_H

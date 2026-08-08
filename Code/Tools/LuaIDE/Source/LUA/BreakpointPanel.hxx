@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef BREAKPOINTS_VIEW_H
-#define BREAKPOINTS_VIEW_H
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -54,5 +52,3 @@ public slots:
     void DeleteSelected();
     void DeleteAll();
 };
-
-#endif

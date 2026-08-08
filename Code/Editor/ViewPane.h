@@ -6,11 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_VIEWPANE_H
-#define CRYINCLUDE_EDITOR_VIEWPANE_H
-
 #pragma once
+
 // ViewPane.h : header file
 //
 
@@ -161,5 +158,3 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
-
-#endif // CRYINCLUDE_EDITOR_VIEWPANE_H

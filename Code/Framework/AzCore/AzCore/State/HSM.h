@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_HIERARCHIAL_STATE_MACHINE_H
-#define AZCORE_HIERARCHIAL_STATE_MACHINE_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
@@ -117,5 +117,3 @@ namespace AZ
     template<bool handleEvent>
     bool DummyStateHandler(HSM& /*sm*/, const HSM::Event& /*e*/) { return handleEvent; }
 }
-#endif // AZCORE_HIERARCHIAL_STATE_MACHINE_H
-#pragma once

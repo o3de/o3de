@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCQUEUEMODEL_H
-#define RCQUEUEMODEL_H
+
+#pragma once
 
 #include "RCCommon.h"
 
@@ -119,6 +119,3 @@ namespace AssetProcessor
         QMultiMap<QueueElementID, RCJob*> m_jobsInQueueLookup;
     };
 } // namespace AssetProcessor
-
-
-#endif // RCQUEUEMODEL_H

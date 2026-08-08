@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_VARIABLE_H
-#define CRYINCLUDE_EDITOR_UTIL_VARIABLE_H
 #pragma once
-
 
 #include "RefCountBase.h"
 
@@ -2124,5 +2120,3 @@ private:
 };
 
 Q_DECLARE_METATYPE(IVariable *);
-
-#endif // CRYINCLUDE_EDITOR_UTIL_VARIABLE_H

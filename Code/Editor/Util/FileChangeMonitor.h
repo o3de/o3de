@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_FILECHANGEMONITOR_H
-#define CRYINCLUDE_EDITOR_UTIL_FILECHANGEMONITOR_H
 #pragma once
 
 #include <AzCore/std/containers/set.h>
@@ -130,5 +127,3 @@ public:
 private:
     CFileChangeMonitor* m_pMonitor;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_FILECHANGEMONITOR_H
