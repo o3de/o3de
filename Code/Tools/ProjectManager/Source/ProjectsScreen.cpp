@@ -659,7 +659,7 @@ namespace O3DE::ProjectManager
                 ProjectUtils::DeleteProjectFiles(projectPath);
                 QGuiApplication::restoreOverrideCursor();
 
-                const QString shortcutName = QString("%1 Editor").arg(projectName);
+                const QString shortcutName = QString(ProjectUtils::EditorShortcutFilenameFormat.data()).arg(projectName);
                 ProjectUtils::DeleteDesktopShortcut(shortcutName);
 
                 emit NotifyProjectRemoved(projectPath);

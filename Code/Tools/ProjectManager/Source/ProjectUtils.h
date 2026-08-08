@@ -27,6 +27,10 @@ namespace O3DE::ProjectManager
         static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
         static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
 
+        // Without the file extension to be cross platform.
+        // %1 to be replaced with project name.
+        static constexpr AZStd::string_view EditorShortcutFilenameFormat = "%1 Editor";
+
         bool RegisterProject(const QString& path, QWidget* parent = nullptr);
         bool UnregisterProject(const QString& path, QWidget* parent = nullptr);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
