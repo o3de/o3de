@@ -21,5 +21,5 @@
         ]
     },
 
-    "DrawList": "forward"
+    "DrawList": "transparent"
 }
