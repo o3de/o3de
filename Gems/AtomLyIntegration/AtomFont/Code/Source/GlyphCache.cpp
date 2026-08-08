@@ -23,7 +23,7 @@ AZ::GlyphCache::GlyphCache()
     : m_usage(1)
     , m_glyphBitmapWidth(0)
     , m_glyphBitmapHeight(0)
-    , m_scaleBitmap(0)
+    , m_scaleBitmap(nullptr)
 {
     m_cacheTable.clear();
     m_slotList.clear();
@@ -114,7 +114,7 @@ int AZ::GlyphCache::Release()
 
         delete m_scaleBitmap;
 
-        m_scaleBitmap = 0;
+        m_scaleBitmap = nullptr;
     }
 
     m_glyphBitmapWidth = 0;
@@ -265,7 +265,7 @@ int AZ::GlyphCache::GlyphCached(uint32_t character, const AtomFont::GlyphSize& g
 AZ::CacheSlot* AZ::GlyphCache::GetLRUSlot()
 {
     unsigned int    dwMinUsage = 0xffffffff;
-    CacheSlot* pLRUSlot = 0;
+    CacheSlot* pLRUSlot = nullptr;
     CacheSlot* slot;
 
     CacheSlotListItor pItor = m_slotList.begin();
@@ -297,7 +297,7 @@ AZ::CacheSlot* AZ::GlyphCache::GetLRUSlot()
 AZ::CacheSlot* AZ::GlyphCache::GetMRUSlot()
 {
     unsigned int    dwMaxUsage = 0;
-    CacheSlot* pMRUSlot = 0;
+    CacheSlot* pMRUSlot = nullptr;
     CacheSlot* slot;
 
     CacheSlotListItor pItor = m_slotList.begin();

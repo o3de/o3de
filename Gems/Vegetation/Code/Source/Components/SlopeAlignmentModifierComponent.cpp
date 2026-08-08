@@ -50,7 +50,7 @@ namespace Vegetation
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &SlopeAlignmentModifierConfig::m_rangeMax, QT_TRANSLATE_NOOP("Vegetation", "Alignment Coefficient Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum slope alignment coefficient."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &SlopeAlignmentModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
+                    ->DataElement(nullptr, &SlopeAlignmentModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
                     ;
             }
         }

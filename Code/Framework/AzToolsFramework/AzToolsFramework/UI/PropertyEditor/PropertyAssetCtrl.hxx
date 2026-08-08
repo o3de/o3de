@@ -70,7 +70,7 @@ namespace AzToolsFramework
         using ClearCallbackType = AZ::Edit::AttributeFunction<void()>;
         using DefaultDirectoryCallbackType = AZ::Edit::AttributeFunction<void(AZStd::string&)>;
 
-        PropertyAssetCtrl(QWidget *pParent = NULL, QString optionalValidDragDropExtensions = QString());
+        PropertyAssetCtrl(QWidget *pParent = nullptr, QString optionalValidDragDropExtensions = QString());
         virtual ~PropertyAssetCtrl();
 
         QWidget* GetFirstInTabOrder() { return m_browseEdit->lineEdit(); }

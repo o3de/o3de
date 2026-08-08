@@ -125,12 +125,12 @@ public:
     void Release() override;
 
     void Init(ISystem* pSystem) override;
-    ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
-    ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
-    ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) override;
-    ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
-    ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
-    ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) override;
+    ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
+    ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
+    ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) override;
+    ICVar* Register(const char* name, float* src, float defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
+    ICVar* Register(const char* name, int* src, int defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
+    ICVar* Register(const char* name, const char** src, const char* defaultvalue, int flags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) override;
 
     void UnregisterVariable(const char* sVarName, bool bDelete = false) override;
     void SetScrollMax(int value) override;
@@ -151,8 +151,8 @@ public:
     bool GetStatus() override;
     void Clear() override;
     void Update() override;
-    bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL) override;
-    bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL) override;
+    bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = nullptr) override;
+    bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = nullptr) override;
     void RemoveCommand(const char* sName) override;
     void ExecuteString(const char* command, bool bSilentMode, bool bDeferExecution = false) override;
     void ExecuteConsoleCommand(const char* command) override;
@@ -161,7 +161,7 @@ public:
     bool IsOpened() override;
     int GetNumVars() override;
     int GetNumVisibleVars() override;
-    size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0) override;
+    size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = nullptr) override;
     void FindVar(const char* substr);
     const char* AutoComplete(const char* substr) override;
     const char* AutoCompletePrev(const char* substr) override;

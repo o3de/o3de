@@ -23,7 +23,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        ComponentPaletteModel(QObject* parent = 0);
+        ComponentPaletteModel(QObject* parent = nullptr);
         ~ComponentPaletteModel() override;
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     };

@@ -26,7 +26,7 @@ namespace AZStd
 
             enum _vt
             {
-                value = sizeof((f)(static_cast<Y*>(0))) == sizeof(yes)
+                value = sizeof((f)(static_cast<Y*>(nullptr))) == sizeof(yes)
             };
         };
         struct sp_empty {};

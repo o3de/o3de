@@ -113,7 +113,7 @@ namespace AZ
         //! \param sizeRatio A sizing scale that gets applied to all glyphs sizes before they are stored in the font texture.
         //! \param glyphSize The resolution to render the glyphs in string at. 
         //! \param glyphFlags Controls hinting behavior for glyphs rendered to the font texture.
-        int PreCacheString(const char* string, int* updated = 0, float sizeRatio = IFFontConstants::defaultSizeRatio, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
+        int PreCacheString(const char* string, int* updated = nullptr, float sizeRatio = IFFontConstants::defaultSizeRatio, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
         // Arguments:
         //   slot - function does nothing if this pointer is 0
         void GetTextureCoord(TextureSlot * slot, float texCoords[4], int& characterSizeX, int& characterSizeY, int& m_characterOffsetX, int& m_characterOffsetY, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize) const;

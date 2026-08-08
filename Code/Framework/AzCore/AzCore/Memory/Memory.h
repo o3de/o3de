@@ -102,7 +102,7 @@ namespace AZ
         AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator)
             : m_allocator(allocator)
         {
-            AZ_Assert(m_allocator != NULL, "You must provide a valid allocator!");
+            AZ_Assert(m_allocator != nullptr, "You must provide a valid allocator!");
         }
         AZ_FORCE_INLINE AZStdIAllocator(const AZStdIAllocator& rhs)
             : m_allocator(rhs.m_allocator)

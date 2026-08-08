@@ -42,7 +42,7 @@ namespace AssetProcessor
             cmdExecute,
             cmdTerminate
         };
-        explicit RCController(QObject* parent = 0);
+        explicit RCController(QObject* parent = nullptr);
         virtual ~RCController();
 
         AssetProcessor::RCJobListModel* GetQueueModel();

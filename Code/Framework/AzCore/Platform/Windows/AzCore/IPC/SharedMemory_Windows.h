@@ -20,7 +20,7 @@ namespace AZ
 
         bool IsReady() const
         {
-            return m_mapHandle != NULL;
+            return m_mapHandle != nullptr;
         }
 
         bool IsMapHandleValid() const

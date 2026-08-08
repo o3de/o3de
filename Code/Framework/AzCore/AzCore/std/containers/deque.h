@@ -189,18 +189,18 @@ namespace AZStd
         typedef AZStd::reverse_iterator<const_iterator> const_reverse_iterator;
 
         AZ_FORCE_INLINE deque()
-            : m_map(0)
+            : m_map(nullptr)
             , m_mapSize(0)
             , m_firstOffset(0)
             , m_size(0) {}
         AZ_FORCE_INLINE explicit deque(const Allocator& allocator)
-            : m_map(0)
+            : m_map(nullptr)
             , m_mapSize(0)
             , m_firstOffset(0)
             , m_size(0)
             , m_allocator(allocator) {}
         AZ_FORCE_INLINE explicit deque(size_type numElements)
-            : m_map(0)
+            : m_map(nullptr)
             , m_mapSize(0)
             , m_firstOffset(0)
             , m_size(0)
@@ -226,7 +226,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE deque(const this_type& rhs)
-            : m_map(0)
+            : m_map(nullptr)
             , m_mapSize(0)
             , m_firstOffset(0)
             , m_size(0)
@@ -341,7 +341,7 @@ namespace AZStd
             }
             size_type newOffset = m_firstOffset != 0 ? m_firstOffset : m_mapSize * NumElementsPerBlock;
             size_type block = --newOffset / NumElementsPerBlock;
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -389,7 +389,7 @@ namespace AZStd
             {
                 block -= m_mapSize;
             }
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -650,7 +650,7 @@ namespace AZStd
 
             for (size_type i = m_mapSize; i > 0; )
             {   // free storage for a block and destroy pointer
-                if (*(m_map + --i) != 0)
+                if (*(m_map + --i) != nullptr)
                 {
                     deallocate_memory(*(m_map + i), sizeof(block_node_type), alignof(block_node_type));
                 }
@@ -661,7 +661,7 @@ namespace AZStd
             if (m_map)
             {
                 deallocate_memory(m_map, sizeof(map_node_type) * m_mapSize, alignment_of_v<map_node_type>);
-                m_map = 0;
+                m_map = nullptr;
             }
 
             m_mapSize = 0;
@@ -689,7 +689,7 @@ namespace AZStd
         }
 
         deque(this_type&& rhs)
-            : m_map(0)
+            : m_map(nullptr)
             , m_mapSize(0)
             , m_firstOffset(0)
             , m_size(0)
@@ -728,7 +728,7 @@ namespace AZStd
                 m_firstOffset = rhs.m_firstOffset;
                 m_size = rhs.m_size;
 
-                rhs.m_map = 0;
+                rhs.m_map = nullptr;
                 rhs.m_mapSize = 0;
                 rhs.m_firstOffset = 0;
                 rhs.m_size = 0;
@@ -746,7 +746,7 @@ namespace AZStd
             }
             size_type newOffset = m_firstOffset != 0 ? m_firstOffset : m_mapSize * NumElementsPerBlock;
             size_type block = --newOffset / NumElementsPerBlock;
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -773,7 +773,7 @@ namespace AZStd
             {
                 block -= m_mapSize;
             }
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -795,7 +795,7 @@ namespace AZStd
             }
             size_type newOffset = m_firstOffset != 0 ? m_firstOffset : m_mapSize * NumElementsPerBlock;
             size_type block = --newOffset / NumElementsPerBlock;
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -823,7 +823,7 @@ namespace AZStd
             {
                 block -= m_mapSize;
             }
-            if (m_map[block] == 0)
+            if (m_map[block] == nullptr)
             {
                 m_map[block] = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(sizeof(block_node_type), alignof(block_node_type))));
             }
@@ -937,7 +937,7 @@ namespace AZStd
         */
         inline void             leak_and_reset()
         {
-            m_map = 0;
+            m_map = nullptr;
             m_size = 0;
             m_mapSize = 0;
             m_firstOffset = 0;

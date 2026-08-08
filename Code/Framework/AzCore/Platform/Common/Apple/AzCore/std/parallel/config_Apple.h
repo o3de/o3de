@@ -30,7 +30,7 @@ namespace AZStd
 
     // Thread
     using native_thread_id_type = pthread_t;
-    static constexpr pthread_t native_thread_invalid_id = 0;
+    static constexpr pthread_t native_thread_invalid_id = nullptr;
     using native_thread_data_type = pthread_t;
     using native_thread_handle_type = pthread_t;
 }

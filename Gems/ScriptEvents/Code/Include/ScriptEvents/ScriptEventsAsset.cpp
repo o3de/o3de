@@ -29,7 +29,7 @@ namespace ScriptEvents
             {
                 editContext->Class<ScriptEventsAsset>(
                     QT_TRANSLATE_NOOP("ScriptEvents", "Script Events Asset"), "")
-                    ->DataElement(0, &ScriptEventsAsset::m_definition,
+                    ->DataElement(nullptr, &ScriptEventsAsset::m_definition,
                         QT_TRANSLATE_NOOP("ScriptEvents", "Definition"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;

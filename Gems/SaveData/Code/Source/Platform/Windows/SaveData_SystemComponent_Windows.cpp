@@ -81,7 +81,7 @@ namespace SaveData
 
         // Get the 'known folder path'
         wchar_t* knownFolderPathUTF16 = nullptr;
-        [[maybe_unused]] long result = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &knownFolderPathUTF16);
+        [[maybe_unused]] long result = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &knownFolderPathUTF16);
         AZ_Assert(SUCCEEDED(result), "SHGetKnownFolderPath could not retrieve LocalAppData folder");
 
         // Convert it from UTF-16 to UTF-8

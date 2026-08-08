@@ -44,7 +44,7 @@ namespace Vegetation
                     ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
                     ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
                     ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
-                    ->DataElement(0, &ShapeIntersectionFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Entity with shape component to test intersection."))
+                    ->DataElement(nullptr, &ShapeIntersectionFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Entity with shape component to test intersection."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
 

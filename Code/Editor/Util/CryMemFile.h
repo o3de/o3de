@@ -61,7 +61,7 @@ public: // ---------------------------------------------------------------
     char* Detach()
     {
         assert(0);      // dangerous - most likely we cause memory leak - better use GetMemPtr
-        return 0;
+        return nullptr;
     }
 
 private:

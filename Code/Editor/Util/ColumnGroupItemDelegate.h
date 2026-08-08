@@ -14,7 +14,7 @@ class ColumnGroupItemDelegate
     : public QStyledItemDelegate
 {
 public:
-    ColumnGroupItemDelegate(QObject* parent = 0);
+    ColumnGroupItemDelegate(QObject* parent = nullptr);
 
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 

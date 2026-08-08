@@ -103,7 +103,7 @@ public:
     //! Check if attributes with specified key exist.
     bool haveAttr(const char* key) const override;
 
-    XmlNodeRef newChild([[maybe_unused]] const char* tagName) override { assert(0); return 0; };
+    XmlNodeRef newChild([[maybe_unused]] const char* tagName) override { assert(0); return nullptr; };
     void addChild([[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
     void removeChild([[maybe_unused]] const XmlNodeRef& node) override { assert(0); };
 
@@ -131,7 +131,7 @@ public:
     void setLine([[maybe_unused]] int line) override { assert(0); };
 
     //! Returns XML of this node and sub nodes.
-    IXmlStringData* getXMLData([[maybe_unused]] int nReserveMem = 0) const override { assert(0); return 0; };
+    IXmlStringData* getXMLData([[maybe_unused]] int nReserveMem = 0) const override { assert(0); return nullptr; };
     XmlString getXML([[maybe_unused]] int level = 0) const override { assert(0); return ""; };
     bool saveToFile([[maybe_unused]] const char* fileName) override { assert(0); return false; };   // saves in one huge chunk
     bool saveToFile([[maybe_unused]] const char* fileName, [[maybe_unused]] size_t chunkSizeBytes, [[maybe_unused]] AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle) override { assert(0); return false; };   // save in small memory chunks
@@ -161,7 +161,7 @@ public:
     bool getAttr(const char* key, float& value) const override;
     bool getAttr(const char* key, f64& value) const override;
     bool getAttr(const char* key, bool& value) const override;
-    bool getAttr(const char* key, XmlString& value) const override  {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
+    bool getAttr(const char* key, XmlString& value) const override  {const char*    v(nullptr); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
     bool getAttr(const char* key, Vec2& value) const override;
     bool getAttr(const char* key, Ang3& value) const override;
     bool getAttr(const char* key, Vec3& value) const override;
@@ -189,7 +189,7 @@ private:
                 return attrValue;
             }
         }
-        return 0;
+        return nullptr;
     }
 
     // Return current node in binary data.

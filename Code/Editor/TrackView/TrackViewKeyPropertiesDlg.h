@@ -120,7 +120,7 @@ class CTrackViewTrackPropsDlg
 {
     Q_OBJECT
 public:
-    CTrackViewTrackPropsDlg(QWidget* parent = 0);
+    CTrackViewTrackPropsDlg(QWidget* parent = nullptr);
     ~CTrackViewTrackPropsDlg();
 
     void OnSequenceChanged();

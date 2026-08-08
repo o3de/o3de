@@ -164,11 +164,11 @@ namespace AZStd
 
                     case move_functor_tag:
                         out_buffer.obj_ref.obj_ptr = in_buffer.obj_ref.obj_ptr;
-                        in_buffer.obj_ref.obj_ptr = 0;
+                        in_buffer.obj_ref.obj_ptr = nullptr;
                         return;
 
                     case destroy_functor_tag:
-                        out_buffer.obj_ref.obj_ptr = 0;
+                        out_buffer.obj_ref.obj_ptr = nullptr;
                         return;
 
                     case check_functor_type_tag:
@@ -187,7 +187,7 @@ namespace AZStd
                         }
                         else
                         {
-                            out_buffer.obj_ptr = 0;
+                            out_buffer.obj_ptr = nullptr;
                         }
                     }
                         return;
@@ -244,11 +244,11 @@ namespace AZStd
                     else if (op == move_functor_tag)
                     {
                         out_buffer.func_ptr = in_buffer.func_ptr;
-                        in_buffer.func_ptr = 0;
+                        in_buffer.func_ptr = nullptr;
                     }
                     else if (op == destroy_functor_tag)
                     {
-                        out_buffer.func_ptr = 0;
+                        out_buffer.func_ptr = nullptr;
                     }
                     else if (op == check_functor_type_tag)
                     {
@@ -259,7 +259,7 @@ namespace AZStd
                         }
                         else
                         {
-                            out_buffer.obj_ptr = 0;
+                            out_buffer.obj_ptr = nullptr;
                         }
                     }
                     else /* op == get_functor_type_tag */
@@ -317,7 +317,7 @@ namespace AZStd
                         }
                         else
                         {
-                            out_buffer.obj_ptr = 0;
+                            out_buffer.obj_ptr = nullptr;
                         }
                     }
                     else /* op == get_functor_type_tag */
@@ -367,7 +367,7 @@ namespace AZStd
                     else if (op == move_functor_tag)
                     {
                         out_buffer.obj_ptr = in_buffer.obj_ptr;
-                        in_buffer.obj_ptr = 0;
+                        in_buffer.obj_ptr = nullptr;
                     }
                     else if (op == destroy_functor_tag)
                     {
@@ -376,7 +376,7 @@ namespace AZStd
                         Internal::destroy<functor_type*>::single(f);
                         AZStd::allocator a;
                         a.deallocate(f, 0, 0);
-                        out_buffer.obj_ptr = 0;
+                        out_buffer.obj_ptr = nullptr;
                     }
                     else if (op == check_functor_type_tag)
                     {
@@ -387,7 +387,7 @@ namespace AZStd
                         }
                         else
                         {
-                            out_buffer.obj_ptr = 0;
+                            out_buffer.obj_ptr = nullptr;
                         }
                     }
                     else /* op == get_functor_type_tag */
@@ -475,7 +475,7 @@ namespace AZStd
                     else if (op == move_functor_tag)
                     {
                         out_buffer.obj_ptr = in_buffer.obj_ptr;
-                        in_buffer.obj_ptr = 0;
+                        in_buffer.obj_ptr = nullptr;
                     }
                     else if (op == destroy_functor_tag)
                     {
@@ -484,7 +484,7 @@ namespace AZStd
                         Allocator wrapper_allocator(static_cast<Allocator const&>(*victim)); // copy the allocator
                         Internal::destroy<functor_wrapper_type*>::single(victim);
                         wrapper_allocator.deallocate(victim, sizeof(functor_wrapper_type), AZStd::alignment_of_v<functor_wrapper_type>);
-                        out_buffer.obj_ptr = 0;
+                        out_buffer.obj_ptr = nullptr;
                     }
                     else if (op == check_functor_type_tag)
                     {
@@ -495,7 +495,7 @@ namespace AZStd
                         }
                         else
                         {
-                            out_buffer.obj_ptr = 0;
+                            out_buffer.obj_ptr = nullptr;
                         }
                     }
                     else /* op == get_functor_type_tag */
@@ -565,7 +565,7 @@ namespace AZStd
     {
     public:
         function_base()
-            : vtable(0) { }
+            : vtable(nullptr) { }
 
         /** Determine if the function is empty (i.e., has no target). */
         bool empty() const { return !vtable; }

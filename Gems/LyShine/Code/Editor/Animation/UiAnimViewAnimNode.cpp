@@ -604,7 +604,7 @@ void CUiAnimViewAnimNode::UnBindFromEditorObjects()
 //////////////////////////////////////////////////////////////////////////
 bool CUiAnimViewAnimNode::IsBoundToEditorObjects() const
 {
-    return m_pAnimNode ? (m_pAnimNode->GetNodeOwner() != NULL) : false;
+    return m_pAnimNode ? (m_pAnimNode->GetNodeOwner() != nullptr) : false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1467,7 +1467,7 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     }
 
     XmlNodeRef animNodesRoot = clipboard.Get();
-    if (animNodesRoot == NULL || strcmp(animNodesRoot->getTag(), "CopyAnimNodesRoot") != 0)
+    if (animNodesRoot == nullptr || strcmp(animNodesRoot->getTag(), "CopyAnimNodesRoot") != 0)
     {
         return false;
     }

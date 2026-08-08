@@ -443,7 +443,7 @@ void ConnectionWorker::EngineSocketStateChanged(QAbstractSocket::SocketState soc
         AZ_TracePrintf(AssetProcessor::DebugChannel, "ConnectionWorker::EngineSocketStateChanged:  %p unconnected, now (%s)", this, m_engineSocketIsConnected ? "True" : "False");
 
 #endif
-        disconnect(&m_engineSocket, &QTcpSocket::readyRead, 0, 0);
+        disconnect(&m_engineSocket, &QTcpSocket::readyRead, nullptr, nullptr);
         DisconnectSockets();
     }
 }

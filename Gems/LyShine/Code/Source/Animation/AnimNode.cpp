@@ -107,7 +107,7 @@ IUiAnimTrack* CUiAnimNode::GetTrackForParameter(const CUiAnimParamType& paramTyp
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 IUiAnimTrack* CUiAnimNode::GetTrackForParameter(const CUiAnimParamType& paramType, uint32 index) const
@@ -130,7 +130,7 @@ IUiAnimTrack* CUiAnimNode::GetTrackForParameter(const CUiAnimParamType& paramTyp
 
         // For this case, no subtracks are considered.
     }
-    return 0;
+    return nullptr;
 }
 
 uint32 CUiAnimNode::GetTrackParamIndex(const IUiAnimTrack* track) const
@@ -170,7 +170,7 @@ IUiAnimTrack* CUiAnimNode::GetTrackByIndex(int nIndex) const
     AZ_Assert(nIndex >= 0 && nIndex < static_cast<int>(m_tracks.size()), "Track index out of range.");
     if (nIndex < 0 || nIndex >= static_cast<int>(m_tracks.size()))
     {
-        return NULL;
+        return nullptr;
     }
     return m_tracks[nIndex].get();
 }
@@ -269,13 +269,13 @@ IUiAnimTrack* CUiAnimNode::CreateTrackInternal(const CUiAnimParamType& paramType
         // Try to get info from paramType, else we can't determine the track data type
         if (!GetParamInfoFromType(paramType, info))
         {
-            return 0;
+            return nullptr;
         }
 
         valueType = info.valueType;
     }
 
-    IUiAnimTrack* track = NULL;
+    IUiAnimTrack* track = nullptr;
 
     switch (paramType.GetType())
     {
@@ -445,11 +445,11 @@ CUiAnimNode::CUiAnimNode(const int id, EUiAnimNodeType nodeType)
     , m_parentNodeId(0)
     , m_nodeType(nodeType)
 {
-    m_pOwner = 0;
-    m_pSequence = 0;
+    m_pOwner = nullptr;
+    m_pSequence = nullptr;
     m_flags = 0;
     m_bIgnoreSetParam = false;
-    m_pParentNode = 0;
+    m_pParentNode = nullptr;
     m_nLoadedParentNodeId = 0;
 }
 
@@ -788,10 +788,10 @@ IUiAnimNode* CUiAnimNode::HasDirectorAsParent() const
         // There are some invalid data.
         if (pParent->GetParent() == pParent)
         {
-            pParent->SetParent(NULL);
-            return NULL;
+            pParent->SetParent(nullptr);
+            return nullptr;
         }
         pParent = pParent->GetParent();
     }
-    return NULL;
+    return nullptr;
 }

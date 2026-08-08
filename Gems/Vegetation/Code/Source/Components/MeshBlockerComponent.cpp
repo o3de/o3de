@@ -48,14 +48,14 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &MeshBlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
+                    ->DataElement(nullptr, &MeshBlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMin, QT_TRANSLATE_NOOP("Vegetation", "Mesh Height Percent Min"), QT_TRANSLATE_NOOP("Vegetation", "The percentage of the mesh height (from the bottom up) used as the lower bound for intersection tests"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMax, QT_TRANSLATE_NOOP("Vegetation", "Mesh Height Percent Max"), QT_TRANSLATE_NOOP("Vegetation", "The percentage of the mesh height (from the bottom up) used as the upper bound for intersection tests"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &MeshBlockerConfig::m_blockWhenInvisible, QT_TRANSLATE_NOOP("Vegetation", "Block When Invisible"), QT_TRANSLATE_NOOP("Vegetation", "Continue to block vegetation even if the mesh is invisible."))
+                    ->DataElement(nullptr, &MeshBlockerConfig::m_blockWhenInvisible, QT_TRANSLATE_NOOP("Vegetation", "Block When Invisible"), QT_TRANSLATE_NOOP("Vegetation", "Continue to block vegetation even if the mesh is invisible."))
                     ;
             }
         }

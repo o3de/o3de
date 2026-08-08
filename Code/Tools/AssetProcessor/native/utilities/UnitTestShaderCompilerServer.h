@@ -24,7 +24,7 @@ class UnitTestShaderCompilerServer
 {
     Q_OBJECT
 public:
-    explicit UnitTestShaderCompilerServer(QObject* parent = 0);
+    explicit UnitTestShaderCompilerServer(QObject* parent = nullptr);
     virtual ~UnitTestShaderCompilerServer();
     enum ServerStatus
     {

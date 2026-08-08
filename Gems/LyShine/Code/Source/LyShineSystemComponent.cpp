@@ -78,7 +78,7 @@ namespace LyShine
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &LyShineSystemComponent::m_cursorImagePathname, QT_TRANSLATE_NOOP("LyShine", "CursorImagePath"), QT_TRANSLATE_NOOP("LyShine", "The cursor image path."))
+                editInfo->DataElement(nullptr, &LyShineSystemComponent::m_cursorImagePathname, QT_TRANSLATE_NOOP("LyShine", "CursorImagePath"), QT_TRANSLATE_NOOP("LyShine", "The cursor image path."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &LyShineSystemComponent::BroadcastCursorImagePathname);
             }
         }
