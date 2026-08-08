@@ -266,7 +266,7 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
+                                    "guid": "{81CF732F-5CEE-5073-8ECB-AC51655FCEBC}",
                                     "subId": 277889906
                                 },
                                 "assetHint": "objects/groundplane/groundplane_512x512m.fbx.azmodel"
