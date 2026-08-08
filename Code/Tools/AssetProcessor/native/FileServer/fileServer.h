@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef FILESERVER_H
-#define FILESERVER_H
+
+#pragma once
 
 #include <QByteArray>
 #include <QDir>
@@ -237,5 +237,3 @@ private:
     QHash<unsigned int, HANDLE> m_locks;
 #endif // lockFiles.  do NOT use QLockFile, it won't work if other platforms are locking it, it only works for other users of QLockFile
 };
-
-#endif // FILESERVER_H

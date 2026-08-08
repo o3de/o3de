@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
-#define CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
 #pragma once
 
 #include <QStatusBar>
@@ -82,6 +79,3 @@ public:
 signals:
     void requestStatusUpdate();
 };
-
-
-#endif // CRYINCLUDE_EDITOR_MAINSTATUSBAR_H

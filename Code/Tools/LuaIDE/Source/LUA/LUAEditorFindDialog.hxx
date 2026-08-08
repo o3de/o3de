@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef LUAEDITOR_FINDDIALOG_H
-#define LUAEDITOR_FINDDIALOG_H
 #pragma once
 
 #include <AzCore/std/parallel/thread.h>
@@ -187,5 +185,3 @@ namespace LUAEditor
     };
 
 }
-
-#endif //LUAEDITOR_FINDDIALOG_H

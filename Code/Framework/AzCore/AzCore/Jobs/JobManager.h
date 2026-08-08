@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBMANAGER_H
-#define AZCORE_JOBS_JOBMANAGER_H 1
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
@@ -94,6 +94,3 @@ namespace AZ
         Internal::JobManagerWorkStealing m_impl;
     };
 }
-
-#endif
-#pragma once

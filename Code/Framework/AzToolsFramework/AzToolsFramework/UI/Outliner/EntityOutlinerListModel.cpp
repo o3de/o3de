@@ -1807,6 +1807,10 @@ namespace AzToolsFramework
     {
         // Ensure all descendants of the current focus root are expanded, so it is visible.
         ExpandAncestors(newFocusEntityId);
+
+        // Queue the new focus entity to be expanded, since you just chose to double click it, or clicked "edit"
+        // the user intends to edit the contents of this container entity.
+        QueueEntityToExpand(newFocusEntityId, true);
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef CUSTOMMENUSAPI_H
-#define CUSTOMMENUSAPI_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
@@ -15,7 +14,6 @@
 #include <QString>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusCommon.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#pragma once
 
 class QMenu;
 
@@ -60,5 +58,3 @@ namespace LegacyFramework
         virtual void RegisterMenuEntries() = 0;
     };
 }
-
-#endif

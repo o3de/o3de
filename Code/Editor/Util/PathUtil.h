@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Utility functions to simplify working with paths.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H
-#define CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H
-#pragma once
 
 #include <CryPath.h>
 #include <Include/EditorCoreAPI.h>
@@ -390,6 +387,3 @@ inline QString operator /(const QString& first, const QString& second)
 {
     return Path::Make(first, second);
 }
-
-
-#endif // CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H

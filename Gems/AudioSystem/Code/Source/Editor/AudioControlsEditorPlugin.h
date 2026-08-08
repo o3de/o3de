@@ -19,7 +19,6 @@
 #include <QATLControlsTreeModel.h>
 
 #include <IEditor.h>
-#include <Include/IPlugin.h>
 
 #include <QStandardItem>
 
@@ -28,19 +27,12 @@ class CImplementationManager;
 
 //-------------------------------------------------------------------------------------------//
 class CAudioControlsEditorPlugin
-    : public IPlugin
 {
 public:
     explicit CAudioControlsEditorPlugin(IEditor* editor);
-    ~CAudioControlsEditorPlugin() override;
+    ~CAudioControlsEditorPlugin();
 
-    void Release() override;
-    void ShowAbout() override {}
-    const char* GetPluginGUID() override { return "{DDD96BF3-892E-4A75-ABF7-BBAE446972DA}"; }
-    AZ::u32 GetPluginVersion() override { return 2; }
-    const char* GetPluginName() override { return "AudioControlsEditor"; }
-    bool CanExitNow() override { return true; }
-    void OnEditorNotify([[maybe_unused]] EEditorNotifyEvent aEventId) override {}
+    void Release();
 
     static void SaveModels();
     static void ReloadModels();

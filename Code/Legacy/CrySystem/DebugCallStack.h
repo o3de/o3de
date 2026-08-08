@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H
-#define CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H
 #pragma once
 
 #include "IDebugCallStack.h"
@@ -92,5 +90,3 @@ protected:
 };
 
 #endif // WIN32
-
-#endif // CRYINCLUDE_CRYSYSTEM_DEBUGCALLSTACK_H

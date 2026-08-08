@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef LUAEDITOR_LUACOMPLETIONMODEL_H
-#define LUAEDITOR_LUACOMPLETIONMODEL_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -64,5 +62,3 @@ namespace LUAEditor
         QStringList m_keywords;
     };
 }
-
-#endif

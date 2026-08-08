@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef INC_TARGETCONTEXTBUTTON_H
-#define INC_TARGETCONTEXTBUTTON_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -56,5 +54,3 @@ namespace LUA
         virtual QWidget* createWidget(QWidget* pParent);
     };
 }
-
-#endif //INC_TARGETCONTEXTBUTTON_H

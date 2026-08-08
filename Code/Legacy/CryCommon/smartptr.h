@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_SMARTPTR_H
-#define CRYINCLUDE_CRYCOMMON_SMARTPTR_H
 #pragma once
 
 #include <platform.h>
@@ -430,5 +427,3 @@ typedef _i_multithread_reference_target<int> _i_multithread_reference_target_t;
 #else
 #define TYPEDEF_AUTOPTR(T) typedef _smart_ptr<T> T##_AutoPtr; typedef std::vector<T##_AutoPtr> T##_AutoArray;
 #endif
-
-#endif // CRYINCLUDE_CRYCOMMON_SMARTPTR_H

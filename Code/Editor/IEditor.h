@@ -10,12 +10,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#ifdef PLUGIN_EXPORTS
-#define PLUGIN_API AZ_DLL_EXPORT
-#else
-#define PLUGIN_API AZ_DLL_IMPORT
-#endif
-
 #include <ISystem.h>
 #include "Include/SandboxAPI.h"
 #include "Util/UndoUtil.h"
@@ -43,9 +37,6 @@ class ICommandManager;
 class CEditorCommandManager;
 class CConsoleSynchronization;
 class CDialog;
-#if defined(AZ_PLATFORM_WINDOWS)
-class C3DConnexionDriver;
-#endif
 class CSettingsManager;
 class CDisplaySettings;
 class CLevelIndependentFileMan;
@@ -432,7 +423,6 @@ struct IEditor
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
 
-    virtual class CPluginManager* GetPluginManager() = 0;
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
@@ -538,12 +528,6 @@ struct IEditor
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual SEditorSettings* GetEditorSettings() = 0;
-
-    // unload all plugins
-    virtual void UnloadPlugins() = 0;
-
-    // reloads the plugins
-    virtual void LoadPlugins() = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs

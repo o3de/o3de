@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CONNECTION_H
-#define CONNECTION_H
+
+#pragma once
 
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -296,6 +296,3 @@ private:
     qint64 m_numOpenFiles;
     Q_DISABLE_COPY(Connection)
 };
-
-
-#endif // CONNECTION_H

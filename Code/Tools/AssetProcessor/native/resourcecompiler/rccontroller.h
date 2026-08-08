@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCCONTROLLER_H
-#define RCCONTROLLER_H
+
+#pragma once
 
 #include "RCCommon.h"
 
@@ -140,6 +140,3 @@ namespace AssetProcessor
 
     };
 } // namespace AssetProcessor
-
-
-#endif // RCCONTROLLER_H

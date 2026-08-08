@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
-#ifndef INCLUDE_FILEDATASOURCE_HEADER
-#define INCLUDE_FILEDATASOURCE_HEADER
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <CertificateManager/DataSource/IDataSource.h>
@@ -51,5 +50,3 @@ namespace CertificateManager
         char* m_certificateAuthorityCertPEM;
     };
 } //namespace CertificateManager
-
-#endif

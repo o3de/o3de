@@ -16,7 +16,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QDialog>
-#include <QFutureWatcher>
 #include <QTimer>
 #include <QValidator>
 
@@ -68,13 +67,9 @@ protected:
     void OnFormatChange();
     void OnPrefixChange();
     void OnDisableDebugInfoChange();
-    void OnCreateVideoChange();
 
     void SaveOutputOptions(const QString& pathname) const;
     bool LoadOutputOptions(const QString& pathname);
-
-    QString m_ffmpegPluginStatusMsg;
-    bool m_bFFMPEGCommandAvailable;
 
     float m_fpsForTimeToFrameConversion;    // FPS setting in TrackView
     struct SRenderItem
@@ -90,12 +85,10 @@ protected:
         QString prefix;
         QStringList cvars;
         bool disableDebugInfo;
-        bool bCreateVideo;
         SRenderItem()
             : pSequence(nullptr)
             , pDirectorNode(nullptr)
-            , disableDebugInfo(false)
-            , bCreateVideo(false) {}
+            , disableDebugInfo(false) {}
         bool operator==(const SRenderItem& item) const
         {
             if (pSequence == item.pSequence
@@ -109,7 +102,6 @@ protected:
                 && prefix == item.prefix
                 && cvars == item.cvars
                 && disableDebugInfo == item.disableDebugInfo
-                && bCreateVideo == item.bCreateVideo
                 && imageFormat == item.imageFormat)
             {
                 return true;
@@ -128,7 +120,6 @@ protected:
         BeginPlayingSequence,
         Capturing,
         End,
-        FFMPEGProcessing,
         Finalize
     };
 
@@ -143,9 +134,6 @@ protected:
         int framesSpentInCurrentPhase{};
         IAnimNode* pActiveDirectorBU{};
         ICaptureKey captureOptions{};
-        bool processingFFMPEG{};
-        // Signals when an mpeg is finished being processed.
-        QFutureWatcher<void> processingFFMPEGWatcher;
         // True if the user canceled a render.
         bool canceled{};
         // The sequence that triggered the CaptureState::Ending.
@@ -191,7 +179,6 @@ protected:
     void OnUpdateBeginPlayingSequence();
     void OnUpdateCapturing();
     void OnUpdateEnd(IAnimSequence* pSequence);
-    void OnUpdateFFMPEGProcessing();
     void OnUpdateFinalize();
 
     bool SetUpNewRenderItem(SRenderItem& item);

@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Android declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#pragma once
 
 #if defined(__arm__) || defined(__aarch64__)
 #define _CPU_ARM
@@ -180,5 +177,3 @@ namespace std
         return result;
     }
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H

@@ -6,6 +6,7 @@
  *
  */
 
+#pragma once
 
 // Description : A simple, intelligent and efficient container for listeners.
 
@@ -15,10 +16,6 @@
 //               dangling pointers.
 
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H
-#define CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H
-#pragma once
 
 
 #include "Cry_Math.h"
@@ -603,6 +600,3 @@ inline const char* CListenerNotifier<T>::Name() const
     return NULL;
 #endif
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H

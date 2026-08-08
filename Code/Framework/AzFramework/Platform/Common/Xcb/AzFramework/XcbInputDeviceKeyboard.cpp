@@ -215,6 +215,17 @@ namespace AzFramework
 
     [[nodiscard]] const InputChannelId* XcbInputDeviceKeyboard::InputChannelFromKeyEvent(xcb_keycode_t code) const
     {
+        // Resolve the tilde/grave key (the physical key under Escape and above Tab) by its physical
+        // location rather than its keysym. Non-US layouts (e.g. German) produce a different keysym at
+        // this location, so a keysym-only lookup would miss it. This mirrors the position-based
+        // resolution already used on Windows (scan code 0x29) and Mac (keycode kVK_ANSI_Grave).
+        xkb_keymap* keymap = m_xkbKeymap.get();
+        const xkb_keycode_t tildeKeycode = keymap ? xkb_keymap_key_by_name(keymap, "TLDE") : XKB_KEYCODE_INVALID;
+        if (tildeKeycode != XKB_KEYCODE_INVALID && code == tildeKeycode)
+        {
+            return &InputDeviceKeyboard::Key::PunctuationTilde;
+        }
+
         const xcb_keysym_t keysym = xkb_state_key_get_one_sym(m_xkbState.get(), code);
 
         switch(keysym)
