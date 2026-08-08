@@ -109,6 +109,8 @@ namespace O3DE::ProjectManager
          */
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
 
+        bool DeleteDesktopShortcut(const QString& filename);
+
         /**
          * Lookup the location of an Editor executable executable that can be used with the
          * supplied project path
