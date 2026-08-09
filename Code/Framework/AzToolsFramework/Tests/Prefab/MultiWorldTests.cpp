@@ -24,7 +24,6 @@ namespace UnitTest
 {
     using AzToolsFramework::EditorEntityContextRequestBus;
     using AzToolsFramework::EditorEntityContextRequests;
-    using AzToolsFramework::EditorRequests;
     using AzToolsFramework::PrefabEditorEntityOwnershipInterface;
 
     class MultiWorldTests
@@ -95,15 +94,6 @@ namespace UnitTest
 
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
-
-        void OpenPrefabInNewViewport(AZStd::string_view prefabPath, EditorRequests::PrefabSurface surface) override
-        {
-            m_openPrefabPaths.push_back(AZStd::string(prefabPath));
-            m_openPrefabSurfaces.push_back(surface);
-        }
-
-        AZStd::vector<AZStd::string> m_openPrefabPaths;
-        AZStd::vector<EditorRequests::PrefabSurface> m_openPrefabSurfaces;
 
         AzFramework::EntityContextId m_world0 = AzFramework::EntityContextId::CreateNull();
 
@@ -460,141 +450,6 @@ namespace UnitTest
         EXPECT_TRUE(isEditorEntity);
     }
 
-    TEST_F(MultiWorldTests, FocusingAPrefabOwnedByAnotherWorldOpensItInThePrefabEditor)
-    {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityContextId worldB = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
-        ASSERT_EQ(AzToolsFramework::GetActiveWorldId(), worldB);
-
-        PrefabEditorEntityOwnershipInterface* ownershipServiceForWorldA = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipServiceForWorldA, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldA);
-        ASSERT_NE(ownershipServiceForWorldA, nullptr);
-
-        InstanceOptionalReference rootOfWorldA = ownershipServiceForWorldA->GetRootPrefabInstance();
-        ASSERT_TRUE(rootOfWorldA.has_value());
-
-        AZ::EntityId nestedContainerInWorldA;
-        rootOfWorldA->get().GetNestedInstances(
-            [&nestedContainerInWorldA](AZStd::unique_ptr<Instance>& nestedInstance)
-            {
-                nestedContainerInWorldA = nestedInstance->GetContainerEntityId();
-            });
-        ASSERT_TRUE(nestedContainerInWorldA.IsValid());
-
-        m_openPrefabPaths.clear();
-        m_openPrefabSurfaces.clear();
-
-        PrefabFocusOperationResult focusResult = m_prefabFocusPublicInterface->FocusOnOwningPrefab(nestedContainerInWorldA);
-
-        EXPECT_FALSE(focusResult.IsSuccess());
-        ASSERT_EQ(m_openPrefabPaths.size(), 1u);
-        EXPECT_EQ(m_openPrefabPaths[0], NestedPathA);
-        EXPECT_EQ(m_openPrefabSurfaces[0], EditorRequests::PrefabSurface::PrefabEditor);
-    }
-
-    TEST_F(MultiWorldTests, FocusingAPrefabOwnedByTheActiveWorldDoesNotRedirect)
-    {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-
-        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldA);
-        ASSERT_NE(ownershipService, nullptr);
-
-        InstanceOptionalReference rootOfWorldA = ownershipService->GetRootPrefabInstance();
-        ASSERT_TRUE(rootOfWorldA.has_value());
-
-        AZ::EntityId nestedContainerInWorldA;
-        rootOfWorldA->get().GetNestedInstances(
-            [&nestedContainerInWorldA](AZStd::unique_ptr<Instance>& nestedInstance)
-            {
-                nestedContainerInWorldA = nestedInstance->GetContainerEntityId();
-            });
-        ASSERT_TRUE(nestedContainerInWorldA.IsValid());
-
-        m_openPrefabPaths.clear();
-
-        PrefabFocusOperationResult focusResult = m_prefabFocusPublicInterface->FocusOnOwningPrefab(nestedContainerInWorldA);
-
-        EXPECT_TRUE(focusResult.IsSuccess());
-        EXPECT_TRUE(m_openPrefabPaths.empty());
-        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(worldA), nestedContainerInWorldA);
-    }
-
-    TEST_F(MultiWorldTests, FocusingAnotherWorldsRootContainerNeverRedirects)
-    {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityContextId worldB = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-
-        PrefabEditorEntityOwnershipInterface* ownershipServiceForWorldB = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipServiceForWorldB, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldB);
-        ASSERT_NE(ownershipServiceForWorldB, nullptr);
-
-        InstanceOptionalReference rootOfWorldB = ownershipServiceForWorldB->GetRootPrefabInstance();
-        ASSERT_TRUE(rootOfWorldB.has_value());
-
-        m_openPrefabPaths.clear();
-
-        m_prefabFocusPublicInterface->FocusOnOwningPrefab(rootOfWorldB->get().GetContainerEntityId());
-
-        EXPECT_TRUE(m_openPrefabPaths.empty());
-    }
-
-    TEST_F(MultiWorldTests, RedirectingFocusLeavesNoUndoNodeBehind)
-    {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityContextId worldB = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
-
-        PrefabEditorEntityOwnershipInterface* ownershipServiceForWorldA = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipServiceForWorldA, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldA);
-        ASSERT_NE(ownershipServiceForWorldA, nullptr);
-
-        InstanceOptionalReference rootOfWorldA = ownershipServiceForWorldA->GetRootPrefabInstance();
-        ASSERT_TRUE(rootOfWorldA.has_value());
-
-        AZ::EntityId nestedContainerInWorldA;
-        rootOfWorldA->get().GetNestedInstances(
-            [&nestedContainerInWorldA](AZStd::unique_ptr<Instance>& nestedInstance)
-            {
-                nestedContainerInWorldA = nestedInstance->GetContainerEntityId();
-            });
-        ASSERT_TRUE(nestedContainerInWorldA.IsValid());
-
-        AzToolsFramework::UndoSystem::URSequencePoint* undoTopBeforeFocus = m_undoStack->GetTop();
-
-        m_prefabFocusPublicInterface->FocusOnOwningPrefab(nestedContainerInWorldA);
-
-        EXPECT_EQ(m_undoStack->GetTop(), undoTopBeforeFocus);
-    }
-
     TEST_F(MultiWorldTests, EachWorldKeepsItsOwnFocus)
     {
         AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
@@ -682,48 +537,6 @@ namespace UnitTest
         EXPECT_FALSE(PrefabSaveHandler::IsPrefabSourcePath(""));
     }
 
-    TEST_F(MultiWorldTests, FindInstanceContainerInActiveWorldIsScopedToTheActiveWorld)
-    {
-        PrefabSaveHandler saveHandler;
-
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityContextId worldB = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-
-        PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
-        EditorEntityContextRequestBus::BroadcastResult(
-            ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldA);
-        ASSERT_NE(ownershipService, nullptr);
-
-        InstanceOptionalReference rootOfWorldA = ownershipService->GetRootPrefabInstance();
-        ASSERT_TRUE(rootOfWorldA.has_value());
-
-        AZ::EntityId nestedContainerInWorldA;
-        rootOfWorldA->get().GetNestedInstances(
-            [&nestedContainerInWorldA](AZStd::unique_ptr<Instance>& nestedInstance)
-            {
-                nestedContainerInWorldA = nestedInstance->GetContainerEntityId();
-            });
-        ASSERT_TRUE(nestedContainerInWorldA.IsValid());
-        ASSERT_EQ(AzToolsFramework::GetEntityWorldId(nestedContainerInWorldA), worldA);
-
-        const AZ::IO::Path nestedPath = m_prefabLoaderInterface->GenerateRelativePath(AZ::IO::PathView(NestedPathA));
-        ASSERT_NE(m_prefabSystemComponent->GetTemplateIdFromFilePath(nestedPath), InvalidTemplateId);
-
-        EXPECT_EQ(saveHandler.FindInstanceContainerInActiveWorld(nestedPath), nestedContainerInWorldA);
-
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
-        ASSERT_EQ(AzToolsFramework::GetActiveWorldId(), worldB);
-
-        EXPECT_FALSE(saveHandler.FindInstanceContainerInActiveWorld(nestedPath).IsValid());
-    }
-
     TEST_F(MultiWorldTests, OpeningANewLevelWhileAnotherWorldIsOpenRebuildsWorldZero)
     {
         AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
@@ -796,7 +609,7 @@ namespace UnitTest
             << "The outliner model kept world 0's entities after world 0 reset";
     }
 
-    TEST_F(MultiWorldTests, ResettingTheEditorContextKeepsAPrefabEditorWorldsRootPrefabInTheOutlinerModel)
+    TEST_F(MultiWorldTests, ResettingTheEditorContextKeepsASecondaryWorldsRootPrefabInTheOutlinerModel)
     {
         AzFramework::EntityContextId prefabWorld = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(
@@ -839,7 +652,7 @@ namespace UnitTest
             << "The prefab editor world's root prefab is no longer a root entry in the outliner";
     }
 
-    TEST_F(MultiWorldTests, DestroyingAPrefabEditorWorldKeepsInstancesOfThatPrefabInOtherWorlds)
+    TEST_F(MultiWorldTests, DestroyingASecondaryWorldKeepsInstancesOfThatPrefabInOtherWorlds)
     {
         AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(

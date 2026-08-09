@@ -104,8 +104,6 @@ namespace AzToolsFramework::Prefab
 
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
 
-        bool RedirectFocusToOwnViewport(const Instance& instance) const;
-
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         PrefabFocusOperationResult FocusOnWorldRootInstance(const AzFramework::EntityContextId& worldId);
         void RefreshInstanceFocusPath(const AzFramework::EntityContextId& worldId, WorldFocus& focus) const;

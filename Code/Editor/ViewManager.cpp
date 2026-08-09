@@ -15,15 +15,11 @@
 #include "ViewManager.h"
 
 // Qt
-#include <QDockWidget>
 #include <QTimer>
 
 // AzCore
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
-// AzQtComponents
-#include <AzQtComponents/Components/DockTabWidget.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -40,7 +36,6 @@
 #include "LayoutWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
-#include "PrefabEditorPane.h"
 #include "QtViewPaneManager.h"
 #include "ViewPane.h"
 
@@ -59,36 +54,6 @@ bool CViewManager::IsMultiViewportEnabled()
     }
 
     return isMultiViewportEnabled;
-}
-
-static bool IsPrefabEditorViewport(const CViewport* viewport)
-{
-    const CLayoutViewPane* viewPane = viewport ? viewport->GetViewPane() : nullptr;
-    return viewPane && qobject_cast<PrefabEditorPane*>(viewPane->parentWidget()) != nullptr;
-}
-
-static void ShowViewportPane(const CViewport* viewport)
-{
-    const CLayoutViewPane* viewPane = viewport ? viewport->GetViewPane() : nullptr;
-    for (QWidget* widget = viewPane ? viewPane->parentWidget() : nullptr; widget; widget = widget->parentWidget())
-    {
-        auto* dockWidget = qobject_cast<QDockWidget*>(widget);
-        if (!dockWidget)
-        {
-            continue;
-        }
-
-        if (AzQtComponents::DockTabWidget* tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget))
-        {
-            tabWidget->setCurrentIndex(tabWidget->indexOf(dockWidget));
-        }
-        else
-        {
-            dockWidget->show();
-            dockWidget->raise();
-        }
-        return;
-    }
 }
 
 static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
@@ -138,7 +103,6 @@ CViewManager::CViewManager()
     m_updateRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-100000, -100000, -100000), AZ::Vector3(100000, 100000, 100000));
 
     m_pSelectedView = nullptr;
-    m_pLastEditorView = nullptr;
 
     m_nGameViewports = 0;
     m_bGameViewportsUpdated = false;
@@ -166,19 +130,6 @@ CViewManager::CViewManager()
             return pane;
         },
         dockableViewportOptions);
-
-    QtViewOptions prefabEditorOptions = dockableViewportOptions;
-    prefabEditorOptions.viewportType = -1;
-    QtViewPaneManager::instance()->RegisterPane(
-        LyViewPane::PrefabEditor,
-        LyViewPane::CategoryTools,
-        [](QWidget* parent = nullptr) -> QWidget*
-        {
-            auto* pane = new PrefabEditorPane(parent);
-            AttachDeferredViewport(pane->GetViewPane(), pane);
-            return pane;
-        },
-        prefabEditorOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }
@@ -212,11 +163,6 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
     if (m_pSelectedView == pViewport)
     {
         m_pSelectedView = nullptr;
-    }
-
-    if (m_pLastEditorView == pViewport)
-    {
-        m_pLastEditorView = nullptr;
     }
 
     stl::find_and_erase(m_viewports, pViewport);
@@ -411,11 +357,6 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
-    if (!IsPrefabEditorViewport(m_pSelectedView))
-    {
-        m_pLastEditorView = m_pSelectedView;
-    }
-
     if (MainWindow* mainWindow = MainWindow::instance())
     {
         mainWindow->SetActiveView(m_pSelectedView ? m_pSelectedView->GetViewPane() : nullptr);
@@ -478,13 +419,6 @@ void CViewManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
     case eNotify_OnUpdateViewports:
         UpdateViews();
-        break;
-    case eNotify_OnBeginGameMode:
-        if (IsPrefabEditorViewport(m_pSelectedView) && m_pLastEditorView)
-        {
-            ShowViewportPane(m_pLastEditorView);
-            SelectViewport(m_pLastEditorView);
-        }
         break;
     }
 }

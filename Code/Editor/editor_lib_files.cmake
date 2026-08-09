@@ -678,8 +678,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    PrefabEditorPane.cpp
-    PrefabEditorPane.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp

@@ -782,21 +782,9 @@ namespace AzToolsFramework
         /// Opens a new instance of an Editor window by name and returns the dock widget container
         virtual QDockWidget* InstanceViewPane(const char* /*paneName*/) { return nullptr; }
 
-        //! Which editing surface a prefab opens in. Nothing in a prefab file says whether it is a level, so
-        //! Auto is a convention-based guess and belongs only to gestures that cannot know - callers holding a
-        //! prefab they already recognise name the surface outright.
-        enum class PrefabSurface
-        {
-            Auto,
-            Viewport,
-            PrefabEditor
-        };
-
-        //! Opens the prefab at this source path as a world of its own in an additional viewport.
-        //! Editing a prefab in place is confined to the world being viewed, so this is how a prefab living in
-        //! another world - or in no world at all - is edited; its edits reach every world instantiating it
-        //! through template propagation.
-        virtual void OpenPrefabInNewViewport(AZStd::string_view /*prefabPath*/, PrefabSurface /*surface*/) {}
+        //! Opens the level at this source path as a world of its own in an additional viewport, raising the
+        //! viewport that already shows it if there is one. Returns false when the path does not name a level.
+        virtual bool OpenLevelInNewViewport(AZStd::string_view /*levelPath*/) { return false; }
 
         /// Closes an Editor window by name.
         /// If the view pane was registered with the ViewPaneOptions.isDeletable set to true (the default), this will delete the view pane, if it was open.

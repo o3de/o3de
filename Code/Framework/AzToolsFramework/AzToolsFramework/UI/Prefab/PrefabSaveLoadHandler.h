@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/UserSettings/UserSettings.h>
 namespace AZ
 {
@@ -43,7 +42,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class InstanceEntityMapperInterface;
-        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
@@ -131,8 +129,6 @@ namespace AzToolsFramework
 
             static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
 
-            AZ::EntityId FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const;
-
         private:
 
             //! AssetSystemBus notification handlers
@@ -161,7 +157,6 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
-            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
 
             bool CanDragAndDropData(
                 const QMimeData* data,

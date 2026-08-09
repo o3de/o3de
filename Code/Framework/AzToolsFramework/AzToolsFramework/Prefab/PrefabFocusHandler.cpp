@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -142,21 +141,6 @@ namespace AzToolsFramework::Prefab
         return focus;
     }
 
-    bool PrefabFocusHandler::RedirectFocusToOwnViewport(const Instance& instance) const
-    {
-        if (instance.GetParentInstance() == AZStd::nullopt ||
-            GetEntityWorldId(instance.GetContainerEntityId()) == GetActiveWorldId())
-        {
-            return false;
-        }
-
-        EditorRequestBus::Broadcast(
-            &EditorRequests::OpenPrefabInNewViewport,
-            instance.GetTemplateSourcePath().Native(),
-            EditorRequests::PrefabSurface::PrefabEditor);
-        return true;
-    }
-
     SelectionCommand* PrefabFocusHandler::CreateSelectionCommandForFocusedPrefab(AZ::EntityId referenceId)
     {
         // update selection - if there is a focused instance, select its container.
@@ -173,14 +157,6 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
-        if (InstanceOptionalReference instance =
-                entityId.IsValid() ? m_instanceEntityMapperInterface->FindOwningInstance(entityId) : InstanceOptionalReference();
-            instance.has_value() && RedirectFocusToOwnViewport(instance->get()))
-        {
-            return AZ::Failure(AZStd::string("Prefab Focus Handler: the prefab belongs to another world, "
-                                             "so it opens in a viewport of its own instead of being focused here."));
-        }
-
         // Initialize Undo Batch object
         ScopedUndoBatch undoBatch("Focus on Prefab");
 
@@ -324,12 +300,6 @@ namespace AzToolsFramework::Prefab
         if (!focusedInstance.has_value())
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
-        }
-
-        if (RedirectFocusToOwnViewport(focusedInstance->get()))
-        {
-            return AZ::Failure(AZStd::string("Prefab Focus Handler: the prefab belongs to another world, "
-                                             "so it opens in a viewport of its own instead of being focused here."));
         }
 
         const AzFramework::EntityContextId worldId = GetEntityWorldId(focusedInstance->get().GetContainerEntityId());

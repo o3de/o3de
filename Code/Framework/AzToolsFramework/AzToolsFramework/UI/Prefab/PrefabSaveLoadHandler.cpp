@@ -23,7 +23,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
-#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -31,7 +30,6 @@
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDragAndDropContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 #include <AzQtComponents/Components/FlowLayout.h>
@@ -127,13 +125,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-            if (m_prefabFocusPublicInterface == nullptr)
-            {
-                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabFocusPublicInterface on construction.");
-                return;
-            }
-
             // we care about both outliner and viewport.
             AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
@@ -175,39 +166,11 @@ namespace AzToolsFramework
                 return;
             }
 
-            alreadyHandled = true;
+            const AZ::IO::Path levelPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
 
-            const AZ::IO::Path prefabPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
-
-            if (const AZ::EntityId containerEntityId = FindInstanceContainerInActiveWorld(prefabPath); containerEntityId.IsValid())
-            {
-                m_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntityId);
-                return;
-            }
-
-            EditorRequestBus::Broadcast(
-                &EditorRequests::OpenPrefabInNewViewport, prefabPath.Native(), EditorRequests::PrefabSurface::Auto);
-        }
-
-        AZ::EntityId PrefabSaveHandler::FindInstanceContainerInActiveWorld(const AZ::IO::Path& prefabPath) const
-        {
-            const TemplateId templateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabPath);
-            InstanceSetConstReference instances = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(templateId);
-            if (!instances.has_value())
-            {
-                return AZ::EntityId();
-            }
-
-            const AzFramework::EntityContextId activeWorldId = GetActiveWorldId();
-            for (const Instance* instance : instances->get())
-            {
-                if (GetEntityWorldId(instance->GetContainerEntityId()) == activeWorldId)
-                {
-                    return instance->GetContainerEntityId();
-                }
-            }
-
-            return AZ::EntityId();
+            bool opened = false;
+            EditorRequestBus::BroadcastResult(opened, &EditorRequests::OpenLevelInNewViewport, levelPath.Native());
+            alreadyHandled = opened;
         }
 
         bool PrefabSaveHandler::GetPrefabSaveLocation(AZStd::string& path, AZ::u32 settingsId)

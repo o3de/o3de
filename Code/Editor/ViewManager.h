@@ -133,7 +133,6 @@ private:
     std::vector<CViewport*> m_viewports;
 
     CViewport* m_pSelectedView;
-    CViewport* m_pLastEditorView;
 
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 };

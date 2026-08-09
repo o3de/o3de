@@ -478,6 +478,7 @@ namespace AzToolsFramework
 
         rootPrefabInstance->SetTemplateId(templateId);
         rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
+        rootPrefabInstance->SetContainerEntityName("Level");
 
         m_rootInstance = AZStd::move(rootPrefabInstance);
         m_isRootPrefabAssigned = true;

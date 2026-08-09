@@ -928,7 +928,7 @@ QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
     return QtViewPaneManager::instance()->InstancePane(paneName);
 }
 
-static bool IsLevelSourcePath(AZStd::string_view prefabPath)
+static bool IsLevelSourcePath(AZStd::string_view levelPath)
 {
     auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     if (!prefabLoader)
@@ -936,7 +936,7 @@ static bool IsLevelSourcePath(AZStd::string_view prefabPath)
         return false;
     }
 
-    const QFileInfo levelFile(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(prefabPath)).c_str()));
+    const QFileInfo levelFile(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(levelPath)).c_str()));
     if (levelFile.completeBaseName().compare(levelFile.dir().dirName(), Qt::CaseInsensitive) != 0)
     {
         return false;
@@ -954,27 +954,19 @@ static bool IsLevelSourcePath(AZStd::string_view prefabPath)
     return false;
 }
 
-void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefabPath, PrefabSurface surface)
+bool SandboxIntegrationManager::OpenLevelInNewViewport(AZStd::string_view levelPath)
 {
-    if (prefabPath.empty())
+    if (levelPath.empty() || !IsLevelSourcePath(levelPath))
     {
-        AZ_Error("PrefabViewport", false, "Could not open a prefab viewport without a prefab source path.");
-        return;
+        return false;
     }
 
-    const QString prefabPathText = QString::fromUtf8(prefabPath.data(), aznumeric_cast<int>(prefabPath.size()));
+    const QString levelPathText = QString::fromUtf8(levelPath.data(), aznumeric_cast<int>(levelPath.size()));
 
-    if (surface == PrefabSurface::Auto)
-    {
-        surface = IsLevelSourcePath(prefabPath) ? PrefabSurface::Viewport : PrefabSurface::PrefabEditor;
-    }
-
-    const char* paneName = surface == PrefabSurface::Viewport ? LyViewPane::EditorViewport : LyViewPane::PrefabEditor;
-
-    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(paneName);
+    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(LyViewPane::EditorViewport);
     if (!viewportPane)
     {
-        return;
+        return false;
     }
 
     for (DockWidget* dockWidget : viewportPane->m_dockWidgetInstances)
@@ -990,28 +982,32 @@ void SandboxIntegrationManager::OpenPrefabInNewViewport(AZStd::string_view prefa
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
 
-        AZStd::string levelPath;
+        AZStd::string worldLevelPath;
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
+            worldLevelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
 
-        if (prefabPathText == QString::fromUtf8(levelPath.c_str()))
+        if (levelPathText == QString::fromUtf8(worldLevelPath.c_str()))
         {
             dockWidget->raise();
             dockWidget->activateWindow();
-            return;
+            return true;
         }
     }
 
     const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
-        paneName, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
+        LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
 
-    if (openedPane && !openedPane->m_dockWidgetInstances.isEmpty())
+    if (!openedPane || openedPane->m_dockWidgetInstances.isEmpty())
     {
-        if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())
-        {
-            paneWidget->setProperty("PendingLevelPath", prefabPathText);
-        }
+        return false;
     }
+
+    if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())
+    {
+        paneWidget->setProperty("PendingLevelPath", levelPathText);
+    }
+
+    return true;
 }
 
 void SandboxIntegrationManager::CloseViewPane(const char* paneName)
