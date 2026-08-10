@@ -10,7 +10,6 @@
 
 
 #include <AzCore/base.h>
-#include <AzCore/Component/EntityBus.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
@@ -162,9 +161,13 @@ namespace AzToolsFramework
         };
         //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
         // PrefabPublicNotificationBus::Handler
+
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
+
+        //////////////////////////////////////////////////////////////////////////
 
         void CreateUndosForDirtyEntities();
         void ConsistencyCheckUndoCache();

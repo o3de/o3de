@@ -679,13 +679,13 @@ namespace AzToolsFramework
         // * Filter out any unselectable entities
         // * Calculate selection/deselection delta so we can notify specific entities only on change.
         // * Filter any duplicates.
+        EntityIdList selectedEntitiesFiltered;
+        selectedEntitiesFiltered.reserve(selectedEntities.size());
 
         // Filter out any invalid or non-selectable entities
         // if the new viewport interaction model is enabled we do not want to
         // filter out locked entities as this breaks with the logic of being
         // able to select locked entities in the entity outliner
-        EntityIdList selectedEntitiesFiltered;
-        selectedEntitiesFiltered.reserve(selectedEntities.size());
 
         std::copy_if(
             selectedEntities.begin(),
