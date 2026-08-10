@@ -26,6 +26,7 @@ namespace AzToolsFramework
         class PrefabSystemComponentInterface;
         class TemplateInstanceMapperInterface;
         class InstanceDomGeneratorInterface;
+        class InstanceEntityMapperInterface;
 
         class AZTF_API InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
@@ -62,6 +63,7 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             AZStd::unordered_set<Instance*> m_uniqueInstancesForPropagation;

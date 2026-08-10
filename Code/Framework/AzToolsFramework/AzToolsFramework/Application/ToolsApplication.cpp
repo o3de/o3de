@@ -186,12 +186,10 @@ namespace AzToolsFramework
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
-        AZ::EntitySystemBus::Handler::BusConnect();
     }
 
     ToolsApplication::~ToolsApplication()
     {
-        AZ::EntitySystemBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
@@ -695,7 +693,14 @@ namespace AzToolsFramework
             std::back_inserter(selectedEntitiesFiltered),
             [this](const AZ::EntityId& entityId)
             {
-                return EntityExists(entityId);
+                if (AZ::Entity* resultEntity = FindEntity(entityId);resultEntity)
+                {
+                    if (resultEntity->GetState() == AZ::Entity::State::Active)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             });
 
         EntityIdList newlySelectedIds;
@@ -1403,19 +1408,6 @@ namespace AzToolsFramework
     void ToolsApplication::OnPrefabInstancePropagationEnd()
     {
         m_freezeSelectionUpdates = false;
-    }
-
-    void ToolsApplication::OnEntityDeactivated(const AZ::EntityId& entityId)
-    {
-        // If the entity in question is in the selection list, then remove it from the selection list and issue a selection updated.
-        EntityIdList::iterator foundIter = AZStd::find(m_selectedEntities.begin(), m_selectedEntities.end(), entityId);
-        if (foundIter != m_selectedEntities.end())
-        {
-            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::BeforeEntitySelectionChanged);
-            m_selectedEntities.erase(foundIter);
-            EntitySelectionEvents::Bus::Event(entityId, &EntitySelectionEvents::OnDeselected);
-            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::AfterEntitySelectionChanged, EntityIdList(), EntityIdList{ entityId } );
-        }
     }
 
     void ToolsApplication::CreateUndosForDirtyEntities()
