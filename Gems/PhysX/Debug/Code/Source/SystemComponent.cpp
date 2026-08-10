@@ -8,9 +8,7 @@
 
 #include "SystemComponent.h"
 
-#include <AzCore/Component/Entity.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
-#include <PhysX/Joint/PhysXJointRequestsBus.h>
 
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MathConversion.h>
@@ -42,30 +40,6 @@ namespace PhysXDebug
     namespace Internal
     {
         const AZ::Crc32 VewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
-
-        AZStd::vector<AZStd::pair<AZ::EntityComponentIdPair,AZStd::string>> FindAllJointComponents(AZ::Entity* entity)
-        {
-           AZStd::vector<AZStd::pair<AZ::EntityComponentIdPair,AZStd::string>> jointComponents;
-
-            AZ_Assert(entity, "Failed to find entity for JointComponent search.");
-            if (!entity)
-            {
-                return jointComponents;
-            }
-
-            const auto& components = entity->GetComponents();
-            for (const auto& component : components)
-            {
-                AZ_Assert(component != nullptr, "JointComponent is null.");
-                AZ::EntityComponentIdPair jointId(entity->GetId(), component->GetId());
-                if (PhysX::JointRequestBus::HasHandlers(jointId))
-                {
-                    const AZStd::string componentTypeName{ component->RTTI_GetTypeName() };
-                    jointComponents.push_back({ jointId, componentTypeName });
-                }
-            }
-            return jointComponents;
-        }
     }
 
     bool UseEditorPhysicsScene()
@@ -96,10 +70,9 @@ namespace PhysXDebug
                 ->Field("ContactPoint", &PhysXVisualizationSettings::m_contactPoint)
                 ->Field("ContactNormal", &PhysXVisualizationSettings::m_contactNormal)
                 ->Field("JointLocalFrames", &PhysXVisualizationSettings::m_jointLocalFrames)
-                ->Field("JointLimits", &PhysXVisualizationSettings::m_jointCharacterLimits)
+                ->Field("JointLimits", &PhysXVisualizationSettings::m_jointLimits)
                 ->Field("MbpRegions", &PhysXVisualizationSettings::m_mbpRegions)
-                ->Field("ActorAxes", &PhysXVisualizationSettings::m_actorAxes)
-                ->Field("ShowJoints", &PhysXVisualizationSettings::m_showJoints);
+                ->Field("ActorAxes", &PhysXVisualizationSettings::m_actorAxes);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -134,13 +107,11 @@ namespace PhysXDebug
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLocalFrames, "Joint Local Frames", "Enable joint local frames")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointCharacterLimits, "Joint Limits", "Enable Joint limits")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLimits, "Joint Limits", "Enable Joint limits")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_mbpRegions, "MBP Regions", "Enable multi box pruning (MBP) regions")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_actorAxes, "Actor Axes", "Enable actor axes")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_showJoints, "Show Joints", "Enable joints visualization")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                 ;
             }
@@ -318,36 +289,9 @@ namespace PhysXDebug
 
             if (ImGui::BeginMenu("Character"))
             {
-                ImGui::Checkbox("Joint Limits", &m_settings.m_jointCharacterLimits);
+                ImGui::Checkbox("Joint Limits", &m_settings.m_jointLimits);
                 ImGui::Checkbox("Mbp Regions", &m_settings.m_mbpRegions);
                 ImGui::Checkbox("Actor Axes", &m_settings.m_actorAxes);
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Joints"))
-            {
-                ImGui::Checkbox("Show Joints", &m_settings.m_showJoints);
-                if (m_settings.IsPhysXDebugEnabled())
-                {
-                    if (!m_jointsCache.empty())
-                    {
-                        for (const auto &[jointId, jointName] : m_jointsCache)
-                        {
-                            if (ImGui::Button(jointName.c_str()))
-                            {
-                                m_selectedJoint = jointId;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ImGui::Text("No joints.");
-                    }
-                }
-                else
-                {
-                    ImGui::Text("Enable PhysX Debug Visualization to see joints.");
-                }
                 ImGui::EndMenu();
             }
 
@@ -382,8 +326,6 @@ namespace PhysXDebug
             ImGui::SliderFloat("PhysX Scale", &m_settings.m_scale, 1.0f, 10.0f);
             ImGui::EndMenu();
         }
-
-        DrawJointManipulationWindow();
     }
 
     void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color)
@@ -399,162 +341,6 @@ namespace PhysXDebug
             color.SetG(g);
             color.SetB(b);
         }
-    }
-
-    void SystemComponent::DrawJointManipulationWindow()
-    {
-        // Check if a joint is selected
-        if (!PhysX::JointRequestBus::HasHandlers(m_selectedJoint))
-        {
-            return;
-        }
-
-        // Find the joint name from cache
-        auto jointIt = m_jointsCache.find(m_selectedJoint);
-        if (jointIt == m_jointsCache.end())
-        {
-            return;
-        }
-
-        const AZStd::string& jointName = jointIt->second;
-        AZStd::string windowTitle = AZStd::string::format("Joint Control: %s", jointName.c_str());
-
-        if (ImGui::Begin(windowTitle.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::Text("Joint: %s", jointName.c_str());
-            ImGui::Separator();
-
-            // Joint Status Section - using O3DE API only
-            if (ImGui::CollapsingHeader("Joint Status", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                // Get current position using O3DE API
-                float position = 0.0f;
-                PhysX::JointRequestBus::EventResult(
-                    position,
-                    m_selectedJoint,
-                    &PhysX::JointRequests::GetPosition);
-                ImGui::Text("Current Position: %.3f", position);
-
-                // Get per-axis positions from transform
-                AZ::Transform jointTransform;
-                PhysX::JointRequestBus::EventResult(
-                    jointTransform,
-                    m_selectedJoint,
-                    &PhysX::JointRequests::GetTransform);
-
-                ImGui::Separator();
-
-                // Get current velocity using O3DE API
-                AZStd::pair<AZ::Vector3, AZ::Vector3> currentVelocity;
-                PhysX::JointRequestBus::EventResult(
-                    currentVelocity,
-                    m_selectedJoint,
-                    &PhysX::JointRequests::GetVelocityGeneral);
-
-                ImGui::Text("Current Velocity:");
-                ImGui::Text("  Linear:  (%.3f, %.3f, %.3f)",
-                    currentVelocity.first.GetX(),
-                    currentVelocity.first.GetY(),
-                    currentVelocity.first.GetZ());
-                ImGui::Text("  Angular: (%.3f, %.3f, %.3f)",
-                    currentVelocity.second.GetX(),
-                    currentVelocity.second.GetY(),
-                    currentVelocity.second.GetZ());
-
-                ImGui::Separator();
-
-                AZ::Vector3 pos = jointTransform.GetTranslation();
-                ImGui::Text("Joint Transform:");
-                ImGui::Text("  Position: (%.3f, %.3f, %.3f)", pos.GetX(), pos.GetY(), pos.GetZ());
-
-                // Get rotation as Euler angles
-                AZ::Vector3 eulerDegrees = jointTransform.GetEulerDegrees();
-                ImGui::Text("  Rotation (deg): (%.2f, %.2f, %.2f)", eulerDegrees.GetX(), eulerDegrees.GetY(), eulerDegrees.GetZ());
-
-                // Get rotation as quaternion
-                AZ::Quaternion quat = jointTransform.GetRotation();
-                ImGui::Text("  Quaternion: (%.3f, %.3f, %.3f, %.3f)", quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW());
-            }
-
-            ImGui::Separator();
-
-            // Velocity control
-            static float linearVel[3] = {0.0f, 0.0f, 0.0f};
-            static float angularVel[3] = {0.0f, 0.0f, 0.0f};
-
-            ImGui::Text("Set Velocity:");
-            if (ImGui::DragFloat3("Linear Velocity", linearVel, 0.01f, -10.0f, 10.0f))
-            {
-                AZ::Vector3 linear(linearVel[0], linearVel[1], linearVel[2]);
-                AZ::Vector3 angular(angularVel[0], angularVel[1], angularVel[2]);
-                PhysX::JointRequestBus::Event(
-                    m_selectedJoint,
-                    &PhysX::JointRequests::SetVelocityGeneral,
-                    linear, angular);
-            }
-
-            if (ImGui::DragFloat3("Angular Velocity", angularVel, 0.01f, -10.0f, 10.0f))
-            {
-                AZ::Vector3 linear(linearVel[0], linearVel[1], linearVel[2]);
-                AZ::Vector3 angular(angularVel[0], angularVel[1], angularVel[2]);
-                PhysX::JointRequestBus::Event(
-                    m_selectedJoint,
-                    &PhysX::JointRequests::SetVelocityGeneral,
-                    linear, angular);
-            }
-
-            if (ImGui::Button("Stop"))
-            {
-                linearVel[0] = linearVel[1] = linearVel[2] = 0.0f;
-                angularVel[0] = angularVel[1] = angularVel[2] = 0.0f;
-                PhysX::JointRequestBus::Event(
-                    m_selectedJoint,
-                    &PhysX::JointRequests::SetVelocityGeneral,
-                    AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
-            }
-
-            ImGui::Separator();
-
-            // Per-axis controls
-            if (ImGui::CollapsingHeader("Per-Axis Control"))
-            {
-                const char* axisNames[] = {"X", "Y", "Z", "Twist", "Swing", "Slerp"};
-                for (int axisId = 0; axisId < 6; ++axisId)
-                {
-
-                    ImGui::PushID(axisId);
-                    ImGui::Text("Axis: %s", axisNames[axisId]);
-
-                    AZStd::pair<float, float> limits;
-                    PhysX::JointRequestBus::EventResult(
-                        limits,
-                        m_selectedJoint,
-                        &PhysX::JointRequests::GetLimitsAxis,
-                        axisId);
-
-                    ImGui::Text("  Limits: [%.3f, %.3f]", limits.first, limits.second);
-
-                    // Force control
-                    static float axisForce = 0.0f;
-                    if (ImGui::InputFloat("Force Limit", &axisForce))
-                    {
-                        PhysX::JointRequestBus::Event(
-                            m_selectedJoint,
-                            &PhysX::JointRequests::SetMaximumForceAxis,
-                            axisId, axisForce);
-                    }
-                    ImGui::PopID();
-                    ImGui::Separator();
-                }
-            }
-
-            // Close button
-            if (ImGui::Button("Close"))
-            {
-                m_selectedJoint = AZ::EntityComponentIdPair();
-            }
-        }
-        ImGui::End();
     }
 #endif // IMGUI_ENABLED
 
@@ -588,7 +374,7 @@ namespace PhysXDebug
         m_settings.m_contactPoint = updatedValue;
         m_settings.m_contactNormal = updatedValue;
         m_settings.m_jointLocalFrames = updatedValue;
-        m_settings.m_jointCharacterLimits = updatedValue;
+        m_settings.m_jointLimits = updatedValue;
         m_settings.m_mbpRegions = updatedValue;
         m_settings.m_actorAxes = updatedValue;
 
@@ -711,7 +497,6 @@ namespace PhysXDebug
         m_lineColors.clear();
         m_trianglePoints.clear();
         m_triangleColors.clear();
-        m_jointsCache.clear();
     }
 
     void SystemComponent::GatherBuffers()
@@ -721,7 +506,6 @@ namespace PhysXDebug
         GatherLines(rb);
         GatherTriangles(rb);
         GatherJointLimits();
-        GatherJoints();
     }
 
     void SystemComponent::RenderBuffers()
@@ -872,7 +656,7 @@ namespace PhysXDebug
             physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_STATIC, m_settings.m_collisionStatic ? 1.0f : 0.0f);
             physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_DYNAMIC, m_settings.m_collisionDynamic ? 1.0f : 0.0f);
             physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eJOINT_LOCAL_FRAMES, m_settings.m_jointLocalFrames ? 1.0f : 0.0f);
-            physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eJOINT_LIMITS, m_settings.m_jointCharacterLimits ? 1.0f : 0.0f);
+            physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eJOINT_LIMITS, m_settings.m_jointLimits ? 1.0f : 0.0f);
             physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eMBP_REGIONS, m_settings.m_mbpRegions ? 1.0f : 0.0f);
             physxScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, m_settings.m_actorAxes ? 1.0f : 0.0f);
 
@@ -976,82 +760,6 @@ namespace PhysXDebug
         }
     }
 
-
-    void SystemComponent::GatherJoints()
-    {
-        AZ_PROFILE_FUNCTION(Physics);
-        m_jointsCache.clear();
-
-        physx::PxScene* scene = GetCurrentPxScene();
-        if ( scene)
-        {
-            const physx::PxU32 numConstraints = scene->getNbConstraints();
-            for (physx::PxU32 constraintIndex = 0; constraintIndex < numConstraints; constraintIndex++)
-            {
-                physx::PxConstraint* constraint = nullptr;
-                scene->getConstraints(&constraint, 1, constraintIndex);
-                physx::PxRigidActor* actor0 = nullptr;
-                physx::PxRigidActor* actor1 = nullptr;
-                constraint->getActors(actor0, actor1);
-
-                // get o3de primitives
-                const PhysX::ActorData* actor0Data = PhysX::Utils::GetUserData(actor0);
-                const PhysX::ActorData* actor1Data = PhysX::Utils::GetUserData(actor1);
-
-                if (actor0Data && actor1Data)
-                {
-                    const auto * simulatedBody0 = actor0Data->GetSimulatedBody();
-                    const auto * simulatedBody1 = actor1Data->GetSimulatedBody();
-
-                    AZ_Assert(simulatedBody0, "PhysX simulation body 0 is null");
-                    AZ_Assert(simulatedBody1, "PhysX simulation body 1 is null");
-
-                    const AZ::EntityId entityId0 = simulatedBody0->GetEntityId();
-                    const AZ::EntityId entityId1 = simulatedBody1->GetEntityId();
-
-                    AZ::Entity* entityPtr0 = nullptr;
-                    AZ::Entity* entityPtr1 = nullptr;
-
-
-                    AZ::ComponentApplicationBus::BroadcastResult(
-                        entityPtr0,
-                        &AZ::ComponentApplicationBus::Events::FindEntity,
-                        entityId0);
-                    AZ::ComponentApplicationBus::BroadcastResult(
-                      entityPtr1,
-                      &AZ::ComponentApplicationBus::Events::FindEntity,
-                      entityId1);
-
-                    AZ_Assert(entityPtr0, "PhysX simulation entity 0 is null");
-                    AZ_Assert(entityPtr1, "PhysX simulation entity 1 is null");
-
-                    auto joints = Internal::FindAllJointComponents(entityPtr0);
-                    const auto joints1 = Internal::FindAllJointComponents(entityPtr1);
-                    joints.insert(joints.end(), joints1.begin(), joints1.end());
-
-                    for (const auto& [jointId, jointName] : joints)
-                    {
-                        AZStd::string label = AZStd::string::format("%s : %s->%s", jointName.c_str(), entityPtr0->GetName().c_str(), entityPtr1->GetName().c_str());
-                        m_jointsCache[jointId] = label;
-                    }
-                }
-                if (m_settings.m_showJoints && actor0 && actor1)
-                {
-                    const auto& actor0Position = actor0->getGlobalPose().p;
-                    const auto& actor1Position = actor1->getGlobalPose().p;
-
-                    if (!m_culling.m_enabled || m_cullingBox.contains(actor0Position) || m_cullingBox.contains(actor1Position))
-                    {
-                        m_linePoints.emplace_back(PxMathConvert(actor0Position));
-                        m_linePoints.emplace_back(PxMathConvert(actor1Position));
-                        m_lineColors.emplace_back(m_colorMappings.m_cyan);
-                        m_lineColors.emplace_back(m_colorMappings.m_cyan);
-                    }
-                }
-            }
-        }
-    }
-
     void SystemComponent::GatherJointLimits()
     {
         AZ_PROFILE_FUNCTION(Physics);
@@ -1060,7 +768,7 @@ namespace PhysXDebug
 
         // The PhysX debug render buffer does not seem to include joint limits, even when
         // PxVisualizationParameter::eJOINT_LIMITS is set, so they are separately added to the line buffer here.
-        if (m_settings.m_jointCharacterLimits && scene)
+        if (m_settings.m_jointLimits && scene)
         {
             const physx::PxU32 numConstraints = scene->getNbConstraints();
             for (physx::PxU32 constraintIndex = 0; constraintIndex < numConstraints; constraintIndex++)

@@ -36,7 +36,10 @@ namespace PhysX
 
         //! Returns velocity as linear and angular
         //! @return pair of 3D vectors : linear in m/s and angular in rad/s
-        virtual AZStd::pair<AZ::Vector3, AZ::Vector3> GetVelocityGeneral() const { return (AZ::Vector3::CreateAxisX(GetVelocity()), AZ::Vector3::CreateZero());}
+        virtual AZStd::pair<AZ::Vector3, AZ::Vector3> GetVelocityGeneral() const
+        {
+            return AZStd::make_pair(AZ::Vector3::CreateAxisX(GetVelocity()), AZ::Vector3::CreateZero());
+        }
 
         //! Sets drive velocity.
         //! @param velocity velocity in meters per second (for prismatic joint) or radians per second (for hinge joint)

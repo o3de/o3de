@@ -12,17 +12,16 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 
-#include <PhysX/EditorJointBus.h>
-#include <Editor/EditorJointConfiguration.h>
-#include <Source/EditorJointComponent.h>
 #include <D6JointComponent.h>
+#include <Editor/EditorJointConfiguration.h>
+#include <PhysX/EditorJointBus.h>
+#include <Source/EditorJointComponent.h>
 namespace PhysX
 {
 
     //! Editor PhysX D6 Joint Component
     //! Provides a 6 degree of freedom joint constraint between two entities in the editor.
-    class EditorD6JointComponent
-        : public EditorJointComponent
+    class EditorD6JointComponent : public EditorJointComponent
     {
     public:
         AZ_EDITOR_COMPONENT(EditorD6JointComponent, "{5B6C7D8E-9F0A-1B2C-3D4E-5F6A7B8C9D0E}", EditorJointComponent);
@@ -49,12 +48,9 @@ namespace PhysX
         void SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair) override;
 
         // AzFramework::EntityDebugDisplayEventBus
-        void DisplayEntityViewport(
-            const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) override;
+        void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
     private:
-
         D6JointComponentConfiguration m_d6Config;
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate;

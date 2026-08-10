@@ -132,6 +132,7 @@ namespace PhysX
             const JointGenericProperties& genericProperties,
             const D6JointComponentConfiguration& d6Configuration);
         ~D6JointComponent() = default;
+
     protected:
         // JointRequestBus::Handler overrides
         float GetPosition() const override;

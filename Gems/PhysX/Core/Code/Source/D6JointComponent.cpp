@@ -9,6 +9,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/array.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <Joint/PhysXJointUtils.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
@@ -32,15 +33,22 @@ namespace PhysX
             return physx::PxD6JointDrive(stiffness, damping, forceLimit, isAcceleration);
         }
 
-        const AZStd::unordered_map<int, physx::PxD6Axis::Enum> idToPxD6AxisEnum = {
-            { 0, physx::PxD6Axis::eX },     { 1, physx::PxD6Axis::eY },      { 2, physx::PxD6Axis::eZ },
-            { 3, physx::PxD6Axis::eTWIST }, { 4, physx::PxD6Axis::eSWING1 }, { 5, physx::PxD6Axis::eSWING2 }
-        };
+        //! Maps an axis id, as used by the joint requests bus, to the corresponding PhysX axis.
+        constexpr AZStd::array<physx::PxD6Axis::Enum, 6> IdToPxD6AxisEnum = { physx::PxD6Axis::eX,     physx::PxD6Axis::eY,
+                                                                             physx::PxD6Axis::eZ,     physx::PxD6Axis::eTWIST,
+                                                                             physx::PxD6Axis::eSWING1, physx::PxD6Axis::eSWING2 };
 
-        const AZStd::unordered_map<int, physx::PxD6Drive::Enum> idToPxD6DriveEnum = {
-            { 0, physx::PxD6Drive::eX },     { 1, physx::PxD6Drive::eY },     { 2, physx::PxD6Drive::eZ },
-            { 3, physx::PxD6Drive::eTWIST }, { 4, physx::PxD6Drive::eSWING }, { 5, physx::PxD6Drive::eSLERP }
-        };
+        //! Maps a drive id, as used by the joint requests bus, to the corresponding PhysX drive.
+        constexpr AZStd::array<physx::PxD6Drive::Enum, 6> IdToPxD6DriveEnum = { physx::PxD6Drive::eX,     physx::PxD6Drive::eY,
+                                                                               physx::PxD6Drive::eZ,     physx::PxD6Drive::eTWIST,
+                                                                               physx::PxD6Drive::eSWING, physx::PxD6Drive::eSLERP };
+
+        //! Returns whether the given id can be used to index one of the id-to-PhysX enum tables above.
+        template<typename EnumType, size_t Size>
+        bool IsValidId(const AZStd::array<EnumType, Size>& table, int id)
+        {
+            return id >= 0 && static_cast<size_t>(id) < table.size();
+        }
 
         physx::PxD6Motion::Enum ConvertD6JointAxisToPxD6Motion(D6JointAxis axis)
         {
@@ -264,8 +272,6 @@ namespace PhysX
     {
     }
 
-
-
     void D6JointComponent::InitNativeJoint()
     {
         JointComponent::LeadFollowerInfo leadFollowerInfo;
@@ -300,7 +306,7 @@ namespace PhysX
             return;
         }
         PhysX::D6JointLimitConfiguration configuration;
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        if (sceneInterface)
         {
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
             m_jointHandle = sceneInterface->AddJoint(
@@ -347,8 +353,7 @@ namespace PhysX
 #else
             // PhysX 4 doesn't support per-axis linear limits, only a single spherical limit
             // Calculate the maximum extent from all limited axes
-            if (m_d6Configuration.m_motionX == D6JointAxis::Limited ||
-                m_d6Configuration.m_motionY == D6JointAxis::Limited ||
+            if (m_d6Configuration.m_motionX == D6JointAxis::Limited || m_d6Configuration.m_motionY == D6JointAxis::Limited ||
                 m_d6Configuration.m_motionZ == D6JointAxis::Limited)
             {
                 AZ_Warning(
@@ -362,20 +367,20 @@ namespace PhysX
                 float maxExtent = 0.0f;
                 if (m_d6Configuration.m_motionX == D6JointAxis::Limited)
                 {
-                    const float extentX = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsX.first),
-                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsX.second));
+                    const float extentX = AZ::GetMax(
+                        AZ::GetAbs(m_d6Configuration.m_motionLimitsX.first), AZ::GetAbs(m_d6Configuration.m_motionLimitsX.second));
                     maxExtent = AZ::GetMax(maxExtent, extentX);
                 }
                 if (m_d6Configuration.m_motionY == D6JointAxis::Limited)
                 {
-                    const float extentY = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsY.first),
-                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsY.second));
+                    const float extentY = AZ::GetMax(
+                        AZ::GetAbs(m_d6Configuration.m_motionLimitsY.first), AZ::GetAbs(m_d6Configuration.m_motionLimitsY.second));
                     maxExtent = AZ::GetMax(maxExtent, extentY);
                 }
                 if (m_d6Configuration.m_motionZ == D6JointAxis::Limited)
                 {
-                    const float extentZ = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.first),
-                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.second));
+                    const float extentZ = AZ::GetMax(
+                        AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.first), AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.second));
                     maxExtent = AZ::GetMax(maxExtent, extentZ);
                 }
                 physx::PxJointLinearLimit linearLimit(physx::PxTolerancesScale(), maxExtent);
@@ -387,8 +392,7 @@ namespace PhysX
             if (m_d6Configuration.m_motionTwist == D6JointAxis::Limited)
             {
                 physx::PxJointAngularLimitPair twistLimit(
-                    AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.first),
-                    AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.second));
+                    AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.first), AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.second));
                 m_nativeD6Joint->setTwistLimit(twistLimit);
             }
 
@@ -407,10 +411,12 @@ namespace PhysX
                     maxSwingLimitDegrees);
 
                 physx::PxJointLimitCone swingLimit(
-                    AZ::DegToRad(AZ::GetClamp(
-                        m_d6Configuration.m_motionLimitsCone.first, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)),
-                    AZ::DegToRad(AZ::GetClamp(
-                        m_d6Configuration.m_motionLimitsCone.second, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)));
+                    AZ::DegToRad(
+                        AZ::GetClamp(
+                            m_d6Configuration.m_motionLimitsCone.first, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)),
+                    AZ::DegToRad(
+                        AZ::GetClamp(
+                            m_d6Configuration.m_motionLimitsCone.second, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)));
                 m_nativeD6Joint->setSwingLimit(swingLimit);
             }
 
@@ -487,11 +493,11 @@ namespace PhysX
 
     AZStd::pair<float, float> D6JointComponent::GetLimitsAxis(int id) const
     {
-        if (!m_nativeD6Joint || !idToPxD6AxisEnum.contains(id))
+        if (!m_nativeD6Joint || !IsValidId(IdToPxD6AxisEnum, id))
         {
             return AZStd::make_pair(0.0f, 0.0f);
         }
-        const physx::PxD6Axis::Enum pxAxis = idToPxD6AxisEnum.at(id);
+        const physx::PxD6Axis::Enum pxAxis = IdToPxD6AxisEnum[id];
         PHYSX_SCENE_READ_LOCK(m_nativeD6Joint->getScene());
         if (pxAxis == physx::PxD6Axis::eX || pxAxis == physx::PxD6Axis::eY || pxAxis == physx::PxD6Axis::eZ)
         {
@@ -546,12 +552,12 @@ namespace PhysX
 
     void D6JointComponent::SetMaximumForceAxis(int id, float force)
     {
-        if (!m_nativeD6Joint || !idToPxD6DriveEnum.contains(id))
+        if (!m_nativeD6Joint || !IsValidId(IdToPxD6DriveEnum, id))
         {
             return;
         }
         PHYSX_SCENE_WRITE_LOCK(m_nativeD6Joint->getScene());
-        const physx::PxD6Drive::Enum driveAxis = idToPxD6DriveEnum.at(id);
+        const physx::PxD6Drive::Enum driveAxis = IdToPxD6DriveEnum[id];
         physx::PxD6JointDrive drive = m_nativeD6Joint->getDrive(driveAxis);
         drive.forceLimit = force;
         m_nativeD6Joint->setDrive(driveAxis, drive);
