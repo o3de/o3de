@@ -59,7 +59,7 @@ namespace PhysXDebug
         bool m_contactNormal = false;
 
         bool m_jointLocalFrames = false;
-        bool m_jointCharacterLimits = false;
+        bool m_jointLimits = false;
 
         bool m_mbpRegions = false;
         bool m_actorAxes = false;

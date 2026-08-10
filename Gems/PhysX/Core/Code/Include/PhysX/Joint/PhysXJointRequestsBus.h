@@ -34,12 +34,17 @@ namespace PhysX
         //! meters per second.
         virtual float GetVelocity() const = 0;
 
+        //! Returns velocity as linear and angular
+        //! @return pair of 3D vectors : linear in m/s and angular in rad/s
         virtual AZStd::pair<AZ::Vector3, AZ::Vector3> GetVelocityGeneral() const { return (AZ::Vector3::CreateAxisX(GetVelocity()), AZ::Vector3::CreateZero());}
 
         //! Sets drive velocity.
         //! @param velocity velocity in meters per second (for prismatic joint) or radians per second (for hinge joint)
         virtual void SetVelocity(float velocity) = 0;
 
+        //! Sets velocity as two 2d vectors
+        //! @param linear linear velocity in m/s
+        //! @param angular angular velocity in rad/s
         virtual void SetVelocityGeneral(const AZ::Vector3& linear, const AZ::Vector3& angular) { AZ_UNUSED(angular); SetVelocity(linear.GetX()); }
 
         //! Gets local transformation of joint.

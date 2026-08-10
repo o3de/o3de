@@ -36,7 +36,7 @@ namespace PhysX
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(D6JointDriveFlag, uint8_t, Force, Acceleration);
 
     AZ_TYPE_INFO_SPECIALIZE(D6JointDriveType, "{2C4F5641-E543-21F1-C669-1911311D3B77}");
-    AZ_TYPE_INFO_SPECIALIZE(D6JointDriveFlag, "{2C4F5641-E543-21F1-C669-1911311D3B77}");
+    AZ_TYPE_INFO_SPECIALIZE(D6JointDriveFlag, "{DA6A6960-94BE-11F1-B55A-0800200C9A66}");
     AZ_TYPE_INFO_SPECIALIZE(D6JointAxis, "{1B3F4530-D432-11F0-B558-0800200C9A66}");
 
     struct D6JointDrive
@@ -130,7 +130,7 @@ namespace PhysX
             const JointGenericProperties& genericProperties,
             const D6JointComponentConfiguration& d6Configuration);
         ~D6JointComponent() = default;
-
+    protected:
         // JointRequestBus::Handler overrides
         float GetPosition() const override;
         float GetVelocity() const override;
@@ -147,7 +147,6 @@ namespace PhysX
             return m_nativeD6Joint;
         }
 
-    protected:
         // JointComponent overrides
         void InitNativeJoint() override;
         void DeinitNativeJoint() override;

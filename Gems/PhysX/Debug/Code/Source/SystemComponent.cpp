@@ -99,7 +99,7 @@ namespace PhysXDebug
                 ->Field("JointLimits", &PhysXVisualizationSettings::m_jointCharacterLimits)
                 ->Field("MbpRegions", &PhysXVisualizationSettings::m_mbpRegions)
                 ->Field("ActorAxes", &PhysXVisualizationSettings::m_actorAxes)
-                ->Field("Joints", &PhysXVisualizationSettings::m_showJoints);
+                ->Field("ShowJoints", &PhysXVisualizationSettings::m_showJoints);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -140,7 +140,7 @@ namespace PhysXDebug
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_actorAxes, "Actor Axes", "Enable actor axes")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_showJoints, "Joints", "Enable joints")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_showJoints, "Show Joints", "Enable joints visualization")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                 ;
             }
@@ -417,7 +417,7 @@ namespace PhysXDebug
         }
 
         const AZStd::string& jointName = jointIt->second;
-        AZStd::string windowTitle = AZStd::string::format("Joint Control: %s###JointManipulation", jointName.c_str());
+        AZStd::string windowTitle = AZStd::string::format("Joint Control: %s", jointName.c_str());
 
         if (ImGui::Begin(windowTitle.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
@@ -462,12 +462,6 @@ namespace PhysXDebug
                     currentVelocity.second.GetZ());
 
                 ImGui::Separator();
-
-                // Get transform using O3DE API
-                PhysX::JointRequestBus::EventResult(
-                    jointTransform,
-                    m_selectedJoint,
-                    &PhysX::JointRequests::GetTransform);
 
                 AZ::Vector3 pos = jointTransform.GetTranslation();
                 ImGui::Text("Joint Transform:");
@@ -524,9 +518,9 @@ namespace PhysXDebug
             // Per-axis controls
             if (ImGui::CollapsingHeader("Per-Axis Control"))
             {
+                const char* axisNames[] = {"X", "Y", "Z", "Twist", "Swing", "Slerp"};
                 for (int axisId = 0; axisId < 6; ++axisId)
                 {
-                    const char* axisNames[] = {"X", "Y", "Z", "Twist", "Swing", "Slerp"};
 
                     ImGui::PushID(axisId);
                     ImGui::Text("Axis: %s", axisNames[axisId]);
@@ -994,10 +988,10 @@ namespace PhysXDebug
             const physx::PxU32 numConstraints = scene->getNbConstraints();
             for (physx::PxU32 constraintIndex = 0; constraintIndex < numConstraints; constraintIndex++)
             {
-                physx::PxConstraint* constraint;
+                physx::PxConstraint* constraint = nullptr;
                 scene->getConstraints(&constraint, 1, constraintIndex);
-                physx::PxRigidActor* actor0;
-                physx::PxRigidActor* actor1;
+                physx::PxRigidActor* actor0 = nullptr;
+                physx::PxRigidActor* actor1 = nullptr;
                 constraint->getActors(actor0, actor1);
 
                 // get o3de primitives

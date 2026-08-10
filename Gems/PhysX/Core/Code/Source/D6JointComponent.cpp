@@ -41,6 +41,22 @@ namespace PhysX
             { 3, physx::PxD6Drive::eTWIST }, { 4, physx::PxD6Drive::eSWING }, { 5, physx::PxD6Drive::eSLERP }
         };
 
+        physx::PxD6Motion::Enum ConvertD6JointAxisToPxD6Motion(D6JointAxis axis)
+        {
+            switch (axis)
+            {
+            case D6JointAxis::Free:
+                return physx::PxD6Motion::eFREE;
+            case D6JointAxis::Limited:
+                return physx::PxD6Motion::eLIMITED;
+            case D6JointAxis::Locked:
+                return physx::PxD6Motion::eLOCKED;
+            default:
+                AZ_Assert(false, "Unsupported D6 joint axis type");
+                return physx::PxD6Motion::eLOCKED;
+            }
+        }
+
     } // namespace
 
     void D6JointDrive::Reflect(AZ::ReflectContext* context)
@@ -247,21 +263,7 @@ namespace PhysX
     {
     }
 
-    physx::PxD6Motion::Enum ConvertD6JointAxisToPxD6Motion(D6JointAxis axis)
-    {
-        switch (axis)
-        {
-        case D6JointAxis::Free:
-            return physx::PxD6Motion::eFREE;
-        case D6JointAxis::Limited:
-            return physx::PxD6Motion::eLIMITED;
-        case D6JointAxis::Locked:
-            return physx::PxD6Motion::eLOCKED;
-        default:
-            AZ_Assert(false, "Unsupported D6 joint axis type");
-            return physx::PxD6Motion::eLOCKED;
-        }
-    }
+
 
     void D6JointComponent::InitNativeJoint()
     {
