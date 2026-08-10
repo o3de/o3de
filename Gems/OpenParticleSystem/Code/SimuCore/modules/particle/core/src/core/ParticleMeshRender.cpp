@@ -58,12 +58,13 @@ namespace SimuCore::ParticleCore {
         auto& instanceBufferView = instanceBufferViews[world.viewKey.v];
         auto& instanceVb = instanceData[world.viewKey.v];
 
-        bool reCreate = false;
-        if (pool.Alive() > instanceVb.size()) {
-            particleSize = pool.Size();
+        const AZ::u32 requiredParticleSize = pool.Size();
+        bool reCreate = instanceVb.size() != requiredParticleSize || particleSize != requiredParticleSize;
+        particleSize = requiredParticleSize;
+        if (reCreate)
+        {
             instanceVb.resize(particleSize);
             ParticleDriver::bufferDestroyFn(m_driver, instanceBufferView.buffer);
-            reCreate = true;
         }
         UpdateParticle(pool, world, instanceVb, positionBuffer);
 

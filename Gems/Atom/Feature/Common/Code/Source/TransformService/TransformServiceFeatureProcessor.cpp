@@ -174,6 +174,7 @@ namespace AZ
         void TransformServiceFeatureProcessor::OnEndPrepareRender()
         {
             m_isWriteable = true;
+            FlushPending();
         }
 
         TransformServiceFeatureProcessor::ObjectId TransformServiceFeatureProcessor::ReserveObjectId()
@@ -197,7 +198,16 @@ namespace AZ
 
         void TransformServiceFeatureProcessor::ReleaseObjectId(ObjectId& id)
         {
-            AZ_Error("TransformServiceFeatureProcessor", m_isWriteable, "Transform data cannot be written to during this phase");
+            if (!m_isWriteable)
+            {
+                if (id.IsValid())
+                {
+                    m_pendingReleases.emplace_back(id);
+                    id.Reset();
+                }
+                return;
+            }
+
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to release an invalid handle.");
             if (id.IsValid())
             {
@@ -209,7 +219,12 @@ namespace AZ
 
         void TransformServiceFeatureProcessor::SetTransformForId(ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
-            AZ_Error("TransformServiceFeatureProcessor", m_isWriteable, "Transform data cannot be written to during this phase");
+            if (!m_isWriteable)
+            {
+                m_pendingSetTransforms.emplace_back(PendingSetTransform{ id, transform, nonUniformScale });
+                return;
+            }
+
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to set the transform for an invalid handle.");
             if (id.IsValid())
             {
@@ -221,6 +236,22 @@ namespace AZ
                 matrix3x4.GetInverseFull().GetTranspose3x3().StoreToRowMajorFloat12(m_objectToWorldInverseTransposeTransforms.at(id.GetIndex()).m_transform);
                 m_deviceBufferNeedsUpdate = true;
             }
+        }
+
+        void TransformServiceFeatureProcessor::FlushPending()
+        {
+            for (auto& pending : m_pendingSetTransforms)
+            {
+                SetTransformForId(pending.m_objectId, pending.m_transform, pending.m_nonUniformScale);
+            }
+            m_pendingSetTransforms.clear();
+
+            for (auto& id : m_pendingReleases)
+            {
+                ObjectId releaseId = id;
+                ReleaseObjectId(releaseId);
+            }
+            m_pendingReleases.clear();
         }
 
         AZ::Transform TransformServiceFeatureProcessor::GetTransformForId(ObjectId id) const

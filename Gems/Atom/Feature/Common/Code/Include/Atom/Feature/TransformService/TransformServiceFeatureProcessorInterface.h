@@ -38,6 +38,9 @@ namespace AZ
             virtual AZ::Transform GetTransformForId(ObjectId) const = 0;
             //! Gets the non-uniform scale for a given id. Id must be one reserved earlier.
             virtual AZ::Vector3 GetNonUniformScaleForId(ObjectId id) const = 0;
+
+            //! Returns whether the service is currently accepting writes (reserves, releases, and transform sets).
+            virtual bool IsWriteable() const = 0;
         };
     }
 }

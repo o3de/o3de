@@ -67,11 +67,33 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Diffuse Lighting ---
 
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
-    OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
+
+#if defined(MATERIAL_HAS_ALPHA_TO_COVERAGE) && defined(MATERIAL_HAS_SURFACE_ALPHA)
+    if (o_alphaToCoverage && o_opacity_mode == OpacityMode::Cutout)
+    {
+        // Premultiply the lighting by the A2C coverage. Semi-transparent edge texels
+        // (bright halo RGB common in cutout textures) then fade out at partial
+        // coverage instead of drawing a bright outline in the final image.
+        OUT.m_diffuseColor.rgb *= surface.alpha;
+        OUT.m_diffuseColor.a = surface.alpha;
+    }
+    else
+    {
+        OUT.m_diffuseColor.a = -1;
+    }
+#else
+    OUT.m_diffuseColor.a = -1;
+#endif
 
     // --- Specular Lighting ---
 
     OUT.m_specularColor.rgb = lightingData.specularLighting[0].rgb;
+#if defined(MATERIAL_HAS_ALPHA_TO_COVERAGE) && defined(MATERIAL_HAS_SURFACE_ALPHA)
+    if (o_alphaToCoverage && o_opacity_mode == OpacityMode::Cutout)
+    {
+        OUT.m_specularColor.rgb *= surface.alpha;
+    }
+#endif
     OUT.m_specularColor.a = 1.0;
 
     // --- Roughness and Specular ---
@@ -82,6 +104,15 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Albedo ---
 
     OUT.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
+#if defined(MATERIAL_HAS_ALPHA_TO_COVERAGE) && defined(MATERIAL_HAS_SURFACE_ALPHA)
+    if (o_alphaToCoverage && o_opacity_mode == OpacityMode::Cutout)
+    {
+        // Same premultiplication as the diffuse/specular outputs: the albedo feeds
+        // the fullscreen IBL/merge passes, so it must fade with the coverage too,
+        // otherwise the halo RGB reappears in the final composite.
+        OUT.m_albedo.rgb *= surface.alpha;
+    }
+#endif
     OUT.m_albedo.a = lightingData.specularOcclusion;
 
     // --- Normal ---

@@ -74,6 +74,39 @@
                 "type": "ShaderInput",
                 "name": "m_opacityAffectsSpecularFactor"
             }
+        },
+        {
+            "name": "edgeSoftness",
+            "displayName": "Edge Softness",
+            "description": "Width of the anti-aliased transition band around the cutout threshold, rendered with alpha-to-coverage. 0.0 = use the Alpha to Coverage Sharpness ramp instead. A screen-space adaptive minimum (~1 pixel) is always applied so edges stay anti-aliased at any distance.",
+            "type": "Float",
+            "min": 0.0,
+            "max": 0.5,
+            "defaultValue": 0.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityEdgeSoftness"
+            }
+        },
+        {
+            "name": "alphaToCoverage",
+            "displayName": "Alpha to Coverage",
+            "description": "Enables Alpha-to-Coverage (A2C) for anti-aliased cutout edges using MSAA. Only applies to Cutout opacity mode. Also enabled implicitly when Edge Softness > 0. The o_alphaToCoverage shader option is set by the StandardPBR_HandleOpacityMode.lua functor so it always matches the A2C render state.",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "alphaToCoverageSharpness",
+            "displayName": "Alpha to Coverage Sharpness",
+            "description": "Steepness of the alpha-to-coverage edge ramp, used when Edge Softness is 0. Higher values produce sharper cutout edges with a narrower anti-aliased band.",
+            "type": "Float",
+            "min": 1.0,
+            "max": 20.0,
+            "defaultValue": 6.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_alphaToCoverageSharpness"
+            }
         }
     ],
     "functors": [

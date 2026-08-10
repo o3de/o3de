@@ -7,6 +7,7 @@
             "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
             "Name": "AlbedoWithCoverage",
             "RGB_Weight": "CIEXYZ",
+            "AlphaDilate": true,
             "PixelFormat": "BC1a",
             "IsPowerOf2": true,
             "MipMapSetting": {
@@ -18,6 +19,7 @@
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "ASTC_4x4",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -28,6 +30,7 @@
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -38,6 +41,7 @@
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "BC1a",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -48,6 +52,7 @@
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "BC1a",
                 "IsPowerOf2": true,
                 "MipMapSetting": {

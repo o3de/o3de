@@ -22,7 +22,10 @@
 
 
 #include <AzCore/std/time.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+#include <cmath>
 
 #include <Atom/RHI.Reflect/Format.h>
 
@@ -53,6 +56,7 @@ namespace ImageProcessingAtom
         StepValidateInput = 0,
         StepConvertToLinear,
         StepSwizzle,
+        StepAlphaDilate,
         StepCubemapLayout,
         StepPreNormalize,
         StepGenerateIBL,
@@ -71,6 +75,7 @@ namespace ImageProcessingAtom
         "ValidateInput",
         "ConvertToLinear",
         "Swizzle",
+        "AlphaDilate",
         "CubemapLayout",
         "PreNormalize",
         "GenerateIBL",
@@ -219,6 +224,26 @@ namespace ImageProcessingAtom
                         m_alphaContent = m_image->Get()->GetAlphaContent();
                     }
                 }
+            }
+            break;
+        case StepAlphaDilate:
+            // dilate opaque colors into transparent texels before mipmap generation,
+            // so cutout edges and mips don't show the background color
+            if (m_input->m_presetSetting.m_alphaDilate
+                && !IsConvertToCubemap()
+                && m_alphaContent != EAlphaContent::eAlphaContent_Absent
+                && m_alphaContent != EAlphaContent::eAlphaContent_OnlyWhite)
+            {
+                AZ_Printf("ImageConvert", "AlphaDilate step running: alphaContent=%d\n",
+                    static_cast<int>(m_alphaContent));
+                AlphaDilate();
+            }
+            else
+            {
+                AZ_Printf("ImageConvert", "AlphaDilate step SKIPPED: dilate=%d alphaContent=%d isCubemap=%d\n",
+                    m_input->m_presetSetting.m_alphaDilate ? 1 : 0,
+                    static_cast<int>(m_alphaContent),
+                    IsConvertToCubemap() ? 1 : 0);
             }
             break;
         case StepCubemapLayout:
@@ -486,6 +511,198 @@ namespace ImageProcessingAtom
     {
         // de-gamma only if the input is sRGB. this will convert other uncompressed format to RGBA32F
         return m_image->GammaToLinearRGBA32F(m_input->m_presetSetting.m_srcColorSpace == ColorSpace::sRGB);
+    }
+
+    void ImageConvertProcess::AlphaDilate()
+    {
+        IImageObjectPtr image = m_image->Get();
+        if (!image || image->GetPixelFormat() != ePixelFormat_R32G32B32A32F)
+        {
+            AZ_Assert(false, "%s only works with pixel format rgba32f", __FUNCTION__);
+            return;
+        }
+
+        const AZ::u32 width = image->GetWidth(0);
+        const AZ::u32 height = image->GetHeight(0);
+        AZ_Printf("ImageConvert", "AlphaDilate: processing %ux%u RGBA32F image\n", width, height);
+        AZ::u8* mem = nullptr;
+        AZ::u32 pitch = 0;
+        image->GetImagePointer(0, mem, pitch);
+        if (!mem || width == 0 || height == 0)
+        {
+            return;
+        }
+
+        auto pixelAt = [mem, pitch](AZ::u32 x, AZ::u32 y) -> float*
+        {
+            return reinterpret_cast<float*>(mem + static_cast<size_t>(y) * pitch) + static_cast<size_t>(x) * 4;
+        };
+
+        constexpr float alphaThreshold = 16.0f / 255.0f;
+
+        const size_t pixelCount = static_cast<size_t>(width) * height;
+        enum TexelState : AZ::u8 { Unknown = 0, Known = 1, Queued = 2 };
+        AZStd::vector<AZ::u8> state(pixelCount, Unknown);
+
+        // Capture original RGB of semi-transparent edge pixels before the BFS. If edge
+        // darkening is enabled we will blend bright edge texels back toward their nearest
+        // opaque color, preventing white cutouts when A2C is active.
+        // Key: index, Value: original [r,g,b]
+        AZStd::vector<AZStd::pair<AZ::u32, AZStd::array<float, 3>>> originalSemiEdges;
+        const bool edgeDarken = m_input->m_presetSetting.m_alphaEdgeDarken;
+        if (edgeDarken)
+        {
+            originalSemiEdges.reserve(65536);
+        }
+
+        // Seed all texels with alpha > 0 (both opaque and semi-transparent). Only fully
+        // transparent texels (alpha == 0) are dilated. Semi-transparent edge pixels keep
+        // their original RGB so the cutout edge shows its natural color, not a forced
+        // dark or bright value. The alpha channel is never modified.
+        size_t knownCount = 0;
+        for (AZ::u32 y = 0; y < height; ++y)
+        {
+            for (AZ::u32 x = 0; x < width; ++x)
+            {
+                float* p = pixelAt(x, y);
+                if (p[3] > alphaThreshold)
+                {
+                    state[static_cast<size_t>(y) * width + x] = Known;
+                    ++knownCount;
+                }
+                else if (edgeDarken && p[3] > 0.0f)
+                {
+                    originalSemiEdges.emplace_back(static_cast<AZ::u32>(y) * width + x, AZStd::array<float, 3>{ p[0], p[1], p[2] });
+                }
+            }
+        }
+
+        if (knownCount == 0 || knownCount == pixelCount)
+        {
+            return; // fully transparent or fully opaque, nothing to dilate
+        }
+
+        const int neighborOffsets[8][2] = { {-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1} };
+
+        AZStd::vector<AZ::u32> frontier;
+        AZStd::vector<AZ::u32> nextFrontier;
+        for (AZ::u32 y = 0; y < height; ++y)
+        {
+            for (AZ::u32 x = 0; x < width; ++x)
+            {
+                const size_t index = static_cast<size_t>(y) * width + x;
+                if (state[index] != Unknown)
+                {
+                    continue;
+                }
+                for (const auto& offset : neighborOffsets)
+                {
+                    const AZ::s64 nx = static_cast<AZ::s64>(x) + offset[0];
+                    const AZ::s64 ny = static_cast<AZ::s64>(y) + offset[1];
+                    if (nx >= 0 && ny >= 0 && nx < static_cast<AZ::s64>(width) && ny < static_cast<AZ::s64>(height)
+                        && state[ny * width + nx] == Known)
+                    {
+                        state[index] = Queued;
+                        frontier.push_back(static_cast<AZ::u32>(index));
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Flood-fill the color of the nearest known neighbor into every transparent
+        // texel (ring by ring). Using the first known neighbor (rather than an average)
+        // avoids blending contrasting colors at boundaries (e.g. green leaf + tan branch
+        // producing a bright/yellow/white result). Each ring inherits the color that the
+        // previous ring copied, so transparent areas fill with the closest opaque color.
+        while (!frontier.empty())
+        {
+            for (const AZ::u32 index : frontier)
+            {
+                const AZ::u32 x = index % width;
+                const AZ::u32 y = index / width;
+                for (const auto& offset : neighborOffsets)
+                {
+                    const AZ::s64 nx = static_cast<AZ::s64>(x) + offset[0];
+                    const AZ::s64 ny = static_cast<AZ::s64>(y) + offset[1];
+                    if (nx >= 0 && ny >= 0 && nx < static_cast<AZ::s64>(width) && ny < static_cast<AZ::s64>(height)
+                        && state[ny * width + nx] == Known)
+                    {
+                        const float* neighbor = pixelAt(static_cast<AZ::u32>(nx), static_cast<AZ::u32>(ny));
+                        float* p = pixelAt(x, y);
+                        p[0] = neighbor[0];
+                        p[1] = neighbor[1];
+                        p[2] = neighbor[2];
+                        break;
+                    }
+                }
+            }
+
+            for (const AZ::u32 index : frontier)
+            {
+                state[index] = Known;
+            }
+            nextFrontier.clear();
+            for (const AZ::u32 index : frontier)
+            {
+                const AZ::u32 x = index % width;
+                const AZ::u32 y = index / width;
+                for (const auto& offset : neighborOffsets)
+                {
+                    const AZ::s64 nx = static_cast<AZ::s64>(x) + offset[0];
+                    const AZ::s64 ny = static_cast<AZ::s64>(y) + offset[1];
+                    if (nx >= 0 && ny >= 0 && nx < static_cast<AZ::s64>(width) && ny < static_cast<AZ::s64>(height)
+                        && state[ny * width + nx] == Unknown)
+                    {
+                        state[ny * width + nx] = Queued;
+                        nextFrontier.push_back(static_cast<AZ::u32>(ny * width + nx));
+                    }
+                }
+            }
+            frontier.swap(nextFrontier);
+        }
+
+        // Edge darkening: bright semi-transparent texels (likely over-bright due to
+        // anti-aliasing or white-matte source art) get blended toward their nearest opaque
+        // color. This keeps A2C/soft cutout edges from showing as white cutouts, while
+        // preserving natural edge color for non-bright pixels.
+        if (edgeDarken)
+        {
+            constexpr float brightThreshold = 0.4f; // relative luminance in linear space
+            constexpr float darkeningMax = 0.85f;   // at very low alpha, blend up to 85%
+            for (const auto& entry : originalSemiEdges)
+            {
+                const AZ::u32 index = entry.first;
+                const float* original = entry.second.data();
+                const AZ::u32 x = index % width;
+                const AZ::u32 y = index / width;
+                float* p = pixelAt(x, y);
+
+                // Luminance of the original semi-transparent pixel (pre-dilation)
+                const float lum = 0.2126f * original[0] + 0.7152f * original[1] + 0.0722f * original[2];
+                const float dilatedLum = 0.2126f * p[0] + 0.7152f * p[1] + 0.0722f * p[2];
+
+                // Only darken if the original is bright and the dilated neighbor is darker
+                if (lum > brightThreshold && dilatedLum < lum)
+                {
+                    const float a = p[3];
+                    // More transparent edges get more darkening
+                    const float t = AZStd::min((1.0f - a) * darkeningMax, 1.0f);
+                    for (int c = 0; c < 3; ++c)
+                    {
+                        p[c] = AZStd::lerp(original[c], p[c], t);
+                    }
+                }
+                else
+                {
+                    // Restore the original color for non-bright edge pixels
+                    for (int c = 0; c < 3; ++c)
+                    {
+                        p[c] = original[c];
+                    }
+                }
+            }
+        }
     }
 
     // mipmap generation

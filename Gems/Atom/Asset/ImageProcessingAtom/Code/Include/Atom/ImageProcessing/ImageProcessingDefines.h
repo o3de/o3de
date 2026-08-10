@@ -86,7 +86,8 @@ namespace ImageProcessingAtom
         quadratic,      //Also called bilinear or Welch window
         gaussian,       //It remove high frequency noise in a highly controllable way.
         blackmanHarris,
-        kaiserSinc      //Good for foliage and tree assets exported from Speedtree.
+        kaiserSinc,     //Good for foliage and tree assets exported from Speedtree.
+        alphaWeighted   //Weights mip generation by alpha coverage.
     };
 
     enum class MipGenEvalType : AZ::u32

@@ -1,6 +1,6 @@
 {
     "materialType": "Types/ParticleMesh.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 6,
     "propertyValues": {
         "baseColor.color": [
             1.0,
