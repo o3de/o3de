@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -178,7 +179,7 @@ namespace PhysX
                         AZ::Edit::UIHandlers::Default,
                         &D6JointComponentConfiguration::m_motionLimitsTwist,
                         "Twist Limits",
-                        "Angular limits for twist (radians)")
+                        "Angular limits for twist (degrees)")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &D6JointComponentConfiguration::IsTwistLimited)
 
                     ->DataElement(
@@ -201,7 +202,7 @@ namespace PhysX
                         AZ::Edit::UIHandlers::Default,
                         &D6JointComponentConfiguration::m_motionLimitsCone,
                         "Cone Limits",
-                        "Angular cone limits for swing (radians)")
+                        "Swing half-angles around Y and Z (degrees)")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &D6JointComponentConfiguration::IsSwing1Limited)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Drives")
@@ -386,14 +387,30 @@ namespace PhysX
             if (m_d6Configuration.m_motionTwist == D6JointAxis::Limited)
             {
                 physx::PxJointAngularLimitPair twistLimit(
-                    m_d6Configuration.m_motionLimitsTwist.first, m_d6Configuration.m_motionLimitsTwist.second);
+                    AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.first),
+                    AZ::DegToRad(m_d6Configuration.m_motionLimitsTwist.second));
                 m_nativeD6Joint->setTwistLimit(twistLimit);
             }
 
             // Set swing limits
             if (m_d6Configuration.m_motionSwing1 == D6JointAxis::Limited || m_d6Configuration.m_motionSwing2 == D6JointAxis::Limited)
             {
-                physx::PxJointLimitCone swingLimit(m_d6Configuration.m_motionLimitsCone.first, m_d6Configuration.m_motionLimitsCone.second);
+                // PxJointLimitCone takes positive half-angles around Y and Z, not a lower/upper pair.
+                const float maxSwingLimitDegrees = 180.0f - JointConstants::MinSwingLimitDegrees;
+                AZ_Warning(
+                    "PhysX",
+                    m_d6Configuration.m_motionLimitsCone.first >= JointConstants::MinSwingLimitDegrees &&
+                        m_d6Configuration.m_motionLimitsCone.second >= JointConstants::MinSwingLimitDegrees,
+                    "Entity [%s] D6 Joint: swing cone limits clamped to [%f, %f] degrees to improve stability.",
+                    GetEntity()->GetName().c_str(),
+                    JointConstants::MinSwingLimitDegrees,
+                    maxSwingLimitDegrees);
+
+                physx::PxJointLimitCone swingLimit(
+                    AZ::DegToRad(AZ::GetClamp(
+                        m_d6Configuration.m_motionLimitsCone.first, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)),
+                    AZ::DegToRad(AZ::GetClamp(
+                        m_d6Configuration.m_motionLimitsCone.second, JointConstants::MinSwingLimitDegrees, maxSwingLimitDegrees)));
                 m_nativeD6Joint->setSwingLimit(swingLimit);
             }
 
@@ -449,6 +466,7 @@ namespace PhysX
 
     AZStd::pair<AZ::Vector3, AZ::Vector3> D6JointComponent::GetVelocityGeneral() const
     {
+        AZ_Error("Physx", m_nativeD6Joint, "No native joint");
         if (!m_nativeD6Joint)
         {
             return AZStd::make_pair(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
@@ -516,7 +534,7 @@ namespace PhysX
             return;
         }
 
-        PHYSX_SCENE_READ_LOCK(m_nativeD6Joint->getScene());
+        PHYSX_SCENE_WRITE_LOCK(m_nativeD6Joint->getScene());
         m_nativeD6Joint->setDriveVelocity(
             physx::PxVec3(linear.GetX(), linear.GetY(), linear.GetZ()), physx::PxVec3(angular.GetX(), angular.GetY(), angular.GetZ()));
     }

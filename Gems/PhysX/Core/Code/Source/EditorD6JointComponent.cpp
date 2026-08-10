@@ -83,11 +83,13 @@ namespace PhysX
 
     float EditorD6JointComponent::GetLinearValue([[maybe_unused]] const AZStd::string& parameterName)
     {
+        AZ_Warning("EditorD6JointComponent", false, "Not implemented for Editor component");
         return 0.0f;
     }
 
     AngleLimitsFloatPair EditorD6JointComponent::GetLinearValuePair([[maybe_unused]] const AZStd::string& parameterName)
     {
+        AZ_Warning("EditorD6JointComponent", false, "Not implemented for Editor component");
         return AngleLimitsFloatPair();
     }
 
@@ -98,14 +100,17 @@ namespace PhysX
 
     void EditorD6JointComponent::SetBoolValue([[maybe_unused]] const AZStd::string& parameterName, [[maybe_unused]] bool value)
     {
+        AZ_Warning("EditorD6JointComponent", false, "Not implemented for Editor component");
     }
 
     void EditorD6JointComponent::SetLinearValue([[maybe_unused]] const AZStd::string& parameterName, [[maybe_unused]] float value)
     {
+        AZ_Warning("EditorD6JointComponent", false, "Not implemented for Editor component");
     }
 
     void EditorD6JointComponent::SetLinearValuePair([[maybe_unused]] const AZStd::string& parameterName, [[maybe_unused]] const AngleLimitsFloatPair& valuePair)
     {
+        AZ_Warning("EditorD6JointComponent", false, "Not implemented for Editor component");
     }
 
     void EditorD6JointComponent::DisplayEntityViewport(

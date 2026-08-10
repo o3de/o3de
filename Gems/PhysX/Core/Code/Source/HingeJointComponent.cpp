@@ -149,7 +149,7 @@ namespace PhysX
     void HingeJointComponent::SetVelocity(float velocity)
     {
         AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
-        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
+        PHYSX_SCENE_WRITE_LOCK(m_nativeJoint->getScene());
         m_nativeJoint->setDriveVelocity(velocity, true);
     }
 

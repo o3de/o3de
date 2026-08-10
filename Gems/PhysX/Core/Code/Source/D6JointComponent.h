@@ -49,7 +49,7 @@ namespace PhysX
         D6JointDriveFlag m_driveFlag = D6JointDriveFlag::Force;
         float m_stiffness = 0.0f;
         float m_damping = 0.0f;
-        float m_forceLimit = AZ::Constants::FloatMax;
+        float m_forceLimit = 1000.f;
 
         bool IsActive() const
         {
@@ -75,8 +75,10 @@ namespace PhysX
         AZStd::pair<float, float> m_motionLimitsX{ -1.f, 1.f };
         AZStd::pair<float, float> m_motionLimitsY{ -1.f, 1.f };
         AZStd::pair<float, float> m_motionLimitsZ{ -1.f, 1.f };
-        AZStd::pair<float, float> m_motionLimitsTwist{ -AZ::Constants::Pi, AZ::Constants::Pi };
-        AZStd::pair<float, float> m_motionLimitsCone{ -AZ::Constants::Pi / 4, AZ::Constants::Pi / 4 };
+        //! Angular limits in degrees, converted to radians when applied to the native joint.
+        AZStd::pair<float, float> m_motionLimitsTwist{ -180.0f, 180.0f };
+        //! Swing half-angles around Y (swing 1) and Z (swing 2), not a lower/upper pair. Must be positive.
+        AZStd::pair<float, float> m_motionLimitsCone{ 45.0f, 45.0f };
 
         D6JointDrive m_driveX;
         D6JointDrive m_driveY;
