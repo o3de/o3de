@@ -228,6 +228,11 @@ set(FILES
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
     Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EntityPresets/EntityPresets.h
+    Entity/EntityPresets/EntityPresets.cpp
+    Entity/EntityPresets/EntityPresetsBuiltIn.cpp
+    Entity/EntityPresets/EntityPresetsSerializer.h
+    Entity/EntityPresets/EntityPresetsSerializer.cpp
     Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.cpp
     Entity/EditorEntityTransformBus.h
@@ -1061,6 +1066,16 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiHandlerBase.cpp
     UI/EditorEntityUi/EditorEntityUiSystemComponent.h
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
+    UI/EntityPresets/ActionManagerIdentifiers/EntityPresetsIdentifiers.h
+    UI/EntityPresets/EntityPresetsStringUtils.h
+    UI/EntityPresets/EntityPresetMenu.h
+    UI/EntityPresets/EntityPresetMenu.cpp
+    UI/EntityPresets/EntityPresetsIntegrationManager.h
+    UI/EntityPresets/EntityPresetsIntegrationManager.cpp
+    UI/EntityPresets/PresetEditorDialog.h
+    UI/EntityPresets/PresetEditorDialog.cpp
+    UI/EntityPresets/TerrainPreset.h
+    UI/EntityPresets/TerrainPreset.cpp
     UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h
