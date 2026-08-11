@@ -7,7 +7,7 @@
 #
 
 # Installer-mode counterpart of Code/Framework/AzTest/3rdParty/Findgoogletest.cmake
-# The libraries are already built here, so just import them. Keep the version below in sync with that file.
+# The libraries are already built here, so just import them.
 
 if (TARGET 3rdParty::googletest::GTest OR TARGET 3rdParty::googletest::GMock)
     return()
