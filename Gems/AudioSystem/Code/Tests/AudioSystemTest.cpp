@@ -870,9 +870,8 @@ public:
     void TestSuccessfulPreloadParsing(const char* controlsFolder, int numExpectedPreloads, int numExpectedBanksPerPreload)
     {
         using ::testing::_;
-        using ::testing::InvokeWithoutArgs;
         ON_CALL(m_mockFileCacheManager, TryAddFileCacheEntry(_, eADS_GLOBAL, _))
-            .WillByDefault(InvokeWithoutArgs(GenerateNewId));
+            .WillByDefault(GenerateNewId);
 
         m_xmlProcessor.ParsePreloadsData(controlsFolder, eADS_GLOBAL);
 

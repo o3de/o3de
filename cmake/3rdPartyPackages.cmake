@@ -799,8 +799,12 @@ function(o3de_fetch_content arg_NAME)
     # would insert a spurious empty argument into FetchContent_Declare.
     set(fc_args)
 
+    # Stamp extracted files with the extraction time, matching CMP0135 NEW (see cmake/Policy.cmake).
+    # Keeping the archive's own timestamps makes a newly extracted version look older than the
+    # object files built from the previous one, so a version bump silently links stale objects
+    # against the new headers instead of recompiling.
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
-        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP FALSE)
     endif()
 
     # Forward any extra arguments we don't explicitly handle
