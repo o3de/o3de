@@ -9,13 +9,13 @@
 # Installer-mode counterpart of Code/Framework/AzTest/3rdParty/Findgoogletest.cmake
 # The libraries are already built here, so just import them.
 
-if (TARGET 3rdParty::googletest::GTest OR TARGET 3rdParty::googletest::GMock)
+if(TARGET 3rdParty::googletest::GTest OR TARGET 3rdParty::googletest::GMock)
     return()
 endif()
 
 # Do not depend on googletest (via AzTest) where it cannot compile.
 # See cmake/Platform/<platform>/PAL_<platform>.cmake
-if (NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
     return()
 endif()
 

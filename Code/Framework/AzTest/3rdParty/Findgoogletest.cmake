@@ -9,19 +9,19 @@
 # GoogleTest and GoogleMock come from one repository, so a single fetch builds both.
 # Installer/Findgoogletest.cmake replaces this file in pre-built installer mode.
 
-if (TARGET 3rdParty::googletest::GTest OR TARGET 3rdParty::googletest::GMock)
+if(TARGET 3rdParty::googletest::GTest OR TARGET 3rdParty::googletest::GMock)
     return()
 endif()
 
 # Do not depend on googletest (via AzTest) where it cannot compile.
 # See cmake/Platform/<platform>/PAL_<platform>.cmake
-if (NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
     return()
 endif()
 
 block()
     set(ADDITIONAL_FETCHCONTENT_FLAGS "")
-    if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.25")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.25")
         list(APPEND ADDITIONAL_FETCHCONTENT_FLAGS "SYSTEM") # do not apply our warning level to googletest headers
     endif()
 
@@ -54,7 +54,7 @@ block()
     set(CMAKE_MESSAGE_LOG_LEVEL ${OLD_LOG_LEVEL})
 
     foreach(targetname gtest gmock gtest_main gmock_main)
-        if (NOT TARGET ${targetname})
+        if(NOT TARGET ${targetname})
             continue()
         endif()
         set_target_properties(${targetname} PROPERTIES FOLDER "3rdParty Dependencies")
@@ -89,7 +89,6 @@ block()
                 CONFIGURATIONS ${conf}
         )
     endforeach()
-
 endblock()
 
 set(googletest_FOUND TRUE)
