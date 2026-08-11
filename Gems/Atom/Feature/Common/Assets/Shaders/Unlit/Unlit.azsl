@@ -8,22 +8,24 @@
 #pragma once
 
 #include "UnlitShared.azsli"
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+
+struct CutoutOutput
+{
+    float4 m_color : SV_Target0;
+};
 
 VertexShaderOutput MainVS(VertexShaderInput IN, uint instanceId : SV_InstanceID)
 {
     return TransformVertex(IN, instanceId);
 }
 
-ForwardPassOutput MainPS(VertexShaderOutput IN)
+CutoutOutput MainPS(VertexShaderOutput IN)
 {
-    ForwardPassOutput OUT = (ForwardPassOutput)0;
+    CutoutOutput OUT;
 
     const float4 baseColor = EvaluateBaseColor(IN);
     ApplyAlphaClip(IN, baseColor.a);
 
-    OUT.m_diffuseColor = float4(baseColor.rgb, -1.0);
-    OUT.m_specularColor = float4(0.0, 0.0, 0.0, 0.0);
-
+    OUT.m_color = float4(baseColor.rgb, 1.0);
     return OUT;
 }
