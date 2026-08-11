@@ -77,6 +77,17 @@ namespace AZ::Render
         Data::Instance<RPI::AttachmentImage> GetDiffuseImage() const;
         Data::Instance<RPI::AttachmentImage> GetSpecularImage() const;
 
+        //! Take over output cubemaps produced by a previous instance of this pass.
+        //!
+        //! A pipeline pass-tree rebuild discards dynamically injected passes, so the feature
+        //! processor hosts a replacement. Carrying the images across avoids reallocating them, and
+        //! -- more importantly -- lets the replacement start with the previous contents instead of
+        //! an unwritten (black) cubemap that the scene would sample until the first dispatch lands.
+        //! Images that do not match the current face size are ignored and rebuilt.
+        void AdoptOutputImages(
+            const Data::Instance<RPI::AttachmentImage>& diffuse,
+            const Data::Instance<RPI::AttachmentImage>& specular);
+
     protected:
         // =====================================================================
         // RPI::Pass Overrides
@@ -106,6 +117,11 @@ namespace AZ::Render
 
         //! Creates one output cubemap AttachmentImage at m_faceSize. Returns nullptr on failure.
         Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const char* debugName) const;
+
+        //! True when both output cubemaps exist and were allocated at the current face size.
+        //! A resolution change invalidates them: the dispatch grid and the image dimensions must
+        //! agree or faces are under-written (stale texels) or overrun (aliasing).
+        bool OutputImagesMatchFaceSize() const;
 
         // =====================================================================
         // Gradient Parameters

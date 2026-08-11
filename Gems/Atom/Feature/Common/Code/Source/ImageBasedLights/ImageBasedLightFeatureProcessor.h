@@ -52,7 +52,6 @@ namespace AZ
             const Quaternion& GetOrientation() const override { return m_orientation; }
 
             void Reset() override;
-            bool IsImageSet() const override;
 
         private:
 

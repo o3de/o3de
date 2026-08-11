@@ -41,11 +41,6 @@ namespace AZ
             virtual const Quaternion& GetOrientation() const = 0;
             //! Resets the images and exposure back to default (unset) values.
             virtual void Reset() = 0;
-            //! Returns true when a non-default global IBL image is currently assigned
-            //! (i.e. some system has set an image and it has not been Reset back to the
-            //! engine default). Cooperating IBL providers use this to tell when the scene
-            //! IBL slots are free to claim. Implementations that do not track this return false.
-            virtual bool IsImageSet() const { return false; }
         };
     }
 }

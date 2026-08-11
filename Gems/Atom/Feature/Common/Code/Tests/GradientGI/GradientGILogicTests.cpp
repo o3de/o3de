@@ -16,6 +16,8 @@
 //   * ResolutionScrubThrottle -- the debounce that fixed the DX12 tiled-pool churn crash when the
 //     resolution slider is scrubbed (different-sized cubemap allocated every frame).
 //   * ResolveUpdateMode       -- the GPU/Dynamic -> CPU/Static fallback when compute is unsupported.
+//   * OwnerRegistry          -- the ownership rule that keeps a component which is shutting down
+//     from switching the feature off while another one is still alive and driving it.
 //   * IsTextureLayerEnabled   -- the detail/specular "no texture falls back" decision.
 //   * Clamp/Round + NormalizeAssetPath -- value/path normalisation for the scripting API.
 //
@@ -258,6 +260,86 @@ namespace UnitTest
         const AZStd::optional<uint32_t> committed = throttle.AdvanceFrame();
         ASSERT_TRUE(committed.has_value());
         EXPECT_EQ(*committed, 20u);
+    }
+
+    // =========================================================================================
+    // Ownership arbitration
+    // =========================================================================================
+
+    TEST_F(GradientGILogicFixture, OwnerRegistry_LatestOwnerDrives)
+    {
+        OwnerRegistry owners;
+        const AZ::EntityId first(0x1111);
+        const AZ::EntityId second(0x2222);
+
+        owners.Add(first);
+        EXPECT_EQ(owners.Current(), first);
+
+        owners.Add(second);
+        EXPECT_EQ(owners.Current(), second);
+        EXPECT_EQ(owners.Count(), 2u);
+    }
+
+    TEST_F(GradientGILogicFixture, OwnerRegistry_PromotesEarlierOwnerInsteadOfStopping)
+    {
+        // Duplicating a GradientGI entity makes the duplicate the owner while the original is
+        // still alive. Deleting the duplicate must hand the feature back, not switch it off --
+        // that left the scene black until something happened to re-activate the original.
+        OwnerRegistry owners;
+        const AZ::EntityId original(0x1111);
+        const AZ::EntityId duplicate(0x2222);
+
+        owners.Add(original);
+        owners.Add(duplicate);
+        owners.Remove(duplicate);
+
+        EXPECT_FALSE(owners.Empty());
+        EXPECT_EQ(owners.Current(), original);
+    }
+
+    TEST_F(GradientGILogicFixture, OwnerRegistry_StaleDisableIsHarmless)
+    {
+        // The game mode transition case: the spawned copy tears down after the editor-only copy
+        // has already re-registered. Removing an entity that is not registered changes nothing.
+        OwnerRegistry owners;
+        const AZ::EntityId editorCopy(0x1111);
+        const AZ::EntityId spawnedCopy(0x2222);
+
+        owners.Add(editorCopy);
+        owners.Remove(spawnedCopy);
+
+        EXPECT_EQ(owners.Count(), 1u);
+        EXPECT_EQ(owners.Current(), editorCopy);
+    }
+
+    TEST_F(GradientGILogicFixture, OwnerRegistry_StopsOnlyWhenTheLastOwnerLeaves)
+    {
+        OwnerRegistry owners;
+        const AZ::EntityId only(0x1234);
+
+        owners.Add(only);
+        owners.Remove(only);
+        EXPECT_TRUE(owners.Empty());
+        EXPECT_FALSE(owners.Current().IsValid());
+
+        // A repeated disable must not misbehave.
+        owners.Remove(only);
+        EXPECT_TRUE(owners.Empty());
+    }
+
+    TEST_F(GradientGILogicFixture, OwnerRegistry_ReEnableDoesNotDuplicateAnOwner)
+    {
+        // The editor cycles a component through Deactivate/Activate on every property edit, and
+        // Enable is also re-issued on game mode transitions.
+        OwnerRegistry owners;
+        const AZ::EntityId entity(0x1234);
+
+        owners.Add(entity);
+        owners.Add(entity);
+        EXPECT_EQ(owners.Count(), 1u);
+
+        owners.Remove(entity);
+        EXPECT_TRUE(owners.Empty());
     }
 
 } // namespace UnitTest

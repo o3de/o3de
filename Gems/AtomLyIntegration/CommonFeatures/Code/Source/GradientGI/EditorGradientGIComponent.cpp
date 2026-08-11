@@ -187,7 +187,11 @@ namespace AZ
         }
 
         // =====================================================================
-        // ChangeNotify Handlers
+        // ChangeNotify Handler
+        //
+        // Every config field routes here: EditorComponentAdapter installs a single class-level
+        // ChangeNotify, and the base implementation cycles the controller through
+        // Deactivate/Activate so the feature processor re-reads the whole configuration.
         // =====================================================================
 
         AZ::u32 EditorGradientGIComponent::OnConfigurationChanged()
@@ -198,30 +202,6 @@ namespace AZ
             // diverging. GPU/Dynamic mode leaves the value untouched.
             m_controller.SnapResolutionForCurrentMode();
             BaseClass::OnConfigurationChanged();
-            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-        }
-
-        AZ::u32 EditorGradientGIComponent::OnColorChanged()
-        {
-            m_controller.UpdateColors();
-            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-        }
-
-        AZ::u32 EditorGradientGIComponent::OnExposureChanged()
-        {
-            m_controller.SetExposure(m_controller.m_configuration.m_exposure);
-            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-        }
-
-        AZ::u32 EditorGradientGIComponent::OnResolutionChanged()
-        {
-            m_controller.SetFaceResolution(static_cast<int>(m_controller.m_configuration.m_faceResolution));
-            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-        }
-
-        AZ::u32 EditorGradientGIComponent::OnUpdateModeChanged()
-        {
-            m_controller.SetUpdateMode(m_controller.m_configuration.m_updateMode);
             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
         }
 

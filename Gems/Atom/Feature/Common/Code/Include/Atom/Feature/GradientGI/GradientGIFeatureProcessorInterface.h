@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -82,11 +83,19 @@ namespace AZ::Render
         //! the platform forced a fallback).
         virtual UpdateMode GetUpdateMode() const = 0;
 
-        //! Returns true if the gradient cubemap has been built and is active.
-        virtual bool IsActive() const = 0;
+        //! Start driving the scene's ambient light on behalf of an owning entity.
+        //!
+        //! The feature processor is a scene-wide singleton shared by every GradientGI component,
+        //! so it tracks which entity currently owns it: the most recently enabled owner wins.
+        //! Until an owner enables it the feature processor produces no output at all, even across
+        //! render pipeline rebuilds.
+        virtual void Enable(EntityId owner) = 0;
 
-        //! Reset to defaults -- removes the gradient cubemap from the IBL slots.
-        virtual void Reset() = 0;
+        //! Stop driving the scene's ambient light and release the IBL slots.
+        //!
+        //! Ignored unless `owner` is the current owner, so a component that is shutting down can
+        //! never switch off one that has already taken over. See GradientGI::ShouldAcceptDisable.
+        virtual void Disable(EntityId owner) = 0;
     };
 
 } // namespace AZ::Render

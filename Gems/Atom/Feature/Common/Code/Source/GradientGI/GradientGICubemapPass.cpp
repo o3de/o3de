@@ -182,9 +182,15 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Create persistent output cubemap AttachmentImages (diffuse + specular) ----
-        m_diffuseImage  = CreateOutputCubemap("GradientGI_Diffuse");
-        m_specularImage = CreateOutputCubemap("GradientGI_Specular");
+        // ---- Persistent output cubemap AttachmentImages (diffuse + specular) ----
+        // Images adopted from a previous instance of this pass are kept when they already match the
+        // current face size, so a pass-tree rebuild neither reallocates them nor exposes an
+        // unwritten cubemap to the scene. Otherwise allocate a fresh pair.
+        if (!OutputImagesMatchFaceSize())
+        {
+            m_diffuseImage  = CreateOutputCubemap("GradientGI_Diffuse");
+            m_specularImage = CreateOutputCubemap("GradientGI_Specular");
+        }
 
         if (!m_diffuseImage || !m_specularImage)
         {
@@ -196,6 +202,25 @@ namespace AZ::Render
         }
 
         m_dirty = true;
+    }
+
+    void GradientGICubemapPass::AdoptOutputImages(
+        const Data::Instance<RPI::AttachmentImage>& diffuse,
+        const Data::Instance<RPI::AttachmentImage>& specular)
+    {
+        m_diffuseImage  = diffuse;
+        m_specularImage = specular;
+    }
+
+    bool GradientGICubemapPass::OutputImagesMatchFaceSize() const
+    {
+        if (!m_diffuseImage || !m_specularImage)
+        {
+            return false;
+        }
+
+        const RHI::ImageDescriptor& descriptor = m_diffuseImage->GetRHIImage()->GetDescriptor();
+        return descriptor.m_size.m_width == m_faceSize;
     }
 
     Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::CreateOutputCubemap(const char* debugName) const

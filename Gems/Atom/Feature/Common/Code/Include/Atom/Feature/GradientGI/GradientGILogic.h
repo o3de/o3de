@@ -9,7 +9,9 @@
 #pragma once
 
 #include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/math.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
@@ -83,6 +85,65 @@ namespace AZ::Render::GradientGI
         using UpdateMode = GradientGIFeatureProcessorInterface::UpdateMode;
         return (requested == UpdateMode::Dynamic && !gpuComputeSupported) ? UpdateMode::Static : requested;
     }
+
+    // =========================================================================================
+    // Ownership arbitration
+    // =========================================================================================
+
+    //! Tracks every component that currently wants the (scene-wide, singleton) GradientGI feature
+    //! processor running. The most recently enabled entity drives it; when that entity leaves, an
+    //! earlier one is promoted rather than the feature switching off.
+    //!
+    //! A single "current owner" is not enough, for two reasons seen in practice:
+    //!  * Game mode transitions interleave. The same prefab can exist twice -- an editor-only copy
+    //!    and a spawned runtime copy -- and the copy that is shutting down must not switch off the
+    //!    copy that has just taken over.
+    //!  * Duplicating a GradientGI entity makes the duplicate the owner while the original is still
+    //!    alive. Deleting the duplicate then issues a perfectly legitimate disable, and with a
+    //!    single owner that shut the feature down and left the scene black until something happened
+    //!    to re-activate the original.
+    //!
+    //! Note: the feature processor holds one set of gradient parameters, not one per owner. After a
+    //! promotion those parameters are whatever the departing owner last pushed, until the survivor
+    //! pushes again. For duplicates (identical configuration) that is invisible; for two genuinely
+    //! different components the survivor's colours are stale until its next edit or activation.
+    class OwnerRegistry
+    {
+    public:
+        //! Register an owner, or move an existing one to the front of the queue.
+        void Add(const AZ::EntityId& owner)
+        {
+            Remove(owner);
+            m_owners.push_back(owner);
+        }
+
+        //! Deregister an owner. Unknown entities are ignored, which is what makes a stale disable
+        //! from an already-superseded component harmless.
+        void Remove(const AZ::EntityId& owner)
+        {
+            const auto it = AZStd::find(m_owners.begin(), m_owners.end(), owner);
+            if (it != m_owners.end())
+            {
+                m_owners.erase(it);
+            }
+        }
+
+        //! True when nobody wants the feature running any more.
+        bool Empty() const { return m_owners.empty(); }
+
+        //! The entity currently driving the feature; invalid when empty.
+        AZ::EntityId Current() const { return m_owners.empty() ? AZ::EntityId() : m_owners.back(); }
+
+        size_t Count() const { return m_owners.size(); }
+
+        //! Every registered owner, oldest first. Used to name them when reporting duplicates.
+        const AZStd::vector<AZ::EntityId>& Entities() const { return m_owners; }
+
+        void Clear() { m_owners.clear(); }
+
+    private:
+        AZStd::vector<AZ::EntityId> m_owners; // most recently enabled last
+    };
 
     // =========================================================================================
     // Texture layer fallback (detail / specular)

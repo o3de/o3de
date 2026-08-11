@@ -171,6 +171,11 @@ namespace AZ
                 LoadDetailTexture();
                 LoadSpecularTexture();
 
+                // Take ownership last, once the whole configuration is staged. The feature
+                // processor is a scene-wide singleton shared with any other GradientGI component,
+                // and the most recently enabled owner drives it.
+                m_featureProcessor->Enable(m_entityId);
+
                 GradientGIComponentRequestBus::Handler::BusConnect(m_entityId);
             }
         }
@@ -182,7 +187,10 @@ namespace AZ
 
             if (m_featureProcessor)
             {
-                m_featureProcessor->Reset();
+                // Scoped to this entity: if another GradientGI component has already taken
+                // ownership (the editor-only copy re-activating as a spawned copy tears down),
+                // this call is ignored and the live one keeps lighting the scene.
+                m_featureProcessor->Disable(m_entityId);
                 m_featureProcessor = nullptr;
             }
 
