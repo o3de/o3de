@@ -43,5 +43,51 @@ for xcode in /Applications/Xcode*.app; do
     sudo rm -rf "${xcode}"
 done
 
+ios_simulator_sdk_version=""
+if ! ios_simulator_sdk_version="$(xcrun --sdk iphonesimulator --show-sdk-version)"; then
+    echo "Unable to determine the selected Xcode's iOS Simulator SDK version"
+fi
+
+if simulator_runtimes="$(xcrun simctl runtime list -j)"; then
+    keep_runtime_identifier="$(
+        jq -r --arg version "${ios_simulator_sdk_version}" '
+            [.[] | select(
+                .platformIdentifier == "com.apple.platform.iphonesimulator"
+                and .version == $version
+                and .state == "Ready"
+            )]
+            | first
+            | .identifier // empty
+        ' <<< "${simulator_runtimes}"
+    )"
+
+    if [[ -n "${keep_runtime_identifier}" ]]; then
+        echo "Keeping iOS ${ios_simulator_sdk_version} simulator runtime"
+    else
+        echo "No simulator runtime matches the selected Xcode. Removing all simulator runtimes"
+    fi
+
+    while IFS=$'\t' read -r runtime_identifier runtime_platform runtime_version; do
+        [[ -n "${runtime_identifier}" ]] || continue
+        echo "Removing simulator runtime: ${runtime_platform} ${runtime_version}"
+        if ! xcrun simctl runtime delete "${runtime_identifier}"; then
+            echo "Unable to remove simulator runtime: ${runtime_identifier}"
+        fi
+    done < <(
+        jq -r --arg keep "${keep_runtime_identifier}" '
+            .[]
+            | select(.deletable == true)
+            | select((.platformIdentifier // "") | endswith("simulator"))
+            | select(.identifier != $keep)
+            | [.identifier, .platformIdentifier, .version]
+            | @tsv
+        ' <<< "${simulator_runtimes}"
+    )
+
+    xcrun simctl delete unavailable || true
+else
+    echo "Unable to list simulator runtimes. Skipping simulator cleanup"
+fi
+
 echo "Disk space after cleanup:"
 df -h /
