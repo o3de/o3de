@@ -21,6 +21,7 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -989,6 +990,14 @@ namespace OpenParticle
         }
 
         drawRequest.m_streamIndices = geometryView.GetFullStreamBufferIndices();
+
+        if (drawKey.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)
+        {
+            AZ::RHI::DrawFilterTag pipelineTag = m_scene->GetDrawFilterTagRegistry()->AcquireTag(drawKey.m_materialPipelineName);
+            AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", drawKey.m_materialPipelineName.GetCStr());
+            drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
+        }
+
         drawPacketBuilder.AddDrawItem(drawRequest);
 
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> drawPacket = drawPacketBuilder.End();
