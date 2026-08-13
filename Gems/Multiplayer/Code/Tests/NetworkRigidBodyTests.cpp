@@ -156,12 +156,10 @@ namespace Multiplayer
             m_rigidBody = AZStd::make_unique<PhysX::RigidBody>();
             m_mockSceneInterface = AZStd::make_unique<testing::NiceMock<Multiplayer::MockSceneInterface>>();
             ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _))
-                .WillByDefault(Invoke(
-                    [this](AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)
+                .WillByDefault([this](AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)
                     {
                         return m_rigidBody.get();
-                    }
-            ));
+                    });
 
             m_mockDefaultWorld = AZStd::make_unique<Multiplayer::MockPhysicsDefaultWorldRequestsHandler>();
 

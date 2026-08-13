@@ -21,8 +21,6 @@ endif()
 
 block()
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
-
     o3de_fetch_content(assimp
         VERSION "v6.0.4"
         LICENSE "Custom BSD-3-Clause"
@@ -30,7 +28,7 @@ block()
         URL_HASH "00e4bf0b9d9d8e9b346fa3dd859c3ce5f3438451822d5933c07f65a76fc04745"
         GIT "https://github.com/assimp/assimp.git"
         GIT_HASH "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"
-        PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
+        PATCH_FILES "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch"
         EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
 

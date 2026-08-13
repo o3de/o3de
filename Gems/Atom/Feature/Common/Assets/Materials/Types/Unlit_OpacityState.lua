@@ -38,19 +38,21 @@ function Process(context)
 
     local useOpaquePath = opacityMode == OpacityMode_Opaque
     local useBlendedPath = opacityMode == OpacityMode_Blended
-    local useForwardPath = opacityMode == OpacityMode_Cutout
+    local useCutoutPath = opacityMode == OpacityMode_Cutout
 
     if context:HasShaderWithTag("forward") then
         local shader = context:GetShaderByTag("forward")
         if shader then
-            shader:SetEnabled(useForwardPath)
+            shader:SetEnabled(useCutoutPath)
         end
     end
 
     if context:HasShaderWithTag("depth") then
         local shader = context:GetShaderByTag("depth")
         if shader then
-            shader:SetEnabled(useForwardPath)
+            -- Unlit renders after SSAO, so Cutout must not contribute to the
+            -- depth prepass that drives the SSAO calculation.
+            shader:SetEnabled(false)
         end
     end
 

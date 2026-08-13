@@ -781,6 +781,7 @@ function(o3de_fetch_content arg_NAME)
     )
     set(multiValueArgs
         URL # One or more archive urls to try in order
+        PATCH_FILES # One or more unified diffs to apply in order
     )
     cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
@@ -799,13 +800,27 @@ function(o3de_fetch_content arg_NAME)
     # would insert a spurious empty argument into FetchContent_Declare.
     set(fc_args)
 
+    # Stamp extracted files with the extraction time, matching CMP0135 NEW (see cmake/Policy.cmake).
+    # Keeping the archive's own timestamps makes a newly extracted version look older than the
+    # object files built from the previous one, so a version bump silently links stale objects
+    # against the new headers instead of recompiling.
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
-        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP FALSE)
     endif()
 
     # Forward any extra arguments we don't explicitly handle
     if(arg_UNPARSED_ARGUMENTS)
         list(APPEND fc_args ${arg_UNPARSED_ARGUMENTS})
+    endif()
+
+    if(arg_PATCH_FILES)
+        list(FIND arg_UNPARSED_ARGUMENTS "PATCH_COMMAND" patch_command_index)
+        list(FIND arg_PATCH_FILES "PATCH_COMMAND" patch_command_in_files_index)
+        if(NOT patch_command_index EQUAL -1 OR NOT patch_command_in_files_index EQUAL -1)
+            message(FATAL_ERROR "PATCH_FILES and PATCH_COMMAND cannot both be specified.")
+        endif()
+
+        list(APPEND fc_args PATCH_COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/Tools/apply_patch.py" ${arg_PATCH_FILES})
     endif()
 
     # Set up cache directory for downloads

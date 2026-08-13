@@ -31,7 +31,6 @@
 namespace RecastNavigation
 {
     using testing::_;
-    using testing::Invoke;
     using testing::NiceMock;
     using testing::Return;
     using AZStd::unique_ptr;
@@ -148,20 +147,20 @@ namespace RecastNavigation
             m_hit->m_shape = m_mockPhysicsShape.get();
 
             // Fake result when querying PhysX world.
-            ON_CALL(*m_mockSceneInterface, QueryScene(_, _)).WillByDefault(Invoke([this]
+            ON_CALL(*m_mockSceneInterface, QueryScene(_, _)).WillByDefault([this]
             (AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest* request)
                 {
                     const AzPhysics::OverlapRequest* overlapRequest = static_cast<const AzPhysics::OverlapRequest*>(request);
                     overlapRequest->m_unboundedOverlapHitCallback({ *m_hit });
                     return AzPhysics::SceneQueryHits();
-                }));
+                });
 
             // Fake a simulated body within query results.
-            ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _)).WillByDefault(Invoke([this]
+            ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _)).WillByDefault([this]
             (AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)
                 {
                     return m_mockSimulatedBody.get();
-                }));
+                });
             // Provide a position and an orientation of a simulated body.
             ON_CALL(*m_mockSimulatedBody, GetOrientation()).WillByDefault(Return(AZ::Quaternion::CreateIdentity()));
             ON_CALL(*m_mockSimulatedBody, GetPosition()).WillByDefault(Return(AZ::Vector3::CreateZero()));
@@ -233,11 +232,11 @@ namespace RecastNavigation
 
         void AddTestGeometry(bool indexed)
         {
-            ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this, indexed]
+            ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault([this, indexed]
             (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
                 {
                     AddTestGeometry(vertices, indices, indexed);
-                }));
+                });
         }
     };
 
