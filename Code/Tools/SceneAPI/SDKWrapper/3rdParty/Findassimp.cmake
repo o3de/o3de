@@ -54,6 +54,7 @@ block()
     set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
     set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # Not sure why this doesn't work. Warnings are still treated as error; needed to add warning disabled commandline parameters to PAL_assimp_<compiler>.cmake
     set(TINYUSDZ_USE_CCACHE OFF)
+    set(BUILD_SHARED_LIBS OFF)
 
     # Assimp requires ZLIB
     find_package(ZLIB REQUIRED)
