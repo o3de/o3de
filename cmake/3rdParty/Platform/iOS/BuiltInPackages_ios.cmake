@@ -34,3 +34,4 @@ if(AZ_USE_PHYSX5)
 else()
     ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-ios  TARGETS PhysX       PACKAGE_HASH 4a5e38b385837248590018eb133444b4e440190414e6756191200a10c8fa5615)
 endif()
+ly_associate_package(PACKAGE_NAME Imath-3.2.2-rev2-ios           TARGETS Imath                       PACKAGE_HASH 0ca26f7e9cdeaa940caac39b5a7f5db0344d7f76cca4123874e4e10a6ec0e907
