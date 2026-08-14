@@ -109,7 +109,10 @@ namespace AZ
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                     }
 
-                    const AZ::u32 estimatedItemCount = scope.GetEstimatedItemCount();
+                    // estimate at least 1 item, to avoid any future division by zero or zero-size-list creation
+                    const uint32_t scopeEstimatedItemCount = scope.GetEstimatedItemCount();
+                    AZ_WarningOnce("FrameGraphExecuter", scopeEstimatedItemCount > 0, "Scope %s has an estimated item count of 0", scope.GetName().GetCStr());
+                    const uint32_t estimatedItemCount = AZStd::max(scopeEstimatedItemCount, 1u);
 
                     const uint32_t CommandListCostThreshold =
                         AZStd::max(
