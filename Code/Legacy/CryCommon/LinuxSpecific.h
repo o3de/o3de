@@ -41,14 +41,6 @@
 
 #include <AzCore/base.h>
 
-typedef void*                               LPVOID;
-#define VOID                    void
-#define PVOID                               void*
-
-typedef unsigned int UINT;
-typedef char CHAR;
-typedef float FLOAT;
-
 #define PHYSICS_EXPORTS
 // MSVC compiler-specific keywords
 #define __forceinline inline

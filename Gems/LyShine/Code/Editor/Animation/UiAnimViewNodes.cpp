@@ -1190,8 +1190,8 @@ void CUiAnimViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = static_cast<int>(menu->actions().size());
-    for (UINT i = 0; i < count; ++i)
+    unsigned int count = static_cast<int>(menu->actions().size());
+    for (unsigned int i = 0; i < count; ++i)
     {
         QAction* a = menu->actions().at(i);
         QString menuString = a->text();
