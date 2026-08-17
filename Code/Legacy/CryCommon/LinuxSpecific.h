@@ -42,17 +42,6 @@
 #include <AzCore/base.h>
 
 #define PHYSICS_EXPORTS
-// MSVC compiler-specific keywords
-#define __forceinline inline
-#define _inline inline
-#define __cdecl
-#define _cdecl
-#define __stdcall
-#define _stdcall
-#define __fastcall
-#define _fastcall
-#define IN
-#define OUT
 
 #ifdef AZ_MONOLITHIC_BUILD
 #if !defined(USE_STATIC_NAME_TABLE)
