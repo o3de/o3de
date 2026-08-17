@@ -45,6 +45,9 @@ jobs:
         with:
           show-progress: false
 
+      - name: Free disk space
+        run: .github/scripts/free-macos-disk-space.sh
+
       - name: Git LFS pull
         run: |
           git lfs install
@@ -65,7 +68,7 @@ jobs:
           ccache_options: |
             cache_dir=${{ github.workspace }}/.ccache
             hash_dir=false
-            max_size=10G
+            max_size=5G
 
       - name: Check for rerun
         id: check-rerun
