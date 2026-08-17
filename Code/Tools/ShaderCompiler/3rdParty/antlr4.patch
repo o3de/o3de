@@ -1,0 +1,156 @@
+diff --git a/runtime/Cpp/CMakeLists.txt b/runtime/Cpp/CMakeLists.txt
+--- a/runtime/Cpp/CMakeLists.txt
++++ b/runtime/Cpp/CMakeLists.txt
+@@ -8,14 +8,14 @@ set(CMAKE_MACOSX_RPATH OFF)
+ enable_testing()
+ 
+ # Detect build type, fallback to release and throw a warning if use didn't specify any
+-if(NOT CMAKE_BUILD_TYPE)
++if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+   message(WARNING "Build type not set, falling back to Release mode.
+  To specify build type use:
+  -DCMAKE_BUILD_TYPE=<mode> where <mode> is Debug or Release.")
+   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+        "Choose the type of build, options are: Debug Release."
+        FORCE)
+-endif(NOT CMAKE_BUILD_TYPE)
++endif()
+ 
+ if(NOT WITH_DEMO)
+   message(STATUS "Building without demo. To enable demo build use: -DWITH_DEMO=True")
+diff --git a/runtime/Cpp/runtime/CMakeLists.txt b/runtime/Cpp/runtime/CMakeLists.txt
+--- a/runtime/Cpp/runtime/CMakeLists.txt
++++ b/runtime/Cpp/runtime/CMakeLists.txt
+@@ -41,8 +41,8 @@ if (ANTLR_BUILD_SHARED)
+     "$<INSTALL_INTERFACE:${libantlrcpp_INCLUDE_INSTALL_DIR}>")
+ endif()
+ if (ANTLR_BUILD_STATIC)
+-  add_library(antlr4_static STATIC ${libantlrcpp_SRC})
+-  target_include_directories(antlr4_static PUBLIC 
++  add_library(antlr4 OBJECT ${libantlrcpp_SRC})
++  target_include_directories(antlr4 PUBLIC 
+     "$<BUILD_INTERFACE:${libantlrcpp_INCLUDE_DIRS}>" 
+     "$<INSTALL_INTERFACE:${libantlrcpp_INCLUDE_INSTALL_DIR}>")
+ endif()
+@@ -56,8 +56,8 @@ if (CMAKE_HOST_UNIX)
+   if (TARGET antlr4_shared)
+     target_link_libraries(antlr4_shared Threads::Threads)
+   endif()
+-  if (TARGET antlr4_static)
+-    target_link_libraries(antlr4_static Threads::Threads)
++  if (TARGET antlr4)
++    target_link_libraries(antlr4 Threads::Threads)
+   endif()
+ endif()
+ 
+@@ -90,7 +90,7 @@ if (ANTLR_BUILD_CPP_TESTS)
+ 
+   target_link_libraries(
+     antlr4_tests
+-	$<IF:$<TARGET_EXISTS:antlr4_static>,antlr4_static,antlr4_shared>
++	$<IF:$<TARGET_EXISTS:antlr4>,antlr4,antlr4_shared>
+     gtest_main
+   )
+ 
+@@ -103,13 +103,13 @@ if(APPLE)
+   if (TARGET antlr4_shared)
+     target_link_libraries(antlr4_shared ${COREFOUNDATION_LIBRARY})
+   endif()
+-  if (TARGET antlr4_static)
+-    target_link_libraries(antlr4_static ${COREFOUNDATION_LIBRARY})
++  if (TARGET antlr4)
++    target_link_libraries(antlr4 ${COREFOUNDATION_LIBRARY})
+   endif()
+ endif()
+ 
+ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+   set(disabled_compile_warnings "/wd4251")
+ else()
+   set(disabled_compile_warnings "-Wno-overloaded-virtual")
+ endif()
+@@ -123,15 +123,12 @@ endif()
+ 
+ set(extra_share_compile_flags "")
+ set(extra_static_compile_flags "")
+-set(static_lib_suffix "")
+-
+ if (WIN32)
+-  set(static_lib_suffix "-static")
+   if (TARGET antlr4_shared)
+     target_compile_definitions(antlr4_shared PUBLIC ANTLR4CPP_EXPORTS)
+   endif()
+-  if (TARGET antlr4_static)
+-    target_compile_definitions(antlr4_static PUBLIC ANTLR4CPP_STATIC)
++  if (TARGET antlr4)
++    target_compile_definitions(antlr4 PUBLIC ANTLR4CPP_STATIC)
+   endif()
+   if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+     set(extra_share_compile_flags "-MP /wd4251")
+@@ -147,12 +144,8 @@ if (TARGET antlr4_shared)
+                                    COMPILE_FLAGS "${disabled_compile_warnings} ${extra_share_compile_flags}")
+ endif()
+ 
+-if (TARGET antlr4_static)
+-  set_target_properties(antlr4_static
+-                        PROPERTIES VERSION   ${ANTLR_VERSION}
+-                                   SOVERSION ${ANTLR_VERSION}
+-                                   OUTPUT_NAME "antlr4-runtime${static_lib_suffix}"
+-                                   COMPILE_PDB_NAME "antlr4-runtime${static_lib_suffix}"
++if (TARGET antlr4)
++  set_target_properties(antlr4 PROPERTIES
+                                    COMPILE_FLAGS "${disabled_compile_warnings} ${extra_static_compile_flags}")
+ endif()
+ 
+@@ -167,12 +160,5 @@ if (ANTLR_BUILD_CPP_TESTS)
+       COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:antlr4_shared> ${CMAKE_HOME_DIRECTORY}/dist)
+   endif()
+   
+-  if (TARGET antlr4_static)
+-    add_custom_command(
+-      TARGET antlr4_static
+-      POST_BUILD
+-      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_HOME_DIRECTORY}/dist
+-      COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:antlr4_static> ${CMAKE_HOME_DIRECTORY}/dist)
+-  endif()
+ endif()
+ 
+@@ -179,17 +165,8 @@ if (TARGET antlr4_shared)
+ if (TARGET antlr4_shared)
+   install(TARGETS antlr4_shared
+           EXPORT antlr4-targets
+           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ endif()
+-
+-if (TARGET antlr4_static)
+-  install(TARGETS antlr4_static
+-          EXPORT antlr4-targets
+-          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+-endif()
+-
+ install(DIRECTORY "${PROJECT_SOURCE_DIR}/runtime/src/"
+diff --git a/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h b/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
+--- a/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
++++ b/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
+@@ -16,3 +16,11 @@ namespace atn {
+   class ANTLR4CPP_PUBLIC OrderedATNConfigSet final : public ATNConfigSet {
+   public:
++    size_t hashCode() const override {
++      return ATNConfigSet::hashCode();
++    }
++
++    bool equals(const ATNConfigSet &other) const override {
++      return ATNConfigSet::equals(other);
++    }
++
+     OrderedATNConfigSet() = default;
+diff --git a/runtime/Cpp/runtime/src/ParserInterpreter.h b/runtime/Cpp/runtime/src/ParserInterpreter.h
+--- a/runtime/Cpp/runtime/src/ParserInterpreter.h
++++ b/runtime/Cpp/runtime/src/ParserInterpreter.h
+@@ -57,1 +57,3 @@ namespace antlr4 {
++    using Parser::enterRecursionRule;
++
+     void enterRecursionRule(ParserRuleContext *localctx, size_t state, size_t ruleIndex, int precedence) override;

@@ -120,7 +120,6 @@ namespace AZ::ShaderCompiler
         void SignalIncrementSpace(std::function<void(int, int)> warningMessageFunctionForMinDescOvershoot);
 
         void SignalUnifyIndices();
-
         void SignalIncrementRegister(BindingType regType, int count);
 
         BindingPair GetCurrent(BindingType regType);
@@ -189,7 +188,6 @@ namespace AZ::ShaderCompiler
 
         IntermediateRepresentation*      m_ir;
         TokenStream*                     m_tokens;
-
         // On some platforms (DX12), descriptor arrays occupy an individual register slot, and spaces are used
         // to prevent overlapping ranges. When an unbounded array is encountered, we immediately assign it to
         // the value of this member variable and increment. This is initialized in the constructor because the
