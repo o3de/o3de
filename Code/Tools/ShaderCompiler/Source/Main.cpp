@@ -328,7 +328,6 @@ int main(int argc, const char* argv[])
 
     bool uniqueIdx = false;
     cli.add_flag("--unique-idx", uniqueIdx, "Use unique indices for all registers. e.g. b0, t0, u0, s0 becomes b0, t1, u2, s3. Use on platforms that don't differentiate registers by resource type.");
-
     bool cbBody = false;
     cli.add_flag("--cb-body", cbBody, "Emit ConstantBuffer body rather than using <T>.");
 
