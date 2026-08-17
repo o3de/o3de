@@ -321,7 +321,6 @@ void SetFlags(T& dest, U flags, bool b)
 
 // Wrapper code for non-windows builds.
 #if defined(LINUX) || defined(APPLE)
-    #include "Linux_Win32Wrapper.h"
 #elif defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_12
     #include AZ_RESTRICTED_FILE(platform_h)
