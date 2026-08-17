@@ -1,0 +1,9 @@
+interface interf1 { void f(); };
+
+interface interf2 { void f2(); };
+
+class s : interf1, interf2
+{
+    void f();
+    void f2();
+};

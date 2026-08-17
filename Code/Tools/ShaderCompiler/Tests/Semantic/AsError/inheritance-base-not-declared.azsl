@@ -1,0 +1,6 @@
+class s : I_am_undeclared
+{
+};
+
+// Semantic Error 16: line 1::8 'Base symbol I_am_undeclared not found'
+// #EC 16

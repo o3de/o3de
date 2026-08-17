@@ -1,0 +1,15 @@
+// This is a valid hlsl shader too: http://shader-playground.timjones.io/29f1d1587238a8441fd965b5b5a5f9cb
+enum class Weekday {Monday = 0, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
+static const Weekday favouriteDay = Weekday::Friday;
+static const float myFloat = 1.0f;
+
+struct MyStruct
+{
+    enum class Nested { Uno, Dos, Tres };
+};
+
+float4 PSMain() : SV_TARGET
+{
+    enum class Number { One = 1, Two = 2, Three = 3 };
+    return float4(1, 1, 1, 1)  * Number::One * MyStruct::Nested::Uno;
+}

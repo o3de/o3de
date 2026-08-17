@@ -1,0 +1,13 @@
+// declaration
+void func0();
+
+// definition
+void func0()
+{
+}
+
+void func2<T : I, U : J, F>(F, T, U);
+
+void func2<T : I, U : J, F>(F f, T t, U u)
+{
+}

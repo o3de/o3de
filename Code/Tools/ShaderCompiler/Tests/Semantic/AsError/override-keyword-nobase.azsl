@@ -1,0 +1,13 @@
+interface IInterf
+{
+    void g();
+};
+
+class C : IInterf
+{
+    void f() override;  
+    void g();  // satisfy the interface just so that we don't get another error
+};
+
+// Semantic Error 22: line 8::9 'method /C/f has override specifier but is not found in any base'
+// #EC 22

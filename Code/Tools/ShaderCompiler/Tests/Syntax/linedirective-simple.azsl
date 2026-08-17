@@ -1,0 +1,6 @@
+#line 1
+#line 2 "linedirective-simple.azsl"
+#line 3 // commented
+#line 4 "" // commented
+# 5 "p"
+#6

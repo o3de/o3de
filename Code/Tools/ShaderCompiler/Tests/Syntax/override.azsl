@@ -1,0 +1,6 @@
+class EmptyLightEnv : ILightEnv
+{
+    float3 illuminate(SurfaceGeometry g, B brdf, float3 wo) override
+    {
+    }
+};

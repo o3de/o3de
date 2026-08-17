@@ -1,0 +1,5 @@
+ShaderResourceGroupSemantic sem { FrequencyId = 0; ShaderVariantFallback = 128; }
+ShaderResourceGroup SRG : sem
+{
+    float4 externalVar = float4(1,1,1,1);  // #EC 42
+}

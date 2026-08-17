@@ -1,0 +1,30 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+    };
+
+    TextureCube m_environmentMap;
+    Sampler     m_sampler {};
+    ConstantBuffer<InnerStruct> m_materialConstants;
+};
+
+struct SData
+{
+    float4 clr;
+};
+
+float4 main(float2 uv) : SV_Target0
+{
+    float4 diff = MySRGOne::m_materialConstants.m_diffuseColor;
+    sampler s = MySRGOne::m_sampler;
+    SData d;
+    d.clr = s.fetch(uv);
+    return d.clr;
+}

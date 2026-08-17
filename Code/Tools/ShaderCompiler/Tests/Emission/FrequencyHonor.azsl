@@ -1,0 +1,17 @@
+// It looks like the original intent of this test was to show that lower number frequencies also got the lower number *registers*.
+// Now that each SRG gets its own unique register space, the register *spaces* follow the same order as the frequencies.
+// In either case, the order of the frequencies control the order of any indexing, not the order of appearance or the names.
+
+ShaderResourceGroupSemantic Slot1  {    FrequencyId = 1; };
+ShaderResourceGroupSemantic Slot0  {    FrequencyId = 0; };
+
+ShaderResourceGroup SRG0 : Slot1
+{
+    float4 float4Test00;
+};
+
+ShaderResourceGroup SRG1 : Slot0
+{
+    Texture2D m_tex2D;
+    float4 m_f4;
+};

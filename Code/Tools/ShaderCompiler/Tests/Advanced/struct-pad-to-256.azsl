@@ -1,0 +1,44 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStructA
+{
+    float m_data;
+    [[pad_to(16)]]
+};
+
+struct MyStructB
+{
+    int m_data;
+    [[pad_to(16)]]
+    MyStructA m_a;
+    float2 m_b;
+    [[pad_to(64)]]
+};
+
+struct MyStruct
+{
+    MyStructA m_a;
+    MyStructB m_b;
+    float m_color_red;
+    [[pad_to(16)]]
+    uint m_uint;
+    [[pad_to(256)]]
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyStruct m_myStruct;
+    StructuredBuffer<MyStruct> m_mySB;
+};
+
+float4 PSMain() : SV_Target0
+{
+    // Inside func
+    float4 color = float4(0, 0, 0, 0);
+    color.r = DemoSrg::m_myStruct.m_color_red;
+    color.r += DemoSrg::m_mySB[0].m_color_red;
+    return color;
+}

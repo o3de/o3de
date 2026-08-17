@@ -1,0 +1,27 @@
+class A
+{
+    bool a;
+};
+
+interface A2
+{
+    int a();
+};
+
+class B : A, A2
+{
+    int b;
+    int a();
+};
+
+static B b, b2;
+
+// reveal access to hidden inherited fields using base-qualification of MAE's RHS:
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.A::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'bool'\n");
+
+// using full base-qualification or RHS:
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.::A::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'bool'\n");

@@ -1,0 +1,11 @@
+struct A {};
+struct B {};
+
+A make(int);
+B make(uint);
+
+void main()
+{
+    float x = 0.5;
+    A a = make((int)(floor(x) + 1));  // was EC 41 in the AsError version, but here usage of cast makes it buildable
+}

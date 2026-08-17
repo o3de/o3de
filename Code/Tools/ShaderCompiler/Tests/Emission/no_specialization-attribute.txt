@@ -1,0 +1,6 @@
+/*
+    Cmdargs: ['--namespace', 'vk', '--sc-options']
+*/
+"bool GetShaderVariantKey_UseGI ( ) ;"
+"static const bool UseGI = GetShaderVariantKey_UseGI ( ) ;"
+

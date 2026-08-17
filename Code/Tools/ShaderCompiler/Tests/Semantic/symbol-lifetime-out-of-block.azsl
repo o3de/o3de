@@ -1,0 +1,8 @@
+void f()
+{
+    if (false)
+    {
+        int i;
+    }
+    ++i;   // this is not an error in AZSL but it prints a warning of level 3 (undeclared sub-symbol in idexpression)
+}

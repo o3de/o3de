@@ -1,0 +1,49 @@
+struct MyT{};
+
+int func1();
+void func2();
+float func3(int arg1);
+snorm float func4(int);
+MyT func5();
+MyT func6(MyT);
+MyT func7(MyT arg1);
+float4x4 func8(unorm double arg1, float3x3 arg2, int, bool);
+uint64_t func9(int32_t arg1, int64_t arg2, uint32_t arg3, uint64_t arg4);
+bool func10(in out int);
+bool func11(in out int i);
+bool func12(inout int i);
+float4 func13() : SV_Target0;
+float4 func14(in float2 : TEXCOORD0) : SV_Target0;
+float4 func15(in float2 uv : TEXCOORD0) : SV_Target0;
+
+[shader( "raygeneration" )]
+void func16();
+
+struct TriVertex{ float3 p : POSITION; };
+float4 main( TriVertex in_ ) : SV_POSITION {return 0;}
+
+struct P { float3 c; };
+struct Attributes { float2 bary; };
+[shader( "closesthit" )]
+void closest(inout P a_payload : SV_RayPayload,
+             Attributes attrib);
+
+[shader("anyhit")]
+void closest(inout P a_payload : SV_RayPayload,
+             in BuiltInTriangleIntersectionAttributes myAttr);
+
+struct Payload {};
+struct VertexOut {};
+
+[RootSignature( "CBV(b0), CBV(b1), CBV(b2), SRV(t0), SRV(t1), SRV(t2), SRV(t3), SRV(t4)" )]
+[NumThreads(128, 1, 1)]
+[OutputTopology("triangle")]
+void main2(
+    uint dtid : SV_DispatchThreadID,
+    uint gtid : SV_GroupThreadID,
+    uint gid : SV_GroupID,
+    in payload Payload a_payload,
+    out vertices VertexOut verts[64],
+    out indices uint3 tris[126]
+)
+{}

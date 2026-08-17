@@ -1,0 +1,68 @@
+static const int two = 2;
+struct S
+{
+    float4 m_surface[two];
+};
+
+enum class E { A, B };
+
+class C
+{
+    E m_e;
+
+    void M()
+    {
+        m_e = E::A;
+    }
+};
+
+void F()
+{
+    C c;
+}
+
+static const C g_c;
+
+
+ShaderResourceGroupSemantic Sem1
+{
+    FrequencyId = 1;
+};
+ShaderResourceGroup Srg1 : Sem1
+{
+    struct S
+    {
+        float4 m_clr;
+    };
+
+    ConstantBuffer<S> m_cb1;
+    float4 m_f4;
+
+    float4 GetDiffClrFromCB()
+    {
+        return m_cb1.m_clr;
+    }
+}
+
+struct S2
+{
+    typeof(g_c) m_c;
+};
+
+static const int three = two + 1;
+
+enum E2 { E2_A = three, E2_B };
+
+class C2
+{
+    E2 m_e2;
+    void M2();
+};
+
+void C2::M2()
+{
+    m_e2 = (E2)(E2_A + 1);
+}
+
+float4 main() : SV_Target0
+{}

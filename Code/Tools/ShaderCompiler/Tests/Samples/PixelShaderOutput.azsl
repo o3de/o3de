@@ -1,0 +1,491 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/*
+ * Basic usage - use predefined type as the pixel shader entry return type and declare return semantic
+ */
+
+// Valid - declare a return type and render target semantic
+float4 MainPS_1_1() : SV_Target0
+{            
+    return float4(1, 1, 1, 1);
+}
+
+// Valid - Render targets don't need to start from 0
+float4 MainPS_1_2() : SV_Target1
+{            
+    return float4(1, 1, 1, 1);
+}
+
+// Valid - render target value can be smaller than the float4 register space
+float2 MainPS_1_3() : SV_Target0
+{            
+    return float2(1, 1);
+}
+
+// Valid - you can only emit depth semantic
+float MainPS_1_4() : SV_Depth
+{            
+    return 1;
+}
+
+// Error: SV_Depth must be float
+float4 MainPS_1_5() : SV_Depth
+{            
+    return float4(1, 1, 1, 1);
+}
+
+// Error: SV_Target semantic index exceeds maximum (7)
+float4 MainPS_1_6() : SV_Target8
+{            
+    return float4(1, 1, 1, 1);
+}
+
+// Valid - Pixel shader entry can even be void
+void MainPS_1_7() : SV_Target0
+{          
+}
+
+// AZSLc: We can't actually catch this type of error so we rely on the native shader compiler here.
+// Error: inside block entry of function MainPS_1_8 Instructions must be of an allowed type
+float4 MainPS_1_8() : SV_Target0
+{          
+}
+
+/*
+ * Return struct - use a struct as a return type for the pixel shader entry
+ */
+
+/*
+ * Basic - define a struct where each attribute has an output semantic and use it as function return type
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   xyzw        0   TARGET   float   xyzw
+ *
+ */
+ 
+struct PSOut_2_1
+{
+    float4 m_color0 : SV_Target0;
+};
+
+PSOut_2_1 MainPS_2_1() 
+{
+    PSOut_2_1 psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * Defining multiple attributes is also valid
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   xyzw        0   TARGET   float   xyzw
+ * ; SV_Target                1   xyz         1   TARGET   float   xyz
+ * ; SV_Target                2   xy          2   TARGET   float   xy
+ * ; SV_Target                3   x           3   TARGET   float   x
+ * ; SV_Target                4   x           4   TARGET   float   x
+ * ; SV_Target                5   xy          5   TARGET   float   xy
+ * ; SV_Target                6   xyz         6   TARGET   float   xyz
+ * ; SV_Target                7   xyzw        7   TARGET   float   xyzw
+ *
+ */
+ 
+struct PSOut_2_2
+{
+    float4 m_color0 : SV_Target0;
+    float3 m_color1 : SV_Target1;
+    float2 m_color2 : SV_Target2;
+    float  m_color3 : SV_Target3;
+    float1 m_color4 : SV_Target4;
+    float2 m_color5 : SV_Target5;
+    float3 m_color6 : SV_Target6;
+    float4 m_color7 : SV_Target7;
+};
+
+PSOut_2_2 MainPS_2_2() 
+{
+    PSOut_2_2 psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float3(1, 1, 1);
+    psOut.m_color2 = float2(1, 1);
+    psOut.m_color3 = 1;
+    psOut.m_color4 = float1(1);
+    psOut.m_color5 = float2(1, 1);
+    psOut.m_color6 = float3(1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * All parameters must have a semantic
+ *
+ * error: Semantic must be defined for all parameters of an entry function or patch constant function
+ * error: Semantic must be defined for all parameters of an entry function or patch constant function
+ */
+ 
+struct PSOut_2_2A
+{
+    float4 m_color0 : SV_Target0;
+    float3 m_color1;
+    float2 m_color2 : SV_Target2;
+    float  m_color3 : SV_Target3;
+    float1 m_color4 : SV_Target4;
+    float2 m_color5;
+    float3 m_color6 : SV_Target6;
+    float4 m_color7 : SV_Target7;
+};
+
+PSOut_2_2A MainPS_2_2A() 
+{
+    PSOut_2_2A psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float3(1, 1, 1);
+    psOut.m_color2 = float2(1, 1);
+    psOut.m_color3 = 1;
+    psOut.m_color4 = float1(1);
+    psOut.m_color5 = float2(1, 1);
+    psOut.m_color6 = float3(1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * Unordered attributes will be ordered by their semantic index
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   xyzw        0   TARGET   float   xyzw
+ * ; SV_Target                1   xyz         1   TARGET   float   xyz
+ * ; SV_Target                2   xy          2   TARGET   float   xy
+ * ; SV_Target                3   x           3   TARGET   float   x
+ * ; SV_Target                4   x           4   TARGET   float   x
+ * ; SV_Target                5   xy          5   TARGET   float   xy
+ * ; SV_Target                6   xyz         6   TARGET   float   xyz
+ * ; SV_Target                7   xyzw        7   TARGET   float   xyzw
+ *
+ */
+ 
+struct PSOut_2_3
+{
+    float  m_color3 : SV_Target3;
+    float1 m_color4 : SV_Target4;
+    float3 m_color1 : SV_Target1;
+    float3 m_color6 : SV_Target6;
+    float4 m_color7 : SV_Target7;
+    float2 m_color5 : SV_Target5;
+    float4 m_color0 : SV_Target0;
+    float2 m_color2 : SV_Target2;
+};
+
+PSOut_2_3 MainPS_2_3() 
+{
+    PSOut_2_3 psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float3(1, 1, 1);
+    psOut.m_color2 = float2(1, 1);
+    psOut.m_color3 = 1;
+    psOut.m_color4 = float1(1);
+    psOut.m_color5 = float2(1, 1);
+    psOut.m_color6 = float3(1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * ATTENTION! The following code is valid, but misleading!
+ *
+ * Defining an output semantic after a pixel shader entry will change the semantic of any nested attribute.
+ * Every attribute will be added in order of DECLARATION, not in the order of their previously defined semantics!
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   x           0   TARGET   float   x
+ * ; SV_Target                1   x           1   TARGET   float   x
+ * ; SV_Target                2   xyz         2   TARGET   float   xyz
+ * ; SV_Target                3   xyz         3   TARGET   float   xyz
+ * ; SV_Target                4   xyzw        4   TARGET   float   xyzw
+ * ; SV_Target                5   xy          5   TARGET   float   xy
+ * ; SV_Target                6   xyzw        6   TARGET   float   xyzw
+ * ; SV_Target                7   xy          7   TARGET   float   xy
+ *
+ */
+ 
+PSOut_2_3 MainPS_2_3A() : SV_Target0
+{
+    PSOut_2_3 psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float3(1, 1, 1);
+    psOut.m_color2 = float2(1, 1);
+    psOut.m_color3 = 1;
+    psOut.m_color4 = float1(1);
+    psOut.m_color5 = float2(1, 1);
+    psOut.m_color6 = float3(1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * ATTENTION! Because of that reason the compilation will fail if the registries exceed the maximum semantic index
+ *
+ * error: validation errors
+ * SV_Target semantic index exceeds maximum (7)
+ * SV_Target semantic index exceeds maximum (7)
+ * SV_Target semantic index exceeds maximum (7)
+ * 
+ * Validation failed.
+ *
+ */
+ 
+PSOut_2_3 MainPS_2_3B() : SV_Target3
+{
+    PSOut_2_3 psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float3(1, 1, 1);
+    psOut.m_color2 = float2(1, 1);
+    psOut.m_color3 = 1;
+    psOut.m_color4 = float1(1);
+    psOut.m_color5 = float2(1, 1);
+    psOut.m_color6 = float3(1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/*
+ * Return structure can have many levels of nested structures
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   xyzw        0   TARGET   float   xyzw
+ * ; SV_Target                1   xyz         1   TARGET   float   xyz
+ * ; SV_Target                2   xy          2   TARGET   float   xy
+ * ; SV_Target                3   x           3   TARGET   float   x
+ * ; SV_Target                4   x           4   TARGET   float   x
+ * ; SV_Target                5   xy          5   TARGET   float   xy
+ * ; SV_Target                6   xyz         6   TARGET   float   xyz
+ * ; SV_Target                7   xyzw        7   TARGET   float   xyzw
+ *
+ */
+
+struct PSOut_2_4_0 {    float4 m_color0 : SV_Target0; };
+struct PSOut_2_4_1 {    float3 m_color1 : SV_Target1; };
+struct PSOut_2_4_2 {    float2 m_color2 : SV_Target2; };
+struct PSOut_2_4_3 {    float  m_color3 : SV_Target3; };
+struct PSOut_2_4_4 {    float1 m_color4 : SV_Target4; };
+struct PSOut_2_4_5 {    float2 m_color5 : SV_Target5; };
+struct PSOut_2_4_6 {    float3 m_color6 : SV_Target6; };
+struct PSOut_2_4_7 {    float4 m_color7 : SV_Target7; };
+
+struct PSOut_2_4_01 {    PSOut_2_4_0    m_0;
+                         PSOut_2_4_1    m_1; };
+struct PSOut_2_4_23 {    PSOut_2_4_2    m_2;
+                         PSOut_2_4_3    m_3; };
+struct PSOut_2_4_45 {    PSOut_2_4_4    m_4;
+                         PSOut_2_4_5    m_5; };
+struct PSOut_2_4_67 {    PSOut_2_4_6    m_6;
+                         PSOut_2_4_7    m_7; };
+
+struct PSOut_2_4_0123 {  PSOut_2_4_01    m_01;
+                         PSOut_2_4_23    m_23; };
+struct PSOut_2_4_4567 {  PSOut_2_4_45    m_45;
+                         PSOut_2_4_67    m_67; };
+
+struct PSOut_2_4      {  PSOut_2_4_0123  m_0123;
+                         PSOut_2_4_4567  m_4567; };
+
+PSOut_2_4 MainPS_2_4() 
+{
+    PSOut_2_4 psOut;
+    psOut.m_0123.m_01.m_0.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_0123.m_01.m_1.m_color1 = float3(1, 1, 1);
+    psOut.m_0123.m_23.m_2.m_color2 = float2(1, 1);
+    psOut.m_0123.m_23.m_3.m_color3 = 1;
+    psOut.m_4567.m_45.m_4.m_color4 = float1(1);
+    psOut.m_4567.m_45.m_5.m_color5 = float2(1, 1);
+    psOut.m_4567.m_67.m_6.m_color6 = float3(1, 1, 1);
+    psOut.m_4567.m_67.m_7.m_color7 = float4(1, 1, 1, 1);
+    return psOut;
+}
+
+/* Error: We can't use matrix type of any kind as a pixel shader return value.
+ * Pixel shader output registers are not indexable.
+ */
+ 
+struct PSOut_3_1
+{
+    float4x4 m_color0 : SV_Target0;
+};
+
+PSOut_3_1 MainPS_3_1() 
+{
+    PSOut_3_1 psOut;
+    psOut.m_color0 = float4x4(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    return psOut;
+}
+
+/* Error: We can't use matrix type of any kind as a pixel shader return value.
+ * Pixel shader output registers are not indexable.
+ */
+
+struct PSOut_3_2
+{
+    float1x4 m_color0 : SV_Target0;
+};
+
+PSOut_3_2 MainPS_3_2() 
+{
+    PSOut_3_2 psOut;
+    psOut.m_color0 = float1x4(1, 1, 1, 1);
+    return psOut;
+}
+
+
+/* Error: DXC will just hang here. FXC supports it.
+ */
+
+struct PSOutput11
+{
+    float m_color[4];
+};
+
+struct PSOutput12
+{
+    float4 m_color;
+};
+
+struct PSOutput1
+{
+    PSOutput11 m_color;
+    PSOutput12 m_color1;
+};
+
+PSOutput1 MainPS1() : SV_Target0
+{
+    PSOutput1 OUT;
+    OUT.m_color.m_color[0] = 1;
+    OUT.m_color.m_color[1] = 1;
+    OUT.m_color.m_color[2] = 1;
+    OUT.m_color.m_color[3] = 1;
+    OUT.m_color1.m_color = float4(1, 1, 1, 1);
+    return OUT;
+}
+
+
+/*
+ * Defining all possible attributes 
+ *
+ * ; Output signature:
+ * ;
+ * ; Name                 Index   Mask Register SysValue  Format   Used
+ * ; -------------------- ----- ------ -------- -------- ------- ------
+ * ; SV_Target                0   xyzw        0   TARGET   float   xyzw
+ * ; SV_Target                1   xyzw        1   TARGET   float   xyzw
+ * ; SV_Target                2   xyzw        2   TARGET   float   xyzw
+ * ; SV_Target                3   xyzw        3   TARGET   float   xyzw
+ * ; SV_Target                4   xyzw        4   TARGET   float   xyzw
+ * ; SV_Target                5   xyzw        5   TARGET   float   xyzw
+ * ; SV_Target                6   xyzw        6   TARGET   float   xyzw
+ * ; SV_Target                7   xyzw        7   TARGET   float   xyzw
+ * ; SV_Coverage              0    N/A    oMask COVERAGE    uint    YES
+ * ; SV_StencilRef            0    N/A    oStencilRefSTENCILREF    uint    YES
+ * ; SV_Depth                 0    N/A   oDepth    DEPTH   float    YES
+ *
+ */
+ 
+struct PSOut_All
+{
+    float4 m_color0 : SV_Target0;
+    float4 m_color1 : SV_Target1;
+    float4 m_color2 : SV_Target2;
+    float4 m_color3 : SV_Target3;
+    float4 m_color4 : SV_Target4;
+    float4 m_color5 : SV_Target5;
+    float4 m_color6 : SV_Target6;
+    float4 m_color7 : SV_Target7;
+
+    uint   m_coverage : SV_Coverage;
+    uint   m_stencil  : SV_StencilRef;
+
+    // Note that there can only be one Depth semantic
+
+    // This is nice, but kills all early-z optimizations
+    float  m_depth    : SV_Depth;
+
+    // Conservative depth output can help with performance - case 1
+    // You're promising to push the fragment into the scene
+    // So Early Z Cull will work!
+    // float  m_depth    : SV_DepthGreaterEqual;
+
+    // Conservative depth output can help with performance - case 2
+    // You're promising to pull the fragment towards the camera
+    // So Early Z Accept will work!
+    // float  m_depth    : SV_DepthLessEqual;
+};
+
+PSOut_All MainPS_All() 
+{
+    PSOut_All psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float4(1, 1, 1, 1);
+    psOut.m_color2 = float4(1, 1, 1, 1);
+    psOut.m_color3 = float4(1, 1, 1, 1);
+    psOut.m_color4 = float4(1, 1, 1, 1);
+    psOut.m_color5 = float4(1, 1, 1, 1);
+    psOut.m_color6 = float4(1, 1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+
+    psOut.m_depth    = 1.0;
+    psOut.m_coverage = 128;
+    psOut.m_stencil  = 192;
+
+    return psOut;
+}
+
+/*
+ * Defining multiple depth semantics isn't allowed 
+ * Error: Pixel Shader only allows one type of depth semantic to be declared
+ */
+ 
+struct PSOut_Depth
+{
+    float  m_depth    : SV_Depth;
+    float  m_depthGE  : SV_DepthGreaterEqual;
+    float  m_depthLE  : SV_DepthLessEqual;
+};
+
+PSOut_Depth MainPS_Depth() 
+{
+    PSOut_Depth psOut;
+
+    psOut.m_depth    = 1.0;
+    psOut.m_depthGE  = 1.0;
+    psOut.m_depthLE  = 1.0;
+
+    return psOut;
+}
+
+/*
+ * Error: This shader is invalid, but AZSLc shouldn't crash trying to process it
+ */
+ 
+InvalidReturnType MainPS_Invalid() 
+{
+    return psOut;
+}

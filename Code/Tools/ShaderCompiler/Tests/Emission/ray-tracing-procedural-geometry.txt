@@ -1,0 +1,12 @@
+"enum class SignedDistancePrimitive_Enum"
+"void swap ( inout float a , inout float b )"
+"static uint3 Load3x16BitIndices ( uint offsetBytes , ByteAddressBuffer Indices )"
+"RaytracingAccelerationStructure RaySRG_g_scene : register ( t0 , space0 ) ;"
+"RWTexture2D < float4 > RaySRG_g_renderTarget : register ( u0 , space0 ) ;"
+"ByteAddressBuffer RaySRG_g_indices : register ( t1 , space0 ) ;"
+"StructuredBuffer < Vertex > RaySRG_g_vertices : register ( t2 , space0 ) ;"
+"StructuredBuffer < PrimitiveInstancePerFrameBuffer > RaySRG_g_AABBPrimitiveAttributes : register ( t3 , space0 ) ;"
+"ConstantBuffer < :: SceneConstantBuffer > RaySRG_g_sceneCB : register ( b0 , space0 ) ;"
+"ConstantBuffer < :: PrimitiveConstantBuffer > RaySRG_l_materialCB : register ( b1 , space0 ) ;"
+"ConstantBuffer < :: PrimitiveInstanceConstantBuffer > RaySRG_l_aabbCB : register ( b2 , space0 ) ;"
+

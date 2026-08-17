@@ -1,0 +1,91 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+
+set(FILES
+    Source/AzslcBackend.cpp
+    Source/AzslcBackend.h
+    Source/AzslcCodeEmissionMutator.h
+    Source/AzslcCommon.h
+    Source/AzslcEmitter.cpp
+    Source/AzslcEmitter.h
+    Source/AzslcException.h
+    Source/AzslcHomonymVisitor.h
+    Source/AzslcIntermediateRepresentation.cpp
+    Source/AzslcIntermediateRepresentation.h
+    Source/AzslcKindInfo.h
+    Source/AzslcListener.cpp
+    Source/AzslcListener.h
+    Source/AzslcMangling.h
+    Source/AzslcPlatformEmitter.cpp
+    Source/AzslcPlatformEmitter.h
+    Source/AzslcPredefinedTypes.h
+    Source/AzslcReflection.cpp
+    Source/AzslcReflection.h
+    Source/AzslcRegisters.h
+    Source/AzslcScopeTracker.cpp
+    Source/AzslcScopeTracker.h
+    Source/AzslcSemanticOrchestrator.cpp
+    Source/AzslcSemanticOrchestrator.h
+    Source/AzslcSymbolAggregator.cpp
+    Source/AzslcSymbolAggregator.h
+    Source/AzslcSymbolTable.cpp
+    Source/AzslcSymbolTable.h
+    Source/AzslcSymbolTranslation.cpp
+    Source/AzslcSymbolTranslation.h
+    Source/AzslcTokenToAst.h
+    Source/AzslcTypes.h
+    Source/AzslcUnboundedArraysValidator.cpp
+    Source/AzslcUnboundedArraysValidator.h
+    Source/AzslcUtils.h
+    Source/DependencySolver.h
+    Source/DependencySolver.tpl
+    Source/DiagnosticStream.h
+    Source/Emitters/CommonVulkanPlatformEmitter.cpp
+    Source/Emitters/CommonVulkanPlatformEmitter.h
+    Source/Emitters/DirectX12PlatformEmitter.cpp
+    Source/Emitters/DirectX12PlatformEmitter.h
+    Source/Emitters/MetalPlatformEmitter.cpp
+    Source/Emitters/MetalPlatformEmitter.h
+    Source/Emitters/VulkanPlatformEmitter.cpp
+    Source/Emitters/VulkanPlatformEmitter.h
+    Source/External/jsoncpp/json/json-forwards.h
+    Source/External/jsoncpp/json/json.h
+    Source/External/jsoncpp/jsoncpp.cpp
+    Source/GenericUtils.h
+    Source/Grammar/Generate.ps1
+    Source/Grammar/azslLexer.cpp
+    Source/Grammar/azslLexer.g4
+    Source/Grammar/azslLexer.h
+    Source/Grammar/azslParser.cpp
+    Source/Grammar/azslParser.g4
+    Source/Grammar/azslParser.h
+    Source/Grammar/azslParserBaseListener.cpp
+    Source/Grammar/azslParserBaseListener.h
+    Source/Grammar/azslParserListener.cpp
+    Source/Grammar/azslParserListener.h
+    Source/MetaUtils.h
+    Source/NewLineCounterStream.h
+    Source/PadToAttributeMutator.cpp
+    Source/PadToAttributeMutator.h
+    Source/PreprocessorLineDirectiveFinder.h
+    Source/ReflectableEnums.h
+    Source/ReflectableEnumsUtils.h
+    Source/StdUtils.h
+    Source/StreamableInterface.h
+    Source/SubpassInputToTexture2DCodeMutator.cpp
+    Source/SubpassInputToTexture2DCodeMutator.h
+    Source/Texture2DMSto2DCodeMutator.cpp
+    Source/Texture2DMSto2DCodeMutator.h
+    Source/exportKeywords.py
+)
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Source/Grammar/azslLexer.cpp
+    Source/Grammar/azslParser.cpp
+    Source/Grammar/azslParserBaseListener.cpp
+    Source/Grammar/azslParserListener.cpp
+)

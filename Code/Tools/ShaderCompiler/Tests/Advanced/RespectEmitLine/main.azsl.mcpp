@@ -1,0 +1,95 @@
+#line 1 "main.azsl"
+#line 12 "main.azsl"
+#line 1 "level2.azsli"
+#line 14 "level2.azsli"
+#line 1 "level1.azsli"
+#line 14 "level1.azsli"
+#line 1 "level0.azsli"
+#line 14 "level0.azsli"
+#line 1 "srg_semantics.azsli"
+#line 14 "srg_semantics.azsli"
+ShaderResourceGroupSemantic Slot0
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroupSemantic Slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroupSemantic Slot2
+{
+    FrequencyId = 2;
+};
+
+ShaderResourceGroupSemantic MainSlot
+{
+    FrequencyId = 3;
+};
+static bool nonElipsableObject = false; // use an object with persistence on HLSL side to force appearance of "srg_semantics" in pound-lines
+
+#line 15 "level0.azsli"
+
+ShaderResourceGroup SRG0 : Slot0
+{
+    struct Colors
+    {
+        float4 m_color0;
+        float4 m_color1;
+    } m_colors;
+
+    float4 GetColorsSum()
+    {
+        return m_colors.m_color0 + m_colors.m_color1;
+    }
+}
+#line 15 "level1.azsli"
+
+ShaderResourceGroup SRG1 : Slot1
+{
+    struct Colors
+    {
+        float4 m_color0;
+        float4 m_color1;
+    } m_colors;
+
+    float4 GetColorsSum()
+    {
+        const float4 level0_color = SRG0::GetColorsSum();
+        return m_colors.m_color0 + m_colors.m_color1 + level0_color;
+    }
+}
+
+float4 GetZeroColor()
+{
+    return float4(0,0,0,0);
+}
+#line 15 "level2.azsli"
+
+ShaderResourceGroup SRG2 : Slot2
+{
+    struct Colors
+    {
+        float4 m_color0;
+        float4 m_color1;
+    } m_colors;
+
+    float4 GetColorsSum()
+    {
+        const float4 level1_color = SRG0::GetColorsSum();
+        return m_colors.m_color0 + m_colors.m_color1 + level1_color;
+    }
+}
+#line 13 "main.azsl"
+
+ShaderResourceGroup MainSRG : MainSlot
+{
+    float4 m_outputColor;
+}
+
+[numthreads(1, 1, 1)]
+void MainCS(uint3 dispatch_id : SV_DispatchThreadID)
+{
+    MainSRG::m_outputColor = SRG2::GetColorsSum() + GetZeroColor();
+}

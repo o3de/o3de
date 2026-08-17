@@ -1,0 +1,19 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct S {
+        class InClass {
+            enum ICSpec { S_G, S_R };
+            bool Func(ICSpec a_spec){}
+        };
+    };
+};
+
+float4 main() : SV_Target0
+{
+    return (float4)0;
+}
