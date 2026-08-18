@@ -64,7 +64,8 @@ diff --git a/runtime/Cpp/runtime/CMakeLists.txt b/runtime/Cpp/runtime/CMakeLists
  endif()
  
  if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-   set(disabled_compile_warnings "/wd4251")
+-  set(disabled_compile_warnings "/wd4251")
++  set(disabled_compile_warnings "/wd4251 /wd4266")
  else()
    set(disabled_compile_warnings "-Wno-overloaded-virtual")
  endif()
@@ -132,25 +133,3 @@ diff --git a/runtime/Cpp/runtime/CMakeLists.txt b/runtime/Cpp/runtime/CMakeLists
 -endif()
 -
  install(DIRECTORY "${PROJECT_SOURCE_DIR}/runtime/src/"
-diff --git a/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h b/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
---- a/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
-+++ b/runtime/Cpp/runtime/src/atn/OrderedATNConfigSet.h
-@@ -16,3 +16,11 @@ namespace atn {
-   class ANTLR4CPP_PUBLIC OrderedATNConfigSet final : public ATNConfigSet {
-   public:
-+    size_t hashCode() const override {
-+      return ATNConfigSet::hashCode();
-+    }
-+
-+    bool equals(const ATNConfigSet &other) const override {
-+      return ATNConfigSet::equals(other);
-+    }
-+
-     OrderedATNConfigSet() = default;
-diff --git a/runtime/Cpp/runtime/src/ParserInterpreter.h b/runtime/Cpp/runtime/src/ParserInterpreter.h
---- a/runtime/Cpp/runtime/src/ParserInterpreter.h
-+++ b/runtime/Cpp/runtime/src/ParserInterpreter.h
-@@ -57,1 +57,3 @@ namespace antlr4 {
-+    using Parser::enterRecursionRule;
-+
-     void enterRecursionRule(ParserRuleContext *localctx, size_t state, size_t ruleIndex, int precedence) override;
