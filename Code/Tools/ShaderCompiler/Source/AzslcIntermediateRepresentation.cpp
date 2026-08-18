@@ -272,7 +272,7 @@ namespace AZ::ShaderCompiler
 
     }
 
-    string ToYaml(const TypeRefInfo& tref, const IntermediateRepresentation& ir, string_view indent)
+    string ToYaml(const TypeRefInfo& tref, const IntermediateRepresentation& ir, [[maybe_unused]] string_view indent)
     {
         if (tref.IsEmpty())
         {

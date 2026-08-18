@@ -9,6 +9,8 @@
 
 #include "AzslcTypes.h"
 
+#include <utility>
+
 namespace AZ::ShaderCompiler
 {
     // This randomly generated GUID has less chance to collide with a user-defined variable, for example m_shaderVariantKey
@@ -73,6 +75,17 @@ namespace AZ::ShaderCompiler
         struct Argument : variant< monostate, bool, ConstNumericVal, string >
         {
             using variant::variant;
+
+            Argument() = default;
+            Argument(bool value)
+                : variant(value)
+            {}
+            Argument(ConstNumericVal value)
+                : variant(std::move(value))
+            {}
+            Argument(string value)
+                : variant(std::move(value))
+            {}
         };
         vector<Argument>  m_argList;
     };
@@ -911,7 +924,7 @@ namespace AZ::ShaderCompiler
             assert( OkToAssignKind(k) ); // don't try to recycle KindInfo. re-create from scratch, or you have a bug.
             m_kind = k;
             int typeIndex = -1;
-            ForEachType<MapKindToTypesT>([&typeIndex, k](auto inst, auto ii_c)
+            ForEachType<MapKindToTypesT>([&typeIndex, k]([[maybe_unused]] auto inst, auto ii_c)
                                          {
                                              // the decltype(ii_c)::value is to prevent MSVC from crashing with an internal error. no kidding.
                                              // using KeyAtii = At_t<ii_c, MapKindToTypesT>;  BOOM !
@@ -1062,7 +1075,7 @@ namespace AZ::ShaderCompiler
             return m_uid.GetName(); // this is not really a type, but whatever
         }
 
-        QualifiedName operator()(const TypeRefInfo& tri) const
+        QualifiedName operator()([[maybe_unused]] const TypeRefInfo& tri) const
         {
             assert(tri.m_typeId == m_uid);
             return m_uid.GetName();

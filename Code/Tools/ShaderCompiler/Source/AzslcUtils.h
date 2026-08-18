@@ -560,10 +560,7 @@ namespace AZ::ShaderCompiler
 
             default:
                 throw std::runtime_error{ "PackNextChunk: Unknown format should be handled properly!" };
-                break;
             }
-
-            return 0; // Prevents warning C4715
         }
 
         //! Packs the next chunk of data to the current offset and returns the new offset
@@ -595,10 +592,7 @@ namespace AZ::ShaderCompiler
 
             default:
                 throw std::runtime_error{ "PackNextChunk: Unknown format should be handled properly!" };
-                break;
             }
-
-            return 0; // Prevents warning C4715
         }
 
         //! Packs the base size into an array of certain dimensions
@@ -1291,14 +1285,14 @@ namespace AZ::ShaderCompiler
     }
 
     //! from a special rule: scalarOrVectorOrMatrixType
-    inline ExtractedComposedType ExtractComposedTypeNamesFromAstContext(azslParser::ScalarOrVectorOrMatrixTypeContext* ctx, vector<tree::TerminalNode*>* genericDims = nullptr)
+    inline ExtractedComposedType ExtractComposedTypeNamesFromAstContext(azslParser::ScalarOrVectorOrMatrixTypeContext* ctx, [[maybe_unused]] vector<tree::TerminalNode*>* genericDims = nullptr)
     {
         return {ExtractedTypeExt{UnqualifiedName{ctx->getText()}}};
                 // for now there is no generic part, but mind it when you fix the grammar to support generic vector.
     }
 
     //! from userDefinedType context
-    inline ExtractedComposedType ExtractComposedTypeNamesFromAstContext(azslParser::UserDefinedTypeContext* ctx, vector<tree::TerminalNode*>* genericDims = nullptr)
+    inline ExtractedComposedType ExtractComposedTypeNamesFromAstContext(azslParser::UserDefinedTypeContext* ctx, [[maybe_unused]] vector<tree::TerminalNode*>* genericDims = nullptr)
     {
         if (ctx->idExpression())
         {

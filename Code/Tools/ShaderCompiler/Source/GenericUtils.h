@@ -11,6 +11,9 @@
 #include "MetaUtils.h"
 
 #include "StreamableInterface.h"
+
+#include <AzCore/std/string/string.h>
+
 #include <sstream>
 
 #define AZ_STRINGIFY(x) #x
@@ -391,11 +394,8 @@ namespace AZ
     template<typename... Args>
     string FormatString(const char* format, Args... args)
     {
-        int size = snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
-        assert(size > 0);
-        std::unique_ptr<char[]> buf(new char[size]);
-        snprintf(buf.get(), size, format, args...);
-        return string(buf.get());
+        const AZStd::string formattedString = AZStd::string::format(format, args...);
+        return string(formattedString.c_str(), formattedString.size());
     }
 
     // Is-One-Of will check if a variable is equal to any of the values listed on the other parameters.
@@ -432,7 +432,7 @@ namespace AZ
 
     // tail case
     template <typename Deduced>
-    bool DynamicTypeIsAnyOf(Deduced* base)
+    bool DynamicTypeIsAnyOf([[maybe_unused]] Deduced* base)
     {
         return false;
     }

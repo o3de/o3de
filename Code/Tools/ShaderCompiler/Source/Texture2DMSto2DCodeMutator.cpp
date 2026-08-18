@@ -426,7 +426,7 @@ namespace AZ::ShaderCompiler
         }
     }
 
-    void Texture2DMSto2DCodeMutator::MutateMultiSamplingSystemSemanticInStruct(const IdentifierUID& varUid, const VarInfo* varInfo, const string& systemSemanticName, const IdentifierUID& structUid)
+    void Texture2DMSto2DCodeMutator::MutateMultiSamplingSystemSemanticInStruct(const IdentifierUID& varUid, const VarInfo* varInfo, const string& systemSemanticName, [[maybe_unused]] const IdentifierUID& structUid)
     {
         // This is the case of member variable of a struct, but it is a system semantic.
         // Example:

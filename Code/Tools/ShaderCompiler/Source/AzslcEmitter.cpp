@@ -249,7 +249,7 @@ namespace AZ::ShaderCompiler
                     m_translations.RegisterLandingScope(uid, m_ir->m_rootConstantStructUID.GetName());
                     m_translations.AddCustomBehavior(uid.GetName(),
                         BehaviorEvent::OnReference,
-                        [constructRootconstantReference](QualifiedNameView, UsageContext, string proposition, ssize_t)
+                        [constructRootconstantReference](QualifiedNameView, UsageContext, [[maybe_unused]] string proposition, ssize_t)
                     {
                         // Construct the rootconstant member name which is declared as global variable with the use of get functions.
                         // Type _g_MyRootConstVar = GetShaderRootConst_Member(); So now we just return _g_MyRootConstVar;
@@ -272,7 +272,6 @@ namespace AZ::ShaderCompiler
             {
                 for (auto& member : *array)
                 {
-                    auto globalScope = QualifiedNameView{"/"};
                     MigrateASTSubTree(member, globalScope);
                 }
             }
@@ -280,7 +279,6 @@ namespace AZ::ShaderCompiler
             // variables get special treatment in case of non-emitConstantBufferBody, because SRG-constants go in a generated-struct: <SRGNAME>_SRGConstantStruct
             for (auto& member : srgInfo->m_implicitStruct.GetMemberFields())
             {
-                auto globalScope = QualifiedNameView{"/"};
                 auto constantsStruct = MakeSrgConstantsStructName(srgUID);
                 MigrateASTSubTree(member, options.m_emitConstantBufferBody ? globalScope : QualifiedNameView{constantsStruct});
             }
@@ -991,7 +989,7 @@ namespace AZ::ShaderCompiler
         m_out << "\n\n";
     }
 
-    void CodeEmitter::EmitSRGCB(const IdentifierUID& cId, const Options& options, const RootSigDesc& rootSig) const
+    void CodeEmitter::EmitSRGCB(const IdentifierUID& cId, [[maybe_unused]] const Options& options, const RootSigDesc& rootSig) const
     {
         EmitAllAttachedAttributes(cId);
         auto bindSet = BindingPair::Set::Merged;
@@ -1019,7 +1017,7 @@ namespace AZ::ShaderCompiler
         m_out << " : register(b" << bindInfo.m_registerBinding.m_pair[bindSet].m_registerIndex << spaceX << ");\n\n";
     }
 
-    void CodeEmitter::EmitSRGSampler(const IdentifierUID& sId, const Options& options, const RootSigDesc& rootSig) const
+    void CodeEmitter::EmitSRGSampler(const IdentifierUID& sId, [[maybe_unused]] const Options& options, const RootSigDesc& rootSig) const
     {
         EmitAllAttachedAttributes(sId);
         auto bindSet = BindingPair::Set::Merged;
@@ -1116,7 +1114,7 @@ namespace AZ::ShaderCompiler
             auto& varInfo = *m_ir->GetSymbolSubAs<VarInfo>(shaderKeyUid.m_name);
             auto dims = varInfo.m_typeInfoExt.GetDimensions();
             assert(dims.m_dimensions.size() == 1); // This is generated variable, it must have exactly 1 array dimension
-            if (arraySlot >= dims.m_dimensions[0])
+            if (dims.m_dimensions[0] < 0 || arraySlot >= static_cast<uint32_t>(dims.m_dimensions[0]))
             {
                 const string errorMessage = ConcatString("The option {", UnmangleTrimedName(getterUid.m_name), "} exceeds the number of bits (",
                     AZ::ShaderCompiler::kShaderVariantKeyRegisterSize * dims.m_dimensions[0], ") allowed by the ShaderVariantFallback.\n",

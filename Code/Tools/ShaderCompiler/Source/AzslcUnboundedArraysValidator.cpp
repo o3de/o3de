@@ -19,7 +19,7 @@ namespace AZ::ShaderCompiler
         m_options = options;
     }
 
-    bool UnboundedArraysValidator::CheckUnboundedArrayFieldCanBeAddedToSrg(const IdentifierUID& srgUid, const IdentifierUID& varUid, const VarInfo& varInfo, TypeClass typeClass,
+    bool UnboundedArraysValidator::CheckUnboundedArrayFieldCanBeAddedToSrg([[maybe_unused]] const IdentifierUID& srgUid, const IdentifierUID& varUid, [[maybe_unused]] const VarInfo& varInfo, TypeClass typeClass,
         string* errorMessage)
     {
         if (!CanBeDeclaredAsUnboundedArray(typeClass))

@@ -21,6 +21,7 @@ namespace AZ
     public:
 
         using MakeOStreamStreamable::MakeOStreamStreamable;
+        using MakeOStreamStreamable::operator<<;
 
         Self& operator<<(char c) override
         {

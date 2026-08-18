@@ -85,7 +85,7 @@ namespace AZ
             return operator<<(PushLevel{ level });
         }
 
-        Self& operator<< (PushLevel&& level)
+        Self& operator<< ([[maybe_unused]] PushLevel&& level)
         {
             m_activeManipulator.push(m_activeManipulator.top());
             return *this;
@@ -96,7 +96,7 @@ namespace AZ
             return operator<<(PopLevel{ level });
         }
 
-        Self& operator<< (PopLevel&& level)
+        Self& operator<< ([[maybe_unused]] PopLevel&& level)
         {
             if (m_activeManipulator.size() > 1)
             {

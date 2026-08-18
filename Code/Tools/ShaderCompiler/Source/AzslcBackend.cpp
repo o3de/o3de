@@ -303,7 +303,7 @@ namespace AZ::ShaderCompiler
         return RemoveWhitespaces(GetTranspiledTokens(initClause->getSourceInterval()));
     }
 
-    void Backend::AppendOptionRange(Json::Value& varOption, const IdentifierUID& varUid, const VarInfo* varInfo, const Options& options) const
+    void Backend::AppendOptionRange(Json::Value& varOption, const IdentifierUID& varUid, const VarInfo* varInfo, [[maybe_unused]] const Options& options) const
     {
         Json::Value optValues(Json::arrayValue);
         bool isRange = false;
@@ -481,7 +481,7 @@ namespace AZ::ShaderCompiler
         return varRoot;
     }
 
-    void Backend::SetupOptionsSpecializationId(const Options& options) const
+    void Backend::SetupOptionsSpecializationId([[maybe_unused]] const Options& options) const
     {
         uint32_t specializationId = 0;
         for (auto& [uid, varInfo, kindInfo] : m_ir->m_symbols.GetOrderedSymbolsOfSubType_3<VarInfo>())

@@ -14,6 +14,8 @@
 
 #include "antlr4-runtime.h"
 
+#include <exception>
+
 using namespace antlr4;
 using namespace antlrcpp;
 
@@ -113,7 +115,7 @@ namespace AZ::ShaderCompiler
     public:
         AzslcException(uint32_t errorCode, const char* const errorType, optional<size_t> line, optional<size_t> column, const string& message)
             : antlr4::RuntimeException(message),
-              m_errorCode(errorCode),
+              m_errorCode(static_cast<uint16_t>(errorCode)),
               m_errorType(errorType),
               m_line(line),
               m_column(column),
@@ -125,7 +127,7 @@ namespace AZ::ShaderCompiler
         AzslcException(uint32_t errorCode, const char* const errorType, Token* token, const string& message)
             : RuntimeException(message),
               m_token(token),
-              m_errorCode(errorCode),
+              m_errorCode(static_cast<uint16_t>(errorCode)),
               m_errorType(errorType),
               m_errorMessage("")
         {
@@ -146,7 +148,7 @@ namespace AZ::ShaderCompiler
         AzslcException(uint32_t errorCode, const char* const errorType, const string& message)
             : RuntimeException(message),
               m_token(nullptr),
-              m_errorCode(errorCode),
+              m_errorCode(static_cast<uint16_t>(errorCode)),
               m_errorType(errorType),
               m_line(none),
               m_column(none),
@@ -292,7 +294,7 @@ namespace AZ::ShaderCompiler
             antlr4::ParseCancellationException parseException(errorMessage);
             if (e)
             {
-                throw_with_nested(parseException);
+                std::throw_with_nested(parseException);
             }
             else
             {
@@ -302,18 +304,18 @@ namespace AZ::ShaderCompiler
 
         std::function<bool(antlr4::Recognizer*, antlr4::Token* )> m_isKeywordPredicate;
 
-        void reportAmbiguity(antlr4::Parser *recognizer, const antlr4::dfa::DFA &dfa, size_t startIndex, size_t stopIndex, bool exact,
-            const antlrcpp::BitSet &ambigAlts, antlr4::atn::ATNConfigSet *configs) override
+        void reportAmbiguity([[maybe_unused]] antlr4::Parser *recognizer, [[maybe_unused]] const antlr4::dfa::DFA &dfa, [[maybe_unused]] size_t startIndex, [[maybe_unused]] size_t stopIndex, [[maybe_unused]] bool exact,
+            [[maybe_unused]] const antlrcpp::BitSet &ambigAlts, [[maybe_unused]] antlr4::atn::ATNConfigSet *configs) override
         {
         }
 
-        void reportAttemptingFullContext(antlr4::Parser *recognizer, const antlr4::dfa::DFA &dfa, size_t startIndex, size_t stopIndex,
-            const antlrcpp::BitSet &conflictingAlts, antlr4::atn::ATNConfigSet *configs) override
+        void reportAttemptingFullContext([[maybe_unused]] antlr4::Parser *recognizer, [[maybe_unused]] const antlr4::dfa::DFA &dfa, [[maybe_unused]] size_t startIndex, [[maybe_unused]] size_t stopIndex,
+            [[maybe_unused]] const antlrcpp::BitSet &conflictingAlts, [[maybe_unused]] antlr4::atn::ATNConfigSet *configs) override
         {
         }
 
-        void reportContextSensitivity(antlr4::Parser *recognizer, const antlr4::dfa::DFA &dfa, size_t startIndex, size_t stopIndex,
-            size_t prediction, antlr4::atn::ATNConfigSet *configs) override
+        void reportContextSensitivity([[maybe_unused]] antlr4::Parser *recognizer, [[maybe_unused]] const antlr4::dfa::DFA &dfa, [[maybe_unused]] size_t startIndex, [[maybe_unused]] size_t stopIndex,
+            [[maybe_unused]] size_t prediction, [[maybe_unused]] antlr4::atn::ATNConfigSet *configs) override
         {
         }
     };
@@ -323,7 +325,7 @@ namespace AZ::ShaderCompiler
         std::cerr << e.what() << std::endl;
         try
         {
-            rethrow_if_nested(e);
+            std::rethrow_if_nested(e);
         }
         catch (const exception& ne)
         {

@@ -447,9 +447,10 @@ int main(int argc, const char* argv[])
     cli.add_flag("--Wx2", warningOpts[Warn::EnumType::Wx2], "Treat level-2 and below warnings as errors.");
     cli.add_flag("--Wx3", warningOpts[Warn::EnumType::Wx3], "Treat level-3 and below warnings as errors.");
 
-    std::string minDescriptors;
-    cli.add_option("--min-descriptors", minDescriptors, "Comma-separated list of limits corresponding to "
+    std::vector<int> minDescriptors;
+    auto minDescriptorsOpt = cli.add_option("--min-descriptors", minDescriptors, "Comma-separated list of limits corresponding to "
         "<set,space,sampler,texture,buffer> descriptors. Emits a warning if a count overshoots a limit. Use -1 to specify \"no limit\".");
+    minDescriptorsOpt->delimiter(',')->expected(5);
     
     bool verbose = false;
     cli.add_flag("--verbose", verbose);
@@ -602,14 +603,10 @@ int main(int argc, const char* argv[])
                 emitOptions.m_rootConstantsMaxSize = rootConst;
             }
 
-            if (!minDescriptors.empty())
+            if (*minDescriptorsOpt)
             {
-                sscanf(minDescriptors.c_str(), "%d,%d,%d,%d,%d",
-                       &emitOptions.m_minAvailableDescriptors.m_descriptorsTotal,
-                       &emitOptions.m_minAvailableDescriptors.m_spaces,
-                       &emitOptions.m_minAvailableDescriptors.m_samplers,
-                       &emitOptions.m_minAvailableDescriptors.m_textures,
-                       &emitOptions.m_minAvailableDescriptors.m_buffers);
+                emitOptions.m_minAvailableDescriptors = {
+                    minDescriptors[0], minDescriptors[1], minDescriptors[2], minDescriptors[3], minDescriptors[4]};
             }
 
             if (*maxSpacesOpt)

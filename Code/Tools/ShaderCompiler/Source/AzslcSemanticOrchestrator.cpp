@@ -805,75 +805,75 @@ namespace AZ::ShaderCompiler
         auto samplerOpts = ctx->samplerBodyDeclaration()->samplerMemberDeclaration();
         for (auto samplerOption : samplerOpts)
         {
-            if (auto opt = samplerOption->maxAnisotropyOption())
+            if (auto maxAnisotropyOption = samplerOption->maxAnisotropyOption())
             {
-                auto maxAnisoVal = FoldEvalStaticConstExprNumericValue(opt->IntegerLiteral());
+                auto maxAnisoVal = FoldEvalStaticConstExprNumericValue(maxAnisotropyOption->IntegerLiteral());
                 desc.m_anisotropyMax = static_cast<uint32_t>(ExtractValueAsInt64(maxAnisoVal));
                 desc.m_anisotropyEnable = true;
             }
 
-            else if (auto opt = samplerOption->minLodOption())
+            else if (auto minLodOption = samplerOption->minLodOption())
             {
-                auto minLODVal = FoldEvalStaticConstExprNumericValue(opt->FloatLiteral(), false);
+                auto minLODVal = FoldEvalStaticConstExprNumericValue(minLodOption->FloatLiteral(), false);
                 desc.m_mipLodMin = ExtractValueAsFloat(minLODVal);
             }
 
-            else if (auto opt = samplerOption->maxLodOption())
+            else if (auto maxLodOption = samplerOption->maxLodOption())
             {
-                auto maxLODVal = FoldEvalStaticConstExprNumericValue(opt->FloatLiteral(), false);
+                auto maxLODVal = FoldEvalStaticConstExprNumericValue(maxLodOption->FloatLiteral(), false);
                 desc.m_mipLodMax = ExtractValueAsFloat(maxLODVal);
             }
 
-            else if (auto opt = samplerOption->mipLodBiasOption())
+            else if (auto mipLodBiasOption = samplerOption->mipLodBiasOption())
             {
-                auto biasVal = FoldEvalStaticConstExprNumericValue(opt->FloatLiteral(), false);
+                auto biasVal = FoldEvalStaticConstExprNumericValue(mipLodBiasOption->FloatLiteral(), false);
                 desc.m_mipLodBias = ExtractValueAsFloat(biasVal);
             }
 
-            else if (auto opt = samplerOption->minFilterOption())
+            else if (auto minFilterOption = samplerOption->minFilterOption())
             {
-                desc.m_filterMin = GetFilterType(opt->filterModeEnum());
+                desc.m_filterMin = GetFilterType(minFilterOption->filterModeEnum());
             }
 
-            else if (auto opt = samplerOption->magFilterOption())
+            else if (auto magFilterOption = samplerOption->magFilterOption())
             {
-                desc.m_filterMag = GetFilterType(opt->filterModeEnum());
+                desc.m_filterMag = GetFilterType(magFilterOption->filterModeEnum());
             }
 
-            else if (auto opt = samplerOption->mipFilterOption())
+            else if (auto mipFilterOption = samplerOption->mipFilterOption())
             {
-                desc.m_filterMip = GetFilterType(opt->filterModeEnum());
+                desc.m_filterMip = GetFilterType(mipFilterOption->filterModeEnum());
             }
 
-            else if (auto opt = samplerOption->reductionTypeOption())
+            else if (auto reductionTypeOption = samplerOption->reductionTypeOption())
             {
-                desc.m_reductionType = GetRedcType(opt->reductionTypeEnum());
+                desc.m_reductionType = GetRedcType(reductionTypeOption->reductionTypeEnum());
             }
 
-            else if (auto opt = samplerOption->comparisonFunctionOption())
+            else if (auto comparisonFunctionOption = samplerOption->comparisonFunctionOption())
             {
-                desc.m_comparisonFunc = GetCompFunc(opt->comparisonFunctionEnum());
+                desc.m_comparisonFunc = GetCompFunc(comparisonFunctionOption->comparisonFunctionEnum());
                 desc.m_isComparison = true;
             }
 
-            else if (auto opt = samplerOption->addressUOption())
+            else if (auto addressUOption = samplerOption->addressUOption())
             {
-                desc.m_addressU = GetAddressMode(opt->addressModeEnum());
+                desc.m_addressU = GetAddressMode(addressUOption->addressModeEnum());
             }
 
-            else if (auto opt = samplerOption->addressVOption())
+            else if (auto addressVOption = samplerOption->addressVOption())
             {
-                desc.m_addressV = GetAddressMode(opt->addressModeEnum());
+                desc.m_addressV = GetAddressMode(addressVOption->addressModeEnum());
             }
 
-            else if (auto opt = samplerOption->addressWOption())
+            else if (auto addressWOption = samplerOption->addressWOption())
             {
-                desc.m_addressW = GetAddressMode(opt->addressModeEnum());
+                desc.m_addressW = GetAddressMode(addressWOption->addressModeEnum());
             }
 
-            else if (auto opt = samplerOption->borderColorOption())
+            else if (auto borderColorOption = samplerOption->borderColorOption())
             {
-                desc.m_borderColor = GetBorderColor(opt->borderColorEnum());
+                desc.m_borderColor = GetBorderColor(borderColorOption->borderColorEnum());
             }
         }
         return desc;
@@ -1343,15 +1343,15 @@ namespace AZ::ShaderCompiler
         {
             return MangleScalarType("bool");
         }
-        else if (auto* literal = ctx->IntegerLiteral())
+        else if (auto* integerLiteral = ctx->IntegerLiteral())
         {
-            return hasSuffix(literal, 'u') ? MangleScalarType("uint")
+            return hasSuffix(integerLiteral, 'u') ? MangleScalarType("uint")
                  : MangleScalarType("int");
         }
-        else if (auto* literal = ctx->FloatLiteral())
+        else if (auto* floatLiteral = ctx->FloatLiteral())
         {
-            return hasSuffix(literal, 'h') ? MangleScalarType("half")
-                 : hasSuffix(literal, 'l') ? MangleScalarType("double")
+            return hasSuffix(floatLiteral, 'h') ? MangleScalarType("half")
+                 : hasSuffix(floatLiteral, 'l') ? MangleScalarType("double")
                  : MangleScalarType("float");
         }
         return {"<fail>"};
