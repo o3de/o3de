@@ -450,7 +450,6 @@ int main(int argc, const char* argv[])
     auto minDescriptorsOpt = cli.add_option("--min-descriptors", minDescriptors, "Comma-separated list of limits corresponding to "
         "<set,space,sampler,texture,buffer> descriptors. Emits a warning if a count overshoots a limit. Use -1 to specify \"no limit\".");
     minDescriptorsOpt->delimiter(',')->expected(5);
-
     bool verbose = false;
     cli.add_flag("--verbose", verbose);
 
