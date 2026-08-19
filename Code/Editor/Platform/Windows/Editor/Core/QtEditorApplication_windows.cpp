@@ -22,6 +22,7 @@
 // AzFramework
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 
 #include <dbt.h>
@@ -44,6 +45,17 @@ namespace Editor
         else if (msg->message == WM_EXITSIZEMOVE)
         {
             m_isMovingOrResizing = false;
+        }
+
+        // Notify the input system about device changes even when the Editor
+        // is not currently in game mode.
+        if (msg->message == WM_DEVICECHANGE)
+        {
+            if (msg->wParam == DBT_DEVNODES_CHANGED)
+            {
+                AzFramework::RawInputNotificationBusWindows::Broadcast(
+                    &AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+            }
         }
 
         // Prevent the user from being able to move the window in game mode.
@@ -110,11 +122,6 @@ namespace Editor
             }
             else if (msg->message == WM_DEVICECHANGE)
             {
-                if (msg->wParam == DBT_DEVNODES_CHANGED) // DBT_DEVNODES_CHANGED
-                {
-                    AzFramework::RawInputNotificationBusWindows::Broadcast(
-                        &AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
-                }
                 return true;
             }
             else if (msg->message == WM_KEYDOWN || msg->message == WM_KEYUP || msg->message == WM_CHAR)
@@ -127,6 +134,30 @@ namespace Editor
         }
 
         return false;
+    }
+
+    void EditorQtApplicationWindows::OnInputDeviceConnectedEvent(const AzFramework::InputDevice& inputDevice)
+    {
+        const auto& inputDeviceId = inputDevice.GetInputDeviceId();
+
+        if (!AzFramework::InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
+        {
+            return;
+        }
+
+        AZ_Printf("Input", "Gamepad connected (index %u)\n", inputDeviceId.GetIndex());
+    }
+
+    void EditorQtApplicationWindows::OnInputDeviceDisconnectedEvent(const AzFramework::InputDevice& inputDevice)
+    {
+        const auto& inputDeviceId = inputDevice.GetInputDeviceId();
+
+        if (!AzFramework::InputDeviceGamepad::IsGamepadDevice(inputDeviceId))
+        {
+            return;
+        }
+
+        AZ_Printf("Input", "Gamepad disconnected (index %u)\n", inputDeviceId.GetIndex());
     }
 
     bool EditorQtApplicationWindows::eventFilter(QObject* object, QEvent* event)
