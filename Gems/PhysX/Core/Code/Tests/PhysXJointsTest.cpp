@@ -209,6 +209,53 @@ namespace PhysX
         EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
     }
 
+    TEST_F(PhysXJointsTest, Joint_BallJoint_BreaksUnderForce)
+    {
+        // Place a follower below a heavy lead body, configure a breakable ball joint,
+        // and give the follower an initial lateral velocity. The joint should break.
+        const AZ::Vector3 followerPosition(0.0f, 0.0f, -1.0f);
+        const AZ::Vector3 followerInitialLinearVelocity(5.0f, 2.0f, 0.0f);
+
+        const AZ::Vector3 leadPosition(0.0f, 0.0f, 1.0f);
+        const AZ::Vector3 leadInitialLinearVelocity(0.0f, 0.0f, 0.0f);
+
+        const AZ::Vector3 jointLocalPosition(0.0f, 0.0f, 2.0f);
+        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateRotationY(90.0f);
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            jointLocalRotation,
+            jointLocalPosition);
+
+        // Templated joint component type is irrelevant since joint component is not created for this invocation.
+        auto leadEntity = AddBodyColliderEntity<JointComponent>(
+            m_testSceneHandle, leadPosition, leadInitialLinearVelocity);
+
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_leadEntity = leadEntity->GetId();
+        jointConfig->m_localTransformFromFollower = jointLocalTransform;
+
+        auto jointGenericProperties = AZStd::make_shared<JointGenericProperties>(
+            JointGenericProperties::GenericJointFlag::Breakable, 1.0f, 1.0f);
+
+        auto followerEntity = AddBodyColliderEntity<BallJointComponent>(
+            m_testSceneHandle,
+            followerPosition,
+            followerInitialLinearVelocity,
+            jointConfig,
+            jointGenericProperties);
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
+
+        AZ::Vector3 leadEndPosition;
+        AZ::TransformBus::EventResult(
+            leadEndPosition, leadEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        EXPECT_NEAR(leadEndPosition.GetX(), leadPosition.GetX(), 0.2f);
+        EXPECT_NEAR(leadEndPosition.GetY(), leadPosition.GetY(), 0.2f);
+        EXPECT_NEAR(leadEndPosition.GetZ(), leadPosition.GetZ(), 0.2f);
+        EXPECT_GT(followerEndPosition.GetX() - followerPosition.GetX(), 0.2f);
+        EXPECT_NEAR(followerEndPosition.GetZ(), followerPosition.GetZ(), 0.2f);
+    }
+
     TEST_F(PhysXJointsTest, Joint_BallJoint_GlobalConstraint)
     {
         // Place an entity in the world with a rigid body, physx collider, and a ball joint components.
