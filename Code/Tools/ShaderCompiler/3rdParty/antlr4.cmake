@@ -18,6 +18,11 @@ block(SCOPE_FOR VARIABLES)
     set(TRACE_ATN OFF)
     set(WITH_STATIC_CRT OFF)
 
+    if(MSVC)
+        string(REGEX REPLACE "/we[0-9]+" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+        string(REGEX REPLACE "/we[0-9]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    endif()
+
     o3de_fetch_content(antlr4
         VERSION "4.13.2"
         LICENSE "BSD-3-Clause"
