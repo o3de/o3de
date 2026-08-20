@@ -15,6 +15,9 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
+// AzCore
+#include <AzCore/Console/ILogger.h>
+
 // AzQtComponents
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -145,7 +148,7 @@ namespace Editor
             return;
         }
 
-        AZ_Printf("Input", "Gamepad connected (index %u)\n", inputDeviceId.GetIndex());
+        AZLOG(InputDevices, "Gamepad connected (index %u)", inputDeviceId.GetIndex());
     }
 
     void EditorQtApplicationWindows::OnInputDeviceDisconnectedEvent(const AzFramework::InputDevice& inputDevice)
@@ -157,7 +160,7 @@ namespace Editor
             return;
         }
 
-        AZ_Printf("Input", "Gamepad disconnected (index %u)\n", inputDeviceId.GetIndex());
+        AZLOG(InputDevices, "Gamepad disconnected (index %u)", inputDeviceId.GetIndex());
     }
 
     bool EditorQtApplicationWindows::eventFilter(QObject* object, QEvent* event)
