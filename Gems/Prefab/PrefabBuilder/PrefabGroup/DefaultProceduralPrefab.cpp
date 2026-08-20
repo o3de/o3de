@@ -9,6 +9,8 @@
 #include <PrefabGroup/DefaultProceduralPrefab.h>
 #include <PrefabGroup/PrefabGroupBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderScriptingBus.h>
@@ -22,6 +24,7 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ICustomPropertyData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
+#include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
@@ -35,6 +38,32 @@ namespace AZ
 
 namespace AZ::SceneAPI
 {
+    static constexpr AZ::Uuid PhysXMeshGroupTypeId{ "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B}" };
+    static constexpr const char* EditorMeshColliderComponentTypeName = "{20382794-0E74-4860-9C35-A19F22DC80D4} PhysX::EditorMeshColliderComponent";
+    static constexpr const char* EditorStaticRigidBodyComponentTypeName = "{DA884366-E00D-496B-A9C3-9CBF08B3537E} PhysX::EditorStaticRigidBodyComponent";
+    static constexpr const char* EditorRigidBodyComponentTypeName = "{F2478E6B-001A-4006-9D7E-DCB5A6B041DD} PhysX::EditorRigidBodyComponent";
+
+    static const char* GetPhysicsBodyComponentTypeName(const Containers::Scene& scene, Containers::SceneGraph::NodeIndex meshNodeIndex)
+    {
+        if (!meshNodeIndex.IsValid())
+        {
+            return nullptr;
+        }
+
+        Events::GraphMetaInfo::VirtualTypesSet types;
+        Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, meshNodeIndex);
+
+        if (types.count(AZ_CRC_CE("PhysicsMeshStatic")) == 1)
+        {
+            return EditorStaticRigidBodyComponentTypeName;
+        }
+        if (types.count(AZ_CRC_CE("PhysicsMeshDynamic")) == 1)
+        {
+            return EditorRigidBodyComponentTypeName;
+        }
+        return nullptr;
+    }
+
     struct PrefabGroupNotificationHandler final
         : public AZ::SceneAPI::PrefabGroupNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
@@ -302,6 +331,57 @@ namespace AZ::SceneAPI
         return result;
     }
 
+    bool DefaultProceduralPrefabGroup::AddPhysicsComponents(
+        const AZ::EntityId& entityId,
+        const Containers::Scene& scene,
+        const Containers::SceneGraph::NodeIndex& meshNodeIndex,
+        const char* bodyComponentTypeName,
+        const AZStd::string& relativeSourcePath) const
+    {
+        AzFramework::BehaviorComponentId editorMeshColliderComponent;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            editorMeshColliderComponent,
+            &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
+            entityId,
+            EditorMeshColliderComponentTypeName);
+
+        AzFramework::BehaviorComponentId rigidBodyComponent;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            rigidBodyComponent,
+            &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
+            entityId,
+            bodyComponentTypeName);
+
+        if (editorMeshColliderComponent.IsValid() == false || rigidBodyComponent.IsValid() == false)
+        {
+            AZ_Warning("prefab", false, "Could not add the PhysX collider components; project needs PhysX enabled.");
+            return true;
+        }
+
+        AZStd::string physicsGroupName = DataTypes::Utilities::CreateStableGroupName(
+            scene, PhysXMeshGroupTypeId, AZStd::string{ scene.GetGraph().GetNodeName(meshNodeIndex).GetPath() });
+
+        AZ::IO::Path physicsAssetPath(relativeSourcePath, '/');
+        physicsAssetPath.ReplaceFilename(AZ::IO::PathView(physicsGroupName));
+        physicsAssetPath.ReplaceExtension(AZ::IO::PathView(scene.GetSourceExtension()));
+
+        auto physicsAssetJson = AZStd::string::format(
+            R"JSON(
+                   {"ShapeConfiguration": {"PhysicsAsset": {"Asset": { "assetHint": "%s.pxmesh"}}}}
+             )JSON", physicsAssetPath.LexicallyNormal().String().c_str());
+
+        bool result = false;
+        AzToolsFramework::EntityUtilityBus::BroadcastResult(
+            result,
+            &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
+            entityId,
+            editorMeshColliderComponent,
+            physicsAssetJson);
+
+        AZ_Error("prefab", result, "UpdateComponentForEntity failed for EditorMeshColliderComponent component");
+        return result;
+    }
+
     bool DefaultProceduralPrefabGroup::CreateMeshGroupAndComponents(
         ManifestUpdates& manifestUpdates,
         AZ::EntityId entityId,
@@ -310,6 +390,11 @@ namespace AZ::SceneAPI
         const Containers::Scene& scene,
         const AZStd::string& relativeSourcePath) const
     {
+        if (const char* bodyComponentTypeName = GetPhysicsBodyComponentTypeName(scene, nodeData.m_meshIndex))
+        {
+            return AddPhysicsComponents(entityId, scene, nodeData.m_meshIndex, bodyComponentTypeName, relativeSourcePath);
+        }
+
         AZStd::shared_ptr<SceneData::MeshGroup> meshGroup(BuildMeshGroupForNode(scene, nodeData, nodeDataMap));
         manifestUpdates.emplace_back(meshGroup);
 
@@ -350,8 +435,12 @@ namespace AZ::SceneAPI
 
         for (const auto& entry : nodeDataMap)
         {
-            newMeshGroups.push_back(BuildMeshGroupForNode(scene, entry.second, nodeDataMap));
+            if (GetPhysicsBodyComponentTypeName(scene, entry.second.m_meshIndex))
+            {
+                continue;
+            }
 
+            newMeshGroups.push_back(BuildMeshGroupForNode(scene, entry.second, nodeDataMap));
         }
 
         return newMeshGroups;
@@ -366,24 +455,12 @@ namespace AZ::SceneAPI
 
         const auto& graph = scene.GetGraph();
         const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-        const auto meshSubId =
-            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<SceneData::MeshGroup>(), meshNodeName.GetPath());
-
-        AZStd::string meshGroupName = "default_";
-        meshGroupName += scene.GetName();
-        meshGroupName += meshSubId.ToFixedString().c_str();
-
-        // clean up the mesh group name
-        AZStd::replace_if(
-            meshGroupName.begin(),
-            meshGroupName.end(),
-            [](char c)
-            {
-                return (!AZStd::is_alnum(c) && c != '_');
-            },
-            '_');
-
         AZStd::string meshNodePath{ meshNodeName.GetPath() };
+
+        const auto meshSubId = DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<SceneData::MeshGroup>(), meshNodePath);
+        AZStd::string meshGroupName =
+            DataTypes::Utilities::CreateStableGroupName(scene, azrtti_typeid<SceneData::MeshGroup>(), meshNodePath);
+
         auto meshGroup = AZStd::make_shared<SceneData::MeshGroup>();
         meshGroup->SetName(meshGroupName);
         meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
@@ -458,7 +535,17 @@ namespace AZ::SceneAPI
                 }
             }
 
-            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName()));
+            AZStd::string entityAlias{ nodeNameForEntity.GetPath() };
+            AZStd::replace_if(
+                entityAlias.begin(),
+                entityAlias.end(),
+                [](char c)
+                {
+                    return (!AZStd::is_alnum(c) && c != '_');
+                },
+                '_');
+
+            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, AZStd::move(entityAlias)));
         }
 
         return nodeEntityMap;
