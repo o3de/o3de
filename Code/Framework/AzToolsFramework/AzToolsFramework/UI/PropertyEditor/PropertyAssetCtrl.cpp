@@ -141,7 +141,8 @@ namespace AzToolsFramework
         m_completer->setCaseSensitivity(Qt::CaseInsensitive);
         m_completer->setFilterMode(Qt::MatchContains);
 
-        connect(m_completer->completionModel(), &QAbstractItemModel::modelReset, this, &PropertyAssetCtrl::OnCompletionModelReset);
+        m_completerResetConnection = connect(
+            m_completer->completionModel(), &QAbstractItemModel::modelReset, this, &PropertyAssetCtrl::OnCompletionModelReset);
         connect(m_completer, static_cast<void (QCompleter::*)(const QModelIndex& index)>(&QCompleter::activated), this, &PropertyAssetCtrl::OnAutocomplete);
 
         m_view = new AssetCompleterListView(this);
@@ -774,6 +775,10 @@ namespace AzToolsFramework
         AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
+        if (m_completerResetConnection)
+        {
+            QObject::disconnect(m_completerResetConnection);
+        }
     }
 
     void PropertyAssetCtrl::OnEditButtonClicked()
