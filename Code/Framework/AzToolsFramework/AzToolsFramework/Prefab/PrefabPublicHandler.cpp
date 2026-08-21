@@ -1469,21 +1469,6 @@ namespace AzToolsFramework
                 return retrieveEntitiesAndInstancesOutcome;
             }
 
-            // Gets selected entities.
-            EntityIdList selectedEntities;
-            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-            SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Delete Entities");
-            selCommand->SetParent(undoBatch.GetUndoBatch());
-            AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
-            selCommand->RunRedo();
-
-            // We insert a "deselect all" command before we delete the entities. This ensures the delete operations aren't changing
-            // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
-            // UI updates once at the start instead of once for each entity.
-            EntityIdList deselection;
-            SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
-            deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
-
             // Removing instances and entities for one owning instance...
             // - Detach instance objects and entity objects.
             // - Update focused template DOM accordingly with undo/redo support.
@@ -1498,6 +1483,25 @@ namespace AzToolsFramework
                         entitiesThatWillBeRemoved.insert(entity->GetId());
                     }
                 });
+
+            // Gets selected entities.  We only need to do selection-related operations if the selected entities include the entities being
+            // destroyed.
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+            auto sizeOfList = entitiesThatWillBeRemoved.size();
+            AZStd::erase_if(selectedEntities, [&entitiesThatWillBeRemoved](const AZ::EntityId& entityId)
+            {
+                return entitiesThatWillBeRemoved.contains(entityId);
+            });
+
+            if (selectedEntities.size() != sizeOfList)
+            {
+                // If the selected entities include any of the entities being destroyed, we need to deselect all of them.
+                SelectionCommand* newSelection = aznew SelectionCommand(selectedEntities, "Deselect Deleted Entities");
+                newSelection->SetParent(undoBatch.GetUndoBatch());
+                newSelection->Redo();
+            }
+
 
             // Set of parent entities that need to be updated. It should not include entities that will be removed.
             AZStd::unordered_set<const AZ::Entity*> parentEntitiesToUpdate;
@@ -1634,7 +1638,6 @@ namespace AzToolsFramework
             AZ_PROFILE_FUNCTION(AzToolsFramework);
             {
                 ScopedUndoBatch outerUndoBatch("Detach Prefab");  // outer undo is for the entire thing - detach AND (optional) delete
-
                 {
                     ScopedUndoBatch undoBatch("Detach Prefab - Actual Detach"); // inner undo is just for the detach part.
                     AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab::UndoCapture");
@@ -1659,6 +1662,25 @@ namespace AzToolsFramework
                     parentEntity = GetEntityById(containerParentId);
                     AZ_Assert(parentEntity, "Can't get the parent entity of the detached prefab instance.");
 
+                    // if we are going to delete the container entity, we need to deselect it first, so that
+                    // the undo of this operation (which happens in reverse order) reselects it last, after it exists again!
+                    if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), containerEntityId) != selectedEntities.end())
+                    {
+                        AzToolsFramework::EntityIdList withoutContainer;
+
+                        std::copy_if(
+                            selectedEntities.begin(),
+                            selectedEntities.end(),
+                            std::back_inserter(withoutContainer),
+                            [containerEntityId](const AZ::EntityId& entityId)
+                            {
+                                return entityId != containerEntityId;
+                            });
+                        auto selectionUndo = aznew SelectionCommand(withoutContainer, "Deselect Prefab Container Entity");
+                        selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                        selectionUndo->Redo();
+                    }
+
                     // Capture the order that entities were in the container before we do any moving around
                     AZStd::vector<AZ::EntityId> priorOrder = AzToolsFramework::GetEntityChildOrder(containerEntityId);
 
@@ -1680,15 +1702,15 @@ namespace AzToolsFramework
                     AZStd::unique_ptr<AZ::Entity> containerEntity = detachedInstance->DetachContainerEntity();
                     AZ_Assert(containerEntity, "Can't detach container entity from the detached Instance.");
 
-                    // Scope to prevent any escape of raw ptr beyond this point.
+                    // Scope to prevent escape of containerEntityRawPtr
                     if (AZ::Entity* containerEntityRawPtr = containerEntity.get(); containerEntityRawPtr)
                     {
-                        detachedEntitiesToUpdate.push_back(containerEntityRawPtr);
                         EditorPrefabComponent* editorPrefabComponent = containerEntityRawPtr->FindComponent<EditorPrefabComponent>();
                         AZ_Assert(editorPrefabComponent, "Can't find EditorPrefabComponent on the container entity of the detached Instance.");
                        
                         if (editorPrefabComponent)
                         {
+                            detachedEntitiesToUpdate.push_back(containerEntityRawPtr);
                             containerEntity->Deactivate();
                             [[maybe_unused]] const bool editorPrefabComponentRemoved =
                                 containerEntityRawPtr->RemoveComponent(editorPrefabComponent);
@@ -1702,11 +1724,6 @@ namespace AzToolsFramework
                             containerEntityRawPtr->Activate();
                         }
                     }
-
-                    AZStd::vector<AZ::EntityId> entitiesToReorder; // entities that need to be moved in the parent order.
-                    // Add the container entity to parent instance and add it to list so that we can update it in template as well.
-                    // it will be deleted later.
-                    
 
                     // Detach entities and add them to the parent instance.
                     detachedInstance->DetachEntities(
@@ -1852,9 +1869,12 @@ namespace AzToolsFramework
                 }
                 else
                 {
+                    // if the container entity was previously selected, make sure it reselects it.
                     if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), containerEntityId) != selectedEntities.end())
                     {
-                        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+                        auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Prefab Container Entity");
+                        selectionUndo->SetParent(outerUndoBatch.GetUndoBatch());
+                        selectionUndo->Redo();
                     }
                 }
 

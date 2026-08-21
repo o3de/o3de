@@ -160,7 +160,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
+        bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue(bool flush)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -172,8 +172,12 @@ namespace AzToolsFramework
             {
                 m_updatingTemplateInstancesInQueue = true;
 
-                const int instanceCountToUpdateInBatch =
-                    m_instanceCountToUpdateInBatch == 0 ? static_cast<int>(m_instancesUpdateQueue.size()) : m_instanceCountToUpdateInBatch;
+                const bool shouldLimitQueueSize = !flush && m_instanceCountToUpdateInBatch > 0;
+
+                const int instanceCountToUpdateInBatch = shouldLimitQueueSize ?
+                     AZStd::min(aznumeric_cast<int>(m_instancesUpdateQueue.size()), m_instanceCountToUpdateInBatch)
+                    : aznumeric_cast<int>(m_instancesUpdateQueue.size());
+
                 TemplateId currentTemplateId = InvalidTemplateId;
                 TemplateReference currentTemplateReference = AZStd::nullopt;
 
@@ -185,14 +189,10 @@ namespace AzToolsFramework
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
-                    // we only need to update the selection if a selected entity got replaced.
-                    // if an entity selected was deleted and stayed deleted, the framework takes care of that.
-                    bool shouldAttemptToUpdateSelection = false;
-
                     // Turn the list of EntityIDs into actual entity alias paths so that we can check if any of the
                     // selected entities were replaced (their EntityId would change but their alias would remain the same)
 
-                     // map of "alias" -> "old entity id" for all selected entities
+                    // map of "alias" -> "old entity id" for all selected entities
                     AZStd::unordered_map<AliasPath, AZ::EntityId> selectedEntityAliasPaths; 
 
                     selectedEntityAliasPaths.reserve(selectedEntityIds.size());
@@ -303,11 +303,15 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
-                            // was anything in the instance that updated selected?
-                            AliasPath instancePath = instanceToUpdate->GetAbsoluteInstanceAliasPath();
+                            if (!selectedEntityAliasPaths.empty())
+                            {
+                                // was anything in the instance that updated selected?
+                                AliasPath instancePath = instanceToUpdate->GetAbsoluteInstanceAliasPath();
 
-                            instanceToUpdate->GetConstEntities(
-                                [&](const AZ::Entity& entity)
+                                // Loop over all new entities and check if their alias path matches
+                                // any of the selected entity alias paths.  If it does, update the entityId
+                                // in the seelcted entity list to the new entityId:
+                                auto updateSelectionCallback = [&](const AZ::Entity& entity)
                                 {
                                     AliasPath entityPath = instancePath;
                                     auto alias = instanceToUpdate->GetEntityAlias(entity.GetId());
@@ -319,13 +323,15 @@ namespace AzToolsFramework
                                         if (auto found = selectedEntityAliasPaths.find(entityPath); found != selectedEntityAliasPaths.end())
                                         {
                                             const AZ::EntityId& oldEntityId = found->second;
-                                            shouldAttemptToUpdateSelection = true;
                                             AZStd::replace(selectedEntityIds.begin(), selectedEntityIds.end(), oldEntityId, entity.GetId());
                                             found->second = entity.GetId();
                                         }
                                     }
-                                    return true; // returning true means keep iterating.
-                                });
+                                    return true; // returning true in this callback means keep iterating.
+                                };
+
+                                instanceToUpdate->GetConstEntities(updateSelectionCallback);
+                            }
 
                             if (!m_isRootPrefabInstanceLoaded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
@@ -339,10 +345,9 @@ namespace AzToolsFramework
                     // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
 
-                    if (shouldAttemptToUpdateSelection)
-                    {
-                        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
-                    }
+                    // eliminate any dead entity Ids and then reselect the entities that were replaced during propagation.
+                    AZStd::erase_if(selectedEntityIds, [](const AZ::EntityId& entityId) { return !GetEntityById(entityId); });
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

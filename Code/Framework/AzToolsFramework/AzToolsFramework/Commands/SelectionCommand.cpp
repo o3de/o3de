@@ -8,6 +8,8 @@
 
 #include "SelectionCommand.h"
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutor.h>
 
 namespace AzToolsFramework
 {
@@ -45,14 +47,46 @@ namespace AzToolsFramework
         }
     }
 
+    void SelectionCommand::FlushExecutorIfNecessary(const AzToolsFramework::EntityIdList& checkList)
+    {
+        // we only need to flush the executor if we are actually during an undo/redo op.
+
+        bool isDuringUndo = false;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            isDuringUndo, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsDuringUndoRedo);
+
+        if (!isDuringUndo)
+        {
+            return;
+        }
+
+        auto entityCannotBeFound = [](const AZ::EntityId& entityId) -> bool
+        {
+            return GetEntityById(entityId) == nullptr;
+        };
+
+        // check if any of the entityIds cannot be found and are null:
+        if (std::any_of(checkList.begin(), checkList.end(), entityCannotBeFound)) 
+        {
+            // flush the executor
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
+                instanceUpdateExecutorInterface)
+            {
+                instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue(/*flush=*/true);
+            }
+        }
+    }
+
     void SelectionCommand::Undo()
     {
+        FlushExecutorIfNecessary(m_previousSelectionList);
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_previousSelectionList);
     }
 
     void SelectionCommand::Redo()
     {
+        FlushExecutorIfNecessary(m_proposedSelectionList);
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_proposedSelectionList);
     }

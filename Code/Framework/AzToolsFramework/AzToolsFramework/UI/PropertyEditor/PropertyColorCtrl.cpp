@@ -282,7 +282,6 @@ namespace AzToolsFramework
         });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
         {
-            // editing finished implies color changed.
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
         });
@@ -416,8 +415,8 @@ namespace AzToolsFramework
             });
         connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
             {
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                    &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
             });
         // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 

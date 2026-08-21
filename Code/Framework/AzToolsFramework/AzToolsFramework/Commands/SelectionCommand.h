@@ -44,6 +44,8 @@ namespace AzToolsFramework
     protected:
         EntityIdList m_previousSelectionList;
         EntityIdList m_proposedSelectionList;
+
+        void FlushExecutorIfNecessary(const AzToolsFramework::EntityIdList& checkList);
     };
 } // namespace AzToolsFramework
 
