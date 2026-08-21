@@ -9,8 +9,6 @@
 #include <PrefabGroup/DefaultProceduralPrefab.h>
 #include <PrefabGroup/PrefabGroupBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/algorithm.h>
-#include <AzCore/std/string/conversions.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderScriptingBus.h>
@@ -535,17 +533,7 @@ namespace AZ::SceneAPI
                 }
             }
 
-            AZStd::string entityAlias{ nodeNameForEntity.GetPath() };
-            AZStd::replace_if(
-                entityAlias.begin(),
-                entityAlias.end(),
-                [](char c)
-                {
-                    return (!AZStd::is_alnum(c) && c != '_');
-                },
-                '_');
-
-            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, AZStd::move(entityAlias)));
+            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName()));
         }
 
         return nodeEntityMap;
