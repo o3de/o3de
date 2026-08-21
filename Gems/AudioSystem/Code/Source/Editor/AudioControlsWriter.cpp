@@ -78,18 +78,26 @@ namespace AudioControls
                 index = index.sibling(++i, 0);
             }
 
+            
             auto fileIO = AZ::IO::FileIOBase::GetInstance();
+
+            FilepathSet normalizedFilePaths; // Temp output variable
+
             AZStd::for_each(
-                m_foundLibraryPaths.begin(), m_foundLibraryPaths.end(),
-                [fileIO](AZStd::string& libraryPath) -> void
+                m_foundLibraryPaths.begin(),
+                m_foundLibraryPaths.end(),
+                [fileIO, &normalizedFilePaths](const AZStd::string& libraryPath) -> void
                 {
-                    if (auto newPathOpt = fileIO->ConvertToAlias(AZ::IO::PathView{ libraryPath });
-                        newPathOpt.has_value())
+                    AZStd::string newPath = libraryPath;
+                    if (auto newPathOpt = fileIO->ConvertToAlias(AZ::IO::PathView{ newPath }); newPathOpt.has_value())
                     {
-                        libraryPath = newPathOpt.value().Native();
+                        newPath = newPathOpt.value().Native();
                     }
-                    AZStd::to_lower(libraryPath.begin(), libraryPath.end());
+                    AZStd::to_lower(newPath.begin(), newPath.end());
+                    normalizedFilePaths.insert(newPath);
                 });
+
+            m_foundLibraryPaths.swap(normalizedFilePaths);
 
             // Delete libraries that don't exist anymore from disk
             FilepathSet librariesToDelete;
