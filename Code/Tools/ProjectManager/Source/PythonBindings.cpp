@@ -9,7 +9,6 @@
 #include <PythonBindings.h>
 
 #include <ProjectManagerDefs.h>
-#include <osdefs.h> // for DELIM
 
 // Qt defines slots, which interferes with the use here.
 #pragma push_macro("slots")
@@ -293,25 +292,37 @@ namespace O3DE::ProjectManager
 
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
-        Py_SetPythonHome(pyHomePath.c_str());
 
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
 
         try
         {
-            // ignore system location for sites site-packages
-            Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
-            Py_IgnoreEnvironmentFlag = 1; // -E
-            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
-
-            const bool initializeSignalHandlers = true;
-            pybind11::initialize_interpreter(initializeSignalHandlers);
+            // Configure and start the interpreter through the PyConfig API
+            // (Py_SetPythonHome and the pre-init configuration globals are
+            // deprecated). The isolated configuration ignores the environment
+            // and the user site directory, matching the intent of the previous
+            // Py_IsolatedFlag / Py_IgnoreEnvironmentFlag setup.
+            PyConfig config;
+            PyConfig_InitIsolatedConfig(&config);
+            config.install_signal_handlers = 1;
+            config.write_bytecode = 0; // Do not generate precompiled bytecode
+            PyStatus pyStatus = PyConfig_SetString(&config, &config.home, pyHomePath.c_str());
+            if (!PyStatus_Exception(pyStatus))
+            {
+                pyStatus = Py_InitializeFromConfig(&config);
+            }
+            PyConfig_Clear(&config);
+            if (PyStatus_Exception(pyStatus))
+            {
+                AZ_Error("python", false, "Python initialization failed with %s!", pyStatus.err_msg ? pyStatus.err_msg : "an unknown error");
+                return false;
+            }
 
             // display basic Python information
             AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
-            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
-            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
+            AZ_Trace("python", "sys.executable=%s \n", pybind11::module_::import("sys").attr("executable").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.exec_prefix=%s \n", pybind11::module_::import("sys").attr("exec_prefix").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.path=%s \n", pybind11::str(pybind11::module_::import("sys").attr("path")).cast<std::string>().c_str());
 
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"), &PythonBindings::OnStdOut, &PythonBindings::OnStdError);
 
@@ -433,7 +444,7 @@ namespace O3DE::ProjectManager
                 engineInfo.m_path = Py_To_String(enginePath);
 
                 auto thisEnginePath = m_manifest.attr("get_this_engine_path")();
-                if (pybind11::isinstance(thisEnginePath, m_pathlib.attr("Path")().get_type()) &&
+                if (pybind11::isinstance(thisEnginePath, pybind11::type::of(m_pathlib.attr("Path")())) &&
                     thisEnginePath.attr("samefile")(enginePath).cast<bool>())
                 {
                     engineInfo.m_thisEngine = true;
@@ -2084,12 +2095,12 @@ namespace O3DE::ProjectManager
 
     bool PythonBindings::ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths)
     {
+        // Collect the interpreter's current sys.path entries (Py_GetPath is deprecated)
         AZStd::unordered_set<AZ::IO::Path> oldPathSet;
-        auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
+        for (pybind11::handle pathEntry : pybind11::module_::import("sys").attr("path"))
         {
-            oldPathSet.emplace(AZ::IO::FixedMaxPath(pathPart));
-        };
-        AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
+            oldPathSet.emplace(AZ::IO::FixedMaxPath(pathEntry.cast<std::string>().c_str()));
+        }
         bool appended{ false };
         AZStd::string pathAppend{ "import sys\n" };
         for (const auto& thisStr : extendPaths)
