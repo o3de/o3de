@@ -107,6 +107,7 @@ namespace AzToolsFramework
         QCompleter* m_completer = nullptr;
         AssetCompleterModel* m_model = nullptr;
         AssetCompleterListView* m_view = nullptr;
+        QMetaObject::Connection m_completerResetConnection;
 
         AZ::Data::AssetId m_defaultAssetID;
 
