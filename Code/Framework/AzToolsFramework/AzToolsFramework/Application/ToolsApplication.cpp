@@ -81,6 +81,7 @@
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportSnappingSystemComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 #include <Entity/EntityUtilityComponent.h>
@@ -230,6 +231,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent>(),
                 azrtti_typeid<Components::EditorEntityModelComponent>(),
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ViewportSnapping::ViewportSnappingSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),

@@ -738,6 +738,17 @@ set(FILES
     ViewportSelection/InvalidClicks.cpp
     ViewportSelection/ViewportEditorModeTracker.cpp
     ViewportSelection/ViewportEditorModeTracker.h
+    ViewportSnapping/EntitySnapDragHandler.h
+    ViewportSnapping/EntitySnapDragHandler.cpp
+    ViewportSnapping/ViewportDragCancelBus.h
+    ViewportSnapping/ViewportSnapping.h
+    ViewportSnapping/ViewportSnapSourceBus.h
+    ViewportSnapping/ViewportSnapper.h
+    ViewportSnapping/ViewportSnapper.cpp
+    ViewportSnapping/ViewportSnappingSystemComponent.h
+    ViewportSnapping/ViewportSnappingSystemComponent.cpp
+    ViewportSnapping/VisibleGeometrySnapSource.h
+    ViewportSnapping/VisibleGeometrySnapSource.cpp
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.cpp
     AssetBrowser/AssetBrowserBus.h
