@@ -47,7 +47,7 @@ namespace AzToolsFramework
         }
     }
 
-    void SelectionCommand::FlushExecutorIfNecessary(const AzToolsFramework::EntityIdList& checkList)
+    void SelectionCommand::FlushExecutorIfNecessary()
     {
         // we only need to flush the executor if we are actually during an undo/redo op.
 
@@ -59,34 +59,25 @@ namespace AzToolsFramework
         {
             return;
         }
-
-        auto entityCannotBeFound = [](const AZ::EntityId& entityId) -> bool
+        
+        // flush the executor
+        if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
+            instanceUpdateExecutorInterface)
         {
-            return GetEntityById(entityId) == nullptr;
-        };
-
-        // check if any of the entityIds cannot be found and are null:
-        if (std::any_of(checkList.begin(), checkList.end(), entityCannotBeFound)) 
-        {
-            // flush the executor
-            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
-                instanceUpdateExecutorInterface)
-            {
-                instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue(/*flush=*/true);
-            }
+            instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue(/*flush=*/true);
         }
     }
 
     void SelectionCommand::Undo()
     {
-        FlushExecutorIfNecessary(m_previousSelectionList);
+        FlushExecutorIfNecessary();
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_previousSelectionList);
     }
 
     void SelectionCommand::Redo()
     {
-        FlushExecutorIfNecessary(m_proposedSelectionList);
+        FlushExecutorIfNecessary();
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, m_proposedSelectionList);
     }

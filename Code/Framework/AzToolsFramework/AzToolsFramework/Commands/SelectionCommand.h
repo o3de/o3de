@@ -45,7 +45,7 @@ namespace AzToolsFramework
         EntityIdList m_previousSelectionList;
         EntityIdList m_proposedSelectionList;
 
-        void FlushExecutorIfNecessary(const AzToolsFramework::EntityIdList& checkList);
+        void FlushExecutorIfNecessary();
     };
 } // namespace AzToolsFramework
 

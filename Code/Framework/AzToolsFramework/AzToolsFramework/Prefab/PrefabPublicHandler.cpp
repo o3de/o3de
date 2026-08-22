@@ -6,12 +6,14 @@
  *
  */
 
+#include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/writer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Utils/TypeHash.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -23,19 +25,19 @@
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
-#include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -1488,13 +1490,12 @@ namespace AzToolsFramework
             // destroyed.
             EntityIdList selectedEntities;
             ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-            auto sizeOfList = entitiesThatWillBeRemoved.size();
-            AZStd::erase_if(selectedEntities, [&entitiesThatWillBeRemoved](const AZ::EntityId& entityId)
+            auto erased_count = AZStd::erase_if(selectedEntities, [&entitiesThatWillBeRemoved](const AZ::EntityId& entityId)
             {
                 return entitiesThatWillBeRemoved.contains(entityId);
             });
 
-            if (selectedEntities.size() != sizeOfList)
+            if (erased_count > 0)
             {
                 // If the selected entities include any of the entities being destroyed, we need to deselect all of them.
                 SelectionCommand* newSelection = aznew SelectionCommand(selectedEntities, "Deselect Deleted Entities");
@@ -1631,6 +1632,9 @@ namespace AzToolsFramework
             // 6.  Reorder entities to maintain the proper order
             // 7.  (If not keeping the container) destroy the container entity.
 
+            // If we keep container, we will need its final new alias path later to restore selection during redo
+            AliasPath containerEntityNewAliasPath;
+
             // Restore selection if possible, after this operation.
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
@@ -1722,6 +1726,14 @@ namespace AzToolsFramework
                             [[maybe_unused]] const bool containerEntityAdded = parentInstance.AddEntity(AZStd::move(containerEntity));
                             AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
                             containerEntityRawPtr->Activate();
+
+                            containerEntityNewAliasPath = parentInstance.GetAbsoluteInstanceAliasPath();
+
+                            auto containerEntityAlias = parentInstance.GetEntityAlias(containerEntityRawPtr->GetId());
+                            AZ_Assert(
+                                containerEntityAlias.has_value(),
+                                "Can't get the alias of the container entity in its new parent instance.");
+                            containerEntityNewAliasPath.Append(containerEntityAlias.value());
                         }
                     }
 
@@ -1869,12 +1881,21 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    // if the container entity was previously selected, make sure it reselects it.
                     if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), containerEntityId) != selectedEntities.end())
                     {
+                        // restore the selection here.  This list will have the "old" container entity id, which hasn't yet
+                        // been updated and will only update when the executor flushes, so its a valid entityId right now until next tick.
+                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
+
+                        // For undo, redo, figure out what the new container entity id will be, and store the new id in the undo so that
+                        // it functions later, once the executor has updated them.
+                        AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(containerEntityNewAliasPath);
+                        AZStd::replace(selectedEntities.begin(), selectedEntities.end(), containerEntityId, newContainerEntityId);
+
+                        // Note that we don't actually run the redo here, the above "setSelectedEntities" took care of that.
                         auto selectionUndo = aznew SelectionCommand(selectedEntities, "Select Prefab Container Entity");
                         selectionUndo->SetParent(outerUndoBatch.GetUndoBatch());
-                        selectionUndo->Redo();
                     }
                 }
 
