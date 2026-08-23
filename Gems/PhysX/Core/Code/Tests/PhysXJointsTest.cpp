@@ -167,7 +167,6 @@ namespace PhysX
         EXPECT_GT(followerEndPosition.GetX(), followerPosition.GetX());
         EXPECT_GT(abs(followerEndPosition.GetZ()), FLT_EPSILON);
     }
-
     TEST_F(PhysXJointsTest, Joint_BallJoint_FollowerSwingsUpAboutLead)
     {
         // Place lead on top of follower, tie them together with ball joint and send the follower moving sideways in the X and Y directions.
@@ -220,7 +219,7 @@ namespace PhysX
         const AZ::Vector3 leadInitialLinearVelocity(0.0f, 0.0f, 0.0f);
 
         const AZ::Vector3 jointLocalPosition(0.0f, 0.0f, 2.0f);
-        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateRotationY(90.0f);
+        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
         const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
             jointLocalRotation,
             jointLocalPosition);
@@ -236,12 +235,16 @@ namespace PhysX
         auto jointGenericProperties = AZStd::make_shared<JointGenericProperties>(
             JointGenericProperties::GenericJointFlag::Breakable, 1.0f, 1.0f);
 
+        auto jointLimits = AZStd::make_shared<JointLimitProperties>();
+        jointLimits->m_isLimited = false;
+
         auto followerEntity = AddBodyColliderEntity<BallJointComponent>(
             m_testSceneHandle,
             followerPosition,
             followerInitialLinearVelocity,
             jointConfig,
-            jointGenericProperties);
+            jointGenericProperties,
+            jointLimits);
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
