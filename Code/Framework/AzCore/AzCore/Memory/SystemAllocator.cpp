@@ -45,12 +45,11 @@
     #error AZCORE_SYSTEM_ALLOCATOR is an invalid value, it needs to be either AZCORE_SYSTEM_ALLOCATOR_HPHA or AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #endif
 
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
 #include <AzCore/Memory/HphaAllocator.h>
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
+#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #include <AzCore/std/parallel/atomic.h>
 #endif
-
 
 namespace AZ
 {
@@ -91,7 +90,9 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
         m_subAllocator = AZStd::make_unique<HphaSchema>();
+#endif
         return true;
     }
 
@@ -129,10 +130,12 @@ namespace AZ
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
 #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
-        AllocateAddress address(AZ_OS_MALLOC(byteSize, alignment), byteSize);
+        void* ptr = AZ_OS_MALLOC(byteSize, alignment);
+        byteSize = AZ_OS_MSIZE(ptr, alignment); // adjust to actual allocated size
+        AllocateAddress address(ptr, byteSize);
         if (address)
         {
-            SystemAllocatorPrivate::g_AllocatedBytes += AZ_OS_MSIZE(address.m_value, alignment);
+            SystemAllocatorPrivate::g_AllocatedBytes += byteSize;
         }
 #else
         byteSize = MemorySizeAdjustedUp(byteSize);
@@ -166,7 +169,7 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    auto SystemAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
+    auto SystemAllocator::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
     {
         // It is valid to call "free" on a nullptr and it should produce no action.
         // Early out here to avoid calling something like AZ_OS_MSIZE, which may not be valid on nullptr.
@@ -177,7 +180,7 @@ namespace AZ
 
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-            byteSize = byteSize == 0 ? AZ_OS_MSIZE(ptr, alignment) : byteSize;
+            byteSize = AZ_OS_MSIZE(ptr, alignment);
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= byteSize, "SystemAllocator: Deallocating more memory than allocated!");
             SystemAllocatorPrivate::g_AllocatedBytes -= byteSize;
@@ -197,11 +200,19 @@ namespace AZ
     //=========================================================================
     AllocateAddress SystemAllocator::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
+        if (!ptr)
+        {
+            return allocate(newSize, newAlignment);
+        }
+
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-            AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= AZ_OS_MSIZE(ptr, newAlignment), "SystemAllocator: Deallocating more memory than allocated!");
-            SystemAllocatorPrivate::g_AllocatedBytes -= AZ_OS_MSIZE(ptr, newAlignment);
-            AllocateAddress newAddress(AZ_OS_REALLOC(ptr, newSize, newAlignment), newSize);
+            size_type oldSize = AZ_OS_MSIZE(ptr, newAlignment);
+            AZ_Assert(SystemAllocatorPrivate::g_AllocatedBytes >= oldSize, "SystemAllocator: Deallocating more memory than allocated!");
+            SystemAllocatorPrivate::g_AllocatedBytes -= oldSize;
+            void* newPtr = AZ_OS_REALLOC(ptr, newSize, newAlignment);
+            newSize = AZ_OS_MSIZE(newPtr, newAlignment);
+            AllocateAddress newAddress(newPtr, newSize);
             if (newAddress)
             {
                 SystemAllocatorPrivate::g_AllocatedBytes += newSize;
@@ -224,7 +235,7 @@ namespace AZ
     //
     // [8/12/2011]
     //=========================================================================
-    auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
+    auto SystemAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const -> size_type
     {
         #if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC)
             return AZ_OS_MSIZE(ptr, alignment);
@@ -234,4 +245,10 @@ namespace AZ
         #endif
     }
 
+    void SystemAllocator::GarbageCollect()
+    {
+        #if (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+            m_subAllocator->GarbageCollect();
+        #endif
+    }
 } // namespace AZ
