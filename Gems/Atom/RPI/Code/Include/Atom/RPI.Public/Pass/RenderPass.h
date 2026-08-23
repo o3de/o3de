@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
@@ -33,7 +34,7 @@ namespace AZ
         class RenderPass;
         class Query;
 
-        //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that 
+        //! A RenderPass is a leaf Pass (i.e. a Pass that has no children) that
         //! implements rendering functionality (raster, compute, copy)
         class ATOM_RPI_PUBLIC_API RenderPass :
             public Pass,
@@ -57,7 +58,7 @@ namespace AZ
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const;
-            
+
             //! Returns a pointer to the Pass ShaderResourceGroup
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup();
 
@@ -144,7 +145,7 @@ namespace AZ
             TimestampResult GetTimestampResultInternal() const override;
             PipelineStatisticsResult GetPipelineStatisticsResultInternal() const override;
 
-            // Begin recording commands for the ScopeQueries 
+            // Begin recording commands for the ScopeQueries
             void BeginScopeQuery(const RHI::FrameGraphExecuteContext& context);
 
             // End recording commands for the ScopeQueries

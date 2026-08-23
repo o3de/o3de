@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/InstanceData.h>
 
 #include <Atom/RHI/PipelineState.h>
 
@@ -18,7 +19,6 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#include <AtomCore/Instance/InstanceData.h>
 #include <OpenParticleSystem/MaterialPropertyOverride.h>
 #include <OpenParticleSystem/ParticleModel.h>
 

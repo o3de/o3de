@@ -11,7 +11,7 @@
 #include <IMovieSystem.h>
 
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/containers/vector.h>
 
 #include "AnimTrack.h"

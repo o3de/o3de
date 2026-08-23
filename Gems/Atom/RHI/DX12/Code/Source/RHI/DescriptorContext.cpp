@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
-#include <AtomCore/std/containers/small_vector.h>
+#include <AzCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
@@ -134,7 +135,7 @@ namespace AZ
                             dynamicPool.Init(m_device.get(), type, flags, descriptorCountMax, m_staticDescriptorOffset);
 
                             // The remaining elements are assigned to a second pool sharing the same descriptor heap as the first
-                            // We assume that unbounded array is always supported on dx12 and can ignore the case when it is not 
+                            // We assume that unbounded array is always supported on dx12 and can ignore the case when it is not
                             uint32_t staticDescriptorCount = descriptorCountMax - m_staticDescriptorOffset;
                             m_staticPool.InitPooledRange(dynamicPool, m_staticDescriptorOffset, staticDescriptorCount);
                             m_staticTable =

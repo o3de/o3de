@@ -6,20 +6,5 @@
  *
  */
 
-#pragma once
-
-#include <AzCore/std/smart_ptr/intrusive_ptr.h>
-
-namespace AZ
-{
-    namespace Data
-    {
-        /**
-         * This is an alias of intrusive_ptr designed for any class which inherits from
-         * InstanceData. You're not required to use Instance<> over AZStd::intrusive_ptr<>,
-         * but it provides symmetry with Asset<>.
-         */
-        template <typename T>
-        using Instance = AZStd::intrusive_ptr<T>;
-    }
-}
+#pragma message("DEPRECATED: Include <AzCore/Instance/Instance.h> instead.")
+#include <AzCore/Instance/Instance.h>

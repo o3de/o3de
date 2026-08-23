@@ -8,14 +8,13 @@
 
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -99,7 +98,7 @@ namespace AZ
 
             IndexableList<MaterialData> m_materials;
             AZStd::array<Data::Instance<RPI::StreamingImage>, DecalMapType_Num> m_textureArrayPacked;
-             
+
             AZStd::unordered_set<AZ::Data::AssetId> m_assetsCurrentlyLoading;
         };
 

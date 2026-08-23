@@ -6,8 +6,8 @@
  *
  */
 
-#include <AtomCore/Instance/InstanceData.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

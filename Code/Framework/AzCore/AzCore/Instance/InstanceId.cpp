@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomCore/Instance/InstanceId.h>
+#include <AzCore/Instance/InstanceId.h>
 
 namespace AZ
 {

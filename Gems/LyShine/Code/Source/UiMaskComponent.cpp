@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "UiMaskComponent.h"
 #include <LyShine/IDraw2d.h>
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -22,7 +24,6 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -698,7 +699,7 @@ void UiMaskComponent::RenderUsingStencilMask(LyShine::IRenderGraph* renderGraph,
 {
     // begin the mask render node
     renderGraph->BeginMask(m_enableMasking, m_useAlphaTest, m_drawMaskVisualBehindChildren, m_drawMaskVisualInFrontOfChildren);
-            
+
     // We never want to apply the fade value when rendering the mask visual to stencil buffer
     renderGraph->PushOverrideAlphaFade(1.0f);
 
@@ -821,7 +822,7 @@ void UiMaskComponent::RenderDisabledMask(LyShine::IRenderGraph* renderGraph, UiE
     // The calling function ensures this method is never called when we want to render both behind and in front.
     // That would not work because the same primitive cannot be added to the render graph twice due to the use of
     // intrusive lists.
-    // Note that (currently at least) we never draw behind or in front when render to texture is enabled, so the value of 
+    // Note that (currently at least) we never draw behind or in front when render to texture is enabled, so the value of
     // m_drawMaskVisualBehindChildren and m_drawMaskVisualInFrontOfChildren is irrelevant in that case.
     AZ_Assert(!(!GetUseRenderToTexture() && m_drawMaskVisualBehindChildren && m_drawMaskVisualInFrontOfChildren),
         "Cannot use RenderDisabledMask when we are drawing behind and in front");
@@ -848,7 +849,7 @@ void UiMaskComponent::RenderDisabledMaskWithDoubleRender(LyShine::IRenderGraph* 
 {
     // we still need to use a mask render node in order to render the behind and in-front mask visual twice
     renderGraph->BeginMask(m_enableMasking, m_useAlphaTest, m_drawMaskVisualBehindChildren, m_drawMaskVisualInFrontOfChildren);
-            
+
     // No need to render the mask primitives since masking is disabled
 
     // tell render graph we have finished rendering the mask primitives and are starting the content primitives

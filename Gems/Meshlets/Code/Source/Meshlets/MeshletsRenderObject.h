@@ -8,14 +8,13 @@
 
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/Name/Name.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/std/containers/map.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Instance/InstanceData.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
-
-#include <AtomCore/Instance/Instance.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/std/containers/map.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>

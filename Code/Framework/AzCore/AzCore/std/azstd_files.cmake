@@ -94,17 +94,20 @@ set(FILES
     containers/fixed_unordered_map.h
     containers/fixed_unordered_set.h
     containers/fixed_vector.h
+    containers/fixed_vector_set.h
     containers/forward_list.h
     containers/intrusive_list.h
     containers/intrusive_set.h
     containers/intrusive_slist.h
     containers/list.h
+    containers/lru_cache.h
     containers/map.h
     containers/node_handle.h
     containers/queue.h
     containers/rbtree.h
     containers/ring_buffer.h
     containers/set.h
+    containers/small_vector.h
     containers/span_fwd.h
     containers/span.h
     containers/stack.h
@@ -113,10 +116,13 @@ set(FILES
     containers/variant.h
     containers/variant_impl.h
     containers/vector.h
+    containers/vector_set.h
+    containers/vector_set_base.h
     parallel/allocator_concurrent_static.h
     parallel/atomic.h
     parallel/binary_semaphore.h
     parallel/combinable.h
+    parallel/concurrency_checker.h
     parallel/condition_variable.h
     parallel/conditional_variable.h
     parallel/config.h

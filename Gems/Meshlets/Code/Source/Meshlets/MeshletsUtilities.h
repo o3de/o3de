@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AtomCore/Instance/InstanceData.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Instance/InstanceData.h>
 
 #include <Atom/RHI/ImagePool.h>
 

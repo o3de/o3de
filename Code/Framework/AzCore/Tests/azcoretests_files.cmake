@@ -24,6 +24,7 @@ set(FILES
     AZStd/Bitset.cpp
     AZStd/Charconv.cpp
     AZStd/ConceptsTests.cpp
+    AZStd/ConcurrencyCheckerTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
@@ -36,6 +37,7 @@ set(FILES
     AZStd/Hashed.cpp
     AZStd/Invoke.cpp
     AZStd/Iterators.cpp
+    AZStd/LruCache.cpp
     AZStd/Lists.cpp
     AZStd/ListsFixed.cpp
     AZStd/ListsIntrusive.cpp
@@ -64,6 +66,7 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
+    AZStd/VectorSet.cpp
     AssetManager.cpp
     AttributeDomInteropTests.cpp
     TestCatalog.h
@@ -110,6 +113,7 @@ set(FILES
     FixedWidthIntegers.cpp
     GenericStreamMock.h
     GenericStreamTests.cpp
+    Instance/InstanceDatabaseTests.cpp
     Math/AabbTests.cpp
     Math/CapsuleTests.cpp
     Math/ColorTests.cpp
@@ -268,6 +272,7 @@ set(FILES
     TaskTests.cpp
     TickBusTest.cpp
     Time/TimeTests.cpp
+    Utils/ScopedValueTests.cpp
     UUIDTests.cpp
     XML.cpp
 )

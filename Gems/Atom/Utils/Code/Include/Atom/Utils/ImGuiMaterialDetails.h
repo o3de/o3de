@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include<AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {

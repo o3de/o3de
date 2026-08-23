@@ -15,8 +15,7 @@
 
 #include <Atom/RHI/StreamingImagePool.h>
 
-#include <AtomCore/Instance/InstanceData.h>
-
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/containers/set.h>
 
 namespace AZ

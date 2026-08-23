@@ -5,17 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/containers/vector_set.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <AtomCore/std/containers/vector_set.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <Atom/RHI.Reflect/Handle.h>
-
 
 namespace AZ
 {

@@ -17,10 +17,10 @@
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <AtomCore/std/parallel/concurrency_checker.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/Console.h>
+#include <AzCore/std/parallel/concurrency_checker.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <Material/FallbackPBRMaterialManager.h>
 #include <Mesh/MeshInfoManager.h>

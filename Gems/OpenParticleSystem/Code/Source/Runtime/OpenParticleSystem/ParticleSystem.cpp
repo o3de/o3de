@@ -12,7 +12,6 @@
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 
 #include <Atom/Feature/RenderCommon.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
@@ -23,6 +22,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
 #include <particle/core/ParticleHelper.h>

@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/ShapeIntersection.h>
@@ -736,7 +736,7 @@ namespace AZ
                 PackTexureArrays();
             }
         }
-        
+
         void DecalTextureArrayFeatureProcessor::UpdateBounds(const DecalHandle handle)
         {
             const DecalData& data = m_decalData.GetData<0>(handle.GetIndex());

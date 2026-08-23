@@ -16,8 +16,7 @@
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 
-#include <AtomCore/Instance/InstanceData.h>
-
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/unordered_set.h>
 
