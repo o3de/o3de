@@ -167,6 +167,7 @@ namespace PhysX
         EXPECT_GT(followerEndPosition.GetX(), followerPosition.GetX());
         EXPECT_GT(abs(followerEndPosition.GetZ()), FLT_EPSILON);
     }
+
     TEST_F(PhysXJointsTest, Joint_BallJoint_FollowerSwingsUpAboutLead)
     {
         // Place lead on top of follower, tie them together with ball joint and send the follower moving sideways in the X and Y directions.
