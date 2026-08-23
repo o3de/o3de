@@ -22,7 +22,6 @@ ly_add_target(
         PRIVATE
             3rdParty::Freetype
             AZ::AzCore
-            AZ::AtomCore
             Legacy::CryCommon
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public

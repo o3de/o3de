@@ -20,7 +20,6 @@ ly_add_target(
             AZ::AzFramework
         PUBLIC
             Gem::Atom_RPI.Public
-            AZ::AtomCore
 )
 
 ly_add_target(
