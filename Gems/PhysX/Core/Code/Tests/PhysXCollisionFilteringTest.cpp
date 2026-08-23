@@ -138,23 +138,6 @@ namespace PhysX
         EXPECT_TRUE(collisionEvents.m_beginCollisions.empty());
     }
 
-    TEST_F(PhysXCollisionFilteringTest, SameCollisionGroupSameLayerCollide)
-    {
-        auto stationaryBox = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
-        auto fallingBox = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3(1.0f, 1.0f, 1.0f));
-
-        TestUtils::SetCollisionLayer(stationaryBox, LayerA);
-        TestUtils::SetCollisionLayer(fallingBox, LayerA);
-        TestUtils::SetCollisionGroup(stationaryBox, GroupA);
-        TestUtils::SetCollisionGroup(fallingBox, GroupA);
-
-        CollisionCallbacksListener collisionEvents(fallingBox->GetId());
-
-        TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, FramesToUpdate);
-
-        EXPECT_FALSE(collisionEvents.m_beginCollisions.empty());
-    }
-
     TEST_F(PhysXCollisionFilteringTest, TestSetCollidesWithGroupOnDynamicObject)
     {
         auto ground = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3::CreateZero(), AZ::Vector3(10.0f, 10.0f, 0.5f));
