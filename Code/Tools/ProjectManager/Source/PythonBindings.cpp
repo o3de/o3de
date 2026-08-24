@@ -8,6 +8,8 @@
 
 #include <PythonBindings.h>
 
+#include <AzCore/std/optional.h>
+
 #include <ProjectManagerDefs.h>
 #include <osdefs.h> // for DELIM
 
@@ -331,6 +333,7 @@ namespace O3DE::ProjectManager
                 ExtendSysPath(extendedPaths);
             }
 
+            {
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
@@ -357,6 +360,17 @@ namespace O3DE::ProjectManager
             m_pathlib = pybind11::module::import("pathlib");
 
             m_pythonStarted = !PyErr_Occurred();
+            }
+
+            if (m_pythonStarted)
+            {
+                // Release the GIL from the initializing thread. The
+                // interpreter keeps the GIL held after initialization;
+                // leaving it held would block any other thread that enters
+                // python through gil_scoped_acquire. StopPython restores
+                // this thread state before finalizing the interpreter.
+                m_initialThreadState = PyEval_SaveThread();
+            }
             return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
@@ -370,6 +384,13 @@ namespace O3DE::ProjectManager
     {
         if (Py_IsInitialized())
         {
+            if (m_initialThreadState)
+            {
+                // Re-adopt the thread state that StartPython released;
+                // finalize must run with the GIL held.
+                PyEval_RestoreThread(static_cast<PyThreadState*>(m_initialThreadState));
+                m_initialThreadState = nullptr;
+            }
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
@@ -385,7 +406,15 @@ namespace O3DE::ProjectManager
         }
 
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-        pybind11::gil_scoped_release release;
+        // gil_scoped_release requires the calling thread to hold the GIL
+        // (it calls PyEval_SaveThread, which needs a current thread state).
+        // A thread that has never entered python yet has no thread state,
+        // so it must skip straight to the acquire, which creates one.
+        AZStd::optional<pybind11::gil_scoped_release> release;
+        if (PyGILState_Check())
+        {
+            release.emplace();
+        }
         pybind11::gil_scoped_acquire acquire;
 
         m_pythonErrorStrings.clear();

@@ -314,7 +314,14 @@ namespace EditorPythonBindings
         // to be locked) and therefore it's already got the GIL acquired.
         if (m_lockRecursiveCounter == 1)
         {
-            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
+            // gil_scoped_release requires the calling thread to hold the GIL
+            // (it calls PyEval_SaveThread, which needs a current thread state).
+            // A thread that has never entered python yet has no thread state,
+            // so it must skip straight to the acquire, which creates one.
+            if (PyGILState_Check())
+            {
+                m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
+            }
             m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
         }
     }
@@ -602,18 +609,31 @@ namespace EditorPythonBindings
             }
             RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
 
-            // Acquire GIL before calling Python code
-            PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
-
-            if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
+            bool startResult = false;
             {
-                m_symbolLogHelper = AZStd::make_shared<PythonSystemComponent::SymbolLogHelper>();
+                // Acquire GIL before calling Python code
+                PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
+
+                if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
+                {
+                    m_symbolLogHelper = AZStd::make_shared<PythonSystemComponent::SymbolLogHelper>();
+                }
+
+                // print Python version using AZ logging
+                const int verRet = PyRun_SimpleStringFlags("import sys \nprint (sys.version) \n", nullptr);
+                AZ_Error("python", verRet == 0, "Error trying to fetch the version number in Python!");
+                startResult = verRet == 0 && !PyErr_Occurred();
             }
 
-            // print Python version using AZ logging
-            const int verRet = PyRun_SimpleStringFlags("import sys \nprint (sys.version) \n", nullptr);
-            AZ_Error("python", verRet == 0, "Error trying to fetch the version number in Python!");
-            return verRet == 0 && !PyErr_Occurred();
+            // Release the GIL from the initializing thread. The interpreter
+            // keeps the GIL held after initialization; leaving it held would
+            // block any other thread (for example an asset builder job
+            // thread) that enters python through gil_scoped_acquire.
+            // StopPythonInterpreter restores this thread state before
+            // finalizing the interpreter.
+            m_initialThreadState = PyEval_SaveThread();
+
+            return startResult;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -652,6 +672,13 @@ namespace EditorPythonBindings
     {
         if (Py_IsInitialized())
         {
+            if (m_initialThreadState)
+            {
+                // Re-adopt the thread state that StartPythonInterpreter
+                // released; finalize must run with the GIL held.
+                PyEval_RestoreThread(static_cast<PyThreadState*>(m_initialThreadState));
+                m_initialThreadState = nullptr;
+            }
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }

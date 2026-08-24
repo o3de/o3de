@@ -124,6 +124,10 @@ namespace O3DE::ProjectManager
 
         AZ::IO::FixedMaxPath m_enginePath;
         mutable AZStd::recursive_mutex m_lock;
+        // PyThreadState of the thread that initialized the interpreter,
+        // released after startup so other threads can acquire the GIL
+        // (see StartPython / StopPython)
+        void* m_initialThreadState = nullptr;
 
         pybind11::handle m_gemProperties;
         pybind11::handle m_engineTemplate;

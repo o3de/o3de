@@ -71,6 +71,10 @@ namespace EditorPythonBindings
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
         int m_lockRecursiveCounter = 0;
+        // PyThreadState of the thread that initialized the interpreter,
+        // released after startup so other threads can acquire the GIL
+        // (see StartPythonInterpreter / StopPythonInterpreter)
+        void* m_initialThreadState = nullptr;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
         PythonActionManagerHandler m_pythonActionManagerHandler;
         AzToolsFramework::EmbeddedPython::PythonLoader m_pythonLoader;
