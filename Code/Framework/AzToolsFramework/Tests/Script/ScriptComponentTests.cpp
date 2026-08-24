@@ -7,13 +7,17 @@
  */
 
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
 #include "EntityTestbed.h"
 
@@ -30,6 +34,91 @@ namespace UnitTest
     // Global Properties used for Testing
     int mySubValue = 0;
     int myReloadValue = 0;
+
+    namespace
+    {
+        constexpr AZ::Crc32 SupportedAssetTypesAttribute = AZ_CRC_CE("SupportedAssetTypes");
+
+        class TestAssetTypeInfo
+            : public AZ::AssetTypeInfoBus::Handler
+        {
+        public:
+            TestAssetTypeInfo(AZ::Data::AssetType assetType, const char* displayName)
+                : m_assetType(assetType)
+                , m_displayName(displayName)
+            {
+                BusConnect(m_assetType);
+            }
+
+            ~TestAssetTypeInfo() override
+            {
+                BusDisconnect();
+            }
+
+            AZ::Data::AssetType GetAssetType() const override
+            {
+                return m_assetType;
+            }
+
+            const char* GetAssetTypeDisplayName() const override
+            {
+                return m_displayName;
+            }
+
+        private:
+            AZ::Data::AssetType m_assetType;
+            const char* m_displayName;
+        };
+
+        class AssetIdScriptPropertyStub
+            : public AZ::ScriptProperty
+        {
+        public:
+            const void* GetDataAddress() const override
+            {
+                return nullptr;
+            }
+
+            AZ::TypeId GetDataTypeUuid() const override
+            {
+                return azrtti_typeid<AZ::Data::AssetId>();
+            }
+
+            AZ::ScriptProperty* Clone([[maybe_unused]] const char* name = nullptr) const override
+            {
+                return nullptr;
+            }
+
+            bool Write([[maybe_unused]] AZ::ScriptContext& context) override
+            {
+                return false;
+            }
+
+        protected:
+            void CloneDataFrom([[maybe_unused]] const AZ::ScriptProperty* scriptProperty) override
+            {
+            }
+        };
+
+        class TestScriptEditorComponent
+            : public AzToolsFramework::Components::ScriptEditorComponent
+        {
+        public:
+            using ScriptEditorComponent::LoadAttribute;
+        };
+
+        AZStd::vector<AZ::Data::AssetType> ReadSupportedAssetTypes(const AZ::Edit::ElementData& editData)
+        {
+            AZStd::vector<AZ::Data::AssetType> assetTypes;
+            AZ::Attribute* attribute = editData.FindAttribute(SupportedAssetTypesAttribute);
+            if (attribute)
+            {
+                AZ::AttributeReader reader(nullptr, attribute);
+                reader.Read<AZStd::vector<AZ::Data::AssetType>>(assetTypes);
+            }
+            return assetTypes;
+        }
+    } // namespace
 
     class ScriptComponentTest
         : public UnitTest::LeakDetectionFixture
@@ -110,6 +199,33 @@ namespace UnitTest
 
             auto* scriptComponent = gameEntity.FindComponent<ScriptComponent>();
             return scriptComponent;
+        }
+
+        bool LoadAssetTypeAttributes(const AZStd::string& attributes, AZ::Edit::ElementData& editData)
+        {
+            const AZStd::string script = AZStd::string::format("AssetTypeAttributeTest = %s", attributes.c_str());
+            if (!m_scriptContext->Execute(script.c_str(), "AssetTypeAttributeTest"))
+            {
+                return false;
+            }
+
+            AZ::ScriptDataContext attributeTable;
+            if (!m_scriptContext->InspectTable("AssetTypeAttributeTest", attributeTable))
+            {
+                return false;
+            }
+
+            TestScriptEditorComponent component;
+            AssetIdScriptPropertyStub property;
+            bool result = true;
+            const char* attributeName = nullptr;
+            int attributeFieldIndex = 0;
+            int attributeIndex = 0;
+            while (attributeTable.InspectNextElement(attributeIndex, attributeName, attributeFieldIndex))
+            {
+                result = component.LoadAttribute(attributeTable, attributeIndex, attributeName, editData, &property) && result;
+            }
+            return result;
         }
 
         ComponentApplication m_app;
@@ -241,5 +357,127 @@ namespace UnitTest
         Entity editorEntity, gameEntity;
         auto* scriptComponent = BuildGameEntity(scriptAsset, gameEntity);
         EXPECT_NE(scriptComponent->GetScriptProperty("myNum"), nullptr);
+    }
+
+    TEST_F(ScriptComponentTest, LuaAssetIdPropertyAcceptsOneAssetTypeDisplayName)
+    {
+        const AZ::Data::AssetType modelAssetType{ "{8F38B502-014C-4E46-A867-20CB7BC24954}" };
+        TestAssetTypeInfo modelAssetTypeInfo(modelAssetType, "ModelAsset");
+        AZ::Edit::ElementData editData;
+
+        EXPECT_TRUE(LoadAssetTypeAttributes("{ assetType = 'ModelAsset' }", editData));
+        EXPECT_THAT(ReadSupportedAssetTypes(editData), ::testing::ElementsAre(modelAssetType));
+        ASSERT_NE(editData.FindAttribute(SupportedAssetTypesAttribute), nullptr);
+        EXPECT_FALSE(editData.FindAttribute(SupportedAssetTypesAttribute)->m_describesChildren);
+
+        editData.ClearAttributes();
+    }
+
+    TEST_F(ScriptComponentTest, LuaAssetIdPropertyAcceptsBetweenOneAndEightAssetTypes)
+    {
+        const AZStd::array<AZ::Data::AssetType, 8> assetTypes = {
+            AZ::Data::AssetType{ "{5091E379-381F-4603-8941-9AC13550D6FB}" },
+            AZ::Data::AssetType{ "{A6DF59CF-6D35-4FB3-AE0C-631144C88A07}" },
+            AZ::Data::AssetType{ "{A0B281BB-2835-46AD-A3AE-5E1D07468320}" },
+            AZ::Data::AssetType{ "{C5AC91D0-D70F-4305-93F7-3CC00FA243F7}" },
+            AZ::Data::AssetType{ "{C9E956F0-AD2B-4C14-9493-F9E89538A60F}" },
+            AZ::Data::AssetType{ "{52CC79AD-1D7C-4B83-A59B-7089ABBD9E82}" },
+            AZ::Data::AssetType{ "{E1D10AD6-4CF5-418D-9A16-82FE01A6A609}" },
+            AZ::Data::AssetType{ "{4437603D-FBD6-4B59-BA2B-11554A4C3425}" }
+        };
+        TestAssetTypeInfo firstTypeInfo(assetTypes[0], "TestAsset1");
+        TestAssetTypeInfo secondTypeInfo(assetTypes[1], "TestAsset2");
+        TestAssetTypeInfo thirdTypeInfo(assetTypes[2], "TestAsset3");
+        TestAssetTypeInfo fourthTypeInfo(assetTypes[3], "TestAsset4");
+        TestAssetTypeInfo fifthTypeInfo(assetTypes[4], "TestAsset5");
+        TestAssetTypeInfo sixthTypeInfo(assetTypes[5], "TestAsset6");
+        TestAssetTypeInfo seventhTypeInfo(assetTypes[6], "TestAsset7");
+        TestAssetTypeInfo eighthTypeInfo(assetTypes[7], "TestAsset8");
+
+        for (size_t typeCount = 1; typeCount <= assetTypes.size(); ++typeCount)
+        {
+            SCOPED_TRACE(typeCount);
+            AZStd::string attribute = "{ assetType = {";
+            for (size_t index = 0; index < typeCount; ++index)
+            {
+                attribute += AZStd::string::format("'TestAsset%zu',", index + 1);
+            }
+            attribute += "} }";
+
+            AZ::Edit::ElementData editData;
+            EXPECT_TRUE(LoadAssetTypeAttributes(attribute, editData));
+            const AZStd::vector<AZ::Data::AssetType> actualAssetTypes = ReadSupportedAssetTypes(editData);
+            ASSERT_EQ(actualAssetTypes.size(), typeCount);
+            EXPECT_TRUE(AZStd::equal(actualAssetTypes.begin(), actualAssetTypes.end(), assetTypes.begin()));
+            editData.ClearAttributes();
+        }
+    }
+
+    TEST_F(ScriptComponentTest, LuaAssetIdPropertyRejectsInvalidAssetTypeFilters)
+    {
+        const AZ::Data::AssetType firstAssetType{ "{72C86438-A410-41D5-A927-854799F62DC0}" };
+        const AZ::Data::AssetType secondAssetType{ "{48415517-F909-4F5F-B9AA-57073A6B3090}" };
+        TestAssetTypeInfo firstTypeInfo(firstAssetType, "TestAsset1");
+        TestAssetTypeInfo secondTypeInfo(secondAssetType, "TestAsset2");
+        TestAssetTypeInfo ambiguousTypeInfo(secondAssetType, "TestAsset1");
+
+        const AZStd::array<const char*, 6> invalidAttributes = {
+            "{ assetType = 'MissingAsset' }",
+            "{ assetType = 'TestAsset1' }",
+            "{ assetType = {} }",
+            "{ assetType = {'TestAsset2', 'TestAsset2'} }",
+            "{ assetType = {'TestAsset1', 'TestAsset2', 'TestAsset3', 'TestAsset4', 'TestAsset5', 'TestAsset6', 'TestAsset7', 'TestAsset8', 'TestAsset9'} }",
+            "{ assetType = 42 }"
+        };
+
+        for (const char* attribute : invalidAttributes)
+        {
+            SCOPED_TRACE(attribute);
+            AZ::Edit::ElementData editData;
+            EXPECT_FALSE(LoadAssetTypeAttributes(attribute, editData));
+            EXPECT_THAT(ReadSupportedAssetTypes(editData), ::testing::ElementsAre(AZ::Data::s_invalidAssetType));
+            editData.ClearAttributes();
+        }
+    }
+
+    TEST_F(ScriptComponentTest, AssetIdSupportedAssetTypesRoundTripsThroughDpe)
+    {
+        AZ::DocumentPropertyEditor::PropertyEditorSystem propertyEditorSystem;
+        AzToolsFramework::AssetIdPropertyHandlerDefault assetIdPropertyHandler;
+        assetIdPropertyHandler.RegisterWithPropertySystem(&propertyEditorSystem);
+
+        const AZ::Name attributeName = propertyEditorSystem.LookupNameFromId(SupportedAssetTypesAttribute);
+        EXPECT_EQ(attributeName, AZ::Name("SupportedAssetTypes"));
+
+        const AZ::DocumentPropertyEditor::AttributeDefinitionInterface* supportedAssetTypesDefinition = nullptr;
+        propertyEditorSystem.EnumerateRegisteredAttributes(
+            attributeName,
+            [&supportedAssetTypesDefinition](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& definition)
+            {
+                if (definition.GetTypeId() == azrtti_typeid<AZStd::vector<AZ::Data::AssetType>>())
+                {
+                    supportedAssetTypesDefinition = &definition;
+                }
+            });
+        ASSERT_NE(supportedAssetTypesDefinition, nullptr);
+
+        const AZStd::vector<AZ::Data::AssetType> expectedAssetTypes = {
+            AZ::Data::AssetType{ "{18F441A4-DB79-42F1-A2D7-70E450A05D64}" },
+            AZ::Data::AssetType{ "{70984272-AB02-4A86-B55D-8AE3A16F6744}" }
+        };
+        AZ::AttributeData<AZStd::vector<AZ::Data::AssetType>> legacyAttribute(expectedAssetTypes);
+
+        const AZ::Dom::Value domValue = supportedAssetTypesDefinition->LegacyAttributeToDomValue(
+            AZ::PointerObject{ nullptr, AZ::TypeId::CreateNull() }, &legacyAttribute);
+        ASSERT_FALSE(domValue.IsNull());
+
+        AZStd::shared_ptr<AZ::Attribute> restoredAttribute =
+            supportedAssetTypesDefinition->DomValueToLegacyAttribute(domValue, true);
+        ASSERT_NE(restoredAttribute, nullptr);
+
+        AZStd::vector<AZ::Data::AssetType> actualAssetTypes;
+        AZ::AttributeReader restoredAttributeReader(nullptr, restoredAttribute.get());
+        ASSERT_TRUE(restoredAttributeReader.Read<AZStd::vector<AZ::Data::AssetType>>(actualAssetTypes));
+        EXPECT_EQ(actualAssetTypes, expectedAssetTypes);
     }
 } // namespace UnitTest
