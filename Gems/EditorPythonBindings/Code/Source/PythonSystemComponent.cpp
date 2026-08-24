@@ -631,12 +631,16 @@ namespace EditorPythonBindings
         };
         AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
         bool appended{ false };
-        AZStd::string pathAppend{ "import sys\n" };
+        // site.addsitedir instead of sys.path.append: it also executes any
+        // .pth files in the added directory, which is how pip's PEP 660
+        // editable installs (__editable__.*.pth import hooks) become
+        // importable; a plain sys.path entry never runs them.
+        AZStd::string pathAppend{ "import sys\nimport site\n" };
         for (const auto& thisStr : extendPaths)
         {
             if (!oldPathSet.contains(thisStr))
             {
-                pathAppend.append(AZStd::string::format("sys.path.append(r'%s')\n", thisStr.c_str()));
+                pathAppend.append(AZStd::string::format("site.addsitedir(r'%s')\n", thisStr.c_str()));
                 appended = true;
             }
         }
