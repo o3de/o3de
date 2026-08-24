@@ -4,11 +4,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+add_subdirectory(cityhash)
+add_subdirectory(mcpp)
+add_subdirectory(mikktspace)
+add_subdirectory(rapidxml)
+add_subdirectory(sqlite)
+add_subdirectory(xxhash)

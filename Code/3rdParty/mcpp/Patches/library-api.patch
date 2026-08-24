@@ -1,0 +1,105 @@
+diff --git a/src/main.c b/src/main.c
+index a438894..b892f81 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -334,7 +334,7 @@ int     main
+ #endif
+ (
+     int argc,
+-    char ** argv
++    const char ** argv
+ )
+ {
+     char *  in_file = NULL;
+diff --git a/src/mcpp_lib.h b/src/mcpp_lib.h
+index 4827f0a..64b23ae 100644
+--- a/src/mcpp_lib.h
++++ b/src/mcpp_lib.h
+@@ -1,3 +1,4 @@
++// # Modifications Copyright (c) Contributors to the Open 3D Engine Project, SPDX-License-Identifier: Apache-2.0 OR MIT
+ /* mcpp_lib.h: declarations of libmcpp exported (visible) functions */
+ #ifndef _MCPP_LIB_H
+ #define _MCPP_LIB_H
+@@ -10,7 +11,7 @@
+             || __MINGW64__
+ #if     DLL_EXPORT || (__CYGWIN__ && PIC)
+ #define DLL_DECL    __declspec( dllexport)
+-#elif   DLL_IMPORT
++#elif   MCPP_DLL_IMPORT
+ #define DLL_DECL    __declspec( dllimport)
+ #else
+ #define DLL_DECL
+@@ -19,13 +20,31 @@
+ #define DLL_DECL
+ #endif
+ 
+-extern DLL_DECL int     mcpp_lib_main( int argc, char ** argv);
+-extern DLL_DECL void    mcpp_reset_def_out_func( void);
+-extern DLL_DECL void    mcpp_set_out_func(
+-                    int (* func_fputc)  ( int c, OUTDEST od),
+-                    int (* func_fputs)  ( const char * s, OUTDEST od),
+-                    int (* func_fprintf)( OUTDEST od, const char * format, ...)
+-                    );
+-extern DLL_DECL void    mcpp_use_mem_buffers( int tf);
+-extern DLL_DECL char *  mcpp_get_mem_buffer( OUTDEST od);
++#include <stdio.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++    extern DLL_DECL int     mcpp_lib_main(int argc, const char ** argv);
++    extern DLL_DECL void    mcpp_reset_def_out_func(void);
++    extern DLL_DECL void    mcpp_set_out_func(
++                        int (* func_fputc)  ( int c, MCPP_OUTDEST od),
++                        int (* func_fputs)  ( const char * s, MCPP_OUTDEST od),
++                        int (* func_fprintf)(MCPP_OUTDEST od, const char * format, ...)
++                        );
++    extern DLL_DECL void    mcpp_use_mem_buffers( int tf);
++    extern DLL_DECL char *  mcpp_get_mem_buffer(MCPP_OUTDEST od);
++
++    extern DLL_DECL void    mcpp_set_report_include_callback(
++                        void(*report_include)(FILE * fp,               /* Open file pointer    */
++                                              const char *  src_dir,   /* Directory of source  */
++                                              const char *  filename,  /* Name of the file     */
++                                              const char *  fullname)  /* Full path            */
++    );
++
++#ifdef __cplusplus
++}
++#endif
++
+ #endif  /* _MCPP_LIB_H  */
+diff --git a/src/mcpp_out.h b/src/mcpp_out.h
+index 02ba2aa..bf0b82e 100644
+--- a/src/mcpp_out.h
++++ b/src/mcpp_out.h
+@@ -1,13 +1,23 @@
+ /* mcpp_out.h: declarations of OUTDEST data types for MCPP  */
++// # Modifications Copyright (c) Contributors to the Open 3D Engine Project, SPDX-License-Identifier: Apache-2.0 OR MIT
+ #ifndef _MCPP_OUT_H
+ #define _MCPP_OUT_H
+ 
+ /* Choices for output destination */
+ typedef enum {
+-    OUT,                        /* ~= fp_out    */
+-    ERR,                        /* ~= fp_err    */
+-    DBG,                        /* ~= fp_debug  */
+-    NUM_OUTDEST
+-} OUTDEST;
++    MCPP_OUT,                        /* ~= fp_out    */
++    MCPP_ERR,                        /* ~= fp_err    */
++    MCPP_DBG,                        /* ~= fp_debug  */
++    MCPP_NUM_OUTDEST
++} MCPP_OUTDEST;
++
++// O3DE: keep build compatibility with MCPP
++#ifndef MCPP_DONT_USE_SHORT_NAMES
++ #define OUT MCPP_OUT
++ #define ERR MCPP_ERR
++ #define DBG MCPP_DBG
++ #define NUM_OUTDEST MCPP_NUM_OUTDEST
++ #define OUTDEST MCPP_OUTDEST
++#endif
+ 
+ #endif  /* _MCPP_OUT_H  */

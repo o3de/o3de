@@ -4,11 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+ly_add_3rdparty_target(
+    NAME cityhash STATIC
+    INCLUDE_DIRECTORIES
+        PUBLIC Include
+)

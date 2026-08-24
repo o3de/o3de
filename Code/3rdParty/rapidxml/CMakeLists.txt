@@ -4,11 +4,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+ly_add_3rdparty_target(
+    NAME rapidxml HEADERONLY
+    INCLUDE_DIRECTORIES
+        INTERFACE Include
+)
+
+ly_create_alias(NAME RapidXML NAMESPACE 3rdParty TARGETS 3rdParty::rapidxml)

@@ -359,6 +359,56 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
 
 endfunction()
 
+#! ly_add_3rdparty_target: Adds a locally-built 3rdParty target using O3DE conventions
+#
+# This wrapper supplies the 3rdParty namespace, disables unity builds and compiler warnings,
+# treats the target's include directories as system includes,
+# and installs the package's required attribution files.
+# It otherwise forwards arguments to ly_add_target unchanged.
+# FILES_CMAKE defaults to files.cmake when it is not specified.
+#
+# Each package directory must contain LICENSE.txt and PackageInfo.json.
+macro(ly_add_3rdparty_target)
+    o3de_disable_warnings()
+
+    block(SCOPE_FOR VARIABLES)
+        set(arguments ${ARGN})
+        cmake_parse_arguments(arg "" "NAME" "" ${arguments})
+
+        if(NOT arg_NAME)
+            message(FATAL_ERROR "ly_add_3rdparty_target requires NAME")
+        endif()
+
+        set(attribution_files LICENSE.txt PackageInfo.json)
+        foreach(attribution_file IN LISTS attribution_files)
+            set(attribution_path "${CMAKE_CURRENT_SOURCE_DIR}/${attribution_file}")
+            if(NOT EXISTS "${attribution_path}" OR IS_DIRECTORY "${attribution_path}")
+                message(FATAL_ERROR "ly_add_3rdparty_target(${arg_NAME}) requires attribution file ${attribution_path}")
+            endif()
+        endforeach()
+
+        set(default_arguments)
+        if(NOT "FILES_CMAKE" IN_LIST arguments)
+            list(APPEND default_arguments FILES_CMAKE files.cmake)
+        endif()
+
+        ly_add_target(
+            ${arguments}
+            NAMESPACE 3rdParty
+            NO_UNITY
+            ${default_arguments}
+        )
+
+        set_target_properties(${arg_NAME} PROPERTIES SYSTEM TRUE)
+
+        ly_get_engine_relative_source_dir("${CMAKE_CURRENT_SOURCE_DIR}" install_destination)
+        ly_install_files(
+            FILES ${attribution_files}
+            DESTINATION "${install_destination}"
+        )
+    endblock()
+endmacro()
+
 # Utility function, pass it a single target or a list of targets, and it will do the following to them
 # 1. Turn off warnings as errors (we are not responsible for warnings in 3p libraries)
 # 2. Make sure its output directory is set to be different for each configuration so that binaries

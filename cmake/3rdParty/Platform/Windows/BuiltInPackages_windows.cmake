@@ -10,10 +10,7 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
-ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                      TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
-ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                            TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                               TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
-ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-windows                              TARGETS expat                       PACKAGE_HASH 748d08f21f5339757059a7887e72b52d15e954c549245c638b0b05bd5961e307)
@@ -24,8 +21,6 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-windows                    
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-windows                          TARGETS Freetype                    PACKAGE_HASH 861d059a5542cb8f58a5157f411eee2e78f69ac72e45117227ebe400efe49f61)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev1-windows                    TARGETS AWSNativeSDK                PACKAGE_HASH 5112bfc8982f240757f22f32f5f761d7d7020d1c77b029ae480c082fa3ae19d4)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-windows                                TARGETS Lua                         PACKAGE_HASH 8ac853288712267ec9763be152a9274ce87b54728b8add97e2ba73c0fd5a0345)
-ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
-ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows                           TARGETS d3dx12                      PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev5-windows                    TARGETS pyside6                     PACKAGE_HASH 322cc789f521cee9444401ce444c14b3a3d7b08ac30384c9baa9f55068be2397)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev4-windows           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH d542198653b33640268a999de542c9c5adf4a29322ed04858c730bc82eb34b09)
@@ -41,6 +36,5 @@ ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-windows                 
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-windows                                TARGETS lz4                         PACKAGE_HASH aa7d4e8f6424fad7fdc0304fecd83c1183886cc4c7b38ba014c85f43d036e550)
 ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 3738f008842df5f9ed9281a16f6e4c9166ed3bd604b57d7eea751af913c60a66)
-ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.3.261-rev1-windows          TARGETS vulkan-validationlayers     PACKAGE_HASH 79132c6379e0d167c7a2f5a8e251861759a71d92f1fb8cc3b873df821d83ae51)

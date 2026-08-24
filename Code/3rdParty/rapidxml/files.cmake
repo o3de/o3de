@@ -4,11 +4,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+set(FILES
+    Include/rapidxml/rapidxml.h
+    Include/rapidxml/rapidxml_iterators.h
+    Include/rapidxml/rapidxml_print.h
+    Include/rapidxml/rapidxml_utils.h
+)

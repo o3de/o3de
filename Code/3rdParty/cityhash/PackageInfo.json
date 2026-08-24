@@ -1,0 +1,11 @@
+{
+    "PackageName": "cityhash",
+    "URL": "https://github.com/google/cityhash",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/google/cityhash/archive/f5dc54147fcce12cefd16548c8e760d68ac04226.tar.gz",
+        "Revision": "f5dc54147fcce12cefd16548c8e760d68ac04226",
+        "SHA256": "22c24af73a3fec9402e3a183f2dee87d71f13a81859b0406472e671fb7d13a69"
+    }
+}

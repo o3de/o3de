@@ -1,0 +1,81 @@
+diff --git a/src/system.c b/src/system.c
+index 4759469..5bccf62 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -3320,7 +3320,7 @@ static int  is_full_path(
+ #if SYS_FAMILY == SYS_UNIX
+     if (path[0] == PATH_DELIM)
+ #elif   SYS_FAMILY == SYS_WIN
+-    if ((path[1] == ':' && path[2] == PATH_DELIM)   /* "C:/path"    */
++    if ((path[1] == ':' && (path[2] == PATH_DELIM || path[2] == '\\'))   /* "C:/path"    */
+             || path[0] == PATH_DELIM)       /* Root dir of current drive    */
+ #elif   1
+ /* For other systems you should write code here.    */
+@@ -3858,6 +3860,28 @@ static int  chk_dirp(
+ }
+ #endif
+ 
++char* mincs_ifnotnull(char* p1, char* p2)
++{
++    if (!p1) return p2;
++    if (!p2) return p1;
++    return p1 < p2 ? p1 : p2;
++}
++
++/* extract directory part of a file path */
++static char g_space[1024];
++char * dir_of(const char* path)
++{
++    const char * lastsep = mincs_ifnotnull(strrchr(path, PATH_DELIM),
++                                           strrchr(path, '\\'));
++    if (!lastsep) return NULL;
++    if (lastsep - path >= 1024)
++        cfatal("path too long encountered. %s", path, 0L, NULL);
++
++    strncpy(g_space, path, lastsep - path + 1);
++    g_space[lastsep - path + 1] = 0;
++    return g_space;
++}
++
+ void    sharp(
+     FILEINFO *  sharp_file,
+     int         flag        /* Flag to append to the line for GCC   */
+@@ -3910,17 +3934,34 @@ static void cur_file(
+ 
+     if (mcpp_debug & MACRO_CALL) {  /* In macro notification mode   */
+         if (sharp_file)                         /* Main input file  */
+-            name = file->filename;
++            name = file->full_fname;
+         else                /* Output full-path-list, normalized    */
+             name = cur_fullname;
+     } else {                /* Usually, the path not "normalized"   */
+         if (sharp_file) {                       /* Main input file  */
+             name = file->filename;
+         } else if (str_eq( file->filename, file->real_fname)) {
+-            sprintf( work_buf, "%s%s", *(file->dirp), cur_fname);
+-            name = work_buf;
++            name = file->full_fname; // O3DE: absolute paths required
+         } else {            /* Changed by '#line fname' directive   */
+-            name = file->filename;
++            if (!is_full_path(file->filename)) {     // O3DE: this block does the best it can to get real full paths.
++                name = dir_of(cur_fullname);  // extract first part of path
++                if (!name)  // no directory found in cur_fullname (weird case)
++                    name = file->filename;
++                else {
++                    sprintf( work_buf, "%s%s", name, file->filename);
++                    FILE* reachable = fopen(work_buf, "r");
++                    if (reachable) {
++                        name = norm_path(null, work_buf, FALSE, FALSE);
++                        fclose(reachable);
++                    } else {  // non reachable file encountered
++                        name = file->filename;  // input verbatim
++                    }
++                }
++                if (strlen(name) == 0)
++                    name = file->filename;  // as is
++            } else {  // absolute path already
++                name = file->filename;
++            }
+         }
+     }
+     if (sharp_filename == NULL || ! str_eq( name, sharp_filename)) {

@@ -1,0 +1,44 @@
+diff --git a/src/configed.H b/src/configed.H
+index b4d1ebf..436bd54 100644
+--- a/src/configed.H
++++ b/src/configed.H
+@@ -17,10 +17,10 @@
+ 
+ #include    "config.h"
+ 
+-#ifndef COMPILER            /* No target compiler specified */
+-#define COMPILER            COMPILER_UNKNOWN
++#ifndef COMPILER
++#define COMPILER            MSC
+ #endif
+-#ifndef HOST_COMPILER       /* No host compiler specified   */
++#ifndef HOST_COMPILER
+ #define HOST_COMPILER       COMPILER
+ #endif
+ 
+diff --git a/src/noconfig.H b/src/noconfig.H
+index 6b634fe..6482967 100644
+--- a/src/noconfig.H
++++ b/src/noconfig.H
+@@ -15,18 +15,18 @@
+  */
+ 
+ /* Define target operating-system.  */
+-#define SYSTEM              SYS_FREEBSD
++#define SYSTEM              SYS_WIN
+ 
+ /* Define target compiler.          */
+ #ifndef COMPILER
+-#define COMPILER            INDEPENDENT /* compiler-independent-build   */
++#define COMPILER            MSC /* compiler-independent-build   */
+ #endif
+ 
+ /* Define host operating-system.    */
+ #define HOST_SYSTEM         SYSTEM
+ 
+ /* Define host compiler.            */
+-#define HOST_COMPILER       GNUC
++#define HOST_COMPILER       COMPILER
+ 
+ /* Version message.                 */
+ /* "MCPP V.2.* (200y/mm) compiled by " precedes VERSION_MSG */

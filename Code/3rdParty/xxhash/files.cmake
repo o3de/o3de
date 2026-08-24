@@ -4,11 +4,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+set(FILES
+    Include/xxhash.h
+    Include/xxhash/xxh3.h
+    Include/xxhash/xxhash.h
+    Source/xxhash.c
+)

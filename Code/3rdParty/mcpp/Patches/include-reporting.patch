@@ -1,0 +1,50 @@
+diff --git a/src/internal.H b/src/internal.H
+index 5e1c19f..94b5a5a 100644
+--- a/src/internal.H
++++ b/src/internal.H
+@@ -503,6 +503,8 @@ extern int      (* mcpp_fputc)( int c, OUTDEST od),
+                 (* mcpp_fputs)( const char * s, OUTDEST od),
+                 (* mcpp_fprintf)( OUTDEST od, const char * format, ...);
+ 
++extern void     (*g_report_include)(FILE *, const char *, const char *, const char *);
++
+ /* system.c */
+ extern void     do_options( int argc, char ** argv, char ** in_pp
+         , char ** out_pp);
+diff --git a/src/support.c b/src/support.c
+index c57eaef..c910d86 100644
+--- a/src/support.c
++++ b/src/support.c
+@@ -364,6 +364,19 @@ void    mcpp_set_out_func(
+ }
+ #endif
+ 
++void (*g_report_include)(FILE *, const char *, const char *, const char *);
++
++void mcpp_set_report_include_callback(
++    void(*report_include)(
++        FILE * fp,               /* Open file pointer    */
++        const char *  src_dir,   /* Directory of source  */
++        const char *  filename,  /* Name of the file     */
++        const char *  fullname)  /* Full path            */
++)
++{
++    g_report_include = report_include;
++}
++
+ int     get_unexpandable(
+     int     c,                              /* First char of token  */
+     int     diag                            /* Flag of diagnosis    */
+diff --git a/src/system.c b/src/system.c
+index 4759469..5bccf62 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -3480,6 +3480,8 @@ search:
+      * Note: inc_dirp is restored to the parent includer's directory
+      *   by get_ch() when the current includer is finished.
+      */
++    if (g_report_include)
++        g_report_include(fp, src_dir, filename, fullname);
+     infile->dirp = inc_dirp = dirp;
+ #if 0   /* This part is only for debugging  */
+     chk_dirp( dirp);
