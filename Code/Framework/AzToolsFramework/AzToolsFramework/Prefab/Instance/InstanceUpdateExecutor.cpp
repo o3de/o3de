@@ -43,6 +43,7 @@ namespace AzToolsFramework
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
         {
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+            ToolsApplicationNotificationBus::Handler::BusConnect();
 
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
@@ -73,6 +74,8 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+
             m_GameModeEventHandler.Disconnect();
 
             m_instanceDomGeneratorInterface = nullptr;
@@ -382,6 +385,19 @@ namespace AzToolsFramework
         void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)
         {
             m_shouldPausePropagation = shouldPausePropagation;
+        }
+
+        void InstanceUpdateExecutor::AfterUndoRedo()
+        {
+            // After undo/redo, the instance update queue may have been populated.  Make sure that the queue is processed,
+            // so that deletions/creations are complete before control returns to the application.
+            // Note that this signal only comes from when a user actually initiates an undo or redo (or a test script does
+            // on behalf of simulating a user), and not from when undo or redo operations are being performed as part of
+            // building the undo stack during an op.  If this ever causes a perf issue, we can relax this requirement.
+            if (!m_shouldPausePropagation)
+            {
+                UpdateTemplateInstancesInQueue(true);
+            }
         }
     }
 }

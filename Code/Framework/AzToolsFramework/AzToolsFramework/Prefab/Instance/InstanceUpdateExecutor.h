@@ -12,11 +12,12 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -30,6 +31,7 @@ namespace AzToolsFramework
 
         class AZTF_API InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
+            , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
         {
         public:
             AZ_RTTI(InstanceUpdateExecutor, "{E21DB0D4-0478-4DA9-9011-31BC96F55837}", InstanceUpdateExecutorInterface);
@@ -59,6 +61,9 @@ namespace AzToolsFramework
             void LazyConnectGameModeEventHandler();
 
             void AddInstanceToQueue(Instance* instance);
+
+            // ToolsApplicationNotificationBus overrides ...
+            void AfterUndoRedo() override;
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
