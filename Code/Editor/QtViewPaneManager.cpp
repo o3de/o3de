@@ -1121,8 +1121,11 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         int screenHeight = QApplication::primaryScreen()->size().height();
 
         // Add the console view pane first
-        m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
-        consoleViewPane->m_dockWidget->setFloating(false);
+        if (consoleViewPane)
+        {
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
+            consoleViewPane->m_dockWidget->setFloating(false);
+        }
 
         if (assetBrowserViewPane)
         {
@@ -1132,7 +1135,9 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             static const float bottomTabWidgetPercentage = 0.25f;
             int newHeight = static_cast<int>((float)screenHeight * bottomTabWidgetPercentage);
 
-            AzQtComponents::DockTabWidget* bottomTabWidget = m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow);
+            AzQtComponents::DockTabWidget* bottomTabWidget = consoleViewPane
+                ? m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow)
+                : nullptr;
             if (bottomTabWidget)
             {
                 bottomTabWidget->setCurrentWidget(assetBrowserViewPane->m_dockWidget);
