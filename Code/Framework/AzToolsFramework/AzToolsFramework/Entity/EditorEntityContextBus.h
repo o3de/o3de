@@ -159,13 +159,14 @@ namespace AzToolsFramework
         virtual bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) = 0;
 
         //! A world is an edit-time entity context owning one level as its root prefab and rendering in
-        //! its own scene. World 0 is the editor entity context itself. Throughout this API a null world
-        //! id addresses the active world, and the editor context id addresses world 0.
+        //! its own scene. The editor entity context is one such world. Throughout this API a null world
+        //! id addresses the active world, and every other id addresses the world it names.
 
         //! Returns the world already showing this level if there is one - a level is never loaded twice.
         virtual AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) = 0;
 
-        //! Unbound viewports show world 0; a world whose last viewport unbinds is torn down.
+        //! Every viewport is bound to the world it shows; binding a null world id unbinds it. A world
+        //! whose last viewport unbinds is torn down.
         virtual void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) = 0;
         virtual AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) = 0;
 
@@ -177,13 +178,15 @@ namespace AzToolsFramework
         virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
         virtual AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) = 0;
 
-        //! The source path of the level a world holds, empty for world 0 (whose level the editor owns).
+        //! The source path of the level a world holds, empty for the editor context (whose level the
+        //! editor owns) and for an unknown world.
         virtual AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) = 0;
 
-        //! Saves every world with unsaved changes except world 0, whose level the editor saves itself.
+        //! Saves every world with unsaved changes except the editor context, whose level the editor
+        //! saves itself.
         virtual void SaveWorlds() = 0;
 
-        //! Root prefab template ids of the worlds with unsaved changes, world 0 aside - the editor prompts
+        //! Root prefab template ids of the worlds with unsaved changes, the editor context aside - it prompts
         //! for its own level. Closing the editor asks about each of these before letting it go.
         virtual AZStd::vector<Prefab::TemplateId> GetModifiedWorldTemplateIds() = 0;
     };

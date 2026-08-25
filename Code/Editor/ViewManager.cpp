@@ -83,8 +83,16 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
             AzFramework::EntityContextId worldId = activeWorldId;
             if (!levelPath.isEmpty())
             {
+                AzFramework::EntityContextId levelWorldId = AzFramework::EntityContextId::CreateNull();
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                    worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(levelPath.constData()));
+                    levelWorldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
+                    AZ::IO::PathView(levelPath.constData()));
+                AZ_Error("EditorWorld", !levelWorldId.IsNull(), "Could not load '%s' as an editor world",
+                    levelPath.constData());
+                if (!levelWorldId.IsNull())
+                {
+                    worldId = levelWorldId;
+                }
             }
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);

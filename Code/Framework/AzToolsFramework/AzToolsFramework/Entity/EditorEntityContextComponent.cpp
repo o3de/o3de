@@ -830,7 +830,7 @@ namespace AzToolsFramework
     {
         const AzFramework::EntityContextId previousWorldId = GetViewportWorld(viewportId);
 
-        if (worldId.IsNull() || worldId == GetContextId())
+        if (worldId.IsNull())
         {
             m_viewportWorlds.erase(viewportId);
         }

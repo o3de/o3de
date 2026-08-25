@@ -76,8 +76,8 @@ namespace AzToolsFramework
         virtual void StopPlayInEditor() = 0;
 
         //! Deactivates this world's editor entities without spawning runtime ones, so that a game
-        //! session playing a different world has the main scene to itself. World 0 renders into the
-        //! main scene, which is also where spawned game entities land.
+        //! session playing a different world has the main scene to itself. The editor world renders
+        //! into the main scene, which is also where spawned game entities land.
         virtual void SuspendEditorEntities() = 0;
         virtual void ResumeEditorEntities() = 0;
 
