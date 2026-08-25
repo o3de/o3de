@@ -168,6 +168,8 @@ namespace AzToolsFramework
 
         void RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId);
 
+        void BindActiveWorldInterface();
+
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
         void OnStopGameModeRequest() override;

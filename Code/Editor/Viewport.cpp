@@ -22,6 +22,7 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -56,7 +57,11 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 {
     GetIEditor()->GetViewManager()->SelectViewport(this);
 
-    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
     if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
@@ -80,7 +85,11 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 
 void QtViewport::dragMoveEvent(QDragMoveEvent* event)
 {
-    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
     if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
@@ -107,7 +116,11 @@ void QtViewport::dropEvent(QDropEvent* event)
     using namespace AzQtComponents;
     GetIEditor()->GetViewManager()->SelectViewport(this);
 
-    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
     if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;

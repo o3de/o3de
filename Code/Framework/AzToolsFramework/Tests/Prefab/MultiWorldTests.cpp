@@ -921,4 +921,33 @@ namespace UnitTest
         EXPECT_TRUE(ownershipServiceAfterReset->GetRootPrefabInstance().has_value());
         EXPECT_TRUE(AzFramework::RenderGeometry::IntersectorBus::HasHandlers(worldA));
     }
+
+    TEST_F(MultiWorldTests, TheGlobalOwnershipInterfaceResolvesToTheActiveWorldsLevel)
+    {
+        OpenWorldInViewport(LevelPathA, ViewportA);
+        OpenWorldInViewport(LevelPathB, ViewportB);
+
+        auto activeWorldLevelPath = []() -> AZ::IO::Path
+        {
+            PrefabEditorEntityOwnershipInterface* service = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            if (!service)
+            {
+                return {};
+            }
+            InstanceOptionalReference rootInstance = service->GetRootPrefabInstance();
+            return rootInstance.has_value() ? rootInstance->get().GetTemplateSourcePath() : AZ::IO::Path();
+        };
+
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
+        EXPECT_EQ(activeWorldLevelPath(), AZ::IO::Path(LevelPathA))
+            << "The global ownership interface did not resolve to world A's level while world A was active";
+
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
+        EXPECT_EQ(activeWorldLevelPath(), AZ::IO::Path(LevelPathB))
+            << "The global ownership interface did not resolve to world B's level while world B was active";
+
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
+        EXPECT_EQ(activeWorldLevelPath(), AZ::IO::Path(LevelPathA))
+            << "The global ownership interface did not follow the active world back to world A";
+    }
 } // namespace UnitTest

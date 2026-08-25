@@ -32,6 +32,7 @@
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "Settings.h"
@@ -112,8 +113,6 @@ CCryEditDoc::CCryEditDoc()
 
     m_prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
     AZ_Assert(m_prefabSystemComponentInterface, "PrefabSystemComponentInterface is not found.");
-    m_prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-    AZ_Assert(m_prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface is not found.");
     m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     AZ_Assert(m_prefabLoaderInterface, "PrefabLoaderInterface is not found.");
     m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
@@ -482,7 +481,8 @@ bool CCryEditDoc::CanCloseFrame()
 
 bool CCryEditDoc::SaveModified()
 {
-    const AzToolsFramework::Prefab::TemplateId levelTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+    const AzToolsFramework::Prefab::TemplateId levelTemplateId =
+        AzToolsFramework::GetWorldOwnershipService()->GetRootPrefabTemplateId();
 
     AZStd::vector<AzToolsFramework::Prefab::TemplateId> modifiedTemplateIds;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
@@ -531,7 +531,7 @@ void CCryEditDoc::OnFileSaveAs()
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
 
             AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
-                m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                AzToolsFramework::GetWorldOwnershipService()->GetRootPrefabTemplateId();
             SetModifiedFlag(m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId));
         }
     }
@@ -899,7 +899,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     auto tempFilenameStrData = tempSaveFile.toStdString();
     auto filenameStrData = fullPathName.toStdString();
 
-    if (m_prefabEditorEntityOwnershipInterface)
+    if (auto* ownershipService = AzToolsFramework::GetWorldOwnershipService())
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO, "No File IO implementation available");
@@ -910,7 +910,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         if (openResult)
         {
             AZ::IO::FileIOStream stream(tempSaveFileHandle, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, false);
-            contentsAllSaved = m_prefabEditorEntityOwnershipInterface->SaveToStream(stream, AZStd::string_view(filenameStrData.data(), filenameStrData.size()));
+            contentsAllSaved = ownershipService->SaveToStream(stream, AZStd::string_view(filenameStrData.data(), filenameStrData.size()));
             stream.Close();
         }
     }

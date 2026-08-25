@@ -36,10 +36,9 @@ namespace AzToolsFramework
         : m_entityContextId(entityContextId)
         , m_serializeContext(serializeContext)
     {
-        m_ownsInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get() == nullptr;
+        m_ownsInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get() == nullptr;
         if (m_ownsInterface)
         {
-            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(this);
             m_prefabOverridePublicHandler = AZStd::make_unique<Prefab::PrefabOverridePublicHandler>();
         }
     }
@@ -49,7 +48,6 @@ namespace AzToolsFramework
         if (m_ownsInterface)
         {
             m_prefabOverridePublicHandler.reset();
-            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(this);
         }
     }
 
@@ -559,10 +557,7 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::SignalGameModeEvent(GameModeState state)
     {
-        if (auto* registrant = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
-        {
-            static_cast<PrefabEditorEntityOwnershipService*>(registrant)->m_gameModeEvent.Signal(state);
-        }
+        m_gameModeEvent.Signal(state);
     }
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
@@ -669,7 +664,7 @@ namespace AzToolsFramework
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
-                [allSpawnableAssetData = m_playInEditorData.m_assetsCache.GetAssetContainer().MoveAllInMemorySpawnableAssets(),
+                [this, allSpawnableAssetData = m_playInEditorData.m_assetsCache.GetAssetContainer().MoveAllInMemorySpawnableAssets(),
                  deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]([[maybe_unused]] uint32_t generation) mutable
                 {
                     auto end = deactivatedEntities.rend();

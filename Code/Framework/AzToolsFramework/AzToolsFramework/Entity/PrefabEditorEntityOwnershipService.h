@@ -148,7 +148,7 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
-        static void SignalGameModeEvent(GameModeState state);
+        void SignalGameModeEvent(GameModeState state);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;

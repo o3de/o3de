@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorModeFeedbackSystemComponent.h>
 #include <EditorModeFeedbackFeatureProcessor.h>
 
@@ -94,19 +95,16 @@ namespace AZ
 
         void EditorModeFeedbackSystemComponent::SetEnableRender(bool enableRender)
         {
-            auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-            if (!sceneSystem)
+            AZStd::shared_ptr<AzFramework::Scene> worldScene;
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene,
+                AzFramework::EntityContextId::CreateNull());
+            if (!worldScene)
             {
                 return;
             }
 
-            AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
-            if (!mainScene)
-            {
-                return;
-            }
-
-            AZ::RPI::ScenePtr* rpiScene = mainScene->FindSubsystem<AZ::RPI::ScenePtr>();
+            AZ::RPI::ScenePtr* rpiScene = worldScene->FindSubsystem<AZ::RPI::ScenePtr>();
             if (!rpiScene)
             {
                 return;

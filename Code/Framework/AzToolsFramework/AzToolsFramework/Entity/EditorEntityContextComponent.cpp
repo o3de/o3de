@@ -306,6 +306,8 @@ namespace AzToolsFramework
 
         InitContext();
 
+        BindActiveWorldInterface();
+
         m_entityOwnershipService->InstantiateAllPrefabs();
 
         EditorEntityContextRequestBus::Handler::BusConnect();
@@ -321,6 +323,11 @@ namespace AzToolsFramework
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
         EditorEntityContextRequestBus::Handler::BusDisconnect();
         EditorEntityContextPickingRequestBus::Handler::BusDisconnect();
+
+        if (auto* current = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
+        {
+            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(current);
+        }
 
         m_viewportWorlds.clear();
         m_worlds.clear();
@@ -839,6 +846,8 @@ namespace AzToolsFramework
             m_viewportWorlds[viewportId] = worldId;
         }
 
+        BindActiveWorldInterface();
+
         if (!previousWorldId.IsNull() && previousWorldId != GetContextId() && previousWorldId != worldId)
         {
             const bool worldStillBound = AZStd::any_of(
@@ -970,11 +979,29 @@ namespace AzToolsFramework
         const AzFramework::EntityContextId previousWorldId = GetActiveWorldId();
         m_focusedViewportId = viewportId;
         const AzFramework::EntityContextId newWorldId = GetActiveWorldId();
+        BindActiveWorldInterface();
         if (newWorldId != previousWorldId)
         {
             EditorEntityContextNotificationBus::Broadcast(
                 &EditorEntityContextNotification::OnActiveWorldChanged, previousWorldId, newWorldId);
         }
+    }
+
+    void EditorEntityContextComponent::BindActiveWorldInterface()
+    {
+        PrefabEditorEntityOwnershipInterface* current = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        PrefabEditorEntityOwnershipInterface* active = GetWorldEntityOwnershipService(GetActiveWorldId());
+
+        if (current == active || active == nullptr)
+        {
+            return;
+        }
+
+        if (current)
+        {
+            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(current);
+        }
+        AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(active);
     }
 
     PrefabEditorEntityOwnershipInterface* EditorEntityContextComponent::GetWorldEntityOwnershipService(
