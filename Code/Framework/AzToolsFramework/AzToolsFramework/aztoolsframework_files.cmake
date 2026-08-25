@@ -339,8 +339,6 @@ set(FILES
     PropertyTreeEditor/PropertyTreeEditor.h
     PropertyTreeEditor/PropertyTreeEditorComponent.cpp
     PropertyTreeEditor/PropertyTreeEditorComponent.h
-    Render/EditorIntersectorComponent.cpp
-    Render/EditorIntersectorComponent.h
     Slice/SliceDataFlagsCommand.h
     Slice/SliceDataFlagsCommand.cpp
     Slice/SliceUtilities.h
@@ -444,8 +442,6 @@ set(FILES
     ToolsComponents/ToolsAssetCatalogComponent.h
     ToolsComponents/ToolsAssetCatalogBus.cpp
     ToolsComponents/ToolsAssetCatalogBus.h
-    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h
-    ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponentMode.h

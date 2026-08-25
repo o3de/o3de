@@ -56,8 +56,6 @@ namespace AzToolsFramework
         /// Retrieve the Id of the editor entity context.
         virtual AzFramework::EntityContextId GetEditorEntityContextId() = 0;
 
-        virtual AzFramework::EntityContext* GetEditorEntityContextInstance() = 0;
-
         /// Creates an entity in the editor context.
         /// \return the EntityId for the created Entity
         virtual AZ::EntityId CreateNewEditorEntity(const char* name) = 0;
@@ -93,23 +91,6 @@ namespace AzToolsFramework
         virtual bool CloneEditorEntities(const EntityIdList& sourceEntities, 
                                          EntityList& resultEntities, 
                                          AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) = 0;
-
-        /// Saves the context's slice root to the specified buffer. Entities are saved as-is (with editor components).
-        /// \param stream The stream to save the editor entity context to.
-        /// \param entitiesInLayers A list of entities that were saved into layers. These won't be saved to the editor entity context stream.
-        /// \return true if successfully saved. Failure is only possible if serialization data is corrupt.
-        virtual bool SaveToStreamForEditor(
-            AZ::IO::GenericStream& stream,
-            const EntityList& entitiesInLayers,
-            AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers) = 0;
-
-        /// Returns entities that are not part of a slice.
-        /// \param entityList The entity list to populate with loose entities.
-        virtual void GetLooseEditorEntities(EntityList& entityList) = 0;
-
-        /// Saves the context's slice root to the specified buffer. Entities undergo conversion for game: editor -> game components.
-        /// \return true if successfully saved. Failure is only possible if serialization data is corrupt.
-        virtual bool SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType) = 0;
 
         /// Loads the context's slice root from the specified buffer.
         /// \return true if successfully loaded. Failure is possible if the source file is corrupt or data could not be up-converted.

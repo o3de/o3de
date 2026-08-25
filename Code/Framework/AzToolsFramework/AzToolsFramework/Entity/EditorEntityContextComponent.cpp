@@ -122,6 +122,11 @@ namespace AzToolsFramework
                 editorModeTracker->ActivateMode({ GetContextId() }, ViewportEditorMode::Default);
             }
 
+            if (levelPrefabPath.empty())
+            {
+                return;
+            }
+
             auto* prefabLoader = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
             auto* prefabSystem = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
             AZ_Assert(prefabLoader && prefabSystem, "Editor world created without the prefab system");
@@ -197,13 +202,43 @@ namespace AzToolsFramework
     protected:
         void OnContextEntitiesAdded(const EntityList& entities) override
         {
+            if (!m_owner.ShouldHandleContextEntityChanges())
+            {
+                return;
+            }
+
             EntityContext::OnContextEntitiesAdded(entities);
             m_owner.SetupEditorEntities(entities);
         }
 
         void OnContextEntityRemoved(const AZ::EntityId& entityId) override
         {
+            if (!m_owner.ShouldHandleContextEntityChanges())
+            {
+                return;
+            }
+
             EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityDeleted, entityId);
+        }
+
+        bool ValidateEntitiesAreValidForContext(const EntityList& entities) override
+        {
+            // All entities in a prefab being instantiated in the level editor should
+            // have the TransformComponent on them. Since it is not possible to create
+            // a prefab with entities from different contexts, it is OK to check
+            // the first entity only
+            if (entities.size() > 0)
+            {
+                return entities[0]->FindComponent<Components::TransformComponent>() != nullptr;
+            }
+
+            return true;
+        }
+
+        void PrepareForContextReset() override
+        {
+            EntityContext::PrepareForContextReset();
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnPrepareForContextReset);
         }
 
     private:
@@ -265,8 +300,7 @@ namespace AzToolsFramework
     // EditorEntityContextComponent ctor
     //=========================================================================
     EditorEntityContextComponent::EditorEntityContextComponent()
-        : AzFramework::EntityContext(AzFramework::EntityContextId::CreateRandom())
-        , m_isRunningGame(false)
+        : m_isRunningGame(false)
         , m_requiredEditorComponentTypes
         // These are the components that will be force added to every entity in the editor
         ({
@@ -302,16 +336,17 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::Activate()
     {
-        m_entityOwnershipService = AZStd::make_unique<PrefabEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
-
-        InitContext();
+        auto startupWorld = AZStd::make_unique<EditorWorld>(*this, AZ::IO::PathView());
+        EditorWorld* world = startupWorld.get();
+        m_editorWorldId = world->GetContextId();
+        m_worlds.emplace(m_editorWorldId, AZStd::move(startupWorld));
 
         BindActiveWorldInterface();
 
-        m_entityOwnershipService->InstantiateAllPrefabs();
+        world->GetOwnershipService()->InstantiateAllPrefabs();
 
         EditorEntityContextRequestBus::Handler::BusConnect();
-        EditorEntityContextPickingRequestBus::Handler::BusConnect(GetContextId());
+        EditorEntityContextPickingRequestBus::MultiHandler::BusConnect(m_editorWorldId);
         EditorLegacyGameModeNotificationBus::Handler::BusConnect();
     }
 
@@ -322,7 +357,7 @@ namespace AzToolsFramework
     {
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
         EditorEntityContextRequestBus::Handler::BusDisconnect();
-        EditorEntityContextPickingRequestBus::Handler::BusDisconnect();
+        EditorEntityContextPickingRequestBus::MultiHandler::BusDisconnect();
 
         if (auto* current = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
         {
@@ -331,10 +366,7 @@ namespace AzToolsFramework
 
         m_viewportWorlds.clear();
         m_worlds.clear();
-
-        DestroyContext();
-
-        m_entityOwnershipService.reset();
+        m_editorWorldId = AzFramework::EntityContextId::CreateNull();
     }
 
     //=========================================================================
@@ -350,7 +382,10 @@ namespace AzToolsFramework
             StopPlayInEditor();
         }
 
-        ResetContext();
+        if (EditorWorld* world = FindWorld(m_editorWorldId))
+        {
+            world->ResetContext();
+        }
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotificationBus::Events::OnContextReset);
     }
@@ -447,10 +482,10 @@ namespace AzToolsFramework
         }
         for (auto& [worldId, worldEntities] : entitiesPerWorld)
         {
-            auto worldIt = m_worlds.find(worldId);
-            AzFramework::EntityOwnershipService* ownershipService =
-                worldIt != m_worlds.end() ? worldIt->second->GetOwnershipService() : m_entityOwnershipService.get();
-            ownershipService->HandleEntitiesAdded(worldEntities);
+            if (auto worldIt = m_worlds.find(worldId); worldIt != m_worlds.end())
+            {
+                worldIt->second->GetOwnershipService()->HandleEntitiesAdded(worldEntities);
+            }
         }
     }
 
@@ -461,7 +496,7 @@ namespace AzToolsFramework
             instanceMapper ? instanceMapper->FindOwningInstance(entityId) : AZStd::nullopt;
         if (!owningInstance.has_value())
         {
-            return GetContextId();
+            return GetActiveWorldId();
         }
 
         const Prefab::Instance* rootInstance = &owningInstance->get();
@@ -479,7 +514,7 @@ namespace AzToolsFramework
                 return worldId;
             }
         }
-        return GetContextId();
+        return GetActiveWorldId();
     }
 
     //=========================================================================
@@ -526,47 +561,10 @@ namespace AzToolsFramework
     bool EditorEntityContextComponent::DestroyEditorEntity(AZ::EntityId entityId)
     {
         AzFramework::EntityContextId owningWorldId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(owningWorldId, entityId, &EntityIdContextQueries::GetOwningContextId);
+        AzFramework::EntityIdContextQueryBus::EventResult(owningWorldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
 
-        if (auto worldIt = m_worlds.find(owningWorldId); worldIt != m_worlds.end())
-        {
-            return worldIt->second->DestroyEntityById(entityId);
-        }
-
-        if (DestroyEntityById(entityId))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    //=========================================================================
-    // EditorEntityContextRequestBus::SaveToStreamForEditor
-    //=========================================================================
-    bool EditorEntityContextComponent::SaveToStreamForEditor(
-        AZ::IO::GenericStream& /* stream */,
-        const EntityList& /* entitiesInLayers */,
-        AZ::SliceComponent::SliceReferenceToInstancePtrs& /* instancesInLayers */)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        return true;
-    }
-
-    void EditorEntityContextComponent::GetLooseEditorEntities(EntityList& entityList)
-    {
-        m_entityOwnershipService->GetNonPrefabEntities(entityList);
-    }
-
-    //=========================================================================
-    // EditorEntityContextRequestBus::SaveToStreamForGame
-    //=========================================================================
-    bool EditorEntityContextComponent::SaveToStreamForGame(AZ::IO::GenericStream& /* stream */, AZ::DataStream::StreamType /* streamType */)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        return true;
+        auto worldIt = m_worlds.find(owningWorldId);
+        return worldIt != m_worlds.end() && worldIt->second->DestroyEntityById(entityId);
     }
 
     //=========================================================================
@@ -577,13 +575,15 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(stream.IsOpen(), "Invalid source stream.");
-        AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
+
+        auto* ownershipService = GetWorldEntityOwnershipService(m_editorWorldId);
+        AZ_Assert(ownershipService, "Loading a level into a world that has no ownership service.");
 
         EditorEntityContextNotificationBus::Broadcast(
             &EditorEntityContextNotification::OnEntityStreamLoadBegin);
 
-        const bool loadedSuccessfully = m_entityOwnershipService->LoadFromStream(stream, false, nullptr,
-            AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterSourceSlicesOnly));
+        const bool loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(ownershipService)->LoadFromStream(
+            stream, false, nullptr, AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterSourceSlicesOnly));
 
         LoadFromStreamComplete(loadedSuccessfully);
 
@@ -595,11 +595,13 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(stream.IsOpen(), "Invalid source stream.");
-        AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
+
+        auto* ownershipService = GetWorldEntityOwnershipService(m_editorWorldId);
+        AZ_Assert(ownershipService, "Loading a level into a world that has no ownership service.");
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEntityStreamLoadBegin);
 
-        bool loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
+        bool loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(ownershipService)->LoadFromStream(
                 stream, AZStd::string_view(levelPakFile.toUtf8().constData(), levelPakFile.size()) );
         
         LoadFromStreamComplete(loadedSuccessfully);
@@ -611,10 +613,12 @@ namespace AzToolsFramework
     {
         if (loadedSuccessfully)
         {
-            EntityList entities;
-            m_entityOwnershipService->GetAllEntities(entities);
+            const AzFramework::EntityContextId worldId = m_editorWorldId;
 
-            AzFramework::SliceEntityOwnershipServiceRequestBus::Event(GetContextId(),
+            EntityList entities;
+            FindWorld(worldId)->GetOwnershipService()->GetAllEntities(entities);
+
+            AzFramework::SliceEntityOwnershipServiceRequestBus::Event(worldId,
                 &AzFramework::SliceEntityOwnershipServiceRequests::SetIsDynamic, true);
 
             SetupEditorEntities(entities);
@@ -654,10 +658,6 @@ namespace AzToolsFramework
 
         m_isRunningGame = true;
 
-        if (m_playingWorldId != GetContextId())
-        {
-            GetWorldEntityOwnershipService(GetContextId())->SuspendEditorEntities();
-        }
         for (const auto& [worldId, world] : m_worlds)
         {
             if (worldId != m_playingWorldId)
@@ -681,7 +681,7 @@ namespace AzToolsFramework
 
         m_isRunningGame = false;
 
-        const AzFramework::EntityContextId playedWorldId = m_playingWorldId.IsNull() ? GetContextId() : m_playingWorldId;
+        const AzFramework::EntityContextId playedWorldId = m_playingWorldId.IsNull() ? m_editorWorldId : m_playingWorldId;
         m_playingWorldId = AzFramework::EntityContextId::CreateNull();
 
         if (auto* service = GetWorldEntityOwnershipService(playedWorldId))
@@ -695,13 +695,6 @@ namespace AzToolsFramework
                 "Stop play in editor could not complete: the world that started game mode no longer exists.");
         }
 
-        if (playedWorldId != GetContextId())
-        {
-            if (auto* editorWorldService = GetWorldEntityOwnershipService(GetContextId()))
-            {
-                editorWorldService->ResumeEditorEntities();
-            }
-        }
         for (const auto& [worldId, world] : m_worlds)
         {
             if (worldId != playedWorldId)
@@ -737,9 +730,9 @@ namespace AzToolsFramework
     bool EditorEntityContextComponent::IsEditorEntity(AZ::EntityId id)
     {
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(contextId, id, &EntityIdContextQueries::GetOwningContextId);
+        AzFramework::EntityIdContextQueryBus::EventResult(contextId, id, &AzFramework::EntityIdContextQueries::GetOwningContextId);
 
-        return contextId == GetContextId() || m_worlds.find(contextId) != m_worlds.end();
+        return m_worlds.find(contextId) != m_worlds.end();
     }
 
     //=========================================================================
@@ -804,18 +797,13 @@ namespace AzToolsFramework
         }
         const AZ::IO::Path relativePath = prefabLoader->GenerateRelativePath(levelPrefabPath);
 
-        if (auto* ownService = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
-        {
-            Prefab::InstanceOptionalReference rootInstance = ownService->GetRootPrefabInstance();
-            if (rootInstance.has_value() && rootInstance->get().GetTemplateSourcePath() == relativePath)
-            {
-                return GetContextId();
-            }
-        }
-
         for (const auto& [existingWorldId, world] : m_worlds)
         {
-            if (world->GetLevelPath() == relativePath)
+            PrefabEditorEntityOwnershipInterface* worldService = world->GetOwnershipService();
+            Prefab::InstanceOptionalReference rootInstance = worldService->GetRootPrefabInstance();
+            const bool holdsLevel = world->GetLevelPath() == relativePath ||
+                (rootInstance.has_value() && rootInstance->get().GetTemplateSourcePath() == relativePath);
+            if (holdsLevel)
             {
                 return existingWorldId;
             }
@@ -829,6 +817,7 @@ namespace AzToolsFramework
 
         const AzFramework::EntityContextId worldId = world->GetContextId();
         m_worlds.emplace(worldId, AZStd::move(world));
+        EditorEntityContextPickingRequestBus::MultiHandler::BusConnect(worldId);
         return worldId;
     }
 
@@ -848,7 +837,7 @@ namespace AzToolsFramework
 
         BindActiveWorldInterface();
 
-        if (!previousWorldId.IsNull() && previousWorldId != GetContextId() && previousWorldId != worldId)
+        if (!previousWorldId.IsNull() && previousWorldId != m_editorWorldId && previousWorldId != worldId)
         {
             const bool worldStillBound = AZStd::any_of(
                 m_viewportWorlds.begin(), m_viewportWorlds.end(),
@@ -866,6 +855,7 @@ namespace AzToolsFramework
                     m_playingWorldId = AzFramework::EntityContextId::CreateNull();
                 }
 
+                EditorEntityContextPickingRequestBus::MultiHandler::BusDisconnect(previousWorldId);
                 m_worlds.erase(previousWorldId);
             }
         }
@@ -893,7 +883,7 @@ namespace AzToolsFramework
     AzFramework::EntityContextId EditorEntityContextComponent::GetViewportWorld(AzFramework::ViewportId viewportId)
     {
         auto viewportWorldIt = m_viewportWorlds.find(viewportId);
-        return viewportWorldIt != m_viewportWorlds.end() ? viewportWorldIt->second : GetContextId();
+        return viewportWorldIt != m_viewportWorlds.end() ? viewportWorldIt->second : m_editorWorldId;
     }
 
     AZStd::string EditorEntityContextComponent::GetWorldLevelPath(const AzFramework::EntityContextId& worldId)
@@ -914,6 +904,13 @@ namespace AzToolsFramework
 
         for (const auto& [worldId, world] : m_worlds)
         {
+            // The startup world's level file belongs to the editor document, which saves and prompts
+            // for it separately.
+            if (!world->IsValid())
+            {
+                continue;
+            }
+
             const auto unsavedChanges = prefabPublicInterface->HasUnsavedChanges(world->GetLevelPath());
             if (unsavedChanges.IsSuccess() && unsavedChanges.GetValue())
             {
@@ -954,7 +951,7 @@ namespace AzToolsFramework
 
     void EditorEntityContextComponent::RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId)
     {
-        if (worldId == GetContextId())
+        if (worldId == m_editorWorldId)
         {
             return;
         }
@@ -987,6 +984,13 @@ namespace AzToolsFramework
         }
     }
 
+    EditorEntityContextComponent::EditorWorld* EditorEntityContextComponent::FindWorld(
+        const AzFramework::EntityContextId& worldId) const
+    {
+        auto worldIt = m_worlds.find(ResolveWorldId(worldId));
+        return worldIt != m_worlds.end() ? worldIt->second.get() : nullptr;
+    }
+
     void EditorEntityContextComponent::BindActiveWorldInterface()
     {
         PrefabEditorEntityOwnershipInterface* current = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -1007,14 +1011,7 @@ namespace AzToolsFramework
     PrefabEditorEntityOwnershipInterface* EditorEntityContextComponent::GetWorldEntityOwnershipService(
         const AzFramework::EntityContextId& worldId)
     {
-        const AzFramework::EntityContextId resolvedWorldId = ResolveWorldId(worldId);
-
-        if (resolvedWorldId == GetContextId())
-        {
-            return static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
-        }
-
-        auto worldIt = m_worlds.find(resolvedWorldId);
+        auto worldIt = m_worlds.find(ResolveWorldId(worldId));
         return worldIt != m_worlds.end() ? worldIt->second->GetOwnershipService() : nullptr;
     }
 
@@ -1022,7 +1019,7 @@ namespace AzToolsFramework
     {
         const AzFramework::EntityContextId resolvedWorldId = ResolveWorldId(worldId);
 
-        if (resolvedWorldId == GetContextId() || resolvedWorldId == m_playingWorldId)
+        if (resolvedWorldId == m_playingWorldId)
         {
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             return sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;
@@ -1038,50 +1035,6 @@ namespace AzToolsFramework
     bool EditorEntityContextComponent::SupportsViewportEntityIdPicking()
     {
         return true;
-    }
-
-    //=========================================================================
-    // PrepareForContextReset
-    //=========================================================================
-    void EditorEntityContextComponent::PrepareForContextReset()
-    {
-        EntityContext::PrepareForContextReset();
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnPrepareForContextReset);
-    }
-
-    //=========================================================================
-    // ValidateEntitiesAreValidForContext
-    //=========================================================================
-    bool EditorEntityContextComponent::ValidateEntitiesAreValidForContext(const EntityList& entities)
-    {
-        // All entities in a prefab being instantiated in the level editor should
-        // have the TransformComponent on them. Since it is not possible to create
-        // a prefab with entities from different contexts, it is OK to check
-        // the first entity only
-        if (entities.size() > 0)
-        {
-            return entities[0]->FindComponent<Components::TransformComponent>() != nullptr;
-        }
-
-        return true;
-    }
-
-    //=========================================================================
-    // OnContextEntitiesAdded
-    //=========================================================================
-    void EditorEntityContextComponent::OnContextEntitiesAdded(const EntityList& entities)
-    {
-        EntityContext::OnContextEntitiesAdded(entities);
-
-        SetupEditorEntities(entities);
-    }
-
-    //=========================================================================
-    // OnContextEntityRemoved
-    //=========================================================================
-    void EditorEntityContextComponent::OnContextEntityRemoved(const AZ::EntityId& entityId)
-    {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityDeleted, entityId);
     }
 
     //=========================================================================

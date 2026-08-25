@@ -105,7 +105,9 @@ namespace UnitTest
             m_viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get();
             ASSERT_TRUE(m_viewportEditorModeTracker != nullptr);
 
-            EditorEntityContextRequestBus::BroadcastResult(m_editorWorld, &EditorEntityContextRequests::GetEditorEntityContextId);
+            // The editor entity context id is only a bus address now, so ask for the world the editor
+            // starts in: the one shown while no viewport is focused.
+            EditorEntityContextRequestBus::BroadcastResult(m_editorWorld, &EditorEntityContextRequests::GetActiveWorldId);
             ASSERT_FALSE(m_editorWorld.IsNull());
 
             GenerateWorldTemplates();
@@ -593,10 +595,14 @@ namespace UnitTest
         EditorEntityContextRequestBus::BroadcastResult(
             sceneForWorldB, &EditorEntityContextRequests::GetWorldScene, worldB);
 
+        ASSERT_NE(sceneForEditorWorld, nullptr);
         ASSERT_NE(sceneForWorldA, nullptr);
         ASSERT_NE(sceneForWorldB, nullptr);
 
-        // The scene a world reports must be the scene its entity context actually lives in.
+        // The scene a world reports must be the scene its entity context actually lives in. The
+        // editor's own world is no exception - it is an ordinary world.
+        EXPECT_EQ(sceneForEditorWorld, AzFramework::EntityContext::FindContainingScene(m_editorWorld))
+            << "The editor's own world does not render in the scene its entity context lives in";
         EXPECT_EQ(sceneForWorldA, AzFramework::EntityContext::FindContainingScene(worldA));
         EXPECT_EQ(sceneForWorldB, AzFramework::EntityContext::FindContainingScene(worldB));
         EXPECT_NE(sceneForWorldA, sceneForEditorWorld) << "A loaded world is rendering into the editor world's scene";
@@ -793,12 +799,9 @@ namespace UnitTest
         ASSERT_TRUE(rootContainerOfWorldA.IsValid());
         ASSERT_TRUE(AzToolsFramework::EditorEntityInfoRequestBus::HasHandlers(rootContainerOfWorldA));
 
-        AzFramework::EntityContextId editorWorld = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(editorWorld, &EditorEntityContextRequests::GetEditorEntityContextId);
-
         PrefabEditorEntityOwnershipInterface* ownershipServiceForEditorWorld = nullptr;
         EditorEntityContextRequestBus::BroadcastResult(
-            ownershipServiceForEditorWorld, &EditorEntityContextRequests::GetWorldEntityOwnershipService, editorWorld);
+            ownershipServiceForEditorWorld, &EditorEntityContextRequests::GetWorldEntityOwnershipService, m_editorWorld);
         ASSERT_NE(ownershipServiceForEditorWorld, nullptr);
 
         InstanceOptionalReference rootOfEditorWorld = ownershipServiceForEditorWorld->GetRootPrefabInstance();

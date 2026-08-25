@@ -39,20 +39,9 @@ namespace AzToolsFramework
 
     protected:
 
-        void OnContextEntitiesAdded([[maybe_unused]] const EntityList& entities) override
+        bool ShouldHandleContextEntityChanges() const override
         {
-            if (m_enableOnContextEntityLogic)
-            {
-                EditorEntityContextComponent::OnContextEntitiesAdded(entities);
-            }
-        }
-
-        void OnContextEntityRemoved([[maybe_unused]] const AZ::EntityId& id) override
-        {
-            if (m_enableOnContextEntityLogic)
-            {
-                EditorEntityContextComponent::OnContextEntityRemoved(id);
-            }
+            return m_enableOnContextEntityLogic;
         }
 
         // By default, act just like the EditorEntityContextComponent

@@ -54,7 +54,6 @@
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -63,7 +62,6 @@
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
@@ -227,12 +225,10 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::AssetBundleComponent>(),
                 azrtti_typeid<AzToolsFramework::ArchiveComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceDependencyBrowserComponent>(),
-                azrtti_typeid<AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent>(),
                 azrtti_typeid<Components::EditorEntityModelComponent>(),
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::ViewportSnapping::ViewportSnappingSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
-                azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
