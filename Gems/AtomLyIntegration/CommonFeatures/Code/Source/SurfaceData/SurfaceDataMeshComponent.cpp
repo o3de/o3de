@@ -37,7 +37,7 @@ namespace SurfaceData
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceDataMeshConfig::m_tags, QT_TRANSLATE_NOOP("AtomLyIntegration", "Generated Tags"), "")
+                    ->DataElement(nullptr, &SurfaceDataMeshConfig::m_tags, QT_TRANSLATE_NOOP("AtomLyIntegration", "Generated Tags"), "")
                     ;
             }
         }

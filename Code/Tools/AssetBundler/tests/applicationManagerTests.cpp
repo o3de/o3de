@@ -72,7 +72,7 @@ namespace AssetBundler
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
 
-            m_data->m_applicationManager.reset(aznew MockApplicationManagerTest(0, 0));
+            m_data->m_applicationManager.reset(aznew MockApplicationManagerTest(nullptr, nullptr));
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             // The AssetBundler does not need to load gems

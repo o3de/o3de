@@ -357,7 +357,7 @@ namespace AZ
             info.m_options = options;
             info.m_buttonChosen = -1;
 
-            LRESULT ret = DialogBoxIndirectParam(GetModuleHandle(NULL), (DLGTEMPLATE*)&dlgTemplate, GetDesktopWindow(), DlgProc, (LPARAM)&info);
+            LRESULT ret = DialogBoxIndirectParam(GetModuleHandle(nullptr), (DLGTEMPLATE*)&dlgTemplate, GetDesktopWindow(), DlgProc, (LPARAM)&info);
             AZ_UNUSED(ret);
             AZ_Assert(ret != -1, "Error displaying native UI dialog.");
 

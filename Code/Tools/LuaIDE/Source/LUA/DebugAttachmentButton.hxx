@@ -32,7 +32,7 @@ namespace LUAEditor
     public:
         AZ_CLASS_ALLOCATOR(DebugAttachmentButton, AZ::SystemAllocator);
 
-        DebugAttachmentButton(QWidget *pParent = 0);
+        DebugAttachmentButton(QWidget *pParent = nullptr);
         virtual ~DebugAttachmentButton();
 
         // These come from the CONTEXT

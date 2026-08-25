@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
         }
 
         LegacyFramework::ApplicationDesc desc(procName.toUtf8().data(), argc, argv);
-        desc.m_applicationModule = NULL;
+        desc.m_applicationModule = nullptr;
         desc.m_enableProjectManager = false;
 
 #if defined(EXTERNAL_CRASH_REPORTING)

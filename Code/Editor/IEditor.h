@@ -461,7 +461,7 @@ struct IEditor
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
     //! Returns true if selection is made and false if selection is canceled.
-    virtual bool SelectColor(QColor& color, QWidget* parent = 0) = 0;
+    virtual bool SelectColor(QColor& color, QWidget* parent = nullptr) = 0;
     //! Get shader enumerator.
     virtual class CUndoManager* GetUndoManager() = 0;
     //! Begin operation requiring undo

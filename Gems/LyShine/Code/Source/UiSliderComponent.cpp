@@ -585,10 +585,10 @@ void UiSliderComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Value"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiSliderComponent::m_value, QT_TRANSLATE_NOOP("LyShine", "Value"), QT_TRANSLATE_NOOP("LyShine", "The initial value of the slider."));
-                editInfo->DataElement(0, &UiSliderComponent::m_minValue, QT_TRANSLATE_NOOP("LyShine", "Min"), QT_TRANSLATE_NOOP("LyShine", "The minimum slider value."));
-                editInfo->DataElement(0, &UiSliderComponent::m_maxValue, QT_TRANSLATE_NOOP("LyShine", "Max"), QT_TRANSLATE_NOOP("LyShine", "The maximum slider value."));
-                editInfo->DataElement(0, &UiSliderComponent::m_stepValue, QT_TRANSLATE_NOOP("LyShine", "Stepping"), QT_TRANSLATE_NOOP("LyShine", "The smallest increment allowed between values. Use zero for no restriction."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_value, QT_TRANSLATE_NOOP("LyShine", "Value"), QT_TRANSLATE_NOOP("LyShine", "The initial value of the slider."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_minValue, QT_TRANSLATE_NOOP("LyShine", "Min"), QT_TRANSLATE_NOOP("LyShine", "The minimum slider value."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_maxValue, QT_TRANSLATE_NOOP("LyShine", "Max"), QT_TRANSLATE_NOOP("LyShine", "The maximum slider value."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_stepValue, QT_TRANSLATE_NOOP("LyShine", "Stepping"), QT_TRANSLATE_NOOP("LyShine", "The smallest increment allowed between values. Use zero for no restriction."));
             }
 
             // Actions group
@@ -596,8 +596,8 @@ void UiSliderComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiSliderComponent::m_valueChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the value is changing."));
-                editInfo->DataElement(0, &UiSliderComponent::m_valueChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the value is done changing."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_valueChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the value is changing."));
+                editInfo->DataElement(nullptr, &UiSliderComponent::m_valueChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the value is done changing."));
             }
         }
     }

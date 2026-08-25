@@ -1423,7 +1423,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_contentEntity, QT_TRANSLATE_NOOP("LyShine", "Content element"), QT_TRANSLATE_NOOP("LyShine", "The child element that is the scrollable content."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiScrollBoxComponent::PopulateChildEntityList);
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffset, QT_TRANSLATE_NOOP("LyShine", "Initial scroll offset"), QT_TRANSLATE_NOOP("LyShine", "The initial offset of the scroll box content."))
+                editInfo->DataElement(nullptr, &UiScrollBoxComponent::m_scrollOffset, QT_TRANSLATE_NOOP("LyShine", "Initial scroll offset"), QT_TRANSLATE_NOOP("LyShine", "The initial offset of the scroll box content."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isScrollingConstrained, QT_TRANSLATE_NOOP("LyShine", "Constrain scrolling"),
                     QT_TRANSLATE_NOOP("LyShine", "Check this box to prevent the content from being scrolled beyond its edges."));
@@ -1433,7 +1433,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                     ->EnumAttribute(UiScrollBoxInterface::SnapMode::Children, QT_TRANSLATE_NOOP("LyShine", "To children"))
                     ->EnumAttribute(UiScrollBoxInterface::SnapMode::Grid, QT_TRANSLATE_NOOP("LyShine", "To grid"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_snapGrid, QT_TRANSLATE_NOOP("LyShine", "Grid spacing"),
+                editInfo->DataElement(nullptr, &UiScrollBoxComponent::m_snapGrid, QT_TRANSLATE_NOOP("LyShine", "Grid spacing"),
                     QT_TRANSLATE_NOOP("LyShine", "The scroll offset will be snapped to multiples of these values."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::IsSnapToGrid);
             }
@@ -1487,8 +1487,8 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the offset is changing."));
-                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollOffsetChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the offset is done changing."));
+                editInfo->DataElement(nullptr, &UiScrollBoxComponent::m_scrollOffsetChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the offset is changing."));
+                editInfo->DataElement(nullptr, &UiScrollBoxComponent::m_scrollOffsetChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the offset is done changing."));
             }
         }
     }

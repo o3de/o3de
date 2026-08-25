@@ -50,11 +50,11 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/simple-motion/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor,
+                        ->DataElement(nullptr, &EditorSimpleMotionComponent::m_previewInEditor,
                             QT_TRANSLATE_NOOP("EMotionFX", "Preview In Editor"),
                             QT_TRANSLATE_NOOP("EMotionFX", "Plays motion in Editor"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
-                        ->DataElement(0, &EditorSimpleMotionComponent::m_configuration,
+                        ->DataElement(nullptr, &EditorSimpleMotionComponent::m_configuration,
                             QT_TRANSLATE_NOOP("EMotionFX", "Configuration"),
                             QT_TRANSLATE_NOOP("EMotionFX", "Settings for this Simple Motion"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)

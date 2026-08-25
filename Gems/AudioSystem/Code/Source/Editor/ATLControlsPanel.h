@@ -134,7 +134,7 @@ namespace AudioControls
     {
         Q_OBJECT
     public:
-        QFilterButton(const QIcon& icon, const QString& text, QWidget* parent = 0);
+        QFilterButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
 
         void SetText(const QString& text){ m_actionText.setText(text); }
 

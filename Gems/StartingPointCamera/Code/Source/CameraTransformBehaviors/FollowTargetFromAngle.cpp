@@ -32,7 +32,7 @@ namespace Camera
                     QT_TRANSLATE_NOOP("Camera", "FollowTargetFromAngle"),
                     QT_TRANSLATE_NOOP("Camera", "Follows behind the target by Angle degrees about RotationType"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &FollowTargetFromAngle::m_angleInDegrees,
+                    ->DataElement(nullptr, &FollowTargetFromAngle::m_angleInDegrees,
                         QT_TRANSLATE_NOOP("Camera", "Angle"),
                         QT_TRANSLATE_NOOP("Camera", "The angle to rotate about RotationType"))
                         ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "degrees"))
@@ -42,7 +42,7 @@ namespace Camera
                         ->EnumAttribute(EulerAngleType::Yaw, QT_TRANSLATE_NOOP("Camera", "Yaw"))
                         ->EnumAttribute(EulerAngleType::Pitch, QT_TRANSLATE_NOOP("Camera", "Pitch"))
                         ->EnumAttribute(EulerAngleType::Roll, QT_TRANSLATE_NOOP("Camera", "Roll"))
-                    ->DataElement(0, &FollowTargetFromAngle::m_distanceFromTarget,
+                    ->DataElement(nullptr, &FollowTargetFromAngle::m_distanceFromTarget,
                         QT_TRANSLATE_NOOP("Camera", "Distance From Target"),
                         QT_TRANSLATE_NOOP("Camera", "The range at which to follow the target from"))
                         ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"));

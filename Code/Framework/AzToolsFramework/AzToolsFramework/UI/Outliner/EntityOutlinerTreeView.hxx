@@ -42,7 +42,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(EntityOutlinerTreeView, AZ::SystemAllocator);
 
-        EntityOutlinerTreeView(QWidget* pParent = NULL);
+        EntityOutlinerTreeView(QWidget* pParent = nullptr);
         virtual ~EntityOutlinerTreeView();
 
         void setAutoExpandDelay(int delay);

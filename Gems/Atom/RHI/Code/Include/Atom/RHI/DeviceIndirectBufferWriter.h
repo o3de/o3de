@@ -147,7 +147,7 @@ namespace AZ::RHI
 
         uint8_t* GetTargetMemory() const;
 
-        DeviceBuffer* m_buffer = 0;
+        DeviceBuffer* m_buffer = nullptr;
         const DeviceIndirectBufferSignature* m_signature = nullptr;
         uint32_t m_maxSequences = 0;
         uint32_t m_sequenceStride = 0;

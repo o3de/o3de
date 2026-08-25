@@ -39,7 +39,7 @@ class QComponentEntityEditorInspectorWindow
     Q_OBJECT
 
 public:
-    explicit QComponentEntityEditorInspectorWindow(QWidget* parent = 0);
+    explicit QComponentEntityEditorInspectorWindow(QWidget* parent = nullptr);
     ~QComponentEntityEditorInspectorWindow();
 
     void Init();

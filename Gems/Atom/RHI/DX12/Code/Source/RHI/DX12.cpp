@@ -271,12 +271,12 @@ namespace AZ
                         FORMAT_MESSAGE_ALLOCATE_BUFFER |
                         FORMAT_MESSAGE_FROM_SYSTEM |
                         FORMAT_MESSAGE_IGNORE_INSERTS,
-                        NULL,
+                        nullptr,
                         hr,
                         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
                         (LPTSTR) &msgBuf,
                         0,
-                        NULL))
+                        nullptr))
                 {
                     AZ_Assert(false, "HRESULT not a success %x, error msg = %s", hr, msgBuf);
                     LocalFree(msgBuf);

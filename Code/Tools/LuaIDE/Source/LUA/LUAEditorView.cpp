@@ -118,10 +118,10 @@ namespace LUAEditor
     LUAViewWidget::LUAViewWidget(QWidget* pParent /*=NULL*/)
         : QWidget(pParent)
         , m_gui(azcreate(Ui::LUAEditorView, ()))
-        , m_pLUADockWidget(NULL)
-        , m_pLoadingProgressShield(NULL)
-        , m_pSavingProgressShield(NULL)
-        , m_pRequestingEditProgressShield(NULL)
+        , m_pLUADockWidget(nullptr)
+        , m_pLoadingProgressShield(nullptr)
+        , m_pSavingProgressShield(nullptr)
+        , m_pRequestingEditProgressShield(nullptr)
         , m_PullRequestQueued(false)
         , m_AutoCompletionEnabled(true)
     {
@@ -275,7 +275,7 @@ namespace LUAEditor
             // load the data now that its ready!
             if (!newInfo.m_bUntitledDocument)
             {
-                const char* buffer = NULL;
+                const char* buffer = nullptr;
                 AZStd::size_t actualSize = 0;
                 Context_DocumentManagement::Bus::Broadcast(
                     &Context_DocumentManagement::Bus::Events::GetDocumentData, newInfo.m_assetId, &buffer, actualSize);
@@ -288,12 +288,12 @@ namespace LUAEditor
             if (m_pLoadingProgressShield)
             {
                 delete m_pLoadingProgressShield;
-                m_pLoadingProgressShield = NULL;
+                m_pLoadingProgressShield = nullptr;
                 UpdateFont(); // Loading over, inner document need the latest font settings
             }
 
             // scan the breakpoint store from our context and pre-set the markers to get in sync
-            const LUAEditor::BreakpointMap* myData = NULL;
+            const LUAEditor::BreakpointMap* myData = nullptr;
             LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
                 myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
             AZ_Assert(myData, "LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints failed to return any data.");
@@ -322,7 +322,7 @@ namespace LUAEditor
             if (m_pSavingProgressShield)
             {
                 delete m_pSavingProgressShield;
-                m_pSavingProgressShield = NULL;
+                m_pSavingProgressShield = nullptr;
             }
         }
 
@@ -349,7 +349,7 @@ namespace LUAEditor
             if (m_pRequestingEditProgressShield)
             {
                 delete m_pRequestingEditProgressShield;
-                m_pRequestingEditProgressShield = NULL;
+                m_pRequestingEditProgressShield = nullptr;
             }
         }
 
@@ -456,7 +456,7 @@ namespace LUAEditor
                 if (m_pRequestingEditProgressShield)
                 {
                     delete m_pRequestingEditProgressShield;
-                    m_pRequestingEditProgressShield = NULL;
+                    m_pRequestingEditProgressShield = nullptr;
                 }
             }
         }
@@ -599,7 +599,7 @@ namespace LUAEditor
         m_Breakpoints.clear();
         m_gui->m_breakpoints->ClearBreakpoints();
 
-        const LUAEditor::BreakpointMap* myData = NULL;
+        const LUAEditor::BreakpointMap* myData = nullptr;
         LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
             myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
         AZ_Assert(myData, "Nobody responded to the request breakpoints message.");

@@ -60,7 +60,7 @@ namespace ShaderManagementConsole
     {
         QMenu contextMenu(tr("Context menu"), this);
         UpdateRecentFileMenu();
-        contextMenu.insertMenu(0, m_menuOpenRecent);
+        contextMenu.insertMenu(nullptr, m_menuOpenRecent);
         contextMenu.exec(mapToGlobal(pos));
     }
 

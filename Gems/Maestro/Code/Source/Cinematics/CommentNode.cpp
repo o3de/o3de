@@ -70,7 +70,7 @@ namespace Maestro
     {
         CreateTrack(AnimParamType::CommentText);
 
-        C2DSplineTrack* pTrack = 0;
+        C2DSplineTrack* pTrack = nullptr;
 
         pTrack = (C2DSplineTrack*)CreateTrack(AnimParamType::PositionX);
         pTrack->SetDefaultValue(Vec2(0, 50));

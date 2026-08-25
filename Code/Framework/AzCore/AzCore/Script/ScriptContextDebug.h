@@ -50,11 +50,11 @@ namespace AZ
         typedef bool(*EnumEBusSender)(const AZStd::string& /*ebus*/, const AZStd::string& /*Sender Name*/, const AZStd::string& /*debug argument info*/, const AZStd::string& category, void* /*user data*/);
 
         // Enum registered classes, this is enabled even in final builds
-        void                EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMethod, EnumProperty enumProperty, void* userData = NULL);
+        void                EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMethod, EnumProperty enumProperty, void* userData = nullptr);
         // Enum registered global properties and methods, this is enabled even in final builds
-        void                EnumRegisteredGlobals(EnumMethod enumMethod, EnumProperty enumProperty, void* userData = NULL);
+        void                EnumRegisteredGlobals(EnumMethod enumMethod, EnumProperty enumProperty, void* userData = nullptr);
         // Enum registered ebusses including senders and handlers, this is enabled even in final builds
-        void                EnumRegisteredEBuses(EnumEBus enumEBus, EnumEBusSender enumEBusSender, void* userData = NULL);
+        void                EnumRegisteredEBuses(EnumEBus enumEBus, EnumEBusSender enumEBusSender, void* userData = nullptr);
         // Prints a call-stack in a string buffer
         void                StackTrace(char* stackOutput, size_t stackOutputSize);
 
@@ -87,7 +87,7 @@ namespace AZ
         typedef AZStd::function<void (ScriptContextDebug* /* debugContext*/)> ProcessDebugCmdCallback;
         /// Register a callback that will be called when "ProcessDebugCommands" is called.
         void                EnableDebugCmdProcess(ProcessDebugCmdCallback& cb)  { m_processDebugCmdCallback = cb; }
-        void                DisableDebugCmdProcess()                            { m_processDebugCmdCallback = NULL; }
+        void                DisableDebugCmdProcess()                            { m_processDebugCmdCallback = nullptr; }
         /**
          * You MUST can this function from a safe context (when a script is not running) to allow the debugger to execute actions on the script.
          * You are not required to call this, but then you will be able to debug only from within "break points" callback.
@@ -123,12 +123,12 @@ namespace AZ
         struct CallstackLine
         {
             CallstackLine()
-                : m_sourceName(0)
-                , m_functionName(0)
-                , m_functionType(0)
+                : m_sourceName(nullptr)
+                , m_functionName(nullptr)
+                , m_functionType(nullptr)
                 , m_lineCalled(0)
                 , m_lineDefined(0)
-                , m_codeStackFrames(0)
+                , m_codeStackFrames(nullptr)
                 , m_codeNumStackFrames(0) {}
             const char*             m_sourceName;   ///< Source name, if it starts with @ it's a file name.
             OSString                m_parameters;   ///< Function parameters as strings.

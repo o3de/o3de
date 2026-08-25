@@ -68,7 +68,7 @@ namespace LmbrCentral
                 editContext->Class<EditorWrappedComponentBase>("WrappedComponentBase", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::DisplayOrder, 50) // There's no special meaning to 50, we just need this class to move down and display below any children
-                    ->DataElement(0, &EditorWrappedComponentBase::m_configuration, "Configuration", "")
+                    ->DataElement(nullptr, &EditorWrappedComponentBase::m_configuration, "Configuration", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWrappedComponentBase::ConfigurationChanged);
             }

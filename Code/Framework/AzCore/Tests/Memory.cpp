@@ -1527,7 +1527,7 @@ namespace UnitTest
             start = AZStd::chrono::steady_clock::now();
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
-            tr[i].ptr = realloc(NULL, size);
+            tr[i].ptr = realloc(nullptr, size);
             }
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
@@ -1547,7 +1547,7 @@ namespace UnitTest
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
             size_t alignment = rand_alignment();
-            tr[i].ptr = hpha.ReAllocate(NULL, size, alignment);
+            tr[i].ptr = hpha.ReAllocate(nullptr, size, alignment);
             }
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
@@ -1568,7 +1568,7 @@ namespace UnitTest
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();
             size_t alignment = rand_alignment();
-            tr[i].ptr = _aligned_realloc(NULL, size, alignment);
+            tr[i].ptr = _aligned_realloc(nullptr, size, alignment);
             }
             for (unsigned i = 0; i < N; i++) {
             size_t size = rand_size();

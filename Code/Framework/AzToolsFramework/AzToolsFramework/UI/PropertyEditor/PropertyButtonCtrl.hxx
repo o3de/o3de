@@ -27,7 +27,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyButtonCtrl, AZ::SystemAllocator);
 
-        PropertyButtonCtrl(QWidget* pParent = NULL);
+        PropertyButtonCtrl(QWidget* pParent = nullptr);
         virtual ~PropertyButtonCtrl();
 
         void SetButtonText(const char* text);

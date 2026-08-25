@@ -57,7 +57,7 @@ namespace AssetProcessor
             Max
         };
 
-        explicit RCJobListModel(QObject* parent = 0);
+        explicit RCJobListModel(QObject* parent = nullptr);
 
 
         QModelIndex parent(const QModelIndex&) const override;

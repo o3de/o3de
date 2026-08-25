@@ -165,7 +165,7 @@ extern size_t wcsnlen(const wchar_t* str, size_t maxLen);
 // std::stoull deosn't exist on android, so we need to define it
 namespace std
 {
-    inline unsigned long long stoull(const std::string& str, size_t* idx = 0, int base = 10)
+    inline unsigned long long stoull(const std::string& str, size_t* idx = nullptr, int base = 10)
     {
         const char* start = str.c_str();
         char* end = nullptr;

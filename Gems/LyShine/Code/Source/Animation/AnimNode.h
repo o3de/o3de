@@ -95,7 +95,7 @@ public:
     bool GetParamValue(float time, CUiAnimParamType param, Vec4& val) override;
 
     void SetTarget([[maybe_unused]] IUiAnimNode* node) {};
-    IUiAnimNode* GetTarget() const { return 0; };
+    IUiAnimNode* GetTarget() const { return nullptr; };
 
     void StillUpdate() override {}
     void Animate(SUiAnimContext& ec) override;

@@ -21,7 +21,7 @@ namespace Benchmark
             EmptyWorkingSet(GetCurrentProcess());
 
             size_t memoryUsage = 0;
-            MEMORY_BASIC_INFORMATION mbi = { 0 };
+            MEMORY_BASIC_INFORMATION mbi = { nullptr };
             unsigned char* pEndRegion = nullptr;
             while (sizeof(mbi) == VirtualQuery(pEndRegion, &mbi, sizeof(mbi))) {
                 pEndRegion += mbi.RegionSize;
