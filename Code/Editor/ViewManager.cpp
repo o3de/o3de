@@ -192,16 +192,10 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
 void CViewManager::AnchorViewportUiTo(CViewport* pViewport)
 {
     QtViewport* target = viewport_cast<QtViewport*>(pViewport);
-    for (CViewport* viewport : m_viewports)
+    MainWindow* mainWindow = MainWindow::instance();
+    if (target && mainWindow)
     {
-        if (target && viewport->GetViewportId() == AzToolsFramework::ViewportUi::DefaultViewportId)
-        {
-            if (QtViewport* owner = viewport_cast<QtViewport*>(viewport))
-            {
-                owner->AnchorViewportUiTo(target);
-            }
-            return;
-        }
+        mainWindow->AnchorViewportUiTo(target->GetRenderOverlay());
     }
 }
 
@@ -264,6 +258,11 @@ m_viewports[i]->ResetContent();
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::IdleUpdate()
 {
+    if (MainWindow* mainWindow = MainWindow::instance())
+    {
+        mainWindow->UpdateViewportUi();
+    }
+
     const bool documentReady = GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady();
 
     AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();

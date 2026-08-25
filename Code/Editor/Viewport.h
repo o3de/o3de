@@ -488,10 +488,9 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 public:
-    void AnchorViewportUiTo(QtViewport* viewport);
+    QWidget* GetRenderOverlay() { return &m_renderOverlay; }
 
 protected:
-    AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
 
     float m_selectionTolerance;
     QMenu m_cViewMenu;

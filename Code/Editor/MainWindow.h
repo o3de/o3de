@@ -25,6 +25,7 @@
 #include <AzQtComponents/Components/ToolButtonComboBox.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 #include "IEditor.h"
 
@@ -105,6 +106,9 @@ public:
     bool IsPreview() const;
 
     bool IsClosing() const;
+
+    void AnchorViewportUiTo(QWidget* renderOverlay);
+    void UpdateViewportUi();
 
     // The singleton is just a hack for now, it should be removed once everything
     // is ported to Qt.
@@ -212,6 +216,9 @@ private:
 
     CLayoutViewPane* m_activeView;
     bool m_isClosing = false;
+
+    AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
+    bool m_viewportUiInitialized = false;
     QSettings m_settings;
 
     AssetImporterManager* m_assetImporterManager;

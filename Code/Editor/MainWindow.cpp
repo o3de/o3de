@@ -587,6 +587,32 @@ bool MainWindow::IsClosing() const
     return m_isClosing;
 }
 
+void MainWindow::AnchorViewportUiTo(QWidget* renderOverlay)
+{
+    if (!renderOverlay)
+    {
+        return;
+    }
+
+    if (!m_viewportUiInitialized)
+    {
+        m_viewportUi.InitializeViewportUi(this, renderOverlay);
+        m_viewportUi.ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
+        m_viewportUiInitialized = true;
+        return;
+    }
+
+    m_viewportUi.SetViewportUiRenderOverlay(renderOverlay);
+}
+
+void MainWindow::UpdateViewportUi()
+{
+    if (m_viewportUiInitialized)
+    {
+        m_viewportUi.Update();
+    }
+}
+
 MainStatusBar* MainWindow::StatusBar() const
 {
     assert(statusBar()->inherits("MainStatusBar"));

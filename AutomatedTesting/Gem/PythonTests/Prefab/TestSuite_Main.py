@@ -232,3 +232,6 @@ class TestAutomationMultiViewport(EditorTestSuite):
 
     class test_MultiViewport_LastViewport_CannotBeClosed(EditorSingleTest):
         from .tests.multi_viewport import MultiViewport_LastViewport_CannotBeClosed as test_module
+
+    class test_MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi as test_module
