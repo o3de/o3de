@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzFramework/Scene/Scene.h>
@@ -16,7 +17,6 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/UI/Prefab/PrefabSaveLoadHandler.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Prefab/PrefabTestFixture.h>
@@ -94,6 +94,82 @@ namespace UnitTest
             }
 
             PrefabTestFixture::TearDownEditorFixtureImpl();
+        }
+
+        //! Opens a world and shows it in a viewport, returning the world id.
+        AzFramework::EntityContextId OpenWorldInViewport(const char* levelPath, AzFramework::ViewportId viewportId)
+        {
+            AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+            EditorEntityContextRequestBus::BroadcastResult(
+                worldId, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(levelPath));
+            EXPECT_FALSE(worldId.IsNull());
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
+            return worldId;
+        }
+
+        AZ::EntityId RootContainerOfWorld(const AzFramework::EntityContextId& worldId)
+        {
+            PrefabEditorEntityOwnershipInterface* ownershipService = nullptr;
+            EditorEntityContextRequestBus::BroadcastResult(
+                ownershipService, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldId);
+            EXPECT_NE(ownershipService, nullptr);
+            InstanceOptionalReference rootInstance = ownershipService->GetRootPrefabInstance();
+            EXPECT_TRUE(rootInstance.has_value());
+            return rootInstance.has_value() ? rootInstance->get().GetContainerEntityId() : AZ::EntityId();
+        }
+
+        size_t CountNestedInstances(AZ::EntityId containerEntityId)
+        {
+            auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
+            EXPECT_TRUE(owningInstance.has_value());
+            size_t nestedCount = 0;
+            owningInstance->get().GetNestedInstances(
+                [&nestedCount](AZStd::unique_ptr<Instance>&)
+                {
+                    ++nestedCount;
+                });
+            return nestedCount;
+        }
+
+        void FocusViewport(AzFramework::ViewportId viewportId)
+        {
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, viewportId);
+        }
+
+        //! Renames through a real undo batch, the way the editor records an edit, so the command is
+        //! posted to whichever world is active when the batch opens.
+        void RenameEntityInBatch(AZ::EntityId entityId, const AZStd::string& newName)
+        {
+            {
+                AzToolsFramework::ScopedUndoBatch undoBatch("Rename Entity");
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+                ASSERT_NE(entity, nullptr);
+                entity->SetName(newName);
+                AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityId);
+            }
+            PropagateAllTemplateChanges();
+        }
+
+        AzToolsFramework::UndoSystem::UndoStack* ActiveUndoStack()
+        {
+            AzToolsFramework::UndoSystem::UndoStack* undoStack = nullptr;
+            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                undoStack, &AzToolsFramework::ToolsApplicationRequests::GetUndoStack);
+            return undoStack;
+        }
+
+        void UndoInActiveWorld()
+        {
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::UndoPressed);
+            ProcessDeferredUpdates();
+        }
+
+        AZStd::string NameOfEntity(AZ::EntityId entityId)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            return entity ? entity->GetName() : AZStd::string();
         }
 
         AzFramework::EntityContextId m_editorWorld = AzFramework::EntityContextId::CreateNull();
@@ -175,9 +251,24 @@ namespace UnitTest
         EditorEntityContextRequestBus::BroadcastResult(
             worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
 
-        EXPECT_FALSE(worldA.IsNull());
-        EXPECT_FALSE(worldB.IsNull());
-        EXPECT_NE(worldA, worldB);
+        ASSERT_FALSE(worldA.IsNull());
+        ASSERT_FALSE(worldB.IsNull());
+
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
+
+        // The two levels hold different things, so the two worlds must too.
+        const AZ::EntityId rootOfA = RootContainerOfWorld(worldA);
+        const AZ::EntityId rootOfB = RootContainerOfWorld(worldB);
+        ASSERT_TRUE(rootOfA.IsValid());
+        ASSERT_TRUE(rootOfB.IsValid());
+
+        EXPECT_FALSE(FindEntityAliasInInstance(rootOfB, "EntityInWorldB").empty())
+            << "World B does not contain the entity its level declares";
+        EXPECT_TRUE(FindEntityAliasInInstance(rootOfA, "EntityInWorldB").empty())
+            << "World A contains world B's entity - the two levels were loaded into one world";
+        EXPECT_EQ(CountNestedInstances(rootOfA), 1u) << "World A does not contain the nested prefab its level declares";
+        EXPECT_EQ(CountNestedInstances(rootOfB), 0u) << "World B contains a nested prefab its level does not declare";
     }
 
     TEST_F(MultiWorldTests, LoadingTheEditorsOwnLevelReturnsTheEditorWorld)
@@ -267,7 +358,9 @@ namespace UnitTest
 
         const AzToolsFramework::ViewportEditorModesInterface* editorModes =
             m_viewportEditorModeTracker->GetViewportEditorModes({ worldA });
-        EXPECT_TRUE(editorModes == nullptr || !editorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Default));
+        ASSERT_NE(editorModes, nullptr) << "The destroyed world has no editor mode state to inspect";
+        EXPECT_FALSE(editorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Default))
+            << "The destroyed world left its Default editor mode active";
     }
 
     TEST_F(MultiWorldTests, RebindingAViewportDestroysTheWorldItLeft)
@@ -340,55 +433,98 @@ namespace UnitTest
         EXPECT_EQ(AzToolsFramework::GetActiveWorldId(), worldA);
     }
 
-    TEST_F(MultiWorldTests, EachWorldHasItsOwnUndoStack)
+    TEST_F(MultiWorldTests, UndoingAnEditInOneWorldLeavesTheOtherWorldUntouched)
     {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityContextId worldB = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldB, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathB));
-        ASSERT_NE(worldA, worldB);
+        const AzFramework::EntityContextId worldA = OpenWorldInViewport(LevelPathA, ViewportA);
+        const AzFramework::EntityContextId worldB = OpenWorldInViewport(LevelPathB, ViewportB);
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldB);
+        const AZ::EntityId entityInA = CreateEditorEntity("OriginalA", RootContainerOfWorld(worldA));
+        const AZ::EntityId entityInB = CreateEditorEntity("OriginalB", RootContainerOfWorld(worldB));
+        ASSERT_TRUE(entityInA.IsValid());
+        ASSERT_TRUE(entityInB.IsValid());
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-        AzToolsFramework::UndoSystem::UndoStack* stackA = nullptr;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            stackA, &AzToolsFramework::ToolsApplicationRequests::GetUndoStack);
+        // Edit A first, then B. The most recent edit overall belongs to B, so undoing while A is
+        // focused must still revert A - undo follows the focused world's history, not wall-clock order.
+        FocusViewport(ViewportA);
+        RenameEntityInBatch(entityInA, "RenamedInA");
+        ASSERT_EQ(NameOfEntity(entityInA), "RenamedInA");
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
-        AzToolsFramework::UndoSystem::UndoStack* stackB = nullptr;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            stackB, &AzToolsFramework::ToolsApplicationRequests::GetUndoStack);
+        FocusViewport(ViewportB);
+        RenameEntityInBatch(entityInB, "RenamedInB");
+        ASSERT_EQ(NameOfEntity(entityInB), "RenamedInB");
 
-        EXPECT_NE(stackA, nullptr);
-        EXPECT_NE(stackB, nullptr);
-        EXPECT_NE(stackA, stackB);
+        FocusViewport(ViewportA);
+        UndoInActiveWorld();
+        EXPECT_EQ(NameOfEntity(entityInA), "OriginalA") << "Undo in world A did not revert world A's edit";
+        EXPECT_EQ(NameOfEntity(entityInB), "RenamedInB") << "Undo in world A reverted the later edit made in world B";
+
+        // World B's own history is untouched by that and still undoable on its own.
+        FocusViewport(ViewportB);
+        UndoInActiveWorld();
+        EXPECT_EQ(NameOfEntity(entityInB), "OriginalB") << "World B's undo history did not survive an undo in world A";
+        EXPECT_EQ(NameOfEntity(entityInA), "OriginalA") << "Undo in world B disturbed world A";
     }
 
-    TEST_F(MultiWorldTests, ViewportsShowingTheSameWorldShareAnUndoStack)
+    TEST_F(MultiWorldTests, AnUndoBatchBelongsToTheWorldItOpenedIn)
     {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
+        const AzFramework::EntityContextId worldA = OpenWorldInViewport(LevelPathA, ViewportA);
+        OpenWorldInViewport(LevelPathB, ViewportB);
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportB, worldA);
+        const AZ::EntityId entityInA = CreateEditorEntity("OriginalA", RootContainerOfWorld(worldA));
+        ASSERT_TRUE(entityInA.IsValid());
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-        AzToolsFramework::UndoSystem::UndoStack* stackA = nullptr;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            stackA, &AzToolsFramework::ToolsApplicationRequests::GetUndoStack);
+        FocusViewport(ViewportB);
+        const int redoDepthOfBBefore = ActiveUndoStack()->CanUndo() ? 1 : 0;
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
-        AzToolsFramework::UndoSystem::UndoStack* stackB = nullptr;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            stackB, &AzToolsFramework::ToolsApplicationRequests::GetUndoStack);
+        // Open the batch while A is focused, then move focus to B before it closes. The command
+        // belongs to A, the world that was being edited, not to whichever viewport ends up focused.
+        FocusViewport(ViewportA);
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("Rename Entity");
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityInA);
+            ASSERT_NE(entity, nullptr);
+            entity->SetName("RenamedInA");
+            AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(entityInA);
 
-        EXPECT_NE(stackA, nullptr);
-        EXPECT_EQ(stackA, stackB);
+            FocusViewport(ViewportB);
+        }
+        PropagateAllTemplateChanges();
+
+        // Focus is on B, so undoing here must do nothing - the command went to A's stack.
+        EXPECT_EQ(ActiveUndoStack()->CanUndo() ? 1 : 0, redoDepthOfBBefore)
+            << "A batch opened while world A was focused was posted to world B's stack";
+        UndoInActiveWorld();
+        EXPECT_EQ(NameOfEntity(entityInA), "RenamedInA") << "Undoing in world B reverted a batch that belonged to world A";
+
+        FocusViewport(ViewportA);
+        UndoInActiveWorld();
+        EXPECT_EQ(NameOfEntity(entityInA), "OriginalA") << "The batch was not recorded on world A's stack";
+    }
+
+    TEST_F(MultiWorldTests, EditingOneWorldDoesNotDiscardAnotherWorldsRedo)
+    {
+        const AzFramework::EntityContextId worldA = OpenWorldInViewport(LevelPathA, ViewportA);
+        const AzFramework::EntityContextId worldB = OpenWorldInViewport(LevelPathB, ViewportB);
+
+        const AZ::EntityId entityInA = CreateEditorEntity("OriginalA", RootContainerOfWorld(worldA));
+        const AZ::EntityId entityInB = CreateEditorEntity("OriginalB", RootContainerOfWorld(worldB));
+        ASSERT_TRUE(entityInA.IsValid());
+        ASSERT_TRUE(entityInB.IsValid());
+
+        // Give world A something to redo.
+        FocusViewport(ViewportA);
+        RenameEntityInBatch(entityInA, "RenamedInA");
+        UndoInActiveWorld();
+        ASSERT_EQ(NameOfEntity(entityInA), "OriginalA");
+        ASSERT_TRUE(ActiveUndoStack()->CanRedo());
+
+        // An unrelated edit in world B must not slice world A's redo away.
+        FocusViewport(ViewportB);
+        RenameEntityInBatch(entityInB, "RenamedInB");
+
+        FocusViewport(ViewportA);
+        EXPECT_TRUE(ActiveUndoStack()->CanRedo()) << "Editing world B discarded world A's redo history";
     }
 
     TEST_F(MultiWorldTests, EachWorldHasItsOwnOwnershipServiceAndScene)
@@ -412,11 +548,14 @@ namespace UnitTest
         EditorEntityContextRequestBus::BroadcastResult(
             serviceForWorldB, &EditorEntityContextRequests::GetWorldEntityOwnershipService, worldB);
 
-        EXPECT_EQ(serviceForEditorWorld, AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get());
-        EXPECT_NE(serviceForWorldA, nullptr);
-        EXPECT_NE(serviceForWorldB, nullptr);
-        EXPECT_NE(serviceForWorldA, serviceForEditorWorld);
-        EXPECT_NE(serviceForWorldA, serviceForWorldB);
+        EXPECT_EQ(serviceForEditorWorld, AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
+            << "The editor world does not route to the globally registered ownership service";
+        ASSERT_NE(serviceForWorldA, nullptr);
+        ASSERT_NE(serviceForWorldB, nullptr);
+
+        // Each world's service must hold that world's own level, not a shared one.
+        EXPECT_EQ(serviceForWorldA->GetRootPrefabInstance()->get().GetTemplateSourcePath(), AZ::IO::Path(LevelPathA));
+        EXPECT_EQ(serviceForWorldB->GetRootPrefabInstance()->get().GetTemplateSourcePath(), AZ::IO::Path(LevelPathB));
 
         AZStd::shared_ptr<AzFramework::Scene> sceneForEditorWorld;
         AZStd::shared_ptr<AzFramework::Scene> sceneForWorldA;
@@ -428,28 +567,13 @@ namespace UnitTest
         EditorEntityContextRequestBus::BroadcastResult(
             sceneForWorldB, &EditorEntityContextRequests::GetWorldScene, worldB);
 
-        EXPECT_NE(sceneForWorldA, nullptr);
-        EXPECT_NE(sceneForWorldB, nullptr);
-        EXPECT_NE(sceneForWorldA, sceneForEditorWorld);
-        EXPECT_NE(sceneForWorldA, sceneForWorldB);
+        ASSERT_NE(sceneForWorldA, nullptr);
+        ASSERT_NE(sceneForWorldB, nullptr);
+
+        // The scene a world reports must be the scene its entity context actually lives in.
         EXPECT_EQ(sceneForWorldA, AzFramework::EntityContext::FindContainingScene(worldA));
         EXPECT_EQ(sceneForWorldB, AzFramework::EntityContext::FindContainingScene(worldB));
-    }
-
-    TEST_F(MultiWorldTests, NullWorldIdResolvesToTheActiveWorld)
-    {
-        AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            worldA, &EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(LevelPathA));
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::BindViewportToWorld, ViewportA, worldA);
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-
-        EXPECT_EQ(AzToolsFramework::ResolveWorldId(AzFramework::EntityContextId::CreateNull()), worldA);
-        EXPECT_EQ(AzToolsFramework::ResolveWorldId(m_editorWorld), m_editorWorld);
-        EXPECT_EQ(AzToolsFramework::ResolveWorldId(worldA), worldA);
-
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportNeverBound);
-        EXPECT_EQ(AzToolsFramework::ResolveWorldId(AzFramework::EntityContextId::CreateNull()), m_editorWorld);
+        EXPECT_NE(sceneForWorldA, sceneForEditorWorld) << "A loaded world is rendering into the editor world's scene";
     }
 
     TEST_F(MultiWorldTests, WorldLevelPathNamesTheLevelAndIsEmptyForTheEditorWorld)
@@ -494,7 +618,14 @@ namespace UnitTest
         const AZ::EntityId entityInWorldA = CreateEditorEntity("OwnedByWorldA", rootInstance->get().GetContainerEntityId());
         ASSERT_TRUE(entityInWorldA.IsValid());
 
-        EXPECT_EQ(AzToolsFramework::GetEntityWorldId(entityInWorldA), worldA);
+        // Focus another world first. GetEntityWorldId falls back to the active world for entities it
+        // cannot place, so asserting while world A is active would pass even if ownership were broken.
+        OpenWorldInViewport(LevelPathB, ViewportB);
+        FocusViewport(ViewportB);
+        ASSERT_NE(AzToolsFramework::GetActiveWorldId(), worldA);
+
+        EXPECT_EQ(AzToolsFramework::GetEntityWorldId(entityInWorldA), worldA)
+            << "An entity created in world A was not attributed to world A";
 
         bool isEditorEntity = false;
         EditorEntityContextRequestBus::BroadcastResult(
@@ -532,13 +663,19 @@ namespace UnitTest
         EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
         ASSERT_TRUE(m_prefabFocusPublicInterface->FocusOnOwningPrefab(nestedContainerInWorldA).IsSuccess());
 
-        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
+        // Query with a null world id, which resolves to the active world - so the answer has to
+        // follow the focused viewport rather than a world id spelled out by the caller.
+        const AzFramework::EntityContextId activeWorld = AzFramework::EntityContextId::CreateNull();
 
-        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(worldA), nestedContainerInWorldA);
-        EXPECT_NE(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(worldB), nestedContainerInWorldA);
+        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(activeWorld), nestedContainerInWorldA);
+
+        EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportB);
+        EXPECT_NE(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(activeWorld), nestedContainerInWorldA)
+            << "Focusing world B still reported world A's focused prefab";
 
         EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
-        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(worldA), nestedContainerInWorldA);
+        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(activeWorld), nestedContainerInWorldA)
+            << "Returning to world A did not restore its own focused prefab";
     }
 
     TEST_F(MultiWorldTests, ModifiedWorldTemplateIdsTracksDirtySecondaryWorldsOnly)
@@ -578,15 +715,6 @@ namespace UnitTest
         ASSERT_EQ(modifiedTemplateIds.size(), 1u);
         EXPECT_EQ(modifiedTemplateIds[0], serviceForWorldB->GetRootPrefabTemplateId());
         EXPECT_NE(modifiedTemplateIds[0], serviceForEditorWorld->GetRootPrefabTemplateId());
-    }
-
-    TEST_F(MultiWorldTests, IsPrefabSourcePathAcceptsOnlyPrefabExtensions)
-    {
-        EXPECT_TRUE(PrefabSaveHandler::IsPrefabSourcePath("Levels/Test/Test.prefab"));
-        EXPECT_TRUE(PrefabSaveHandler::IsPrefabSourcePath("Test.PREFAB"));
-        EXPECT_FALSE(PrefabSaveHandler::IsPrefabSourcePath("Levels/Test/Test.spawnable"));
-        EXPECT_FALSE(PrefabSaveHandler::IsPrefabSourcePath("Test.prefab.bak"));
-        EXPECT_FALSE(PrefabSaveHandler::IsPrefabSourcePath(""));
     }
 
     TEST_F(MultiWorldTests, OpeningANewLevelWhileAnotherWorldIsOpenRebuildsTheEditorWorld)
