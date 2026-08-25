@@ -186,6 +186,8 @@ namespace AzToolsFramework
         void OnPrepareForContextReset() override;
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
 
         bool m_beginStartPlayInEditor = false;
 

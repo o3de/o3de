@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include "EntityOutlinerListModel.hxx"
 
@@ -52,6 +53,12 @@ namespace AzToolsFramework
         }
 
         QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+
+        if (!parentEntityId.IsValid() && GetEntityWorldId(m_listModel->GetEntityFromIndex(index)) != GetActiveWorldId())
+        {
+            return false;
+        }
+
         QVariant visibilityData = sourceModel()->data(index, EntityOutlinerListModel::VisibilityRole);
         return visibilityData.isValid() ? visibilityData.toBool() : true;
     }

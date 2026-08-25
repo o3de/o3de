@@ -251,10 +251,8 @@ namespace AzToolsFramework
         m_gui->m_objectTree->header()->setSortIndicatorShown(false);
         m_gui->m_objectTree->header()->setStretchLastSection(false);
 
-        for (int row = 0; row < m_proxyModel->rowCount(); ++row)
-        {
-            m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));
-        }
+        // Always expand root entity (level entity) - needed if the widget is re-created while a level is already open.
+        m_gui->m_objectTree->expand(m_proxyModel->index(0, 0));
 
         // resize the icon columns so that the Visibility and Lock toggle icon columns stay right-justified
         m_gui->m_objectTree->header()->setStretchLastSection(false);
@@ -301,14 +299,14 @@ namespace AzToolsFramework
 
         m_listModel->Initialize();
 
-        EditorPickModeNotificationBus::Handler::BusConnect(GetEntityContextId());
+        EditorPickModeNotificationBus::Handler::BusConnect(GetActiveWorldId());
         EntityHighlightMessages::Bus::Handler::BusConnect();
         EntityOutlinerModelNotificationBus::Handler::BusConnect();
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         EditorEntityContextNotificationBus::Handler::BusConnect();
-        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetActiveWorldId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetActiveWorldId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
         EntityOutlinerRequestBus::Handler::BusConnect();
@@ -330,6 +328,20 @@ namespace AzToolsFramework
 
         delete m_listModel;
         delete m_gui;
+    }
+
+    void EntityOutlinerWidget::OnActiveWorldChanged(const AzFramework::EntityContextId&, const AzFramework::EntityContextId& newWorldId)
+    {
+        EditorPickModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
+        EditorPickModeNotificationBus::Handler::BusConnect(newWorldId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(newWorldId);
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(newWorldId);
+
+        OnPrefabEditScopeChanged();
+        m_proxyModel->UpdateFilter();
+        m_gui->m_objectTree->expand(m_proxyModel->index(0, 0));
     }
 
     void EntityOutlinerWidget::OnPrefabEditScopeChanged()
@@ -1144,10 +1156,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setUpdatesEnabled(true);
         QTimer::singleShot(1, this, [this]()
             {
-            for (int row = 0; row < m_proxyModel->rowCount(); ++row)
-            {
-                m_gui->m_objectTree->expand(m_proxyModel->index(row, 0));
-            }
+            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
             });
     }
 

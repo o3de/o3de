@@ -65,6 +65,7 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerTreeView.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -110,12 +111,8 @@ namespace AzToolsFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-
-        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
-        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ContainerEntityNotificationBus::Handler::BusConnect(GetActiveWorldId());
+        FocusModeNotificationBus::Handler::BusConnect(GetActiveWorldId());
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
@@ -1801,6 +1798,14 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::OnStartPlayInEditor()
     {
         m_beginStartPlayInEditor = false;
+    }
+
+    void EntityOutlinerListModel::OnActiveWorldChanged(const AzFramework::EntityContextId&, const AzFramework::EntityContextId& newWorldId)
+    {
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
+        FocusModeNotificationBus::Handler::BusDisconnect();
+        ContainerEntityNotificationBus::Handler::BusConnect(newWorldId);
+        FocusModeNotificationBus::Handler::BusConnect(newWorldId);
     }
 
     void EntityOutlinerListModel::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
