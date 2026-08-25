@@ -226,3 +226,6 @@ class TestAutomationMultiViewport(EditorTestSuite):
 
     class test_MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld(EditorSingleTest):
         from .tests.multi_viewport import MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld as test_module
+
+    class test_MultiViewport_BackgroundViewport_DoesNotStealTheActiveWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_BackgroundViewport_DoesNotStealTheActiveWorld as test_module
