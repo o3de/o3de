@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/ViewportSnapping/EntitySnapDragHandler.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Entity/EditorEntityHelpers.h>
@@ -219,6 +220,14 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Checked before the manipulator manager sees the event. While a manipulator is
+        // interacting ConsumeViewportMousePress swallows every press, so this is the last point at
+        // which a right click is still visible to anything that wants to cancel a drag.
+        if (m_entitySnapDragHandler.HandleMouseManipulatorInteractionBefore(mouseInteractionEvent))
+        {
+            return true;
+        }
+
         if (!IsEditedWorldVisibleInViewport(mouseInteractionEvent.m_mouseInteraction.m_interactionId.m_viewportId))
         {
             return false;
@@ -229,34 +238,48 @@ namespace AzToolsFramework
         // store the current interaction for use in DrawManipulators
         m_currentInteraction = mouseInteraction;
 
-        switch (mouseInteractionEvent.m_mouseEvent)
+        const bool handled = [this, &mouseInteractionEvent, &mouseInteraction]()
         {
-        case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-        case MouseEvent::DoubleClick:
-            return false;
-        case MouseEvent::Move:
+            switch (mouseInteractionEvent.m_mouseEvent)
             {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
-                return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
+            case MouseEvent::Down:
+                return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
+            case MouseEvent::DoubleClick:
+                return false;
+            case MouseEvent::Move:
+                {
+                    const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                        m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                    return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
+                }
+            case MouseEvent::Up:
+                return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
+            case MouseEvent::Wheel:
+                return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
+            default:
+                return false;
             }
-        case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-        case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-        default:
-            return false;
-        }
+        }();
+
+        // Runs after the manipulator manager, which has just written this frame's unsnapped entity
+        // positions. The snap correction is applied on top of them.
+        m_entitySnapDragHandler.HandleMouseManipulatorInteractionAfter(mouseInteractionEvent);
+
+        return handled;
     }
 
     bool EditorDefaultSelection::InternalHandleMouseViewportInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        bool enterComponentModeAttempted = false;
-        const bool componentModeBefore = InComponentMode();
-
         const bool editedWorldVisible =
             IsEditedWorldVisibleInViewport(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+
+        if (editedWorldVisible && m_entitySnapDragHandler.HandleMouseViewportInteraction(mouseInteraction))
+        {
+            return true;
+        }
+
+        bool enterComponentModeAttempted = false;
+        const bool componentModeBefore = InComponentMode();
 
         bool handled = false;
         if (!editedWorldVisible)
@@ -352,6 +375,10 @@ namespace AzToolsFramework
         debugDisplay.DepthTestOff();
         m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
         debugDisplay.DepthTestOn();
+
+        // Drawn after the manipulators so the marker is not hidden behind the gizmo, which sits
+        // over the very position being snapped to.
+        m_entitySnapDragHandler.DisplayViewportSelection(debugDisplay);
     }
 
     void EditorDefaultSelection::DisplayViewportSelection2d(

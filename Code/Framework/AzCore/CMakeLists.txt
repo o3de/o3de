@@ -20,6 +20,8 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     endif()
 endif()
 
+set(O3DE_SYSTEM_ALLOCATOR_USE_MALLOC OFF CACHE BOOL "Use OS allocator as the SystemAllocator schema.")
+
 # By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
 # and will ignore all overrides in release builds.
 # This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2, 3 or 4 when generating the build files.
@@ -115,7 +117,7 @@ ly_add_source_properties(
     VALUES ${O3DE_STACK_CAPTURE_DEPTH_DEFINE}
 )
 
-if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+if(LY_BUILD_WITH_ADDRESS_SANITIZER OR O3DE_SYSTEM_ALLOCATOR_USE_MALLOC)
     # Default to use Malloc schema so ASan works well
     ly_add_source_properties(
         SOURCES AzCore/Memory/SystemAllocator.cpp

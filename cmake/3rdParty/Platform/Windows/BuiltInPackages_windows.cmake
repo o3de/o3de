@@ -11,7 +11,6 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                      TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
-ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                    TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                            TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                               TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
@@ -27,7 +26,6 @@ ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev1-windows            
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-windows                                TARGETS Lua                         PACKAGE_HASH 8ac853288712267ec9763be152a9274ce87b54728b8add97e2ba73c0fd5a0345)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-windows                    TARGETS GoogleBenchmark             PACKAGE_HASH a19e41670b46ec1676b51f9d6ad862443c56415d61b505383c19909fb02feb9e)
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows                           TARGETS d3dx12                      PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
 ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev5-windows                    TARGETS pyside6                     PACKAGE_HASH 322cc789f521cee9444401ce444c14b3a3d7b08ac30384c9baa9f55068be2397)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev4-windows           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH d542198653b33640268a999de542c9c5adf4a29322ed04858c730bc82eb34b09)

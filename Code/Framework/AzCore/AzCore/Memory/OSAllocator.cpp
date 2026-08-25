@@ -114,13 +114,13 @@ namespace AZ
 #if defined(AZ_ENABLE_TRACING)
         m_numAllocatedBytes += (allocatedSize - previouslyAllocatedSize);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
-        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, allocatedSize, 1));
+        AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, newSize, 1));
 #endif
 
         return AllocateAddress{ newPtr, allocatedSize };
     }
 
-    auto OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
+    auto OSAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const -> size_type
     {
         return ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
     }

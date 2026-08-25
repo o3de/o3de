@@ -11,7 +11,6 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
-ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-rev1-mac-arm64                       TARGETS cityhash                    PACKAGE_HASH c5844582b4fe819e74ca923dbb58405dd687a4b9acb82d7de04e3e766addb4ed)
 ly_associate_package(PACKAGE_NAME zstd-1.35-rev1-mac-arm64                          TARGETS zstd                        PACKAGE_HASH bb401d198d9fd2be2669acb6fe8dbe59fd7d33a66b5f2fd7d3e0221e5b72d1f4)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
@@ -26,7 +25,6 @@ ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.361-rev1-mac-arm64          
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev2-mac-arm64                          TARGETS Lua                         PACKAGE_HASH f2089b3d513e614242be6dc4169ed7cb64d502668f0edae72f10815e494b1dbf)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev3-mac-arm64                    TARGETS mcpp                        PACKAGE_HASH 2c1e7d4154ebf26a35dea1cf9f9cc001aa68f82cbcba8f02f0cb877a07757d36)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.5-mac-arm64                  TARGETS mikkelsen                        PACKAGE_HASH 835f1ec2df64c4046a2f51bff76e72920b1773b504238b4a28b5e8c11ed40135)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev2-mac-arm64              TARGETS GoogleBenchmark             PACKAGE_HASH c33706b0e495aa17ae8c169a708fdf7ec5b76ec396e63a469ec059bd05e79d7c)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac-arm64     TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH 9cbbf7e66f3890af8eadac23076fe26d644f67d79f8fd5823678dde1d3af98bb)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1w-rev1-mac-arm64                     TARGETS OpenSSL                     PACKAGE_HASH 3367bdf98e73cf2413eb495853972aa4ccd29c2ef58392fa7b7fa99001b1e2e0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                      TARGETS OpenEXR Imath               PACKAGE_HASH 4a093f5ca03836631dc66166b8f493925d0445467219efcbca3a5a0ee2ccbf4b)

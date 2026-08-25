@@ -507,6 +507,13 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
         m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
+
+        // Geometry snapping, after the grid and angle entries it belongs alongside. A separator
+        // first because the entries above quantise a value, while this snaps to what is in the
+        // level - related enough to share the menu, different enough not to read as one group.
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 850);
+        m_menuManagerInterface->AddSubMenuToMenu(
+            EditorIdentifiers::ViewportOptionsMenuIdentifier, EditorIdentifiers::EditModifySnapToMenuIdentifier, 900);
     }
 }
 
