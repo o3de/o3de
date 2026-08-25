@@ -529,9 +529,10 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
         &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectionInOtherWorlds);
 }
 
-void SandboxIntegrationManager::OnWorldDestroyed([[maybe_unused]] const AzFramework::EntityContextId& worldId)
+void SandboxIntegrationManager::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
 {
-    GetIEditor()->FlushUndo();
+    GetIEditor()->GetUndoManager()->FlushWorld(worldId);
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::FlushWorldUndo, worldId);
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()
@@ -967,31 +968,6 @@ bool SandboxIntegrationManager::OpenLevelInNewViewport(AZStd::string_view levelP
     if (!viewportPane)
     {
         return false;
-    }
-
-    for (DockWidget* dockWidget : viewportPane->m_dockWidgetInstances)
-    {
-        QWidget* paneWidget = dockWidget->widget();
-        const QVariant viewportId = paneWidget ? paneWidget->property("ViewportId") : QVariant();
-        if (!viewportId.isValid())
-        {
-            continue;
-        }
-
-        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
-
-        AZStd::string worldLevelPath;
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            worldLevelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
-
-        if (levelPathText == QString::fromUtf8(worldLevelPath.c_str()))
-        {
-            dockWidget->raise();
-            dockWidget->activateWindow();
-            return true;
-        }
     }
 
     const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(

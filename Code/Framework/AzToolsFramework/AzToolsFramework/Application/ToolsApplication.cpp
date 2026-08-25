@@ -180,7 +180,6 @@ namespace AzToolsFramework
     ToolsApplication::ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : AzFramework::Application(argc, argv, AZStd::move(componentAppSettings))
         , m_selectionBounds(AZ::Aabb())
-        , m_undoStack(nullptr)
         , m_currentBatchUndo(nullptr)
         , m_isDuringUndoRedo(false)
         , m_isInIsolationMode(false)
@@ -273,8 +272,6 @@ namespace AzToolsFramework
     void ToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
         Application::StartCommon(systemEntity);
-
-        m_undoStack = new UndoSystem::UndoStack(10, nullptr);
     }
 
     void ToolsApplication::Stop()
@@ -288,9 +285,6 @@ namespace AzToolsFramework
             {
                 undoCacheInterface->Clear();
             }
-
-            delete m_undoStack;
-            m_undoStack = nullptr;
 
             // Release any memory used by ToolsApplication before Application::Stop() destroys the allocators.
             m_selectedEntities.set_capacity(0);
@@ -1200,13 +1194,13 @@ namespace AzToolsFramework
 
     void ToolsApplication::UndoPressed()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            if (m_undoStack->CanUndo())
+            if (undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
-                m_undoStack->Undo();
+                undoStack->Undo();
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
@@ -1219,13 +1213,13 @@ namespace AzToolsFramework
 
     void ToolsApplication::RedoPressed()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            if (m_undoStack->CanRedo())
+            if (undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
-                m_undoStack->Redo();
+                undoStack->Redo();
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
@@ -1236,13 +1230,32 @@ namespace AzToolsFramework
         }
     }
 
+    UndoSystem::UndoStack* ToolsApplication::GetUndoStack()
+    {
+        auto& undoStack = m_worldUndoStacks[GetActiveWorldId()];
+        if (!undoStack)
+        {
+            undoStack = AZStd::make_unique<UndoSystem::UndoStack>(nullptr);
+        }
+        return undoStack.get();
+    }
+
     void ToolsApplication::FlushUndo()
     {
-        if (m_undoStack)
-        {
-            m_undoStack->Reset();
-        }
+        m_worldUndoStacks.clear();
 
+        DiscardCurrentUndoBatch();
+    }
+
+    void ToolsApplication::FlushWorldUndo(const AzFramework::EntityContextId& worldId)
+    {
+        m_worldUndoStacks.erase(worldId);
+
+        DiscardCurrentUndoBatch();
+    }
+
+    void ToolsApplication::DiscardCurrentUndoBatch()
+    {
         if (m_currentBatchUndo)
         {
             delete m_currentBatchUndo;
@@ -1255,9 +1268,9 @@ namespace AzToolsFramework
 
     void ToolsApplication::FlushRedo()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            m_undoStack->Slice();
+            undoStack->Slice();
         }
     }
 
@@ -1287,7 +1300,7 @@ namespace AzToolsFramework
 
     UndoSystem::URSequencePoint* ToolsApplication::ResumeUndoBatch(UndoSystem::URSequencePoint* expected, const char* label)
     {
-        if ((!m_undoStack) || (!expected))
+        if (!expected)
         {
             return BeginUndoBatch(label);
         }
@@ -1305,12 +1318,13 @@ namespace AzToolsFramework
 
         // if we just finished an undo, and its the top operation or contains the resume operation, reopen it.
         // note that we re-attach the root to the current undo batch, but we return the child found.
-        UndoSystem::URSequencePoint* topOperation = m_undoStack->GetTop();
+        UndoSystem::UndoStack* undoStack = GetUndoStack();
+        UndoSystem::URSequencePoint* topOperation = undoStack->GetTop();
         if (topOperation)
         {
             if (UndoSystem::URSequencePoint* searcher = topOperation->Find(expected); searcher)
             {
-                m_currentBatchUndo = m_undoStack->PopTop();
+                m_currentBatchUndo = undoStack->PopTop();
                 return searcher;
             }
         }
@@ -1371,9 +1385,9 @@ namespace AzToolsFramework
                 &ToolsApplicationEvents::Bus::Events::OnEndUndo, m_currentBatchUndo->GetName().c_str(), changed);
 
             // record each undo batch
-            if (m_undoStack && changed)
+            if (changed)
             {
-                m_undoStack->Post(m_currentBatchUndo);
+                GetUndoStack()->Post(m_currentBatchUndo);
             }
             else
             {

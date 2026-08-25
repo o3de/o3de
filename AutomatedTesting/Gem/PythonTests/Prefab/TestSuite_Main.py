@@ -221,8 +221,8 @@ class TestAutomationMultiViewport(EditorTestSuite):
     class test_MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport(EditorSingleTest):
         from .tests.multi_viewport import MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport as test_module
 
-    class test_MultiViewport_ReopeningALevel_RaisesTheExistingViewport(EditorSingleTest):
-        from .tests.multi_viewport import MultiViewport_ReopeningALevel_RaisesTheExistingViewport as test_module
+    class test_MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld as test_module
 
     class test_MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld(EditorSingleTest):
         from .tests.multi_viewport import MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld as test_module

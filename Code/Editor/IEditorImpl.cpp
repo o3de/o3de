@@ -1018,8 +1018,7 @@ void CEditorImpl::ShowStatusText(bool bEnable)
 
 void CEditorImpl::ReduceMemory()
 {
-    GetIEditor()->GetUndoManager()->ClearRedoStack();
-    GetIEditor()->GetUndoManager()->ClearUndoStack();
+    GetIEditor()->FlushUndo();
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();

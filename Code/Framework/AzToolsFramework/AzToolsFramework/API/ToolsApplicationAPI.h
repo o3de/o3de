@@ -297,6 +297,11 @@ namespace AzToolsFramework
         virtual void FlushUndo() = 0;
 
         /*!
+         * Notifies the application that a world was torn down and its undo stack needs to be dropped
+         */
+        virtual void FlushWorldUndo(const AzFramework::EntityContextId& worldId) = 0;
+
+        /*!
         * Notifies the application that the redo stack needs to be sliced (removed)
         */
         virtual void FlushRedo() = 0;

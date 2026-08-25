@@ -10,19 +10,19 @@ class Tests:
     first_open_added_viewport = (
         "The first double-click opened an additional Editor Viewport",
         "The first double-click did not open an additional Editor Viewport")
-    second_open_added_nothing = (
-        "Double-clicking the same level again did not open another viewport",
-        "Double-clicking the same level again opened a duplicate viewport")
+    second_open_added_viewport = (
+        "Double-clicking the same level again opened another viewport",
+        "Double-clicking the same level again did not open another viewport")
     world_is_reused = (
-        "The level is still held by the same world",
+        "Both viewports are held by the same world",
         "Reopening the level produced a second world for the same level")
 
 
-def MultiViewport_ReopeningALevel_RaisesTheExistingViewport():
+def MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld():
     """
     Summary:
     A level is never loaded into two worlds. Double-clicking a level prefab that a viewport is already showing
-    raises that viewport instead of opening a second one.
+    opens a second viewport bound to that same world, so one world holds two viewport ids.
 
     :return: None
     """
@@ -89,18 +89,20 @@ def MultiViewport_ReopeningALevel_RaisesTheExistingViewport():
         Tests.first_open_added_viewport,
         helper.wait_for_condition(lambda: len(viewport_ids() - viewport_ids_before) == 1, 10.0))
 
-    new_viewport_id = (viewport_ids() - viewport_ids_before).pop()
-    world_after_first_open = editor.EditorEntityContextRequestBus(bus.Broadcast, "GetViewportWorld", new_viewport_id)
+    first_viewport_id = (viewport_ids() - viewport_ids_before).pop()
+    world_after_first_open = editor.EditorEntityContextRequestBus(bus.Broadcast, "GetViewportWorld", first_viewport_id)
 
     double_click_level(tree)
-    general.idle_wait(2.0)
 
-    Report.result(Tests.second_open_added_nothing, len(viewport_ids() - viewport_ids_before) == 1)
+    Report.result(
+        Tests.second_open_added_viewport,
+        helper.wait_for_condition(lambda: len(viewport_ids() - viewport_ids_before) == 2, 10.0))
 
-    world_after_second_open = editor.EditorEntityContextRequestBus(bus.Broadcast, "GetViewportWorld", new_viewport_id)
+    second_viewport_id = (viewport_ids() - viewport_ids_before - {first_viewport_id}).pop()
+    world_after_second_open = editor.EditorEntityContextRequestBus(bus.Broadcast, "GetViewportWorld", second_viewport_id)
     Report.result(Tests.world_is_reused, world_after_second_open == world_after_first_open)
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(MultiViewport_ReopeningALevel_RaisesTheExistingViewport)
+    Report.start_test(MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld)

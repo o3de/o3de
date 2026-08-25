@@ -26,6 +26,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Atom
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -76,15 +77,13 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
             viewPane->AttachViewport(new EditorViewportWidget("Perspective", viewPane));
 
             const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
-            if (levelPath.isEmpty())
-            {
-                return;
-            }
 
-            AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
-                AZ::IO::PathView(levelPath.constData()));
+            AzFramework::EntityContextId worldId = AzToolsFramework::GetActiveWorldId();
+            if (!levelPath.isEmpty())
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(levelPath.constData()));
+            }
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
         });
