@@ -63,6 +63,8 @@ namespace AzToolsFramework
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+            void OnActiveWorldChanged(
+                const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
 
             // EntityPropertyEditorNotificationBus ...
             void OnComponentSelectionChanged(
@@ -145,7 +147,6 @@ namespace AzToolsFramework
 
             AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
 
-            static AzFramework::EntityContextId s_editorEntityContextId;
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;

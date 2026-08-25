@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -218,10 +219,15 @@ namespace AzToolsFramework
         Clear(editorEntityContextId);
     }
 
-    void ContainerEntitySystemComponent::RefreshAllContainerEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    void ContainerEntitySystemComponent::RefreshAllContainerEntities(AzFramework::EntityContextId entityContextId) const
     {
+        const AzFramework::EntityContextId worldId = ResolveWorldId(entityContextId);
         for (AZ::EntityId containerEntityId : m_containers)
         {
+            if (GetEntityWorldId(containerEntityId) != worldId)
+            {
+                continue;
+            }
             ContainerEntityNotificationBus::Broadcast(
                 &ContainerEntityNotificationBus::Events::OnContainerEntityStatusChanged, containerEntityId, m_openContainers.contains(containerEntityId));
         }

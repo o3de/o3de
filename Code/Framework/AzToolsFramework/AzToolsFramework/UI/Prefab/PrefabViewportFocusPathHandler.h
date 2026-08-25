@@ -29,6 +29,7 @@ namespace AzToolsFramework::Prefab
         : public AzQtComponents::BreadCrumbs
         , private PrefabFocusNotificationBus::Handler
         , private ViewportEditorModeNotificationsBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
     {
     public:
         PrefabFocusPathWidget();
@@ -43,9 +44,12 @@ namespace AzToolsFramework::Prefab
         void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
+        // EditorEntityContextNotificationBus overrides ...
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
+
         void Refresh();
 
-        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
     };
 

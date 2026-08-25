@@ -123,7 +123,7 @@ namespace AzToolsFramework
             m_editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
         if (!m_editorEntityContextId.IsNull())
         {
-            AzFramework::EntityContextEventBus::Handler::BusConnect(m_editorEntityContextId);
+            AzFramework::EntityContextEventBus::MultiHandler::BusConnect(m_editorEntityContextId);
         }
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
@@ -133,7 +133,7 @@ namespace AzToolsFramework
     EditorEntityModel::~EditorEntityModel()
     {
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-        AzFramework::EntityContextEventBus::Handler::BusDisconnect();
+        AzFramework::EntityContextEventBus::MultiHandler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         EditorTransformChangeNotificationBus::Handler::BusDisconnect();
@@ -678,6 +678,16 @@ namespace AzToolsFramework
 
             entityInfo.OnChildSortOrderChanged();
         }
+    }
+
+    void EditorEntityModel::OnWorldLoaded(const AzFramework::EntityContextId& worldId)
+    {
+        AzFramework::EntityContextEventBus::MultiHandler::BusConnect(worldId);
+    }
+
+    void EditorEntityModel::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        AzFramework::EntityContextEventBus::MultiHandler::BusDisconnect(worldId);
     }
 
     void EditorEntityModel::OnPrepareForContextReset()

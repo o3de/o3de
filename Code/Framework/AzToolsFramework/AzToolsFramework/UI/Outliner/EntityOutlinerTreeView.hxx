@@ -16,6 +16,7 @@
 #include <QBasicTimer>
 #include <QEvent>
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 
@@ -37,6 +38,7 @@ namespace AzToolsFramework
     class AZTF_API EntityOutlinerTreeView
         : public AzQtComponents::StyledTreeView
         , private FocusModeNotificationBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -66,6 +68,10 @@ namespace AzToolsFramework
         void mousePressEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
+
+        // EditorEntityContextNotificationBus overrides ...
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
 
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;

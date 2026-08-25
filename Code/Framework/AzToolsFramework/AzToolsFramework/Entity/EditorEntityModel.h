@@ -39,7 +39,7 @@
 namespace AzToolsFramework
 {
     class AZTF_API EditorEntityModel
-        : public AzFramework::EntityContextEventBus::Handler
+        : public AzFramework::EntityContextEventBus::MultiHandler
         , public EditorEntityContextNotificationBus::Handler
         , public EditorEntitySortNotificationBus::MultiHandler
         , public ToolsApplicationEvents::Bus::Handler
@@ -83,6 +83,8 @@ namespace AzToolsFramework
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
         //////////////////////////////////////////////////////////////////////////
         void OnPrepareForContextReset() override;
+        void OnWorldLoaded(const AzFramework::EntityContextId& worldId) override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
         void OnEntityStreamLoadBegin() override;
         void OnEntityStreamLoadSuccess() override;
         void OnEntityStreamLoadFailed() override;

@@ -96,6 +96,7 @@ namespace AzToolsFramework::Prefab
             //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
             AZ::IO::Path m_filenameFocusPath;
             int m_rootAliasFocusPathLength = 0;
+            PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
         };
 
         WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
@@ -117,14 +118,14 @@ namespace AzToolsFramework::Prefab
             const AzFramework::EntityContextId& worldId, const RootAliasPath& rootAliasPath, bool openState) const;
         void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
 
-        void SwitchToEditScope() const;
+        void SwitchToEditScope(const AzFramework::EntityContextId& worldId) const;
 
         InstanceOptionalReference GetInstanceReference(
             const AzFramework::EntityContextId& worldId, RootAliasPath rootAliasPath) const;
 
         mutable AZStd::unordered_map<AzFramework::EntityContextId, WorldFocus> m_worldFocus;
-        //! The current focus mode.
-        PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
+        //! The focus mode a world starts out in.
+        PrefabEditScope m_defaultPrefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;

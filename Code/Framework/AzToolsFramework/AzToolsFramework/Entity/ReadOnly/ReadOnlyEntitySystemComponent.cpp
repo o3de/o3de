@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -88,7 +89,13 @@ namespace AzToolsFramework
 
     void ReadOnlyEntitySystemComponent::OnPrepareForContextReset()
     {
-        m_readOnlystates.clear();
+        const AzFramework::EntityContextId resetWorldId = GetEntityContextId();
+        AZStd::erase_if(
+            m_readOnlystates,
+            [&resetWorldId](const auto& readOnlyState)
+            {
+                return GetEntityWorldId(readOnlyState.first) == resetWorldId;
+            });
     }
 
     void ReadOnlyEntitySystemComponent::QueryReadOnlyStateForEntity(const AZ::EntityId& entityId)

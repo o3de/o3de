@@ -13,6 +13,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
@@ -26,6 +28,30 @@ namespace UnitTest
     using AzToolsFramework::EditorEntityContextRequestBus;
     using AzToolsFramework::EditorEntityContextRequests;
     using AzToolsFramework::PrefabEditorEntityOwnershipInterface;
+
+    using AzToolsFramework::ContainerEntityInterface;
+
+    class ContainerStatusListener
+        : public AzToolsFramework::ContainerEntityNotificationBus::Handler
+    {
+    public:
+        explicit ContainerStatusListener(const AzFramework::EntityContextId& worldId)
+        {
+            BusConnect(worldId);
+        }
+
+        ~ContainerStatusListener()
+        {
+            BusDisconnect();
+        }
+
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool) override
+        {
+            m_notified.insert(entityId);
+        }
+
+        AZStd::unordered_set<AZ::EntityId> m_notified;
+    };
 
     class MultiWorldTests
         : public PrefabTestFixture
@@ -949,5 +975,30 @@ namespace UnitTest
         EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::SetFocusedViewport, ViewportA);
         EXPECT_EQ(activeWorldLevelPath(), AZ::IO::Path(LevelPathA))
             << "The global ownership interface did not follow the active world back to world A";
+    }
+
+    TEST_F(MultiWorldTests, RefreshingContainerEntitiesOnlyTouchesTheWorldItWasAskedAbout)
+    {
+        const AzFramework::EntityContextId worldA = OpenWorldInViewport(LevelPathA, ViewportA);
+        const AzFramework::EntityContextId worldB = OpenWorldInViewport(LevelPathB, ViewportB);
+
+        auto* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        ASSERT_NE(containerEntityInterface, nullptr);
+
+        const AZ::EntityId rootContainerA = RootContainerOfWorld(worldA);
+        const AZ::EntityId rootContainerB = RootContainerOfWorld(worldB);
+        ASSERT_TRUE(rootContainerA.IsValid());
+        ASSERT_TRUE(rootContainerB.IsValid());
+
+        containerEntityInterface->RegisterEntityAsContainer(rootContainerA);
+        containerEntityInterface->RegisterEntityAsContainer(rootContainerB);
+
+        ContainerStatusListener listener(worldA);
+        containerEntityInterface->RefreshAllContainerEntities(worldA);
+
+        EXPECT_TRUE(listener.m_notified.contains(rootContainerA))
+            << "Refreshing world A's containers did not report world A's own container";
+        EXPECT_FALSE(listener.m_notified.contains(rootContainerB))
+            << "Refreshing world A's containers reported a container belonging to world B";
     }
 } // namespace UnitTest

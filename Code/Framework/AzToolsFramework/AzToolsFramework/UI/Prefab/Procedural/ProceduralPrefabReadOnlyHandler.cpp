@@ -9,6 +9,7 @@
 #include <AzToolsFramework/UI/Prefab/Procedural/ProceduralPrefabReadOnlyHandler.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -29,8 +30,8 @@ namespace AzToolsFramework
                 m_prefabFocusPublicInterface != nullptr,
                 "ProceduralPrefabReadOnlyHandler requires a PrefabFocusPublicInterface instance on Initialize.");
 
-            EditorEntityContextRequestBus::BroadcastResult(m_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-            ReadOnlyEntityQueryRequestBus::Handler::BusConnect(m_editorEntityContextId);
+            ReadOnlyEntityQueryRequestBus::Handler::BusConnect(GetActiveWorldId());
+            EditorEntityContextNotificationBus::Handler::BusConnect();
 
              // Refresh the whole read-only cache
             if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
@@ -38,13 +39,28 @@ namespace AzToolsFramework
                 readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
             }
 
-            PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
+            PrefabFocusNotificationBus::Handler::BusConnect(GetActiveWorldId());
         }
 
         ProceduralPrefabReadOnlyHandler ::~ProceduralPrefabReadOnlyHandler()
         {
+            EditorEntityContextNotificationBus::Handler::BusDisconnect();
             PrefabFocusNotificationBus::Handler::BusDisconnect();
             ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
+        }
+
+        void ProceduralPrefabReadOnlyHandler::OnActiveWorldChanged(
+            [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+        {
+            PrefabFocusNotificationBus::Handler::BusDisconnect();
+            ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
+            ReadOnlyEntityQueryRequestBus::Handler::BusConnect(newWorldId);
+            PrefabFocusNotificationBus::Handler::BusConnect(newWorldId);
+
+            if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
+            {
+                readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
+            }
         }
 
         void ProceduralPrefabReadOnlyHandler::OnPrefabEditScopeChanged()

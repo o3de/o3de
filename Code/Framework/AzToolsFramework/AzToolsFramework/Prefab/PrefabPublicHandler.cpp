@@ -631,7 +631,7 @@ namespace AzToolsFramework
             inputEntityList = EntityIdListToEntityList(entityIds);
 
             // Remove Level Container Entity if it's part of the list
-            AZ::EntityId levelEntityId = GetLevelInstanceContainerEntityId();
+            AZ::EntityId levelEntityId = GetLevelInstanceContainerEntityId(AzFramework::EntityContextId::CreateNull());
             if (levelEntityId.IsValid())
             {
                 AZ::Entity* levelEntity = GetEntityById(levelEntityId);
@@ -1170,9 +1170,9 @@ namespace AzToolsFramework
             return AZ::EntityId();
         }
 
-        AZ::EntityId PrefabPublicHandler::GetLevelInstanceContainerEntityId() const
+        AZ::EntityId PrefabPublicHandler::GetLevelInstanceContainerEntityId(AzFramework::EntityContextId worldId) const
         {
-            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
+            auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService(worldId);
             if (!prefabEditorEntityOwnershipInterface)
             {
                 AZ_Assert(

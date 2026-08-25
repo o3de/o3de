@@ -118,13 +118,18 @@ namespace AzToolsFramework::Prefab
 
         if (IsOutlinerOverrideManagementEnabled())
         {
-            m_prefabEditScope = PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT;
+            m_defaultPrefabEditScope = PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT;
         }
     }
 
     PrefabFocusHandler::WorldFocus& PrefabFocusHandler::GetWorldFocus(const AzFramework::EntityContextId& worldId) const
     {
-        WorldFocus& focus = m_worldFocus[worldId];
+        auto [focusIt, inserted] = m_worldFocus.try_emplace(worldId);
+        WorldFocus& focus = focusIt->second;
+        if (inserted)
+        {
+            focus.m_prefabEditScope = m_defaultPrefabEditScope;
+        }
         if (focus.m_rootAliasFocusPathLength == 0)
         {
             PrefabEditorEntityOwnershipInterface* ownershipService = GetWorldOwnershipService(worldId);
@@ -556,10 +561,11 @@ namespace AzToolsFramework::Prefab
         return GetWorldFocus(ResolveWorldId(entityContextId)).m_rootAliasFocusPathLength;
     }
 
-    void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope)
+    void PrefabFocusHandler::SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope)
     {
-        m_prefabEditScope = prefabEditScope;
-        SwitchToEditScope();
+        const AzFramework::EntityContextId worldId = ResolveWorldId(entityContextId);
+        GetWorldFocus(worldId).m_prefabEditScope = prefabEditScope;
+        SwitchToEditScope(worldId);
     }
 
     void PrefabFocusHandler::OnPrepareForContextReset()
@@ -641,7 +647,7 @@ namespace AzToolsFramework::Prefab
 
         if (IsOutlinerOverrideManagementEnabled())
         {
-            SwitchToEditScope();
+            SwitchToEditScope(GetActiveWorldId());
         }
     }
 
@@ -770,12 +776,12 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    void PrefabFocusHandler::SwitchToEditScope() const
+    void PrefabFocusHandler::SwitchToEditScope(const AzFramework::EntityContextId& worldId) const
     {
-        const AzFramework::EntityContextId worldId = GetActiveWorldId();
-        auto focusInstance = GetInstanceReference(worldId, GetWorldFocus(worldId).m_rootAliasFocusPath);
+        WorldFocus& focus = GetWorldFocus(worldId);
+        auto focusInstance = GetInstanceReference(worldId, focus.m_rootAliasFocusPath);
 
-        switch (m_prefabEditScope)
+        switch (focus.m_prefabEditScope)
         {           
         case PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT:
         {

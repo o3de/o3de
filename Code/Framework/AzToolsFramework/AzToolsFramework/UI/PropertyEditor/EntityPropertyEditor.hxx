@@ -219,6 +219,8 @@ namespace AzToolsFramework
         void OnStopPlayInEditor() override;
         void OnPrepareForContextReset() override;
         void OnContextReset() override;
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
         //////////////////////////////////////////////////////////////////////////
 
         // PropertyEditorEntityChangeNotificationBus overrides ...

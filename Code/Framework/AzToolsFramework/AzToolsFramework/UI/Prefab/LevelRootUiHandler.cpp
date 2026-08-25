@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/Prefab/Constants.h>
 
 #include <QAbstractItemModel>
@@ -76,7 +77,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         if (!painter)
         {
@@ -95,7 +96,8 @@ namespace AzToolsFramework
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
 
         QColor backgroundColor = m_prefabCapsuleColor;
-        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+        const AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId(GetEntityWorldId(entityId));
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(levelContainerEntityId))
         {
