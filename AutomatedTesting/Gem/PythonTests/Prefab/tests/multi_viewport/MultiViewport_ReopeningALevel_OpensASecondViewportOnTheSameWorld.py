@@ -43,7 +43,10 @@ def MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld():
         "PrefabLevel_OpensLevelWithEntities", "PrefabLevel_OpensLevelWithEntities.prefab")
 
     def viewport_ids():
-        main_window = pyside_utils.get_editor_main_window().findChild(QtWidgets.QMainWindow)
+        # Hold the outer window alive: get_editor_main_window() returns a wrapInstance wrapper, and
+        # letting it go out of scope while still walking its children invalidates the whole tree.
+        editor_window = pyside_utils.get_editor_main_window()
+        main_window = editor_window.findChild(QtWidgets.QMainWindow)
         found = []
         for dock_widget in main_window.findChildren(QtWidgets.QDockWidget):
             if not dock_widget.windowTitle().startswith("Editor Viewport"):
@@ -75,7 +78,9 @@ def MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld():
         action.trigger()
         general.idle_wait(1.0)
 
-    main_window = pyside_utils.get_editor_main_window().findChild(QtWidgets.QMainWindow)
+    editor_window = pyside_utils.get_editor_main_window()
+
+    main_window = editor_window.findChild(QtWidgets.QMainWindow)
     asset_browser = pyside_utils.find_child_by_pattern(main_window, text="Asset Browser", type=QtWidgets.QDockWidget)
     asset_browser.findChild(QtWidgets.QToolButton, "m_treeViewButton").click()
     general.idle_wait(1.0)
