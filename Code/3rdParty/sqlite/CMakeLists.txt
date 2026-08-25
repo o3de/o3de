@@ -44,7 +44,7 @@ ly_add_3rdparty_target(
             $<$<BOOL:${SQLITE_HAVE_STRERROR_R}>:HAVE_STRERROR_R=1>
     BUILD_DEPENDENCIES
         PUBLIC
-            Threads::Threads
+            ${CMAKE_THREAD_LIBS_INIT}
             ${CMAKE_DL_LIBS}
             $<$<BOOL:${SQLITE_HAVE_LIBM}>:m>
     TARGET_PROPERTIES

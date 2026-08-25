@@ -18,7 +18,3 @@ ly_add_3rdparty_target(
         C_STANDARD 90
         C_STANDARD_REQUIRED YES
 )
-
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    target_compile_options(mcpp PRIVATE -Wno-implicit-function-declaration)
-endif()
