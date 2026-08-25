@@ -1230,14 +1230,19 @@ namespace AzToolsFramework
         }
     }
 
-    UndoSystem::UndoStack* ToolsApplication::GetUndoStack()
+    UndoSystem::UndoStack* ToolsApplication::GetWorldUndoStack(const AzFramework::EntityContextId& worldId)
     {
-        auto& undoStack = m_worldUndoStacks[GetActiveWorldId()];
+        auto& undoStack = m_worldUndoStacks[worldId];
         if (!undoStack)
         {
             undoStack = AZStd::make_unique<UndoSystem::UndoStack>(nullptr);
         }
         return undoStack.get();
+    }
+
+    UndoSystem::UndoStack* ToolsApplication::GetUndoStack()
+    {
+        return GetWorldUndoStack(GetActiveWorldId());
     }
 
     void ToolsApplication::FlushUndo()
@@ -1281,6 +1286,7 @@ namespace AzToolsFramework
         if (!m_currentBatchUndo)
         {
             m_currentBatchUndo = aznew UndoSystem::BatchCommand(label, 0);
+            m_currentBatchWorldId = GetActiveWorldId();
 
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
@@ -1318,7 +1324,7 @@ namespace AzToolsFramework
 
         // if we just finished an undo, and its the top operation or contains the resume operation, reopen it.
         // note that we re-attach the root to the current undo batch, but we return the child found.
-        UndoSystem::UndoStack* undoStack = GetUndoStack();
+        UndoSystem::UndoStack* undoStack = GetWorldUndoStack(m_currentBatchWorldId);
         UndoSystem::URSequencePoint* topOperation = undoStack->GetTop();
         if (topOperation)
         {
@@ -1387,7 +1393,7 @@ namespace AzToolsFramework
             // record each undo batch
             if (changed)
             {
-                GetUndoStack()->Post(m_currentBatchUndo);
+                GetWorldUndoStack(m_currentBatchWorldId)->Post(m_currentBatchUndo);
             }
             else
             {

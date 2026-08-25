@@ -59,9 +59,11 @@ bool CViewManager::IsMultiViewportEnabled()
 
 static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
 {
+    const AzFramework::EntityContextId activeWorldId = AzToolsFramework::GetActiveWorldId();
+
     QTimer::singleShot(
         0, viewPane,
-        [viewPane, pendingLevelHost]
+        [viewPane, pendingLevelHost, activeWorldId]
         {
             auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             int viewportId = 0;
@@ -78,7 +80,7 @@ static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLe
 
             const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
 
-            AzFramework::EntityContextId worldId = AzToolsFramework::GetActiveWorldId();
+            AzFramework::EntityContextId worldId = activeWorldId;
             if (!levelPath.isEmpty())
             {
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
@@ -159,7 +161,8 @@ void CViewManager::RegisterViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
-    if (m_pSelectedView == pViewport)
+    const bool wasSelected = m_pSelectedView == pViewport;
+    if (wasSelected)
     {
         m_pSelectedView = nullptr;
     }
@@ -167,7 +170,14 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
 
-    AnchorViewportUiTo(m_pSelectedView);
+    if (wasSelected)
+    {
+        SelectViewport(m_viewports.empty() ? nullptr : m_viewports.front());
+    }
+    else
+    {
+        AnchorViewportUiTo(m_pSelectedView);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

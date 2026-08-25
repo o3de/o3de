@@ -375,14 +375,13 @@ bool EditorViewportWidget::event(QEvent* event)
     switch (event->type())
     {
     case QEvent::WindowActivate:
-        GetIEditor()->GetViewManager()->SelectViewport(this);
+        if (IsSelectedViewport())
+        {
+            GetIEditor()->GetViewManager()->SelectViewport(this);
+        }
         // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
         // get the keyrelease event anyways)
         m_keyDown.clear();
-        break;
-
-    case QEvent::Show:
-        GetIEditor()->GetViewManager()->SelectViewport(this);
         break;
 
     case QEvent::Shortcut:
@@ -794,10 +793,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     if (IsSelectedViewport())
     {
-        if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
-        {
-            atomViewportRequests->SetDefaultViewportContext(id);
-        }
+        GetIEditor()->GetViewManager()->SelectViewport(this);
     }
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());

@@ -244,7 +244,9 @@ private: // ---------------------------------------------------------------
     };
 
     WorldUndo& GetWorldUndo() const;
+    WorldUndo& GetWorldUndo(const AzFramework::EntityContextId& worldId) const;
     static void ClearWorldUndo(WorldUndo& undo);
+    static void ClearWorldRedoStack(WorldUndo& undo);
 
     bool                                            m_bRecording;
     int                                             m_suspendCount;
@@ -255,6 +257,7 @@ private: // ---------------------------------------------------------------
     bool                                            m_bClearRedoStackQueued;
 
     CUndoStep*                             m_currentUndo;
+    AzFramework::EntityContextId           m_currentUndoWorldId;
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 

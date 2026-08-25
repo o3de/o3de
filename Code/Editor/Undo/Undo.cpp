@@ -100,6 +100,7 @@ void CUndoManager::Begin()
 
     // Begin Creates a new undo object.
     m_currentUndo = new CUndoStep;
+    m_currentUndoWorldId = AzToolsFramework::GetActiveWorldId();
 
     m_bRecording = true;
     //CLogFile::WriteLine( "<Undo> Begin OK" );
@@ -161,13 +162,13 @@ void CUndoManager::Accept(const QString& name)
             GetIEditor()->SetModifiedFlag();
         }
 
-        // If accepting new undo object, must clear all redo stack.
-        ClearRedoStack();
-
         m_currentUndo->SetName(name);
         // Normal recording.
         // Keep max undo steps.
-        WorldUndo& undo = GetWorldUndo();
+        WorldUndo& undo = GetWorldUndo(m_currentUndoWorldId);
+
+        // If accepting new undo object, must clear all redo stack.
+        ClearWorldRedoStack(undo);
         while (undo.m_undoStack.size() && (undo.m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
         {
             delete undo.m_undoStack.front();
@@ -397,14 +398,19 @@ void CUndoManager::ClearRedoStack()
     }
     m_bClearRedoStackQueued = false;
 
-    WorldUndo& undo = GetWorldUndo();
-    for (AZStd::list<CUndoStep*>::iterator it = undo.m_redoStack.begin(); it != undo.m_redoStack.end(); it++)
-    {
-        delete *it;
-    }
-    undo.m_redoStack.clear();
+    ClearWorldRedoStack(GetWorldUndo());
 
     SignalNumUndoRedoToListeners();
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CUndoManager::ClearWorldRedoStack(WorldUndo& undo)
+{
+    for (CUndoStep* step : undo.m_redoStack)
+    {
+        delete step;
+    }
+    undo.m_redoStack.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -598,7 +604,13 @@ void CUndoManager::FlushWorld(const AzFramework::EntityContextId& worldId)
 //////////////////////////////////////////////////////////////////////////
 CUndoManager::WorldUndo& CUndoManager::GetWorldUndo() const
 {
-    return m_worldUndo[AzToolsFramework::GetActiveWorldId()];
+    return GetWorldUndo(AzToolsFramework::GetActiveWorldId());
+}
+
+//////////////////////////////////////////////////////////////////////////
+CUndoManager::WorldUndo& CUndoManager::GetWorldUndo(const AzFramework::EntityContextId& worldId) const
+{
+    return m_worldUndo[worldId];
 }
 
 //////////////////////////////////////////////////////////////////////////

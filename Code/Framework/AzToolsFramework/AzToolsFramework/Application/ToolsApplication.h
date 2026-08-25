@@ -174,12 +174,14 @@ namespace AzToolsFramework
 
         void CreateUndosForDirtyEntities();
         void DiscardCurrentUndoBatch();
+        UndoSystem::UndoStack* GetWorldUndoStack(const AzFramework::EntityContextId& worldId);
         void ConsistencyCheckUndoCache();
         AZ::Aabb                            m_selectionBounds;
         EntityIdList                        m_selectedEntities;
         EntityIdList                        m_highlightedEntities;
         AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<UndoSystem::UndoStack>> m_worldUndoStacks;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
+        AzFramework::EntityContextId        m_currentBatchWorldId;
         AZStd::unordered_set<AZ::EntityId>  m_dirtyEntities;
         AZStd::unordered_set<AZ::EntityId>  m_ignoredEntities;
         bool                                m_isDuringUndoRedo;
