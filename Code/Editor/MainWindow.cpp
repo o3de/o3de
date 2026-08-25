@@ -499,12 +499,14 @@ void MainWindow::closeEvent(QCloseEvent* event)
     SaveConfig();
 
     Editor::EditorQtApplication::instance()->EnableOnIdle(false);
+    m_isClosing = true;
 
     // Some of the panes may ask for confirmation to save changes before closing.
     if (!QtViewPaneManager::instance()->ClosePanesWithRollback(QVector<QString>()) ||
         !GetIEditor() ||
         !GetIEditor()->GetLevelIndependentFileMan()->PromptChangedFiles())
     {
+        m_isClosing = false;
         Editor::EditorQtApplication::instance()->EnableOnIdle(true);
 
         if (isInGameMode)
@@ -578,6 +580,11 @@ void UndoRedoToolButton::Update(int count)
 bool MainWindow::IsPreview() const
 {
     return GetIEditor()->IsInPreviewMode();
+}
+
+bool MainWindow::IsClosing() const
+{
+    return m_isClosing;
 }
 
 MainStatusBar* MainWindow::StatusBar() const

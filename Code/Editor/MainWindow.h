@@ -104,6 +104,8 @@ public:
 
     bool IsPreview() const;
 
+    bool IsClosing() const;
+
     // The singleton is just a hack for now, it should be removed once everything
     // is ported to Qt.
     static MainWindow* instance();
@@ -209,6 +211,7 @@ private:
     UndoStackStateAdapter* m_undoStateAdapter;
 
     CLayoutViewPane* m_activeView;
+    bool m_isClosing = false;
     QSettings m_settings;
 
     AssetImporterManager* m_assetImporterManager;

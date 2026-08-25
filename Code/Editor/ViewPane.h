@@ -103,6 +103,7 @@ protected:
     void OnMenuMaximized();
 
     void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
     void OnDestroy();
     void focusInEvent(QFocusEvent* event) override;
 

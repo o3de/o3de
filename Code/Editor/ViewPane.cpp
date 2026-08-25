@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <QLayout>
+#include <QCloseEvent>
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QToolBar>
@@ -557,6 +558,20 @@ void CLayoutViewPane::SetViewClass(const QString& sClass)
 QString CLayoutViewPane::GetViewClass() const
 {
     return m_viewPaneClass;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLayoutViewPane::closeEvent(QCloseEvent* event)
+{
+    MainWindow* mainWindow = MainWindow::instance();
+    if (m_viewport && (!mainWindow || !mainWindow->IsClosing()) &&
+        GetIEditor()->GetViewManager()->GetNumberOfGameViewports() <= 1)
+    {
+        event->ignore();
+        return;
+    }
+
+    AzQtComponents::ToolBarArea::closeEvent(event);
 }
 
 //////////////////////////////////////////////////////////////////////////
