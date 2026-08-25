@@ -479,10 +479,21 @@ bool CCryEditDoc::CanCloseFrame()
     return true;
 }
 
+namespace
+{
+    AzFramework::EntityContextId GetDocumentWorldId()
+    {
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+        return worldId;
+    }
+}
+
 bool CCryEditDoc::SaveModified()
 {
     const AzToolsFramework::Prefab::TemplateId levelTemplateId =
-        AzToolsFramework::GetWorldOwnershipService()->GetRootPrefabTemplateId();
+        AzToolsFramework::GetWorldOwnershipService(GetDocumentWorldId())->GetRootPrefabTemplateId();
 
     AZStd::vector<AzToolsFramework::Prefab::TemplateId> modifiedTemplateIds;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
@@ -531,7 +542,7 @@ void CCryEditDoc::OnFileSaveAs()
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
 
             AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
-                AzToolsFramework::GetWorldOwnershipService()->GetRootPrefabTemplateId();
+                AzToolsFramework::GetWorldOwnershipService(GetDocumentWorldId())->GetRootPrefabTemplateId();
             SetModifiedFlag(m_prefabSystemComponentInterface->AreDirtyTemplatesPresent(rootPrefabTemplateId));
         }
     }
@@ -899,7 +910,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     auto tempFilenameStrData = tempSaveFile.toStdString();
     auto filenameStrData = fullPathName.toStdString();
 
-    if (auto* ownershipService = AzToolsFramework::GetWorldOwnershipService())
+    if (auto* ownershipService = AzToolsFramework::GetWorldOwnershipService(GetDocumentWorldId()))
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO, "No File IO implementation available");

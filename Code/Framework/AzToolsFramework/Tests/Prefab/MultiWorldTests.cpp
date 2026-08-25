@@ -608,7 +608,7 @@ namespace UnitTest
         EXPECT_NE(sceneForWorldA, sceneForEditorWorld) << "A loaded world is rendering into the editor world's scene";
     }
 
-    TEST_F(MultiWorldTests, WorldLevelPathNamesTheLevelAndIsEmptyForTheEditorWorld)
+    TEST_F(MultiWorldTests, EveryWorldNamesItsOwnLevel)
     {
         AzFramework::EntityContextId worldA = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(
@@ -627,7 +627,9 @@ namespace UnitTest
             AzFramework::EntityContextId::CreateRandom());
 
         EXPECT_EQ(levelPathForWorldA, LevelPathA);
-        EXPECT_TRUE(levelPathForEditorWorld.empty());
+        EXPECT_FALSE(levelPathForEditorWorld.empty())
+            << "The editor's own world does not name the level it holds";
+        EXPECT_NE(levelPathForEditorWorld, levelPathForWorldA);
         EXPECT_TRUE(levelPathForUnknownWorld.empty());
     }
 

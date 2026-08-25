@@ -184,9 +184,16 @@ namespace AzToolsFramework
             return !m_levelPath.empty();
         }
 
-        const AZ::IO::Path& GetLevelPath() const
+        AZ::IO::Path GetLevelPath() const
         {
-            return m_levelPath;
+            if (!m_levelPath.empty())
+            {
+                return m_levelPath;
+            }
+
+            PrefabEditorEntityOwnershipInterface* ownershipService = GetOwnershipService();
+            Prefab::InstanceOptionalReference rootInstance = ownershipService->GetRootPrefabInstance();
+            return rootInstance.has_value() ? rootInstance->get().GetTemplateSourcePath() : AZ::IO::Path();
         }
 
         AZStd::shared_ptr<AzFramework::Scene> GetScene() const
@@ -904,9 +911,8 @@ namespace AzToolsFramework
 
         for (const auto& [worldId, world] : m_worlds)
         {
-            // The startup world's level file belongs to the editor document, which saves and prompts
-            // for it separately.
-            if (!world->IsValid())
+            // The editor document saves and prompts for its own world separately.
+            if (worldId == m_editorWorldId)
             {
                 continue;
             }
@@ -927,7 +933,7 @@ namespace AzToolsFramework
 
         for (EditorWorld* world : ModifiedWorlds())
         {
-            const AZ::IO::Path& levelPath = world->GetLevelPath();
+            const AZ::IO::Path levelPath = world->GetLevelPath();
 
             const auto saveResult = prefabPublicInterface->SavePrefab(levelPath);
             AZ_Error(

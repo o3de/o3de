@@ -147,6 +147,8 @@ private:
     // AzToolsFramework::EditorEntityContextNotificationBus::Handler
     void OnPrepareForContextReset() override;
     void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
+    void OnActiveWorldChanged(
+        const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
     //////////////////////////////////////////////////////////////////////////
 
     // ActionManagerRegistrationNotificationBus overrides ...

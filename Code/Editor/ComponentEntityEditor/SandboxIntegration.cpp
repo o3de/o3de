@@ -20,6 +20,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -533,6 +534,28 @@ void SandboxIntegrationManager::OnWorldDestroyed(const AzFramework::EntityContex
 {
     GetIEditor()->GetUndoManager()->FlushWorld(worldId);
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::FlushWorldUndo, worldId);
+}
+
+void SandboxIntegrationManager::OnActiveWorldChanged(
+    [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+{
+    // Viewports unbind from their worlds as the editor tears down, which changes the active world.
+    // The title is meaningless by then and the main window is already on its way out.
+    MainWindow* mainWindow = MainWindow::instance();
+    auto* cryEdit = CCryEditApp::instance();
+    if (!mainWindow || mainWindow->IsClosing() || !cryEdit)
+    {
+        return;
+    }
+
+    AZStd::string levelPath;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, newWorldId);
+
+    const AZStd::string levelName = AZ::IO::Path(levelPath).Stem().Native();
+
+    cryEdit->SetEditorWindowTitle(
+        nullptr, AZ::Utils::GetProjectDisplayName().c_str(), levelName.empty() ? nullptr : levelName.c_str());
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()

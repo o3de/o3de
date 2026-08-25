@@ -235,3 +235,6 @@ class TestAutomationMultiViewport(EditorTestSuite):
 
     class test_MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi(EditorSingleTest):
         from .tests.multi_viewport import MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi as test_module
+
+    class test_MultiViewport_WindowTitle_FollowsTheActiveWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_WindowTitle_FollowsTheActiveWorld as test_module
