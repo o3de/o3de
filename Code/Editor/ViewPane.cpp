@@ -563,9 +563,13 @@ QString CLayoutViewPane::GetViewClass() const
 //////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::closeEvent(QCloseEvent* event)
 {
+    // Shutdown reaches viewports by more than one route, and not all of them run MainWindow's close
+    // handler first, so also stand down once the system itself is quitting.
     MainWindow* mainWindow = MainWindow::instance();
-    if (m_viewport && (!mainWindow || !mainWindow->IsClosing()) &&
-        GetIEditor()->GetViewManager()->GetNumberOfGameViewports() <= 1)
+    const bool editorShuttingDown =
+        (mainWindow && mainWindow->IsClosing()) || (gEnv && gEnv->pSystem && gEnv->pSystem->IsQuitting());
+
+    if (m_viewport && !editorShuttingDown && GetIEditor()->GetViewManager()->GetNumberOfGameViewports() <= 1)
     {
         event->ignore();
         return;
