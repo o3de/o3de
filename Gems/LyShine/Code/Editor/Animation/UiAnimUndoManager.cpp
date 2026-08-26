@@ -111,7 +111,7 @@ UiAnimUndoManager::UiAnimUndoManager()
 {
     m_bRecording = false;
 
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
 
     m_suspendCount = 0;
 
@@ -212,7 +212,7 @@ void UiAnimUndoManager::Accept(const AZStd::string& name)
     }
 
     m_bRecording = false;
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
 
     //CLogFile::WriteLine( "<Undo> Accept OK" );
 }
@@ -242,7 +242,7 @@ void UiAnimUndoManager::Cancel()
     }
 
     delete m_currentUndo;
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
     //CLogFile::WriteLine( "<Undo> Cancel OK" );
 }
 
@@ -378,7 +378,7 @@ void UiAnimUndoManager::Flush()
     m_bRecording = false;
 
     delete m_currentUndo;
-    m_currentUndo = 0;
+    m_currentUndo = nullptr;
 }
 
 void UiAnimUndoManager::AddListener(IUndoManagerListener* pListener)

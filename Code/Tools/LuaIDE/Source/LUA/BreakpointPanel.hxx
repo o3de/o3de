@@ -26,7 +26,7 @@ class DHBreakpointsWidget
 
 public:
     // CLASS ALLOCATOR INTENIONALLY OMITTED so that we can be factoried by Qt code.
-    DHBreakpointsWidget(QWidget* parent = 0);
+    DHBreakpointsWidget(QWidget* parent = nullptr);
     virtual ~DHBreakpointsWidget();
 
     //////////////////////////////////////////////////////////////////////////

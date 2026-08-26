@@ -288,7 +288,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     XmlNodeRef customTrackColorsNode = XmlHelpers::LoadXmlFromFile(fullPath.toStdString().c_str());
-    if (customTrackColorsNode == NULL)
+    if (customTrackColorsNode == nullptr)
     {
         return false;
     }

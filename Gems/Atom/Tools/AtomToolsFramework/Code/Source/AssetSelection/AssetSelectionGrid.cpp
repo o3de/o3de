@@ -69,7 +69,7 @@ namespace AtomToolsFramework
         }
 
         m_ui->m_assetList->sortItems();
-        m_ui->m_assetList->setCurrentItem(0);
+        m_ui->m_assetList->setCurrentItem(nullptr);
     }
 
     void AssetSelectionGrid::SetFilter(const FilterFn& filterFn)

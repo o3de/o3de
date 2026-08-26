@@ -24,7 +24,7 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(MultipleDependentJob, ThreadPoolAllocator);
 
-        MultipleDependentJob(bool isAutoDelete, JobContext* context = NULL)
+        MultipleDependentJob(bool isAutoDelete, JobContext* context = nullptr)
             : Job(isAutoDelete, context)  { }
 
         /**

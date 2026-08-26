@@ -45,7 +45,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     int GetSubTrackCount() const override { return 0; };
-    IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return 0; };
+    IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return nullptr; };
     AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
     void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) override { assert(0); }
 
@@ -107,7 +107,7 @@ public:
     void GetKey(int index, IKey* key) const override
     {
         assert(index >= 0 && index < GetNumKeys());
-        assert(key != 0);
+        assert(key != nullptr);
         typename Spline::key_type& k = m_spline->key(index);
         ITcbKey* tcbkey = (ITcbKey*)key;
         tcbkey->time = k.time;
@@ -125,7 +125,7 @@ public:
     void SetKey(int index, IKey* key) override
     {
         assert(index >= 0 && index < GetNumKeys());
-        assert(key != 0);
+        assert(key != nullptr);
         typename Spline::key_type& k = m_spline->key(index);
         ITcbKey* tcbkey = (ITcbKey*)key;
         k.time = tcbkey->time;
@@ -191,7 +191,7 @@ public:
 
     void GetKeyInfo(int key, const char*& description, float& duration) override
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
     }
 
@@ -290,7 +290,7 @@ public:
     //! If key not exist adds key at this time.
     void SetKeyAtTime(float time, IKey* key)
     {
-        assert(key != 0);
+        assert(key != nullptr);
 
         key->time = time;
 

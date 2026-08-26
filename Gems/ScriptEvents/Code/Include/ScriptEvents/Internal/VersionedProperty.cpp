@@ -95,7 +95,7 @@ namespace ScriptEventData
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &VersionedProperty::GetLabel)
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(0, &VersionedProperty::m_data, "", "")
+                    ->DataElement(nullptr, &VersionedProperty::m_data, "", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

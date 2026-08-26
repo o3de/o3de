@@ -369,7 +369,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiMaskComponent::PopulateChildEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-             editInfo->DataElement(0, &UiMaskComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use alpha gradient"),
+             editInfo->DataElement(nullptr, &UiMaskComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use alpha gradient"),
                 QT_TRANSLATE_NOOP("LyShine", "If true, this element's content and the mask are rendered to separate render targets\n"
                 "and then rendered to the screen using the mask render target as an alpha gradient mask.\n"
                 "This allows soft-edged masking. The effect is limited to the rect of this element."))

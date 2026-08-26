@@ -40,7 +40,7 @@ namespace AudioControls
 
         m_TextFilterLineEdit = new QLineEdit(this);
         m_TextFilterLineEdit->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignVCenter);
-        m_TextFilterLineEdit->setPlaceholderText(QApplication::translate("ATLControlsPanel", "Search", 0));
+        m_TextFilterLineEdit->setPlaceholderText(QApplication::translate("ATLControlsPanel", "Search", nullptr));
         connect(m_TextFilterLineEdit, &QLineEdit::textChanged, this, &ATLControlsDialog::SetTextFilter);
         connect(m_TextFilterLineEdit, &QLineEdit::returnPressed, this, &ATLControlsDialog::EnterPressed);
         pLayout->addWidget(m_TextFilterLineEdit, 0);

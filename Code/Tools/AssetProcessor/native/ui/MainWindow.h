@@ -115,7 +115,7 @@ public:
      */
     static Config defaultConfig();
 
-    explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
+    explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = nullptr);
     void Activate();
     ~MainWindow() override;
 

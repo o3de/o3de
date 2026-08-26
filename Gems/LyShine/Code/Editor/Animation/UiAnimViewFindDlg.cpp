@@ -29,7 +29,7 @@ CUiAnimViewFindDlg::CUiAnimViewFindDlg(const char* title, QWidget* pParent /*=NU
 {
     setWindowTitle(title);
 
-    m_tvDlg = 0;
+    m_tvDlg = nullptr;
     m_numSeqs = 0;
 
     ui->setupUi(this);

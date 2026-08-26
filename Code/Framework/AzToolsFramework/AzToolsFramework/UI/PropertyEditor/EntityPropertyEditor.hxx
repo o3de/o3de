@@ -139,7 +139,7 @@ namespace AzToolsFramework
             Below
         };
 
-        EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
+        EntityPropertyEditor(QWidget* pParent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
         void BeforeUndoRedo() override;

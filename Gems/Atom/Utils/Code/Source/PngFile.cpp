@@ -151,7 +151,7 @@ namespace AZ
             png_infop info_ptr = png_create_info_struct(png_ptr);
             if (!info_ptr)
             {
-                png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
+                png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
                 loadSettings.m_errorHandler("png_create_info_struct failed.");
                 return {};
             }
@@ -159,7 +159,7 @@ namespace AZ
             png_infop end_info = png_create_info_struct(png_ptr);
             if (!end_info)
             {
-                png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+                png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)nullptr);
                 loadSettings.m_errorHandler("png_create_info_struct failed.");
                 return {};
             }
@@ -192,7 +192,7 @@ AZ_POP_DISABLE_WARNING
 
             png_set_sig_bytes(png_ptr, HeaderSize);
 
-            png_set_keep_unknown_chunks(png_ptr, PNG_HANDLE_CHUNK_NEVER, NULL, 0);
+            png_set_keep_unknown_chunks(png_ptr, PNG_HANDLE_CHUNK_NEVER, nullptr, 0);
 
             // To keep things simple for now we limit all images to RGB and RGBA, 8 bits per channel
             int png_transforms = PNG_TRANSFORM_PACKING | // Expand 1, 2 and 4-bit samples to bytes
@@ -204,7 +204,7 @@ AZ_POP_DISABLE_WARNING
                 png_transforms |= PNG_TRANSFORM_STRIP_ALPHA;
             }
 
-            png_read_png(png_ptr, info_ptr, png_transforms, NULL);
+            png_read_png(png_ptr, info_ptr, png_transforms, nullptr);
 
             // Note that libpng will allocate row_pointers for us. If we want to manage the memory ourselves, we need to call png_set_rows.
             // In that case we would have to use the low level interface: png_read_info, png_read_image, and png_read_end.
@@ -214,7 +214,7 @@ AZ_POP_DISABLE_WARNING
 
             int colorType = 0;
 
-            png_get_IHDR(png_ptr, info_ptr, &pngFile.m_width, &pngFile.m_height, &pngFile.m_bitDepth, &colorType, NULL, NULL, NULL);
+            png_get_IHDR(png_ptr, info_ptr, &pngFile.m_width, &pngFile.m_height, &pngFile.m_bitDepth, &colorType, nullptr, nullptr, nullptr);
 
             uint32_t bytesPerPixel = 0;
 
@@ -236,7 +236,7 @@ AZ_POP_DISABLE_WARNING
                 break;
             default:
                 AZ_Assert(false, "The png transforms should have ensured a pixel format of RGB or RGBA, 8 bits per channel");
-                png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+                png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)nullptr);
                 loadSettings.m_errorHandler("Unsupported pixel format.");
                 return {};
             }
@@ -268,7 +268,7 @@ AZ_POP_DISABLE_WARNING
 
             // For documentation of this code, see http://www.libpng.org/pub/png/libpng-1.4.0-manual.pdf chapter 4
 
-            FILE* fp = NULL;
+            FILE* fp = nullptr;
             azfopen(&fp, path, "wb"); // return type differs across platforms so can't do inside if
             if (!fp)
             {
@@ -291,7 +291,7 @@ AZ_POP_DISABLE_WARNING
             png_infop info_ptr = png_create_info_struct(png_ptr);
             if (!info_ptr)
             {
-                png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+                png_destroy_write_struct(&png_ptr, (png_infopp)nullptr);
                 fclose(fp);
                 saveSettings.m_errorHandler("png_destroy_write_struct failed.");
                 return false;
@@ -340,7 +340,7 @@ AZ_POP_DISABLE_WARNING
 
             png_set_rows(png_ptr, info_ptr, rows.begin());
             
-            png_write_png(png_ptr, info_ptr, transforms, NULL);
+            png_write_png(png_ptr, info_ptr, transforms, nullptr);
 
             png_destroy_write_struct(&png_ptr, &info_ptr);
 

@@ -209,7 +209,7 @@ namespace ImageProcessingAtom
         //validate all pixel formats are proper initialized
         for (int i = 0; i < ePixelFormat_Count; ++i)
         {
-            if (m_pixelFormatInfo[i].szName == 0)
+            if (m_pixelFormatInfo[i].szName == nullptr)
             {
                 // Uninitialized entry. Should never happen. But, if it happened: make sure that entries from
                 // the EPixelFormat enum and InitPixelFormat() calls match.

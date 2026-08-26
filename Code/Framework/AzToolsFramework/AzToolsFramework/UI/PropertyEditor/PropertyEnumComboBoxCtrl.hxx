@@ -35,7 +35,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyEnumComboBoxCtrl, AZ::SystemAllocator);
 
-        PropertyEnumComboBoxCtrl(QWidget* pParent = NULL);
+        PropertyEnumComboBoxCtrl(QWidget* pParent = nullptr);
         virtual ~PropertyEnumComboBoxCtrl();
 
         AZ::s64 value() const;

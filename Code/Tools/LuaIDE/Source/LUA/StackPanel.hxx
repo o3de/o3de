@@ -23,7 +23,7 @@ class DHStackWidget : public QTableWidget, LUAEditor::LUAStackTrackerMessages::B
 {
     Q_OBJECT;
 public:
-    DHStackWidget( QWidget * parent = 0 );
+    DHStackWidget( QWidget * parent = nullptr );
     virtual ~DHStackWidget();
 
     //////////////////////////////////////////////////////////////////////////

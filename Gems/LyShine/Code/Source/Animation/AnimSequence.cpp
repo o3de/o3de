@@ -30,12 +30,12 @@ CUiAnimSequence::CUiAnimSequence(IUiAnimationSystem* pUiAnimationSystem, uint32 
     m_nextGenId = 1;
     m_pUiAnimationSystem = pUiAnimationSystem;
     m_flags = 0;
-    m_pParentSequence = NULL;
+    m_pParentSequence = nullptr;
     m_timeRange.Set(0, 10);
     m_bPaused = false;
     m_bActive = false;
-    m_pOwner = NULL;
-    m_pActiveDirector = NULL;
+    m_pOwner = nullptr;
+    m_pActiveDirector = nullptr;
     m_precached = false;
     m_bResetting = false;
     m_id = id;
@@ -114,7 +114,7 @@ int CUiAnimSequence::GetCutSceneFlags(const bool localFlags) const
 {
     int currentFlags = m_flags & (eSeqFlags_NoHUD | eSeqFlags_NoPlayer | eSeqFlags_16To9 | eSeqFlags_NoGameSounds | eSeqFlags_NoAbort);
 
-    if (m_pParentSequence != NULL)
+    if (m_pParentSequence != nullptr)
     {
         if (localFlags == true)
         {
@@ -192,7 +192,7 @@ bool CUiAnimSequence::AddNode(IUiAnimNode* pAnimNode)
         AddNodeNeedToRender(pAnimNode);
     }
 
-    bool bNewDirectorNode = m_pActiveDirector == NULL && pAnimNode->GetType() == eUiAnimNodeType_Director;
+    bool bNewDirectorNode = m_pActiveDirector == nullptr && pAnimNode->GetType() == eUiAnimNodeType_Director;
     if (bNewDirectorNode)
     {
         m_pActiveDirector = pAnimNode;
@@ -204,7 +204,7 @@ bool CUiAnimSequence::AddNode(IUiAnimNode* pAnimNode)
 //////////////////////////////////////////////////////////////////////////
 IUiAnimNode* CUiAnimSequence::CreateNodeInternal(EUiAnimNodeType nodeType, uint32 nNodeId)
 {
-    CUiAnimNode* pAnimNode = NULL;
+    CUiAnimNode* pAnimNode = nullptr;
 
     if (nNodeId == -1)
     {
@@ -240,7 +240,7 @@ IUiAnimNode* CUiAnimSequence::CreateNode(XmlNodeRef node)
 {
     if (!GetUiAnimationSystem())
     {
-        return 0;   // should never happen, null pointer guard
+        return nullptr;   // should never happen, null pointer guard
     }
 
     EUiAnimNodeType type;
@@ -249,13 +249,13 @@ IUiAnimNode* CUiAnimSequence::CreateNode(XmlNodeRef node)
     XmlString name;
     if (!node->getAttr("Name", name))
     {
-        return 0;
+        return nullptr;
     }
 
     IUiAnimNode* pNewNode = CreateNode(type);
     if (!pNewNode)
     {
-        return 0;
+        return nullptr;
     }
 
     pNewNode->SetName(name);
@@ -282,7 +282,7 @@ IUiAnimNode* CUiAnimSequence::CreateNode(XmlNodeRef node)
 // Only called from undo/redo
 void CUiAnimSequence::RemoveNode(IUiAnimNode* node)
 {
-    assert(node != 0);
+    assert(node != nullptr);
 
     static_cast<CUiAnimNode*>(node)->Activate(false);
     static_cast<CUiAnimNode*>(node)->OnReset();
@@ -304,7 +304,7 @@ void CUiAnimSequence::RemoveNode(IUiAnimNode* node)
         }
         if (m_nodes[i]->GetParent() == node)
         {
-            m_nodes[i]->SetParent(0);
+            m_nodes[i]->SetParent(nullptr);
         }
 
         i++;
@@ -314,7 +314,7 @@ void CUiAnimSequence::RemoveNode(IUiAnimNode* node)
     if (m_pActiveDirector == node)
     {
         // Clear the active one.
-        m_pActiveDirector = NULL;
+        m_pActiveDirector = nullptr;
 
         // If there is another director node, set it as active.
         for (AnimNodes::const_iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
@@ -335,7 +335,7 @@ void CUiAnimSequence::RemoveAll()
     stl::free_container(m_nodes);
     stl::free_container(m_events);
     stl::free_container(m_nodesNeedToRender);
-    m_pActiveDirector = NULL;
+    m_pActiveDirector = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -976,7 +976,7 @@ int CUiAnimSequence::GetTrackEventsCount() const
 //////////////////////////////////////////////////////////////////////////
 char const* CUiAnimSequence::GetTrackEvent(int iIndex) const
 {
-    char const* szResult = NULL;
+    char const* szResult = nullptr;
     const bool bValid = (iIndex >= 0 && iIndex < GetTrackEventsCount());
     AZ_Assert(bValid, "Track Event index out of range.");
 
@@ -1038,7 +1038,7 @@ IUiAnimNode* CUiAnimSequence::FindNodeById(int nNodeId)
             return pAnimNode;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1057,7 +1057,7 @@ IUiAnimNode* CUiAnimSequence::FindNodeByName(const char* sNodeName, const IUiAni
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1180,14 +1180,14 @@ void CUiAnimSequence::PasteNodes(const XmlNodeRef& xmlNode, IUiAnimNode* pParent
 //////////////////////////////////////////////////////////////////////////
 bool CUiAnimSequence::AddNodeNeedToRender(IUiAnimNode* pNode)
 {
-    assert(pNode != 0);
+    assert(pNode != nullptr);
     return stl::push_back_unique(m_nodesNeedToRender, AZStd::intrusive_ptr<IUiAnimNode>(pNode));
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::RemoveNodeNeedToRender(IUiAnimNode* pNode)
 {
-    assert(pNode != 0);
+    assert(pNode != nullptr);
     stl::find_and_erase_if(m_nodesNeedToRender, [pNode](const AZStd::intrusive_ptr<IUiAnimNode>& sp) { return sp.get() == pNode; });
 }
 

@@ -41,7 +41,7 @@ class WindowScreen
 public:
 
     /// standard Qt constructor
-    explicit WindowScreen(QObject* parent = 0);
+    explicit WindowScreen(QObject* parent = nullptr);
     virtual ~WindowScreen();
 
     ///Loads settings

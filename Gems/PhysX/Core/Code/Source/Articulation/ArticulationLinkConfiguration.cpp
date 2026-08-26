@@ -83,10 +83,10 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint."))
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value."))
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveStiffness, QT_TRANSLATE_NOOP("PhysX", "Stiffness Value"), QT_TRANSLATE_NOOP("PhysX", "Stiffness of motor servo."))
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveDamping, QT_TRANSLATE_NOOP("PhysX", "Damping Value"), QT_TRANSLATE_NOOP("PhysX", "Damping of motor servo."));
+                    ->DataElement(nullptr, &PhysX::ArticulationJointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint."))
+                    ->DataElement(nullptr, &PhysX::ArticulationJointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value."))
+                    ->DataElement(nullptr, &PhysX::ArticulationJointMotorProperties::m_driveStiffness, QT_TRANSLATE_NOOP("PhysX", "Stiffness Value"), QT_TRANSLATE_NOOP("PhysX", "Stiffness of motor servo."))
+                    ->DataElement(nullptr, &PhysX::ArticulationJointMotorProperties::m_driveDamping, QT_TRANSLATE_NOOP("PhysX", "Damping Value"), QT_TRANSLATE_NOOP("PhysX", "Damping of motor servo."));
             }
         }
     }

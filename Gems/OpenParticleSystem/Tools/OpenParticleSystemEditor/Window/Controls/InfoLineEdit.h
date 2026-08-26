@@ -23,7 +23,7 @@ namespace OpenParticleSystemEditor
     {
         Q_OBJECT
     public:
-        InfoLineEdit(const QString& text, AZ::TypeId id, QWidget* parent = 0);
+        InfoLineEdit(const QString& text, AZ::TypeId id, QWidget* parent = nullptr);
         ~InfoLineEdit() override;
 
         // OpenParticle::ValueObjVecX

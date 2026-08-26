@@ -165,7 +165,7 @@ void UiTooltipComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiTooltipComponent::m_text, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The text string."));
+            editInfo->DataElement(nullptr, &UiTooltipComponent::m_text, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The text string."));
         }
     }
 

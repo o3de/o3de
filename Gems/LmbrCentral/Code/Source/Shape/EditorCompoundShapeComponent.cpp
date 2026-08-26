@@ -37,7 +37,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/compound-shape/")
-                    ->DataElement(0, &EditorCompoundShapeComponent::m_configuration,
+                    ->DataElement(nullptr, &EditorCompoundShapeComponent::m_configuration,
                         QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
                         QT_TRANSLATE_NOOP("LmbrCentral", "Compound Shape Configuration"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCompoundShapeComponent::ConfigurationChanged)

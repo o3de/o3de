@@ -28,7 +28,7 @@ private:
     _I* p;
 public:
     _smart_ptr()
-        : p(NULL) {}
+        : p(nullptr) {}
     _smart_ptr(_I* p_)
     {
         p = p_;

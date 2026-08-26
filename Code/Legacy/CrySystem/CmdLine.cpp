@@ -110,7 +110,7 @@ const ICmdLineArg* CCmdLine::GetArg(int n) const
         return &m_args[n];
     }
 
-    return 0;
+    return nullptr;
 }
 
 int CCmdLine::GetArgCount() const
@@ -147,7 +147,7 @@ const ICmdLineArg* CCmdLine::FindArg(const ECmdLineArgType ArgType, const char* 
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 
