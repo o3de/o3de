@@ -226,10 +226,8 @@ namespace AzToolsFramework
 
     bool IsEditedWorldVisibleInViewport(const AzFramework::ViewportId viewportId)
     {
-        EntityIdList selectedEntities;
-        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-
-        const auto editedWorldId = selectedEntities.empty() ? GetActiveWorldId() : GetEntityWorldId(selectedEntities.front());
+        // The selection belongs to the world being edited, so that world is simply the active one.
+        const AzFramework::EntityContextId editedWorldId = GetActiveWorldId();
 
         AzFramework::EntityContextId viewportWorldId = editedWorldId;
         EditorEntityContextRequestBus::BroadcastResult(

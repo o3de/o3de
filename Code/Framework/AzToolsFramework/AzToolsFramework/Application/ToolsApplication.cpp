@@ -183,12 +183,14 @@ namespace AzToolsFramework
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
+        EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     ToolsApplication::~ToolsApplication()
     {
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -285,6 +287,7 @@ namespace AzToolsFramework
             // Release any memory used by ToolsApplication before Application::Stop() destroys the allocators.
             m_selectedEntities.set_capacity(0);
             m_highlightedEntities.set_capacity(0);
+            m_inactiveWorldSelections.clear();
             m_dirtyEntities = {};
 
             // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
@@ -449,6 +452,12 @@ namespace AzToolsFramework
 
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
+
+        // A destroyed entity must not come back when its world is made active again.
+        for (auto& [worldId, selection] : m_inactiveWorldSelections)
+        {
+            selection.erase(AZStd::remove(selection.begin(), selection.end(), entity->GetId()), selection.end());
+        }
 
         ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
@@ -1224,6 +1233,33 @@ namespace AzToolsFramework
 #endif
             }
         }
+    }
+
+    void ToolsApplication::OnActiveWorldChanged(
+        const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+    {
+        if (!previousWorldId.IsNull())
+        {
+            m_inactiveWorldSelections[previousWorldId] = m_selectedEntities;
+        }
+
+        EntityIdList restoredSelection;
+        if (auto selectionIt = m_inactiveWorldSelections.find(newWorldId); selectionIt != m_inactiveWorldSelections.end())
+        {
+            restoredSelection = selectionIt->second;
+            m_inactiveWorldSelections.erase(selectionIt);
+        }
+
+        // Go through the normal path so the inspector, outliner and manipulators all follow.
+        SetSelectedEntities(restoredSelection);
+
+        // Highlighting tracks the cursor, so it belongs to whatever the cursor is now over.
+        m_highlightedEntities.clear();
+    }
+
+    void ToolsApplication::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        m_inactiveWorldSelections.erase(worldId);
     }
 
     UndoSystem::UndoStack* ToolsApplication::GetWorldUndoStack(const AzFramework::EntityContextId& worldId)

@@ -503,33 +503,6 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-void SandboxIntegrationManager::OnPrepareForContextReset()
-{
-    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
-    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-
-    AzToolsFramework::EntityIdList selectedEntities;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-    AzToolsFramework::EntityIdList selectionInOtherWorlds;
-    for (const AZ::EntityId& entityId : selectedEntities)
-    {
-        auto owningWorldId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(
-            owningWorldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-
-        if (!owningWorldId.IsNull() && owningWorldId != editorWorldId)
-        {
-            selectionInOtherWorlds.push_back(entityId);
-        }
-    }
-
-    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectionInOtherWorlds);
-}
-
 void SandboxIntegrationManager::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
 {
     GetIEditor()->GetUndoManager()->FlushWorld(worldId);

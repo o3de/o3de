@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
@@ -30,6 +31,7 @@ namespace AzToolsFramework
     class AZTF_API ToolsApplication
         : public AzFramework::Application
         , private ToolsApplicationRequests::Bus::Handler
+        , private EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
@@ -175,10 +177,18 @@ namespace AzToolsFramework
         void CreateUndosForDirtyEntities();
         void DiscardCurrentUndoBatch();
         UndoSystem::UndoStack* GetWorldUndoStack(const AzFramework::EntityContextId& worldId);
+
+        // EditorEntityContextNotificationBus overrides ...
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
         void ConsistencyCheckUndoCache();
         AZ::Aabb                            m_selectionBounds;
         EntityIdList                        m_selectedEntities;
         EntityIdList                        m_highlightedEntities;
+        //! The selection of every world that is not the active one. Each world keeps its own, so that
+        //! switching between levels does not carry one level's selection into another.
+        AZStd::unordered_map<AzFramework::EntityContextId, EntityIdList> m_inactiveWorldSelections;
         AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<UndoSystem::UndoStack>> m_worldUndoStacks;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
         AzFramework::EntityContextId        m_currentBatchWorldId;

@@ -1010,4 +1010,38 @@ namespace UnitTest
         EXPECT_FALSE(listener.m_notified.contains(rootContainerB))
             << "Refreshing world A's containers reported a container belonging to world B";
     }
+
+    TEST_F(MultiWorldTests, EachWorldKeepsItsOwnSelection)
+    {
+        const AzFramework::EntityContextId worldA = OpenWorldInViewport(LevelPathA, ViewportA);
+        const AzFramework::EntityContextId worldB = OpenWorldInViewport(LevelPathB, ViewportB);
+
+        FocusViewport(ViewportA);
+        const AZ::EntityId entityInA = CreateEditorEntity("SelectedInA", RootContainerOfWorld(worldA));
+        ASSERT_TRUE(entityInA.IsValid());
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityInA });
+
+        AzToolsFramework::EntityIdList selection;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selection, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selection, AzToolsFramework::EntityIdList{ entityInA });
+
+        // Working in another world must not show the first world's selection.
+        FocusViewport(ViewportB);
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selection, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_TRUE(selection.empty()) << "World B shows a selection belonging to world A";
+
+        const AZ::EntityId entityInB = CreateEditorEntity("SelectedInB", RootContainerOfWorld(worldB));
+        ASSERT_TRUE(entityInB.IsValid());
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityInB });
+
+        // Going back must restore what was selected there, not what was selected in world B.
+        FocusViewport(ViewportA);
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selection, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_EQ(selection, AzToolsFramework::EntityIdList{ entityInA }) << "World A did not get its own selection back";
+    }
 } // namespace UnitTest
