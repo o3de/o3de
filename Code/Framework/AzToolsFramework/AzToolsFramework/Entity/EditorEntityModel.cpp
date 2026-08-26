@@ -682,7 +682,10 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnWorldLoaded(const AzFramework::EntityContextId& worldId)
     {
-        AzFramework::EntityContextEventBus::MultiHandler::BusConnect(worldId);
+        if (!AzFramework::EntityContextEventBus::MultiHandler::BusIsConnectedId(worldId))
+        {
+            AzFramework::EntityContextEventBus::MultiHandler::BusConnect(worldId);
+        }
     }
 
     void EditorEntityModel::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)

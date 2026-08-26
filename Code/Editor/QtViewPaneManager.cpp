@@ -1363,6 +1363,16 @@ static void RecordViewportLevel(ViewLayoutState& state, DockWidget* dockWidget, 
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
 
+    // The editor's own world takes its level from the document when the editor starts, so recording a
+    // level for it here would load that level a second time into a world of its own.
+    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+    if (worldId == editorWorldId)
+    {
+        return;
+    }
+
     AZStd::string levelPath;
     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
         levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
@@ -1408,17 +1418,11 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
 
 void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath)
 {
-    auto assignLevel = [&levelPath](const QtViewPane* openedPane)
-    {
-        if (openedPane && openedPane->Widget() && !levelPath.isEmpty())
-        {
-            openedPane->Widget()->setProperty("PendingLevelPath", levelPath);
-        }
-    };
-
     if (GetPane(paneName))
     {
-        assignLevel(OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen));
+        // The primary viewport shows the editor's own world, whose level the document opens. Restoring
+        // a pending level onto it would load that level a second time into a world of its own.
+        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
         return;
     }
 
