@@ -351,7 +351,9 @@ namespace PhysX
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            AzPhysics::SceneHandle editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            AzPhysics::SceneHandle editorSceneHandle = AzPhysics::InvalidSceneHandle;
+            Physics::EditorWorldBus::BroadcastResult(
+                editorSceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, entityId);
             sceneInterface->RegisterSceneSimulationStartHandler(editorSceneHandle, m_sceneStartSimHandler);
         }
 
@@ -510,14 +512,12 @@ namespace PhysX
 
     void EditorRigidBodyComponent::CreateEditorWorldRigidBody()
     {
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        Physics::EditorWorldBus::BroadcastResult(
+            m_editorSceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, GetEntityId());
+        if (m_editorSceneHandle == AzPhysics::InvalidSceneHandle)
         {
-            m_editorSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
-            if (m_editorSceneHandle == AzPhysics::InvalidSceneHandle)
-            {
-                AZ_Assert(false, "Attempting to create an edit time rigid body without an editor scene.");
-                return;
-            }
+            AZ_Assert(false, "Attempting to create an edit time rigid body without an editor scene.");
+            return;
         }
 
         AZ::Transform colliderTransform = GetWorldTM();

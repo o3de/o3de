@@ -240,7 +240,9 @@ namespace PhysXDebug
 #ifdef PHYSXDEBUG_GEM_EDITOR
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            AzPhysics::SceneHandle sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
+            Physics::EditorWorldBus::BroadcastResult(
+                sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, AZ::EntityId());
             sceneInterface->RegisterSceneSimulationFinishHandler(sceneHandle, m_sceneFinishSimHandler);
         }
 #endif // PHYSXDEBUG_GEM_EDITOR
@@ -432,7 +434,8 @@ namespace PhysXDebug
         if (UseEditorPhysicsScene())
         {
             // Editor scene needs to be ticked for debug rendering to work (taking place in EditorSystemComponent)
-            Physics::EditorWorldBus::BroadcastResult(sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle);
+            Physics::EditorWorldBus::BroadcastResult(
+                sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, AZ::EntityId());
         }
         else
         {

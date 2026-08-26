@@ -93,8 +93,10 @@ namespace Physics
     public:
         using MutexType = AZStd::mutex;
 
-        //! Returns a handle to the Editor Scene managed by editor system component.
-        virtual AzPhysics::SceneHandle GetEditorSceneHandle() const = 0;
+        //! Returns a handle to the Editor Scene the given entity is edited in. Each world being edited
+        //! has its own editor scene, so that entities in one level cannot collide with another's.
+        //! An invalid entity id resolves to the world currently being edited.
+        virtual AzPhysics::SceneHandle GetEditorSceneHandle(AZ::EntityId entityId = AZ::EntityId()) const = 0;
     };
     using EditorWorldBus = AZ::EBus<EditorWorldRequests>;
 

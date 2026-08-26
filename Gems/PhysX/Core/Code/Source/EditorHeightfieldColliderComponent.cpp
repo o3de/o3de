@@ -14,6 +14,7 @@
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
@@ -170,10 +171,8 @@ namespace PhysX
         m_heightfieldAssetBakingJob.Reset(true);
 
         AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
-        if (auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
-        }
+        Physics::EditorWorldBus::BroadcastResult(
+            sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, GetEntityId());
 
         m_heightfieldCollider = AZStd::make_unique<HeightfieldCollider>(
             GetEntityId(), GetEntity()->GetName(), sceneHandle, m_colliderConfig,
