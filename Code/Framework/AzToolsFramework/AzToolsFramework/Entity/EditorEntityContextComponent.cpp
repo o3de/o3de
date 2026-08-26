@@ -629,6 +629,10 @@ namespace AzToolsFramework
                 &AzFramework::SliceEntityOwnershipServiceRequests::SetIsDynamic, true);
 
             SetupEditorEntities(entities);
+
+            // The editor's own world gets its level from the document rather than from LoadWorld, so
+            // this is the point at which its level has finished loading.
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnWorldLoaded, worldId);
             EditorEntityContextNotificationBus::Broadcast(
                 &EditorEntityContextNotification::OnEntityStreamLoadSuccess);
         }
@@ -957,11 +961,6 @@ namespace AzToolsFramework
 
     void EditorEntityContextComponent::RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId)
     {
-        if (worldId == m_editorWorldId)
-        {
-            return;
-        }
-
         for (const auto& [viewportId, boundWorldId] : m_viewportWorlds)
         {
             if (boundWorldId == worldId)
@@ -1025,7 +1024,9 @@ namespace AzToolsFramework
     {
         const AzFramework::EntityContextId resolvedWorldId = ResolveWorldId(worldId);
 
-        if (resolvedWorldId == m_playingWorldId)
+        // The main scene is the one the engine bootstraps its default render pipeline into, and the one
+        // gems such as LyShine attach their draw contexts to, so the editor's own world renders there.
+        if (resolvedWorldId == m_editorWorldId || resolvedWorldId == m_playingWorldId)
         {
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             return sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;

@@ -141,6 +141,19 @@ namespace AZ::ViewportHelpers
             }
         }
 
+        void OnWorldLoaded(const AzFramework::EntityContextId& worldId) override
+        {
+            AzFramework::EntityContextId viewportWorldId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld,
+                m_editorViewportWidget.GetViewportId());
+
+            if (viewportWorldId == worldId)
+            {
+                m_editorViewportWidget.UpdateScene();
+            }
+        }
+
     private:
         EditorViewportWidget& m_editorViewportWidget;
     };
@@ -1997,10 +2010,13 @@ void EditorViewportWidget::UpdateScene()
     // Don't enable the render pipeline until a level has been loaded
     // Also show/hide the RenderViewportWidget accordingly so that we get the
     // expected gradient background when no level is loaded
+    auto* ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
+    const bool worldHasLevel = ownershipService && ownershipService->IsRootPrefabAssigned();
+
     auto renderPipeline = viewportContext->GetCurrentPipeline();
     if (renderPipeline)
     {
-        if (GetIEditor()->IsLevelLoaded())
+        if (worldHasLevel)
         {
             m_renderViewport->show();
             renderPipeline->AddToRenderTick();

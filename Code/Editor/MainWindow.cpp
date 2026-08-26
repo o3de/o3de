@@ -468,6 +468,7 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    m_isClosing = true;
     gSettings.Save(true);
 
     AzFramework::SystemCursorState currentCursorState;
@@ -492,6 +493,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
                 &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                 currentCursorState);
         }
+        m_isClosing = false;
         event->ignore();
         return;
     }
@@ -499,7 +501,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     SaveConfig();
 
     Editor::EditorQtApplication::instance()->EnableOnIdle(false);
-    m_isClosing = true;
 
     // Some of the panes may ask for confirmation to save changes before closing.
     if (!QtViewPaneManager::instance()->ClosePanesWithRollback(QVector<QString>()) ||

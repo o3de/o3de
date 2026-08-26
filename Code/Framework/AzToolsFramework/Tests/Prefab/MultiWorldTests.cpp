@@ -10,6 +10,7 @@
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzFramework/Scene/Scene.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -599,10 +600,13 @@ namespace UnitTest
         ASSERT_NE(sceneForWorldA, nullptr);
         ASSERT_NE(sceneForWorldB, nullptr);
 
-        // The scene a world reports must be the scene its entity context actually lives in. The
-        // editor's own world is no exception - it is an ordinary world.
-        EXPECT_EQ(sceneForEditorWorld, AzFramework::EntityContext::FindContainingScene(m_editorWorld))
-            << "The editor's own world does not render in the scene its entity context lives in";
+        // A loaded world renders in the scene its own entity context lives in. The editor's own world
+        // renders in the main scene instead, because that is the scene the engine bootstraps its
+        // render pipeline into and that gems attach their draw contexts to.
+        auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
+        ASSERT_NE(sceneSystem, nullptr);
+        EXPECT_EQ(sceneForEditorWorld, sceneSystem->GetScene(AzFramework::Scene::MainSceneName))
+            << "The editor's own world does not render in the main scene";
         EXPECT_EQ(sceneForWorldA, AzFramework::EntityContext::FindContainingScene(worldA));
         EXPECT_EQ(sceneForWorldB, AzFramework::EntityContext::FindContainingScene(worldB));
         EXPECT_NE(sceneForWorldA, sceneForEditorWorld) << "A loaded world is rendering into the editor world's scene";
