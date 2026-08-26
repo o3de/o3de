@@ -67,7 +67,9 @@ def MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi():
         return found
 
     def viewport_count():
-        return len(viewport_panes())
+        # Count viewports, not dock widgets: viewport ids are recycled, so a stale dock can carry the
+        # same id as a live one.
+        return len(set(viewport_id for _, _, viewport_id in viewport_panes()))
 
     def viewport_ui_windows():
         # The viewport UI overlay carries Qt::Tool, so it is always a top level window. Scanning only
@@ -117,9 +119,14 @@ def MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi():
     general.idle_wait(1.0)
 
     # The editor restores its previous layout, so drive the viewport count rather than assuming it.
+    def close_highest_viewport():
+        panes = sorted(viewport_panes(), key=lambda pane: pane[2])
+        if panes:
+            panes[-1][0].close()
+            general.idle_wait(1.0)
+
     while viewport_count() > 1:
-        viewport_panes()[viewport_count() - 1][0].close()
-        general.idle_wait(1.0)
+        close_highest_viewport()
 
     open_level_in_new_viewport()
     Report.result(Tests.second_viewport_opened, helper.wait_for_condition(lambda: viewport_count() >= 2, 10.0))
