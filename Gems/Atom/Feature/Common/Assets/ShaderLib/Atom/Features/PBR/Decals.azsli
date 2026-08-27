@@ -96,6 +96,11 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         real3 blendedBaseColor = BlendBaseColor(real3(baseMap.rgb), real3(decal.m_decalColor), real(decal.m_decalColorFactor), TextureBlendMode::Multiply, useTexture);
         surface.albedo = lerp(surface.albedo, real3(blendedBaseColor.rgb), albedoOpacity);
 
+        // A fully metallic surface has albedo lerped to black (see Surface::SetAlbedoAndSpecularF0),
+        // so it only reflects decal color through specularF0. Blend that too, scaled by how metallic
+        // the surface is, or decals become invisible on metallic surfaces.
+        surface.specularF0 = lerp(surface.specularF0, real3(blendedBaseColor.rgb), albedoOpacity * surface.metallic);
+
         const real normalOpacity = real(baseMap.a) * real(decal.m_normalMapOpacity) * decalAttenuation;
         const real3 normalMapWS = GetWorldSpaceNormal(real2(normalMap), decalRot[2], decalRot[0], decalRot[1], 1.0);
         surface.normal = normalize(lerp(surface.normal, normalMapWS, normalOpacity));
