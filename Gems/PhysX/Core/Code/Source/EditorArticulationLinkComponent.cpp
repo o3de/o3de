@@ -17,6 +17,7 @@
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorColliderComponent.h>
+#include <Editor/InertiaPropertyHandler.h>
 
 namespace PhysX
 {
@@ -77,6 +78,19 @@ namespace PhysX
                         QT_TRANSLATE_NOOP("PhysX", "COM offset"),
                         QT_TRANSLATE_NOOP("PhysX", "Local space offset for the center of mass (COM)."))
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_computeInertiaTensor,
+                        QT_TRANSLATE_NOOP("PhysX", "Compute inertia"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, inertia is computed based on the mass and shape of the articulation link."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        Editor::InertiaHandler,
+                        &ArticulationLinkConfiguration::m_inertiaTensor,
+                        QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal"),
+                        QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal elements that specify an inertia tensor; determines the "
+                        "torque required to rotate the articulation link on each axis."))
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_linearDamping,
@@ -206,6 +220,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Sensors"))
+
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(nullptr, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
                     ->EndGroup()

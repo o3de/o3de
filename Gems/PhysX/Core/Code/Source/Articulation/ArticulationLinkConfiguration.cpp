@@ -106,6 +106,8 @@ namespace PhysX
                 ->Field("Sleep threshold", &ArticulationLinkConfiguration::m_sleepMinEnergy)
                 ->Field("Start Asleep", &ArticulationLinkConfiguration::m_startAsleep)
                 ->Field("Centre of mass offset", &ArticulationLinkConfiguration::m_centerOfMassOffset)
+                ->Field("Compute inertia", &ArticulationLinkConfiguration::m_computeInertiaTensor)
+                ->Field("Inertia tensor", &ArticulationLinkConfiguration::m_inertiaTensor)
                 ->Field("Maximum Angular Velocity", &ArticulationLinkConfiguration::m_maxAngularVelocity)
                 ->Field("SolverPositionIterations", &ArticulationLinkConfiguration::m_solverPositionIterations)
                 ->Field("SolverVelocityIterations", &ArticulationLinkConfiguration::m_solverVelocityIterations)
@@ -148,5 +150,10 @@ namespace PhysX
     bool ArticulationLinkConfiguration::IsSingleDofJointType() const
     {
         return HingePropertiesVisible() || PrismaticPropertiesVisible();
+    }
+
+    AZ::Crc32 ArticulationLinkConfiguration::GetInertiaVisibility() const
+    {
+        return !m_computeInertiaTensor ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 } // namespace PhysX
