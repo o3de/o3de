@@ -58,6 +58,8 @@ namespace AZ
             void SetOpacity(float opacity) override;
             float GetNormalMapOpacity() const override;
             void SetNormalMapOpacity(float opacity) override;
+            float GetMaxDrawDistance() const override;
+            void SetMaxDrawDistance(float maxDrawDistance) override;
             uint8_t GetSortKey() const override;
             void SetSortKey(uint8_t sortKeys) override;
             void SetMaterialAssetId(Data::AssetId) override;
@@ -69,6 +71,7 @@ namespace AZ
             void DecalColorFactorChanged();
             void OpacityChanged();
             void NormalMapOpacityChanged();
+            void MaxDrawDistanceChanged();
             void SortKeyChanged();
             void MaterialChanged();
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);

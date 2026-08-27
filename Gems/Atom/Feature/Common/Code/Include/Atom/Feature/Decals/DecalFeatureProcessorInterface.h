@@ -43,6 +43,9 @@ namespace AZ
 
             AZStd::array<float, 3> m_decalColor = { { 1.0f, 1.0f, 1.0f } };
             float m_decalColorFactor = 1.0f;
+            // Distance from the camera beyond which the decal stops rendering. Defaults to unlimited
+            // so existing content is unaffected until a project opts in by lowering it.
+            float m_maxDrawDistance = std::numeric_limits<float>::max();
             static constexpr uint32_t UnusedIndex = std::numeric_limits< uint32_t>::max();
         };
 
@@ -91,6 +94,9 @@ namespace AZ
 
             //! Sets the opacity of the decal normal map
             virtual void SetDecalNormalMapOpacity(DecalHandle handle, float opacity) = 0;
+
+            //! Sets the distance from the camera beyond which the decal stops rendering.
+            virtual void SetDecalMaxDrawDistance(DecalHandle handle, float maxDrawDistance) = 0;
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()

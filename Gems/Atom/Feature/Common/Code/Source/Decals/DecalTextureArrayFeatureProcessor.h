@@ -85,6 +85,9 @@ namespace AZ
             //! Sets the opacity of the normal map of the decal
             void SetDecalNormalMapOpacity(const DecalHandle handle, float opacity) override;
 
+            //! Sets the distance from the camera beyond which the decal stops rendering.
+            void SetDecalMaxDrawDistance(const DecalHandle handle, float maxDrawDistance) override;
+
             //! Sets the decal sort key. Decals with a larger sort key appear over top of smaller sort keys.
             void SetDecalSortKey(const DecalHandle handle, uint8_t sortKey) override;
 

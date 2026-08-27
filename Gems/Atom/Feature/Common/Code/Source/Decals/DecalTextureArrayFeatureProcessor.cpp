@@ -345,6 +345,19 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalMaxDrawDistance(const DecalHandle handle, float maxDrawDistance)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData<0>(handle.GetIndex()).m_maxDrawDistance = maxDrawDistance;
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalMaxDrawDistance().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalSortKey(DecalHandle handle, uint8_t sortKey)
         {
             if (handle.IsValid())
@@ -610,6 +623,7 @@ namespace AZ
             }
 
             const auto& dataVector = m_decalData.GetDataVector<0>();
+            const AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
             size_t numVisibleDecals =
                 r_maxVisibleDecals < 0 ? dataVector.size() : AZStd::min(dataVector.size(), static_cast<size_t>(r_maxVisibleDecals));
             AZStd::vector<uint32_t> sortedDecals(dataVector.size());
@@ -618,7 +632,6 @@ namespace AZ
             // Only sort if we are going to limit the number of visible decals
             if (numVisibleDecals < dataVector.size())
             {
-                AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
                 AZStd::sort(
                     sortedDecals.begin(),
                     sortedDecals.end(),
@@ -637,6 +650,15 @@ namespace AZ
             {
                 uint32_t dataIndex = sortedDecals[i];
                 const auto& decalData = dataVector[dataIndex];
+
+                // Squaring m_maxDrawDistance's unlimited default (FLT_MAX) overflows to +inf, which no
+                // finite distance can ever exceed, so this is a no-op for decals without a draw distance.
+                const float maxDrawDistanceSq = decalData.m_maxDrawDistance * decalData.m_maxDrawDistance;
+                if ((AZ::Vector3::CreateFromFloat3(decalData.m_position.data()) - viewPos).GetLengthSq() > maxDrawDistanceSq)
+                {
+                    continue;
+                }
+
                 AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
                     AZ::Vector3::CreateFromFloat3(decalData.m_position.data()),
                     AZ::Quaternion::CreateFromFloat4(decalData.m_quaternion.data()),
