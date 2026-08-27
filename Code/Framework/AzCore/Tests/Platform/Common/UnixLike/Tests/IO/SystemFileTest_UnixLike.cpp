@@ -10,6 +10,8 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/Utils.h>
 
+#include <sys/stat.h>
+
 namespace UnitTest
 {
     class SystemFilePlatformFixture
@@ -56,5 +58,13 @@ namespace UnitTest
         AZ::IO::PosixInternal::Close(fileHandle);
 
         EXPECT_EQ(testData, readData);
+    }
+
+    TEST_F(SystemFilePlatformFixture, Length_NamedPipeWithoutWriter_ReturnsZero)
+    {
+        auto namedPipePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / "SystemFileLengthPipe";
+        ASSERT_EQ(mkfifo(namedPipePath.c_str(), S_IRUSR | S_IWUSR), 0);
+
+        EXPECT_EQ(AZ::IO::SystemFile::Length(namedPipePath.c_str()), 0);
     }
 }   // namespace UnitTest
