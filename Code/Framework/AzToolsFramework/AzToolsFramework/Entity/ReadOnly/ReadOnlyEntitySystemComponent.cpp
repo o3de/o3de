@@ -72,18 +72,7 @@ namespace AzToolsFramework
 
     void ReadOnlyEntitySystemComponent::RefreshReadOnlyStateForAllEntities()
     {
-        for (auto& elem : m_readOnlystates)
-        {
-            AZ::EntityId entityId = elem.first;
-            bool wasReadOnly = elem.second;
-            QueryReadOnlyStateForEntity(entityId);
-
-            if (bool isReadOnly = m_readOnlystates[entityId]; wasReadOnly != isReadOnly)
-            {
-                ReadOnlyEntityPublicNotificationBus::Broadcast(
-                    &ReadOnlyEntityPublicNotificationBus::Events::OnReadOnlyEntityStatusChanged, entityId, isReadOnly);
-            }
-        }
+        m_readOnlystates.clear(); // just clear the cache, since it will be lazily refreshed on request
     }
 
     void ReadOnlyEntitySystemComponent::OnPrepareForContextReset()
