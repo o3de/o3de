@@ -28,7 +28,7 @@ namespace PhysX
             const physx::PxReal damping = d6JointDrive.m_damping;
             const physx::PxReal forceLimit = d6JointDrive.m_forceLimit;
             const bool isAcceleration =
-                (d6JointDrive.m_driveFlag == D6JointDriveFlag::Acceleration); // Currently not exposed in the configuration
+                (d6JointDrive.m_driveFlag == D6JointDriveFlag::Acceleration);
 
             return physx::PxD6JointDrive(stiffness, damping, forceLimit, isAcceleration);
         }

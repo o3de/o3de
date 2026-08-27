@@ -156,7 +156,7 @@ namespace PhysX
     void HingeJointComponent::SetMaximumForce(float force)
     {
         AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
-        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
+        PHYSX_SCENE_WRITE_LOCK(m_nativeJoint->getScene());
         m_nativeJoint->setDriveForceLimit(force);
     }
 
