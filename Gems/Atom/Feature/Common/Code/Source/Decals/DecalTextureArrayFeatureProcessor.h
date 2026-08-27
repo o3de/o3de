@@ -108,8 +108,11 @@ namespace AZ
         private:
 
             // Number of size and format permutations
-            // This number should match the number of texture arrays in Decals/ViewSrg.azsli
-            static constexpr int NumTextureArrays = 5;
+            // This number should match the number of texture arrays in Decals/ViewSrg.azsli and the
+            // switch in PBR/Decals.azsli. Was 5 -- too easy to exhaust with real content (any two decal
+            // materials that differ in resolution or mip count land in separate permutations), which
+            // silently dropped new decals with only a log warning (#19721).
+            static constexpr int NumTextureArrays = 16;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
             struct DecalLocation
