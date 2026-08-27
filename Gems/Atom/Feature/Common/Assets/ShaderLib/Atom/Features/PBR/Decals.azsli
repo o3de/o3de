@@ -86,7 +86,51 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             case 4:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse4.Sample(PassSrg::LinearSampler, decalUV);
                 normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV).rg;
-            break;            
+            break;
+            case 5:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse5.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps5.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 6:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse6.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps6.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 7:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse7.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps7.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 8:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse8.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps8.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 9:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse9.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps9.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 10:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse10.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps10.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 11:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse11.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps11.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 12:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse12.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps12.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 13:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse13.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps13.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 14:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse14.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps14.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 15:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse15.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps15.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
         }
         
         const real decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], real(decal.m_angleAttenuation));
