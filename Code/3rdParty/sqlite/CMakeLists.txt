@@ -5,6 +5,15 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
+o3de_fetch_content(sqlite
+    VERSION "3.53.4"
+    LICENSE "blessing"
+    URL "https://sqlite.org/2026/sqlite-amalgamation-3530400.zip"
+    URL_HASH "1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d"
+)
+FetchContent_MakeAvailable(sqlite)
+FetchContent_GetProperties(sqlite SOURCE_DIR sqlite_source_dir)
+
 include(CheckLibraryExists)
 check_library_exists(m sin "" SQLITE_HAVE_LIBM)
 
@@ -20,7 +29,8 @@ find_package(Threads REQUIRED)
 ly_add_3rdparty_target(
     NAME sqlite STATIC
     OUTPUT_NAME sqlite3
-    INCLUDE_DIRECTORIES PUBLIC Include
+    INCLUDE_DIRECTORIES
+        PUBLIC "${sqlite_source_dir}"
     COMPILE_DEFINITIONS
         PRIVATE
             SQLITE_THREADSAFE=1

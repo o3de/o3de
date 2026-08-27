@@ -6,7 +6,7 @@
 #
 
 set(FILES
-    Include/sqlite3.h
-    Include/sqlite3ext.h
-    Source/sqlite3.c
+    "${sqlite_source_dir}/sqlite3.h"
+    "${sqlite_source_dir}/sqlite3ext.h"
+    "${sqlite_source_dir}/sqlite3.c"
 )
