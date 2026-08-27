@@ -6,8 +6,8 @@
 #
 
 set(FILES
-    Include/xxhash.h
     Include/xxhash/xxh3.h
     Include/xxhash/xxhash.h
-    Source/xxhash.c
+    "${xxhash_source_dir}/xxhash.h"
+    "${xxhash_source_dir}/xxhash.c"
 )

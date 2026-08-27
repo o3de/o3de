@@ -6,8 +6,8 @@
 #
 
 set(FILES
-    Include/city.h
-    Include/citycrc.h
-    Source/city.cc
+    "${cityhash_source_dir}/src/city.h"
+    "${cityhash_source_dir}/src/citycrc.h"
+    "${cityhash_source_dir}/src/city.cc"
     Source/config.h
 )

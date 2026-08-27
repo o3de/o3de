@@ -7,6 +7,6 @@
 
 set(FILES
     Include/MikkTSpace/mikktspace.h
-    Include/mikkelsen/mikktspace.h
-    Source/mikktspace.c
+    "${mikktspace_source_dir}/mikktspace.h"
+    "${mikktspace_source_dir}/mikktspace.c"
 )

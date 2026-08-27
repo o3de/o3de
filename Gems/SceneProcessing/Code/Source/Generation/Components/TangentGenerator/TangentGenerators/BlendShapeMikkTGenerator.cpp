@@ -15,7 +15,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 
-#include <mikkelsen/mikktspace.h>
+#include <MikkTSpace/mikktspace.h>
 
 namespace AZ::TangentGeneration::BlendShape::MikkT
 {
