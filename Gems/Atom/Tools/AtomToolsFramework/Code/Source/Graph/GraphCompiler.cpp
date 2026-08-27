@@ -175,8 +175,15 @@ namespace AtomToolsFramework
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
             }
 
+            // The loop above only returns early when the AP reports a final status. Reaching this point
+            // means m_state was changed to something other than Processing by someone else -- Reset()
+            // canceling this compile because a newer one superseded it -- which is not success, even
+            // though this previously fell through to `return true` unconditionally. That let a canceled
+            // compile finish as State::Complete with a stale/incomplete generated file list, which is
+            // what let the viewport (or an in-flight AP report) end up out of sync with reality.
             AssetStatusReporterSystemRequestBus::Event(
                 m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+            return false;
         }
 
         return true;
