@@ -39,10 +39,9 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
 {
     Decal decal = ViewSrg::m_decals[currDecalIndex];
 
-    // Correctness backstop for the max draw distance: CullDecals() already drops far decals from the
-    // CPU-culled visibility list, but decals reached via GPU tile culling don't go through that path,
-    // so this is what actually enforces the cutoff there.
-    if (distance(ViewSrg::m_worldPosition, surface.position) > decal.m_maxDrawDistance)
+    // Backstop for paths that skipped the CPU and LightCulling.azsl culls. Measured from the decal
+    // position so all three agree; the surface position would make the cutoff per-pixel.
+    if (distance(ViewSrg::m_worldPosition, decal.m_position) > decal.m_maxDrawDistance)
     {
         return;
     }

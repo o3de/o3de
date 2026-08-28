@@ -110,11 +110,9 @@ namespace AZ
 
         private:
 
-            // Number of size and format permutations
-            // This number should match the number of texture arrays in Decals/ViewSrg.azsli and the
-            // switch in PBR/Decals.azsli. Was 5 -- too easy to exhaust with real content (any two decal
-            // materials that differ in resolution or mip count land in separate permutations), which
-            // silently dropped new decals with only a log warning (#19721).
+            // Must match the texture array count in Decals/ViewSrg.azsli and the switch in
+            // PBR/Decals.azsli. Raised from 5: grouping by full texture layout (see PackingLayout)
+            // needs more arrays than grouping by dimensions alone did.
             static constexpr int NumTextureArrays = 16;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
@@ -138,7 +136,7 @@ namespace AZ
             // This call could fail (returning nullopt) if we run out of texture arrays
             AZStd::optional<DecalLocation> AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset);
 
-            int FindTextureArrayWithSize(const RHI::Size& size) const;
+            int FindTextureArrayWithLayout(const DecalTextureArray::PackingLayout& layout) const;
             void RemoveMaterialFromDecal(const uint16_t decalIndex);
             void SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location);
             void QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle);
@@ -153,12 +151,9 @@ namespace AZ
             MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
             RHI::Handle<uint32_t> m_decalMeshFlag;
 
-            // Texture arrays are organized one per texture size permutation.
-            // e.g. There may be a situation where we have 3 texture arrays:
-            // 24 textures @ 128x128
-            // 16 textures @ 256x256
-            // 4 textures @ 512x512
-            IndexableList < AZStd::pair < AZ::RHI::Size, DecalTextureArray>> m_textureArrayList;
+            // One texture array per packing-layout permutation, e.g.
+            // 24 textures @ 128x128 BC7 10 mips, 16 @ 256x256 BC7 9 mips, 4 @ 512x512 BC1 10 mips.
+            IndexableList < AZStd::pair < DecalTextureArray::PackingLayout, DecalTextureArray>> m_textureArrayList;
 
             AZStd::array<AZStd::array<RHI::ShaderInputImageIndex, DecalMapType_Num>, NumTextureArrays> m_decalTextureArrayIndices;
             GpuBufferHandler m_decalBufferHandler;
