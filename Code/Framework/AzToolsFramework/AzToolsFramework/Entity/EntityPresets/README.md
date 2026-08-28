@@ -57,7 +57,7 @@ presets are missing, check this first.
 ```
 
 The editor writes this exact shape when saving user presets, so the quickest way to author a gem
-file is to build the presets in **Manage Presets…**, then copy them out of the project's
+file is to build the presets in **Manage Presets...**, then copy them out of the project's
 `Registry/EntityPresets.json`.
 
 | Field | Meaning |
@@ -121,7 +121,7 @@ need Qt to use it.
 
 ## User presets
 
-Anything the user adds through **Manage Presets…** is written to `Registry/EntityPresets.json`
+Anything the user adds through **Manage Presets...** is written to `Registry/EntityPresets.json`
 inside the project, so their presets travel with the project and can be committed and shared.
 Gem-supplied presets are read-only in that dialog - editing one would be overwritten the next time
 the gem updated - and duplicating gives an editable copy.

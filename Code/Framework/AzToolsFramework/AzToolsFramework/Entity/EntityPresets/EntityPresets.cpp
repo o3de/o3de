@@ -103,7 +103,7 @@ namespace AzToolsFramework
                 }
             }
 
-            // ── File IO ───────────────────────────────────────────────────────────────
+            // -- File IO ---------------------------------------------------------------
 
             //! Read one presets file.
             //!
@@ -170,7 +170,7 @@ namespace AzToolsFramework
                     });
             }
 
-            // ── Asset lookup ──────────────────────────────────────────────────────────
+            // -- Asset lookup ----------------------------------------------------------
 
             //! Everything after the last separator, lowercased - what the file is called, with no
             //! regard for where it lives.
@@ -234,7 +234,7 @@ namespace AzToolsFramework
                 return match;
             }
 
-            // ── Creation helpers ──────────────────────────────────────────────────────
+            // -- Creation helpers ------------------------------------------------------
 
             //! Component display name to type id. Worth caching: the lookup walks every registered
             //! component, and building a rig clicks through several presets in a row.
