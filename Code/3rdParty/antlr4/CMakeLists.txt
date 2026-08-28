@@ -31,10 +31,9 @@ ly_add_target(
     NAMESPACE 3rdParty
     NO_UNITY
     FILES_CMAKE files.cmake
-    OUTPUT_NAME antlr4-runtime
     COMPILE_DEFINITIONS
         PUBLIC
-            $<$<PLATFORM_ID:Windows>:ANTLR4CPP_STATIC>
+            ANTLR4CPP_STATIC
     BUILD_DEPENDENCIES
         PUBLIC
             Threads::Threads
