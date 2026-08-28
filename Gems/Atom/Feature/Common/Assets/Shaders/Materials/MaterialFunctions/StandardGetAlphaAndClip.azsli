@@ -10,12 +10,60 @@
 
 #include "../MaterialInputs/AlphaInput.azsli"
 
+static const float AlphaToCoverageMinCoverage = 0.5;
+
+real GetAlphaToCoverageValue(const MaterialParameters params, real alpha, real opacityFactor)
+{
+    real threshold = GetAlphaCutoutThreshold(opacityFactor);
+
+#ifdef MATERIAL_HAS_OPACITY_EDGE_SOFTNESS
+    real edgeSoftness = real(params.m_opacityEdgeSoftness);
+#else
+    real edgeSoftness = 0.0;
+#endif
+#ifdef MATERIAL_HAS_ALPHA_TO_COVERAGE_SHARPNESS
+    real sharpnessBand = 0.5 / real(params.m_alphaToCoverageSharpness);
+#else
+    real sharpnessBand = 0.5 / 6.0; // default when the material SRG doesn't expose the sharpness property
+#endif
+    real band = o_alphaToCoverageUseSharpness ? sharpnessBand : edgeSoftness;
+    band = clamp(band, 1e-5, 0.5);
+
+    real lowerBound = max(threshold - band, 0.0);
+    real upperBound = min(threshold + band, 1.0);
+    return smoothstep(lowerBound, upperBound, alpha);
+}
+
 real GetAlphaAndClip(const MaterialParameters params, float2 uvs[UvSetCount], float4 uvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f), bool customDerivatives = false)
 {
     // Alpha
     float2 baseColorUV = uvs[params.m_baseColorMapUvIndex];
     float2 opacityUV = uvs[params.m_opacityMapUvIndex];
     real alpha = SampleAlpha(GetMaterialTexture(params.m_baseColorMap), GetMaterialTexture(params.m_opacityMap), baseColorUV, opacityUV, GetMaterialTextureSampler(), o_opacity_source, uvDxDy, customDerivatives);
-    CheckClipping(alpha, real(params.m_opacityFactor));
-    return real(params.m_opacityFactor) * alpha;
+
+    real opacityFactor = real(params.m_opacityFactor);
+
+    if (o_opacity_mode == OpacityMode::Cutout && o_alphaToCoverage)
+    {
+        real coverage = GetAlphaToCoverageValue(params, alpha, opacityFactor);
+
+#ifndef CS_SAMPLERS
+    #ifdef MATERIAL_DEPTH_PASS
+        if (alpha <= GetAlphaCutoutThreshold(opacityFactor) || coverage < real(AlphaToCoverageMinCoverage))
+        {
+            clip(-1);
+        }
+    #else
+        if (alpha <= GetAlphaCutoutThreshold(opacityFactor))
+        {
+            clip(-1);
+        }
+    #endif
+#endif
+
+        return coverage;
+    }
+
+    CheckClipping(alpha, opacityFactor);
+    return opacityFactor * alpha;
 }

@@ -106,6 +106,11 @@ namespace OpenParticle
 
     void ParticleDataInstance::Init()
     {
+        if (m_particleInstance)
+        {
+            return;
+        }
+
         if (m_particleFp)
         {
             m_driver.m_bufferPool = m_particleFp->GetBufferPool();
@@ -114,7 +119,10 @@ namespace OpenParticle
 
         m_particleInstance = ParticleSystem::Create(m_particleAsset, m_rtConfig);
         m_particleInstance->SetEntityId(m_entityId);
-        m_particleInstance->SetObjectId(m_objectId);
+        if (m_objectId.IsValid())
+        {
+            m_particleInstance->SetObjectId(m_objectId);
+        }
         m_particleInstance->SetFeatureProcessor(m_particleFp);
         m_particleInstance->SetScene(m_scene);
         m_particleInstance->PostLoad();
@@ -218,7 +226,7 @@ namespace OpenParticle
 
         {
             AZ::RHI::BufferPoolDescriptor desc;
-            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
+            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Host;
             desc.m_bindFlags = AZ::RHI::BufferBindFlags::ShaderRead;
             m_shaderReadBufferPool = aznew AZ::RHI::BufferPool;
             m_shaderReadBufferPool->SetName(AZ::Name("ParticleShaderReadBufferPool"));
@@ -258,6 +266,8 @@ namespace OpenParticle
 
     void ParticleFeatureProcessor::Simulate([[maybe_unused]] const AZ::RPI::FeatureProcessor::SimulatePacket& packet)
     {
+        FlushPendingOps();
+
         if (m_timeToSim <= 0)
         {
             return;
@@ -358,11 +368,26 @@ namespace OpenParticle
         handle->m_scene = GetParentScene();
         handle->m_particleAsset = rtConfig.m_particleAsset;
         handle->m_entityId = id;
-        handle->m_objectId = m_transformService->ReserveObjectId();
         handle->m_driver.m_bufferPool = m_bufferPool;
         handle->m_transform = transform;
         handle->SetRuntimeConfig(rtConfig);
         handle->LoadParticle(rtConfig.m_particleAsset, *this);
+
+        auto instance = handle.operator->();
+        if (m_transformService && m_transformService->IsWriteable())
+        {
+            handle->m_objectId = m_transformService->ReserveObjectId();
+            if (handle->m_particleInstance && handle->m_objectId.IsValid())
+            {
+                handle->m_particleInstance->SetObjectId(handle->m_objectId);
+            }
+            m_transformService->SetTransformForId(handle->m_objectId, transform);
+        }
+        else
+        {
+            m_pendingOps.emplace_back(PendingOp{ PendingOpType::Reserve, instance });
+        }
+
         return handle;
     }
 
@@ -371,8 +396,16 @@ namespace OpenParticle
         if (handle.IsValid())
         {
             handle->m_enable = false;
-            m_transformService->ReleaseObjectId(handle->m_objectId);
+            auto objectId = handle->m_objectId;
             m_particleInstances.erase(handle);
+            if (m_transformService && m_transformService->IsWriteable())
+            {
+                m_transformService->ReleaseObjectId(objectId);
+            }
+            else
+            {
+                m_pendingOps.emplace_back(PendingOp{ PendingOpType::Release, objectId });
+            }
         }
     }
 
@@ -381,12 +414,68 @@ namespace OpenParticle
     {
         if (handle.IsValid())
         {
-            m_transformService->SetTransformForId(handle->m_objectId, transform, nonUniformScale);
+            auto instance = handle.operator->();
+            if (m_transformService && m_transformService->IsWriteable() && handle->m_objectId.IsValid())
+            {
+                m_transformService->SetTransformForId(handle->m_objectId, transform, nonUniformScale);
+            }
+            else
+            {
+                m_pendingOps.emplace_back(PendingOp{ PendingOpType::SetTransform, instance, transform, nonUniformScale });
+            }
+
             if (handle->m_particleInstance != nullptr)
             {
                 handle->m_particleInstance->SetTransform(transform);
             }
         }
+    }
+
+    void ParticleFeatureProcessor::FlushPendingOps()
+    {
+        if (!m_transformService || !m_transformService->IsWriteable() || m_pendingOps.empty())
+        {
+            return;
+        }
+
+        for (auto& op : m_pendingOps)
+        {
+            if (!op.m_instance && !op.m_objectId.IsValid())
+            {
+                continue;
+            }
+
+            switch (op.m_type)
+            {
+            case PendingOpType::Reserve:
+                op.m_instance->m_objectId = m_transformService->ReserveObjectId();
+                if (op.m_instance->m_particleInstance)
+                {
+                    op.m_instance->m_particleInstance->SetObjectId(op.m_instance->m_objectId);
+                }
+                if (op.m_instance->m_objectId.IsValid())
+                {
+                    m_transformService->SetTransformForId(op.m_instance->m_objectId, op.m_instance->m_transform);
+                }
+                break;
+
+            case PendingOpType::SetTransform:
+                if (op.m_instance->m_objectId.IsValid())
+                {
+                    m_transformService->SetTransformForId(op.m_instance->m_objectId, op.m_transform, op.m_nonUniformScale);
+                }
+                break;
+
+            case PendingOpType::Release:
+                if (op.m_objectId.IsValid())
+                {
+                    m_transformService->ReleaseObjectId(op.m_objectId);
+                }
+                break;
+            }
+        }
+
+        m_pendingOps.clear();
     }
 
     ParticlePipelineState* ParticleFeatureProcessor::FetchOrCreate(AZ::u32 key)

@@ -7,7 +7,9 @@
             "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
             "Name": "AlbedoWithGenericAlpha",
             "RGB_Weight": "CIEXYZ",
-            "PixelFormat": "BC3",
+            "AlphaDilate": true,
+            "AlphaEdgeDarken": true,
+            "PixelFormat": "BC7",
             "MipMapSetting": {
                 "MipGenType": "Box"
             }
@@ -17,6 +19,7 @@
                 "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
                 "Name": "AlbedoWithGenericAlpha",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "ASTC_4x4",
                 "MaxTextureSize": 2048,
                 "MipMapSetting": {
@@ -27,6 +30,7 @@
                 "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
                 "Name": "AlbedoWithGenericAlpha",
                 "RGB_Weight": "CIEXYZ",
+                "AlphaDilate": true,
                 "PixelFormat": "ASTC_6x6",
                 "MaxTextureSize": 2048,
                 "MipMapSetting": {
@@ -37,7 +41,8 @@
                 "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
                 "Name": "AlbedoWithGenericAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "BC3",
+                "AlphaDilate": true,
+                "PixelFormat": "BC7",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
@@ -46,7 +51,8 @@
                 "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
                 "Name": "AlbedoWithGenericAlpha",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "BC3",
+                "AlphaDilate": true,
+                "PixelFormat": "BC7",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }

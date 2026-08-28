@@ -1,9 +1,9 @@
 {
     "description": "Material Type with properties used to define particle mesh.",
-    "version": 5,
+    "version": 6,
     "versionUpdates": [
         {
-            "toVersion": 5,
+            "toVersion": 6,
             "actions": []
         }
     ],

@@ -90,11 +90,17 @@ namespace OpenParticle
         AZ::RPI::Material::ChangeId m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
         AZ::RPI::Scene* m_scene = nullptr;
         AZ::u32 m_sortId = 0;
+        AZ::u32 m_lightingChannelMask = 0;
+        AZ::u32 m_objectId = 0;
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         bool m_needsPipelineRebuild = false;
         void Setup(AZ::Data::Asset<AZ::RPI::MaterialAsset>& mat);
         void ReBuildPipeline();
         bool TryRebuildPipeline();
         void Reset();
+        void ConfigureObjectSrg(AZ::u32 objectId);
+        void SetTransform(const AZ::Transform& transform);
+        void ReconfigureObjectSrg();
     };
 
     struct ParticlePipelineState

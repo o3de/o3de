@@ -11,6 +11,14 @@
 #define MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE 1
 #define PIPELINE_HAS_PASS_SRG 0
 
+// Depth pre-pass does not have alpha-to-coverage render state enabled (only color
+// passes do, see AlphaToCoverage.lua). Force CheckClipping() instead of the A2C
+// path so transparent pixels are actually discarded and don't write depth. Without
+// this, the depth pre-pass writes depth for pixels that the forward pass A2C will
+// fully discard, leaving the G-buffer clear color at valid depth positions. The
+// lighting pass then lights that clear color, producing white outlines.
+#define MATERIAL_DEPTH_PASS 1
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH

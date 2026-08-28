@@ -156,6 +156,10 @@ namespace ImageProcessingAtom
         //validate the input image and settings
         bool ValidateInput();
 
+        //dilate opaque colors into transparent texels and/or un-blend a composited matte color,
+        //so soft cutout edges and mipmaps don't reveal the background baked into the source art
+        void AlphaDilate();
+
         //mipmap generation
         bool FillMipmaps();
 

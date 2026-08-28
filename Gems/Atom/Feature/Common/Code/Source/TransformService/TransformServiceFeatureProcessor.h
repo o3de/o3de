@@ -49,6 +49,9 @@ namespace AZ
             AZ::Transform GetTransformForId(ObjectId id) const override;
             AZ::Vector3 GetNonUniformScaleForId(ObjectId id) const override;
 
+            //! Returns true when the service is writable (between the end and start of prepare-render).
+            bool IsWriteable() const override { return m_isWriteable; }
+
         private:
 
             // Holds both regular 4x3 transforms and 3x3 normal transforms with padding at the end of each float3.
@@ -66,6 +69,9 @@ namespace AZ
             // Prepare GPU buffers for object transformation matrices
             // Create the buffers if they don't exist. Otherwise, resize them if they are not large enough for the matrices
             void PrepareBuffers();
+
+            // Flush any queued SetTransform/Release calls that arrived while m_isWriteable was false.
+            void FlushPending();
 
             void UpdateSceneSrg(RPI::ShaderResourceGroup *sceneSrg);
 
@@ -90,6 +96,18 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_objectToWorldHistoryBuffer;
 
             uint32_t m_firstAvailableTransformIndex = NoAvailableTransformIndices;
+
+            struct PendingSetTransform
+            {
+                ObjectId m_objectId;
+                AZ::Transform m_transform;
+                AZ::Vector3 m_nonUniformScale;
+            };
+
+            // Transforms and releases that were requested while the service was not writable.
+            AZStd::vector<PendingSetTransform> m_pendingSetTransforms;
+            AZStd::vector<ObjectId> m_pendingReleases;
+
             bool m_deviceBufferNeedsUpdate = false;
             bool m_historyBufferNeedsUpdate = false;
             bool m_isWriteable = true;     //prevents write access during certain parts of the frame (for threadsafety)

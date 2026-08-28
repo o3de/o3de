@@ -20,6 +20,7 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Component/TickBus.h>
 
@@ -64,7 +65,7 @@ namespace OpenParticle
         AZ::Data::Instance<ParticleSystem> m_particleInstance;
         AZ::EntityId m_entityId;
         AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
-        AZ::Transform m_transform;
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         DriverWrap m_driver;
         bool m_visible = true;
         bool m_enable = true;
@@ -118,15 +119,34 @@ namespace OpenParticle
 
         void ShutDown() override;
 
+        void FlushPendingOps();
+
         void InitFeature();
 
         void InitDriver();
 
         void InitBufferPool();
 
+        enum class PendingOpType { Reserve, SetTransform, Release };
+        struct PendingOp
+        {
+            PendingOp(PendingOpType type, ParticleDataInstance* instance, const AZ::Transform& transform = AZ::Transform::CreateIdentity(), const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne())
+                : m_type(type), m_instance(instance), m_transform(transform), m_nonUniformScale(nonUniformScale) {}
+
+            PendingOp(PendingOpType type, AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId objectId)
+                : m_type(type), m_objectId(objectId) {}
+
+            PendingOpType m_type;
+            ParticleDataInstance* m_instance = nullptr;
+            AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+            AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
+        };
+
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_shaderReadBufferPool;
         AZ::Render::TransformServiceFeatureProcessorInterface* m_transformService = nullptr;
+        AZStd::vector<PendingOp> m_pendingOps;
         AZ::StableDynamicArray<ParticleDataInstance> m_particleInstances;
         AZStd::unordered_map<AZ::u32, ParticlePipelineState> m_pipelineStates;
         AZStd::optional<AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>> time;

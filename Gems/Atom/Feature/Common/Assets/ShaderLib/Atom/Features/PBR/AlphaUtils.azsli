@@ -8,7 +8,22 @@
 
 #pragma once
 
+#define MATERIAL_HAS_ALPHA_TO_COVERAGE 1
+
 option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
+option bool o_alphaToCoverage;
+option bool o_alphaToCoverageUseSharpness;
+
+// An opacityFactor of 1.0 produces a cutout threshold of 0.0, which keeps every texel
+// with any non-zero alpha - including the 1-3/255 residue that block compression
+// (BC7/BC3) leaves behind in blocks that were fully transparent in the source texture.
+// Treat alpha at or below that noise floor as fully transparent.
+static const float AlphaCutoutMinThreshold = 2.0 / 255.0;
+
+real GetAlphaCutoutThreshold(real opacityFactor)
+{
+    return max(1.0 - opacityFactor, real(AlphaCutoutMinThreshold));
+}
 
 void CheckClipping(real alpha, real opacityFactor)
 {
@@ -19,11 +34,11 @@ void CheckClipping(real alpha, real opacityFactor)
     {
         case OpacityMode::Cutout:
         {
-            if(alpha)
-            {
-                clip(alpha - (1.0 - opacityFactor));
-            }
-            else
+            // clip() only rejects negative values, so a threshold of 0 would keep both
+            // fully transparent texels and the compression residue just above zero, and
+            // they would render as opaque quads. Reject everything at or below the
+            // threshold explicitly.
+            if (alpha <= GetAlphaCutoutThreshold(opacityFactor))
             {
                 clip(-1);
             }

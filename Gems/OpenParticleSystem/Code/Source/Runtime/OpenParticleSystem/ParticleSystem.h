@@ -111,7 +111,7 @@ namespace OpenParticle
         AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
         AZStd::unique_ptr<SimuCore::ParticleCore::ParticleSystem> m_particleSystem;
         AZStd::unordered_map<const SimuCore::ParticleCore::ParticleEmitter*, EmitterInstance> m_emitterInstances;
-        AZ::Transform m_transform;
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZStd::unordered_map <AZ::u32,
             AZStd::vector<AZ::Render::SimplePointLightFeatureProcessorInterface::LightHandle>> lightHandles;
         AZStd::vector<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>> m_drawPacket;

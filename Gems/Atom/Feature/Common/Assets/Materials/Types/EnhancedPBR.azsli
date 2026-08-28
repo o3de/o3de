@@ -8,6 +8,9 @@
 
 #pragma once
 
+#define MATERIAL_HAS_OPACITY_EDGE_SOFTNESS 1
+#define MATERIAL_HAS_ALPHA_TO_COVERAGE_SHARPNESS 1
+
 #include <Atom/Feature/Common/Assets/Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialInputs.azsli>
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE

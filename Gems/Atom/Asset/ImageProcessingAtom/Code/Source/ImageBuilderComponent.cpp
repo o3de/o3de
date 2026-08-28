@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 35;   // Added MipmapChain and StreamingImage allocator
+        builderDescriptor.m_version = 41;   // Add AlphaEdgeDarken: darken bright A2C edge pixels toward nearest opaque color
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);

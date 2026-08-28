@@ -56,6 +56,64 @@ namespace OpenParticle
         m_emitterForDrawPair.clear();
     }
 
+    void EmitterInstance::ConfigureObjectSrg(AZ::u32 objectId)
+    {
+        m_objectId = objectId;
+        ReconfigureObjectSrg();
+    }
+
+    void EmitterInstance::SetTransform(const AZ::Transform& transform)
+    {
+        m_transform = transform;
+        ReconfigureObjectSrg();
+    }
+
+    void EmitterInstance::ReconfigureObjectSrg()
+    {
+        if (!m_objSrg)
+        {
+            return;
+        }
+
+        AZ::RHI::ShaderInputNameIndex objectIdIndex("m_objectId");
+        m_objSrg->SetConstant(objectIdIndex, m_objectId);
+
+        if (m_material && m_material->UsesSceneMaterialSrg())
+        {
+            AZ::RHI::ShaderInputNameIndex materialTypeIdIndex("m_materialTypeId");
+            m_objSrg->SetConstant(materialTypeIdIndex, m_material->GetMaterialTypeId());
+
+            AZ::RHI::ShaderInputNameIndex materialInstanceIdIndex("m_materialInstanceId");
+            m_objSrg->SetConstant(materialInstanceIdIndex, m_material->GetMaterialInstanceId());
+        }
+
+        AZ::RHI::ShaderInputConstantIndex modelToWorldIndex =
+            m_objSrg->FindShaderInputConstantIndex(AZ::Name("m_reflectionProbeData.m_modelToWorld"));
+        if (modelToWorldIndex.IsValid())
+        {
+            m_objSrg->SetConstant(modelToWorldIndex, AZ::Matrix3x4::CreateFromTransform(m_transform));
+        }
+
+        AZ::RHI::ShaderInputConstantIndex modelToWorldInverseIndex =
+            m_objSrg->FindShaderInputConstantIndex(AZ::Name("m_reflectionProbeData.m_modelToWorldInverse"));
+        if (modelToWorldInverseIndex.IsValid())
+        {
+            AZ::Transform safeTransform = m_transform;
+            float scale = safeTransform.GetUniformScale();
+            if (AZ::GetAbs(scale) < AZ::MinTransformScale)
+            {
+                safeTransform.SetUniformScale(AZ::MinTransformScale);
+            }
+            m_objSrg->SetConstant(modelToWorldInverseIndex, AZ::Matrix3x4::CreateFromTransform(safeTransform).GetInverseFull());
+        }
+
+        AZ::RHI::ShaderInputConstantIndex lightingChannelMaskIndex = m_objSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+        if (lightingChannelMaskIndex.IsValid())
+        {
+            m_objSrg->SetConstant(lightingChannelMaskIndex, m_lightingChannelMask);
+        }
+    }
+
     bool EmitterInstance::TryRebuildPipeline()
     {
         if (!m_needsPipelineRebuild)
@@ -129,7 +187,7 @@ namespace OpenParticle
                     drawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(shaderAsset->GetDrawListName());
                 }
 
-                if (!m_scene->HasOutputForPipelineState(drawListTag))
+                if (!m_scene || !m_scene->HasOutputForPipelineState(drawListTag))
                 {
                     return true;
                 }
@@ -167,6 +225,7 @@ namespace OpenParticle
             });
 
         m_materialChangeId = m_material->GetCurrentChangeId();
+        ReconfigureObjectSrg();
     }
 
     bool ParticlePipelineState::Setup(AZ::u32 key)
