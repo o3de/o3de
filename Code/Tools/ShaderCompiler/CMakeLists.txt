@@ -20,15 +20,11 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            3rdParty::antlr4
+            3rdParty::jsoncpp
 )
 
-include(3rdParty/antlr4.cmake)
-target_link_libraries(ShaderCompiler PUBLIC 3rdParty::antlr4)
-target_include_directories(ShaderCompiler SYSTEM PRIVATE Source/External)
-
-target_compile_options(ShaderCompiler PRIVATE
-    ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS}
-)
+target_compile_options(ShaderCompiler PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})
 
 ly_add_target(
     NAME Azslc EXECUTABLE
@@ -43,9 +39,10 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::ShaderCompiler
+            3rdParty::antlr4
+            3rdParty::cli11
+            3rdParty::jsoncpp
 )
-
-target_include_directories(Azslc SYSTEM PRIVATE Source/External)
 
 target_compile_options(Azslc PRIVATE
     ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS}

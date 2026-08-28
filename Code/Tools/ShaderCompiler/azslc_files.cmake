@@ -6,6 +6,5 @@
 #
 
 set(FILES
-    Source/External/CLI11.hpp
     Source/Main.cpp
 )

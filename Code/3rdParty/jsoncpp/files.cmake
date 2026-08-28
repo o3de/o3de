@@ -4,11 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-add_subdirectory(3rdParty)
-add_subdirectory(Framework)
-add_subdirectory(LauncherUnified)
-add_subdirectory(Legacy)
-add_subdirectory(Editor)
-add_subdirectory(Tools)
+set(FILES
+    "${jsoncpp_SOURCE_DIR}/src/lib_json/json_reader.cpp"
+    "${jsoncpp_SOURCE_DIR}/src/lib_json/json_value.cpp"
+    "${jsoncpp_SOURCE_DIR}/src/lib_json/json_writer.cpp"
+)

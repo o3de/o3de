@@ -52,9 +52,6 @@ set(FILES
     Source/Emitters/MetalPlatformEmitter.h
     Source/Emitters/VulkanPlatformEmitter.cpp
     Source/Emitters/VulkanPlatformEmitter.h
-    Source/External/jsoncpp/json/json-forwards.h
-    Source/External/jsoncpp/json/json.h
-    Source/External/jsoncpp/jsoncpp.cpp
     Source/GenericUtils.h
     Source/Grammar/Generate.ps1
     Source/Grammar/azslLexer.cpp
