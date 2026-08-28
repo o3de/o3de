@@ -52,7 +52,7 @@ namespace AzToolsFramework
             {
                 AZStd::vector<Preset> presets;
 
-                // ── Scripting ─────────────────────────────────────────────────────────
+                // -- Scripting ---------------------------------------------------------
                 presets.push_back(Simple("Lua Script", "Scripting", { "Lua Script" }));
 
                 return presets;

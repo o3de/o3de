@@ -152,7 +152,7 @@ namespace AzToolsFramework
         }
     } // namespace
 
-    // ── Edit one preset ────────────────────────────────────────────────────────────────────
+    // -- Edit one preset --------------------------------------------------------------------
 
     EntityPresetEditDialog::EntityPresetEditDialog(const EntityPresets::Preset& preset, QWidget* parent)
         : QDialog(parent)
@@ -227,7 +227,7 @@ namespace AzToolsFramework
         auto* hint = new QLabel(
             QStringLiteral("Components are added in order. Property paths are spelled the way the "
                            "Entity Inspector shows them, for example "
-                           "Controller|Configuration|Light type — leave properties out to keep a "
+                           "Controller|Configuration|Light type - leave properties out to keep a "
                            "component's defaults."),
             this);
         hint->setWordWrap(true);
@@ -444,7 +444,7 @@ namespace AzToolsFramework
         return preset;
     }
 
-    // ── Manage the set ─────────────────────────────────────────────────────────────────────
+    // -- Manage the set ---------------------------------------------------------------------
 
     EntityPresetManagerDialog::EntityPresetManagerDialog(QWidget* parent)
         : QDialog(parent)
@@ -457,7 +457,7 @@ namespace AzToolsFramework
 
         auto* info = new QLabel(
             QStringLiteral("Presets appear under Create Preset in the viewport and Entity Outliner "
-                           "right-click menus. Presets shipped by gems cannot be changed — duplicate "
+                           "right-click menus. Presets shipped by gems cannot be changed - duplicate "
                            "one to make an editable copy that is saved with this project."),
             this);
         info->setWordWrap(true);
@@ -527,7 +527,7 @@ namespace AzToolsFramework
         for (const EntityPresets::Preset& preset : EntityPresets::BuiltIn())
         {
             auto* item = new QListWidgetItem(
-                QStringLiteral("%1  —  %2  (engine)")
+                QStringLiteral("%1  -  %2  (engine)")
                     .arg(ToQString(preset.m_category), ToQString(preset.m_name)),
                 m_list);
             item->setForeground(readOnlyBrush);
@@ -536,14 +536,14 @@ namespace AzToolsFramework
         for (const EntityPresets::Preset& preset : EntityPresets::FromGems())
         {
             auto* item = new QListWidgetItem(
-                QStringLiteral("%1  —  %2  (from %3)")
+                QStringLiteral("%1  -  %2  (from %3)")
                     .arg(
                         ToQString(preset.m_category), ToQString(preset.m_name),
                         ToQString(preset.m_sourceGem)),
                 m_list);
             item->setForeground(readOnlyBrush);
             item->setToolTip(QStringLiteral(
-                "Shipped by the %1 gem. Duplicate it to get an editable copy — editing it here "
+                "Shipped by the %1 gem. Duplicate it to get an editable copy - editing it here "
                 "would be lost the next time that gem updated.")
                                  .arg(ToQString(preset.m_sourceGem)));
         }
@@ -551,7 +551,7 @@ namespace AzToolsFramework
         for (const EntityPresets::Preset& preset : m_userPresets)
         {
             new QListWidgetItem(
-                QStringLiteral("%1  —  %2").arg(ToQString(preset.m_category), ToQString(preset.m_name)), m_list);
+                QStringLiteral("%1  -  %2").arg(ToQString(preset.m_category), ToQString(preset.m_name)), m_list);
         }
 
         if (previousRow >= 0 && previousRow < m_list->count())
