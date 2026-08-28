@@ -64,9 +64,16 @@ namespace PhysX
         // Note: setMass() alone does NOT update the inertia tensor (PxShape.h:193),
         // so we must explicitly compute it after shapes are attached.
         // No scene lock needed: SetupFromLinkData runs during construction (before scene).
-        if (configuration.m_computeInertiaTensor && !AZ::IsClose(configuration.m_mass, 0.0f))
+        if (configuration.m_computeInertiaTensor)
         {
-            if (!m_physicsShapes.empty())
+            if(configuration.m_mass <= 0.0f)
+            {   
+                // Inertia Use the default value, do not set it.
+                AZ_Warning("ArticulationLink::SetupFromLinkData",
+                           false, 
+                           "When calculating inertia, MASS=%f must be Greater Than zero.", configuration.m_mass);
+            }
+            else if (!m_physicsShapes.empty())
             {
                 physx::PxVec3 pxCenterOfMass = PxMathConvert(configuration.m_centerOfMassOffset);
                 physx::PxRigidBodyExt::setMassAndUpdateInertia(
