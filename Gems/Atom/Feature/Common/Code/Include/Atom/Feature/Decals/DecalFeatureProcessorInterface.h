@@ -46,8 +46,18 @@ namespace AZ
             // Distance from the camera beyond which the decal stops rendering. Defaults to unlimited
             // so existing content is unaffected until a project opts in by lowering it.
             float m_maxDrawDistance = std::numeric_limits<float>::max();
+
+            // Unused. Pads out to the 96 bytes [[pad_to(16)]] gives the shader-side struct.
+            AZStd::array<float, 3> m_padding{};
+
             static constexpr uint32_t UnusedIndex = std::numeric_limits< uint32_t>::max();
         };
+
+        // This is uploaded as raw bytes, so it must match DecalStructures.azsli's Decal exactly. A
+        // mismatch makes the RHI reject the buffer every frame ("Buffer has stride size 84. SRG expects
+        // stride size 96") and no decals render at all. Change both together.
+        static_assert(
+            sizeof(DecalData) == 96, "DecalData must match the size of the Decal struct in DecalStructures.azsli");
 
         //! DecalFeatureProcessorInterface provides an interface to acquire, release, and update a decal. This is necessary for code outside of
         //! the Atom features gem to communicate with the DecalTextureArrayFeatureProcessor.
