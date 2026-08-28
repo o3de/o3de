@@ -140,7 +140,7 @@ namespace UnitTest
         AZ::SerializeContext* m_serializeContext = nullptr;
     };
 
-    // ── The regression this whole file exists for ─────────────────────────────────────
+    // -- The regression this whole file exists for -------------------------------------
 
     TEST_F(EntityPresetsTests, IntValueReachesAnEnumProperty)
     {
@@ -227,7 +227,7 @@ namespace UnitTest
         EXPECT_EQ(converted.type(), azrtti_typeid<AZ::s64>());
     }
 
-    // ── The JSON format, which existing project files depend on ───────────────────────
+    // -- The JSON format, which existing project files depend on -----------------------
 
     TEST_F(EntityPresetsTests, PropertyAssignmentIsWrittenFlat)
     {
@@ -401,7 +401,7 @@ namespace UnitTest
         EXPECT_FALSE(written.HasMember("builtIn"));
         EXPECT_FALSE(written.HasMember("sourceGem"));
     }
-    // ── The file format, as opposed to the serializer ─────────────────────────────────
+    // -- The file format, as opposed to the serializer ---------------------------------
     //
     // Every test above works on in-memory documents through AZ::JsonSerialization. The code that
     // actually reads a gem's Presets/*.entitypresets.json does not: it goes through

@@ -35,7 +35,7 @@ namespace Terrain
         {
             using EntityType = AzToolsFramework::EditorComponentAPIRequests::EntityType;
 
-            // ── The shape of the terrain this builds ──────────────────────────────────
+            // -- The shape of the terrain this builds ----------------------------------
             //
             // A 1km square starting at the origin, 100m of vertical range, with gentle noise for
             // height. Big enough to be a landscape rather than a test patch, small enough that the
@@ -68,7 +68,7 @@ namespace Terrain
             //! `enum class SnapMode : AZ::u8 { Corner = 0, Center }`.
             constexpr AZ::s64 SectorPointSnapModeCentre = 1;
 
-            // ── Property values ───────────────────────────────────────────────────────
+            // -- Property values -------------------------------------------------------
             //
             // PropertyTreeEditor::HandleTypeConversion accepts exactly two source types - double
             // and s64 - and converts down to whatever the property really is: float, u32, s32,
@@ -92,7 +92,7 @@ namespace Terrain
                 return AZStd::any(value);
             }
 
-            // ── Component plumbing ────────────────────────────────────────────────────
+            // -- Component plumbing ----------------------------------------------------
 
             //! Resolve a component by display name, trying each category in turn.
             //!
@@ -586,7 +586,7 @@ namespace Terrain
                 EnsureVegetationLevelComponents();
             }
 
-            // ── The graph root, for the Landscape Canvas variants ─────────────────────
+            // -- The graph root, for the Landscape Canvas variants ---------------------
             //
             // A Landscape Canvas "graph" is not a file - it is an entity carrying the Landscape
             // Canvas component, whose descendants' components become the nodes. So making the
@@ -609,7 +609,7 @@ namespace Terrain
                 }
             }
 
-            // ── The spawner: a box saying where terrain exists ────────────────────────
+            // -- The spawner: a box saying where terrain exists ------------------------
             const AZ::EntityId spawnerId = CreateEntity("Terrain", graphRootId);
             if (!spawnerId.IsValid())
             {
@@ -638,7 +638,7 @@ namespace Terrain
                 boxShape, "Axis Aligned Box Shape|Box Configuration|Dimensions",
                 AZStd::any(AZ::Vector3(TerrainSizeMetres, TerrainSizeMetres, TerrainHeightMetres)));
 
-            // ── The height provider: noise, shaped to the spawner's box ───────────────
+            // -- The height provider: noise, shaped to the spawner's box ---------------
             //
             // A child of the spawner so the two travel together, and so the setup reads as one
             // thing in the outliner rather than two unrelated entities.
@@ -676,7 +676,7 @@ namespace Terrain
             return spawnerId;
         }
 
-        // ── Editor menu registration ────────────────────────────────
+        // -- Editor menu registration --------------------------------
         //
         // Terrain reaches the "Create Preset" menu the way any gem would: it registers its own
         // actions and its own submenu, then attaches that submenu to the identifier
