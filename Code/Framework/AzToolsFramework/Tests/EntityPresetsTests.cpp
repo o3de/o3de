@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/JSON/document.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -15,6 +16,7 @@
 #include <AzCore/std/any.h>
 
 #include <AzTest/AzTest.h>
+#include <AzTest/Utils.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EntityPresets/EntityPresets.h>
@@ -43,8 +45,8 @@ namespace UnitTest
         Third
     };
 
-    //! One property of every kind a preset can set. Reflected the same way the real components
-    //! reflect theirs - in particular the enum gets a plain Field, with no special handling.
+    //! One property of every kind a preset can set, reflected the way a real component reflects
+    //! its own - serialize fields plus an Edit Context - because that is what a preset addresses.
     struct EntityPresetsTestConfig
     {
         AZ_TYPE_INFO(EntityPresetsTestConfig, "{6E4C97A5-2E0D-4F91-9B3C-1D5A7F8E2B44}");
@@ -58,6 +60,27 @@ namespace UnitTest
                 ->Field("My Float", &EntityPresetsTestConfig::m_float)
                 ->Field("My String", &EntityPresetsTestConfig::m_string)
                 ->Field("My Enum", &EntityPresetsTestConfig::m_enum);
+
+            // PropertyTreeEditor addresses properties by their *Edit Context* display names - that
+            // is where a path like "Controller|Configuration|Light type" comes from - and
+            // PopulateNodeMap skips outright any node that has no edit metadata. Reflecting
+            // serialize fields alone leaves the tree empty, so every SetProperty fails on a missing
+            // path, for reasons that have nothing to do with the type conversion under test.
+            AZ::EditContext* editContext = context->GetEditContext();
+            if (editContext == nullptr)
+            {
+                editContext = context->CreateEditContext();
+            }
+
+            editContext->Class<EntityPresetsTestConfig>("Entity Presets Test Config", "")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_bool, "My Bool", "")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_int, "My Int", "")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_float, "My Float", "")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_string, "My String", "")
+                // Deliberately a plain Default handler with no EnumAttributes: the conversion under
+                // test has to work on the type itself, not on edit-context decoration a component
+                // may or may not have bothered to add.
+                ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_enum, "My Enum", "");
         }
 
         bool m_bool = false;
@@ -361,7 +384,7 @@ namespace UnitTest
 
         // Both of these describe where a preset came from at runtime. Writing them would let a
         // user preset claim to be a built-in, or to belong to a gem that never shipped it.
-        preset.m_builtIn = true;
+        preset.m_readOnly = true;
         preset.m_sourceGem = "SomeGem";
 
         file.m_presets.push_back(preset);
@@ -377,5 +400,161 @@ namespace UnitTest
         const rapidjson::Value& written = document["presets"][0];
         EXPECT_FALSE(written.HasMember("builtIn"));
         EXPECT_FALSE(written.HasMember("sourceGem"));
+    }
+    // ── The file format, as opposed to the serializer ─────────────────────────────────
+    //
+    // Every test above works on in-memory documents through AZ::JsonSerialization. The code that
+    // actually reads a gem's Presets/*.entitypresets.json does not: it goes through
+    // AZ::JsonSerializationUtils::LoadObjectFromFile, which demands a
+    // Type/Version/ClassName/ClassData header before it hands anything to the serializer.
+    //
+    // Nothing covered that, and the gap is not theoretical: a preset file written in the shape the
+    // tests above would lead you to write is valid JSON, is accepted by the serializer, and is
+    // still refused by the loader - so an entire gem's presets fail to appear, quietly.
+
+    TEST_F(EntityPresetsTests, GemPresetFileLoadsFromDisk)
+    {
+        constexpr const char* gemShaped = R"JSON(
+        {
+            "Type": "JsonSerialization",
+            "Version": 1,
+            "ClassName": "PresetFile",
+            "ClassData": {
+                "presets": [
+                    {
+                        "name": "Box Shape",
+                        "category": "Shapes",
+                        "components": [
+                            { "component": "Box Shape", "properties": [] }
+                        ]
+                    },
+                    {
+                        "name": "Quad Light",
+                        "category": "Lights",
+                        "components": [
+                            {
+                                "component": "Light",
+                                "properties": [
+                                    {
+                                        "path": "Controller|Configuration|Light type",
+                                        "type": "int",
+                                        "value": 4
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        })JSON";
+
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const auto filePath = AZ::Test::CreateTestFile(tempDirectory, "shapes.entitypresets.json", gemShaped);
+        ASSERT_TRUE(filePath.has_value());
+
+        EntityPresets::PresetFile file;
+        const auto loaded =
+            AZ::JsonSerializationUtils::LoadObjectFromFile(file, AZStd::string(filePath->c_str()));
+
+        ASSERT_TRUE(loaded.IsSuccess()) << loaded.GetError().c_str();
+        ASSERT_EQ(file.m_presets.size(), 2);
+
+        EXPECT_STREQ(file.m_presets[0].m_name.c_str(), "Box Shape");
+        EXPECT_STREQ(file.m_presets[0].m_category.c_str(), "Shapes");
+
+        ASSERT_EQ(file.m_presets[1].m_components.size(), 1);
+        ASSERT_EQ(file.m_presets[1].m_components[0].m_properties.size(), 1);
+        EXPECT_EQ(file.m_presets[1].m_components[0].m_properties[0].m_value.m_int, 4);
+    }
+
+    TEST_F(EntityPresetsTests, PresetFileWithoutTheSerializationHeaderIsRefused)
+    {
+        // The exact mistake the test above exists to prevent, pinned from the other side. This is
+        // the shape PresetsFileFromBeforeTheRewriteStillLoads hands straight to
+        // AZ::JsonSerialization::Load, which is why writing a gem file this way looks reasonable
+        // right up until nothing shows up in the menu.
+        constexpr const char* headerless = R"JSON(
+        {
+            "presets": [
+                {
+                    "name": "Box Shape",
+                    "category": "Shapes",
+                    "components": [ { "component": "Box Shape" } ]
+                }
+            ]
+        })JSON";
+
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const auto filePath =
+            AZ::Test::CreateTestFile(tempDirectory, "headerless.entitypresets.json", headerless);
+        ASSERT_TRUE(filePath.has_value());
+
+        EntityPresets::PresetFile file;
+        const auto loaded =
+            AZ::JsonSerializationUtils::LoadObjectFromFile(file, AZStd::string(filePath->c_str()));
+
+        EXPECT_FALSE(loaded.IsSuccess());
+        EXPECT_TRUE(file.m_presets.empty());
+    }
+
+    TEST_F(EntityPresetsTests, WhatTheEditorWritesTheLoaderReads)
+    {
+        // The project's file and a gem's files are meant to be the same shape, so a preset can be
+        // moved between them by copying it and a gem can ship exactly what the editor wrote. That
+        // is a claim about two functions agreeing - SaveUser writes through SaveObjectToFile, the
+        // loader reads through LoadObjectFromFile - and nothing else holds them to it.
+        EntityPresets::PresetFile written;
+
+        EntityPresets::Preset preset;
+        preset.m_name = "Exposure Volume";
+        preset.m_description = "Exposure control that applies only inside the box.";
+        preset.m_category = "PostFX";
+
+        EntityPresets::ComponentSpec shape;
+        shape.m_componentName = "Box Shape";
+        preset.m_components.push_back(shape);
+
+        EntityPresets::ComponentSpec layer;
+        layer.m_componentName = "PostFX Layer";
+        layer.m_properties.push_back(EntityPresets::PropertyAssignment{
+            "Controller|Configuration|Layer Category", IntValue(5000000) });
+        preset.m_components.push_back(layer);
+
+        EntityPresets::ComponentSpec levelSettings;
+        levelSettings.m_componentName = "Vegetation System Settings";
+        preset.m_levelComponents.push_back(levelSettings);
+
+        written.m_presets.push_back(preset);
+
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const AZ::IO::Path filePath = tempDirectory.Resolve("EntityPresets.json");
+
+        // The settings SaveUser uses: defaults kept, so the file is spelled out in full rather
+        // than relying on the reader knowing what was left out.
+        AZ::JsonSerializerSettings serializerSettings;
+        serializerSettings.m_keepDefaults = true;
+        const EntityPresets::PresetFile* noDefault = nullptr;
+
+        const auto saved = AZ::JsonSerializationUtils::SaveObjectToFile(
+            &written, filePath.Native(), noDefault, &serializerSettings);
+        ASSERT_TRUE(saved.IsSuccess()) << saved.GetError().c_str();
+
+        EntityPresets::PresetFile read;
+        const auto loaded = AZ::JsonSerializationUtils::LoadObjectFromFile(read, filePath.Native());
+        ASSERT_TRUE(loaded.IsSuccess()) << loaded.GetError().c_str();
+
+        ASSERT_EQ(read.m_presets.size(), 1);
+        EXPECT_STREQ(read.m_presets[0].m_name.c_str(), "Exposure Volume");
+        EXPECT_STREQ(read.m_presets[0].m_description.c_str(), preset.m_description.c_str());
+
+        ASSERT_EQ(read.m_presets[0].m_components.size(), 2);
+        ASSERT_EQ(read.m_presets[0].m_components[1].m_properties.size(), 1);
+        EXPECT_EQ(read.m_presets[0].m_components[1].m_properties[0].m_value.m_int, 5000000);
+
+        // levelComponents is the newest part of the format, and a round trip that dropped it would
+        // lose the level singleton a preset depends on - visible only as "the preset does nothing".
+        ASSERT_EQ(read.m_presets[0].m_levelComponents.size(), 1);
+        EXPECT_STREQ(
+            read.m_presets[0].m_levelComponents[0].m_componentName.c_str(), "Vegetation System Settings");
     }
 } // namespace UnitTest

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/UI/EntityPresets/TerrainPreset.h>
+#include <EntityPresets/TerrainPreset.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -20,13 +20,20 @@
 #include <AzToolsFramework/Entity/EditorEntityAPIBus.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 
-namespace AzToolsFramework
+#include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/UI/EntityPresets/ActionManagerIdentifiers/EntityPresetsIdentifiers.h>
+#include <AzToolsFramework/UI/EntityPresets/PresetRequirements.h>
+
+namespace Terrain
 {
     namespace TerrainPreset
     {
         namespace
         {
-            using EntityType = EditorComponentAPIRequests::EntityType;
+            using EntityType = AzToolsFramework::EditorComponentAPIRequests::EntityType;
 
             // ── The shape of the terrain this builds ──────────────────────────────────
             //
@@ -98,8 +105,8 @@ namespace AzToolsFramework
                 for (const EntityType category : categories)
                 {
                     AZStd::vector<AZ::Uuid> typeIds;
-                    EditorComponentAPIBus::BroadcastResult(
-                        typeIds, &EditorComponentAPIRequests::FindComponentTypeIdsByEntityType,
+                    AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                        typeIds, &AzToolsFramework::EditorComponentAPIRequests::FindComponentTypeIdsByEntityType,
                         AZStd::vector<AZStd::string>{ componentName }, category);
 
                     if (!typeIds.empty() && !typeIds.front().IsNull())
@@ -137,10 +144,10 @@ namespace AzToolsFramework
                     return AZ::EntityComponentIdPair();
                 }
 
-                EditorComponentAPIRequests::AddComponentsOutcome outcome =
+                AzToolsFramework::EditorComponentAPIRequests::AddComponentsOutcome outcome =
                     AZ::Failure(AZStd::string());
-                EditorComponentAPIBus::BroadcastResult(
-                    outcome, &EditorComponentAPIRequests::AddComponentOfType, entityId, typeId);
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    outcome, &AzToolsFramework::EditorComponentAPIRequests::AddComponentOfType, entityId, typeId);
 
                 if (!outcome.IsSuccess() || outcome.GetValue().empty())
                 {
@@ -178,8 +185,8 @@ namespace AzToolsFramework
                 }
 
                 bool alreadyPresent = false;
-                EditorComponentAPIBus::BroadcastResult(
-                    alreadyPresent, &EditorComponentAPIRequests::HasComponentOfType, entityId,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    alreadyPresent, &AzToolsFramework::EditorComponentAPIRequests::HasComponentOfType, entityId,
                     typeId);
 
                 if (!alreadyPresent)
@@ -196,10 +203,10 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                EditorComponentAPIRequests::PropertyOutcome outcome =
+                AzToolsFramework::EditorComponentAPIRequests::PropertyOutcome outcome =
                     AZ::Failure(AZStd::string());
-                EditorComponentAPIBus::BroadcastResult(
-                    outcome, &EditorComponentAPIRequests::SetComponentProperty, component,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    outcome, &AzToolsFramework::EditorComponentAPIRequests::SetComponentProperty, component,
                     AZStd::string_view(propertyPath), value);
 
                 AZ_Warning(
@@ -222,10 +229,10 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                EditorComponentAPIRequests::PropertyTreeOutcome treeOutcome =
+                AzToolsFramework::EditorComponentAPIRequests::PropertyTreeOutcome treeOutcome =
                     AZ::Failure(AZStd::string());
-                EditorComponentAPIBus::BroadcastResult(
-                    treeOutcome, &EditorComponentAPIRequests::BuildComponentPropertyTreeEditor,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    treeOutcome, &AzToolsFramework::EditorComponentAPIRequests::BuildComponentPropertyTreeEditor,
                     component);
 
                 if (!treeOutcome.IsSuccess())
@@ -236,7 +243,7 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                PropertyTreeEditor tree = treeOutcome.GetValue();
+                AzToolsFramework::PropertyTreeEditor tree = treeOutcome.GetValue();
                 const auto appendOutcome = tree.AppendContainerItem(propertyPath, AZStd::any(value));
 
                 if (appendOutcome.IsSuccess())
@@ -253,8 +260,8 @@ namespace AzToolsFramework
                     propertyPath, appendOutcome.GetError().c_str());
 
                 AZStd::vector<AZStd::string> available;
-                EditorComponentAPIBus::BroadcastResult(
-                    available, &EditorComponentAPIRequests::BuildComponentPropertyList,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    available, &AzToolsFramework::EditorComponentAPIRequests::BuildComponentPropertyList,
                     component);
 
                 for (const AZStd::string& path : available)
@@ -276,8 +283,8 @@ namespace AzToolsFramework
                 }
 
                 bool refreshed = false;
-                EditorComponentAPIBus::BroadcastResult(
-                    refreshed, &EditorComponentAPIRequests::EnableComponents,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    refreshed, &AzToolsFramework::EditorComponentAPIRequests::EnableComponents,
                     AZStd::vector<AZ::EntityComponentIdPair>{ component });
 
                 AZ_Warning(
@@ -289,23 +296,38 @@ namespace AzToolsFramework
             AZ::EntityId CreateEntity(const char* name, const AZ::EntityId parentId)
             {
                 AZ::EntityId entityId;
-                ToolsApplicationRequestBus::BroadcastResult(
-                    entityId, &ToolsApplicationRequests::CreateNewEntity, parentId);
+                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                    entityId, &AzToolsFramework::ToolsApplicationRequests::CreateNewEntity, parentId);
 
                 if (entityId.IsValid())
                 {
-                    EditorEntityAPIBus::Event(
-                        entityId, &EditorEntityAPIRequests::SetName, AZStd::string(name));
+                    AzToolsFramework::EditorEntityAPIBus::Event(
+                        entityId, &AzToolsFramework::EditorEntityAPIRequests::SetName, AZStd::string(name));
                 }
 
                 return entityId;
             }
 
+            //! The variant's name as the menu spells it, so a dialog names what was clicked.
+            const char* VariantName(const Variant variant)
+            {
+                switch (variant)
+                {
+                case Variant::Landscape:
+                    return "Landscape Terrain";
+                case Variant::LandscapeWithVegetation:
+                    return "Landscape Terrain + Vegetation";
+                case Variant::Simple:
+                default:
+                    return "Simple Terrain";
+                }
+            }
+
             AZ::EntityId LevelEntityId()
             {
                 AZ::EntityId levelEntityId;
-                ToolsApplicationRequestBus::BroadcastResult(
-                    levelEntityId, &ToolsApplicationRequests::GetCurrentLevelEntityId);
+                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                    levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
                 return levelEntityId;
             }
 
@@ -325,8 +347,8 @@ namespace AzToolsFramework
                 }
 
                 bool alreadyPresent = false;
-                EditorComponentAPIBus::BroadcastResult(
-                    alreadyPresent, &EditorComponentAPIRequests::HasComponentOfType,
+                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                    alreadyPresent, &AzToolsFramework::EditorComponentAPIRequests::HasComponentOfType,
                     levelEntityId, typeId);
 
                 if (alreadyPresent)
@@ -453,39 +475,110 @@ namespace AzToolsFramework
 
         AZ::EntityId Create(const Variant variant)
         {
-            const bool wantsLandscapeCanvas = variant != Variant::Simple;
+            bool wantsLandscapeCanvas = variant != Variant::Simple;
             bool wantsVegetation = variant == Variant::LandscapeWithVegetation;
+            bool wantsPhysics = true;
 
-            // Landscape Canvas and FastNoise are genuinely optional - the setup degrades to
-            // something usable without them. The Terrain gem is not: without it there is no
-            // spawner, no height gradient list and no world component, so pressing on would create
-            // a hierarchy of empty entities, add nothing to any of them, log a warning per missing
-            // component, and leave the mess behind for the user to delete. Check before touching
-            // anything, and before opening an undo batch there would be nothing to put in.
-            if (FindEntityComponentTypeId("Terrain Layer Spawner").IsNull())
+            using AzToolsFramework::EntityPresets::RequiredComponent;
+
+            // Everything this builds, and the gem each piece comes from, split by whether the
+            // terrain is still worth having without it. The old check covered Terrain and
+            // Vegetation and let the other four gems fail silently one component at a time.
+            //
+            // Components are asked about rather than gems: a gem can be enabled and still have
+            // registered nothing usable, and it is the components that decide whether this builds.
+            const AZStd::vector<RequiredComponent> core = {
+                { "Terrain Layer Spawner", "Terrain" },
+                { "Terrain Height Gradient List", "Terrain" },
+                { "Terrain World", "Terrain" },
+                { "Axis Aligned Box Shape", "LmbrCentral" },
+                { "Shape Reference", "LmbrCentral" },
+                { "Gradient Transform Modifier", "GradientSignal" },
+            };
+
+            if (const auto missing = AzToolsFramework::EntityPresets::MissingComponents(core); !missing.empty())
             {
-                AZ_Warning(
-                    "EntityPresets", false,
-                    "Terrain preset needs the Terrain gem, which is not enabled for this project. "
-                    "Enable it in Project Manager and restart the Editor. Nothing has been created.");
+                for (const RequiredComponent& component : missing)
+                {
+                    AZ_Warning(
+                        "EntityPresets", false, "Terrain preset needs '%s' from the %s gem, which is not available.",
+                        component.m_componentName.c_str(), component.m_gemName.c_str());
+                }
 
+                AzToolsFramework::EntityPresets::ReportMissingRequirements(VariantName(variant), missing);
                 return AZ::EntityId();
             }
 
-            // Vegetation is a layer on top rather than a prerequisite, so a missing gem downgrades
-            // the request instead of refusing it - the terrain is still worth having.
-            if (wantsVegetation && FindEntityComponentTypeId("Vegetation Layer Spawner").IsNull())
-            {
-                AZ_Warning(
-                    "EntityPresets", false,
-                    "Terrain preset cannot add vegetation without the Vegetation gem, which is not "
-                    "enabled for this project. Building the terrain without it.");
+            // Layers on top. Each is dropped on its own, and the user is asked once about all of
+            // them together rather than told afterwards - it is their call whether a terrain with
+            // no collision is what they wanted.
+            AZStd::vector<RequiredComponent> reduced;
+            AZStd::vector<AZStd::string> lost;
 
-                wantsVegetation = false;
+            if (wantsLandscapeCanvas)
+            {
+                if (const auto missing = AzToolsFramework::EntityPresets::MissingComponents(
+                        { { "Landscape Canvas", "LandscapeCanvas" } });
+                    !missing.empty())
+                {
+                    reduced.insert(reduced.end(), missing.begin(), missing.end());
+                    lost.push_back("the node graph");
+                    wantsLandscapeCanvas = false;
+                }
             }
 
-            ToolsApplicationRequestBus::Broadcast(
-                &ToolsApplicationRequests::BeginUndoBatch, "Create Terrain");
+            if (const auto missing = AzToolsFramework::EntityPresets::MissingComponents(
+                    { { "Terrain Physics Heightfield Collider", "Terrain" },
+                      { "PhysX Heightfield Collider", "PhysX5" } });
+                !missing.empty())
+            {
+                reduced.insert(reduced.end(), missing.begin(), missing.end());
+                lost.push_back("collision");
+                wantsPhysics = false;
+            }
+
+            if (wantsVegetation)
+            {
+                if (const auto missing = AzToolsFramework::EntityPresets::MissingComponents(
+                        { { "Vegetation Layer Spawner", "Vegetation" },
+                          { "Vegetation Asset List", "Vegetation" },
+                          { "Vegetation System Settings", "Vegetation" } });
+                    !missing.empty())
+                {
+                    reduced.insert(reduced.end(), missing.begin(), missing.end());
+                    lost.push_back("vegetation");
+                    wantsVegetation = false;
+                }
+            }
+
+            if (!reduced.empty())
+            {
+                AZStd::string reduction = "without ";
+                for (size_t index = 0; index < lost.size(); ++index)
+                {
+                    if (index > 0)
+                    {
+                        reduction += (index + 1 == lost.size()) ? " or " : ", ";
+                    }
+                    reduction += lost[index];
+                }
+
+                for (const RequiredComponent& component : reduced)
+                {
+                    AZ_Warning(
+                        "EntityPresets", false, "Terrain preset is leaving out '%s' from the %s gem.",
+                        component.m_componentName.c_str(), component.m_gemName.c_str());
+                }
+
+                if (!AzToolsFramework::EntityPresets::ConfirmReducedSetup(VariantName(variant), reduction, reduced))
+                {
+                    return AZ::EntityId();
+                }
+            }
+
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Create Terrain");
 
             EnsureTerrainLevelComponents();
             if (wantsVegetation)
@@ -505,12 +598,14 @@ namespace AzToolsFramework
                 graphRootId = CreateEntity("Landscape Terrain", AZ::EntityId());
                 if (graphRootId.IsValid())
                 {
+                    // Availability was settled in the preflight, so a failure here is something
+                    // else - worth saying, but not worth blaming the gem for.
                     const AZ::EntityComponentIdPair canvas = AddComponent(graphRootId, "Landscape Canvas");
 
                     AZ_Warning(
                         "EntityPresets", canvas.GetEntityId().IsValid(),
-                        "The terrain was built, but without a Landscape Canvas component it will not open "
-                        "as a graph. Enable the Landscape Canvas gem for this project.");
+                        "The terrain was built, but the Landscape Canvas component could not be added, "
+                        "so it will not open as a graph.");
                 }
             }
 
@@ -519,8 +614,8 @@ namespace AzToolsFramework
             if (!spawnerId.IsValid())
             {
                 AZ_Warning("EntityPresets", false, "Terrain preset could not create its entity.");
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequests::EndUndoBatch);
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
                 return AZ::EntityId();
             }
 
@@ -531,9 +626,13 @@ namespace AzToolsFramework
 
             // Both halves of the collider. Terrain Physics Heightfield Collider turns the terrain
             // into heightfield data; PhysX Heightfield Collider is what actually puts that data
-            // into the physics scene. One without the other is terrain you fall straight through.
-            AddComponentIfMissing(spawnerId, "Terrain Physics Heightfield Collider");
-            AddComponentIfMissing(spawnerId, "PhysX Heightfield Collider");
+            // into the physics scene. One without the other is terrain you fall straight through -
+            // so it is both or neither, and the preflight already settled which.
+            if (wantsPhysics)
+            {
+                AddComponentIfMissing(spawnerId, "Terrain Physics Heightfield Collider");
+                AddComponentIfMissing(spawnerId, "PhysX Heightfield Collider");
+            }
 
             SetProperty(
                 boxShape, "Axis Aligned Box Shape|Box Configuration|Dimensions",
@@ -567,14 +666,114 @@ namespace AzToolsFramework
                 CreateVegetationArea(spawnerId);
             }
 
-            ToolsApplicationRequestBus::Broadcast(
-                &ToolsApplicationRequests::SetSelectedEntities,
-                EntityIdList{ graphRootId.IsValid() ? graphRootId : spawnerId });
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
+                AzToolsFramework::EntityIdList{ graphRootId.IsValid() ? graphRootId : spawnerId });
 
-            ToolsApplicationRequestBus::Broadcast(
-                &ToolsApplicationRequests::EndUndoBatch);
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
 
             return spawnerId;
         }
+
+        // ── Editor menu registration ────────────────────────────────
+        //
+        // Terrain reaches the "Create Preset" menu the way any gem would: it registers its own
+        // actions and its own submenu, then attaches that submenu to the identifier
+        // AzToolsFramework publishes. Nothing about it is special-cased on the framework side.
+
+        namespace
+        {
+            //! Kept identical to the identifiers this used when it lived in AzToolsFramework, so a
+            //! hotkey a user had already bound to one of these survives the move.
+            constexpr AZStd::string_view TerrainMenuIdentifier = "o3de.menu.editor.entityPresets.terrain";
+
+            struct TerrainVariantAction
+            {
+                const char* m_identifier;
+                const char* m_name;
+                const char* m_description;
+                Variant m_variant;
+            };
+
+            //! Ordered as a progression - each builds on the one above - so the list reads as
+            //! "how much do I want" rather than as three unrelated options.
+            constexpr TerrainVariantAction TerrainVariants[] = {
+                { "o3de.action.editor.entityPreset.terrain.simple", "Simple Terrain",
+                  "A terrain region with noise driving its height. The quickest way to have ground.",
+                  Variant::Simple },
+                { "o3de.action.editor.entityPreset.terrain.landscape", "Landscape Terrain",
+                  "The same terrain under a Landscape Canvas entity, so the whole setup opens as a "
+                  "node graph.",
+                  Variant::Landscape },
+                { "o3de.action.editor.entityPreset.terrain.vegetation", "Landscape Terrain + Vegetation",
+                  "Landscape terrain plus a vegetation area and the level's vegetation settings. Add a "
+                  "mesh to its Vegetation Asset List to see anything planted.",
+                  Variant::LandscapeWithVegetation },
+            };
+        } // namespace
+
+        void RegisterActions()
+        {
+            auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            if (actionManager == nullptr)
+            {
+                return;
+            }
+
+            for (const TerrainVariantAction& terrain : TerrainVariants)
+            {
+                if (actionManager->IsActionRegistered(terrain.m_identifier))
+                {
+                    continue;
+                }
+
+                AzToolsFramework::ActionProperties properties;
+                properties.m_name = terrain.m_name;
+                properties.m_description = terrain.m_description;
+                properties.m_category = "Entity Presets";
+
+                const Variant variant = terrain.m_variant;
+                actionManager->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, terrain.m_identifier, properties,
+                    [variant]() { Create(variant); });
+            }
+        }
+
+        void RegisterMenus()
+        {
+            auto* menuManager = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            if (menuManager == nullptr || menuManager->IsMenuRegistered(TerrainMenuIdentifier))
+            {
+                return;
+            }
+
+            AzToolsFramework::MenuProperties properties;
+            properties.m_name = "Terrain";
+            menuManager->RegisterMenu(TerrainMenuIdentifier, properties);
+        }
+
+        void BindMenus()
+        {
+            auto* menuManager = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            if (menuManager == nullptr)
+            {
+                return;
+            }
+
+            int sortKey = 0;
+            for (const TerrainVariantAction& terrain : TerrainVariants)
+            {
+                sortKey += 100;
+                menuManager->AddActionToMenu(TerrainMenuIdentifier, terrain.m_identifier, sortKey);
+            }
+
+            // Safe without any ordering arrangement: the root menu is registered during the menu
+            // registration hook, and every handler completes that hook before any handler reaches
+            // this one.
+            menuManager->AddSubMenuToMenu(
+                EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, TerrainMenuIdentifier,
+                EntityPresetsIdentifiers::EntityPresetsGemSortKeyStart);
+        }
     } // namespace TerrainPreset
-} // namespace AzToolsFramework
+} // namespace Terrain

@@ -10,9 +10,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/utils.h>
 
 namespace AzToolsFramework
 {
@@ -48,13 +46,6 @@ namespace AzToolsFramework
         //! Safe to call at runtime: AddActionToMenu prompts a menu refresh, so a preset added in
         //! the panel shows up on the next right click rather than after a restart.
         AZTF_API void Refresh();
-
-        //! The hand-written Terrain actions, as (display name, action identifier) pairs.
-        //!
-        //! Exposed for the same reason as the preset identifiers below: they live only in context
-        //! menus, so anything enumerating what this gem offers has to be told about them rather
-        //! than finding them by walking the menu bar.
-        AZTF_API AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> TerrainActions();
 
         //! The action identifier a preset is registered under.
         //!
