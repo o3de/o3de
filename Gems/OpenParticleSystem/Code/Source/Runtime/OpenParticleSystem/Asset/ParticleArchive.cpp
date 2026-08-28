@@ -42,13 +42,18 @@ namespace OpenParticle
 
     void ParticleArchive::EmitterInfo::Reflect(AZ::ReflectContext* context)
     {
+        ReflectMaterialPropertyOverrides(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ParticleArchive::EmitterInfo>()
-                ->Version(0)
+                // Version 1 added per-emitter material property overrides. Older assets simply deserialize
+                // with an empty override map, which is exactly the previous behaviour.
+                ->Version(1)
                 ->Field("config", &ParticleArchive::EmitterInfo::m_config)
                 ->Field("render", &ParticleArchive::EmitterInfo::m_render)
                 ->Field("material", &ParticleArchive::EmitterInfo::m_material)
+                ->Field("materialOverrides", &ParticleArchive::EmitterInfo::m_materialOverrides)
                 ->Field("model", &ParticleArchive::EmitterInfo::m_model)
                 ->Field("skeleton model", &ParticleArchive::EmitterInfo::m_skeletonModel)
                 ->Field("effectors", &ParticleArchive::EmitterInfo::m_effectors)
@@ -315,6 +320,13 @@ namespace OpenParticle
     {
         auto& emitter = m_emitterInfos.back();
         emitter.m_material = asset;
+        return *this;
+    }
+
+    ParticleArchive& ParticleArchive::MaterialOverrides(const MaterialPropertyOverrideMap& overrides)
+    {
+        auto& emitter = m_emitterInfos.back();
+        emitter.m_materialOverrides = overrides;
         return *this;
     }
 
