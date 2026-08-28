@@ -35,30 +35,6 @@ namespace AZ
     {
         namespace
         {
-            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(AZ::RPI::MaterialAsset* materialAsset)
-            {
-                for (const auto& elem : materialAsset->GetPropertyValues())
-                {
-                    if (elem.Is<Data::Asset<RPI::ImageAsset>>())
-                    {
-                        const auto& imageBinding = elem.GetValue<Data::Asset<RPI::ImageAsset>>();
-                        if (imageBinding && imageBinding.IsReady())
-                        {
-                            return imageBinding->GetImageDescriptor().m_size;
-                        }
-                    }
-                }
-
-                AZ_Error(
-                    "DecalTextureFeatureProcessor",
-                    false,
-                    "GetSizeFromMaterial() unable to load image in material ID '%s'",
-                    materialAsset->GetId().ToString<AZStd::string>().c_str()
-                );
-
-                return {};
-            }
-
             static AZ::Data::Asset<AZ::RPI::MaterialAsset> QueueMaterialAssetLoad(const AZ::Data::AssetId material)
             {
                 auto asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(material, AZ::Data::AssetLoadBehavior::QueueLoad);
@@ -491,22 +467,32 @@ namespace AZ
 
         AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset)
         {
-            const RHI::Size textureSize = GetTextureSizeFromMaterialAsset(materialAsset);
+            const DecalTextureArray::PackingLayout layout = DecalTextureArray::GetPackingLayout(*materialAsset);
 
-            int textureArrayIndex = FindTextureArrayWithSize(textureSize);
-            const bool wasExistingTextureArrayFoundForGivenSize = textureArrayIndex != -1;
-            if (m_textureArrayList.size() == NumTextureArrays && !wasExistingTextureArrayFoundForGivenSize)
+            int textureArrayIndex = FindTextureArrayWithLayout(layout);
+            const bool wasExistingTextureArrayFoundForGivenLayout = textureArrayIndex != -1;
+            if (m_textureArrayList.size() == NumTextureArrays && !wasExistingTextureArrayFoundForGivenLayout)
             {
-                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Unable to add decal with size %u %u. There are no more texture arrays left to accept a decal with this size permutation.", textureSize.m_width, textureSize.m_height);
+                const auto& diffuse = layout.m_maps[DecalMapType_Diffuse];
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Unable to add decal with diffuse map size %u %u, format %u, %u mips. All %d texture arrays are in use and none "
+                    "matches this layout. Decals group by exact texture layout, so authoring them consistently lets more share an array.",
+                    diffuse.m_size.m_width,
+                    diffuse.m_size.m_height,
+                    static_cast<uint32_t>(diffuse.m_format),
+                    diffuse.m_mipLevels,
+                    NumTextureArrays);
                 return AZStd::nullopt;
             }
 
             int textureIndex;
-            if (!wasExistingTextureArrayFoundForGivenSize)
+            if (!wasExistingTextureArrayFoundForGivenLayout)
             {
                 DecalTextureArray decalTextureArray;
                 textureIndex = decalTextureArray.AddMaterial(materialAsset->GetId());
-                textureArrayIndex = m_textureArrayList.push_front(AZStd::make_pair(textureSize, decalTextureArray));
+                textureArrayIndex = m_textureArrayList.push_front(AZStd::make_pair(layout, decalTextureArray));
             }
             else
             {
@@ -563,12 +549,12 @@ namespace AZ
             }
         }
 
-        int DecalTextureArrayFeatureProcessor::FindTextureArrayWithSize(const RHI::Size& size) const
+        int DecalTextureArrayFeatureProcessor::FindTextureArrayWithLayout(const DecalTextureArray::PackingLayout& layout) const
         {
             int iter = m_textureArrayList.begin();
             while (iter != -1)
             {
-                if (m_textureArrayList[iter].first == size)
+                if (m_textureArrayList[iter].first == layout)
                 {
                     return iter;
                 }

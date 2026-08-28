@@ -262,10 +262,17 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabbCenter,
     for (uint decalIndex = groupIndex ; decalIndex < PassSrg::m_decalCount ; decalIndex += TILE_DIM_X * TILE_DIM_Y)
     { 
         Decal decal = PassSrg::m_decals[decalIndex];
-        float3 decalPosition = WorldToView_Point(decal.m_position); 
-        
+        float3 decalPosition = WorldToView_Point(decal.m_position);
+
+        // Drop out-of-range decals before any tile intersection work. The camera is at the origin in
+        // view space, so this is the same distance the CPU cull and Decals.azsli measure.
+        if (dot(decalPosition, decalPosition) > decal.m_maxDrawDistance * decal.m_maxDrawDistance)
+        {
+            continue;
+        }
+
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
-        // ATOM-4224 - try AABB-AABB 
+        // ATOM-4224 - try AABB-AABB
         float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
         bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabbCenter, aabbHalfExtents);
