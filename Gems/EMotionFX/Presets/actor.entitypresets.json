@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Actor",
+                "category": "Rendering",
+                "components": [
+                    {
+                        "component": "Actor",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

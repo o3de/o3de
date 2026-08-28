@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "White Box",
+                "category": "Rendering",
+                "components": [
+                    {
+                        "component": "White Box",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

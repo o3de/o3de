@@ -23,6 +23,8 @@ set(FILES
     Source/EditorComponents/EditorTerrainWorldRendererComponent.h
     Source/EditorComponents/EditorTerrainSystemComponent.cpp
     Source/EditorComponents/EditorTerrainSystemComponent.h
+    Source/EntityPresets/TerrainPreset.cpp
+    Source/EntityPresets/TerrainPreset.h
     Source/EditorTerrainModule.cpp
     Source/EditorTerrainModule.h
     Source/EditorSurfaceTagListProvider.h

@@ -23,7 +23,7 @@ class QTreeWidgetItem;
 
 namespace AzToolsFramework
 {
-    //! Edits one preset: its name, its category, and the components it puts on the entity.
+    //! Edits one preset: its name, description, category, and the components it puts on the entity.
     //!
     //! Works on a copy. Nothing is written until the manager saves, so cancelling anywhere in the
     //! chain leaves the stored presets untouched.
@@ -60,15 +60,22 @@ namespace AzToolsFramework
         QTreeWidgetItem* SelectedComponentItem() const;
 
         QLineEdit* m_nameEdit = nullptr;
+        QLineEdit* m_descriptionEdit = nullptr;
+
+        //! Carried through untouched: level components are not editable here yet, and rebuilding
+        //! the preset from the widgets alone would silently drop them from a preset that had some.
+        AZStd::vector<EntityPresets::ComponentSpec> m_levelComponents;
         QComboBox* m_categoryCombo = nullptr;
         QTreeWidget* m_tree = nullptr;
     };
 
     //! Lists every preset and manages the user's own.
     //!
-    //! Built-ins are shown but not editable - they are compiled in, so there is nothing to write
-    //! back to. Duplicating one produces an ordinary user preset, which is how you start from a
-    //! built-in and change it.
+    //! Almost every preset shown here belongs to a gem, and those are read-only: editing one would
+    //! be overwritten the next time that gem updated, and the file it came from is not the
+    //! project's to write. The same goes for the handful compiled into the framework. Duplicating
+    //! either produces an ordinary user preset, which is how you start from a shipped one and
+    //! change it.
     class AZTF_API EntityPresetManagerDialog : public QDialog
     {
         Q_OBJECT
@@ -79,7 +86,7 @@ namespace AzToolsFramework
     private:
         void Populate();
 
-        //! The user preset selected in the list, or -1 for a built-in or nothing.
+        //! The user preset selected in the list, or -1 for a read-only one or nothing.
         int SelectedUserIndex() const;
 
         void OnAdd();

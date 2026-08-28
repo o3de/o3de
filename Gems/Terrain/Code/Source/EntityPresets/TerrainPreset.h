@@ -8,20 +8,16 @@
 
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
 #include <AzCore/Component/EntityId.h>
 
-namespace AzToolsFramework
+namespace Terrain
 {
     //! Builds a working terrain setup in one action.
     //!
-    //! TODO: this belongs in Gems/Terrain, not in AzToolsFramework. Every component it names is
-    //! supplied by the Terrain, GradientSignal, SurfaceData and Vegetation gems, and the framework
-    //! should not know they exist. It compiles here only because components are named by display
-    //! string, and it does the right thing at runtime only because the lookups fail gracefully when
-    //! those gems are disabled. Moving it out means giving the gem somewhere to register an action
-    //! into EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, which it can already do.
+    //! Lives in the Terrain gem rather than in AzToolsFramework because every component it names
+    //! is supplied by the Terrain, GradientSignal, SurfaceData and Vegetation gems. It reaches the
+    //! editor's "Create Preset" menu through the public contract in EntityPresetsIdentifiers,
+    //! registering itself the way any other gem-supplied action does.
     //!
     //! Terrain is the one setup that does not fit the ordinary preset model, and it misses by
     //! three separate margins rather than one:
@@ -68,6 +64,16 @@ namespace AzToolsFramework
         //! so one Ctrl+Z removes the whole setup.
         //!
         //! @return The spawner entity, or an invalid id if it could not be built.
-        AZTF_API AZ::EntityId Create(Variant variant);
+        AZ::EntityId Create(Variant variant);
+
+        //! Register the Terrain actions. Call from OnActionRegistrationHook.
+        void RegisterActions();
+
+        //! Register the Terrain submenu. Call from OnMenuRegistrationHook.
+        void RegisterMenus();
+
+        //! Hang that submenu off the editor's "Create Preset" menu, in the band it publishes for
+        //! gem-contributed entries. Call from OnMenuBindingHook.
+        void BindMenus();
     } // namespace TerrainPreset
-} // namespace AzToolsFramework
+} // namespace Terrain
