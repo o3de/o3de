@@ -551,7 +551,7 @@ namespace UnitTest
             }
 
             auto createResult = prefabPublicHandler->CreateEntity(parentId, AZ::Vector3::CreateZero());
-            EXPECT_NO_FATAL_FAILURE(createResult.IsSuccess()) << "Failed to create editor entity " << name;
+            AZ_Error("CreateDefaultEditorEntity", entity, "Failed to create entity for test %s - CreateEntity failed", name)
             if (createResult.IsSuccess())
             {
                 entityId = createResult.GetValue();
@@ -562,17 +562,19 @@ namespace UnitTest
             }
 
             entity = GetEntityById(entityId);
-            EXPECT_NO_FATAL_FAILURE(entity) << "Failed to create entity for test" << name;
-            if (entity)
+            AZ_Error("CreateDefaultEditorEntity", entity, "Failed to create entity for test %s - Could not GetEntityById", name);
+            if (!entity)
             {
-                entity->Deactivate();
-                entity->SetName(name);
-                EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
-                entity->Activate();
-
-                AzToolsFramework::ScopedUndoBatch undoBatch("Create and configure entity");
-                prefabPublicHandler->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, undoBatch.GetUndoBatch());
+                return AZ::EntityId();
             }
+
+            entity->Deactivate();
+            entity->SetName(name);
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+            entity->Activate();
+
+            AzToolsFramework::ScopedUndoBatch undoBatch("Create and configure entity");
+            prefabPublicHandler->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, undoBatch.GetUndoBatch());
 
             // Don't keep the entities selected (which is the default for "create new entity" in editor.
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{});
