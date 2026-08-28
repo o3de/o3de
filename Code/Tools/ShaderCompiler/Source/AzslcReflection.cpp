@@ -667,11 +667,11 @@ namespace AZ::ShaderCompiler
 
             auto semantic = m_ir->GetSymbolSubAs<ClassInfo>(srgInfo->m_semantic->GetName())->Get<SRGSemanticInfo>();
 
-            srgLayout["bindingSlot"] = *semantic->m_frequencyId; // Semantic check has asserted that we have it, so we can dereference here.
+            srgLayout["bindingSlot"] = static_cast<Json::Value::Int64>(*semantic->m_frequencyId); // Semantic check has asserted that we have it, so we can dereference here.
 
             if (srgInfo->m_shaderVariantFallback)
             {
-                srgLayout["fallbackSize"] = *semantic->m_variantFallback;
+                srgLayout["fallbackSize"] = static_cast<Json::Value::Int64>(*semantic->m_variantFallback);
                 srgLayout["fallbackName"] = srgInfo->m_shaderVariantFallback->GetNameLeaf();
             }
 

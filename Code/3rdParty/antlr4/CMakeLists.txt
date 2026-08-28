@@ -22,6 +22,7 @@ file(COPY "${antlr4_runtime_source_dir}/"
     FILES_MATCHING PATTERN "*.h"
 )
 
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 o3de_disable_warnings()
@@ -34,10 +35,9 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             ANTLR4CPP_STATIC
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Threads::Threads
 )
+
+target_link_libraries(antlr4 PUBLIC Threads::Threads)
 
 target_include_directories(antlr4 SYSTEM
     PRIVATE "${antlr4_runtime_source_dir}"
