@@ -8,10 +8,10 @@
 
 #include <AzToolsFramework/UI/EntityPresets/EntityPresetMenu.h>
 #include <AzToolsFramework/Entity/EntityPresets/EntityPresets.h>
-#include <AzToolsFramework/UI/EntityPresets/TerrainPreset.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/sort.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
@@ -34,32 +34,8 @@ namespace AzToolsFramework
     {
         namespace
         {
-            //! Terrain is not an ordinary preset - it is hand-written because it touches the level
-            //! entity and builds a multi-entity hierarchy - so it is registered separately and sits
-            //! in its own submenu alongside the data-driven ones.
-            struct TerrainVariantAction
-            {
-                const char* m_identifier;
-                const char* m_name;
-                const char* m_description;
-                TerrainPreset::Variant m_variant;
-            };
-
-            //! Ordered as a progression - each builds on the one above - so the list reads as
-            //! "how much do I want" rather than as three unrelated options.
-            constexpr TerrainVariantAction TerrainVariants[] = {
-                { "o3de.action.editor.entityPreset.terrain.simple", "Simple Terrain",
-                  "A terrain region with noise driving its height. The quickest way to have ground.",
-                  TerrainPreset::Variant::Simple },
-                { "o3de.action.editor.entityPreset.terrain.landscape", "Landscape Terrain",
-                  "The same terrain under a Landscape Canvas entity, so the whole setup opens as a "
-                  "node graph.",
-                  TerrainPreset::Variant::Landscape },
-                { "o3de.action.editor.entityPreset.terrain.vegetation", "Landscape Terrain + Vegetation",
-                  "Landscape terrain plus a vegetation area and the level's vegetation settings. Add a "
-                  "mesh to its Vegetation Asset List to see anything planted.",
-                  TerrainPreset::Variant::LandscapeWithVegetation },
-            };
+            //! Where uncategorised presets land.
+            constexpr const char* OtherCategory = "Other";
 
             //! Where the presets submenu sits in the context menus. High so it lands below the
             //! stock entries rather than above Create Entity.
@@ -122,8 +98,17 @@ namespace AzToolsFramework
                     Slug(category);
             }
 
-            //! Categories in the order they first appear in the preset list, so built-ins keep the
-            //! order they are declared in and user categories follow.
+            //! Categories in alphabetical order, with "Other" last.
+            //!
+            //! Alphabetical because there is nothing else left to order by. Presets now arrive from
+            //! whichever gems happen to be enabled, in whatever order VisitActiveGems returns them,
+            //! so first-appearance order stopped carrying meaning the moment the compiled-in table
+            //! was emptied - it just made the menu depend on the gem list. Alphabetical at least
+            //! makes a category's position predictable from its name.
+            //!
+            //! Order *within* a category is deliberately left alone: that one is authored. A gem
+            //! groups its presets on purpose - the light types read as a progression rather than an
+            //! alphabet - and sorting them would throw that away.
             AZStd::vector<AZStd::string> OrderedCategories()
             {
                 AZStd::vector<AZStd::string> categories;
@@ -131,26 +116,30 @@ namespace AzToolsFramework
 
                 for (const EntityPresets::Preset& preset : EntityPresets::All())
                 {
-                    const AZStd::string category = preset.m_category.empty() ? AZStd::string("Other") : preset.m_category;
+                    const AZStd::string category = preset.m_category.empty() ? AZStd::string(OtherCategory) : preset.m_category;
                     if (seen.insert(category).second)
                     {
                         categories.push_back(category);
                     }
                 }
 
+                AZStd::sort(
+                    categories.begin(), categories.end(),
+                    [](const AZStd::string& lhs, const AZStd::string& rhs)
+                    {
+                        // "Other" is the bucket for presets that named no category, so it belongs
+                        // after the real ones rather than sorted in among them.
+                        if ((lhs == OtherCategory) != (rhs == OtherCategory))
+                        {
+                            return rhs == OtherCategory;
+                        }
+
+                        return azstricmp(lhs.c_str(), rhs.c_str()) < 0;
+                    });
+
                 return categories;
             }
         } // namespace
-
-        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> TerrainActions()
-        {
-            AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> actions;
-            for (const TerrainVariantAction& terrain : TerrainVariants)
-            {
-                actions.emplace_back(terrain.m_name, terrain.m_identifier);
-            }
-            return actions;
-        }
 
         AZStd::string ActionIdentifierFor(const EntityPresets::Preset& preset)
         {
@@ -184,8 +173,9 @@ namespace AzToolsFramework
 
                 ActionProperties properties;
                 properties.m_name = preset.m_name;
-                properties.m_description =
-                    AZStd::string("Create an entity from the '") + preset.m_name + "' preset.";
+                properties.m_description = preset.m_description.empty()
+                    ? AZStd::string("Create an entity from the '") + preset.m_name + "' preset."
+                    : preset.m_description;
                 properties.m_category = "Entity Presets";
 
                 // Captured by name rather than by value: presets can be edited in the panel while
@@ -211,24 +201,6 @@ namespace AzToolsFramework
                     });
 
                 RegisteredActionIdentifiers().push_back(identifier);
-            }
-
-            for (const TerrainVariantAction& terrain : TerrainVariants)
-            {
-                if (actionManager->IsActionRegistered(terrain.m_identifier))
-                {
-                    continue;
-                }
-
-                ActionProperties properties;
-                properties.m_name = terrain.m_name;
-                properties.m_description = terrain.m_description;
-                properties.m_category = "Entity Presets";
-
-                const TerrainPreset::Variant variant = terrain.m_variant;
-                actionManager->RegisterAction(
-                    EditorIdentifiers::MainWindowActionContextIdentifier, terrain.m_identifier, properties,
-                    [variant]() { TerrainPreset::Create(variant); });
             }
 
             // The way in to the preset manager. Without it the user presets are only reachable by
@@ -272,14 +244,6 @@ namespace AzToolsFramework
                 menuManager->RegisterMenu(EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, properties);
             }
 
-            if (!menuManager->IsMenuRegistered(EntityPresetsIdentifiers::EntityPresetsTerrainMenuIdentifier))
-            {
-                MenuProperties terrainProperties;
-                terrainProperties.m_name = "Terrain";
-                menuManager->RegisterMenu(
-                    EntityPresetsIdentifiers::EntityPresetsTerrainMenuIdentifier, terrainProperties);
-            }
-
             RegisteredCategoryMenus().clear();
 
             for (const AZStd::string& category : OrderedCategories())
@@ -312,7 +276,7 @@ namespace AzToolsFramework
 
             for (const EntityPresets::Preset& preset : EntityPresets::All())
             {
-                const AZStd::string category = preset.m_category.empty() ? AZStd::string("Other") : preset.m_category;
+                const AZStd::string category = preset.m_category.empty() ? AZStd::string(OtherCategory) : preset.m_category;
                 const AZStd::string menuIdentifier = CategoryMenuIdentifierFor(category);
 
                 int& sortKey = nextSortKey[menuIdentifier];
@@ -321,38 +285,32 @@ namespace AzToolsFramework
                 menuManager->AddActionToMenu(menuIdentifier, ActionIdentifierFor(preset), sortKey);
             }
 
-            int categorySortKey = 0;
+            int categorySortKey = EntityPresetsIdentifiers::EntityPresetsCategorySortKeyStart;
             for (const AZStd::string& identifier : RegisteredCategoryMenus())
             {
-                categorySortKey += 100;
                 menuManager->AddSubMenuToMenu(
                     EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, identifier, categorySortKey);
+                categorySortKey += EntityPresetsIdentifiers::EntityPresetsCategorySortKeyStep;
             }
 
-            // Terrain sits at the bottom of the root menu, below the category submenus, separated
-            // because it builds something level-scoped rather than an ordinary entity.
-            int terrainSortKey = 0;
-            for (const TerrainVariantAction& terrain : TerrainVariants)
-            {
-                terrainSortKey += 100;
-                menuManager->AddActionToMenu(
-                    EntityPresetsIdentifiers::EntityPresetsTerrainMenuIdentifier, terrain.m_identifier,
-                    terrainSortKey);
-            }
-
+            // A separator ahead of the gem band, so whatever a gem hangs here reads as its own
+            // group rather than as one more category. Placed by the published constant rather than
+            // relative to the last category, because that is exactly what makes the band usable
+            // from outside: a gem cannot know how many categories were loaded.
             menuManager->AddSeparatorToMenu(
-                EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, categorySortKey + 50);
-            menuManager->AddSubMenuToMenu(
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier,
-                EntityPresetsIdentifiers::EntityPresetsTerrainMenuIdentifier, categorySortKey + 100);
+                EntityPresetsIdentifiers::EntityPresetsGemSortKeyStart - 1);
 
             // Last, under its own separator: it manages the list rather than creating anything, so
             // it should not sit among the things that do.
             menuManager->AddSeparatorToMenu(
-                EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, categorySortKey + 150);
+                EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier,
+                EntityPresetsIdentifiers::EntityPresetsManageSortKey - 1);
             menuManager->AddActionToMenu(
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier,
-                EntityPresetsIdentifiers::EntityPresetsManageActionIdentifier, categorySortKey + 200);
+                EntityPresetsIdentifiers::EntityPresetsManageActionIdentifier,
+                EntityPresetsIdentifiers::EntityPresetsManageSortKey);
+
 
             // Both places you would right click when you want to make something.
             menuManager->AddSubMenuToMenu(

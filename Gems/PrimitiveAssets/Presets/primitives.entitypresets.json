@@ -1,0 +1,57 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Box 1x1",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/_primitives/_box_1x1.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Sphere 1x1",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/_primitives/_sphere_1x1.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Cylinder 1x1",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/_primitives/_cylinder_1x1.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

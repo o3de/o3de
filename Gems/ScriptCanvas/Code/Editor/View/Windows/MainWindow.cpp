@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QProgressDialog>
+#include <QTimer>
 #include <QToolButton>
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
@@ -477,10 +478,16 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
-        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-        {
-            hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
-        }
+        QTimer::singleShot(
+            0,
+            this,
+            [this]()
+            {
+                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                {
+                    hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
+                }
+            });
         
         // Custom Actions
         {

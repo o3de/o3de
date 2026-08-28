@@ -172,6 +172,17 @@ namespace AzToolsFramework
 
         {
             auto* row = new QHBoxLayout();
+            row->addWidget(new QLabel(QStringLiteral("Description"), this));
+            m_descriptionEdit = new QLineEdit(ToQString(preset.m_description), this);
+            m_descriptionEdit->setPlaceholderText(
+                QStringLiteral("Shown as the menu tooltip - say what it makes, and anything the user "
+                               "still has to do themselves"));
+            row->addWidget(m_descriptionEdit);
+            layout->addLayout(row);
+        }
+
+        {
+            auto* row = new QHBoxLayout();
             row->addWidget(new QLabel(QStringLiteral("Category"), this));
 
             m_categoryCombo = new QComboBox(this);
@@ -194,6 +205,23 @@ namespace AzToolsFramework
 
             row->addWidget(m_categoryCombo);
             layout->addLayout(row);
+        }
+
+        m_levelComponents = preset.m_levelComponents;
+        if (!m_levelComponents.empty())
+        {
+            QStringList names;
+            for (const EntityPresets::ComponentSpec& component : m_levelComponents)
+            {
+                names.append(ToQString(component.m_componentName));
+            }
+
+            // Worth saying out loud: these are added to the level entity, not to the new entity, so
+            // they do not appear in the tree below and their absence there is not a mistake.
+            auto* levelLabel = new QLabel(
+                QStringLiteral("Level components: %1").arg(names.join(QStringLiteral(", "))), this);
+            levelLabel->setEnabled(false);
+            layout->addWidget(levelLabel);
         }
 
         auto* hint = new QLabel(
@@ -372,8 +400,10 @@ namespace AzToolsFramework
     {
         EntityPresets::Preset preset;
         preset.m_name = ToAZString(m_nameEdit->text().trimmed());
+        preset.m_description = ToAZString(m_descriptionEdit->text().trimmed());
         preset.m_category = ToAZString(m_categoryCombo->currentText().trimmed());
-        preset.m_builtIn = false;
+        preset.m_levelComponents = m_levelComponents;
+        preset.m_readOnly = false;
 
         for (int componentIndex = 0; componentIndex < m_tree->topLevelItemCount(); ++componentIndex)
         {
@@ -427,8 +457,8 @@ namespace AzToolsFramework
 
         auto* info = new QLabel(
             QStringLiteral("Presets appear under Create Preset in the viewport and Entity Outliner "
-                           "right-click menus. Built-in presets and those shipped by gems cannot be "
-                           "changed — duplicate one to make an editable copy."),
+                           "right-click menus. Presets shipped by gems cannot be changed — duplicate "
+                           "one to make an editable copy that is saved with this project."),
             this);
         info->setWordWrap(true);
         layout->addWidget(info);
@@ -497,7 +527,7 @@ namespace AzToolsFramework
         for (const EntityPresets::Preset& preset : EntityPresets::BuiltIn())
         {
             auto* item = new QListWidgetItem(
-                QStringLiteral("%1  —  %2  (built-in)")
+                QStringLiteral("%1  —  %2  (engine)")
                     .arg(ToQString(preset.m_category), ToQString(preset.m_name)),
                 m_list);
             item->setForeground(readOnlyBrush);
@@ -536,7 +566,7 @@ namespace AzToolsFramework
     {
         const int row = m_list->currentRow();
 
-        // Read-only rows come first - built-ins, then whatever the enabled gems ship - and
+        // Read-only rows come first - compiled-in, then whatever the enabled gems ship - and
         // anything past them indexes into the user list.
         const int readOnlyCount = aznumeric_cast<int>(EntityPresets::BuiltIn().size()) +
             aznumeric_cast<int>(EntityPresets::FromGems().size());
@@ -557,7 +587,7 @@ namespace AzToolsFramework
 
         m_editButton->setEnabled(userSelected);
         m_removeButton->setEnabled(userSelected);
-        // Duplicating a built-in is the supported way to start from one, so this stays enabled for
+        // Duplicating a shipped preset is the supported way to start from one, so this stays enabled for
         // any selection.
         m_duplicateButton->setEnabled(anySelected);
     }
@@ -619,7 +649,7 @@ namespace AzToolsFramework
 
         // The copy is the user's, wherever it came from - editable, saved to the project, and no
         // longer tied to the gem that may have supplied the original.
-        source.m_builtIn = false;
+        source.m_readOnly = false;
         source.m_sourceGem.clear();
         source.m_name += " Copy";
 

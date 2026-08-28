@@ -32,9 +32,11 @@ namespace AzToolsFramework
     //! volume with exposure control on it" - one click instead of create-entity then hunt for the
     //! components then set the two properties that make it useful.
     //!
-    //! Presets are **data**, not code. The built-in set is compiled in and read-only; anything the
-    //! user adds lives in a JSON file inside the project, so presets travel with the project and
-    //! can be committed and shared rather than being stuck on one machine.
+    //! Presets are **data**, not code. Almost all of them are shipped by gems, as JSON inside the
+    //! gem that owns the components they name, so a preset appears exactly when what it builds is
+    //! available and goes away with its gem. Anything the user adds lives in a JSON file inside the
+    //! project, so their presets travel with the project and can be committed and shared rather
+    //! than being stuck on one machine.
     namespace EntityPresets
     {
         //! A value to write into a component property.
@@ -96,21 +98,46 @@ namespace AzToolsFramework
             AZ_TYPE_INFO(Preset, "{92BD5109-4C04-4E10-844D-2B3F1C387AF9}");
 
             AZStd::string m_name;
+
+            //! One line saying what this makes, and anything the user has to do themselves.
+            //!
+            //! Becomes the action's tooltip in the menu, so it is where a caveat belongs - a preset
+            //! that only does half a job on its own can say so at the point someone is about to
+            //! pick it. Optional; a generic description is used when it is empty.
+            AZStd::string m_description;
+
             //! Groups presets into submenus. Free text; anything sharing a category groups together.
             AZStd::string m_category;
             AZStd::vector<ComponentSpec> m_components;
 
-            //! Not editable here - either compiled in, or owned by a gem. Only user presets are
-            //! written back to the project's JSON file.
+            //! Components ensured on the *level* entity before the new entity is built.
+            //!
+            //! Some setups need a level-scoped singleton to do anything at all: a vegetation area
+            //! plants nothing without the level's Vegetation System Settings, terrain renders
+            //! nothing without Terrain World. That does not fit "an entity with these components on
+            //! it", and having no way to express it is one of the reasons the terrain preset had to
+            //! be written by hand.
+            //!
+            //! Added only when absent, so triggering a preset twice does not stack duplicates on
+            //! the level, and two presets naming the same level component agree rather than fight.
+            AZStd::vector<ComponentSpec> m_levelComponents;
+
+            //! Not the user's to change: either compiled in, or owned by a gem. Only user presets
+            //! are written back to the project's JSON file.
+            //!
+            //! Named for what it means rather than where it came from. It is true for gem presets
+            //! as well as compiled-in ones, and the distinction that matters to every caller is
+            //! whether editing is possible - not which of the two read-only sources it was. Use
+            //! m_sourceGem to tell those apart; it is empty only for the compiled-in ones.
             //!
             //! Deliberately not reflected: it describes where this preset came from at runtime, not
             //! anything that belongs in a file. A preset read from the project file is a user preset
             //! by definition, and one read from a gem is not, so both are set by the loader.
-            bool m_builtIn = false;
+            bool m_readOnly = false;
 
-            //! Name of the gem that supplied it, empty for built-ins and user presets. Shown in the
+            //! Name of the gem that supplied it, empty for compiled-in and user presets. Shown in the
             //! manager so it is obvious where a preset came from and why it cannot be edited.
-            //! Not reflected, for the same reason as m_builtIn.
+            //! Not reflected, for the same reason as m_readOnly.
             AZStd::string m_sourceGem;
         };
 
@@ -132,7 +159,7 @@ namespace AzToolsFramework
         //! The compiled-in presets. Always available, never written to disk.
         AZTF_API const AZStd::vector<Preset>& BuiltIn();
 
-        //! Presets shipped by whichever gems are enabled, from each gem's Presets/*.json.
+        //! Presets shipped by whichever gems are enabled, from each gem's Presets/*.entitypresets.json.
         //!
         //! A gem that introduces components is the thing best placed to say how they are usually
         //! assembled - the terrain gem knows what a terrain needs, the PhysX gem knows what a rigid
@@ -143,7 +170,7 @@ namespace AzToolsFramework
         //! time it updated. Duplicate one to get an editable copy.
         AZTF_API const AZStd::vector<Preset>& FromGems();
 
-        //! Built-ins, then gem-provided, then the user's own - the order they appear in menus.
+        //! Compiled-in, then gem-provided, then the user's own - the order they appear in menus.
         AZTF_API const AZStd::vector<Preset>& All();
 
         //! User presets only, as loaded from the project file.

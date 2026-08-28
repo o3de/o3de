@@ -1,0 +1,40 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Vegetation Area",
+                "description": "Scatters on terrain. To scatter on other meshes, give them a Mesh Surface Tag Emitter and match its tag in the spawner's surface filter. Add a mesh or prefab to the Vegetation Asset List before anything appears.",
+                "category": "Vegetation",
+                "levelComponents": [
+                    {
+                        "component": "Vegetation System Settings",
+                        "properties": [
+                            {
+                                "path": "Configuration|Area System Settings|Sector Point Snap Mode",
+                                "type": "int",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "components": [
+                    {
+                        "component": "Box Shape",
+                        "properties": []
+                    },
+                    {
+                        "component": "Vegetation Layer Spawner",
+                        "properties": []
+                    },
+                    {
+                        "component": "Vegetation Asset List",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

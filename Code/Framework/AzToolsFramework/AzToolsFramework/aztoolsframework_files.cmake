@@ -1072,10 +1072,10 @@ set(FILES
     UI/EntityPresets/EntityPresetMenu.cpp
     UI/EntityPresets/EntityPresetsIntegrationManager.h
     UI/EntityPresets/EntityPresetsIntegrationManager.cpp
+    UI/EntityPresets/PresetRequirements.h
+    UI/EntityPresets/PresetRequirements.cpp
     UI/EntityPresets/PresetEditorDialog.h
     UI/EntityPresets/PresetEditorDialog.cpp
-    UI/EntityPresets/TerrainPreset.h
-    UI/EntityPresets/TerrainPreset.cpp
     UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h

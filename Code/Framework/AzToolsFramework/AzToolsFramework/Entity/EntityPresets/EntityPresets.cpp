@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
@@ -32,6 +33,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Entity/EditorEntityAPIBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -47,6 +51,11 @@ namespace AzToolsFramework
             //! Where a gem keeps the presets it ships. Its own folder rather than Registry/,
             //! because these are content the gem author authored, not machine-written settings.
             constexpr const char* GemPresetsFolder = "Presets";
+
+            //! Only files named <something>.entitypresets.json are read. A bare *.json filter
+            //! would claim every JSON file a gem happens to keep in that folder, so the suffix is
+            //! what makes the folder shareable rather than owned by this feature.
+            constexpr const char* GemPresetsFileFilter = "*.entitypresets.json";
 
             //! Cached so menus and the panel are looking at the same list, and so the file is not
             //! re-read every time the context menu opens.
@@ -122,7 +131,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            //! Read every *.json under a gem's Presets folder.
+            //! Read every *.entitypresets.json under a gem's Presets folder.
             //!
             //! One file may hold many presets, in the same shape as the project's own file, so a gem
             //! can either group them or keep one per file - whichever suits it.
@@ -136,7 +145,7 @@ namespace AzToolsFramework
                 }
 
                 fileIO->FindFiles(
-                    folderPath.c_str(), "*.json",
+                    folderPath.c_str(), GemPresetsFileFilter,
                     [&gemName, &out](const char* filePath)
                     {
                         PresetFile file;
@@ -151,7 +160,7 @@ namespace AzToolsFramework
 
                                 // Marked as not-editable and tagged with its origin. Both matter in
                                 // the manager: one greys out Edit, the other explains why.
-                                preset.m_builtIn = true;
+                                preset.m_readOnly = true;
                                 preset.m_sourceGem = gemName;
                                 out.push_back(AZStd::move(preset));
                             }
@@ -291,6 +300,101 @@ namespace AzToolsFramework
                     AZ_Warning("EntityPresets", false, "    %s", path.c_str());
                 }
             }
+            //! Level components are registered against the Level entity type rather than Game, so
+            //! the ordinary lookup does not find them. Game is tried too, because a few components
+            //! are offered for both.
+            AZ::Uuid FindLevelComponentTypeId(const AZStd::string& componentName)
+            {
+                static AZStd::unordered_map<AZStd::string, AZ::Uuid> cache;
+
+                if (const auto found = cache.find(componentName); found != cache.end())
+                {
+                    return found->second;
+                }
+
+                AZ::Uuid typeId = AZ::Uuid::CreateNull();
+                for (const EditorComponentAPIRequests::EntityType entityType :
+                     { EditorComponentAPIRequests::EntityType::Level, EditorComponentAPIRequests::EntityType::Game })
+                {
+                    AZStd::vector<AZ::Uuid> typeIds;
+                    EditorComponentAPIBus::BroadcastResult(
+                        typeIds, &EditorComponentAPIRequests::FindComponentTypeIdsByEntityType,
+                        AZStd::vector<AZStd::string>{ componentName }, entityType);
+
+                    if (!typeIds.empty() && !typeIds.front().IsNull())
+                    {
+                        typeId = typeIds.front();
+                        break;
+                    }
+                }
+
+                cache[componentName] = typeId;
+                return typeId;
+            }
+
+            //! Put the preset's level components on the level entity, skipping any already there.
+            void EnsureLevelComponents(const Preset& preset)
+            {
+                if (preset.m_levelComponents.empty())
+                {
+                    return;
+                }
+
+                AZ::EntityId levelEntityId;
+                ToolsApplicationRequestBus::BroadcastResult(
+                    levelEntityId, &ToolsApplicationRequests::GetCurrentLevelEntityId);
+
+                if (!levelEntityId.IsValid())
+                {
+                    AZ_Warning(
+                        "EntityPresets", false,
+                        "Preset '%s' needs components on the level entity, but no level is open.",
+                        preset.m_name.c_str());
+                    return;
+                }
+
+                for (const ComponentSpec& component : preset.m_levelComponents)
+                {
+                    const AZ::Uuid typeId = FindLevelComponentTypeId(component.m_componentName);
+                    if (typeId.IsNull())
+                    {
+                        AZ_Warning(
+                            "EntityPresets", false,
+                            "Preset '%s' wants the level component '%s', which is not registered - is "
+                            "the gem that provides it enabled?",
+                            preset.m_name.c_str(), component.m_componentName.c_str());
+                        continue;
+                    }
+
+                    bool alreadyPresent = false;
+                    EditorComponentAPIBus::BroadcastResult(
+                        alreadyPresent, &EditorComponentAPIRequests::HasComponentOfType, levelEntityId, typeId);
+
+                    if (alreadyPresent)
+                    {
+                        continue;
+                    }
+
+                    EditorComponentAPIRequests::AddComponentsOutcome outcome = AZ::Failure(AZStd::string());
+                    EditorComponentAPIBus::BroadcastResult(
+                        outcome, &EditorComponentAPIRequests::AddComponentOfType, levelEntityId, typeId);
+
+                    if (!outcome.IsSuccess() || outcome.GetValue().empty())
+                    {
+                        AZ_Warning(
+                            "EntityPresets", false, "Preset '%s' could not add level component '%s': %s",
+                            preset.m_name.c_str(), component.m_componentName.c_str(),
+                            outcome.IsSuccess() ? "no component returned" : outcome.GetError().c_str());
+                        continue;
+                    }
+
+                    const AZ::EntityComponentIdPair added = outcome.GetValue().front();
+                    for (const PropertyAssignment& assignment : component.m_properties)
+                    {
+                        ApplyProperty(added, assignment);
+                    }
+                }
+            }
         } // namespace
 
         void Reflect(AZ::ReflectContext* context)
@@ -310,12 +414,14 @@ namespace AzToolsFramework
                     ->Field("component", &ComponentSpec::m_componentName)
                     ->Field("properties", &ComponentSpec::m_properties);
 
-                // m_builtIn and m_sourceGem are absent by design - see the header.
+                // m_readOnly and m_sourceGem are absent by design - see the header.
                 serializeContext->Class<Preset>()
                     ->Version(1)
                     ->Field("name", &Preset::m_name)
+                    ->Field("description", &Preset::m_description)
                     ->Field("category", &Preset::m_category)
-                    ->Field("components", &Preset::m_components);
+                    ->Field("components", &Preset::m_components)
+                    ->Field("levelComponents", &Preset::m_levelComponents);
 
                 serializeContext->Class<PresetFile>()->Version(1)->Field("presets", &PresetFile::m_presets);
             }
@@ -557,6 +663,10 @@ namespace AzToolsFramework
                 &ToolsApplicationRequests::BeginUndoBatch,
                 (AZStd::string("Create Preset: ") + preset.m_name).c_str());
 
+            // Before the entity, because a level singleton is a prerequisite for it rather than a
+            // part of it - and inside the undo batch, so one Ctrl+Z takes both back.
+            EnsureLevelComponents(preset);
+
             // Put it where the user is looking rather than at the origin. The interaction
             // position accounts for the context menu and cursor, so a preset picked from a right
             // click lands under the cursor; it falls back to the viewport centre otherwise.
@@ -607,6 +717,27 @@ namespace AzToolsFramework
                         ApplyProperty(added, assignment);
                     }
                 }
+
+                // A component whose required services are not met is added *pending* rather than
+                // rejected: the entity looks right in the outliner, the component sits greyed out
+                // in the inspector, and creation reports success. Nothing else reports it, which
+                // is how presets missing a prerequisite went unnoticed for as long as they did.
+                //
+                // Warn rather than repair. Which component satisfies a service is a judgement -
+                // several shapes provide ShapeService - so guessing would sometimes assemble
+                // something the preset author did not mean.
+                AZ::Entity::ComponentArrayType pending;
+                EditorPendingCompositionRequestBus::Event(
+                    entityId, &EditorPendingCompositionRequests::GetPendingComponents, pending);
+
+                for (const AZ::Component* pendingComponent : pending)
+                {
+                    AZ_Warning(
+                        "EntityPresets", false,
+                        "Preset '%s' left '%s' inactive: it requires a component the preset does not "
+                        "add. Add the missing component to the preset.",
+                        preset.m_name.c_str(), GetFriendlyComponentName(pendingComponent).c_str());
+                }
             }
             else
             {
@@ -615,6 +746,19 @@ namespace AzToolsFramework
             }
 
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::EndUndoBatch);
+
+            // Open the outliner's rename box on the new entity. A preset's name says what the
+            // entity is made of, hardly ever what this particular one is for, so it gets renamed
+            // almost every time - this saves hunting it down in the outliner and double clicking.
+            //
+            // Deliberately after the batch closes: renaming is its own undoable step, and starting
+            // it inside the batch would fold the typed name into the creation, so one Ctrl+Z would
+            // undo both and a second would be needed to get back to before the preset.
+            if (entityId.IsValid())
+            {
+                EntityOutlinerRequestBus::Broadcast(
+                    &EntityOutlinerRequests::TriggerRenameEntityUi, entityId);
+            }
 
             return entityId;
         }
