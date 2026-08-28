@@ -158,6 +158,11 @@ namespace AzToolsFramework
 
         void ViewportSnapper::SetSnapMode(const SnapMode mode)
         {
+            if (m_mode == mode)
+            {
+                return;
+            }
+
             m_mode = mode;
 
             if (m_mode == SnapMode::Off)
@@ -165,6 +170,8 @@ namespace AzToolsFramework
                 // Do not hold mesh caches while the feature is off.
                 m_visibleGeometrySource.Clear();
             }
+
+            ViewportSnappingNotificationBus::Broadcast(&ViewportSnappingNotifications::OnSnapModeChanged, m_mode);
         }
 
         bool ViewportSnapper::IsSnappingEnabled() const

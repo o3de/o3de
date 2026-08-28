@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ViewportSnapping/ViewportSnapSourceBus.h>
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -93,6 +94,19 @@ namespace AzToolsFramework
             Face,
             FaceCenter
         };
+
+        class ViewportSnappingNotifications : public AZ::EBusTraits
+        {
+        public:
+            virtual void OnSnapModeChanged([[maybe_unused]] SnapMode mode)
+            {
+            }
+
+        protected:
+            ~ViewportSnappingNotifications() = default;
+        };
+
+        using ViewportSnappingNotificationBus = AZ::EBus<ViewportSnappingNotifications>;
 
         //! Editor-wide geometry snapping service.
         //!
