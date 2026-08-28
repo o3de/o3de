@@ -551,20 +551,20 @@ namespace UnitTest
             }
 
             auto createResult = prefabPublicHandler->CreateEntity(parentId, AZ::Vector3::CreateZero());
-            AZ_Error("CreateDefaultEditorEntity", entity, "Failed to create entity for test %s - CreateEntity failed", name)
             if (createResult.IsSuccess())
             {
                 entityId = createResult.GetValue();
             }
             else
             {
+                AZ_Error("CreateDefaultEditorEntity", false, "Failed to create entity %s for test - Prefab CreateEntity failed", name)
                 return AZ::EntityId();
             }
 
             entity = GetEntityById(entityId);
-            AZ_Error("CreateDefaultEditorEntity", entity, "Failed to create entity for test %s - Could not GetEntityById", name);
             if (!entity)
             {
+                AZ_Error("CreateDefaultEditorEntity", false, "Failed to create entity %s for test - Could not GetEntityById", name);
                 return AZ::EntityId();
             }
 
