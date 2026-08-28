@@ -90,6 +90,7 @@ namespace PhysX
                         QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal"),
                         QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal elements that specify an inertia tensor; determines the "
                         "torque required to rotate the articulation link on each axis."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetInertiaVisibility)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
