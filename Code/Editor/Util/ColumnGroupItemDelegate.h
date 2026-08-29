@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPITEMDELEGATE_H
-#define COLUMNGROUPITEMDELEGATE_H
+
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -14,11 +14,9 @@ class ColumnGroupItemDelegate
     : public QStyledItemDelegate
 {
 public:
-    ColumnGroupItemDelegate(QObject* parent = 0);
+    ColumnGroupItemDelegate(QObject* parent = nullptr);
 
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
-
-#endif // COLUMNGROUPITEMDELEGATE_H

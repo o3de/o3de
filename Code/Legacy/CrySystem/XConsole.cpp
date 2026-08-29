@@ -159,8 +159,8 @@ int CXConsole::con_restricted = 0;
 CXConsole::CXConsole()
 {
     m_fRepeatTimer = 0;
-    m_pSysDeactivateConsole = 0;
-    m_pImage = NULL;
+    m_pSysDeactivateConsole = nullptr;
+    m_pImage = nullptr;
     m_nCursorPos = 0;
     m_nScrollPos = 0;
     m_nScrollMax = 300;
@@ -173,7 +173,7 @@ CXConsole::CXConsole()
     m_bIsProcessingGroup = false;
     m_bIsConsoleKeyPressed = false;
     m_sdScrollDir = sdNONE;
-    m_pSystem = NULL;
+    m_pSystem = nullptr;
     m_bDrawCursor = true;
     m_fCursorBlinkTimer = 0;
 
@@ -241,7 +241,7 @@ void CXConsole::Release()
 void Command_AuditCVars(IConsoleCmdArgs* pArg)
 {
     CXConsole* pConsole = (CXConsole*)gEnv->pConsole;
-    if (pConsole != NULL)
+    if (pConsole != nullptr)
     {
         pConsole->AuditCVars(pArg);
     }
@@ -552,7 +552,7 @@ ICVar* CXConsole::Register(const char* sName, int* src, int iValue, int nFlags, 
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(int): variable [%s] is already registered", pCVar->GetName());
@@ -578,7 +578,7 @@ ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFla
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::Register(float): variable [%s] is already registered", pCVar->GetName());
@@ -602,7 +602,7 @@ ICVar* CXConsole::Register(const char* sName, const char** src, const char* defa
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::Register(const char*): variable [%s] is already registered", pCVar->GetName());
@@ -625,7 +625,7 @@ ICVar* CXConsole::RegisterString(const char* sName, const char* sValue, int nFla
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterString(const char*): variable [%s] is already registered", pCVar->GetName());
@@ -645,7 +645,7 @@ ICVar* CXConsole::RegisterFloat(const char* sName, float fValue, int nFlags, con
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterFloat(): variable [%s] is already registered", pCVar->GetName());
@@ -665,7 +665,7 @@ ICVar* CXConsole::RegisterInt(const char* sName, int iValue, int nFlags, const c
 {
     AssertName(sName);
 
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, nullptr);
     if (pCVar)
     {
         gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterInt(): variable [%s] is already registered", pCVar->GetName());
@@ -779,7 +779,7 @@ const char* CXConsole::FindKeyBind(const char* sCmd) const
         return it->second.c_str();
     }
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -841,14 +841,14 @@ ICVar* CXConsole::GetCVar(const char* sName)
         }
     */
 
-    return NULL;        // haven't found this name
+    return nullptr;     // haven't found this name
 }
 
 //////////////////////////////////////////////////////////////////////////
 char* CXConsole::GetVariable([[maybe_unused]] const char* szVarName, [[maybe_unused]] const char* szFileName, [[maybe_unused]] const char* def_val)
 {
     assert(m_pSystem);
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -921,7 +921,7 @@ const char* CXConsole::GetHistoryElement(const bool bUpOrDown)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1286,7 +1286,7 @@ void CXConsole::DumpVarsTxt(const bool includeCheat)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::DisplayHelp(const char* help, const char* name)
 {
-    if (help == 0 || *help == 0)
+    if (help == nullptr || *help == 0)
     {
         ConsoleLogInputResponse("No help available for $3%s", name);
     }
@@ -1870,7 +1870,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
         if (bProcessAutoCompl)
         {
-            IConsoleArgumentAutoComplete* pArgumentAutoComplete = stl::find_in_map(m_mapArgumentAutoComplete, sVar, 0);
+            IConsoleArgumentAutoComplete* pArgumentAutoComplete = stl::find_in_map(m_mapArgumentAutoComplete, sVar, nullptr);
             if (pArgumentAutoComplete)
             {
                 int nMatches = pArgumentAutoComplete->GetCount();
@@ -2272,7 +2272,7 @@ void CXConsole::Copy()
         return;
     }
 
-    if (!OpenClipboard(NULL))
+    if (!OpenClipboard(nullptr))
     {
         return;
     }
@@ -2300,7 +2300,7 @@ void CXConsole::Copy()
 void CXConsole::Paste()
 {
 #if defined(AZ_PLATFORM_WINDOWS)
-    if (OpenClipboard(NULL) != 0)
+    if (OpenClipboard(nullptr) != 0)
     {
         AZStd::string data;
         const HANDLE wideData = GetClipboardData(CF_UNICODETEXT);

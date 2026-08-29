@@ -139,7 +139,7 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/ui/canvas-on-mesh/")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
-            editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride,
+            editInfo->DataElement(nullptr, &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride,
                 QT_TRANSLATE_NOOP("LyShine", "Render target override"),
                 QT_TRANSLATE_NOOP("LyShine", "If not empty, this asset overrides the render target set on the UI canvas.\n"
                 "This is useful if multiple instances of the same UI canvas are rendered in the level."));

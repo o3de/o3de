@@ -730,11 +730,12 @@ namespace Audio
             audioFileEntry->m_fileSize,
             audioFileEntry->m_memoryBlockAlignment
         );
+
+        audioFileEntry->m_memoryBlock = nullptr; // <- DeAllocate doesn't set the pointer back to nullptr, thus leaving an dangling pointer instead, this is why fails when you change the g_languageAudio cvar.
         audioFileEntry->m_flags.ClearFlags(eAFF_CACHED | eAFF_REMOVABLE);
         m_currentByteTotal -= audioFileEntry->m_fileSize;
         AZ_Warning("FileCacheManager", audioFileEntry->m_useCount == 0, "Use-count of file '%s' is non-zero while uncaching it! Use Count: %d", audioFileEntry->m_filePath.c_str(), audioFileEntry->m_useCount);
         audioFileEntry->m_useCount = 0;
-
     #if !defined(AUDIO_RELEASE)
         audioFileEntry->m_timeCached = AZStd::chrono::steady_clock::time_point();
     #endif // !AUDIO_RELEASE

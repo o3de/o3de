@@ -170,9 +170,9 @@ namespace
                         {
                             static const int base16 = 16;
                             static const float normalizeRgbMultiplier = 1.0f / 255.0f;
-                            color.SetX(static_cast<float>(AZStd::stoi(colorValue.substr(1, 2), 0, base16)) * normalizeRgbMultiplier);
-                            color.SetY(static_cast<float>(AZStd::stoi(colorValue.substr(3, 2), 0, base16)) * normalizeRgbMultiplier);
-                            color.SetZ(static_cast<float>(AZStd::stoi(colorValue.substr(5, 2), 0, base16)) * normalizeRgbMultiplier);
+                            color.SetX(static_cast<float>(AZStd::stoi(colorValue.substr(1, 2), nullptr, base16)) * normalizeRgbMultiplier);
+                            color.SetY(static_cast<float>(AZStd::stoi(colorValue.substr(3, 2), nullptr, base16)) * normalizeRgbMultiplier);
+                            color.SetZ(static_cast<float>(AZStd::stoi(colorValue.substr(5, 2), nullptr, base16)) * normalizeRgbMultiplier);
                         }
                     }
                     else

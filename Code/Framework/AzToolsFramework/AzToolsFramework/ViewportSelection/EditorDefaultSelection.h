@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
+#include <AzToolsFramework/ViewportSnapping/EntitySnapDragHandler.h>
 
 #include <QWidget>
 
@@ -116,5 +117,7 @@ namespace AzToolsFramework
         ViewportInteraction::MouseInteraction m_currentInteraction; //!< Current mouse interaction to be used for drawing manipulators.
         //! Tracker for activating/deactivating viewport editor modes.
         ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; 
+        //! Applies geometry snapping to transform gizmo drags, and cancels drags on right click.
+        ViewportSnapping::EntitySnapDragHandler m_entitySnapDragHandler;
     };
 } // namespace AzToolsFramework

@@ -42,7 +42,7 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorJointComponent::m_config, QT_TRANSLATE_NOOP("PhysX", "Standard Joint Parameters"), QT_TRANSLATE_NOOP("PhysX", "Joint parameters shared by all joint types."))
+                    ->DataElement(nullptr, &EditorJointComponent::m_config, QT_TRANSLATE_NOOP("PhysX", "Standard Joint Parameters"), QT_TRANSLATE_NOOP("PhysX", "Joint parameters shared by all joint types."))
                     ;
             }
         }

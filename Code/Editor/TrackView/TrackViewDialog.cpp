@@ -50,8 +50,6 @@
 #include "TrackViewFindDlg.h"
 #include "SequenceBatchRenderDialog.h"
 #include "TVCustomizeTrackColorsDlg.h"
-#include "PluginManager.h"
-#include "Util/3DConnexionDriver.h"
 #include "TrackViewNewSequenceDialog.h"
 #include "FBXExporterDialog.h"
 #include "CryEditDoc.h"
@@ -1634,52 +1632,6 @@ bool CTrackViewDialog::event(QEvent* e)
 
     return QMainWindow::event(e);
 }
-
-#if defined(AZ_PLATFORM_WINDOWS)
-bool CTrackViewDialog::nativeEvent(const QByteArray &eventType, void *message, [[maybe_unused]] qintptr *result)
-{
-    /* On Windows, eventType is set to "windows_generic_MSG" for messages sent to toplevel windows, and "windows_dispatcher_MSG" for
-    system - wide messages such as messages from a registered hot key.In both cases, the message can be casted to a MSG pointer.
-    The result pointer is only used on Windows, and corresponds to the LRESULT pointer.*/
-
-    if (eventType == "windows_generic_MSG") {
-        MSG* pMsg = static_cast<MSG*>(message);
-        return processRawInput(pMsg);
-    }
-
-    return false;
-}
-
-bool CTrackViewDialog::processRawInput(MSG* pMsg)
-{
-    if (pMsg->message == WM_INPUT)
-    {
-        static C3DConnexionDriver* p3DConnexionDriver = 0;
-
-        if (!p3DConnexionDriver)
-        {
-            p3DConnexionDriver = (C3DConnexionDriver*)GetIEditor()->GetPluginManager()->GetPluginByGUID("{AD109901-9128-4ffd-8E67-137CB2B1C41B}");
-        }
-        if (p3DConnexionDriver)
-        {
-            S3DConnexionMessage msg;
-            if (p3DConnexionDriver->GetInputMessageData(pMsg->lParam, msg))
-            {
-                if (msg.bGotRotation)
-                {
-                    float fTime = GetIEditor()->GetAnimation()->GetTime();
-                    float fDelta2 = msg.vRotate[2] * 0.1f;
-                    fTime += fDelta2;
-
-                    GetIEditor()->GetAnimation()->SetTime(fTime);
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-#endif
 
 void CTrackViewDialog::OnModeDopeSheet()
 {

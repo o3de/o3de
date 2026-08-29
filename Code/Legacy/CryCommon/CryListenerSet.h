@@ -6,6 +6,7 @@
  *
  */
 
+#pragma once
 
 // Description : A simple, intelligent and efficient container for listeners.
 
@@ -15,10 +16,6 @@
 //               dangling pointers.
 
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H
-#define CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H
-#pragma once
 
 
 #include "Cry_Math.h"
@@ -120,7 +117,7 @@ public:
     inline /*non-virtual*/ ~CListenerSet();
 
     // Appends a listener to the end of the collection. Name is optional but recommended.
-    inline bool Add(T pListener, const char* name = NULL, bool staticName = true);
+    inline bool Add(T pListener, const char* name = nullptr, bool staticName = true);
 
     // Removes a listener from the collection.
     inline void Remove(T pListener);
@@ -158,7 +155,7 @@ private:    // DO NOT REMOVE - following methods only to be accessed only via CN
     {
         ListenerRecord()
             : m_pListener() {}
-        ListenerRecord(T pListener, [[maybe_unused]] const char* szName = NULL)
+        ListenerRecord(T pListener, [[maybe_unused]] const char* szName = nullptr)
             : m_pListener(pListener)
 #ifdef CRY_LISTENERSET_DEBUG
             , m_szName(szName)
@@ -315,7 +312,7 @@ inline void CListenerSet<T>::Remove(T pListener)
         else    // Notification(s) in progress, cannot re-order listeners
         {
             // Mark for cleanup
-            iter->m_pListener = NULL;
+            iter->m_pListener = nullptr;
 
             m_cleanupRequired = true;
             m_freeMemOnCleanup = false;
@@ -535,7 +532,7 @@ ILINE bool CListenerNotifier<T>::IsValid()
         }
     }
 
-    return m_pListener != NULL;
+    return m_pListener != nullptr;
 }
 
 // Dereference current listener, MUST only be done after a call to IsReady().
@@ -565,8 +562,8 @@ template <typename T>
 ILINE void CListenerNotifier<T>::Next()
 {
     size_t index = m_index;
-    typename CListenerSet<T>::ListenerRecord * pNextRecord = NULL;
-    m_pListener = NULL; // Always assume there's no next, let the code below prove otherwise!
+    typename CListenerSet<T>::ListenerRecord * pNextRecord = nullptr;
+    m_pListener = nullptr; // Always assume there's no next, let the code below prove otherwise!
 
     const size_t listenerCount = m_listenerSet.m_listeners.size();
     while (++index < listenerCount)
@@ -600,9 +597,6 @@ inline const char* CListenerNotifier<T>::Name() const
 #ifdef CRY_LISTENERSET_DEBUG
     return m_szName;
 #else
-    return NULL;
+    return nullptr;
 #endif
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYLISTENERSET_H

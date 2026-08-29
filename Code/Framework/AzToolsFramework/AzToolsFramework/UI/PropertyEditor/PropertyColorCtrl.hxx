@@ -56,7 +56,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyColorCtrl, AZ::SystemAllocator);
 
-        PropertyColorCtrl(QWidget* pParent = NULL);
+        PropertyColorCtrl(QWidget* pParent = nullptr);
         virtual ~PropertyColorCtrl();
 
         QColor value() const;

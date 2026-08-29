@@ -526,9 +526,16 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
 
         case QEvent::DynamicPropertyChange:
         {
-            auto styleSheet = StyleManager::styleSheetStyle(spinBox);
-            styleSheet->unpolish(spinBox);
-            styleSheet->polish(spinBox);
+            // ignore properties coming from inside the style sheet system itself, which are all by convention
+            // prefixed with _q_
+            QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+            QString propertyName = QString::fromUtf8(eventFull->propertyName());
+            if (!propertyName.startsWith(QStringLiteral("_q_")))
+            {
+                auto styleSheet = StyleManager::styleSheetStyle(spinBox);
+                styleSheet->unpolish(spinBox);
+                styleSheet->polish(spinBox);
+            }
             break;
         }
 
@@ -1738,69 +1745,9 @@ namespace internal
         QLineEdit::keyPressEvent(ev);
     }
 
-    static void setLineEditTextFormat(QLineEdit* lineEdit, const QList<QTextLayout::FormatRange>& formats)
-    {
-        if (!lineEdit)
-            return;
-
-        QList<QInputMethodEvent::Attribute> attributes;
-        for (const QTextLayout::FormatRange& fr : formats)
-        {
-            QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
-            int start = fr.start;
-            int length = fr.length;
-            QVariant value = fr.format;
-            attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
-        }
-        QInputMethodEvent event(QString(), attributes);
-        QCoreApplication::sendEvent(lineEdit, &event);
-    }
-
-    static void clearLineEditTextFormat(QLineEdit* lineEdit)
-    {
-        setLineEditTextFormat(lineEdit, QList<QTextLayout::FormatRange>());
-    }
-
     void SpinBoxLineEdit::paintEvent(QPaintEvent* event)
     {
-        QAbstractSpinBox* abstractSpinBox = qobject_cast<QAbstractSpinBox*>(parent());
-        QSpinBox* spinBox = reinterpret_cast<QSpinBox*>(abstractSpinBox);
-        bool fixLeftAlignment = !spinBox->property(g_hoveredPropertyName).toBool() && !hasFocus();
-        int suffixSize = static_cast<int>(spinBox->suffix().size());
-        QString beforeText;
-        int cursorPos = 0;
-        if (fixLeftAlignment)
-        {
-            // Reset the cursorposition to ensure left-aligned values
-            cursorPos = cursorPosition();
-            setCursorPosition(0);
-        }
-        if (suffixSize)
-        {
-            QList<QTextLayout::FormatRange> formats;
-            int size = static_cast<int>(text().size());
-
-            QTextCharFormat f;
-            f.setForeground(QColor(0x888888));
-
-            QTextLayout::FormatRange fr_task;
-            fr_task.start = size - suffixSize;
-            fr_task.length = suffixSize;
-            fr_task.format = f;
-
-            formats.append(fr_task);
-
-            setLineEditTextFormat(this, formats);
-        }
         QLineEdit::paintEvent(event);
-        if (suffixSize)
-        {
-            clearLineEditTextFormat(this);
-        }
-        if (fixLeftAlignment)
-        {
-            setCursorPosition(cursorPos);
-        }
     }
 } // namespace internal
 

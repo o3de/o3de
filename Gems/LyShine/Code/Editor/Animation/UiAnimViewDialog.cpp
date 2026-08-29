@@ -34,8 +34,6 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-#include "PluginManager.h"
-#include "Util/3DConnexionDriver.h"
 #include "UiAnimViewNewSequenceDialog.h"
 #include "UiAnimViewCurveEditor.h"
 
@@ -73,7 +71,7 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUiAnimViewDialog* CUiAnimViewDialog::s_pUiAnimViewDialog = NULL;
+CUiAnimViewDialog* CUiAnimViewDialog::s_pUiAnimViewDialog = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 class CUiAnimViewExpanderWatcher
@@ -191,7 +189,7 @@ CUiAnimViewDialog::~CUiAnimViewDialog()
         m_findDlg->deleteLater();
         m_findDlg = nullptr;
     }
-    s_pUiAnimViewDialog = 0;
+    s_pUiAnimViewDialog = nullptr;
 
     const CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
     CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByName(m_currentSequenceName);

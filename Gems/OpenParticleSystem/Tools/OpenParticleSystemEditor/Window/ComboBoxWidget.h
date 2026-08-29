@@ -13,6 +13,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <QComboBox>
+#include <QPushButton>
 #include <Serializer/ParticleSourceData.h>
 #include <ParticleCommonData.h>
 #include <QVBoxLayout>
@@ -29,6 +30,7 @@ namespace OpenParticleSystemEditor
     const QString RENDERER_LABEL = QCoreApplication::translate("ComboBoxWidget", "Renderer");
 
     class AssetWidget;
+    class MaterialPropertyDialog;
 
     using AssetChangeCB = AZStd::function<void(AZ::Data::AssetId)>;
     //! ComboBoxWidget represents a widget that has a drop down combo at the top which lets you select a class of objects
@@ -76,9 +78,21 @@ namespace OpenParticleSystemEditor
         void OnMaterialChanged();
         void OnModelChanged();
         void OnSkeletonModelChanged();
+        // signal that a per-emitter material property override was edited.
+        // editingFinished is false for the intermediate values produced while dragging a control.
+        void OnMaterialPropertiesChanged(bool editingFinished);
 
     private:
         void SetAssetWidgetVisible();
+        // Shows or hides the "Edit Material Properties" button and keeps an open dialog pointed at the
+        // current emitter and material.
+        void RefreshMaterialProperties();
+        // Opens the per-emitter material property dialog, creating it on first use.
+        void OpenMaterialPropertyDialog();
+        // Drops every per-emitter override so the emitter renders with the material asset's own values.
+        void ClearMaterialOverrides();
+        // Cheap enable/disable only - must not touch the dialog, which would rebuild it mid-drag.
+        void UpdateClearOverridesButtonState();
         void InitComboBox();
         void SetUI();
 
@@ -91,8 +105,13 @@ namespace OpenParticleSystemEditor
         QVBoxLayout* m_layout;
         QWidget* m_parent;
         AssetWidget* m_materialAssetWidget = nullptr;
+        QPushButton* m_materialPropertiesButton = nullptr;
+        QPushButton* m_clearOverridesButton = nullptr;
+        MaterialPropertyDialog* m_materialPropertyDialog = nullptr;
         AssetWidget* m_modelAssetWidget = nullptr;
         AssetWidget* m_skeletonModelAssetWidget = nullptr;
+        // Kept so the material property panel can be pointed at the emitter being edited.
+        OpenParticle::ParticleSourceData::DetailInfo* m_detail = nullptr;
         AZStd::vector<AZStd::pair<AZStd::string, QString>> m_locationClasses;
         AZStd::vector<AZStd::pair<AZStd::string, QString>> m_rendererClasses;
     };

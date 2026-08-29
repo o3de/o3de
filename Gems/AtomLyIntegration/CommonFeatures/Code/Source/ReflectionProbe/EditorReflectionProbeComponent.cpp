@@ -211,7 +211,8 @@ namespace AZ
                         m_controller.UpdateCubeMap();
 
                         // update the UI
-                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                        using NotifyBus = AzToolsFramework::ToolsApplicationNotificationBus;
+                        NotifyBus::Broadcast(&NotifyBus::Events::InvalidatePropertyDisplayForComponent, AZ::EntityComponentIdPair(GetEntityId(), GetId()), AzToolsFramework::Refresh_Values);
                     }
                     else if (notificationType == CubeMapAssetNotificationType::Error)
                     {
@@ -339,8 +340,6 @@ namespace AZ
                 configuration.m_bakedCubeMapRelativePath.clear();
             }
 
-            AzToolsFramework::ScopedUndoBatch undoBatch("ReflectionProbe Bake");
-
             AZ::u32 result = RenderCubeMap(
                 [&](RenderCubeMapCallback callback, AZStd::string& relativePath) { m_controller.BakeReflectionProbe(callback, relativePath); },
                 "Baking Reflection Probe...",
@@ -350,14 +349,13 @@ namespace AZ
                 CubeMapCaptureType::Specular,
                 m_bakedCubeMapQualityLevel);
 
+            AzToolsFramework::ScopedUndoBatch undoBatch("CubeMap Render");
+            undoBatch.MarkEntityDirty(GetEntityId());
             // update quality level
             m_controller.m_configuration.m_bakedCubeMapQualityLevel = m_bakedCubeMapQualityLevel;
 
             // update UI cubemap path display
             m_bakedCubeMapRelativePath = configuration.m_bakedCubeMapRelativePath;
-
-            SetDirty();
-
             return result;
         }
     } // namespace Render

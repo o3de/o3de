@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SHARED_MEMORY_H
-#define AZCORE_SHARED_MEMORY_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/parallel/lock.h>
@@ -117,8 +117,3 @@ namespace AZ
         void  Clear();
     };
 }
-
-#endif // AZCORE_SHARED_MEMORY_H
-#pragma once
-
-

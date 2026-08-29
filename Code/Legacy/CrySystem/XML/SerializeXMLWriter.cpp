@@ -55,7 +55,7 @@ bool CSerializeXMLWriterImpl::Value(const char* name, CTimeValue value)
 
 void CSerializeXMLWriterImpl::BeginGroup(const char* szName)
 {
-    if (strchr(szName, ' ') != 0)
+    if (strchr(szName, ' ') != nullptr)
     {
         assert(0 && "Spaces in group name not supported");
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in group name not supported: %s/%s", GetStackInfo().c_str(), szName);

@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_SEQUENCETYPE_H
-#define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_SEQUENCETYPE_H
 #pragma once
 
 enum class SequenceType
@@ -16,5 +13,3 @@ enum class SequenceType
     Legacy                = 0,        // legacy CryEntity Sequence Object
     SequenceComponent     = 1         // Sequence Component on an AZ::Entity
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_SEQUENCETYPE_H

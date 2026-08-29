@@ -6,13 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : Memory block helper used with ZLib
 
 
-#ifndef CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H
-#define CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H
-#pragma once
 #include "RefCountBase.h"
 
 #include "Include/EditorCoreAPI.h"
@@ -69,7 +67,7 @@ public:
     void Serialize(CArchive& ar);
 
     //! Is MemoryBlock is empty.
-    bool IsEmpty() const { return m_buffer == 0; }
+    bool IsEmpty() const { return m_buffer == nullptr; }
 
 private:
     void* m_buffer;
@@ -79,4 +77,3 @@ private:
     //! True if memory block owns its memory.
     bool m_owns;
 };
-#endif // CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H

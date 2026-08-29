@@ -41,10 +41,10 @@ namespace SurfaceData
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceDataColliderConfig::m_providerTags,
+                    ->DataElement(nullptr, &SurfaceDataColliderConfig::m_providerTags,
                         QT_TRANSLATE_NOOP("SurfaceData", "Generated Tags"),
                         QT_TRANSLATE_NOOP("SurfaceData", "Surface tags to add to created points"))
-                    ->DataElement(0, &SurfaceDataColliderConfig::m_modifierTags,
+                    ->DataElement(nullptr, &SurfaceDataColliderConfig::m_modifierTags,
                         QT_TRANSLATE_NOOP("SurfaceData", "Extended Tags"),
                         QT_TRANSLATE_NOOP("SurfaceData", "Surface tags to add to contained points"))
                     ;

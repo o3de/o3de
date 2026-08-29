@@ -30,7 +30,7 @@ namespace Maestro
 
     void CScreenFaderTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
 
         if (keyIndex < 0 || keyIndex >= GetNumKeys())
@@ -204,7 +204,7 @@ namespace Maestro
             PreloadTextures();
             pTexture = GetActiveTexture();
         }
-        return pTexture != 0;
+        return pTexture != nullptr;
     }
 
     static bool ScreenFaderTrackVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)

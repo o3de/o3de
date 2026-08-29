@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Android declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#pragma once
 
 #if defined(__arm__) || defined(__aarch64__)
 #define _CPU_ARM
@@ -168,7 +165,7 @@ extern size_t wcsnlen(const wchar_t* str, size_t maxLen);
 // std::stoull deosn't exist on android, so we need to define it
 namespace std
 {
-    inline unsigned long long stoull(const std::string& str, size_t* idx = 0, int base = 10)
+    inline unsigned long long stoull(const std::string& str, size_t* idx = nullptr, int base = 10)
     {
         const char* start = str.c_str();
         char* end = nullptr;
@@ -180,5 +177,3 @@ namespace std
         return result;
     }
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H

@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <AtomCore/Instance/InstanceData.h>
+#include <OpenParticleSystem/MaterialPropertyOverride.h>
 #include <OpenParticleSystem/ParticleModel.h>
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
@@ -86,12 +87,18 @@ namespace OpenParticle
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_objSrg;
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_matSrg;
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
+        //! Values this emitter overrides on its private copy of the material.
+        MaterialPropertyOverrideMap m_materialOverrides;
         ParticleModel m_model;
         AZ::RPI::Material::ChangeId m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
         AZ::RPI::Scene* m_scene = nullptr;
         AZ::u32 m_sortId = 0;
         bool m_needsPipelineRebuild = false;
-        void Setup(AZ::Data::Asset<AZ::RPI::MaterialAsset>& mat);
+        //! Set when ApplyMaterialOverrides could not compile the material this frame, so it is retried.
+        bool m_needsMaterialOverrideApply = false;
+        void Setup(AZ::Data::Asset<AZ::RPI::MaterialAsset>& mat, const MaterialPropertyOverrideMap& overrides);
+        //! Pushes m_materialOverrides onto m_material and compiles. Returns false if the compile has to be retried.
+        bool ApplyMaterialOverrides();
         void ReBuildPipeline();
         bool TryRebuildPipeline();
         void Reset();

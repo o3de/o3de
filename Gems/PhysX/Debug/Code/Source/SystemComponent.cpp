@@ -41,6 +41,17 @@ namespace PhysXDebug
     namespace Internal
     {
         const AZ::Crc32 VewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
+
+        // Radius of the marker drawn at the center of mass of a body to visualize its sleep state.
+        const float BodyCenterRadius = 0.05f;
+
+        //! Determine if a body is kinematic, in which case the simulation does not manage its sleep state.
+        //! @param rigidBody the body to query.
+        //! @return true if the body is kinematic.
+        bool IsKinematic(const physx::PxRigidBody& rigidBody)
+        {
+            return rigidBody.getRigidBodyFlags().isSet(physx::PxRigidBodyFlag::eKINEMATIC);
+        }
     }
 
     bool UseEditorPhysicsScene()
@@ -55,7 +66,7 @@ namespace PhysXDebug
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<PhysXVisualizationSettings>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("VisualizationEnabled", &PhysXVisualizationSettings::m_visualizationEnabled)
                 ->Field("CollisionShapes", &PhysXVisualizationSettings::m_collisionShapes)
                 ->Field("CollisionFNormals", &PhysXVisualizationSettings::m_collisionFNormals)
@@ -73,7 +84,8 @@ namespace PhysXDebug
                 ->Field("JointLocalFrames", &PhysXVisualizationSettings::m_jointLocalFrames)
                 ->Field("JointLimits", &PhysXVisualizationSettings::m_jointLimits)
                 ->Field("MbpRegions", &PhysXVisualizationSettings::m_mbpRegions)
-                ->Field("ActorAxes", &PhysXVisualizationSettings::m_actorAxes);
+                ->Field("ActorAxes", &PhysXVisualizationSettings::m_actorAxes)
+                ->Field("BodySleepState", &PhysXVisualizationSettings::m_bodySleepState);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -113,6 +125,9 @@ namespace PhysXDebug
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_mbpRegions, QT_TRANSLATE_NOOP("PhysX", "MBP Regions"), QT_TRANSLATE_NOOP("PhysX", "Enable multi box pruning (MBP) regions"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_actorAxes, QT_TRANSLATE_NOOP("PhysX", "Actor Axes"), QT_TRANSLATE_NOOP("PhysX", "Enable actor axes"))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodySleepState,
+                        "Body Sleep State", "Draw the center of each body, green when it is active and red when it is asleep")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                 ;
             }
@@ -278,6 +293,7 @@ namespace PhysXDebug
                 ImGui::Checkbox("Mass Axes", &m_settings.m_bodyMassAxes);
                 ImGui::Checkbox("Linear Velocity", &m_settings.m_bodyLinVelocity);
                 ImGui::Checkbox("Angular Velocity", &m_settings.m_bodyAngVelocity);
+                ImGui::Checkbox("Sleep State", &m_settings.m_bodySleepState);
                 ImGui::EndMenu();
             }
 
@@ -310,6 +326,8 @@ namespace PhysXDebug
                 BuildColorPickingMenuItem("Dark Red", m_colorMappings.m_darkRed);
                 BuildColorPickingMenuItem("Dark Green", m_colorMappings.m_darkGreen);
                 BuildColorPickingMenuItem("Dark Blue", m_colorMappings.m_darkBlue);
+                BuildColorPickingMenuItem("Active Body Center", m_colorMappings.m_bodyActive);
+                BuildColorPickingMenuItem("Sleeping Body Center", m_colorMappings.m_bodySleeping);
 
                 if (ImGui::Button("Reset Color Mappings"))
                 {
@@ -378,6 +396,7 @@ namespace PhysXDebug
         m_settings.m_jointLimits = updatedValue;
         m_settings.m_mbpRegions = updatedValue;
         m_settings.m_actorAxes = updatedValue;
+        m_settings.m_bodySleepState = updatedValue;
 
         ConfigurePhysXVisualizationParameters();
     }
@@ -466,6 +485,10 @@ namespace PhysXDebug
         }
 
         RenderBuffers();
+
+        // Body centers are drawn every tick, independently of the PhysX render buffer, since the sleep
+        // state of a body is not part of the visualization data provided by PhysX.
+        DrawBodyCenters();
     }
 
     AZ::Vector3 GetViewCameraPosition()
@@ -840,6 +863,92 @@ namespace PhysXDebug
         }
     }
 
+    void SystemComponent::DrawBodyCenters()
+    {
+        AZ_PROFILE_FUNCTION(Physics);
+
+        if (!m_settings.m_visualizationEnabled || !m_settings.m_bodySleepState)
+        {
+            return;
+        }
+
+        physx::PxScene* physxScene = GetCurrentPxScene();
+        if (!physxScene)
+        {
+            return;
+        }
+
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, Internal::VewportId);
+        AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (!debugDisplay)
+        {
+            return;
+        }
+
+        PHYSX_SCENE_READ_LOCK(physxScene);
+
+        // The markers are drawn without depth testing, so that the sleep state of a body remains visible
+        // even while the body is occluded by other geometry.
+        debugDisplay->DepthTestOff();
+
+        if (const physx::PxU32 numActors = physxScene->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC); numActors > 0)
+        {
+            m_bodyCenterActors.resize(numActors);
+            physxScene->getActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC, m_bodyCenterActors.data(), numActors);
+
+            for (physx::PxActor* actor : m_bodyCenterActors)
+            {
+                auto* rigidDynamic = static_cast<physx::PxRigidDynamic*>(actor);
+
+                // Kinematic bodies are not simulated, so their sleep state does not carry the same meaning.
+                if (!Internal::IsKinematic(*rigidDynamic))
+                {
+                    DrawBodyCenter(*debugDisplay, *rigidDynamic, rigidDynamic->isSleeping());
+                }
+            }
+        }
+
+        // Articulations are put to sleep as a whole, so all of their links share the sleep state of the articulation.
+        if (const physx::PxU32 numArticulations = physxScene->getNbArticulations(); numArticulations > 0)
+        {
+            m_bodyCenterArticulations.resize(numArticulations);
+            physxScene->getArticulations(m_bodyCenterArticulations.data(), numArticulations);
+
+            for (physx::PxArticulationReducedCoordinate* articulation : m_bodyCenterArticulations)
+            {
+                const bool sleeping = articulation->isSleeping();
+
+                const physx::PxU32 numLinks = articulation->getNbLinks();
+                m_bodyCenterArticulationLinks.resize(numLinks);
+                articulation->getLinks(m_bodyCenterArticulationLinks.data(), numLinks);
+
+                for (physx::PxArticulationLink* link : m_bodyCenterArticulationLinks)
+                {
+                    DrawBodyCenter(*debugDisplay, *link, sleeping);
+                }
+            }
+        }
+
+        debugDisplay->DepthTestOn();
+    }
+
+    void SystemComponent::DrawBodyCenter(
+        AzFramework::DebugDisplayRequests& debugDisplay, const physx::PxRigidBody& rigidBody, bool sleeping)
+    {
+        const physx::PxVec3 centerOfMass = rigidBody.getGlobalPose().transform(rigidBody.getCMassLocalPose().p);
+
+        // Consistent with the culling applied to the PhysX visualization data.
+        if (m_culling.m_enabled && !m_cullingBox.contains(centerOfMass))
+        {
+            return;
+        }
+
+        debugDisplay.SetColor(sleeping ? m_colorMappings.m_bodySleeping : m_colorMappings.m_bodyActive);
+        debugDisplay.DrawBall(PxMathConvert(centerOfMass), Internal::BodyCenterRadius, false);
+    }
+
     AZ::Color SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
     {
         AZ_PROFILE_FUNCTION(Physics);
@@ -892,5 +1001,9 @@ namespace PhysXDebug
         m_colorMappings.m_darkRed.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKRED));
         m_colorMappings.m_darkGreen.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKGREEN));
         m_colorMappings.m_darkBlue.FromU32(static_cast<AZ::u32>(physx::PxDebugColor::eARGB_DARKBLUE));
+
+        // Not PhysX debug colors: the body center is drawn green while the body is active and red once it is asleep.
+        m_colorMappings.m_bodyActive = AZ::Colors::Green;
+        m_colorMappings.m_bodySleeping = AZ::Colors::Red;
     }
 }

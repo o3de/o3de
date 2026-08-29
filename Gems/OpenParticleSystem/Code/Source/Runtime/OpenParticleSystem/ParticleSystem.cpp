@@ -494,7 +494,7 @@ namespace OpenParticle
                 if (it != m_emitterInstances.end())
                 {
                     AZ::Data::Asset<AZ::RPI::MaterialAsset> typedAsset(asset);
-                    it->second.Setup(typedAsset);
+                    it->second.Setup(typedAsset, archive.m_emitterInfos[emitter.first].m_materialOverrides);
 
                     AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
                     if (it->second.m_objSrg != nullptr)
@@ -1045,12 +1045,15 @@ namespace OpenParticle
 
             HandleSkeletonModel(*emitter.second);
             auto& materialAsset = archive.m_emitterInfos[emitter.first].m_material;
+            const auto& materialOverrides = archive.m_emitterInfos[emitter.first].m_materialOverrides;
             if (materialAsset && materialAsset->IsReady())
             {
-                efd.Setup(materialAsset);
+                efd.Setup(materialAsset, materialOverrides);
             }
             else if (materialAsset)
             {
+                // Remember the overrides now so they are applied as soon as OnAssetReady runs Setup.
+                efd.m_materialOverrides = materialOverrides;
                 AZ::Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
             }
 

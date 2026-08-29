@@ -116,12 +116,12 @@ CXmlNode::~CXmlNode()
 }
 
 CXmlNode::CXmlNode()
-    : m_pStringPool(NULL) // must be changed later.
+    : m_pStringPool(nullptr) // must be changed later.
     , m_tag("")
     , m_content("")
-    , m_parent(NULL)
-    , m_pChilds(NULL)
-    , m_pAttributes(NULL)
+    , m_parent(nullptr)
+    , m_pChilds(nullptr)
+    , m_pAttributes(nullptr)
     , m_line(0)
     , m_isProcessingInstruction(false)
 {
@@ -130,9 +130,9 @@ CXmlNode::CXmlNode()
 
 CXmlNode::CXmlNode(const char* tag, bool bReuseStrings, bool bIsProcessingInstruction)
     : m_content("")
-    , m_parent(NULL)
-    , m_pChilds(NULL)
-    , m_pAttributes(NULL)
+    , m_parent(nullptr)
+    , m_pChilds(nullptr)
+    , m_pAttributes(nullptr)
     , m_line(0)
     , m_isProcessingInstruction(bIsProcessingInstruction)
 {
@@ -361,7 +361,7 @@ bool CXmlNode::getAttr(const char* key, unsigned int& value) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = static_cast<unsigned int>(strtoul(svalue, NULL, 10));
+        value = static_cast<unsigned int>(strtoul(svalue, nullptr, 10));
         return true;
     }
     return false;
@@ -561,7 +561,7 @@ XmlNodeRef CXmlNode::findChild(const char* tag) const
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void CXmlNode::removeChild(const XmlNodeRef& node)
@@ -608,7 +608,7 @@ void CXmlNode::addChild(const XmlNodeRef& node)
         m_pChilds = new XmlNodes;
     }
 
-    assert(node != 0);
+    assert(node != nullptr);
     IXmlNode* pNode = ((IXmlNode*)node);
     pNode->AddRef();
     m_pChilds->push_back(pNode);
@@ -795,7 +795,7 @@ void CXmlNode::ReleaseChild(IXmlNode* pChild)
     {
         if (pChild->getParent() == this)      // if check to handle shared children which are supported by the CXmlNode impl
         {
-            pChild->setParent(NULL);
+            pChild->setParent(nullptr);
         }
         pChild->Release();
     }
@@ -1091,7 +1091,7 @@ void XmlParserImp::CleanStack()
     m_nNodeStackTop = 0;
     for (int i = 0, num = static_cast<int>(m_nodeStack.size()); i < num; i++)
     {
-        m_nodeStack[i].node = 0;
+        m_nodeStack[i].node = nullptr;
         m_nodeStack[i].childs.resize(0);
     }
 }
@@ -1134,7 +1134,7 @@ void    XmlParserImp::onStartElement(const char* tagName, const char** atts)
     // Call start element callback.
     int i = 0;
     int numAttrs = 0;
-    while (atts[i] != 0)
+    while (atts[i] != nullptr)
     {
         numAttrs++;
         i += 2;
@@ -1150,7 +1150,7 @@ void    XmlParserImp::onStartElement(const char* tagName, const char** atts)
         XmlAttributes& nodeAtts = *(pCNode->m_pAttributes);
         nodeAtts.resize(numAttrs);
         int nAttr = 0;
-        while (atts[i] != 0)
+        while (atts[i] != nullptr)
         {
             nodeAtts[nAttr].key = AddString(atts[i]);
             nodeAtts[nAttr].value = AddString(atts[i + 1]);
@@ -1180,7 +1180,7 @@ void    XmlParserImp::onEndElement([[maybe_unused]] const char* tagName)
             *currNode->m_pChilds = entry.childs;
         }
         entry.childs.resize(0);
-        entry.node = NULL;
+        entry.node = nullptr;
     }
     m_nNodeStackTop--;
 }
@@ -1212,7 +1212,7 @@ void    XmlParserImp::onRawData(const char* data)
 //////////////////////////////////////////////////////////////////////////
 XmlParserImp::XmlParserImp(bool bReuseStrings)
     : m_nNodeStackTop(0)
-    , m_parser(NULL)
+    , m_parser(nullptr)
     , m_stringPool(bReuseStrings)
 {
     m_nodeStack.resize(32);
@@ -1243,7 +1243,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 void XmlParserImp::ParseBegin(bool bCleanPools)
 {
-    m_root = 0;
+    m_root = nullptr;
     CleanStack();
 
     if (bCleanPools)
@@ -1256,7 +1256,7 @@ void XmlParserImp::ParseBegin(bool bCleanPools)
     memHandler.realloc_fcn = custom_xml_realloc;
     memHandler.free_fcn = custom_xml_free;
 
-    m_parser = XML_ParserCreate_MM(NULL, &memHandler, NULL);
+    m_parser = XML_ParserCreate_MM(nullptr, &memHandler, nullptr);
 
     XML_SetUserData(m_parser, this);
     XML_SetElementHandler(m_parser, startElement, endElement);
@@ -1271,7 +1271,7 @@ void XmlParserImp::ParseEnd()
     {
         XML_ParserFree(m_parser);
     }
-    m_parser = 0;
+    m_parser = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1279,7 +1279,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
 {
     static const char* const errorPrefix = "XML parser: ";
 
-    XmlNodeRef root = 0;
+    XmlNodeRef root = nullptr;
 
     // Let's try to parse the buffer as binary XML
     {
@@ -1298,7 +1298,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
             {
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s%s (data size: %u)", errorPrefix, str, static_cast<unsigned>(bufLen));
             }
-            return 0;
+            return nullptr;
         }
     }
 
@@ -1322,7 +1322,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
             }
         }
 
-        m_root = 0;
+        m_root = nullptr;
         ParseEnd();
     }
 
@@ -1334,14 +1334,14 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 {
     if (!filename)
     {
-        return 0;
+        return nullptr;
     }
 
     static const char* const errorPrefix = "XML reader: ";
 
-    XmlNodeRef root = 0;
+    XmlNodeRef root = nullptr;
 
-    char* pFileContents = 0;
+    char* pFileContents = nullptr;
     size_t fileSize = 0;
 
     char str[1024];
@@ -1357,7 +1357,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             azsprintf(str, "%sCan't open file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-            return 0;
+            return nullptr;
         }
 
         fileSize = xmlFile.GetLength();
@@ -1366,7 +1366,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             azsprintf(str, "%sFile is empty (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-            return 0;
+            return nullptr;
         }
 
         pFileContents = new char[fileSize];
@@ -1375,7 +1375,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             azsprintf(str, "%sCan't allocate %u bytes of memory (%s)", errorPrefix, static_cast<unsigned>(fileSize), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-            return 0;
+            return nullptr;
         }
 
         if (xmlFile.ReadRaw(pFileContents, fileSize) != fileSize)
@@ -1384,7 +1384,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             azsprintf(str, "%sCan't read file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-            return 0;
+            return nullptr;
         }
 
         AZ::IO::FixedMaxPath resolvedPath(AZ::IO::PosixPathSeparator);
@@ -1413,7 +1413,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         azsprintf(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
         errorString = str;
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
-        return 0;
+        return nullptr;
     }
     else
     {
@@ -1447,7 +1447,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         }
 
-        m_root = 0;
+        m_root = nullptr;
         ParseEnd();
     }
 
@@ -1510,7 +1510,7 @@ void CXmlNodeReuse::Release()
 CXmlNodePool::CXmlNodePool(unsigned int nBlockSize, bool bReuseStrings)
 {
     m_pStringPool = new CXmlStringPool(bReuseStrings);
-    assert(m_pStringPool != 0);
+    assert(m_pStringPool != nullptr);
 
     // in order to avoid memory fragmentation
     // allocates 1Mb buffer for shared string pool
@@ -1532,7 +1532,7 @@ CXmlNodePool::~CXmlNodePool()
 
 XmlNodeRef CXmlNodePool::GetXmlNode(const char* sNodeName)
 {
-    CXmlNodeReuse* pNode = 0;
+    CXmlNodeReuse* pNode = nullptr;
 
     // NOTE: at the moment xml node pool is dedicated for statistics nodes only
 
@@ -1554,7 +1554,7 @@ XmlNodeRef CXmlNodePool::GetXmlNode(const char* sNodeName)
         // there is no free nodes so create new one
         // later it will be reused as soon as no external references left
         pNode = new CXmlNodeReuse(sNodeName, this);
-        assert(pNode != 0);
+        assert(pNode != nullptr);
 
         // increase ref counter for reusing node later
         pNode->AddRef();

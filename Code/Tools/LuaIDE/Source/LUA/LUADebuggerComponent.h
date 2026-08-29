@@ -6,15 +6,12 @@
  *
  */
 
-#ifndef LUADEBUGGER_COMPONENT_H
-#define LUADEBUGGER_COMPONENT_H
+#pragma once
 
 #include "LUAEditorDebuggerMessages.h"
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-
-#pragma once
 
 namespace LUADebugger
 {
@@ -100,5 +97,3 @@ namespace LUADebugger
         AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 };
-
-#endif

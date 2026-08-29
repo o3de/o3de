@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H
-#define CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H
 #pragma once
 
 #include <QWidget>
@@ -149,6 +146,3 @@ private:
 
     UpdateCallback m_updateCallback;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H

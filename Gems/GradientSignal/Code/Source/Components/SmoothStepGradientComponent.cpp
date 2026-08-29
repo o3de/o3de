@@ -63,9 +63,9 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SmoothStepGradientConfig::m_smoothStep, QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step"), QT_TRANSLATE_NOOP("GradientSignal", "Parameters for controlling the smooth-step curve."))
+                    ->DataElement(nullptr, &SmoothStepGradientConfig::m_smoothStep, QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step"), QT_TRANSLATE_NOOP("GradientSignal", "Parameters for controlling the smooth-step curve."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(0, &SmoothStepGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed."))
+                    ->DataElement(nullptr, &SmoothStepGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed."))
                     ;
             }
         }

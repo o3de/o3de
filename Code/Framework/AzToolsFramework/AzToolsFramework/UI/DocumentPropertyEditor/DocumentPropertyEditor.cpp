@@ -34,7 +34,15 @@ AZ_CVAR(
     true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental DPE-based CVar Editor");
+    "If set, enables DPE-based CVar Editor");
+
+AZ_CVAR(
+    bool,
+    ed_enableDPEWidgetPooling,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, DPE will use widget pooling to attempt to improve performance.");
 
 static constexpr const char* GetHandlerPropertyName()
 {
@@ -453,23 +461,45 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
-                    childWidget->hide();
-                    m_columnLayout->removeWidget(childWidget);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        // try to put the widget back in the pooling, which means removing it from the layout, and hiding it
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
+                    }
                     GetDPE()->ClearDirtyHandler(handlerInfo.handlerInterface);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
-                else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
+                else if (auto* rowWidget = qobject_cast<DPERowWidget*>(childWidget); rowWidget)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowWidget);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowWidget);
+                    }
+                    else
+                    {
+                        delete rowWidget;
+                    }
                 }
-                else // if it's not a row or a PropertyHandler, it must be a label
+                else if (auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget); label)
                 {
-                    auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                    AZ_Assert(label, "unknown widget in DPERowWidget!");
-                    if (label)
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                     {
                         DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
                     }
+                    else
+                    {
+                        delete label;
+                    }
+                }
+                else
+                {
+                    // likely someone introduced a new type of widget but hasn't handled all the cases
+                    // for its housekeeping.
+                    AZ_Assert(false, "unknown widget type discovered in DPE row.");
+                    // we still have a valid childWidget pointer, though, so we can at least delete it
+                    // to avoid memory leak.
+                    delete childWidget;
                 }
             }
         }
@@ -607,27 +637,48 @@ namespace AzToolsFramework
                 }
                 if (!newOwner)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                    }
+                    else
+                    {
+                        delete rowToRemove;
+                    }
                 }
             }
             else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
             {
-                childWidget->hide();
-                m_columnLayout->removeWidget(childWidget);
-                RemoveCachedAttributes(childIndex);
+                // if `newOwner` is not null we are moving the widget, not removing it, so don't release the handler
                 if (!newOwner)
                 {
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        // remove it from the layout and hide it so we can reuse it later.
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
+                    }
+
                     GetDPE()->ClearDirtyHandler(handlerInfo.handlerInterface);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
+                
+                RemoveCachedAttributes(childIndex);
             }
             else // not a row, not a PropertyHandler, must be a label
             {
-                auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                AZ_Assert(label, "not a label, unknown widget discovered!");
-                if (label && !newOwner)
+                if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                 {
-                    DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                    auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                    AZ_Assert(label, "not a label, unknown widget discovered!");
+                    if (label && !newOwner)
+                    {
+                        DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                    }
+                }
+                else
+                {
+                    delete childWidget;
                 }
             }
         }
@@ -940,8 +991,13 @@ namespace AzToolsFramework
                         // check if this patch has morphed the PropertyHandler into a different type
                         if (handlerId != handlerInfo.handlerId)
                         {
-                            childWidget->hide();
-                            m_columnLayout->removeWidget(childWidget);
+                            if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                            {
+                                // remove the existing handler widget from the layout and hide it so we can reuse it later.
+                                childWidget->hide();
+                                m_columnLayout->removeWidget(childWidget);
+                            }
+
                             theDPE->ClearDirtyHandler(handlerInfo.handlerInterface);
                             DocumentPropertyEditor::ReleaseHandler(handlerInfo);
 
@@ -1226,7 +1282,14 @@ namespace AzToolsFramework
                 DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(currentChild);
                 if (rowChild)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowChild);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowChild);
+                    }
+                    else
+                    {
+                        delete rowChild;
+                    }
                     currentChild = nullptr;
                 }
             }
@@ -1347,6 +1410,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectResetHandler(m_resetHandler);
 
+        m_resetQueuedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler(
+            [this]()
+            {
+                this->RequestExecuteQueuedReset();
+            });
+        m_adapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
+
         m_changedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
             [this](const AZ::Dom::Patch& patch)
             {
@@ -1380,7 +1450,14 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::Clear()
     {
         m_dirtyHandlers.clear();
-        m_rowPool->RecycleInstance(m_rootNode);
+        if (ShouldUseWidgetPooling())
+        {
+            m_rowPool->RecycleInstance(m_rootNode);
+        }
+        else
+        {
+            delete m_rootNode;
+        }
         m_rootNode = nullptr;
     }
 
@@ -1515,6 +1592,16 @@ namespace AzToolsFramework
         Clear();
     }
 
+    void DocumentPropertyEditor::InvalidateAll([[maybe_unused]] const char* filter)
+    {
+        // If the DPE is a standalone control, this is not going to be called by anyone.  However if its part of a larger
+        // control cluster (like an entity inspector that has multiple DPEs in it) then the parent control can *optionally*
+        // call this when it rebuilds itself to synchronize all the rebuilds all at once.  When that happens, it should be
+        // happening from a "short" call stack - ie, not from inside a deep call stack inside a value change operation.
+        m_executeQueuedResetAlreadyQueued = false;
+        m_adapter->ExecuteQueuedReset();
+    }
+
     void DocumentPropertyEditor::SetFilterString(AZStd::string str)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -1551,15 +1638,6 @@ namespace AzToolsFramework
             applyFilterRecursively(m_rootNode, applyFilterRecursively);
             update(); // Need to redraw for the linting to be applied
         }
-    }
-
-    // this happens when something *outside* of the control of the DPE has changed the underlying data.
-    // for example, clicking a manipulator in the viewport and changing it.  Since the change
-    // does not originate anywhere in the DPE's domain, it cannot know that the value has changed and that the
-    // tree needs to be refreshed, except by listening for this event which is spontaneous.
-    void DocumentPropertyEditor::QueueInvalidation([[maybe_unused]] PropertyModificationRefreshLevel level)
-    {
-        RequestExecuteQueuedReset();
     }
 
     void DocumentPropertyEditor::SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
@@ -1619,7 +1697,10 @@ namespace AzToolsFramework
             }
         };
 
-        applyExpansionRecursively(m_rootNode, AZ::Dom::Path(), this, applyExpansionRecursively);
+        if (m_rootNode)
+        {
+            applyExpansionRecursively(m_rootNode, AZ::Dom::Path(), this, applyExpansionRecursively);
+        }
     }
 
     void DocumentPropertyEditor::ExpandAll()
@@ -1670,6 +1751,16 @@ namespace AzToolsFramework
             console->GetCvarValue(GetEnableCVarEditorName(), dpeCVarEditorEnabled);
         }
         return dpeCVarEditorEnabled;
+    }
+
+    bool DocumentPropertyEditor::ShouldUseWidgetPooling()
+    {
+        bool dpeShouldUseWidgetPooling = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableDPEWidgetPooling", dpeShouldUseWidgetPooling);
+        }
+        return dpeShouldUseWidgetPooling;
     }
 
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
@@ -1901,18 +1992,11 @@ namespace AzToolsFramework
             }
         };
 
-        auto handlePropertyEditorChanged = [&](const AZ::Dom::Value&, AZ::DocumentPropertyEditor::Nodes::ValueChangeType)
-        {
-            RequestExecuteQueuedReset();
-        };
-
         message.Match(
             AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey,
             showKeyQueryDialog,
             AZ::DocumentPropertyEditor::Nodes::Adapter::QuerySubclass,
-            showQuerySubclassDialog,
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged,
-            handlePropertyEditorChanged);
+            showQuerySubclassDialog);
     }
 
     void DocumentPropertyEditor::RequestExecuteQueuedReset()
@@ -1923,15 +2007,21 @@ namespace AzToolsFramework
         }
 
         m_executeQueuedResetAlreadyQueued = true;
+
         // When a value changes, we'd like to queue the execution of any property editor tree updates.
-        QTimer::singleShot(
-            1,  // 1 to place it AFTER all other 0 timer or queued events.
-            this,
-            [this]()
-            {
-                m_executeQueuedResetAlreadyQueued = false;
-                m_adapter->ExecuteQueuedReset();
-            });
+        // However, we want it to happen when we're not still inside the deep callstack of a property editor change
+        // callback.  So queue it to happen when we return to the message pump:
+        QMetaObject::invokeMethod(this, &DocumentPropertyEditor::ExecuteQueuedReset, Qt::QueuedConnection);
+    }
+
+    void DocumentPropertyEditor::ExecuteQueuedReset()
+    {
+        // debounce this, in case something else reset before we got here:
+        if (m_executeQueuedResetAlreadyQueued)
+        {
+            m_executeQueuedResetAlreadyQueued = false;
+            m_adapter->ExecuteQueuedReset();
+        }
     }
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
@@ -2011,16 +2101,19 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
     {
-        if (handler.handlerInterface->ResetToDefaults())
+        if (ShouldUseWidgetPooling())
         {
-            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = GetNameForHandlerId(handler.handlerId);
-            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-
-            if (handlerPool)
+            if (handler.handlerInterface->ResetToDefaults())
             {
-                handlerPool->RecycleInstance(handler.handlerInterface);
-                return;
+                auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+                auto handlerName = GetNameForHandlerId(handler.handlerId);
+                auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
+                if (handlerPool)
+                {
+                    handlerPool->RecycleInstance(handler.handlerInterface);
+                    return;
+                }
             }
         }
 

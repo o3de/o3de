@@ -15,7 +15,7 @@ namespace AZ
 {
     BetterPseudoRandom_Windows::BetterPseudoRandom_Windows()
     {
-        if (!CryptAcquireContext(&m_generatorHandle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+        if (!CryptAcquireContext(&m_generatorHandle, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
         {
             AZ_Warning("System", false, "CryptAcquireContext failed with 0x%08x\n", GetLastError());
             m_generatorHandle = 0;

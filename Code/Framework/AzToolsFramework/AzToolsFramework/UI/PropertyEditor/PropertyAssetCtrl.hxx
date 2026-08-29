@@ -70,7 +70,7 @@ namespace AzToolsFramework
         using ClearCallbackType = AZ::Edit::AttributeFunction<void()>;
         using DefaultDirectoryCallbackType = AZ::Edit::AttributeFunction<void(AZStd::string&)>;
 
-        PropertyAssetCtrl(QWidget *pParent = NULL, QString optionalValidDragDropExtensions = QString());
+        PropertyAssetCtrl(QWidget *pParent = nullptr, QString optionalValidDragDropExtensions = QString());
         virtual ~PropertyAssetCtrl();
 
         QWidget* GetFirstInTabOrder() { return m_browseEdit->lineEdit(); }
@@ -107,6 +107,7 @@ namespace AzToolsFramework
         QCompleter* m_completer = nullptr;
         AssetCompleterModel* m_model = nullptr;
         AssetCompleterListView* m_view = nullptr;
+        QMetaObject::Connection m_completerResetConnection;
 
         AZ::Data::AssetId m_defaultAssetID;
 

@@ -18,7 +18,7 @@ namespace AZ::RHI::Internal
     AZ::IO::FixedMaxPathString GetLatestWinPixGpuCapturerPath()
     {
         LPWSTR programFilesPath = nullptr;
-        SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
+        SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, nullptr, &programFilesPath);
 
         std::filesystem::path pixInstallationPath = programFilesPath;
         pixInstallationPath /= "Microsoft PIX";

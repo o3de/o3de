@@ -27,7 +27,7 @@ class CTVNewSequenceDialog
 {
     Q_OBJECT
 public:
-    CTVNewSequenceDialog(QWidget* pParent = 0);
+    CTVNewSequenceDialog(QWidget* pParent = nullptr);
     virtual ~CTVNewSequenceDialog();
 
     const QString& GetSequenceName() const { return m_sequenceName; }

@@ -168,7 +168,7 @@ public:
     // Arguments:
     //      outString - This is first and this is second.
     virtual void FormatStringMessage_List(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams) = 0;
-    virtual void FormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0) = 0;
+    virtual void FormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = nullptr, const char* param3 = nullptr, const char* param4 = nullptr) = 0;
 
     virtual void LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString) = 0;
     virtual void LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString) = 0;

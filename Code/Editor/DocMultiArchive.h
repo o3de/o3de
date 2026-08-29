@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_DOCMULTIARCHIVE_H
-#define CRYINCLUDE_EDITOR_DOCMULTIARCHIVE_H
 #pragma once
 
 #include "Util/XmlArchive.h"
@@ -58,5 +55,3 @@ inline bool IsLoadingXmlArArray(TDocMultiArchive& arrXmlAr)
     }
     return bLoading;
 }
-
-#endif // CRYINCLUDE_EDITOR_DOCMULTIARCHIVE_H

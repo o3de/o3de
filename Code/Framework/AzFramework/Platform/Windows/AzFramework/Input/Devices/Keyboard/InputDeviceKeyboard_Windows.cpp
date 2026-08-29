@@ -43,7 +43,7 @@ namespace AzFramework
             rawInputDevice.usUsagePage = RAW_INPUT_KEYBOARD_USAGE_PAGE;
             rawInputDevice.usUsage     = RAW_INPUT_KEYBOARD_USAGE;
             rawInputDevice.dwFlags     = 0;
-            rawInputDevice.hwndTarget  = 0;
+            rawInputDevice.hwndTarget  = nullptr;
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to register raw input device: keyboard");
             AZ_UNUSED(result);
@@ -69,7 +69,7 @@ namespace AzFramework
             rawInputDevice.usUsagePage = RAW_INPUT_KEYBOARD_USAGE_PAGE;
             rawInputDevice.usUsage     = RAW_INPUT_KEYBOARD_USAGE;
             rawInputDevice.dwFlags     = RIDEV_REMOVE;
-            rawInputDevice.hwndTarget  = 0;
+            rawInputDevice.hwndTarget  = nullptr;
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: keyboard");
             AZ_UNUSED(result);

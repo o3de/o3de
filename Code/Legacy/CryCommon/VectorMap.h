@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : std::map replacement implemented using sorted vector.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_VECTORMAP_H
-#define CRYINCLUDE_CRYCOMMON_VECTORMAP_H
-#pragma once
 
 #include <CryCommon/StlUtils.h>
 
@@ -531,5 +528,3 @@ typename VectorMap<K, V, T, A>::mapped_type& VectorMap<K, V, T, A>::operator[](c
     }
     return (*it).second;
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_VECTORMAP_H

@@ -78,7 +78,7 @@ public:
         CTrackViewNode* m_pNode;
     };
 
-    CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent = 0);
+    CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent = nullptr);
     ~CTrackViewNodesCtrl();
 
     void SetTrackViewDialog(CTrackViewDialog* dlg) { m_pTrackViewDialog = dlg; }

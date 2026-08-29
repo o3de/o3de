@@ -64,7 +64,7 @@ class CTrackViewDopeSheetBase
     , public ITrackViewSequenceListener
 {
 public:
-    CTrackViewDopeSheetBase(QWidget* parent = 0);
+    CTrackViewDopeSheetBase(QWidget* parent = nullptr);
     virtual ~CTrackViewDopeSheetBase();
 
     void SetNodesCtrl(CTrackViewNodesCtrl* pNodesCtrl) { m_pNodesCtrl = pNodesCtrl; }

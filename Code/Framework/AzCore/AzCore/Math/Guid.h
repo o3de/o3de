@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_CORE_GUID_H
-#define AZ_CORE_GUID_H 1
+
+#pragma once
 
 #if defined(GUID_DEFINED)
 #define GUID_FORMAT_DATA1 "lX"
@@ -70,6 +70,3 @@ inline constexpr GUID GUID_NULL()
 #define GUID_NULL GUID_NULL()
 
 #endif // AZ_TRAIT_COMPILER_DEFINE_REFGUID
-
-#endif // AZ_CORE_GUID_H
-#pragma once

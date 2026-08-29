@@ -25,7 +25,7 @@ namespace InAppPurchases
 {
     static bool IsFieldIdValid(jfieldID fid)
     {
-        if (fid == NULL)
+        if (fid == nullptr)
         {
             return false;
         }

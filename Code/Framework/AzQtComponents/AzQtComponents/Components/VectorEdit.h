@@ -68,7 +68,7 @@ namespace AzQtComponents
         Q_PROPERTY(AzQtComponents::VectorEditElement::Flavor flavor READ flavor WRITE setFlavor NOTIFY flavorChanged)
 
     public:
-        explicit VectorEdit(QWidget* parent = 0);
+        explicit VectorEdit(QWidget* parent = nullptr);
 
         QVector3D vector() const;
         float x() const;

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef THREADHELPER_H
-#define THREADHELPER_H
+
+#pragma once
 
 #include <QObject>
 #include <QMutex>
@@ -44,7 +44,7 @@ namespace AssetProcessor
 
     public:
         AZ_CLASS_ALLOCATOR(ThreadWorker, AZ::SystemAllocator)
-        explicit ThreadWorker(QObject* parent = 0)
+        explicit ThreadWorker(QObject* parent = nullptr)
             : QObject(parent)
         {
             m_runningThread = new QThread();
@@ -133,6 +133,3 @@ Q_SIGNALS:
         FactoryFunctionType m_function;
     };
 }
-
-#endif // THREADHELPER_H
-

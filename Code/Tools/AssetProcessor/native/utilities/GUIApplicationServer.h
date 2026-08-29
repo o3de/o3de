@@ -17,7 +17,7 @@ class GUIApplicationServer
 {
     Q_OBJECT
 public:
-    explicit GUIApplicationServer(QObject* parent = 0);
+    explicit GUIApplicationServer(QObject* parent = nullptr);
     ~GUIApplicationServer() override;
 
     bool startListening(unsigned short port = 0) override;

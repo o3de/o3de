@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H
-#define CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H
 #pragma once
 
 #include <QBuffer>
@@ -64,11 +61,9 @@ public: // ---------------------------------------------------------------
     char* Detach()
     {
         assert(0);      // dangerous - most likely we cause memory leak - better use GetMemPtr
-        return 0;
+        return nullptr;
     }
 
 private:
     QByteArray m_lpBuffer;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H

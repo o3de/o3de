@@ -256,7 +256,7 @@ namespace LyShineExamples
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-                editInfo->DataElement(0, &UiCustomImageComponent::m_uvs, QT_TRANSLATE_NOOP("LyShineExamples", "UV Rect"), QT_TRANSLATE_NOOP("LyShineExamples", "The UV coordinates of the rectangle for rendering the texture."))
+                editInfo->DataElement(nullptr, &UiCustomImageComponent::m_uvs, QT_TRANSLATE_NOOP("LyShineExamples", "UV Rect"), QT_TRANSLATE_NOOP("LyShineExamples", "The UV coordinates of the rectangle for rendering the texture."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden

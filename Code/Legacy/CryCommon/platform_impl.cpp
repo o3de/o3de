@@ -166,7 +166,7 @@ void CrySleep(unsigned int dwMilliseconds)
 void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
-    ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
+    ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
         return;
@@ -175,7 +175,7 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+    MessageBoxW(nullptr, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
     return;
 #endif

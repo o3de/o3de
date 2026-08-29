@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Utility functions to work with GUIDs.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_GUIDUTIL_H
-#define CRYINCLUDE_EDITOR_UTIL_GUIDUTIL_H
-#pragma once
 
 #include <AzCore/Math/Guid.h>
 
@@ -39,5 +36,3 @@ struct guid_less_predicate
         return memcmp(&guid1, &guid2, sizeof(GUID)) < 0;
     }
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_GUIDUTIL_H

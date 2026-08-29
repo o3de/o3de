@@ -56,7 +56,7 @@ namespace Maestro
 
         IAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override
         {
-            return 0;
+            return nullptr;
         }
 
         AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override
@@ -898,7 +898,7 @@ namespace Maestro
         if ((m_flags & eAnimTrackFlags_Cycle) || (m_flags & eAnimTrackFlags_Loop))
         {
             // Warp time.
-            const char* desc = 0;
+            const char* desc = nullptr;
             float duration = 0;
             GetKeyInfo(numKeys - 1, desc, duration);
             float endtime = GetKeyTime(numKeys - 1) + duration;

@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H
-#define CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H
 #pragma once
-
 
 #include <ISystem.h>
 #include <IXml.h>
@@ -63,7 +59,7 @@ private:
     template <class T>
     void AddValue(const char* name, const T& value)
     {
-        if (strchr(name, ' ') != 0)
+        if (strchr(name, ' ') != nullptr)
         {
             assert(0 && "Spaces in Value name not supported");
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in Value name not supported: %s in Group %s", name, GetStackInfo().c_str());
@@ -133,5 +129,3 @@ private:
     bool IsDefaultValue( const T& v ) const { return false; };
     */
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H

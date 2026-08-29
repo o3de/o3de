@@ -42,7 +42,7 @@ namespace MessagePopup
         }
         bool IsValid()
         {
-            return m_clientData != 0;
+            return m_clientData != nullptr;
         }
 
         void* m_clientData;
