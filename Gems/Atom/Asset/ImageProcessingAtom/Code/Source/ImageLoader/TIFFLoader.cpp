@@ -299,14 +299,14 @@ namespace ImageProcessingAtom
             bool isGeoTIFF = false;
             {
                 uint32_t tagCount = 0;
-                double* pixelScales = NULL;
+                double* pixelScales = nullptr;
                 static constexpr int GEOTIFF_MODELPIXELSCALE_TAG = 33550;
                 if (TIFFGetField(tif, GEOTIFF_MODELPIXELSCALE_TAG, &tagCount, &pixelScales) == 1)
                 {
                     isGeoTIFF = true;
 
                     // if there's an xyz scale, and the Z scale isn't 0, let's use it.
-                    if ((tagCount == 3) && (pixelScales != NULL) && (pixelScales[2] != 0.0f))
+                    if ((tagCount == 3) && (pixelScales != nullptr) && (pixelScales[2] != 0.0f))
                     {
                         pixelValueScale = static_cast<float>(pixelScales[2]);
                     }

@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Utility functions to simplify working with paths.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H
-#define CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H
-#pragma once
 
 #include <CryPath.h>
 #include <Include/EditorCoreAPI.h>
@@ -325,7 +322,7 @@ namespace Path
         }
         else
         {
-            gEnv->pSystem->Warning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, VALIDATOR_FLAG_AUDIO, 0, "The localization folder is not set! Please make sure it is by checking the setting of cvar \"sys_localization_folder\"!");
+            gEnv->pSystem->Warning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, VALIDATOR_FLAG_AUDIO, nullptr, "The localization folder is not set! Please make sure it is by checking the setting of cvar \"sys_localization_folder\"!");
         }
 
         return sLocalizationFolder;
@@ -390,6 +387,3 @@ inline QString operator /(const QString& first, const QString& second)
 {
     return Path::Make(first, second);
 }
-
-
-#endif // CRYINCLUDE_EDITOR_UTIL_PATHUTIL_H

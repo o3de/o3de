@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CRYEDITDOC_H
-#define CRYINCLUDE_EDITOR_CRYEDITDOC_H
 #pragma once
 
 #include "DocMultiArchive.h"
@@ -207,5 +204,3 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
-
-#endif // CRYINCLUDE_EDITOR_CRYEDITDOC_H

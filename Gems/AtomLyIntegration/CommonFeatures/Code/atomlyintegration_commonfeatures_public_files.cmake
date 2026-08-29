@@ -61,8 +61,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/EditorHDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingComponentConfig.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/AmbientOcclusion/AoBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/AmbientOcclusion/AoComponentConfiguration.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationComponentConstants.h

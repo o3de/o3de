@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Defines File version structure.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYVERSION_H
-#define CRYINCLUDE_CRYCOMMON_CRYVERSION_H
-#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 /** This class keeps file version information.
@@ -162,5 +159,3 @@ struct SFileVersion
         azsnprintf(s, bufferSize, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
     }
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYVERSION_H

@@ -208,7 +208,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(AZPreferencesView, AZ::SystemAllocator)
 
-        AZPreferencesView(QWidget* parent = 0);
+        AZPreferencesView(QWidget* parent = nullptr);
         virtual ~AZPreferencesView();
 
         virtual void CaptureHotkeyAccepted(QKeySequence keysPressed);

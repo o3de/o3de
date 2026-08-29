@@ -18,7 +18,7 @@ namespace AZ
         RHI::ResultCode WSISurface::BuildNativeSurface()
         {
             Instance& instance = Instance::GetInstance();
-            const HINSTANCE hinstance = GetModuleHandle(0);
+            const HINSTANCE hinstance = GetModuleHandle(nullptr);
 
             VkWin32SurfaceCreateInfoKHR createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;

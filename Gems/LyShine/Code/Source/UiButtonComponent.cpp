@@ -160,7 +160,7 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiButtonComponent::m_actionName, QT_TRANSLATE_NOOP("LyShine", "Click"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when the button is released"));
+                editInfo->DataElement(nullptr, &UiButtonComponent::m_actionName, QT_TRANSLATE_NOOP("LyShine", "Click"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when the button is released"));
             }
         }
     }

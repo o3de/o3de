@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H
-#define CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H
 #pragma once
 
 #include "ISystem.h"
@@ -81,23 +78,23 @@ public:
     CSimpleStringPool()
     {
         m_blockSize = STD_BLOCK_SIZE  - offsetof(BLOCK, s);
-        m_blocks = 0;
-        m_start = 0;
-        m_ptr = 0;
-        m_end = 0;
+        m_blocks = nullptr;
+        m_start = nullptr;
+        m_ptr = nullptr;
+        m_end = nullptr;
         nUsedSpace = 0;
         nUsedBlocks = 0;
-        m_free_blocks = 0;
+        m_free_blocks = nullptr;
         m_reuseStrings = false;
     }
 
     explicit CSimpleStringPool(bool reuseStrings)
         : m_blockSize(STD_BLOCK_SIZE - offsetof(BLOCK, s))
-        , m_blocks(NULL)
-        , m_free_blocks(NULL)
-        , m_end(0)
-        , m_ptr(0)
-        , m_start(0)
+        , m_blocks(nullptr)
+        , m_free_blocks(nullptr)
+        , m_end(nullptr)
+        , m_ptr(nullptr)
+        , m_start(nullptr)
         , nUsedSpace(0)
         , nUsedBlocks(0)
         , m_reuseStrings(reuseStrings)
@@ -122,10 +119,10 @@ public:
             azfree(pBlock);
             pBlock = temp;
         }
-        m_blocks = 0;
-        m_ptr = 0;
-        m_start = 0;
-        m_end = 0;
+        m_blocks = nullptr;
+        m_ptr = nullptr;
+        m_start = nullptr;
+        m_end = nullptr;
     }
     void SetBlockSize(unsigned int nBlockSize)
     {
@@ -158,10 +155,10 @@ public:
             m_free_blocks = m_blocks;
         }
 
-        m_blocks = 0;
-        m_start = 0;
-        m_ptr = 0;
-        m_end = 0;
+        m_blocks = nullptr;
+        m_start = nullptr;
+        m_ptr = nullptr;
+        m_end = nullptr;
         nUsedSpace = 0;
         if (m_reuseStrings)
         {
@@ -274,7 +271,7 @@ private:
         if (m_free_blocks)
         {
             BLOCK* pBlock = m_free_blocks;
-            BLOCK* pPrev = 0;
+            BLOCK* pPrev = nullptr;
             while (pBlock)
             {
                 if (pBlock->size >= nMinBlockSize)
@@ -346,11 +343,8 @@ private:
     char* FindExistingString(const char* szString, int nStrLen)
     {
         SStringData testData(szString, nStrLen);
-        char* szResult = stl::find_in_map(m_stringToExistingStringMap, testData, NULL);
+        char* szResult = stl::find_in_map(m_stringToExistingStringMap, testData, nullptr);
         assert(!szResult || !_stricmp(szResult, szString));
         return szResult;
     }
 };
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H

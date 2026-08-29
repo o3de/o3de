@@ -17,7 +17,7 @@ class ModuleHandle
 {
 public:
     explicit ModuleHandle(const std::string& lib)
-        : m_libHandle(NULL)
+        : m_libHandle(nullptr)
     {
         std::string libext = lib;
         if (!AZ::Test::EndsWith(libext, ".dll"))
@@ -26,7 +26,7 @@ public:
         }
         m_libHandle = ::LoadLibraryA(libext.c_str());  // LoadLibrary conflicts with CryEngine code, so use LoadLibraryA
 
-        if (m_libHandle == NULL)
+        if (m_libHandle == nullptr)
         {
             DWORD dw = ::GetLastError();
             std::cerr << "FAILED to load library: " << libext << "; GetLastError() returned " << dw << std::endl;
@@ -38,13 +38,13 @@ public:
 
     ~ModuleHandle() override
     {
-        if (m_libHandle != NULL)
+        if (m_libHandle != nullptr)
         {
             FreeLibrary(m_libHandle);
         }
     }
 
-    bool IsValid() override { return m_libHandle != NULL; }
+    bool IsValid() override { return m_libHandle != nullptr; }
 
     std::shared_ptr<AZ::Test::IFunctionHandle> GetFunction(const std::string& name) override;
 
@@ -60,7 +60,7 @@ class FunctionHandle
 {
 public:
     explicit FunctionHandle(ModuleHandle& module, std::string symbol)
-        : m_proc(NULL)
+        : m_proc(nullptr)
     {
         m_proc = ::GetProcAddress(module.m_libHandle, symbol.c_str());
     }
@@ -86,7 +86,7 @@ public:
         return (*fn)();
     }
 
-    bool IsValid() override { return m_proc != NULL; }
+    bool IsValid() override { return m_proc != nullptr; }
 
 private:
     FARPROC m_proc;

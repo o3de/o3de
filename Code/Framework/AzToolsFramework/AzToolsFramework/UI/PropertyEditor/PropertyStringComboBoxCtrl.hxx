@@ -38,7 +38,7 @@ namespace AzToolsFramework
         AZ_RTTI(PropertyStringComboBoxCtrl, "{886E5B2C-46F5-4046-B0A3-89C28CB28B38}", ComboBoxBase);
         AZ_CLASS_ALLOCATOR(PropertyStringComboBoxCtrl, AZ::SystemAllocator);
 
-        PropertyStringComboBoxCtrl(QWidget* pParent = NULL);
+        PropertyStringComboBoxCtrl(QWidget* pParent = nullptr);
         ~PropertyStringComboBoxCtrl() override;
 
         void Add(const AZStd::string& value);

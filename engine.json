@@ -112,12 +112,14 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/GameplayGem",
         "Templates/AssetGem",
         "Templates/AddTestsToProject",
         "Templates/CppToolGem",
         "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
+        "Templates/EngineFinder",
         "Templates/GemRepo",
         "Templates/GraphicsGem",
         "Templates/MinimalProject",

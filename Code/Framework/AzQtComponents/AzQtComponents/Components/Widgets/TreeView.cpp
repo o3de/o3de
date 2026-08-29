@@ -40,14 +40,21 @@ namespace AzQtComponents
                 {
                     case QEvent::DynamicPropertyChange:
                     {
-                        auto widget = qobject_cast<QWidget*>(obj);
-                        auto styleSheet = StyleManager::styleSheetStyle(widget);
-                        if (styleSheet)
+                        // ignore properties coming from inside the style sheet system itself, which are all by convention
+                        // prefixed with _q_
+                        QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+                        QString propertyName = QString::fromUtf8(eventFull->propertyName());
+                        if (!propertyName.startsWith(QStringLiteral("_q_")))
                         {
-                            styleSheet->unpolish(widget);
-                            styleSheet->polish(widget);
+                            auto widget = qobject_cast<QWidget*>(obj);
+                            auto styleSheet = StyleManager::styleSheetStyle(widget);
+                            if (styleSheet)
+                            {
+                                styleSheet->unpolish(widget);
+                                styleSheet->polish(widget);
+                            }
+                            widget->update();
                         }
-                        widget->update();
                         break;
                     }
                 }

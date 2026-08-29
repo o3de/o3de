@@ -593,6 +593,19 @@ namespace OpenParticle
 
         AZ::Data::AssetLoadBehavior loadBehavior = AZ::Data::AssetLoadBehavior::PreLoad;
         resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_material, inputValue, "material", loadBehavior, context));
+
+        // Optional. Particle files authored before per-emitter material overrides existed simply have no
+        // "materialOverrides" member and load with an empty map.
+        if (inputValue.IsObject() && inputValue.HasMember("materialOverrides"))
+        {
+            resultCode.Combine(ContinueLoadingFromJsonObjectField(
+                &emitInfo->m_materialOverrides,
+                azrtti_typeid<MaterialPropertyOverrideMap>(),
+                inputValue,
+                "materialOverrides",
+                context));
+        }
+
         resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_model, inputValue, "model", loadBehavior, context));
         resultCode.Combine(ConvertSourceFileNameToAsset(emitInfo->m_skeletonModel, inputValue, "skeleton model", loadBehavior, context));
 
@@ -702,13 +715,28 @@ namespace OpenParticle
             {
                 // we don't actually have to load the asset, just want to place it into a struct for serialize.
                 mat = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(
-                    defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehaviorNamespace::NoLoad);
+                    // PreLoad to match the load path, so the behaviour written to the file agrees with the
+                    // behaviour the asset is given when it is read back.
+                    defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehavior::PreLoad);
             }
         }
 
         auto materialAssetType = azrtti_typeid<AZ::Data::Asset<AZ::RPI::MaterialAsset>>();
         auto modelAssetType = azrtti_typeid<AZ::Data::Asset<AZ::RPI::ModelAsset>>();
         resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "material", &mat, nullptr, materialAssetType, context));
+
+        // Only written when the emitter actually overrides something, so untouched particle files stay byte
+        // identical to what they were before this feature existed.
+        if (!info->m_materialOverrides.empty())
+        {
+            resultCode.Combine(ContinueStoringToJsonObjectField(
+                outputValue,
+                "materialOverrides",
+                &info->m_materialOverrides,
+                nullptr,
+                azrtti_typeid<MaterialPropertyOverrideMap>(),
+                context));
+        }
 
         if (info->m_model.GetId().IsValid())
         {

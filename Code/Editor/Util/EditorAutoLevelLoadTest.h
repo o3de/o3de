@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_EDITORAUTOLEVELLOADTEST_H
-#define CRYINCLUDE_EDITOR_UTIL_EDITORAUTOLEVELLOADTEST_H
 #pragma once
-
 
 class CEditorAutoLevelLoadTest
     : public IEditorNotifyListener
@@ -23,5 +19,3 @@ private:
 
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_EDITORAUTOLEVELLOADTEST_H

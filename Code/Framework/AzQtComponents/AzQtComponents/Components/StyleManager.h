@@ -12,7 +12,6 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 
 #include <QObject>
-#include <QColor>
 #include <QHash>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::StyleManager::m_widgetToStyleSheetMap': class 'QHash<QWidget *,QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::StyleManager'
 #include <QPointer>
@@ -21,6 +20,7 @@ AZ_POP_DISABLE_WARNING
 class QApplication;
 class QStyle;
 class QWidget;
+class QColor;
 
 namespace AzQtComponents
 {
@@ -65,6 +65,9 @@ namespace AzQtComponents
         static QStyle* baseStyle(const QWidget* widget);
 
         static void repolishStyleSheet(QWidget* widget);
+
+        //! Utility - set an object property, and return true if it changed.
+        static bool setObjectProperty(QWidget* widget, const char* propertyName, const QVariant& value);
 
         explicit StyleManager(QObject* parent);
         ~StyleManager() override;

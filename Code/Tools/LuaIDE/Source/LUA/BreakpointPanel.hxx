@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef BREAKPOINTS_VIEW_H
-#define BREAKPOINTS_VIEW_H
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -28,7 +26,7 @@ class DHBreakpointsWidget
 
 public:
     // CLASS ALLOCATOR INTENIONALLY OMITTED so that we can be factoried by Qt code.
-    DHBreakpointsWidget(QWidget* parent = 0);
+    DHBreakpointsWidget(QWidget* parent = nullptr);
     virtual ~DHBreakpointsWidget();
 
     //////////////////////////////////////////////////////////////////////////
@@ -54,5 +52,3 @@ public slots:
     void DeleteSelected();
     void DeleteAll();
 };
-
-#endif

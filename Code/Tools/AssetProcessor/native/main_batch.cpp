@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     qputenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1");
 
     BatchApplicationManager applicationManager(&argc, &argv);
-    setvbuf(stdout, NULL, _IONBF, 0); // Disabling output buffering to fix test failures due to incomplete logs
+    setvbuf(stdout, nullptr, _IONBF, 0); // Disabling output buffering to fix test failures due to incomplete logs
 
     ApplicationManager::BeforeRunStatus status = applicationManager.BeforeRun();
 

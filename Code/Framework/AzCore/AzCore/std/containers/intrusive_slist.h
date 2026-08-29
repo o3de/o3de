@@ -146,7 +146,7 @@ namespace AZStd
             AZ_FORCE_INLINE pointer operator->() const          { return m_node; }
             AZ_FORCE_INLINE this_type& operator++()
             {
-                AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::intrusive_slist::const_iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::intrusive_slist::const_iterator_impl invalid node!");
                 m_node = Hook::to_node_ptr(m_node)->m_next;
                 return *this;
             }
@@ -191,14 +191,14 @@ namespace AZStd
             AZ_FORCE_INLINE pointer operator->() const { return base_type::m_node; }
             AZ_FORCE_INLINE this_type& operator++()
             {
-                AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::intrusive_slist::iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(base_type::m_node != nullptr, "AZSTD::intrusive_slist::iterator_impl invalid node!");
                 base_type::m_node = Hook::to_node_ptr(base_type::m_node)->m_next;
                 return *this;
             }
 
             AZ_FORCE_INLINE this_type operator++(int)
             {
-                AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::intrusive_slist::iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(base_type::m_node != nullptr, "AZSTD::intrusive_slist::iterator_impl invalid node!");
                 this_type temp = *this;
                 base_type::m_node = Hook::to_node_ptr(base_type::m_node)->m_next;
                 return temp;
@@ -383,7 +383,7 @@ namespace AZStd
             node_ptr_type node = toEraseNext.get_iterator().m_node;
             orphan_node(node);
 #else
-            AZSTD_CONTAINER_ASSERT(toEraseNext.m_node != 0, "AZStd::intrusive_slist::erase_after - invalid node!");
+            AZSTD_CONTAINER_ASSERT(toEraseNext.m_node != nullptr, "AZStd::intrusive_slist::erase_after - invalid node!");
             node_ptr_type prevNode = toEraseNext.m_node;
             node_ptr_type node = Hook::to_node_ptr(prevNode)->m_next;
 #endif
@@ -947,7 +947,7 @@ namespace AZStd
             {
                 node = nodeHook->m_next;
                 // This check makes sense for the linear forward_list only.
-                AZSTD_CONTAINER_ASSERT(node != 0, "This node it's not in the list or the list is corrupted!");
+                AZSTD_CONTAINER_ASSERT(node != nullptr, "This node it's not in the list or the list is corrupted!");
                 nodeHook = Hook::to_node_ptr(node);
             }
             return node;

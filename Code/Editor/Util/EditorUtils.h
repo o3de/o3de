@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Utility classes used by Editor.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-#define CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-#pragma once
 
 #include <CryCommon/platform.h>
 #include <IXml.h>
@@ -531,6 +528,3 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
 }
 
 #endif
-
-#endif // CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-

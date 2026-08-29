@@ -16,11 +16,11 @@ CAutoLogTime::CAutoLogTime(const char* what)
     m_what = what;
     CLogFile::FormatLine("---- Start: %s", m_what);
 
-    m_t0 = time(0);
+    m_t0 = time(nullptr);
 }
 
 CAutoLogTime::~CAutoLogTime()
 {
-    m_t1 = time(0);
+    m_t1 = time(nullptr);
     CLogFile::FormatLine("---- End: %s (%lld seconds)", m_what, (m_t1 - m_t0));
 }

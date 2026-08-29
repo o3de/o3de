@@ -112,7 +112,7 @@ namespace AZ
                 shaderOption.SetValue(m_exposureShaderVariantOptionName, options.at(shaderVariantIndex).m_enableExposureControl);
                 shaderOption.SetValue(m_colorGradingShaderVariantOptionName, options.at(shaderVariantIndex).m_enableColorGrading);
                 shaderOption.SetValue(m_lutSampleQualityShaderVariantOptionName, options.at(shaderVariantIndex).m_lutSampleQuality);
-                PreloadShaderVariant(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
+                PreloadShaderVariantForDraw(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
             }
 
             m_needToUpdateShaderVariant = true;

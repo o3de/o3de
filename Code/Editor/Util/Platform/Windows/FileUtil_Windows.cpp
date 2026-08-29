@@ -26,8 +26,8 @@ namespace Platform
         HINSTANCE hInst = ShellExecuteW( nullptr,
             L"open",
             command.toStdWString().c_str(),
-            args.isEmpty() ? NULL : args.toStdWString().c_str(),
-            NULL, SW_SHOWNORMAL);
+            args.isEmpty() ? nullptr : args.toStdWString().c_str(),
+            nullptr, SW_SHOWNORMAL);
 
         success = ((DWORD_PTR)hInst > 32);
 

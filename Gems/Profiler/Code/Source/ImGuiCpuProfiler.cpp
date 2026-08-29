@@ -904,7 +904,7 @@ namespace Profiler
                 const float scaleFactor = ImGui::GetIO().FontGlobalScale;
                 const float fontSize = ImGui::GetFont()->FontSize * scaleFactor;
 
-                ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
+                ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), nullptr);
             }
             else // We have enough space to draw the entire label, draw and center text.
             {

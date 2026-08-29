@@ -10,6 +10,66 @@
             },
             "methods": [
                 {
+                    "base": "SmoothCriticallyDamped",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Smooth Critically Damped"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Smooth Critically Damped is invoked"
+                    },
+                    "details": {
+                        "name": "Smooth Critically Damped"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "From"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Rate"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delta Time"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Target"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Smooth Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Smoothed Result"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Updated Rate"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "DivideByNumber",
                     "entry": {
                         "name": "In",
@@ -818,6 +878,48 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Maximum"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SmoothStep",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Smooth Step"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Smooth Step is invoked"
+                    },
+                    "details": {
+                        "name": "Smooth Step"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Time"
                             }
                         }
                     ],

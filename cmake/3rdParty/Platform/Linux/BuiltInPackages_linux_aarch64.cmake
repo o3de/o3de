@@ -11,8 +11,6 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
-ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
-ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
@@ -24,7 +22,6 @@ ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-linux-aarch64            
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-linux-aarch64                               TARGETS Lua                         PACKAGE_HASH 4d30067fc494ac27acd72b0bf18099c19c0a44ac9bd46b23db66ad780e72374a)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.1-rev1-linux-aarch64                         TARGETS mcpp                        PACKAGE_HASH 817d31b94d1217b6e47bd5357b3a07a79ab6aa93452c65ff56831d0590c5169d)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux-aarch64                            TARGETS mikkelsen                   PACKAGE_HASH 62f3f316c971239a2b86d7c47a68fee9be744de3a4f9b00533b32f33a4764f8b)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-linux-aarch64                   TARGETS GoogleBenchmark             PACKAGE_HASH 06fbfeaba2aeae20197da631019e52105dc1f69e702151a76c6aba2c27c03acb)
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev9-linux-aarch64                               TARGETS Qt                          PACKAGE_HASH da80840ecd3f7a074edecbb3dedb1ff36c568cfe4943e18d9559e9fca9f151bc)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-linux-aarch64                              TARGETS PNG                         PACKAGE_HASH fcf646c1b1b4163000efdb56d7c8f086b6ce0a520da5c8d3ffce4e1329ae798a)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux-aarch64                     TARGETS libsamplerate               PACKAGE_HASH 751484da1527432cd19263909f69164d67b25644f87ec1d4ec974a343defacea)

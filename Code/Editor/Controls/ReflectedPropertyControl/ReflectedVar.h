@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_REFLECTEDVAR_H
-#define CRYINCLUDE_EDITOR_UTILS_REFLECTEDVAR_H
 #pragma once
 
 #include <algorithm>
@@ -425,6 +423,3 @@ public:
     AZStd::string m_motion;
     AZ::Data::AssetId m_assetId;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_UTILS_REFLECTEDVAR_H

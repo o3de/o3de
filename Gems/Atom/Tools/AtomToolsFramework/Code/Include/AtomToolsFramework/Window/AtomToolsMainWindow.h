@@ -32,7 +32,7 @@ namespace AtomToolsFramework
     public:
         using Base = AzQtComponents::DockMainWindow;
 
-        AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent = 0);
+        AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent = nullptr);
         ~AtomToolsMainWindow();
 
         // AtomToolsMainWindowRequestBus::Handler overrides...

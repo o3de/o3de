@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_VALIDNUMBER_H
-#define CRYINCLUDE_CRYCOMMON_CRY_VALIDNUMBER_H
 #pragma once
 
 //--------------------------------------------------------------------------------
@@ -172,6 +169,3 @@ ILINE bool NumberValid([[maybe_unused]] const uint64 x)
 {
     return true; //integers are always valid
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_VALIDNUMBER_H

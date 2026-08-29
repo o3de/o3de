@@ -45,6 +45,9 @@ jobs:
         with:
           show-progress: false
 
+      - name: Free disk space
+        run: .github/scripts/free-macos-disk-space.sh
+
       - name: Git LFS pull
         # Minimal pull for profile builds, otherwise pull all
         run: |
@@ -66,7 +69,7 @@ jobs:
           ccache_options: |
             cache_dir=${{ github.workspace }}/.ccache
             hash_dir=false
-            max_size=10G
+            max_size=5G
 
       - name: Check for rerun
         id: check-rerun
@@ -121,9 +124,11 @@ jobs:
         continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         run: |
-          if [ -f ${{ github.workspace }}/cache.tar ]; then
-            gtar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
-            rm ${{ github.workspace }}/cache.tar
+          if [ -f "${{ github.workspace }}/cache.tar" ]; then
+            trap 'rm -f "${{ github.workspace }}/cache.tar"' EXIT
+            gtar -xpf "${{ github.workspace }}/cache.tar" --ignore-failed-read
+            rm -f "${{ github.workspace }}/cache.tar"
+            trap - EXIT
             ccache --zero-stats --cleanup
           fi
 
@@ -162,7 +167,8 @@ jobs:
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         run: |
-          gtar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
+          ccache --cleanup
+          gtar --format=posix -cpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
             .ccache \
             .o3de/python/downloaded_packages \
             3rdParty/downloaded_packages \

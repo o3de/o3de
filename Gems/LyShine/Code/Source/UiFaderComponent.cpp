@@ -288,7 +288,7 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFaderComponent::OnFadeValueChanged);
  
-            editInfo->DataElement(0, &UiFaderComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use render to texture"),
+            editInfo->DataElement(nullptr, &UiFaderComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use render to texture"),
                 QT_TRANSLATE_NOOP("LyShine", "If true, this element and all children are rendered to a separate render target\n"
                 "and then that target is rendered to the screen. This avoids child elements\n"
                 "blending with each other as they fade. But it is more expensive."))
