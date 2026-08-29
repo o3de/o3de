@@ -9,6 +9,43 @@
 #include <AzFramework/Input/Devices/InputDeviceId.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
+
+namespace
+{
+    void InputDeviceIdScriptConstructor(AzFramework::InputDeviceId* thisPtr, AZ::ScriptDataContext& scriptDataContext)
+    {
+        new (thisPtr) AzFramework::InputDeviceId();
+
+        const int argumentCount = scriptDataContext.GetNumArguments();
+        if (argumentCount == 0)
+        {
+            return;
+        }
+
+        if ((argumentCount == 1 || argumentCount == 2)
+            && scriptDataContext.IsString(0)
+            && (argumentCount == 1 || scriptDataContext.IsNumber(1)))
+        {
+            const char* name = nullptr;
+            scriptDataContext.ReadArg(0, name);
+
+            AZ::u32 index = 0;
+            if (argumentCount == 2)
+            {
+                scriptDataContext.ReadArg(1, index);
+            }
+
+            *thisPtr = AzFramework::InputDeviceId(name, index);
+            return;
+        }
+
+        scriptDataContext.GetScriptContext()->Error(
+            AZ::ScriptContext::ErrorType::Error,
+            true,
+            "InputDeviceId expects zero arguments, or a string name and an optional numeric index");
+    }
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -24,6 +61,7 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Category, "Input")
                 ->Constructor<const char*>()
                 ->Constructor<const char*, AZ::u32>()
+                ->Attribute(AZ::Script::Attributes::ConstructorOverride, &InputDeviceIdScriptConstructor)
                 ->Property("name", [](InputDeviceId* thisPtr) { return thisPtr->GetName(); }, nullptr)
                 ->Property("index", BehaviorValueProperty(&InputDeviceId::m_index))
             ;
