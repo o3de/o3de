@@ -56,16 +56,13 @@ void UiSimpleEntityOwnershipService::Reset()
 void UiSimpleEntityOwnershipService::AddEntity(AZ::Entity* entity)
 {
     AZ_Assert(entity, "Null entity passed to AddEntity");
-    m_entities.insert(entity);
+    HandleEntitiesAdded(AzFramework::EntityList{ entity });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSimpleEntityOwnershipService::AddEntities(const AzFramework::EntityList& entities)
 {
-    for (AZ::Entity* entity : entities)
-    {
-        m_entities.insert(entity);
-    }
+    HandleEntitiesAdded(entities);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

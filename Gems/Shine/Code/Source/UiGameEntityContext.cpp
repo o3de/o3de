@@ -71,10 +71,9 @@ void UiGameEntityContext::AddUiEntities(const AzFramework::EntityList& entities)
     for (AZ::Entity* entity : entities)
     {
         AZ_Assert(!AzFramework::EntityIdContextQueryBus::MultiHandler::BusIsConnectedId(entity->GetId()), "Entity already in context.");
-        m_entityOwnershipService->AddEntity(entity);
     }
 
-    m_entityOwnershipService->HandleEntitiesAdded(entities);
+    m_entityOwnershipService->AddEntities(entities);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
