@@ -60,6 +60,9 @@ namespace OpenParticle
             AZStd::any m_config;
             AZStd::any m_renderConfig;
             AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            //! Material property values authored for this emitter alone. Empty means "use the material as-is",
+            //! which lets two emitters share one .material asset and still render differently.
+            MaterialPropertyOverrideMap m_materialOverrides;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::list<AZStd::any> m_emitModules;
@@ -229,6 +232,9 @@ namespace OpenParticle
             bool m_solo = false;
             AZStd::string m_name;
             AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            //! Editor-side mirror of EmitterInfo::m_materialOverrides. The inspector edits this copy and
+            //! UpdateEmitterAsset(ASSET_MATERIAL) syncs it back onto the emitter.
+            MaterialPropertyOverrideMap m_materialOverrides;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::unordered_map<AZStd::string, ModuleType> m_modules;
@@ -383,7 +389,10 @@ namespace OpenParticle
         void RemovedModulesModuleSort(DetailInfo* detailInfo, EmitterInfo* emitterInfo) const;
         const TypeId::value_type& GetTypeIdItem(const AZStd::string& className, const AZStd::string& moduleName) const;
         void RemoveUnusedModule(DetailInfo* detailInfo, AZStd::any& any) const;
-        void SetDefaultModules(DetailInfo* detailInfo);
+        //! Applies the default module set and default material to a newly created emitter.
+        //! The material has to be written to both the detail and the emitter: the detail feeds the editor
+        //! UI, but it is the emitter that gets baked into the particle asset.
+        void SetDefaultModules(DetailInfo* detailInfo, EmitterInfo* emitterInfo);
 
         void StashDistribution(AZStd::any& any, const void* detailInfo, const AZStd::string& className, const AZStd::string& moduleName);
         bool PopDistribution(AZStd::any& any, const void* detailInfo, const AZStd::string& className, const AZStd::string& moduleName, bool stash = false);

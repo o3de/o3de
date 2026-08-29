@@ -11,7 +11,6 @@
 
 #include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
-#include <osdefs.h> // for DELIM
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <pybind11/pybind11.h>
@@ -574,25 +573,37 @@ namespace EditorPythonBindings
         }
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
-        Py_SetPythonHome(pyHomePath.c_str());
 
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
         try
         {
-            // ignore system location for sites site-packages
-            Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
-            Py_IgnoreEnvironmentFlag = 1; // -E
-            Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
-            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
-
-            const bool initializeSignalHandlers = true;
-            pybind11::initialize_interpreter(initializeSignalHandlers);
+            // Configure and start the interpreter through the PyConfig API
+            // (Py_SetPythonHome and the pre-init configuration globals are
+            // deprecated). The isolated configuration ignores the environment
+            // and the user site directory, matching the intent of the previous
+            // Py_IsolatedFlag / Py_IgnoreEnvironmentFlag setup.
+            PyConfig config;
+            PyConfig_InitIsolatedConfig(&config);
+            config.install_signal_handlers = 1;
+            config.inspect = 1; // unhandled SystemExit will terminate the process unless inspect is set
+            config.write_bytecode = 0; // Do not generate precompiled bytecode
+            PyStatus pyStatus = PyConfig_SetString(&config, &config.home, pyHomePath.c_str());
+            if (!PyStatus_Exception(pyStatus))
+            {
+                pyStatus = Py_InitializeFromConfig(&config);
+            }
+            PyConfig_Clear(&config);
+            if (PyStatus_Exception(pyStatus))
+            {
+                AZ_Warning("python", false, "Python initialization failed with %s!", pyStatus.err_msg ? pyStatus.err_msg : "an unknown error");
+                return false;
+            }
 
             // display basic Python information
             AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
-            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
-            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
+            AZ_Trace("python", "sys.executable=%s \n", pybind11::module_::import("sys").attr("executable").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.exec_prefix=%s \n", pybind11::module_::import("sys").attr("exec_prefix").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.path=%s \n", pybind11::str(pybind11::module_::import("sys").attr("path")).cast<std::string>().c_str());
 
             // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
             // alters the behavior of the initializer to not compute default search paths. See https://docs.python.org/3/c-api/init.html#c.Py_SetPath
@@ -624,12 +635,12 @@ namespace EditorPythonBindings
 
     bool PythonSystemComponent::ExtendSysPath(const AZStd::unordered_set<AZStd::string>& extendPaths)
     {
+        // Collect the interpreter's current sys.path entries (Py_GetPath is deprecated)
         AZStd::unordered_set<AZStd::string> oldPathSet;
-        auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
+        for (pybind11::handle pathEntry : pybind11::module_::import("sys").attr("path"))
         {
-            oldPathSet.emplace(pathPart);
-        };
-        AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
+            oldPathSet.emplace(pathEntry.cast<std::string>().c_str());
+        }
         bool appended{ false };
         AZStd::string pathAppend{ "import sys\n" };
         for (const auto& thisStr : extendPaths)
@@ -799,29 +810,24 @@ namespace EditorPythonBindings
             // Acquire GIL before calling Python code
             PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
-            // Create standard "argc" / "argv" command-line parameters to pass in to the Python script via sys.argv.
-            // argc = number of parameters.  This will always be at least 1, since the first parameter is the script name.
-            // argv = the list of parameters, in wchar format.
-            // Our expectation is that the args passed into this function does *not* already contain the script name.
-            int argc = aznumeric_cast<int>(args.size()) + 1;
-
-            // Note:  This allocates from PyMem to ensure that Python has access to the memory.
-            wchar_t** argv = static_cast<wchar_t**>(PyMem_Malloc(argc * sizeof(wchar_t*)));
-
-            // Python 3.x is expecting wchar* strings for the command-line args.
-            argv[0] = Py_DecodeLocale(theFilename.c_str(), nullptr);
-
-            for (int arg = 0; arg < args.size(); arg++)
+            // Pass the standard command-line parameters to the Python script via sys.argv.
+            // The first entry is always the script name; our expectation is that the args
+            // passed into this function does *not* already contain the script name.
+            // (PySys_SetArgvEx is deprecated.) Mirroring its updatePath behavior, the
+            // script's folder is prepended to sys.path for "import" commands.
+            pybind11::list pythonArgs;
+            pythonArgs.append(theFilename.c_str());
+            for (const AZStd::string_view& arg : args)
             {
-                AZStd::string argString(args[arg]);
-                argv[arg + 1] = Py_DecodeLocale(argString.c_str(), nullptr);
+                pythonArgs.append(AZStd::string(arg).c_str());
             }
-            // Tell Python the command-line args.
-            // Note that this has a side effect of adding the script's path to the set of directories checked for "import" commands.
-            const int updatePath = 1;
-            PySys_SetArgvEx(argc, argv, updatePath);
+            auto pySys = pybind11::module_::import("sys");
+            pySys.attr("argv") = pythonArgs;
 
-            Py_DontWriteBytecodeFlag = 1;
+            AZStd::string scriptFolder;
+            AzFramework::StringFunc::Path::GetFullPath(theFilename.c_str(), scriptFolder);
+            pySys.attr("path").attr("insert")(0, scriptFolder.c_str());
+
             PyCompilerFlags flags;
             flags.cf_flags = 0;
             const int bAutoCloseFile = true;
@@ -834,13 +840,6 @@ namespace EditorPythonBindings
                 EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnExceptionMessage, message.c_str());
                 pythonScriptResult = Result::Error_PythonException;
             }
-
-            // Free any memory allocated for the command-line args.
-            for (int arg = 0; arg < argc; arg++)
-            {
-                PyMem_RawFree(argv[arg]);
-            }
-            PyMem_Free(argv);
         }
         catch ([[maybe_unused]] const std::exception& e)
         {

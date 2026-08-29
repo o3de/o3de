@@ -39,6 +39,10 @@ set(FILES
     OpenParticleSystemEditor/Window/LightingPresetMenu.cpp
     OpenParticleSystemEditor/Window/ComboBoxWidget.h
     OpenParticleSystemEditor/Window/ComboBoxWidget.cpp
+    OpenParticleSystemEditor/Window/MaterialPropertyWidget.h
+    OpenParticleSystemEditor/Window/MaterialPropertyWidget.cpp
+    OpenParticleSystemEditor/Window/MaterialPropertyDialog.h
+    OpenParticleSystemEditor/Window/MaterialPropertyDialog.cpp
     OpenParticleSystemEditor/Window/PropertyEditorWidget.h
     OpenParticleSystemEditor/Window/PropertyEditorWidget.cpp
     OpenParticleSystemEditor/Window/EventHandlerWidget.h
