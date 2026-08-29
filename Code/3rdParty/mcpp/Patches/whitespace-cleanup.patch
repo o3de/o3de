@@ -1,0 +1,189 @@
+diff --git a/src/internal.H b/src/internal.H
+--- a/src/internal.H
++++ b/src/internal.H
+@@ -96,7 +96,7 @@
+ #define OP_LPA          2           /* (    */
+ /* The following are unary.     */
+ #define FIRST_UNOP      OP_PLU      /* First unary operator         */
+-#define OP_PLU          3           /* +    */ 
++#define OP_PLU          3           /* +    */
+ #define OP_NEG          4           /* -    */
+ #define OP_COM          5           /* ~    */
+ #define OP_NOT          6           /* !    */
+@@ -324,7 +324,7 @@
+         int     inc_nest;           /* Least maximum of include nest*/
+         long    n_macro;            /* Least maximum of num of macro*/
+         long    line_num;           /* Maximum source line number   */
+-} std_limits;    
++} std_limits;
+ /* The boolean flags specified by the execution options.    */
+ extern struct option_flags_ {
+         int     c;                  /* -C option (keep comments)    */
+diff --git a/src/support.c b/src/support.c
+--- a/src/support.c
++++ b/src/support.c
+@@ -649,7 +649,7 @@
+         if (mcpp_mode == STD && c == '\\' && stdc2) {
+             int     cnt;
+             char *  tp = bp;
+-            
++
+             if ((c = get_ch()) == 'u') {
+                 cnt = 4;
+             } else if (c == 'U') {
+@@ -1397,7 +1397,7 @@
+             } else {                                    /* .        */
+                 openum = OP_1;
+             }
+-        } else {    
++        } else {
+             openum = OP_1;
+         }
+         break;
+@@ -1865,7 +1865,7 @@
+     if (keep_spaces) {
+         saved_sp = sp - 2;          /* '-2' for beginning / and *   */
+         *sizp = 0;
+-    }        
++    }
+     if (keep_comments)                      /* If writing comments  */
+         mcpp_fputs( "/*", OUT);             /* Write the initializer*/
+     c = *sp++;
+@@ -1955,7 +1955,7 @@
+ /*
+  * ANSI (ISO) C: translation phase 1, 2.
+  * Get the next logical line from source file.
+- * Convert [CR+LF] to [LF]. 
++ * Convert [CR+LF] to [LF].
+  */
+ {
+ #if COMPILER == INDEPENDENT
+diff --git a/src/system.c b/src/system.c
+--- a/src/system.c
++++ b/src/system.c
+@@ -303,7 +303,7 @@
+ /* sharp_filename is filename for #line line, used only in cur_file()   */
+ static char *   sharp_filename = NULL;
+ static char *   argv0;      /* argv[ 0] for usage() and version()   */
+-static int      ansi;           /* __STRICT_ANSI__ flag for GNUC    */ 
++static int      ansi;           /* __STRICT_ANSI__ flag for GNUC    */
+ static int      compat_mode;
+                 /* "Compatible" mode of recursive macro expansion   */
+ #define MAX_ARCH_LEN    16
+@@ -530,7 +530,7 @@
+                 compat_mode = TRUE;     /* 'compatible' mode        */
+                 mcpp_mode = STD;
+             }
+-            else 
++            else
+                 usage( opt);
+             standard = (mcpp_mode == STD || mcpp_mode == POST_STD);
+             if (old_mode != STD && old_mode != mcpp_mode)
+@@ -837,7 +837,7 @@
+             /* Fall through */
+         case 'k':
+             option_flags.k = TRUE;
+-            /* Keep white spaces of input lines as they are */ 
++            /* Keep white spaces of input lines as they are */
+             break;
+ 
+ #if COMPILER == GNUC
+@@ -1739,7 +1739,7 @@
+     skip_nl();                      /* Clear the appended <newline> */
+ }
+ 
+-static void     chk_opts( 
++static void     chk_opts(
+     int     sflag,      /* Flag of Standard or post-Standard mode   */
+     int     trad                    /* -traditional (GCC only)      */
+ )
+@@ -2239,7 +2239,7 @@
+     set_a_dir( "/usr/local/include");
+ #endif
+ 
+-#ifdef  C_INCLUDE_DIR1 
++#ifdef  C_INCLUDE_DIR1
+     set_a_dir( C_INCLUDE_DIR1);
+ #endif
+ #ifdef  C_INCLUDE_DIR2
+@@ -2301,7 +2301,7 @@
+ #if SYSTEM == SYS_MAC
+         to_search_framework = &incdir[ framework_pos];
+ #endif
+-        max_inc *= 2;                   
++        max_inc *= 2;
+     }
+ 
+     if (dirname == NULL)
+@@ -2392,7 +2392,7 @@
+         if (! norm_name && option_flags.v)
+             mcpp_fprintf( ERR, "Invalid header map file \"%s\" is ignored\n"
+                     , dirname);
+-    } else 
++    } else
+ #endif
+     {
+         norm_name = norm_path( dirname, NULL, FALSE, FALSE);
+@@ -2642,7 +2642,7 @@
+             } else {                                /* Impossible   */
+                 break;
+             }
+-        } else {                                    /* Impossible   */ 
++        } else {                                    /* Impossible   */
+             break;
+         }
+     }
+@@ -2769,7 +2769,7 @@
+                 && scan_token( skip_ws(), (tp = work_buf, &tp), work_end)
+                         == NAM
+                     && str_eq( work_buf, "define")) {
+-                defp = do_define( TRUE, nargs);     /* Ignore re-definition */ 
++                defp = do_define( TRUE, nargs);     /* Ignore re-definition */
+             }
+             skip_nl();
+         }
+@@ -2981,7 +2981,7 @@
+ }
+ 
+ static char *   md_init(
+-    const char *    filename,   /* The source file name             */ 
++    const char *    filename,   /* The source file name             */
+     char *  output              /* Output to dependency file        */
+ )
+ /*
+@@ -3288,7 +3288,7 @@
+ )
+ /*
+  * If a directory is found in the 'source' filename string (i.e. "includer"),
+- * the directory part of the string is copied to 'directory' and 
++ * the directory part of the string is copied to 'directory' and
+  * has_directory() returns TRUE.
+  * Else, nothing is copied and it returns FALSE.
+  */
+@@ -3432,7 +3432,7 @@
+         return  FALSE;
+     if (standard && included( fullname))        /* Once included    */
+         goto  true;
+-        
++
+     if ((max_open != 0 && max_open <= include_nest)
+                             /* Exceed the known limit of open files */
+             || ((fp = fopen( fullname, "r")) == NULL && errno == EMFILE)) {
+@@ -3462,7 +3462,7 @@
+         }
+         if (max_open == 0)      /* Remember the limit of the system */
+             max_open = include_nest;
+-    } else if (fp == NULL)                  /* No read permission   */ 
++    } else if (fp == NULL)                  /* No read permission   */
+         goto  false;
+     /* Truncate buffer of the includer to save memory   */
+     len = (int) (file->bptr - file->buffer);
+@@ -3764,7 +3764,7 @@
+             return  TRUE;
+     }
+ 
+-    *cp2 = PATH_DELIM;      /* Restore original include file format */ 
++    *cp2 = PATH_DELIM;      /* Restore original include file format */
+ 
+     return  FALSE;
+ }

@@ -10,8 +10,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON               PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
-ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
-ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                    PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 
 # platform-specific:
@@ -20,7 +18,6 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android                    
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android                      TARGETS Freetype                PACKAGE_HASH 31cd0411425f3d69064849190c3cafb09fc3cdd64507f40bf49342630d76f861)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.288-rev2-android                TARGETS AWSNativeSDK                PACKAGE_HASH 61620cb4c79f752328e4722fa36020dabe04167d83c94a0d302c08f3efa367b7)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android                            TARGETS Lua                     PACKAGE_HASH 2adda1831577336454090f249baf09519f41bb73160cd1d5b5b33564729af4a2)
-ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android                         TARGETS mikkelsen               PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android                           TARGETS PNG                     PACKAGE_HASH c2240299251d97d963d2e9f4320fbc384bfb2e1b1e073419d1171df0e8ea983d)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android                  TARGETS libsamplerate           PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev2-android                       TARGETS OpenSSL                 PACKAGE_HASH 28fa781be8fa233e3074b08e5d6d5064d1a5a5cffc80b04e1bb8d407aca459a0)
