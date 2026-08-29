@@ -345,7 +345,11 @@ namespace UnitTest
 
             if (auto* ownershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get(); ownershipInterface)
             {
-                ownershipInterface->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+                // you can create an application manually that already has all of this stuff initialized.
+                if (!ownershipInterface->IsRootPrefabAssigned())
+                {
+                    ownershipInterface->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+                }
 
                 InstanceOptionalReference rootInstance = ownershipInterface->GetRootPrefabInstance();
                 ASSERT_TRUE(rootInstance.has_value());
