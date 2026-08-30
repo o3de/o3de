@@ -89,10 +89,19 @@ namespace AZ
             // Add the current view which can potentially be the editor view
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            auto currentView = atomViewportRequests->GetCurrentViewGroup(contextName)->GetView();
-            if (IsEditorView(currentView))
+
+            // GetCurrentViewGroup returns null when the default viewport context has no view group yet, which happens whenever a tool
+            // starts up with no viewport widget realised. A restored window layout that leaves the viewport hidden or collapsed is enough
+            // to reach this on the very first tick, and the unguarded arrow below then dereferences null and takes the process down.
+            // Nothing here needs the current view when there is not one; the other scene views gathered above still get their blend
+            // weights, and the next tick picks the view up once the viewport exists.
+            if (const auto currentViewGroup = atomViewportRequests->GetCurrentViewGroup(contextName))
             {
-                allSceneViews.insert(currentView.get());
+                auto currentView = currentViewGroup->GetView();
+                if (IsEditorView(currentView))
+                {
+                    allSceneViews.insert(currentView.get());
+                }
             }
 
             // calculate blend weights for all cameras

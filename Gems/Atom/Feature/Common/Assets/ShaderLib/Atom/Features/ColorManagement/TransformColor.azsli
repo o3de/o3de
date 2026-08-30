@@ -14,8 +14,23 @@
 #include "GeneratedTransforms/LinearSrgb_To_Srgb.azsli"
 #include "GeneratedTransforms/Srgb_To_LinearSrgb.azsli"
 #include "GeneratedTransforms/Aces_To_AcesCg.azsli"
+// The ACEScc conversions are opt-out, because one of them is disproportionately expensive to compile. AcesCcToAcesCg.azsli includes
+// Atom/Features/PostProcessing/Aces.azsli, which is 808 preprocessed lines of ACES reference transforms, and that is the single
+// largest contributor to the input azslc receives for any material shader that samples a texture -- sample_texture_2d.materialgraphnode
+// requests this file for its colour space conversion, so every Material Canvas graph with a texture in it pays for the ACES library
+// whether or not ACEScc is ever selected.
+//
+// Defining ENABLE_ACESCC_COLOR_SPACE to 0 removes it. Conversions to or from ACEScc then fall through to the same magenta that any
+// other unsupported pair produces below, which is deliberate: it is visibly wrong rather than quietly approximate. Every other colour
+// space is unaffected, and nothing else in the material shader path reaches Aces.azsli.
+#ifndef ENABLE_ACESCC_COLOR_SPACE
+#define ENABLE_ACESCC_COLOR_SPACE 1
+#endif
+
+#if ENABLE_ACESCC_COLOR_SPACE
 #include "GeneratedTransforms/AcesCcToAcesCg.azsli"
 #include "GeneratedTransforms/AcesCgToAcesCc.azsli"
+#endif
 #include "GeneratedTransforms/CalculateLuminance_LinearSrgb.azsli"
 #include "GeneratedTransforms/CalculateLuminance_AcesCg.azsli"
 
@@ -73,18 +88,22 @@ real3 TransformColor(in real3 color, ColorSpaceId fromColorSpace, ColorSpaceId t
     {
         color = AcesCg_To_LinearSrgb(color);
     }
+#if ENABLE_ACESCC_COLOR_SPACE
     else if (fromColorSpace == ColorSpaceId::ACEScg && toColorSpace == ColorSpaceId::ACEScc)
     {
         color = AcesCgToAcesCc(color);
     }
+#endif
     else if (fromColorSpace == ColorSpaceId::ACES2065 && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = Aces_To_AcesCg(color);
     }
+#if ENABLE_ACESCC_COLOR_SPACE
     else if (fromColorSpace == ColorSpaceId::ACEScc && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = AcesCcToAcesCg(color);
     }
+#endif
     else
     {
         color = real3(1, 0, 1);

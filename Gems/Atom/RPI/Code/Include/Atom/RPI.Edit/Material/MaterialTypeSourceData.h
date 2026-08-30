@@ -213,6 +213,31 @@ namespace AZ
             //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
 
+            //! Build time facts about this material type that a .materialpipeline script can act on, as a free form name/value map.
+            //!
+            //! Material Canvas currently emits:
+            //!   "opacityMode" = "Opaque" | "Cutout" | "Blended" | "TintedTransparent"
+            //!   "positionOffset" = "Connected" when the Position Offset input has an incoming graph connection
+            //!
+            //! Material pipeline scripts use opacityMode to include only the shader group used by the generated material. A missing
+            //! opacityMode means Dynamic for backward compatibility and builds every group. The positionOffset fact allows optional
+            //! depth, shadow, and motion-vector vertex passes to be omitted when the graph leaves vertex positions unchanged.
+            //!
+            //! "materialPipelines" names the material pipelines this material type is built through, by file stem, separated by commas
+            //! or spaces. Absent, it is the project wide default list and nothing changes. Present, it selects from that list plus
+            //! /O3DE/Atom/RPI/OptInMaterialPipelineFiles, whose pipelines are registered but never built unless a material type asks for
+            //! one by name.
+            //!
+            //! This is what keeps a tool specific pipeline from becoming a project wide setting. A reduced pipeline for a preview
+            //! viewport can be registered permanently and used by exactly the material types that name it, rather than by swapping the
+            //! project's pipeline list out from under every other material type and needing an Asset Processor restart to swap it back.
+            //! A name that matches no registered pipeline is warned about and ignored; if none of the declared names match, the default
+            //! list is used, because a material type with no pipelines produces no shaders and renders as nothing with no clue why.
+            //!
+            //! This is relevant for "abstract" material type files (see GetFormat()).
+            using BuildSettings = AZStd::map<AZStd::string, AZStd::string>;
+            BuildSettings m_buildSettings;
+
             //! This indicates a .azsli file that contains only material-specific shader definitions, which will be included.
             //! in the final shader before any other files.
             //! The build system will automatically combine this code with .materialpipeline shader code
