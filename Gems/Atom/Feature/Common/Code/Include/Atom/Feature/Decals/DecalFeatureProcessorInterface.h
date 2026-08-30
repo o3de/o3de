@@ -43,9 +43,11 @@ namespace AZ
 
             AZStd::array<float, 3> m_decalColor = { { 1.0f, 1.0f, 1.0f } };
             float m_decalColorFactor = 1.0f;
-            // Distance from the camera beyond which the decal stops rendering. Defaults to unlimited
-            // so existing content is unaffected until a project opts in by lowering it.
-            float m_maxDrawDistance = std::numeric_limits<float>::max();
+            // Distance from the camera beyond which the decal stops rendering. Zero means unlimited,
+            // which is both the default and the fail-safe value: a zero arriving here from a stale
+            // shader cache or an uninitialized path disables culling rather than culling everything.
+            // Do not use FLT_MAX as the sentinel -- squaring it for distance-squared compares overflows.
+            float m_maxDrawDistance = 0.0f;
 
             // Unused. Pads out to the 96 bytes [[pad_to(16)]] gives the shader-side struct.
             AZStd::array<float, 3> m_padding{};
