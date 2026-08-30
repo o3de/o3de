@@ -187,7 +187,7 @@ namespace AZ::ShaderCompiler
                 //                        | |     |       decimal
                 // custom raw string      | |     |          |  optional filename between quotes
                 //         delimiter --+  | |     |          |        |
-                std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
+                static const std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
                 auto matchBegin = std::sregex_iterator(lineText.begin(), lineText.end(), lineRegex);
                 // there can be only 1 match, and it HAS to match since AntlR lexer already matched.
                 auto& groups = *matchBegin; // 4 groups: [0] is the whole line. [1] is the first parenthesized group, [2] the 2nd etc
