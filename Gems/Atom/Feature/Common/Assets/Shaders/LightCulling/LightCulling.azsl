@@ -266,7 +266,9 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabbCenter,
 
         // Drop out-of-range decals before any tile intersection work. The camera is at the origin in
         // view space, so this is the same distance the CPU cull and Decals.azsli measure.
-        if (dot(decalPosition, decalPosition) > decal.m_maxDrawDistance * decal.m_maxDrawDistance)
+        // Zero means unlimited, so only cull when a limit is actually set.
+        if (decal.m_maxDrawDistance > 0.0f &&
+            dot(decalPosition, decalPosition) > decal.m_maxDrawDistance * decal.m_maxDrawDistance)
         {
             continue;
         }

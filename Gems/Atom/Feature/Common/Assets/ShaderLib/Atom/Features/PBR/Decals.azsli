@@ -41,7 +41,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
 
     // Backstop for paths that skipped the CPU and LightCulling.azsl culls. Measured from the decal
     // position so all three agree; the surface position would make the cutoff per-pixel.
-    if (distance(ViewSrg::m_worldPosition, decal.m_position) > decal.m_maxDrawDistance)
+    if (decal.m_maxDrawDistance > 0.0 && distance(ViewSrg::m_worldPosition, decal.m_position) > decal.m_maxDrawDistance)
     {
         return;
     }

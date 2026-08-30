@@ -637,12 +637,14 @@ namespace AZ
                 uint32_t dataIndex = sortedDecals[i];
                 const auto& decalData = dataVector[dataIndex];
 
-                // Squaring m_maxDrawDistance's unlimited default (FLT_MAX) overflows to +inf, which no
-                // finite distance can ever exceed, so this is a no-op for decals without a draw distance.
-                const float maxDrawDistanceSq = decalData.m_maxDrawDistance * decalData.m_maxDrawDistance;
-                if ((AZ::Vector3::CreateFromFloat3(decalData.m_position.data()) - viewPos).GetLengthSq() > maxDrawDistanceSq)
+                // Zero means unlimited, so only cull when a limit is actually set.
+                if (decalData.m_maxDrawDistance > 0.0f)
                 {
-                    continue;
+                    const float maxDrawDistanceSq = decalData.m_maxDrawDistance * decalData.m_maxDrawDistance;
+                    if ((AZ::Vector3::CreateFromFloat3(decalData.m_position.data()) - viewPos).GetLengthSq() > maxDrawDistanceSq)
+                    {
+                        continue;
+                    }
                 }
 
                 AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
