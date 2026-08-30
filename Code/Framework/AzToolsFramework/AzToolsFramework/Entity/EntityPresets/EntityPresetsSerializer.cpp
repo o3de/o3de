@@ -231,7 +231,7 @@ namespace AzToolsFramework
 
             case PropertyValue::Type::Int:
             default:
-                outputValue.AddMember(rapidjson::StringRef("value"), value.m_int, allocator);
+                outputValue.AddMember(rapidjson::StringRef("value"), static_cast<int64_t>(value.m_int), allocator);
                 break;
             }
 

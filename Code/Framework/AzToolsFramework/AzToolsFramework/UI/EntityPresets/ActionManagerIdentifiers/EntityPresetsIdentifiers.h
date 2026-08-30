@@ -19,7 +19,7 @@ namespace EntityPresetsIdentifiers
     //! This identifier is a public contract. A gem may hang its own submenu or action here for a
     //! preset that cannot be expressed as data - one that touches the level entity, builds a
     //! hierarchy, or wires entities to one another. An ordinary preset needs no code and should
-    //! ship as Presets/*.entitypresets.json inside the gem instead; it will be picked up
+    //! ship as Presets/<name>.entitypresets.json inside the gem instead; it will be picked up
     //! automatically and needs nothing from this header.
     //!
     //! No handler-ordering arrangement is required. ActionManagerSystemComponent broadcasts each
