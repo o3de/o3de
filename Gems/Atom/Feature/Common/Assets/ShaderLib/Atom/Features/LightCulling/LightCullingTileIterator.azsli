@@ -8,8 +8,20 @@
 
 #pragma once
 
-#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+// LightingOptions.azsli comes first because it declares ENABLE_LIGHT_CULLING, and the guard below reads as 0 for an
+// undefined macro -- ordered the other way round this would silently drop light culling from every shader.
 #include <Atom/Features/PBR/LightingOptions.azsli>
+
+#if ENABLE_LIGHT_CULLING
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+#else
+// With culling off, Init() below compiles down to InitNoCulling() and the only things still wanted from that header are the
+// two sentinel values the iterator compares against. Including it for them costs 285 preprocessed lines of NVLC.azsli in
+// every material shader, which ENABLE_LIGHT_CULLING=0 was widely assumed to remove and did not: the option guards the call
+// sites, while LightCullingShared.azsli includes NVLC.azsli unconditionally.
+#define NVLC_END_OF_LIST     0xFFFF
+#define NVLC_END_OF_GROUP    0xFFFE
+#endif
 
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator

@@ -84,16 +84,72 @@ colour science are the clearest example: they arrive through
 `ForwardPassDecals` to `Decals.azsli` to `BlendUtility.azsli` to `TransformColor.azsli` to `AcesCcToAcesCg.azsli`. Decal colour
 blending is the only reason a material shader contains a tone mapping library.
 
-The five defines remove roughly 4,240 of those 13,399 lines:
+The six defines together remove roughly 4,240 of those 13,399 lines:
 
 | Define | Removes | Lines |
 | --- | --- | ---: |
 | `ENABLE_AREA_LIGHTS=0` | Ltc, Quad, Disk, Capsule and Polygon lights | ~1,394 |
 | `ENABLE_DECALS=0` | Aces, AcesColorSpaceConversion, TransformColor | ~1,123 |
 | `ENABLE_SHADOWS=0` | the four shadow filtering files | ~1,127 |
-| `ENABLE_SHADER_DEBUGGING=0` | Debug | ~309 |
-| `ENABLE_LIGHT_CULLING=0` | NVLC | ~286 |
+| `ENABLE_LIGHT_CULLING=0` | NVLC, but only since its include was guarded -- see below | ~286 |
 | `ENABLE_ACESCC_COLOR_SPACE=0` | Aces (via TransformColor's ACEScc conversion) | ~808 |
+| `ENABLE_SHADER_DEBUGGING=0` | a handful of branches inside Debug, not the file | ~15 |
+
+**These rows do not sum, and the last one is not what it looks like.** Both mistakes are easy to make from a table like this,
+so they are worth stating outright.
+
+`Aces.azsli` reaches the shader by two independent routes: decals pull it in through `BlendUtility` to `TransformColor`, and
+`sample_texture_2d` pulls it in through `TransformColor` directly. Whichever define is measured first is charged the full 808
+lines and the other appears to save them again. Measuring each define alone and adding the results gives about 4,750; the
+combined figure is ~4,240. Only ever quote the combined number, measured with every define set at once.
+
+`ENABLE_SHADER_DEBUGGING=0` removes about 15 lines, not the 309 that `Debug.azsli` contributes. The define guards the code
+that *uses* the debug data; the file itself is `#include`d unconditionally from `LightingData.azsli`, `Ibl.azsli`,
+`ForwardPassDirectLighting.azsli` and `DeferredPassEvaluateLighting.azsli`. An earlier version of this table credited it with
+the full 309, which was wrong. It is kept in the `Definitions` block because 15 lines is still 15 lines and it costs nothing.
+
+`ENABLE_LIGHT_CULLING=0` did not remove `NVLC.azsli` either, for the same reason, until this branch guarded it.
+`LightCullingShared.azsli` included NVLC unconditionally and `LightCullingTileIterator.azsli` included that, so 285 lines
+survived an option everyone assumed removed them. The iterator needed exactly two sentinel constants from the header on the
+culling-disabled path, so it now defines those in an `#else` and skips the include. Note the include order there: the guard
+has to sit below `LightingOptions.azsli`, because `#if` treats an undefined `ENABLE_LIGHT_CULLING` as 0 and the original
+order would have dropped light culling from every shader in the engine.
+
+### Verifying this table
+
+Do not trust the estimates; read the preprocessor's own output. Every `.azslin` in `Cache/pc` carries `#line` directives, so
+attributing its lines back to source files says exactly what survived. That is how both errors above were caught -- the
+defines were all set correctly and the files were still there:
+
+```
+crystal_shader_materialcanvaspreview_transparent_standardlighting_dx12.azslin   8,343 content lines, 106 files
+  Aces.azsli            absent      ENABLE_ACESCC_COLOR_SPACE / ENABLE_DECALS worked
+  Ltc.azsli             absent      ENABLE_AREA_LIGHTS worked
+  ParallaxDepth.azsli   absent      already off; see below
+  Debug.azsli           304 lines   ENABLE_SHADER_DEBUGGING did not remove it
+  NVLC.azsli            286 lines   ENABLE_LIGHT_CULLING did not remove it (fixed since)
+```
+
+`z_attribute_shader_lines.ps1` in the project root does this. Run it after any change here.
+
+### Investigated and rejected
+
+Two further cuts look obvious from the attribution table and are not worth making. Both were measured; this section exists so
+the next person does not spend the afternoon rediscovering them.
+
+**Guarding the four `Debug.azsli` includes** would recover the remaining ~294 lines, worth 30-50ms at the measured 0.10-0.17ms
+per line. `Debug.azsli` is deliberately written to be included unconditionally: its predicates (`IsDirectLightingEnabled`,
+`IsDiffuseLightingEnabled`, `AreNormalMapsEnabled`, `UseDebugLight` and six more) return the 'everything on' answer when
+debugging is off, so ordinary lighting code calls them without guards. Twelve files across the engine depend on that, including
+`ForwardPassVertexAndPixel.azsli`, which calls `DebugModifyOutput` on the main pixel path. Guarding the includes means shipping
+a stub header that redeclares that whole surface and keeping it in sync with `Debug.azsli` forever, and a drift between the two
+would show up as a miscompiled production shader rather than a build error. Not worth 40ms.
+
+**`ENABLE_PARALLAX=0`** saves nothing here. Material Canvas already defaults it to 0 in
+`MaterialGraphName_Defines.azsli` for both BasePBR and StandardPBR -- parallax is disabled until the parallax depth functions
+stop taking the heightmap and sampler from the material SRG. Setting it in these templates changes nothing for a graph that
+does not use parallax, and silently breaks the preview for one that does. Measurements showing a saving for this define were
+taken on a hand-authored StandardPBR material, where the default is 1.
 
 azslc cost tracks input size and does so slightly worse than linearly: across seven shaders between 13.4k and 15.5k lines the
 average was about 0.10 ms per line while the marginal cost was about 0.17 ms per line. dxc then parses the HLSL azslc emits, so a
