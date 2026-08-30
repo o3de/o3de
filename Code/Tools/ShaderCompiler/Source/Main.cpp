@@ -172,10 +172,11 @@ namespace AZ::ShaderCompiler
     }
 
     //! iterates on tokens and build the line number mapping (from preprocessor line directives)
-    void ConstructLineMap(vector<std::unique_ptr<Token>>* allTokens, PreprocessorLineDirectiveFinder* lineFinder)
+    // Takes the parser's own token buffer (non-owning views) rather than a second, separately lexed vector.
+    void ConstructLineMap(const vector<Token*>& allTokens, PreprocessorLineDirectiveFinder* lineFinder)
     {
         string lastNonEmptyFileName = lineFinder->m_physicalSourceFileName;
-        for (auto& token : *allTokens) // auto& because each element is a unique_ptr we can't copy
+        for (const Token* token : allTokens)
         {
             if (token->getType() == azslLexer::LineDirective)
             {
@@ -512,13 +513,16 @@ int main(int argc, const char* argv[])
         azslLexer lexer(&input);
         CommonTokenStream tokens(&lexer);
         IntermediateRepresentation ir(&lexer);
-        auto allTokens = lexer.getAllTokens();
+        // Lex once. getAllTokens() ran the lexer over the whole input, then lexer.reset() threw that state away and
+        // CommonTokenStream lexed the same input a second time during the parse. fill() populates the stream the
+        // parser is about to read, and getTokens() hands back every buffered token -- off-channel ones included, so
+        // the PREPROCESSOR-channel LineDirective tokens the line map needs are all still there.
+        tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
             throw std::runtime_error("syntax errors present");
         }
-        ConstructLineMap(&allTokens, &lineFinder);
-        lexer.reset();
+        ConstructLineMap(tokens.getTokens(), &lineFinder);
         AzslParserEventListener azslParserEventListener;
         azslParser parser(&tokens);
         parser.removeErrorListeners();
