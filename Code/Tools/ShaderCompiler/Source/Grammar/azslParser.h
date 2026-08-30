@@ -405,10 +405,10 @@ public:
     antlr4::Token *GlobalSROToken = nullptr;
     NestedNameSpecifierContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<antlr4::tree::TerminalNode *> Identifier();
-    antlr4::tree::TerminalNode* Identifier(size_t i);
     std::vector<antlr4::tree::TerminalNode *> ColonColon();
     antlr4::tree::TerminalNode* ColonColon(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Identifier();
+    antlr4::tree::TerminalNode* Identifier(size_t i);
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;

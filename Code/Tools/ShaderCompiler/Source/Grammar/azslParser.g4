@@ -42,8 +42,24 @@ qualifiedId:
     nestedNameSpecifier unqualifiedId
 ;
 
+// Left-factored so this cannot derive the empty string.
+//
+// It used to read  GlobalSROToken='::'? (Identifier '::')*  , where both parts are optional, so the whole rule
+// could match nothing. That made qualifiedId (nestedNameSpecifier unqualifiedId) derive a bare Identifier --
+// exactly what unqualifiedId derives -- so every identifier in the file hit a genuinely ambiguous decision in
+// idExpression. ANTLR resolves that by preferring the first alternative, but only after running full-context
+// ALL(*) prediction to discover the conflict, once per identifier. Measured at ~11,900 full-context predictions
+// for one shader, in a parse phase that is 71% of AZSLc's run.
+//
+// Requiring at least one token means qualifiedId now announces itself within two tokens ('::' or Identifier
+// '::'), which SLL can decide without falling back.
+//
+// The generated context class is unchanged: both alternatives are unlabelled, so NestedNameSpecifierContext
+// still exposes GlobalSROToken (null in the second alternative, as it already was when '::' was absent) and
+// the same Identifier() list. The only derivation lost is the empty one, which ANTLR never chose anyway.
 nestedNameSpecifier:
-    GlobalSROToken='::'? (Identifier '::')*
+        GlobalSROToken='::' (Identifier '::')*   // ::a::b::   or just ::
+    |   (Identifier '::')+                       // a::b::
 ;
 
 classDefinitionStatement:
