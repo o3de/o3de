@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
+#include <AtomToolsFramework/Graph/GraphDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
@@ -26,7 +27,9 @@
 namespace MaterialCanvas
 {
     //! MaterialCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Material Canvas. 
-    class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    class MaterialCanvasMainWindow
+        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+        , private AtomToolsFramework::GraphDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -36,7 +39,7 @@ namespace MaterialCanvas
 
         MaterialCanvasMainWindow(
             const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = nullptr);
-        ~MaterialCanvasMainWindow() = default;
+        ~MaterialCanvasMainWindow() override;
 
     protected:
         // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...
@@ -46,6 +49,13 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
+
+        // AtomToolsFramework::GraphDocumentNotificationBus::Handler overrides...
+        void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
+
+        // AtomToolsFramework::AtomToolsMainWindow overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+        void UpdateMenus(QMenuBar* menuBar) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
@@ -61,6 +71,7 @@ namespace MaterialCanvas
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;
+        QAction* m_actionApply = {};
         QTranslator m_translator;
         mutable AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> m_materialCanvasCompileSettingsGroup;
     };

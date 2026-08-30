@@ -14,8 +14,23 @@ function MaterialTypeSetup(context)
     Print('Material type uses lighting model "' .. lightingModel .. '".')
 
     context:ExcludeAllShaders()
-    
-    context:IncludeShader("ShadowmapPass")
+
+    opacityMode = context:GetBuildSetting("opacityMode", "Dynamic")
+    if(opacityMode ~= "Dynamic" and opacityMode ~= "Opaque" and opacityMode ~= "Cutout" and
+       opacityMode ~= "Blended" and opacityMode ~= "TintedTransparent") then
+        Warning('Unrecognised "opacityMode" build setting "' .. opacityMode .. '". Building every shader.')
+        opacityMode = "Dynamic"
+    end
+
+    buildOpaqueShader = opacityMode == "Dynamic" or opacityMode == "Opaque"
+    buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
+    buildBlendedShader = opacityMode == "Dynamic" or opacityMode == "Blended"
+    buildTintedTransparentShader = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
+    buildVertexShaders = opacityMode == "Dynamic" or context:GetBuildSetting("positionOffset", "Disconnected") == "Connected"
+
+    if(buildVertexShaders) then
+        context:IncludeShader("ShadowmapPass")
+    end
 
     if(lightingModel == "Base") then
         context:IncludeShader("ForwardPass_BaseLighting")
@@ -27,11 +42,19 @@ function MaterialTypeSetup(context)
             Warning("The mobile pipeline does not support the Enhanced lighting model. Will use Standard lighting as a fallback.")
         end
         
-        context:IncludeShader("ShadowmapPass_CustomZ")
-        context:IncludeShader("ForwardPass_StandardLighting")
-        context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
-        context:IncludeShader("Transparent_StandardLighting")
-        context:IncludeShader("TintedTransparent_StandardLighting")
+        if(buildOpaqueShader) then
+            context:IncludeShader("ForwardPass_StandardLighting")
+        end
+        if(buildCutoutShaders) then
+            context:IncludeShader("ShadowmapPass_CustomZ")
+            context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
+        end
+        if(buildBlendedShader) then
+            context:IncludeShader("Transparent_StandardLighting")
+        end
+        if(buildTintedTransparentShader) then
+            context:IncludeShader("TintedTransparent_StandardLighting")
+        end
         return true
     end
     

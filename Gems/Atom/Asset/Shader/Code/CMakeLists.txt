@@ -59,9 +59,12 @@ ly_add_target(
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/atom_asset_shader_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             ${pal_source_dir}
         PUBLIC
+            # Both are public because the public headers need both: AzslCompiler.h is found through Source/Editor but includes
+            # <Editor/ShaderBuilderUtility.h>, which only resolves with Source on the path. With Source private this target could
+            # not actually be linked by anything outside this gem.
+            Source
             Source/Editor
     COMPILE_DEFINITIONS
         PRIVATE

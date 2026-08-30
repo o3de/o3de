@@ -15,6 +15,8 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
 #include <AtomToolsFramework/Graph/GraphDocumentView.h>
+#include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
@@ -82,6 +84,8 @@ namespace MaterialCanvas
     {
         Base::Reflect(context);
         MaterialGraphCompiler::Reflect(context);
+        AtomToolsFramework::GraphViewSettings::Reflect(context);
+        AtomToolsFramework::GraphViewConstructPresets::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -123,6 +127,11 @@ namespace MaterialCanvas
         // Save all of the graph view configuration settings to the settings registry.
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
 
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Remove("/O3DE/Atom/MaterialCanvas/PaneWindowState");
+        }
+
         m_graphViewSettingsPtr.reset();
         m_window.reset();
         m_viewportSettingsSystem.reset();
@@ -131,6 +140,7 @@ namespace MaterialCanvas
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
+        ApplyPreviewMaterialPipelineSettings();
         Base::Destroy();
     }
 
@@ -147,6 +157,7 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::FactoryRegistered()
     {
         ApplyShaderBuildSettings();
+        ApplyPreviewMaterialPipelineSettings();
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()
@@ -413,6 +424,37 @@ namespace MaterialCanvas
             {
                 fileIO->Remove(settingsPath.c_str());
                 fileIO->Remove(settingsPathDx12.c_str());
+            }
+        }
+    }
+
+    void MaterialCanvasApplication::ApplyPreviewMaterialPipelineSettings()
+    {
+        // If the preview-only material pipeline is enabled, copy a settings registry file stub into the user settings folder. It replaces
+        // /O3DE/Atom/RPI/MaterialPipelineFiles with a single trimmed pipeline, which MaterialTypeBuilder reads when it expands an abstract
+        // material type into shaders. The default list names both MainPipeline and LowEndPipeline, and for a Standard lighting model those
+        // two produce 21 shaders between them. The preview pipeline produces four and drops LowEndPipeline entirely.
+        //
+        // This is an Asset Processor side setting, so it applies to every material type in the project while it is enabled, not just the
+        // graph being edited, and both this application and the Asset Processor have to be restarted for a change to take effect. Turning
+        // it back off restores the stock pipelines and the assets they generate.
+        if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
+        {
+            const AZ::IO::FixedMaxPath materialCanvasGemPath = AZ::Utils::GetGemPath("MaterialCanvas");
+            const auto settingsPathStub(
+                materialCanvasGemPath / AZ::SettingsRegistryConstants::RegistryFolder / "user_preview_material_pipeline.setregstub");
+
+            const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            const auto settingsPath(
+                projectPath / AZ::SettingsRegistryConstants::DevUserRegistryFolder / "user_preview_material_pipeline.setreg");
+
+            if (AtomToolsFramework::GetSettingsValue<bool>("/O3DE/Atom/MaterialCanvas/EnablePreviewOnlyMaterialPipeline", false))
+            {
+                fileIO->Copy(settingsPathStub.c_str(), settingsPath.c_str());
+            }
+            else
+            {
+                fileIO->Remove(settingsPath.c_str());
             }
         }
     }

@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportScene.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 namespace AtomToolsFramework
@@ -38,9 +39,17 @@ namespace AtomToolsFramework
 
         // The viewport context created by RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
-        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
-        viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
+        //
+        // This is only safe when the tool owns the only viewport in the process, which is true for the standalone Atom Tools
+        // applications and false when one of them is hosted inside the O3DE Editor. There the default viewport context
+        // belongs to the level viewport, and claiming its name takes it away from the Editor. Hosts in that situation set the
+        // setting below to false before constructing a viewport; the default preserves the standalone behaviour exactly.
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/EntityPreviewViewport/RenameToDefaultViewportContext", true))
+        {
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            viewportContextManager->RenameViewportContext(
+                viewportContext, viewportContextManager->GetDefaultViewportContextName());
+        }
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;

@@ -73,6 +73,8 @@ namespace AtomToolsFramework
         bool CompileGraph() override;
         void QueueCompileGraph() override;
         bool IsCompileGraphQueued() const override;
+        void QueueApplyGraph() override;
+        bool IsApplyGraphNeeded() const override;
 
     private:
         // AZ::SystemTickBus::Handler overrides...
@@ -108,6 +110,10 @@ namespace AtomToolsFramework
         bool m_buildPropertiesQueued = {};
         // This plan will be set to true if a request has been made to compile the graph data.
         bool m_compileGraphQueued = {};
+
+        // Set when a save queues a compile, cleared when a compile actually starts. Sticky on purpose: edits and saves coalesce into one
+        // compile, and that compile owes production output if a save was among the requests it swallowed.
+        bool m_compileProductionOutputQueued = {};
         // Next time that a cued compile can be executed
         AZStd::chrono::steady_clock::time_point m_compileGraphQueueTime = AZStd::chrono::steady_clock::now();
         // Container of file paths that were affected by the compiler.

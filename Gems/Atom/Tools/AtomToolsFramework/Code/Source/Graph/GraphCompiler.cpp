@@ -14,6 +14,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AtomToolsFramework
@@ -47,13 +48,60 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::Reset()
     {
-        if (CanCompileGraph())
+        bool stopAssetStatusReporting = false;
         {
-            return true;
+            AZStd::scoped_lock lock(m_compileLifecycleMutex);
+            if (m_compileInProgress)
+            {
+                m_cancelRequested = true;
+                stopAssetStatusReporting = true;
+            }
+            else
+            {
+                switch (m_state.load())
+                {
+                case State::Idle:
+                case State::Failed:
+                case State::Complete:
+                case State::Canceled:
+                    // Reserve synchronously, before GraphDocument dispatches the background job. This closes the window where a second
+                    // edit could observe the old terminal state and dispatch another job before the first worker had started.
+                    m_compileInProgress = true;
+                    m_compileReserved = true;
+                    m_cancelRequested = false;
+                    return true;
+                default:
+                    break;
+                }
+            }
         }
 
-        SetState(State::Canceled);
+        if (stopAssetStatusReporting)
+        {
+            AssetStatusReporterSystemRequestBus::Event(
+                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+        }
+
         return false;
+    }
+
+    void GraphCompiler::Cancel()
+    {
+        bool stopAssetStatusReporting = false;
+        {
+            AZStd::scoped_lock lock(m_compileLifecycleMutex);
+            if (m_compileInProgress)
+            {
+                m_cancelRequested = true;
+                stopAssetStatusReporting = true;
+            }
+        }
+
+        if (stopAssetStatusReporting)
+        {
+            AssetStatusReporterSystemRequestBus::Event(
+                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+        }
     }
 
     void GraphCompiler::SetStateChangeHandler(StateChangeHandler handler)
@@ -114,11 +162,17 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::CanCompileGraph() const
     {
-        switch (m_state)
+        if (m_compileInProgress)
+        {
+            return false;
+        }
+
+        switch (m_state.load())
         {
         case State::Idle:
         case State::Failed:
         case State::Complete:
+        case State::Canceled:
             return true;
         }
         return false;
@@ -126,9 +180,38 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath)
     {
-        if (!CanCompileGraph())
         {
-            return false;
+            AZStd::scoped_lock lock(m_compileLifecycleMutex);
+
+            // GraphDocument normally reserves the compiler with Reset before dispatching this worker. Retain support for direct callers
+            // by creating and consuming a reservation here only when no job is already active.
+            if (!m_compileInProgress)
+            {
+                switch (m_state.load())
+                {
+                case State::Idle:
+                case State::Failed:
+                case State::Complete:
+                case State::Canceled:
+                    m_compileInProgress = true;
+                    m_compileReserved = true;
+                    m_cancelRequested = false;
+                    break;
+                default:
+                    return false;
+                }
+            }
+
+            if (!m_compileReserved)
+            {
+                return false;
+            }
+            m_compileReserved = false;
+        }
+
+        if (IsCancelRequested())
+        {
+            return FinishCompile(State::Canceled);
         }
 
         m_graph = graph;
@@ -139,26 +222,93 @@ namespace AtomToolsFramework
         // Skip compilation if there is no graph or this is a template.
         if (!m_graph || m_graphName.empty() || GetGraphPath().empty())
         {
-            SetState(State::Failed);
-            return false;
+            return FinishCompile(State::Failed);
         }
 
         SetState(State::Compiling);
+        if (IsCancelRequested())
+        {
+            return FinishCompile(State::Canceled);
+        }
         return true;
+    }
+
+    bool GraphCompiler::IsCancelRequested() const
+    {
+        return m_cancelRequested;
+    }
+
+    bool GraphCompiler::FinishCompile(State finalState, AZStd::function<void()> completionCallback)
+    {
+        AZStd::scoped_lock lock(m_compileLifecycleMutex);
+        if (!m_compileInProgress)
+        {
+            return false;
+        }
+
+        const State publishedState = m_cancelRequested ? State::Canceled : finalState;
+        if (publishedState == State::Complete && completionCallback)
+        {
+            completionCallback();
+        }
+
+        SetState(publishedState);
+        m_compileReserved = false;
+        m_compileInProgress = false;
+        return publishedState == State::Complete;
+    }
+
+    bool GraphCompiler::ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const
+    {
+        // Include files have no Asset Processor builder and therefore no jobs to wait for.
+        return !generatedFile.ends_with(".azsli");
     }
 
     bool GraphCompiler::ReportGeneratedFileStatus()
     {
+        if (IsCancelRequested())
+        {
+            return false;
+        }
+
         SetState(State::Processing);
 
+        // Only report on files that the Asset Processor will actually build. Include files like azsli have no builder and therefore no
+        // jobs, so querying their status costs a full round trip to the AP that can never return anything but an empty job list. They are
+        // deliberately left in m_generatedFiles, which other systems rely on in full, such as the viewport searching it for the generated
+        // material to apply.
+        AZStd::vector<AZStd::string> filesToReport;
+        filesToReport.reserve(m_generatedFiles.size());
+        for (const auto& generatedFile : m_generatedFiles)
+        {
+            if (ShouldReportGeneratedFileStatus(generatedFile))
+            {
+                filesToReport.push_back(generatedFile);
+            }
+        }
+
         // Start monitoring and reporting AP status for any files generated during this compile.
-        if (!m_generatedFiles.empty())
+        if (!filesToReport.empty())
         {
             // Begin requesting status from the asset reporting system, which manages a queue of requests from multiple graphs.
             AssetStatusReporterSystemRequestBus::Event(
-                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, m_generatedFiles);
+                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, filesToReport);
 
-            while (m_state == State::Processing)
+            // Bound the wait. AssetStatusReporter walks its paths with an index that only ever moves forward, so a path it is sitting on
+            // has to reach a terminal job state or it waits on that path forever. The Asset Processor can finish all of its work without
+            // that happening: a structural change to a graph makes MaterialTypeBuilder delete and regenerate the intermediate shader
+            // sources, which retriggers the very jobs being polled, and a duplicated intermediate entry in the Asset Processor database
+            // (o3de/o3de#19642, visible in the AP log as "GetTopLevelSourceForProduct found multiple sources") leaves paths that never
+            // settle cleanly.
+            //
+            // Giving up costs nothing. The compile is reported complete and the viewport re-applies the material when the assets actually
+            // appear in the asset catalog, which it watches for exactly this reason. Waiting forever, by contrast, strands the preview
+            // until something else happens to change the compiler's state.
+            const AZ::u64 timeoutMs =
+                GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/AssetStatusTimeoutMs", (AZ::u64)15000);
+            const auto deadline = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(timeoutMs);
+
+            while (m_state == State::Processing && !IsCancelRequested())
             {
                 AssetStatusReporterState status = AssetStatusReporterState::Failed;
                 AssetStatusReporterSystemRequestBus::EventResult(
@@ -171,8 +321,38 @@ namespace AtomToolsFramework
                     return status == AssetStatusReporterState::Succeeded;
                 }
 
+                // A timeout of zero disables the bound, restoring the original behavior of waiting indefinitely.
+                if (timeoutMs > 0 && AZStd::chrono::steady_clock::now() >= deadline)
+                {
+                    AZStd::string statusMessage;
+                    AssetStatusReporterSystemRequestBus::EventResult(
+                        statusMessage, m_toolId, &AssetStatusReporterSystemRequestBus::Events::GetStatusMessage,
+                        m_assetReportRequestId);
+
+                    AZ_Warning(
+                        "GraphCompiler",
+                        false,
+                        "Gave up waiting for the Asset Processor after %llu ms while compiling '%s'. Still waiting on: %s. Reporting the "
+                        "compile as complete; the viewport will pick up the generated assets when they reach the asset catalog. Check the "
+                        "Asset Processor log if this happens repeatedly.",
+                        timeoutMs,
+                        GetGraphPath().c_str(),
+                        statusMessage.empty() ? "(unknown)" : statusMessage.c_str());
+
+                    AssetStatusReporterSystemRequestBus::Event(
+                        m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+                    return true;
+                }
+
                 // Sleep to give other possible threats time to make AssetStatusReporterSystemRequestBus requests
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
+            }
+
+            if (IsCancelRequested())
+            {
+                AssetStatusReporterSystemRequestBus::Event(
+                    m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+                return false;
             }
 
             AssetStatusReporterSystemRequestBus::Event(
