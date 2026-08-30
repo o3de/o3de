@@ -264,7 +264,7 @@ namespace Terrain
                     available, &AzToolsFramework::EditorComponentAPIRequests::BuildComponentPropertyList,
                     component);
 
-                for (const AZStd::string& path : available)
+                for ([[maybe_unused]] const AZStd::string& path : available)
                 {
                     AZ_Warning("EntityPresets", false, "    %s", path.c_str());
                 }

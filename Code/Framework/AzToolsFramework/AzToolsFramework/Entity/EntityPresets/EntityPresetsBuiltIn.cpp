@@ -14,7 +14,7 @@
  *
  * What is left is the one preset built from a component AzToolsFramework provides itself:
  * ScriptEditorComponent registers "Lua Script". Everything else moved out to
- * Presets/*.entitypresets.json inside the gem that owns its components, which
+ * Presets/<name>.entitypresets.json inside the gem that owns its components, which
  * EntityPresets::FromGems() reads - so a preset now appears exactly when the thing it builds
  * is actually available, and disappears with its gem.
  *

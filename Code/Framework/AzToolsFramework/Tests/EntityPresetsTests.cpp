@@ -404,7 +404,7 @@ namespace UnitTest
     // -- The file format, as opposed to the serializer ---------------------------------
     //
     // Every test above works on in-memory documents through AZ::JsonSerialization. The code that
-    // actually reads a gem's Presets/*.entitypresets.json does not: it goes through
+    // actually reads a gem's Presets/<name>.entitypresets.json does not: it goes through
     // AZ::JsonSerializationUtils::LoadObjectFromFile, which demands a
     // Type/Version/ClassName/ClassData header before it hands anything to the serializer.
     //
