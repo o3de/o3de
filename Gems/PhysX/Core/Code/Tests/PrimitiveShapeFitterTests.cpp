@@ -10,7 +10,6 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AzCore/std/sort.h>
 #include <AzCore/Component/ComponentApplication.h>
 
 #include <Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.h>
@@ -630,19 +629,24 @@ namespace PhysX::Pipeline
         // Sanity check.
         ASSERT_EQ(expectedVertices.size(), actualVertices.size());
 
-        // Sort both sets of vertices so that we can compare them element by element. We sort them by x-coordinate
-        // first, then y-coordinate and finally z-cooridnate.
-        auto comparator = [] (const AZ::Vector3& lhs, const AZ::Vector3& rhs) {
-            return lhs(0) < rhs(0) || (lhs(0) == rhs(0) && lhs(1) < rhs(1) || (lhs(1) == rhs(1) && lhs(2) < rhs(2)));
-        };
-
-        AZStd::sort(expectedVertices.begin(), expectedVertices.end(), comparator);
-        AZStd::sort(actualVertices.begin(), actualVertices.end(), comparator);
-
-        for (AZ::u32 i = 0; i < actualVertices.size(); ++i)
+        // Match the two sets directly. Sorting numerically close symmetric vertices can pair equivalent vertices differently
+        // when small fitting errors change their lexicographic order.
+        for (const AZ::Vector3& expectedVertex : expectedVertices)
         {
-            ExpectNear(expectedVertices[i], actualVertices[i], FitterTolerance);
+            const auto matchingVertex = AZStd::find_if(
+                actualVertices.begin(),
+                actualVertices.end(),
+                [&expectedVertex](const AZ::Vector3& actualVertex)
+                {
+                    return actualVertex.IsClose(expectedVertex, aznumeric_cast<float>(FitterTolerance));
+                });
+
+            ASSERT_NE(matchingVertex, actualVertices.end());
+            ExpectNear(*matchingVertex, expectedVertex, FitterTolerance);
+            actualVertices.erase(matchingVertex);
         }
+
+        EXPECT_TRUE(actualVertices.empty());
     }
 
     INSTANTIATE_TEST_SUITE_P(

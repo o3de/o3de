@@ -465,86 +465,78 @@ namespace UnitTest
         EXPECT_EQ(3, x);
     }
 
-    // Waiting inside a task is disallowed , test that it fails correctly
-    TEST_F(TaskGraphTestFixture, SpawnSubgraph)
+    TEST_F(TaskGraphTestFixture, SubmitSubgraphFromTask)
     {
-        AZStd::atomic<int> x = 0;
+        TaskExecutor executor{ 3 };
+        AZStd::atomic_bool firstDependencyCompleted{ false };
+        AZStd::atomic_bool secondDependencyCompleted{ false };
+        AZStd::atomic_bool subgraphDependenciesCompleted{ false };
+        TaskGraphEvent subgraphEvent{ "SubgraphEvent" };
 
-        TaskGraph graph{ "SpawnSubgraph" };
-        auto a = graph.AddTask(
+        TaskGraph graph{ "SubmitSubgraphFromTask" };
+        graph.AddTask(
             defaultTD,
             [&]
             {
-                x = 0b111;
+                TaskGraph subgraph{ "Subgraph" };
+                auto firstDependency = subgraph.AddTask(
+                    defaultTD,
+                    [&]
+                    {
+                        firstDependencyCompleted.store(true);
+                    });
+                auto secondDependency = subgraph.AddTask(
+                    defaultTD,
+                    [&]
+                    {
+                        secondDependencyCompleted.store(true);
+                    });
+                auto dependentTask = subgraph.AddTask(
+                    defaultTD,
+                    [&]
+                    {
+                        subgraphDependenciesCompleted.store(
+                            firstDependencyCompleted.load() && secondDependencyCompleted.load());
+                    });
+                dependentTask.Follows(firstDependency, secondDependency);
+                subgraph.Detach();
+                subgraph.SubmitOnExecutor(executor, &subgraphEvent);
             });
-        auto b = graph.AddTask(
-            defaultTD,
-            [&]
-            {
-                x ^= 1;
-            });
-        auto c = graph.AddTask(
-            defaultTD,
-            [&]
-            {
-                x ^= 2;
 
-                TaskGraph subgraph{ "InnerSubgraph" };
-                auto e = subgraph.AddTask(
-                    defaultTD,
-                    [&]
-                    {
-                        x ^= 0b1000;
-                    });
-                auto f = subgraph.AddTask(
-                    defaultTD,
-                    [&]
-                    {
-                        x ^= 0b10000;
-                    });
-                auto g = subgraph.AddTask(
-                    defaultTD,
-                    [&]
-                    {
-                        x += 0b1000;
-                    });
-                e.Precedes(g);
-                f.Precedes(g);
-                TaskGraphEvent ev{ "ev" };
-                subgraph.SubmitOnExecutor(*m_executor, &ev);
-                // TaskGraphEvent::Wait asserts if called on a worker thread, suppress & validate assert
+        TaskGraphEvent graphEvent{ "GraphEvent" };
+        graph.SubmitOnExecutor(executor, &graphEvent);
+        graphEvent.Wait();
+        subgraphEvent.Wait();
+
+        EXPECT_TRUE(firstDependencyCompleted.load());
+        EXPECT_TRUE(secondDependencyCompleted.load());
+        EXPECT_TRUE(subgraphDependenciesCompleted.load());
+    }
+
+    TEST_F(TaskGraphTestFixture, WaitForTaskGraphEventInsideTaskAsserts)
+    {
+        TaskExecutor executor{ 3 };
+        TaskGraph completedGraph{ "CompletedGraph" };
+        TaskGraphEvent completedEvent{ "CompletedEvent" };
+        completedGraph.SubmitOnExecutor(executor, &completedEvent);
+
+        AZStd::atomic_bool taskCompleted{ false };
+        TaskGraph graph{ "WaitForTaskGraphEventInsideTaskAsserts" };
+        graph.AddTask(
+            defaultTD,
+            [&]
+            {
                 AZ_TEST_START_TRACE_SUPPRESSION;
-                ev.Wait();
+                completedEvent.Wait();
                 AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+                taskCompleted.store(true);
             });
-        auto d = graph.AddTask(
-            defaultTD,
-            [&]
-            {
-                x -= 1;
-            });
-        /*
-           NOTE: The ideal way to express this topology is without the wait on the subgraph
-           at task g, but this is more an illustrative test. Better is to express the entire
-           graph in a single larger graph.
-             a  <-- Root
-            / \
-           b   c - f
-            \   \   \
-             \   e - g
-              \     /
-               \   /
-                \ /
-                 d
-        */
-        a.Precedes(b);
-        a.Precedes(c);
-        b.Precedes(d);
-        c.Precedes(d);
 
-        TaskGraphEvent ev{ "ev" };
-        graph.SubmitOnExecutor(*m_executor, &ev);
-        ev.Wait();
+        TaskGraphEvent graphEvent{ "GraphEvent" };
+        graph.SubmitOnExecutor(executor, &graphEvent);
+        graphEvent.Wait();
+
+        EXPECT_TRUE(taskCompleted.load());
     }
 
     TEST_F(TaskGraphTestFixture, RetainedGraph)

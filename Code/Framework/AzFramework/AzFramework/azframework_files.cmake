@@ -250,6 +250,7 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Script/ScriptRemoteDebuggingConstants.cpp
     Script/ScriptRemoteDebuggingConstants.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
