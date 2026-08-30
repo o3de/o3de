@@ -159,7 +159,7 @@ namespace AzToolsFramework
         //! The compiled-in presets. Always available, never written to disk.
         AZTF_API const AZStd::vector<Preset>& BuiltIn();
 
-        //! Presets shipped by whichever gems are enabled, from each gem's Presets/*.entitypresets.json.
+        //! Presets shipped by whichever gems are enabled, from each gem's Presets/<name>.entitypresets.json.
         //!
         //! A gem that introduces components is the thing best placed to say how they are usually
         //! assembled - the terrain gem knows what a terrain needs, the PhysX gem knows what a rigid
