@@ -59,6 +59,9 @@ namespace UnitTest
             // parenting children so they inherit visibility.
             m_dummyWidget->show();
             m_dummyWidget->activateWindow();
+            AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations")
+            QApplication::setActiveWindow(m_dummyWidget.get());
+            AZ_POP_DISABLE_WARNING
             QApplication::processEvents();
         }
 

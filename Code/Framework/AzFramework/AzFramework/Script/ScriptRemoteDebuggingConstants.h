@@ -7,17 +7,18 @@
  */
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
+
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Name/Name.h>
-#include <AzCore/Name/NameDictionary.h>
 
 namespace AzFramework
 {
-    static const AZ::Name LuaToolsName = AZ::Name::FromStringLiteral("LuaRemoteTools", nullptr);
+    AZF_API extern const AZ::Name LuaToolsName;
     static constexpr AZ::Crc32 LuaToolsKey("LuaRemoteTools");
     static constexpr uint16_t LuaToolsPort = 6777;
 
-    static const AZ::Name ScriptCanvasToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools", nullptr);
+    AZF_API extern const AZ::Name ScriptCanvasToolsName;
     static constexpr AZ::Crc32 ScriptCanvasToolsKey("ScriptCanvasRemoteTools");
     static constexpr uint16_t ScriptCanvasToolsPort = 45641;
 }
