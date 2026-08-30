@@ -12,7 +12,6 @@ namespace AZ::ShaderCompiler
 {
     void SemaCheckListener::enterIdExpression(azslParser::IdExpressionContext* ctx)
     {
-        UnqualifiedName currentIdCtxUqName = ExtractNameFromIdExpression(ctx);
         auto* memberAccessExpr = As<AstMemberAccess*>(ctx->parent);
         assert(IsRHSOfMemberAccess(ctx) == !!memberAccessExpr);
         if (memberAccessExpr)  // if direct parent is MAE, it's guaranteed this current idExpression is RHS. (because LHS of MAE is expression, not idExpression)
