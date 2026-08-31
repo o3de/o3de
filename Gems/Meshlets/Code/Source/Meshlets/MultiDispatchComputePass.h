@@ -107,12 +107,8 @@ namespace AZ
             //! standard raster passes consume it as indirect arguments.
             void SetIndirectBarrierAttachments(const AZStd::vector<MeshletsImportedAttachment>& attachments);
 
-            //! HiZ cluster cull: import \p image (the persistent HiZ pyramid slot NOT being
-            //! written this frame) and declare Read (ComputeShader-stage) scope usage, so the
-            //! frame graph transitions it out of last frame's UAV state into shader-read
-            //! before the standard depth/forward/motion passes sample it from the meshlet
-            //! cull SRGs (which bind it directly, outside any pass attachment). Pass null to
-            //! clear. Called once per frame from the feature processor's Render().
+            //! Import the last-completed HiZ pyramid with Read usage (UAV->SRV before
+            //! any consumer samples it outside a pass attachment). Null clears.
             void SetHiZReadImage(Data::Instance<RPI::AttachmentImage> image);
 
             // Pass behavior overrides

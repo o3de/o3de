@@ -1,16 +1,8 @@
 {
     "Source" : "./MeshletsForwardMeshShader.azsl",
 
-    // Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS). SEPARATE .shader from
-    // MeshletsForwardMeshShader.shader even though both compile the same .azsl source:
-    // adding the Amplification stage to THAT shader would make every DispatchMesh call
-    // through it invoke the AS unconditionally, changing the shipped default (no-cull)
-    // mesh-shader path's behavior. This PSO adds Amplification + the payload-driven
-    // MeshletsForwardPassMSCulled entry (per-triangle cull too) instead of
-    // MeshletsForwardPassMS; the pixel shader is byte-for-byte shared.
-    //
-    // Mirrors MeshletsForwardMeshShader.shader's render state exactly (reverse-Z +
-    // stencil Replace) so a mesh-shader-drawn cluster looks identical either way.
+    // AS+triangle-cull forward PSO -- separate .shader so the shipped no-cull PSO
+    // keeps plain DispatchMesh semantics. Render state mirrors the uncull .shader.
     "DepthStencilState" :
     {
         "Depth" :

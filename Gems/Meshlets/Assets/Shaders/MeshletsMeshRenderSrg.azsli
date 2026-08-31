@@ -9,18 +9,9 @@
 #pragma once
 
 // ----------------------------------------------------------------------------
-// SRGs for the HARDWARE MESH-SHADER meshlet render path (Phase 5).
-//
-// Deliberately SEPARATE from MeshletsPerObjectRenderSrg.azsli (the VS/vertex-pull
-// path) so the mesh-shader shaders are fully isolated from the existing 5 render
-// shaders -- no shared-SRG layout churn, no risk to the vertex-pull path.
-//
-// The mesh shader runs ONE threadgroup per cluster (DispatchMesh(clusterCount,1,1)),
-// reads that cluster's descriptor, transforms its vertices, and emits its triangles.
-// The cluster descriptor + triangle + indirection buffers already exist on the GPU
-// (created in MeshletsRenderObjectPackInit for the compute path); the feature
-// processor binds them to MeshletsMeshObjectSrg. The decode mirrors the compute
-// reference in MeshletsCompute.azsl (GetGlobalVertexIndicesAndTriOffset).
+// SRGs for the hardware mesh-shader path. azslc runs with --strip-unused-srgs:
+// the uncull and AS-cull shaders compile DIFFERENT layouts from this one file,
+// so runtime binds must be guarded by layout presence.
 // ----------------------------------------------------------------------------
 
 #include <scenesrg_all.srgi>
@@ -49,13 +40,8 @@ ShaderResourceGroup MeshletsMeshInstanceSrg : SRG_PerDraw
 {
     uint m_objectId;
 
-    // ---- Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS) ----
-    // Per-instance cull params consumed ONLY by MeshletsCullClustersAS. Unused (dead-
-    // stripped) by the default MeshletsForwardPassMS entry point, so their presence
-    // here is layout-only for that path -- byte-identical rendered output when the
-    // AS-cull PSO isn't the one bound. Mirrors MeshletsCullSrg's per-instance fields
-    // (MeshletsCull.azsl) so the AS composes the same MeshletsClusterCullMath.azsli
-    // functions the same way.
+    // ---- AS cull params (consumed only by MeshletsCullClustersAS; dead-stripped
+    // from the uncull entries) ----
     float4 m_worldRow0;
     float4 m_worldRow1;
     float4 m_worldRow2;
@@ -140,11 +126,9 @@ ShaderResourceGroup MeshletsMeshObjectSrg : SRG_PerObject
     //! zeros (selfError 0 => reads as "leaf"), and the cut is never enabled anyway.
     StructuredBuffer<MeshletDagNodeRecord> m_dagNodes;
 
-    // ---- Phase 7 streaming (r_meshletsStreaming; v4 packs, AS path only) ----
-    //! 0 = monolithic fetch; 1 = every AS-path cluster fetches from the page pool.
-    //! The feature processor sets 1 ONLY once all of this mesh's always-resident
-    //! (interior) pages are uploaded, so a mapped interior always exists as the
-    //! coarse fallback.
+    // ---- Streaming (v4 packs, AS path only) ----
+    //! 0 = monolithic fetch; 1 = paged fetch. Set only once every always-resident
+    //! page of this mesh is uploaded (the forced-parent fallback must have data).
     uint m_pagedMode;
     //! Phase 4 VRAM reclaim: 1 = this mesh has NO monolithic geometry buffers
     //! (r_meshletsStreamingExclusive at load). Until m_pagedMode goes live the AS

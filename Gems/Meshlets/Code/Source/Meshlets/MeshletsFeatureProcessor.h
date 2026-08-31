@@ -95,27 +95,15 @@ namespace AZ
             bool InitShadowShader();
             bool InitForwardShader();
             bool InitMotionShader();
-            //! Phase 5 (hardware mesh shader): load MeshletsForwardMeshShader (Mesh +
-            //! Fragment entry points) and acquire its DispatchMesh pipeline state.
-            //! Mirrors InitForwardShader but with NO input-stream layout (the mesh
-            //! path has no input assembler). Safe no-op retry if the shader asset
-            //! hasn't been processed yet.
+            //! Load MeshletsForwardMeshShader + its DispatchMesh PSO (no IA layout).
             bool InitMeshForwardShader();
 
-            //! Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS): load
-            //! MeshletsForwardMeshShaderCulled (Amplification + Mesh + Fragment entry
-            //! points) and acquire its DispatchMesh pipeline state. A SEPARATE
-            //! shader/PSO from m_meshForwardShader -- see the comment in
-            //! MeshletsForwardMeshShaderCulled.shader for why. Safe no-op retry if the
-            //! shader asset hasn't been processed yet.
+            //! Load the AS+Mesh+Fragment culled forward shader/PSO (separate from
+            //! m_meshForwardShader -- see MeshletsForwardMeshShaderCulled.shader).
             bool InitMeshCullForwardShader();
 
-            //! Hardware mesh-shader DEPTH prepass: load MeshletsDepthMeshShader (a
-            //! single Mesh entry, no Fragment) and acquire its DispatchMesh pipeline
-            //! state for the standard "depth" DrawListTag. Without this item the mesh
-            //! path never reaches MainPipeline's once-per-frame resolved Depth copy,
-            //! so DepthOfField/Transparent sample stale depth and the meshlets read
-            //! as see-through. Safe no-op retry if the shader asset isn't processed yet.
+            //! Load the mesh-shader depth prepass PSO ("depth" tag). Without it,
+            //! DepthOfField/Transparent sample stale depth and meshlets look see-through.
             bool InitMeshDepthShader();
 
             //! Hardware mesh-shader MOTION VECTOR pass. Needed for correctness, not only speed:
@@ -124,11 +112,8 @@ namespace AZ
             //! ghosted under TAA and any temporal upscaler.
             bool InitMeshMotionShader();
 
-            //! AS-culled DEPTH and MOTION PSOs (opt-in r_meshletsMsCullAS): the culled
-            //! forward packet binds ONE geometry view (AS group counts), so its depth and
-            //! motion items need PSOs that carry the SAME shared cluster-cull AS
-            //! (MeshletsCullAS.azsli) rather than the plain Mesh-only PSOs. Shared retry
-            //! helper -- safe no-op until the shader asset is processed.
+            //! AS-culled depth/motion PSOs: the culled packet's one geometry view
+            //! carries AS group counts, so every item needs the shared cull AS.
             bool InitCulledMeshVariant(
                 const char* shaderPath, const char* label,
                 Data::Instance<RPI::Shader>& shaderOut, const RHI::PipelineState*& pipelineStateOut);
@@ -471,23 +456,16 @@ namespace AZ
             //! GpuCullAndDrawPass/HiZGeneratePass, now HiZGeneratePersistentTemplate).
             //! Found in InitCullPasses; null when the pipeline has none -> HiZ cull stays off.
             RPI::Ptr<RPI::HiZGeneratePass> m_hiZGeneratePass;
-            //! Per-frame resolved bind state: the LAST-COMPLETED pyramid slot (safe to read
-            //! early in the frame) + the world->clip of the camera that rendered it (the
-            //! PREVIOUS frame's -- projecting current bounds with the pyramid's own matrix
-            //! keeps the depth comparison in the pyramid's clip space). Valid only when the
-            //! toggle is on, the pyramid is populated, and the barrier pass exists to
-            //! transition the image to shader-read.
+            //! Per-frame HiZ bind: last-completed pyramid slot + the matrix of the
+            //! camera that rendered it (comparisons stay in the pyramid's clip space).
             Data::Instance<RPI::AttachmentImage> m_hiZBindImage;
             AZ::Matrix4x4 m_hiZBindWorldToClip = AZ::Matrix4x4::CreateIdentity();
             bool m_hiZBindValid = false;
             AZ::Matrix4x4 m_hiZPrevCullMat = AZ::Matrix4x4::CreateIdentity();
             bool m_hasHiZPrevCullMat = false;
 
-            //! Phase 6 cluster-DAG cut: per-frame projection stash. m_dagProjScale =
-            //! cot(FovY/2) * viewportHeight * 0.5 (pure projection, rotation-independent);
-            //! m_dagViewport = render-target size in pixels (also feeds the per-triangle
-            //! pixel-size gates). Valid only when a camera + pipeline size resolved this
-            //! frame; while invalid, every DAG-aware shader falls back to leaf-only.
+            //! DAG projection stash: m_dagProjScale = cot(FovY/2) * viewportH * 0.5
+            //! (rotation-independent). Invalid => DAG shaders fall back to leaf-only.
             float m_dagProjScale = 0.0f;
             AZ::Vector2 m_dagViewport = AZ::Vector2::CreateZero();
             bool m_dagBindValid = false;
@@ -495,10 +473,8 @@ namespace AZ
             //! counts and SRG constants bake the DAG range).
             bool m_lastDagLod = false;
 
-            //! Two-pass occlusion (opt-in r_meshletsTwoPassOcclusion): the injected
-            //! late-depth pass (PASS 2 -- draws disoccluded clusters after this frame's
-            //! HiZ reduce), the late PSO, and a monotonic frame id for the per-cluster
-            //! visibility ledgers (starts at 1: a fresh zeroed ledger never matches).
+            //! Two-pass occlusion: injected late-depth pass + PSO + a monotonic frame
+            //! id for the ledgers (starts at 1: a fresh zeroed ledger never matches).
             Data::Instance<MeshletsRenderPass> m_lateDepthPass;
             Data::Instance<RPI::Shader> m_meshLateShader;
             const RHI::PipelineState* m_meshLatePipelineState = nullptr;
@@ -506,10 +482,7 @@ namespace AZ
             Data::Asset<RPI::AnyAsset> m_latePassRequestAsset;
             uint32_t m_frameId = 1;
             bool m_lastTwoPass = false;
-            //! Per-frame scratch: visibility-ledger imports for the barrier pass
-            //! (ReadWrite/compute -- establishes UAV state + a sync point before the
-            //! depth prepass) and the late pass (ReadWrite on its own scope -- the sync
-            //! point AFTER pass 1's AS writes).
+            //! Ledger imports for the barrier + late passes (the two RW sync points).
             AZStd::vector<MeshletsImportedAttachment> m_visFrameAttachmentsScratch;
 
             bool TryAutoInjectLatePass(RPI::RenderPipeline* renderPipeline);
@@ -519,19 +492,12 @@ namespace AZ
             //! buffer, and push the paged state into the mesh's object SRG.
             void RebuildPagedClusterMap(MeshRenderData& mrd);
 
-            //! Phase 7 streaming (opt-in r_meshletsStreaming; v1 = design phase 2:
-            //! pages classify/load/evict against the slot budget while RENDERING still
-            //! draws the monolithic buffers -- the paged GPU pools + residency-aware
-            //! cut are the next work package; this fixes the interfaces and proves the
-            //! residency behavior with live stats).
+            //! Streaming residency core (r_meshletsStreaming).
             MeshletsPageResidency m_pageResidency;
             bool m_pageResidencyInitialized = false;
             AZStd::vector<MeshletsPageResidency::PageRequest> m_pageRequestScratch;
-            //! Phase 3 paged GPU pool + upload machinery. The pool is ONE global
-            //! StructuredBuffer<uint> of fixed PageSlotU32s-word slots; uploads run as
-            //! compute dispatches on the cull compute pass (staging created via the
-            //! proven ReadOnly initial-data path, pool imported ReadWrite + finalized
-            //! there, transitioned to shader-read by the barrier pass).
+            //! Paged pool: one global StructuredBuffer<uint> of fixed slots; uploads
+            //! are compute dispatches on the cull pass (ReadOnly initial-data staging).
             Data::Instance<RPI::Buffer> m_pagePoolBuffer;
             AZ::Name m_pagePoolAttachmentId{ "MeshletsPagePool" };
             Data::Instance<RPI::Shader> m_pageUploadShader;

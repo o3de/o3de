@@ -8,14 +8,9 @@
 
 #pragma once
 
-// Phase 5 AS cluster cull -- the SHARED amplification stage for every AS-culled
-// meshlet PSO (forward / depth / motion). One definition so the three passes can
-// never disagree on which clusters survive: each *Culled.shader lists
-// MeshletsCullClustersAS as its Amplification entry and pairs it with its own
-// payload-driven Mesh entry.
-//
-// Requires MeshletsMeshRenderSrg.azsli (MeshletsMeshObjectSrg /
-// MeshletsMeshInstanceSrg + MeshletsClusterCullMath.azsli) to be included first.
+// Shared amplification stage for every AS-culled meshlet PSO (forward / depth /
+// motion / shadow) so the passes can never disagree on which clusters survive.
+// Requires MeshletsMeshRenderSrg.azsli to be included first.
 
 // One AS threadgroup tests up to MESHLETS_AS_GROUP clusters (one cluster per lane),
 // compacts survivors via wave ballot, and DispatchMesh()'s exactly that many MS
@@ -45,11 +40,9 @@ bool MeshletClusterVisible(uint clusterId)
         return false;
     }
 
-    // Phase 6 cluster-DAG cut -- MUST run before the passthrough early-out below:
-    // when the cut is active the dispatch covers the FULL leaf+interior range and
-    // only cut-selected clusters may draw; when it is OFF (v2 pack, invalid
-    // projection stash, toggle transition) interior DAG clusters are refused
-    // outright so a DAG-range dispatch can never double-draw on top of leaves.
+    // DAG cut -- must run before the passthrough early-out: with the cut off,
+    // interior clusters are refused outright so a DAG-range dispatch can never
+    // double-draw on top of leaves.
     if (MeshletsMeshInstanceSrg::m_doDagCut != 0u)
     {
         const float2 errs = MeshletsDagNodeErrorsPx(
@@ -65,11 +58,8 @@ bool MeshletClusterVisible(uint clusterId)
         const bool isLeaf = clusterId < MeshletsMeshObjectSrg::m_leafClusterCount;
         if (MeshletsMeshObjectSrg::m_pagedMode != 0u)
         {
-            // Phase 7 fail-safe-coarse (design section 3): a leaf whose group is not fully
-            // resident FAILS the cut, and its (always-resident) parent is FORCED to
-            // draw instead -- group-shared bits keep it crack-free. m_pagedMode only
-            // turns on once every interior page is uploaded, so the forced parent
-            // always has data.
+            // Fail-safe-coarse: a leaf whose group is not fully resident fails the cut and
+            // its always-resident parent draws instead (group-shared bits keep it crack-free).
             const uint map = MeshletsMeshObjectSrg::m_pagedClusterMap[clusterId];
             const bool groupComplete = (map >> 31) != 0u;
             const bool pageResident  = ((map >> 30) & 1u) != 0u;

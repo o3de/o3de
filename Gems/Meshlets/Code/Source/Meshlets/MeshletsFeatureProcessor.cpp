@@ -130,14 +130,8 @@ namespace AZ
             "captured when this turned on, so you can fly the real camera around and see "
             "which clusters were culled. Has no effect unless cluster culling is enabled.");
 
-        // Phase 6: cluster-DAG continuous LOD (see
-        // docs/superpowers/specs/2026-08-31-meshlets-phase6-cluster-dag-lod-design.md).
-        // Requires a DAG-baked pack (sidecar "generate_cluster_dag") and, for the AS
-        // path, r_meshletsHwMeshShader + r_meshletsMsCullAS. When active, the
-        // per-instance screen-coverage LOD ladder is bypassed (the DAG *is* the LOD
-        // system) and each cluster independently passes/fails the screen-space-error
-        // cut. Off (default): every existing path is untouched (DAG packs draw their
-        // leaf clusters, i.e. exactly the LOD0 set).
+        // Cluster-DAG continuous LOD (design doc: 2026-08-31-meshlets-phase6-*).
+        // Needs a "generate_cluster_dag" pack; replaces the per-instance LOD ladder.
         AZ_CVAR(bool, r_meshletsDagLod, false, nullptr,
             AZ::ConsoleFunctorFlags::Null,
             "If true, meshes baked with a cluster DAG (sidecar generate_cluster_dag) "
@@ -155,24 +149,7 @@ namespace AZ
             "leaves render blue-gray, coarser levels step through hues. Makes the cut "
             "boundary directly visible.");
 
-        // Two-pass occlusion for the AS path (see
-        // docs/superpowers/specs/2026-08-31-meshlets-two-pass-occlusion-design.md).
-        // PASS 1 = the depth prepass item culls with the PREV-frame pyramid and records
-        // every dispatched cluster in a per-instance visibility ledger; the persistent
-        // HiZ pass then reduces THIS frame's pyramid; PASS 2 = the injected
-        // MeshletsLateDepthPass re-tests only the skipped clusters against the fresh
-        // pyramid and draws the disoccluded survivors -- completing the depth buffer in
-        // the SAME frame (no one-frame disocclusion pop, no pyramid feedback).
-        // Forward/motion then cull against THIS frame's pyramid directly. Requires
-        // r_meshletsMsCullAS; off (default) keeps occlusion-safe depth (pass 1 without
-        // HiZ) exactly as before.
-        // Phase 7 streaming (see
-        // docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md).
-        // v1 = the design's phase 2: the CPU residency manager classifies every leaf
-        // page of every v4 (generate_pages) pack against the DAG-cut camera, loads/
-        // evicts against the slot budget and reports live stats -- while RENDERING
-        // still draws the monolithic (duplicate-fallback) buffers. The paged GPU
-        // pools + residency-aware cut consume these exact interfaces next.
+        // Geometry streaming (design doc: 2026-08-31-meshlets-streaming-paging-*).
         AZ_CVAR(bool, r_meshletsStreaming, false, nullptr,
             AZ::ConsoleFunctorFlags::Null,
             "If true, leaf streaming pages of v4 meshlet packs are classified and "
@@ -185,15 +162,12 @@ namespace AZ
             AZ::ConsoleFunctorFlags::Null,
             "Upper bound on page loads issued per frame (spreads upload cost). Sweep "
             "upward when profiling teleport recovery time (phase 4 soak).");
-        // Phase 4 soak knob: the eviction hysteresis band. A page becomes WANTED when
-        // its projected parent error exceeds tau, and only becomes EVICTABLE once it
-        // drops below tau / this factor. 1.0 = no band (expect churn at the boundary);
-        // larger = stickier residency. Tuned live against the churn counter.
         AZ_CVAR(float, r_meshletsStreamingHysteresis, 1.5f, nullptr,
             AZ::ConsoleFunctorFlags::Null,
             "Streaming eviction hysteresis: pages evict only below tau/thisFactor. "
             "Tune until the ImGui churn counter stays flat during normal camera motion.");
 
+        // Two-pass occlusion (design doc: 2026-08-31-meshlets-two-pass-occlusion-*).
         AZ_CVAR(bool, r_meshletsTwoPassOcclusion, false, nullptr,
             AZ::ConsoleFunctorFlags::Null,
             "If true (with r_meshletsMsCullAS), meshlet HiZ occlusion runs as two-pass: "
@@ -547,10 +521,7 @@ namespace AZ
             {
                 return false;
             }
-            // PASS 2 must run AFTER this frame's HiZ pyramid is reduced
-            // (GpuCullAndDrawPass hosts the persistent HiZGeneratePass) and before
-            // the forward pass consumes depth. Pipelines without the GPU-driven
-            // subtree simply don't get two-pass occlusion.
+            // Pass 2 must follow this frame's HiZ reduce (hosted by GpuCullAndDrawPass).
             if (renderPipeline->AddPassAfter(pass, Name("GpuCullAndDrawPass")))
             {
                 return true;
@@ -582,11 +553,8 @@ namespace AZ
             {
                 return false;
             }
-            // Phase 6: PersistentClusterDescriptors covers the FULL leaf+interior DAG
-            // range for DAG packs. Size the command buffer / dispatch to that range so
-            // the DAG cut can select interiors; while the cut is inactive,
-            // UpdateGpuCullInstance clamps the shader-visible m_clusterCount to the
-            // leaf count so interiors never draw.
+            // Size to the full leaf+interior DAG range; with the cut off,
+            // UpdateGpuCullInstance clamps m_clusterCount to leaves.
             const uint32_t clusterCount =
                 static_cast<uint32_t>(meshRenderData.PersistentClusterDescriptors.size());
             const uint32_t indexCount = meshRenderData.IndexCount;   // LEAF triangle corners
@@ -762,10 +730,7 @@ namespace AZ
             const RHI::ShaderInputConstantIndex coneIdx = srg->FindShaderInputConstantIndex(Name("m_doConeCull"));
             srg->SetConstant(coneIdx, m_debugControls.m_coneCull ? 1u : 0u);
 
-            // m_worldToClip is used ONLY by the HiZ projection: when a pyramid resolved
-            // this frame, use the PYRAMID's own frame matrix (last frame's camera) so the
-            // depth comparison happens in the clip space the pyramid was reduced in;
-            // otherwise fall back to the cull camera's (HiZ is off then anyway).
+            // HiZ compares in the pyramid's own clip space -- use its frame matrix.
             const RHI::ShaderInputConstantIndex worldToClipIdx = srg->FindShaderInputConstantIndex(Name("m_worldToClip"));
             srg->SetConstant(worldToClipIdx, m_hiZBindValid ? m_hiZBindWorldToClip : worldToClip);
             // Per-cluster HiZ occlusion: bind the last-completed pyramid when available.
@@ -1829,13 +1794,8 @@ namespace AZ
             // Create the SRG from the SAME shader asset as the PSO it will be bound to.
             const Data::Instance<RPI::Shader>& srgSourceShader =
                 (forCull && m_meshCullForwardShader) ? m_meshCullForwardShader : m_meshForwardShader;
-            // Cluster descriptors ride the proven GPU-cull StructuredBuffer
-            // (ClusterDescBuffer); the caller runs EnsureCullGpuBuffers first.
-            //
-            // Phase 6: for DAG packs PersistentClusterDescriptors covers the FULL
-            // leaf+interior range. Only the AS-cull path (with the DAG cut active) may
-            // ever dispatch that range; the uncull MS path and shadow packet stay
-            // strictly leaf-only or interiors would double-draw on top of leaves.
+            // Only the AS-cull path (cut active) may dispatch the full DAG range;
+            // uncull/shadow stay leaf-only or interiors double-draw on top of leaves.
             const uint32_t sliceClusterCount =
                 static_cast<uint32_t>(meshRenderData.PersistentClusterDescriptors.size());
             const uint32_t leafClusterCount = meshRenderData.MeshletsCount;
@@ -1848,12 +1808,8 @@ namespace AZ
                 return false;
             }
 
-            // Triangle words (one uint = 3x8-bit cluster-local indices) + vertex
-            // indirection, as StructuredBuffer<uint> copies of the pack-owned slices
-            // recorded in ComputeBuffersDescriptors (their m_bufferData points into
-            // pack memory, which the render object keeps alive). Deliberately NOT the
-            // typed Buffer<uint> compute buffers -- that SRV path is unproven on this
-            // AMD GPU (NumElements bug).
+            // StructuredBuffer<uint> copies of the pack-owned slices -- NOT the typed
+            // Buffer<uint> path (AMD NumElements bug).
             if (meshRenderData.ComputeBuffersDescriptors.size() <=
                 static_cast<size_t>(ComputeStreamsSemantics::MeshletsIndicesIndirection))
             {
@@ -1947,16 +1903,8 @@ namespace AZ
             // Streaming-exclusive: the monolithic stream slots stay null (never read --
             // the AS's m_pagedExclusive gate rejects every cluster until paged mode is
             // live, and paged clusters fetch from the pool exclusively).
-            // Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS): m_clusterBounds is
-            // read ONLY by MeshletsCullClustersAS. This SRG instance is created from
-            // m_meshForwardShader (the UNCULL Mesh+Fragment shader) above, and azslc runs
-            // with --strip-unused-srgs, so that shader's compiled SRG layout does NOT
-            // contain m_clusterBounds at all. Binding it there is NOT harmless: it fails
-            // FindShaderInputBufferIndex, and the ok &= below then fails the whole
-            // resource build, killing the entire mesh-shader path (every buffer, not just
-            // this one). Bind only when the layout actually has the slot.
-            // Requires EnsureCullGpuBuffers to have run first (guaranteed by
-            // BuildMeshShaderDrawPacket's call order).
+            // --strip-unused-srgs: the uncull layout lacks m_clusterBounds, and a
+            // failed bind would fail the whole ok &= chain -- bind only when present.
             if (meshRenderData.ClusterBoundsBuffer &&
                 srg->FindShaderInputBufferIndex(Name{ "m_clusterBounds" }).IsValid())
             {
@@ -2126,21 +2074,10 @@ namespace AZ
                 instance.MeshShaderInstanceSrg->SetConstant(
                     instance.MeshShaderInstanceSrg->FindShaderInputConstantIndex(Name{ "m_objectId" }),
                     instance.ObjectId.GetIndex());
-                // AS-only fields: write the REAL cull constants (live camera frustum +
-                // this instance's live transform) before the one creation Compile().
-                //
-                // ROOT-CAUSE NOTE (meshlets vanishing after a packet rebuild while the
-                // model is moved/scaled): these used to be ZERO-initialized here on the
-                // assumption the per-frame UpdateMeshShaderCullInstance would overwrite
-                // them the same frame. It runs the same frame, but its Compile() is
-                // DISCARDED: DeviceShaderResourceGroupPool::QueueForCompile drops the
-                // new data when the SRG is already queued ("Only compile an SRG once
-                // per frame"), so every rebuild frame culled with a zero world matrix
-                // and zero frustum planes. LOD migration rebuilds packets exactly when
-                // an object is translated/scaled, making the model flicker/vanish while
-                // transformed. These exist ONLY in the AS-cull shader's layout (stripped
-                // from the uncull one), so setting them against an uncull SRG would just
-                // warn on invalid indices.
+                // Write REAL cull constants before the one creation Compile(): the RHI
+                // discards a same-frame recompile, so zero-init here meant rebuild
+                // frames culled with a zero world matrix (meshlets vanished during
+                // LOD-migrating transforms).
                 if (useCullAS)
                 {
                     AZ::Frustum frustum;   // default: cull toggles below still guard usage
@@ -2240,11 +2177,8 @@ namespace AZ
             // early from this tag only) and DepthOfField/Transparent sample stale
             // depth -> meshlets look see-through.
             //
-            // Under useCullAS the packet's ONE geometry view dispatches
-            // ceil(clusterCount/MESHLETS_AS_GROUP) AS groups, so the depth item needs
-            // the AS-culled depth PSO (MeshletsDepthMeshShaderCulled.shader -- carries
-            // the SAME shared cluster-cull AS as the forward item); the plain
-            // (no-amplification) depth PSO is only correct on the non-AS path.
+            // The packet's one geometry view carries AS group counts under useCullAS,
+            // so the depth item needs the AS-culled depth PSO.
             const RHI::PipelineState* depthPso = nullptr;
             if (useCullAS)
             {
@@ -2269,12 +2203,8 @@ namespace AZ
             {
                 if (useCullAS)
                 {
-                    // Phase 6 occlusion-safe depth: the depth item gets its OWN packet
-                    // with its OWN cull-layout instance SRG whose m_doHiZCull is never
-                    // set -- a HiZ-occluded depth prepass would render incomplete depth
-                    // and poison next frame's pyramid (false-culls feed back). Frustum/
-                    // cone/DAG constants mirror the camera SRG each frame
-                    // (UpdateMeshShaderCullInstance refreshes it).
+                    // Own packet + own SRG so depth never gets the HiZ override --
+                    // an occluded depth prepass would poison next frame's pyramid.
                     if (!instance.MeshDepthInstanceSrg && m_meshDepthCullShader)
                     {
                         instance.MeshDepthInstanceSrg = RPI::ShaderResourceGroup::Create(
@@ -2284,9 +2214,8 @@ namespace AZ
                             instance.MeshDepthInstanceSrg->SetConstant(
                                 instance.MeshDepthInstanceSrg->FindShaderInputConstantIndex(Name{ "m_objectId" }),
                                 instance.ObjectId.GetIndex());
-                            // Fresh SRG data is zeroed: every cull toggle off => the AS
-                            // draws exactly the leaf set until the per-frame update
-                            // writes real constants. Safe on creation frames.
+                            // Zeroed SRG = all culls off = leaf set only, until the
+                            // per-frame update writes real constants.
                             instance.MeshDepthInstanceSrg->Compile();
                         }
                     }
@@ -2317,9 +2246,7 @@ namespace AZ
                 }
             }
 
-            // Two-pass occlusion PASS 2 (opt-in r_meshletsTwoPassOcclusion): the
-            // visibility ledger + the late-depth packet ("meshletslatedepth" tag ->
-            // the injected MeshletsLateDepthPass, after this frame's HiZ reduce).
+            // Two-pass PASS 2: visibility ledger + late-depth packet.
             instance.LateDepthDrawPacket = nullptr;
             if (useCullAS && r_meshletsTwoPassOcclusion && m_lateDepthPass &&
                 InitCulledMeshVariant(
@@ -2332,11 +2259,8 @@ namespace AZ
                 }
                 if (!instance.VisFrameBuffer)
                 {
-                    // One u32 frame-id per (full DAG range) cluster. GPU-only -- never
-                    // CPU-uploaded (the ReadWrite pool's CPU upload path is the broken
-                    // one on this AMD GPU; pure UAV usage is fine). Frame-counter
-                    // encoding: a fresh zeroed ledger never equals m_frameId (>= 1),
-                    // so no clear pass is ever needed.
+                    // One frame-id per cluster, GPU-only (AMD CPU uploads to the
+                    // ReadWrite pool are unreliable). m_frameId >= 1 => no clear pass.
                     SrgBufferDescriptor d(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
                         RHI::BufferBindFlags::ShaderReadWrite,
@@ -2355,17 +2279,14 @@ namespace AZ
                         instance.MeshLateInstanceSrg->SetConstant(
                             instance.MeshLateInstanceSrg->FindShaderInputConstantIndex(Name{ "m_objectId" }),
                             instance.ObjectId.GetIndex());
-                        // visMode 2 with the zeroed m_frameId(0) == zeroed ledger(0)
-                        // => every cluster reads "already drawn" and the late pass
-                        // emits NOTHING until the per-frame update writes real
-                        // constants. Safe on creation frames by construction.
+                        // visMode 2 + zeroed frameId == zeroed ledger => emits nothing
+                        // until the per-frame update writes real constants.
                         instance.MeshLateInstanceSrg->SetConstant(
                             instance.MeshLateInstanceSrg->FindShaderInputConstantIndex(Name{ "m_visMode" }), 2u);
                         instance.MeshLateInstanceSrg->Compile();
                     }
                 }
-                // Bind the ledger UAV into BOTH writers (pass 1 = depth SRG, pass 2 =
-                // late SRG). Guarded by layout presence like every optional bind.
+                // Ledger UAV binds into its two writers (depth + late SRGs).
                 auto bindVisLedger = [&](const Data::Instance<RPI::ShaderResourceGroup>& s)
                 {
                     if (s && instance.VisFrameBuffer &&
@@ -2436,46 +2357,18 @@ namespace AZ
             instance.DrawPacket = drawPacketBuilder.End();
 
             // ---- Shadow casting ----
-            // Shadows are a SEPARATE DrawPacket (its own geometry view), submitted to the
-            // CSM cascade views. Casting deliberately uses the CLASSIC vertex-pull shadow
-            // PSO over the WHOLE mesh -- exactly like every other path in this file -- because
-            // camera-side per-cluster culling is wrong for a light's point of view. So the
-            // mesh path needs NO mesh/amplification shadow shader; it only has to build the
-            // vertex-pull prerequisites that BuildInstanceDrawPacket would normally have
-            // built before this function short-circuits it:
-            //   * EnsureIndirectArgs -> IndirectGeometryView + POSITION-only IA buffer
-            //     + PositionStreamValid   (idempotent; cheap after the first frame)
-            //   * instance.InstanceSrg  -> the CLASSIC MeshletsInstanceRenderSrg layout
-            //     (NOT MeshShaderInstanceSrg -- different SRG, incompatible layout)
-            // meshRenderData.ObjectSrg already exists (built during render-object init).
-            // Without this the instance casts no shadow at all: ShadowDrawPacket stayed
-            // null, so nothing was ever added to the DirectionalLightView cascade views.
+            // Separate DrawPacket over the WHOLE mesh: camera-side per-cluster culling
+            // is wrong for a light's point of view.
             instance.ShadowDrawPacket = nullptr;
             instance.DepthDrawPacket = nullptr;
             instance.LateDepthDrawPacket = nullptr;
 
-            // PREFERRED: hardware mesh-shader shadow packet. Leaving shadows on vertex-pull was
-            // the single biggest reason meshlets lost to the standard mesh path -- a directional
-            // light rasterizes the whole visible set once per cascade, so with only forward,
-            // depth and motion on DispatchMesh the majority of the frame's geometry work still
-            // ran the slower path (vertex-pull loses the post-transform vertex cache and
-            // re-transforms shared vertices per index).
-            //
-            // The existing objection to a mesh shadow path -- that camera-side per-cluster
-            // culling is wrong for a light's point of view -- is real but specific to the CULLED
-            // geometry view. This uses MeshShaderGeometryView (ALL clusters, no AS), which emits
-            // exactly what the vertex-pull path emits, so nothing is culled from the light's
-            // perspective. The shadow packet is a SEPARATE DrawPacket, so under useCullAS it
-            // binds its own UNCULL-layout instance SRG (MeshShadowInstanceSrg, created from the
-            // shadow shader's own asset) instead of the cull-layout MeshShaderInstanceSrg; when
-            // !useCullAS, MeshShaderInstanceSrg is uncull-layout already and is reused directly.
+            // Preferred: mesh-shader shadow packet over ALL clusters (no AS) -- emits
+            // exactly the vertex-pull set, so nothing is culled from the light's view.
+            // Under useCullAS it needs its own uncull-layout instance SRG.
             const bool meshShadowReady = m_meshShadowPipelineState || InitMeshShadowShader();
-            // Phase 6 shadow-side DAG cut: while the cut is active (and the culled
-            // shadow PSO is processed), shadows render the SAME cut the camera passes
-            // draw -- the AS in "cut-only" mode (per-frame update zeroes every
-            // camera-view cull toggle on the shadow SRG; a light must rasterize
-            // clusters outside the camera frustum). Otherwise shadows keep the plain
-            // all-leaves mesh shadow PSO.
+            // Shadow DAG cut: same cut as the camera passes, AS in cut-only mode
+            // (camera-view culls zeroed -- a light sees outside the camera frustum).
             const bool dagShadow = r_meshletsDagLod && useCullAS &&
                 meshRenderData.DagClusterCount > 0 && meshRenderData.DagNodesBuffer &&
                 InitCulledMeshVariant(
@@ -2488,9 +2381,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> shadowInstanceSrg = instance.MeshShaderInstanceSrg;
             if (shadowPso && useCullAS)
             {
-                // The shadow packet's instance SRG layout must match its PSO: uncull
-                // layout for the plain shadow MS, cull layout (all AS constants) for
-                // the DAG-cut variant. Rebuild on mismatch.
+                // SRG layout must match the shadow PSO (uncull vs cull); rebuild on flip.
                 if (instance.MeshShadowInstanceSrg && instance.MeshShadowInstanceSrgIsCull != dagShadow)
                 {
                     instance.MeshShadowInstanceSrg = nullptr;
@@ -2507,9 +2398,7 @@ namespace AZ
                         instance.MeshShadowInstanceSrg->SetConstant(
                             instance.MeshShadowInstanceSrg->FindShaderInputConstantIndex(Name{ "m_objectId" }),
                             instance.ObjectId.GetIndex());
-                        // Fresh SRG data is zeroed: with every cull toggle 0 the AS
-                        // draws exactly the leaf set until the per-frame update writes
-                        // the cut constants -- safe on creation frames.
+                        // Zeroed SRG = leaf set only until the per-frame update runs.
                         instance.MeshShadowInstanceSrg->Compile();
                     }
                 }
@@ -2531,12 +2420,8 @@ namespace AZ
                 meshShadowBuilder.SetGeometryView(dagShadow
                     ? &meshRenderData.MeshShaderCullGeometryView
                     : &meshRenderData.MeshShaderGeometryView);
-                // MeshShaderObjectSrg, NOT ObjectSrg: MeshletsShadowMeshShader reads
-                // MeshletsMeshObjectSrg (cluster descriptors/indirection/triangles) at
-                // SRG_PerObject, while ObjectSrg is the vertex-pull MeshletsObjectRenderSrg
-                // -- a different layout at the same frequency. Binding it made the shadow
-                // mesh shader decode garbage clusters and emit primitive indices past the
-                // vertex count, hanging the GPU (device removed).
+                // MeshShaderObjectSrg, NOT ObjectSrg -- the vertex-pull layout at the
+                // same frequency decoded garbage clusters and hung the GPU.
                 meshShadowBuilder.AddShaderResourceGroup(meshRenderData.MeshShaderObjectSrg->GetRHIShaderResourceGroup());
                 meshShadowBuilder.AddShaderResourceGroup(shadowInstanceSrg->GetRHIShaderResourceGroup());
 
@@ -2641,9 +2526,7 @@ namespace AZ
             const bool dagCutActive = r_meshletsDagLod && m_dagBindValid &&
                 dagMrd && dagMrd->DagClusterCount > 0 && dagMrd->DagNodesBuffer;
 
-            // Two-pass occlusion eligibility (per instance): needs the injected late
-            // pass, this instance's late packet + ledger, the persistent pyramid, and
-            // the barrier pass (which establishes the ledger's pre-depth UAV state).
+            // Per-instance two-pass eligibility.
             Data::Instance<RPI::AttachmentImage> currentPyramid;
             if (m_hiZGeneratePass)
             {
@@ -2654,15 +2537,9 @@ namespace AZ
                 instance.LateDepthDrawPacket && instance.VisFrameBuffer;
 
             WriteMeshShaderCullConstants(instance.MeshShaderInstanceSrg, frustum, cameraPos, objectToWorld, dagCutActive);
-            // HiZ per-cluster occlusion on the CAMERA (forward/motion) SRG:
-            //   * two-pass ON: THIS frame's pyramid + THIS frame's matrix -- legal
-            //     because the late pass's declared HiZInput read (ordered after the
-            //     mip-chain writes) transitioned the current slot for every later
-            //     scope, and exact because pass 2 completed the depth it reduces from.
-            //     (m_hiZPrevCullMat already holds THIS frame's matrix by the time this
-            //     runs -- the stash block assigns it after resolving the prev-frame pair.)
-            //   * two-pass OFF: the last-completed (prev-frame) pyramid + its matrix,
-            //     as before.
+            // Camera-SRG HiZ: two-pass ON = CURRENT pyramid/matrix (legal via the
+            // late pass's declared HiZInput read; m_hiZPrevCullMat already holds this
+            // frame's matrix here); OFF = last-completed pyramid as before.
             if (twoPassActive)
             {
                 auto& srg = instance.MeshShaderInstanceSrg;
@@ -2677,22 +2554,14 @@ namespace AZ
                 srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_worldToClip")), m_hiZBindWorldToClip);
                 srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_doHiZCull")), 1u);
             }
-            // On a packet-(re)build frame the SRG was already compiled (with the same
-            // live constants) by BuildMeshShaderDrawPacket; a second Compile would be
-            // discarded by the RHI with a warning. The constants written above persist
-            // in the RPI-side data and go out with the next frame's Compile.
+            // A rebuild frame already compiled this SRG; a second Compile is discarded.
             if (!instance.MeshShaderInstanceSrg->IsQueuedForCompile())
             {
                 instance.MeshShaderInstanceSrg->Compile();
             }
 
-            // Depth prepass SRG (PASS 1 when two-pass is on):
-            //   * two-pass ON: prev-frame HiZ occlusion is safe again -- pass 2
-            //     completes the depth -- and visMode 1 records every dispatched
-            //     cluster in the ledger.
-            //   * two-pass OFF: occlusion-safe depth -- the SRG mirrors the camera
-            //     constants but NEVER gets the HiZ override (an occluded depth
-            //     prepass would poison next frame's pyramid).
+            // Depth SRG: two-pass ON = pass 1 (prev-frame HiZ safe again, visMode 1
+            // records the ledger); OFF = no HiZ ever (pyramid-feedback protection).
             if (instance.MeshDepthInstanceSrg)
             {
                 auto& depthSrg = instance.MeshDepthInstanceSrg;
@@ -2713,8 +2582,7 @@ namespace AZ
                 }
             }
 
-            // Late-depth SRG (PASS 2): test ONLY clusters pass 1 skipped, against
-            // THIS frame's pyramid, and record its own survivors.
+            // Late SRG (pass 2): only pass-1-skipped clusters vs THIS frame's pyramid.
             if (instance.MeshLateInstanceSrg && twoPassActive)
             {
                 auto& lateSrg = instance.MeshLateInstanceSrg;
@@ -2731,11 +2599,8 @@ namespace AZ
                 }
             }
 
-            // Phase 6 shadow-side DAG cut: cut-only mode -- the DAG cut (main-camera
-            // error metric, so shadow geometry matches the shaded cut exactly) with
-            // every camera-view cull FORCED OFF: a light must rasterize clusters
-            // outside the camera frustum, backfacing to the camera, or occluded from
-            // the camera's point of view.
+            // Shadow SRG: cut-only -- camera-view culls forced off (a light sees
+            // clusters the camera cannot).
             if (instance.MeshShadowInstanceSrg && instance.MeshShadowInstanceSrgIsCull)
             {
                 auto& shadowSrg = instance.MeshShadowInstanceSrg;
@@ -4260,22 +4125,10 @@ namespace AZ
             m_drawPacketsScratch.clear();
             m_visFrameAttachmentsScratch.clear();
 
-            // ===================================================================
-            // HiZ per-cluster occlusion (opt-in m_debugControls.m_hiZCull): resolve
-            // this frame's bindable pyramid ONCE, before any cull-constant update
-            // (compute path's UpdateGpuCullInstance and the AS path's
-            // UpdateMeshShaderCullInstance both consume m_hiZBind*).
-            //   * image  = the LAST-COMPLETED persistent pyramid slot -- written last
-            //     frame, untouched this frame (the HiZ pass ping-pongs), so it is
-            //     safe for our early-in-frame consumers. Gated on the pyramid being
-            //     populated (an unpopulated slot is undefined driver memory).
-            //   * matrix = LAST frame's cull-camera world->clip -- the camera that
-            //     rendered the depth the pyramid was reduced from. Projecting with
-            //     it keeps the depth comparison in the pyramid's own clip space.
-            //   * requires m_cullBarrierPass: it is what imports the image into the
-            //     frame graph with Read usage (UAV->shader-read transition) -- never
-            //     bind the image without that barrier.
-            // ===================================================================
+            // HiZ bind resolve, once per frame before any cull-constant update:
+            // last-COMPLETED pyramid slot (this frame's is being written) + LAST
+            // frame's matrix (the pyramid's own clip space). Requires the barrier
+            // pass -- it declares the UAV->shader-read transition.
             m_hiZBindImage = nullptr;
             m_hiZBindValid = false;
             if (m_debugControls.m_hiZCull && m_hiZGeneratePass && m_cullBarrierPass &&
@@ -4298,15 +4151,9 @@ namespace AZ
                 }
             }
 
-            // ===================================================================
-            // Phase 6 cluster-DAG cut: per-frame projection stash. The pixel scale
-            // MUST come from the pure projection (ViewToClip[1][1] = cot(FovY/2)),
-            // NOT the combined WorldToClip -- the same rotation-collapse root cause
-            // the coverage LOD ladder hit. Viewport = the pipeline's (possibly
-            // render-scaled) output size, which also feeds the per-triangle
-            // pixel-size gates. While this stash is invalid, every DAG-aware
-            // shader path falls back to leaf-only (never draws interiors).
-            // ===================================================================
+            // DAG-cut projection stash. Pixel scale from the PURE projection
+            // (ViewToClip[1][1]); the combined matrix folds in camera rotation and
+            // collapses toward 0. Invalid stash => DAG paths fall back leaf-only.
             m_dagBindValid = false;
             if (m_renderPipeline)
             {
@@ -4323,21 +4170,12 @@ namespace AZ
                     }
                 }
             }
-            // ===================================================================
-            // Phase 7 streaming (v1 residency tracking -- see the cvar comment):
-            // classify every leaf page of every DAG-paged mesh against the DAG-cut
-            // camera, let the residency core load/evict within the slot budget, and
-            // surface the stats. "Load" is immediate in v1 (the pack bytes are
-            // already RAM-resident; GPU upload is the next work package).
-            // ===================================================================
+            // Streaming: classify pages, load/evict within the slot budget.
             m_streamingLoadsThisFrame = 0;
             m_streamingEvictsThisFrame = 0;
             if (r_meshletsStreaming && m_dagBindValid && m_transformServiceFeatureProcessor)
             {
-                // Phase 4 soak: a live budget change (r_meshletsStreamingPoolMB) tears
-                // the pool down and rebuilds it -- everything falls back coarse for a
-                // few frames, then the classifier reloads the wanted set. This is the
-                // budget-sweep mechanism.
+                // Live budget change: rebuild the pool; meshes go coarse, then reload.
                 if (m_pageResidencyInitialized &&
                     m_lastStreamingPoolMB != static_cast<uint32_t>(r_meshletsStreamingPoolMB))
                 {
@@ -4451,10 +4289,8 @@ namespace AZ
                 m_pageUploadItemsScratch.clear();
                 m_pageUploadAttachmentsScratch.clear();
 
-                // ---- Loads: stage + dispatch the slot copy on the cull compute pass.
-                // The copy runs BEFORE DepthPrePass, so marking the page resident (and
-                // flipping the cluster maps) THIS frame is coherent: the data is in the
-                // pool before any consumer's scope executes.
+                // Loads: the slot copy runs on the cull compute pass, BEFORE
+                // DepthPrePass -- marking resident this frame is therefore coherent.
                 for (MeshletsPageResidency::PageKey key : ops.m_load)
                 {
                     auto lookupIt = m_pageKeyLookup.find(key);
@@ -4607,19 +4443,14 @@ namespace AZ
                 }
             }
 
-            // Two-pass occlusion: bump the ledger frame id once per frame (equality
-            // encoding -- wrap keeps correctness, just never let it hit 0, the value a
-            // fresh ledger holds).
+            // Ledger frame id: never 0 (a fresh ledger's value) even across wrap.
             ++m_frameId;
             if (m_frameId == 0)
             {
                 m_frameId = 1;
             }
 
-            // Toggling the DAG (or two-pass occlusion) bakes different dispatch
-            // counts / packets / SRG constants into the cached state -- force a full
-            // rebuild, same pattern as the r_meshletsHwMeshShader/r_meshletsMsCullAS
-            // toggles.
+            // DAG/two-pass toggles bake into cached packets -- force a rebuild.
             if (r_meshletsDagLod != m_lastDagLod || r_meshletsTwoPassOcclusion != m_lastTwoPass)
             {
                 m_lastDagLod = r_meshletsDagLod;
@@ -4756,10 +4587,7 @@ namespace AZ
                             continue;   // skip coverage selection for this instance.
                         }
 
-                        // Phase 6 cluster DAG: the DAG *is* the LOD system -- pin the
-                        // instance to LOD0 (whose cluster range holds every DAG level)
-                        // and let the per-cluster cut pick detail. The ladder's
-                        // hysteresis/group machinery goes dormant, not deleted.
+                            // DAG packs: the DAG is the LOD system -- pin LOD0.
                         if (r_meshletsDagLod && lod0Mrd.DagClusterCount > 0)
                         {
                             if (instance->LodIndex != 0)
@@ -5194,12 +5022,9 @@ namespace AZ
                             // the barrier pass so their state stays read-ready for the draw.
                             const bool gpuTransformChanged =
                                 !instance->HasLastCullTransform || !xform.IsClose(instance->LastCullTransform);
-                            // HiZ active => never skip: the pyramid ping-pongs EVERY frame, so a
-                            // skipped instance's CullSrg would keep last frame's image -- the slot
-                            // the HiZ pass is WRITING this frame (also: occlusion is
-                            // view-dependent per frame, the cull must re-run regardless).
-                            // DAG cut active => never skip either: the cut is view-dependent
-                            // and its constants/validity can change every frame.
+                            // HiZ/DAG active => never skip: the pyramid ping-pongs every
+                            // frame (a stale bind = the slot being written) and both
+                            // tests are view-dependent.
                             const bool dagMayCut = r_meshletsDagLod && mrd.DagClusterCount > 0;
                             const bool gpuCanSkip = !m_hiZBindValid && !dagMayCut &&
                                 !cameraChanged && !gpuTransformChanged &&
@@ -5273,14 +5098,8 @@ namespace AZ
                 m_cullWasEnabled = false;
             }
 
-            // ===================================================================
-            // Phase 5: hardware mesh-shader path. When the CVar toggles, every packet
-            // is invalidated so the next build routes through the newly-selected path.
-            // While active, rebuild any instance whose camera packet is missing (the
-            // group path below never rebuilds per-instance packets), then submit
-            // per-instance packets (the DispatchMesh forward item) instead of the
-            // Step-B instanced group packets.
-            // ===================================================================
+            // Hardware mesh-shader path: a CVar toggle invalidates every packet so the
+            // next build routes through the newly-selected path.
             if (r_meshletsHwMeshShader && !m_meshShaderSupportQueried)
             {
                 m_meshShaderSupportQueried = true;
@@ -5368,19 +5187,8 @@ namespace AZ
                 }
             }
 
-            // ===================================================================
-            // Step B: submission.
-            //   DEFAULT (cull OFF): collapse the N per-instance packets of each
-            //     shared model into ONE hardware-instanced DrawIndexed per group per
-            //     pass. Rebuild dirty groups, then submit ONE camera + ONE shadow
-            //     packet per group. Whole-group submit (no per-instance frustum cull
-            //     on the instanced path -- out of scope for Step B; instancing draws
-            //     all members cheaply).
-            //   CULL ON (opt-in): UNCHANGED per-instance path (the cull block above
-            //     set up each instance's culled packet); do NOT group.
-            //   HW MESH SHADER ON: per-instance path (each instance's packet is the
-            //     DispatchMesh forward item built above); do NOT group.
-            // ===================================================================
+            // Submission: cull OFF = one hardware-instanced packet per group;
+            // cull or mesh-shader ON = per-instance packets, no grouping.
             if (!m_debugControls.m_cullEnabled && !hwMeshActive)
             {
                 size_t cameraPackets = 0;
@@ -5454,10 +5262,8 @@ namespace AZ
                     {
                         m_drawPacketsScratch.emplace_back(instance->ShadowDrawPacket.get());
                     }
-                    // Two-pass occlusion PASS 2: the late-depth packet, plus this
-                    // instance's visibility-ledger import (declared RW on the barrier
-                    // pass -- pre-depth UAV state/sync -- AND on the late pass -- the
-                    // post-pass-1 sync point).
+                    // Pass 2: late-depth packet + the ledger import (RW on barrier
+                    // AND late pass -- the two sync points).
                     if (instance && r_meshletsTwoPassOcclusion && instance->LateDepthDrawPacket &&
                         instance->VisFrameBuffer && instance->VisFrameBuffer->GetRHIBuffer())
                     {
@@ -5524,11 +5330,9 @@ namespace AZ
                 m_debugControls.m_forwardPassEnabled && !m_debugControls.m_useDebugShader;
             m_renderPass->SetHasDrawWork(!forwardHealthy);
 
-            // Two-pass occlusion PASS 2: the late pass opens its scope (and thereby
-            // declares its HiZInput read + the ledger RW imports) only on frames with
-            // actual late work -- its scope is what makes the CURRENT pyramid legal to
-            // sample from every later pass, so this gate and the per-instance
-            // twoPassActive checks must agree (both key off LateDepthDrawPacket).
+            // The late pass's scope is what legalizes CURRENT-pyramid sampling for
+            // later passes -- this gate and twoPassActive must agree (both key off
+            // LateDepthDrawPacket).
             if (m_lateDepthPass)
             {
                 m_lateDepthPass->SetImportedAttachments(m_visFrameAttachmentsScratch);
@@ -5544,11 +5348,8 @@ namespace AZ
             // depth/forward/shadow passes consume them. Both passes sit before DepthPrePass.
             if (m_cullComputePass && m_cullBarrierPass)
             {
-                // Phase 7 streaming: page-slot upload dispatches ride the cull compute
-                // pass (before DepthPrePass), with the pool imported ReadWrite +
-                // finalized there; the barrier pass then declares the pool Read
-                // (VertexShader = pre-raster stages) every frame so the AS/MS sample
-                // it in the right state.
+                // Page uploads ride the cull compute pass; the barrier pass declares
+                // the pool Read (pre-raster) so the AS/MS sample it in-state.
                 if (!m_pageUploadItemsScratch.empty())
                 {
                     m_cullDispatchItemsScratch.insert(m_cullDispatchItemsScratch.end(),
@@ -5576,13 +5377,10 @@ namespace AZ
                 m_cullBarrierPass->SetIndirectBarrierAttachments(m_cullBarrierAttachmentsScratch);
                 // The barrier pass runs no dispatches.
                 m_cullBarrierPass->AddDispatchItems({});
-                // HiZ: have the barrier pass import the last-completed pyramid with Read
-                // usage (UAV->shader-read before the standard passes sample it). Cleared
-                // when HiZ is off/unavailable so no stale image lingers on the pass.
+                // Barrier pass declares the last-completed pyramid Read (UAV->SRV
+                // before any consumer); cleared when HiZ is off.
                 m_cullBarrierPass->SetHiZReadImage(m_hiZBindValid ? m_hiZBindImage : nullptr);
-                // Two-pass occlusion: the visibility ledgers, declared ReadWrite here
-                // (pre-depth UAV state + a sync point) -- pass 1's AS then writes them
-                // inside the DepthPrePass scope in that established state.
+                // Ledgers declared RW here = pre-depth UAV state + sync point.
                 m_cullBarrierPass->SetImportedAttachments(m_visFrameAttachmentsScratch);
             }
 

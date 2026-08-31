@@ -6,19 +6,8 @@
  *
  */
 
-// Meshlet forward pass -- HARDWARE MESH SHADER path (Phase 5, first slice).
-//
-// Rendered by the STANDARD Atom ForwardPass (DrawListTag "forward"), exactly like
-// the vertex-pull MeshletsForwardPass.azsl, so it inherits the ForwardPassSrg
-// lighting resources for free. This first slice runs one threadgroup per cluster
-// (DispatchMesh(clusterCount,1,1)) with NO amplification/cull stage yet -- the mesh
-// shader transforms each cluster's vertices and emits its triangles directly (no
-// input assembler, no index buffer). The pixel shader outputs a flat per-cluster
-// debug color so the meshlet decomposition is directly visible and correctness of
-// the mesh-shader emit can be verified before wiring the full PBR path.
-//
-// Decode of the cluster triangle/vertex data mirrors MeshletsCompute.azsl's
-// GetGlobalVertexIndicesAndTriOffset exactly.
+// Meshlet forward pass -- hardware mesh-shader path. Rendered by the standard
+// Atom ForwardPass ("forward" tag); one MS threadgroup per cluster.
 
 // Enable tile-based light culling (the ForwardPass provides m_tileLightData +
 // m_lightListRemapped). Must be set BEFORE the lighting headers are included.
@@ -128,18 +117,8 @@ void MeshletsForwardPassMS(
 }
 
 // ============================================================================
-// Phase 5 -- AMPLIFICATION-SHADER cluster cull + PER-TRIANGLE cull (opt-in,
-// r_meshletsMsCullAS; default OFF -- MeshletsForwardPassMS above is untouched and
-// stays the default DispatchMesh(clusterCount,1,1) path with no cull stage).
-//
-// This is a SEPARATE entry-point pair from MeshletsForwardPassMS, compiled into a
-// SEPARATE .shader/PSO (MeshletsForwardMeshShaderCulled.shader) that adds the
-// Amplification stage. Adding an AS to the SAME .shader as the default MS entry
-// would make every DispatchMesh call through it invoke the AS unconditionally --
-// that would change the shipped default's behavior, which HARD RULE 7 forbids.
-//
-// Both PSOs share this one .azsl file (and its PS) so the shipped default is
-// byte-for-byte unchanged; only a new PSO opts in.
+// AS cluster cull + per-triangle cull (opt-in r_meshletsMsCullAS): a separate
+// PSO pairing the shared cull AS with this payload-driven MS entry.
 // ============================================================================
 
 // The AS entry (MeshletsCullClustersAS), payload struct and per-cluster cull test
@@ -148,25 +127,13 @@ void MeshletsForwardPassMS(
 #include <MeshletsCullAS.azsli>
 
 // ---------------------------------------------------------------------------
-// Per-triangle cull (Item 2): backface + degenerate + micro-polygon, evaluated
-// after vertices are transformed but before SetMeshOutputCounts commits a
-// triangle count. MUST be conservative (reverse-Z everywhere; a false cull
-// silently drops geometry) -- any ambiguous case (near-plane straddle, etc.)
-// is left un-culled.
+// Per-triangle cull: backface + degenerate + micro-polygon + big-triangle HiZ,
+// evaluated after transform but before SetMeshOutputCounts commits the counts.
 // ---------------------------------------------------------------------------
-// NOTE: SetMeshOutputCounts must be called exactly once, uniformly, by every thread,
-// and -- per the mesh-shader spec -- BEFORE any thread writes to the out vertices/
-// indices arrays. The final triangle count isn't known until after the per-triangle
-// cull runs, so vertices are staged into this groupshared buffer (not outVerts)
-// first; only after SetMeshOutputCounts is called do threads copy the staged data
-// into outVerts/outTris.
-// LDS budget: the per-triangle cull only reads each vertex CLIP position, so only
-// that is staged -- plus the world position, purely so the emit pass below does not
-// have to re-read and re-transform the position stream. ~2KB + 1.5KB + 3KB = 6.5KB
-// per group instead of the ~13KB a staged VSOutput[128] cost, which is the difference
-// between one and two resident groups per SIMD against the 32KB RDNA LDS budget. The
-// remaining attributes (normal/tangent/uv) are read straight into outVerts after
-// SetMeshOutputCounts -- the same number of SRV reads as before, just issued later.
+// SetMeshOutputCounts must precede any outVerts/outTris write (mesh-shader spec),
+// but the count isn't known until the cull runs -- so clip/world positions stage
+// here first. Only those two: staging full VSOutput[128] would double LDS use
+// and halve resident groups per SIMD.
 groupshared float4 s_clipPos[MESHLETS_MS_MAX_VERTICES];
 groupshared float3 s_worldPos[MESHLETS_MS_MAX_VERTICES];
 groupshared uint3  s_survivingTris[MESHLETS_MS_MAX_TRIANGLES];
@@ -228,13 +195,8 @@ bool TriangleCulled(float4 c0, float4 c1, float4 c2)
     return false;
 }
 
-//! True if the triangle is entirely occluded per the previous-frame HiZ pyramid
-//! (spec Phase 5 "big-triangle HiZ" test). Projects with the PYRAMID's own
-//! world->clip (MeshletsMeshInstanceSrg::m_worldToClip -- last frame's camera, set
-//! by UpdateMeshShaderCullInstance), NOT this frame's ViewSrg matrix, so the depth
-//! comparison happens in the clip space the pyramid was reduced in. Conservative:
-//! never culls near-plane straddlers, unbound pyramids, or small triangles (4
-//! pyramid taps + 3 matrix muls cost more than rasterizing them).
+//! True if the triangle is entirely occluded per the bound HiZ pyramid.
+//! Projects with the PYRAMID's own world->clip; any w<=0 vertex skips the test.
 bool TriangleOccludedHiZ(float3 w0, float3 w1, float3 w2)
 {
     uint hiZW, hiZH;

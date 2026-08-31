@@ -38,10 +38,8 @@ namespace AZ::Meshlets::Builders
         AZ::u16  m_maxVerticesPerCluster  = 128;
         AZ::u16  m_maxTrianglesPerCluster = 256;
         float    m_coneWeight             = 0.5f;
-        //! Phase 6: build a cluster-simplification DAG (continuous per-cluster LOD for
-        //! the AS mesh-shader path) instead of the discrete per-instance LOD chain.
-        //! Produces a v3 pack with a DagNodes section; leaves stay contiguous-first so
-        //! non-DAG-aware paths draw exactly the LOD0 cluster set.
+        //! Build a cluster-simplification DAG (v3 pack, leaves-first so non-DAG
+        //! paths draw exactly the LOD0 cluster set).
         bool     m_generateClusterDag     = false;
         //! Phase 7: additionally emit self-contained LEAF streaming pages (PageTable/
         //! PageData/ParentIndex sections, pack v4). Implies m_generateClusterDag.

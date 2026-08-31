@@ -146,11 +146,8 @@ namespace AZ
             AZStd::vector<ClusterDescriptor> PersistentClusterDescriptors;
             AZStd::vector<ClusterBoundsRecord> PersistentClusterBounds;
 
-            //! Phase 6 cluster DAG (pack v3): per-cluster cut records + the full
-            //! leaf+interior cluster count. For DAG packs, PersistentClusterDescriptors/
-            //! Bounds (and the expanded-index slab) cover the FULL DagClusterCount range,
-            //! leaves first; MeshletsCount/IndexCount stay leaf-only so whole-mesh draws
-            //! never touch interiors. DagClusterCount == 0 => no DAG (v2 pack).
+            //! DAG cut records + full leaf+interior count (0 = no DAG). Persistent*
+            //! arrays cover the full range; MeshletsCount/IndexCount stay leaf-only.
             AZStd::vector<DagNodeRecord> PersistentDagNodes;
             AZ::u32 DagClusterCount = 0;
 
@@ -165,11 +162,8 @@ namespace AZ
             //! The whole pack's PageData section bytes (page payload base).
             AZStd::span<const AZ::u8> PageData;
 
-            //! Phase 3 streaming runtime state (built lazily on first streaming use):
-            //! exact simplification-group bookkeeping derived from PersistentParentIndex
-            //! (the fail-safe-coarse cut needs group-shared completeness bits), the
-            //! cluster->page lookup, and the per-cluster paged map GPU buffer
-            //! (recreated on any residency change -- the proven initial-data path).
+            //! Streaming runtime state (lazy): group bookkeeping for the
+            //! fail-safe-coarse cut + cluster->page lookup + the paged-map buffer.
             struct LeafGroup
             {
                 AZ::u32 m_parentFirst = 0;    //!< Mesh-local first parent cluster.
@@ -185,12 +179,8 @@ namespace AZ
             //! True once every always-resident (interior) page is uploaded -- the
             //! object SRG's m_pagedMode mirrors this.
             bool PagedModeActive = false;
-            //! Phase 4 VRAM-reclaim switch (r_meshletsStreamingExclusive at pack load):
-            //! the monolithic geometry buffers (vertex-stream SRVs, expanded-index SRV,
-            //! index/IA buffers, MS triangle/indirection copies) are NEVER created for
-            //! this mesh -- it renders ONLY through the AS-cull paged path. Every other
-            //! path sees permanently-not-ready resources and self-skips (the lazy-load
-            //! guards). Decided at load; a cvar flip requires a level reload.
+            //! r_meshletsStreamingExclusive at pack load: no monolithic buffers ever --
+            //! every non-paged path self-skips via its lazy-load guards.
             bool MonolithicDropped = false;
             //! GPU copy of PersistentDagNodes (StructuredBuffer<DagNodeRecord>), created
             //! by EnsureCullGpuBuffers alongside the bounds/descriptor buffers.
@@ -306,11 +296,8 @@ namespace AZ
             //! m_hiZTexture) is stripped from its layout; UpdateMeshShaderCullInstance
             //! silently no-ops against such an SRG.
             bool MeshShaderInstanceSrgBuiltForCull = false;
-            //! Uncull-layout MeshletsMeshInstanceSrg for the mesh-shader SHADOW packet
-            //! when r_meshletsMsCullAS is active: the shadow MS is the UNCULL shader
-            //! (a light's view must rasterize every cluster), so it cannot bind the
-            //! cull-layout MeshShaderInstanceSrg above. Unused (null) when the camera
-            //! packet is uncull too -- MeshShaderInstanceSrg is shared then.
+            //! Shadow packet's own instance SRG under r_meshletsMsCullAS -- the shadow
+            //! MS is uncull-layout, incompatible with the cull-layout camera SRG.
             Data::Instance<RPI::ShaderResourceGroup> MeshShadowInstanceSrg;
             //! Owning ref to the DrawPacket. DrawPacketBuilder::End() returns an
             //! RHI::Ptr; if we stored a raw pointer instead, the temporary Ptr would
@@ -322,23 +309,15 @@ namespace AZ
             //! Shadow packet (shadow DrawItem only), always the full cluster set
             //! (un-culled) so shadows stay correct regardless of the camera. Built once.
             RHI::Ptr<RHI::DrawPacket> ShadowDrawPacket;
-            //! Phase 6 occlusion-safe depth: under the AS-cull path the depth prepass
-            //! item lives in its OWN packet with its own instance SRG (MeshDepthInstanceSrg)
-            //! so the depth draw NEVER applies HiZ occlusion -- a HiZ-culled depth prepass
-            //! would poison the next frame's pyramid (false-culls feed back). Null when
-            //! the depth item rides the camera packet (non-AS path).
+            //! Own depth packet under AS-cull so depth never applies HiZ -- an occluded
+            //! depth prepass would poison next frame's pyramid. Null on the non-AS path.
             RHI::Ptr<RHI::DrawPacket> DepthDrawPacket;
-            //! Cull-layout instance SRG for DepthDrawPacket: same constants as
-            //! MeshShaderInstanceSrg each frame EXCEPT m_doHiZCull stays 0 -- unless
-            //! two-pass occlusion is active, when it becomes PASS 1 (prev-frame HiZ +
-            //! visMode 1, safe because the late pass completes the depth).
+            //! Depth SRG: mirrors the camera constants, HiZ off -- except as two-pass
+            //! PASS 1 (prev-frame HiZ + visMode 1).
             Data::Instance<RPI::ShaderResourceGroup> MeshDepthInstanceSrg;
 
-            //! Two-pass occlusion PASS 2 (opt-in r_meshletsTwoPassOcclusion): the
-            //! late-depth packet ("meshletslatedepth" tag -> MeshletsLateDepthPass,
-            //! after this frame's HiZ reduce) + its cull-layout instance SRG (visMode
-            //! 2, THIS frame's pyramid) + the per-cluster visibility ledger (one u32
-            //! frame-id per DAG-range cluster; frame-counter encoding, never cleared).
+            //! Two-pass PASS 2: late-depth packet + its SRG (visMode 2, THIS frame's
+            //! pyramid) + the per-cluster frame-id ledger (never cleared).
             RHI::Ptr<RHI::DrawPacket> LateDepthDrawPacket;
             Data::Instance<RPI::ShaderResourceGroup> MeshLateInstanceSrg;
             Data::Instance<RPI::Buffer> VisFrameBuffer;

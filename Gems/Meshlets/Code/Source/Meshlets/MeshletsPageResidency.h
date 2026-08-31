@@ -15,17 +15,9 @@
 
 namespace AZ::Meshlets
 {
-    //! Phase 7 streaming -- CPU residency core (design section 2, v1: conservative CPU
-    //! classifier, no GPU feedback). Pure logic, no GPU/IO dependencies, unit-tested
-    //! in MeshletsPageResidencyTest.cpp.
-    //!
-    //! Model: a fixed pool of identical page SLOTS (fixed-slot allocator -- pages are
-    //! builder-padded to PageMaxClusters caps, so any page fits any slot and the
-    //! free-list can never fragment). Each frame the caller submits every candidate
-    //! page's classifier inputs; Update() returns which pages to load (up to a
-    //! per-update budget) and which to evict. Fail-safe-coarse is the CONSUMER's
-    //! contract: a non-resident page's leaves simply fail the cut and their
-    //! always-resident parents render instead -- this class only manages residency.
+    //! CPU residency core: fixed pool of identical page slots (any page fits any
+    //! slot -- no fragmentation). Pure logic, no GPU/IO; unit-tested. Fail-safe-
+    //! coarse is the consumer's contract -- this class only manages residency.
     class MeshletsPageResidency
     {
     public:

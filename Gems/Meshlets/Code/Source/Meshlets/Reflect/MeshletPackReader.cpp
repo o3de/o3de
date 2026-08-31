@@ -28,10 +28,7 @@ namespace AZ::Meshlets
         {
             return false;
         }
-        // v2 (SP1), v3 (Phase 6 cluster DAG) and v4 (Phase 7 streaming pages) are
-        // strictly additive: v3 ADDS DagNodes + m_dagClusterCount (formerly a zeroed
-        // reserved slot); v4 ADDS PageTable/PageData/ParentIndex on top of the full
-        // v3 layout (duplicate-fallback).
+        // v2/v3/v4 are strictly additive.
         if (header.m_version != PackVersion && header.m_version != PackVersionDag &&
             header.m_version != PackVersionPaged)
         {

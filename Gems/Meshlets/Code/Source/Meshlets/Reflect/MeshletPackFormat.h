@@ -24,15 +24,12 @@ namespace AZ::Meshlets
     //! Written ONLY for packs whose sidecar opts into "generate_cluster_dag" -- non-DAG
     //! packs stay byte-identical v2. Readers accept both.
     inline constexpr AZ::u32 PackVersionDag = 3;
-    //! Phase 7 v4 (streaming): v3 + PageTable/PageData (self-contained LEAF pages) +
-    //! ParentIndex. Sidecar "generate_pages" (implies the DAG). v1 keeps the full v3
-    //! monolithic sections alongside the pages (duplicate-fallback: streaming OFF
-    //! renders exactly like v3; the paged path can land incrementally).
+    //! v4: v3 + PageTable/PageData/ParentIndex (sidecar "generate_pages"). Keeps the
+    //! full v3 sections as fallback, so streaming-off renders identically.
     inline constexpr AZ::u32 PackVersionPaged = 4;
 
-    //! v1 fixed-slot streaming pool: every page is padded to these caps so the
-    //! runtime slot allocator is a trivial fragmentation-proof free-list. With the
-    //! default 128v/256t cluster budget a full page is ~150 KB of payload.
+    //! Hard page cap: fixed-size pool slots keep the runtime allocator a
+    //! fragmentation-proof free-list (~150 KB payload at the 128v/256t budget).
     inline constexpr AZ::u32 PageMaxClusters = 16;
     inline constexpr AZ::u32 PackHeader = PackMagic | (PackVersion << 16);
 
@@ -52,11 +49,9 @@ namespace AZ::Meshlets
         ClusterMaterialMap = 10,
         PageTable          = 11,
         PageData           = 12,
-        //! Phase 7 v4: per-cluster PACK-GLOBAL cluster index of the cluster's FIRST
-        //! parent (the group's parents are contiguous), 0xFFFFFFFF for roots.
-        //! Parallel to ClusterDescriptors like ConeBounds/DagNodes. Lets the runtime
-        //! derive group->children mappings exactly (for the fail-safe-coarse
-        //! residency cut) without float-matching group records.
+        //! v4: per-cluster pack-global index of the FIRST parent (0xFFFFFFFF = root),
+        //! parallel to ClusterDescriptors -- exact group->children mapping for the
+        //! residency cut, no float-matching of group records.
         ParentIndex        = 14,
         // SP1 v2: pre-baked flat triangle index list (3 u32 indices per
         // triangle, all clusters of all meshes concatenated in pack-global
@@ -182,19 +177,12 @@ namespace AZ::Meshlets
     };
     static_assert(sizeof(ClusterBoundsRecord) == 48, "ClusterBoundsRecord must be 48 bytes");
 
-    //! Kind 7 (DagNodes, Phase 6 / pack v3): one record per cluster, pack-global order,
-    //! parallel to ClusterDescriptors exactly like ConeBounds. Drives the runtime
-    //! cluster-DAG cut test: a cluster is drawn iff
-    //!   errPx(selfSphere, selfError) <= tau && errPx(parentSphere, parentError) > tau.
-    //! Invariants the builder guarantees (crack-freedom):
-    //!   * every parent cluster produced from one simplification group shares ONE
-    //!     self error/sphere, and every child of that group shares the SAME values
-    //!     as its parent error/sphere;
-    //!   * errors are monotonically non-decreasing up the DAG (max-propagated);
-    //!   * a group's sphere encloses its member clusters' self spheres.
-    //! Leaves: selfError = 0 (always eligible). Roots / clusters of meshes that
-    //! could not simplify: parentError = FLT_MAX (never rejected as "parent good
-    //! enough"). 48 bytes = 3x float4 -> clean StructuredBuffer.
+    //! Kind 7 (DagNodes, v3): per-cluster cut record, parallel to ClusterDescriptors.
+    //! Drawn iff errPx(self) <= tau < errPx(parent). Crack-freedom invariants the
+    //! builder guarantees: group-shared records (a group's parents share one self
+    //! record; its children share it as their parent record), max-propagated
+    //! monotonic errors, parent spheres enclose child spheres. Leaves: selfError 0;
+    //! roots: parentError FLT_MAX.
     struct DagNodeRecord
     {
         float m_selfSphere[4];    //!< xyz = center, w = radius (object space, group-shared).
@@ -205,24 +193,13 @@ namespace AZ::Meshlets
     };
     static_assert(sizeof(DagNodeRecord) == 48, "DagNodeRecord must be 48 bytes");
 
-    //! Kind 11 (PageTable, Phase 7 / pack v4): one record per streaming page. Pages
-    //! hold LEAF clusters only (v1 -- the always-resident set is every interior DAG
-    //! level, so any budget renders correct-but-coarser geometry); each page's
-    //! clusters are CONTIGUOUS in pack-global cluster order (the builder permutes
-    //! leaves into page order before the DAG is built on top of them).
-    //!
-    //! Page payload layout inside PageData (tightly packed, page 16-byte aligned):
-    //!   PagedClusterRecord[m_clusterCount]
-    //!   u32 triangleWords[m_triangleWords]     (3x8-bit cluster-LOCAL ids, verbatim)
-    //!   u32 indirection[m_indirCount]          (PAGE-LOCAL unique-vertex ids)
-    //!   float positions [3 * m_vertexCount]
-    //!   float normals   [3 * m_vertexCount]
-    //!   float tangents  [4 * m_vertexCount]
-    //!   float bitangents[3 * m_vertexCount]
-    //!   float uvs       [2 * m_vertexCount]
-    //! Self-contained: rendering a resident page touches nothing outside its payload
-    //! (vertices shared with other pages are duplicated -- the ~10-15% overhead that
-    //! buys trivial residency).
+    //! Kind 11 (PageTable, v4): one record per streaming page. A page's clusters are
+    //! contiguous in pack-global order (leaves are permuted into page order before
+    //! the DAG builds on them). Payload layout (tight, 16-byte aligned):
+    //!   PagedClusterRecord[clusterCount] | triangleWords | indirection(PAGE-local
+    //!   vertex ids) | pos/norm/tan/bitan/uv floats.
+    //! Self-contained: shared vertices are duplicated across pages so rendering a
+    //! resident page touches nothing outside its payload.
     struct PageTableRecord
     {
         AZ::u64 m_dataOffset;         //!< Bytes from the start of the PageData section.
@@ -233,16 +210,13 @@ namespace AZ::Meshlets
         AZ::u32 m_vertexCount;        //!< Page-local unique vertices.
         AZ::u32 m_triangleWords;      //!< Actual triangle words in the payload.
         AZ::u32 m_indirCount;         //!< Actual indirection entries (== sum of cluster vertex counts).
-        //! Bit 0 (PageFlagAlwaysResident): interior-DAG-level page -- pinned resident
-        //! for the mesh's lifetime (the coarse fallback that makes fail-safe-coarse
-        //! possible at ANY budget). Interior pages are contiguous emission runs, not
-        //! spatial partitions (locality is irrelevant for always-resident data).
+        //! Bit 0 (PageFlagAlwaysResident): interior-level page, pinned resident --
+        //! the coarse fallback that keeps every budget hole-free.
         AZ::u32 m_flags;
         float   m_aabbMin[3];         //!< Object-space bounds of the page's clusters.
         float   m_aabbMax[3];
-        //! max over the page's leaves of their parentError: the residency classifier
-        //! needs this page iff errPx(pageBounds, m_maxParentError) > tau -- i.e. some
-        //! leaf's parent is NOT good enough on screen, so leaves must render.
+        //! max leaf parentError: the classifier wants this page iff its projection
+        //! exceeds tau (some leaf's parent is no longer good enough on screen).
         float   m_maxParentError;
         AZ::u32 m_reserved1;
     };
@@ -260,14 +234,10 @@ namespace AZ::Meshlets
 
     inline constexpr AZ::u32 PageFlagAlwaysResident = 1u << 0;
 
-    //! Phase 3 runtime pool: per-slot u32 layout inside the single global page pool
-    //! (StructuredBuffer<uint>; floats stored as bit patterns, shaders asfloat()).
-    //!   slotBase + 0                                : header {clusterCount, vertexCount, triangleWords, indirCount}
-    //!   slotBase + PageSlotHeaderU32s               : PagedClusterRecord[clusterCount] (4 u32 each)
-    //!   ... then tightly packed, in payload order   : triWords / indirection / pos / normal / tangent / bitangent / uv
-    //! PageSlotU32s is the fixed slot capacity: header + caps for a full
-    //! PageMaxClusters page at the 128v/256t cluster budget (the builder's clamp
-    //! ceiling). Pages exceeding it are rejected at load with a warning.
+    //! Runtime pool slot layout (StructuredBuffer<uint>, floats as bit patterns):
+    //! 4-word header {clusterCount, vertexCount, triWords, indirCount}, then the
+    //! payload verbatim. PageSlotU32s = capacity for a full page at the 128v/256t
+    //! clamp ceiling; oversize pages are rejected at load.
     inline constexpr AZ::u32 PageSlotHeaderU32s = 4;
     inline constexpr AZ::u32 PageSlotU32s =
         PageSlotHeaderU32s +

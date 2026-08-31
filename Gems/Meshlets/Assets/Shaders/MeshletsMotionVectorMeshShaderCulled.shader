@@ -1,13 +1,8 @@
 {
     "Source" : "./MeshletsMotionVectorMeshShader.azsl",
 
-    // AS-culled motion vector PSO (opt-in r_meshletsMsCullAS). Split from
-    // MeshletsMotionVectorMeshShader.shader for the same reason as the forward and
-    // depth pairs -- the shipped no-cull PSO must keep its plain DispatchMesh
-    // semantics. Pairs the SHARED cluster-cull AS (MeshletsCullAS.azsli) with the
-    // payload-driven MeshletsMotionVectorMSCulled entry.
-    //
-    // Render state mirrors MeshletsMotionVectorMeshShader.shader exactly.
+    // AS-culled motion PSO -- split so the shipped no-cull PSO keeps plain
+    // DispatchMesh semantics. Render state mirrors the uncull .shader.
     "DepthStencilState" :
     {
         "Depth" :

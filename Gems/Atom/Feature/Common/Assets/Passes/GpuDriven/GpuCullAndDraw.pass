@@ -31,12 +31,8 @@
                     "SlotType": "Output"
                 },
                 {
-                    // Phase 6 two-pass occlusion: expose THIS frame's HiZ pyramid so a
-                    // later pipeline pass (MeshletsLateDepthPass) can read it through a
-                    // normal declared connection -- the frame graph then orders the
-                    // UAV->shader-read transition after the mip-chain writes. Importing
-                    // the same RHI image a second time under another attachment id would
-                    // split hazard tracking; a slot connection avoids that entirely.
+                    // Expose this frame's pyramid as a slot: a second import of the
+                    // same RHI image would split hazard tracking.
                     "Name": "HiZOutput",
                     "SlotType": "Output"
                 }

@@ -6,24 +6,8 @@
  *
  */
 
-// Meshlet MOTION VECTOR pass -- HARDWARE MESH SHADER path.
-//
-// The mesh-shader counterpart of MeshletsMotionVector.azsl (vertex-pull). Unlike
-// the depth and shadow mesh shaders this one has a REAL pixel shader: it writes
-// screen-space motion to a render target, so it carries world position for both the
-// current and previous frame through to the PS.
-//
-// Motion vectors feed TAA and any upscaler (see the UpscalerInterface work), so
-// leaving this pass on the vertex-pull path meant meshlet geometry paid the slower
-// path on every frame TAA was enabled.
-//
-// NOTE ON OBJECT ID: the vertex-pull path resolves objectId through
-// MeshletsInstanceRenderSrg::ResolveObjectId(SV_InstanceID) because it supports
-// hardware-instanced draws. The mesh-shader path issues one DispatchMesh per
-// instance, so there is no SV_InstanceID to resolve -- it reads
-// MeshletsMeshInstanceSrg::m_objectId directly, matching MeshletsDepthMeshShader
-// and MeshletsForwardMeshShader. Each instance therefore still gets its OWN
-// previous transform, which is what prevents ghosting.
+// Meshlet motion-vector pass -- hardware mesh-shader path ("motion" tag; without
+// it the mesh path emits nothing to the motion buffer and ghosts under TAA).
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>
@@ -96,11 +80,7 @@ void MeshletsMotionVectorMS(
 }
 
 // ---------------------------------------------------------------------------
-// AS-culled variant (opt-in r_meshletsMsCullAS, MeshletsMotionVectorMeshShaderCulled.shader):
-// same emit as MeshletsMotionVectorMS but driven by the shared cluster-cull AS's
-// payload, matching the culled forward PSO's AS group counts (one geometry view
-// per DrawPacket). No per-triangle cull -- the motion pass depth-tests GreaterEqual
-// against the prepass, so extra triangles resolve correctly.
+// AS-culled variant: same emit, driven by the shared cull AS's payload.
 // ---------------------------------------------------------------------------
 #include <MeshletsCullAS.azsli>
 

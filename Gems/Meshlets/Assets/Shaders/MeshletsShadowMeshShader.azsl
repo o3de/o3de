@@ -6,23 +6,8 @@
  *
  */
 
-// Meshlet SHADOW pass -- HARDWARE MESH SHADER path.
-//
-// The mesh-shader counterpart of MeshletsShadowPass.azsl (vertex-pull). Position
-// only, exactly like MeshletsDepthMeshShader.azsl; the only differences live in the
-// .shader descriptor (LessEqual depth test, depth bias, DrawList "shadow").
-//
-// WHY THIS MATTERS FOR PERF: shadows are usually the heaviest geometry cost in the
-// frame -- every cascade rasterizes the whole visible set again. With only forward
-// and depth on DispatchMesh, a directional light with 4 cascades left 5 of ~7
-// geometry passes on the vertex-pull path, which is SLOWER than the standard mesh
-// path because it loses the post-transform vertex cache and re-transforms shared
-// vertices per index. Meshlets therefore could not win no matter how well the
-// forward pass performed. This pass is the biggest single piece of closing that.
-//
-// Atom rebinds ViewSrg::m_viewProjectionMatrix with the light's VP matrix per
-// cascade (see the comment in MeshletsShadowPass.azsl), so the transform here is
-// identical to the depth variant and needs no shadow-specific SRG.
+// Meshlet shadow pass -- hardware mesh-shader path ("shadow" tag, all clusters:
+// camera-side culling is wrong for a light's point of view).
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>
@@ -88,12 +73,7 @@ void MeshletsShadowPassMS(
 }
 
 // ---------------------------------------------------------------------------
-// Phase 6 shadow-side DAG cut (MeshletsShadowMeshShaderCulled.shader): payload-
-// driven variant fed by the SHARED cluster-cull AS in "cut-only" mode -- the
-// feature processor sets m_doFrustumCull/m_doConeCull/m_doHiZCull to 0 on the
-// shadow instance SRG (a light must rasterize clusters outside the CAMERA
-// frustum), leaving only the DAG cut. The shadow geometry therefore matches the
-// camera passes' cut exactly -- no detail mismatch between depth and shadow.
+// Shadow DAG cut variant: shared cull AS in cut-only mode (camera culls zeroed).
 // ---------------------------------------------------------------------------
 #include <MeshletsCullAS.azsli>
 
@@ -158,11 +138,7 @@ void MeshletsShadowPassMSCulled(
     }
 }
 
-// Empty pixel shader -- see the long note in MeshletsDepthMeshShader.azsl. Short
-// version: azslc counts entry functions from input-assembly reflection, a Mesh
-// entry contributes none, and a mesh-ONLY shader fails to build with "The number of
-// valid shader entry functions ... was 0!". An output-free PS keeps this a
-// depth-only draw and still permits early-Z.
+// Empty PS -- same azslc entry-count workaround as MeshletsDepthMeshShader.azsl.
 void MeshletsShadowPassPS(VSOutput IN)
 {
 }

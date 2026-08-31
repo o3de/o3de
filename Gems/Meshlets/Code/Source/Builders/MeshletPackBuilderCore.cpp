@@ -407,14 +407,8 @@ namespace AZ::Meshlets::Builders
             return true;
         }
 
-        // ================================================================
-        // Phase 6 -- cluster-simplification DAG (see
-        // docs/superpowers/specs/2026-08-31-meshlets-phase6-cluster-dag-lod-design.md).
-        // Runs AFTER BuildOneMesh, entirely in the mesh's compacted (post-
-        // optimizeVertexFetch) vertex space: simplification only ever selects a
-        // SUBSET of existing vertices, so every DAG level shares the mesh's one
-        // vertex slice and only the cluster/triangle/indirection arrays grow.
-        // ================================================================
+        // Cluster-simplification DAG. Simplification only selects a subset of
+        // existing vertices, so every DAG level shares the mesh's one vertex slice.
 
         //! Clusterize \p indices (mesh-local vertex ids) and APPEND the resulting
         //! meshlets to \p out's cluster/bounds/triangle/indirection arrays -- the same
@@ -503,12 +497,8 @@ namespace AZ::Meshlets::Builders
             }
         }
 
-        //! Build the cluster DAG on top of \p out's leaf clusters (which BuildOneMesh
-        //! just produced). Appends interior-level clusters (leaf-first layout) and
-        //! fills m_dagNodes / m_leafClusterCount. Crack-freedom invariants (design section 2):
-        //! locked group boundaries, ONE shared error/sphere per simplification group
-        //! (stamped on every parent's self record and every member's parent record),
-        //! and max()-propagated monotonic errors.
+        //! Append interior DAG levels (leaf-first layout) and fill m_dagNodes.
+        //! Crack-freedom: locked borders, group-shared records, monotonic errors.
         void BuildMeshDag(AZ::u16 maxVerts, AZ::u16 maxTris, float coneWeight, PerMeshOutput& out)
         {
             constexpr AZ::u32 kDagMaxLevels        = 16;
@@ -604,11 +594,8 @@ namespace AZ::Meshlets::Builders
                         continue;
                     }
 
-                    // LOCK_BORDER: group-boundary vertices are pinned -> adjacent groups
-                    // simplified independently still meet exactly (THE crack mechanism).
-                    // SPARSE: indices are a small subset of the whole mesh's vertex set.
-                    // ERROR_ABSOLUTE: resultError comes back in object-space units, which
-                    // is what the runtime's pixel projection expects.
+                    // LOCK_BORDER = the crack mechanism; ERROR_ABSOLUTE = object-space
+                    // error, what the runtime's pixel projection expects.
                     static constexpr float kNormalAttrWeights[3] = { 0.5f, 0.5f, 0.5f };
                     float resultError = 0.0f;
                     simplified.resize(mergedIndices.size());
@@ -709,13 +696,8 @@ namespace AZ::Meshlets::Builders
         // docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md).
         // ================================================================
 
-        //! Partition the mesh's LEAF clusters into pages (spatial adjacency via
-        //! meshopt_partitionClusters, hard-capped at PageMaxClusters) and PERMUTE the
-        //! leaf prefix of m_clusters/m_clusterBounds into page order so each page's
-        //! clusters are contiguous. MUST run after BuildOneMesh and BEFORE BuildMeshDag:
-        //! descriptors are self-describing (a permutation touches no offsets) and the
-        //! DAG is built on top of whatever leaf order exists, but DagNodes/ParentIndex
-        //! entries could not be permuted safely afterwards.
+        //! Partition leaves into pages and permute them into page order. Must run
+        //! before BuildMeshDag -- DagNodes/ParentIndex cannot be permuted afterwards.
         void PartitionLeafPages(PerMeshOutput& out)
         {
             const AZ::u32 leafCount = static_cast<AZ::u32>(out.m_clusters.size());
@@ -783,12 +765,8 @@ namespace AZ::Meshlets::Builders
             out.m_clusterBounds = AZStd::move(newBounds);
         }
 
-        //! Slice the interior DAG levels into always-resident pages: plain contiguous
-        //! runs of <= PageMaxClusters (no spatial partition, no permutation -- they are
-        //! pinned resident, so locality does not matter; what matters is that EVERY
-        //! cluster the AS path can draw has a pool slot, which is what lets the
-        //! monolithic buffers eventually be dropped for the AS path). Runs after
-        //! BuildMeshDag (needs the level ranges); payloads build with the leaf pages.
+        //! Slice interior levels into always-resident pages (contiguous, no
+        //! permutation) so every drawable cluster has a pool slot.
         void PageInteriorLevels(PerMeshOutput& out)
         {
             for (const auto& [levelFirst, levelCount] : out.m_dagLevelRanges)

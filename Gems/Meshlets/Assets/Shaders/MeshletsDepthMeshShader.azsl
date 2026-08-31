@@ -6,19 +6,8 @@
  *
  */
 
-// Meshlet DEPTH prepass -- HARDWARE MESH SHADER path.
-//
-// The mesh-shader counterpart of MeshletsDepthPass.azsl (vertex-pull). Emits the
-// same clusters as MeshletsForwardMeshShader.azsl but computes ONLY clip-space
-// position -- no normals/tangents/UVs, no pixel shader (depth-only write).
-//
-// WHY THIS EXISTS: MainPipeline resolves a single-sample Depth/DepthLinear copy
-// exactly once per frame, early, sourced only from DrawListTag "depth". Passes
-// that sample it afterwards (DepthOfField, Transparent) never see geometry that
-// skipped the prepass -- it reads as see-through/washed-out even though the
-// forward pass shaded it correctly and wrote MSAA depth. The vertex-pull path hit
-// the identical symptom (see MeshletsDepthPass.shader's comment: "making meshlets
-// look translucent"); the fix is the same -- contribute to the standard prepass.
+// Meshlet depth prepass -- hardware mesh-shader path ("depth" tag, position-only
+// emit into Atom's early DepthPrePass).
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>
@@ -82,13 +71,7 @@ void MeshletsDepthPassMS(
 }
 
 // ---------------------------------------------------------------------------
-// AS-culled variant (opt-in r_meshletsMsCullAS, MeshletsDepthMeshShaderCulled.shader):
-// same emit as MeshletsDepthPassMS but driven by the shared cluster-cull AS's
-// payload, so the depth prepass dispatches the same AS group counts as the culled
-// forward PSO (a DrawPacket binds ONE geometry view for all its items). No
-// per-triangle cull here -- emitting all triangles of surviving clusters keeps
-// depth coverage a superset of the forward pass's (conservative; forward tests
-// GreaterEqual, not Equal, so extra depth triangles are harmless).
+// AS-culled variant: same emit, driven by the shared cull AS's payload.
 // ---------------------------------------------------------------------------
 #include <MeshletsCullAS.azsli>
 
@@ -152,18 +135,8 @@ void MeshletsDepthPassMSCulled(
     }
 }
 
-// Empty pixel shader -- writes nothing, so this stays a depth-only draw (the depth
-// pass binds no render targets, and an output-free PS still permits early-Z).
-//
-// It exists only to satisfy the shader builder: azslc's input-assembly reflection
-// (AzslCompiler::ParseIaPopulateFunctionData) counts entry functions from the IA
-// data, and a Mesh entry contributes none -- a mesh-ONLY shader fails to build with
-// "The number of valid shader entry functions ... was 0!". The vertex-pull
-// MeshletsDepthPass.azsl needs no PS because its VS supplies IA data; a mesh shader
-// has no input assembler, so a Fragment entry is what makes the count non-zero.
-// ponytail: null PS instead of teaching azslc/ShaderBuilder that a Mesh entry is a
-// valid entry function; do that upstream fix if a true PS-less depth path is ever
-// needed for perf (would require rebuilding AtomShader.Builders + a shader reprocess).
+// Empty PS: writes nothing (stays depth-only, early-Z permitted). Required --
+// azslc counts entries from IA reflection and a Mesh-only shader fails to build.
 void MeshletsDepthPassPS(VSOutput IN)
 {
 }

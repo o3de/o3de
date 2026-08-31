@@ -13,11 +13,8 @@
 
 namespace AZ::Meshlets
 {
-    // Phase 4 VRAM-reclaim switch: for v4 (paged) meshes, skip creating every
-    // monolithic geometry buffer -- the mesh renders exclusively through the AS-cull
-    // paged path (requires r_meshletsHwMeshShader + r_meshletsMsCullAS +
-    // r_meshletsDagLod + r_meshletsStreaming at runtime; with any of them off such
-    // meshes render nothing, by design). Load-time decision: flip + reload the level.
+    // v4 paged meshes skip every monolithic buffer -- AS-cull paged path only.
+    // Load-time decision: flip + reload the level.
     AZ_CVAR(bool, r_meshletsStreamingExclusive, false, nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "If true at pack load, paged (v4) meshes skip their monolithic geometry "
@@ -323,13 +320,8 @@ namespace AZ::Meshlets
                 // --------------------------------------------------------
                 const ClusterDescriptor* meshClusters = clustersAll + lodEntry->m_clusterFirst;
 
-                // Phase 6 cluster DAG (pack v3): m_clusterCount is the LEAF count and
-                // m_dagClusterCount (when nonzero, always >= leaf count) is the full
-                // leaf+interior range, laid out leaves-first. The per-mesh slabs
-                // (triangles/indirection/descriptors/bounds) must cover the FULL range
-                // so the DAG-aware AS path can decode interior clusters; every
-                // whole-mesh DRAW quantity (IndexCount, MeshletsCount) stays leaf-only
-                // so non-DAG-aware paths never double-draw interiors.
+                // DAG packs: slabs cover the full leaf+interior range; whole-mesh
+                // draw quantities stay leaf-only so non-DAG paths never double-draw.
                 const bool hasDag = dagNodesAll != nullptr && lodEntry->m_dagClusterCount > meshClusterCount;
                 const AZ::u32 sliceClusterCount = hasDag ? lodEntry->m_dagClusterCount : meshClusterCount;
 

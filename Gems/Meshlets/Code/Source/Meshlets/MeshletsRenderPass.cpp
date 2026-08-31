@@ -298,10 +298,8 @@ namespace AZ
 
                 RHI::BufferScopeAttachmentDescriptor scopeDesc(
                     att.m_attachmentId, att.m_viewDescriptor);
-                // Two-pass occlusion: the visibility ledger is UAV on this scope (the
-                // AS reads pass-1 bits and writes its own); everything else keeps the
-                // SP1 Read/SRV declare. VertexShader stage maps to the pre-raster
-                // (non-pixel) stages, which covers the amplification stage.
+                // Ledger is UAV on this scope; VertexShader stage = pre-raster,
+                // which covers the amplification stage.
                 const AZ::RHI::ResultCode useRes = frameGraph.UseShaderAttachment(
                     scopeDesc,
                     att.m_renderPassReadWrite ? RHI::ScopeAttachmentAccess::ReadWrite
@@ -443,13 +441,9 @@ namespace AZ
 
             m_shader = nullptr;
             m_pipelineState = nullptr;
-            // Do NOT call InitializePipelineState() here. Shader reload events can be
-            // dispatched mid pass-tree rebuild (any pass block-loading a shader pumps
-            // AssetManager::DispatchEvents), at which point ResetInternal has cleared
-            // m_renderAttachmentConfiguration and GetRenderAttachmentConfiguration()
-            // asserts. FrameBeginInternal rebuilds the pipeline state next frame when
-            // the pass is built and the attachment configuration is valid again
-            // (same deferral FullscreenTrianglePass uses on reload).
+            // No InitializePipelineState() here: reload events can fire mid pass-tree
+            // rebuild when GetRenderAttachmentConfiguration() asserts -- FrameBeginInternal
+            // rebuilds next frame (same deferral as FullscreenTrianglePass).
             if (!AcquireFeatureProcessor() || !LoadShader())
             {
                 AZ_Error( "Meshlets", false, "MeshletsRenderPass::BuildShaderAndRenderData failed");

@@ -662,11 +662,8 @@ namespace AZ
                 return false;
             }
             {
-                // FULL expanded slab, not IndexCount: for Phase 6 DAG packs the slab
-                // also holds the interior clusters' index slices (after the leaves),
-                // which the DAG-aware per-cluster indirect draws slice into. All
-                // whole-mesh DRAW counts remain IndexCount (leaf-only) -- the extra
-                // tail is only ever reached via per-cluster StartIndexLocation.
+                // FULL expanded slab: DAG packs keep interior index slices after the
+                // leaves; whole-mesh draw counts stay IndexCount (leaf-only).
                 const AZ::u32 slabIndexCount =
                     static_cast<AZ::u32>(meshRenderData.PersistentExpandedIndices.size());
                 SrgBufferDescriptor ibDesc(

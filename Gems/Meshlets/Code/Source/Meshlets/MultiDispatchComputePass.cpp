@@ -291,14 +291,9 @@ namespace AZ
                 }
             }
 
-            // HiZ cluster cull: import the last-completed persistent HiZ pyramid and
-            // declare Read (compute-stage) scope usage. The image was UAV-written by
-            // LAST frame's HiZ mip chain and is NOT touched by any pass this frame
-            // (the HiZGeneratePass ping-pongs to the other slot), so this is the only
-            // scope that puts it in the frame graph -- the declared Read transitions it
-            // UAV->shader-read here, before the standard depth/forward/motion passes
-            // sample it via the meshlet cull SRGs (bound directly, not as a pass
-            // attachment). AttachmentImage carries its own unique attachment id.
+            // HiZ: the pyramid ping-pongs, so the last-completed slot is untouched
+            // this frame -- this is the only scope that imports it, and its declared
+            // Read performs the UAV->shader-read transition.
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_hiZReadImageMutex);
                 if (m_hiZReadImage)
