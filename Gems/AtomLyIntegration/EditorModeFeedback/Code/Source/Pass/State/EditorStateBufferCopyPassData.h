@@ -24,7 +24,6 @@ namespace AZ::RPI
         EditorStateBufferCopyPassData() = default;
         virtual ~EditorStateBufferCopyPassData() = default;
 
-        //! Pointer to the owning editor state effect parent pass instance.
-        const Render::EditorStateBase* editorStatePass = nullptr;
+        Render::EditorState editorState = Render::EditorState::FocusMode;
     };
 } // namespace AZ::RPI

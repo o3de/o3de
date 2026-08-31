@@ -143,10 +143,12 @@ namespace AzToolsFramework
         {
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            
-            if (!m_GameModeEventHandler.IsConnected() && prefabEditorEntityOwnershipInterface)
+
+            if (prefabEditorEntityOwnershipInterface && prefabEditorEntityOwnershipInterface != m_gameModeEventSource)
             {
+                m_GameModeEventHandler.Disconnect();
                 prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
+                m_gameModeEventSource = prefabEditorEntityOwnershipInterface;
             }
         }
 
@@ -316,8 +318,11 @@ namespace AzToolsFramework
 
             PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            m_rootPrefabInstanceSourcePath =
-                prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
+            if (InstanceOptionalReference rootInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+                rootInstance.has_value())
+            {
+                m_rootPrefabInstanceSourcePath = rootInstance->get().GetTemplateSourcePath();
+            }
         }
 
         void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)

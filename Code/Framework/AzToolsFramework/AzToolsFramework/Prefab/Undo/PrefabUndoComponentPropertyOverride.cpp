@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -51,7 +52,7 @@ namespace AzToolsFramework
             const PrefabDomValue& afterStateOfComponentProperty)
         {
             InstanceOptionalReference focusedInstance =
-                m_prefabFocusInterface->GetFocusedPrefabInstance(AzFramework::EntityContextId::CreateNull());
+                m_prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(owningInstance.GetContainerEntityId()));
 
             AZ_Assert(focusedInstance.has_value(), "PrefabUndoComponentPropertyOverride::CaptureAndRedo - Focused instance not found.");
 

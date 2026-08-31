@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -27,6 +29,7 @@ namespace AzToolsFramework
         class AZTF_API ProceduralPrefabReadOnlyHandler
             : public ReadOnlyEntityQueryRequestBus::Handler
             , public PrefabFocusNotificationBus::Handler
+            , public EditorEntityContextNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(ProceduralPrefabReadOnlyHandler, AZ::SystemAllocator);
@@ -42,7 +45,10 @@ namespace AzToolsFramework
             void IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly) override;
 
         private:
-            AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            // EditorEntityContextNotificationBus overrides ...
+            void OnActiveWorldChanged(
+                const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
+
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         };

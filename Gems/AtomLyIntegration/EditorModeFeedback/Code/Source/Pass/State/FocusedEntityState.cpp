@@ -8,10 +8,9 @@
 
 #include <Pass/State/FocusedEntityState.h>
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
-#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 namespace AZ::Render
 {
@@ -31,39 +30,20 @@ namespace AZ::Render
         };
     }
 
-    FocusedEntityState::FocusedEntityState()
+    FocusedEntityState::FocusedEntityState(AZStd::function<AzFramework::EntityContextId()> worldIdProvider)
         : EditorStateBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
+        , m_worldIdProvider(AZStd::move(worldIdProvider))
     {
-        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         SetEnabled(AzToolsFramework::PrefabEditModeEffectEnabled());
-    }
-
-    FocusedEntityState::~FocusedEntityState()
-    {
-        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
-    }
-
-    void FocusedEntityState::OnEditorModeActivated(
-        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
-        AzToolsFramework::ViewportEditorMode mode)
-    {
-        if (AzToolsFramework::ViewportEditorMode::Focus == mode)
-        {
-            m_inFocusMode = true;
-        }
-    }
-    void FocusedEntityState::OnEditorModeDeactivated(
-        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-    {
-        if (AzToolsFramework::ViewportEditorMode::Focus == mode)
-        {
-            m_inFocusMode = false;
-        }
     }
 
     bool FocusedEntityState::IsEnabled() const
     {
-        return EditorStateBase::IsEnabled() && m_inFocusMode;
+        auto* editorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get();
+        const auto* editorModes =
+            editorModeTracker ? editorModeTracker->GetViewportEditorModes({ m_worldIdProvider() }) : nullptr;
+        return EditorStateBase::IsEnabled() && editorModes &&
+            editorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus);
     }
 
     AzToolsFramework::EntityIdList FocusedEntityState::GetMaskedEntities() const
@@ -74,7 +54,6 @@ namespace AZ::Render
             return {};
         }
 
-        return focusModeInterface->GetFocusedEntities(AzToolsFramework::GetEntityContextId());
+        return focusModeInterface->GetFocusedEntities(m_worldIdProvider());
     }
 } // namespace AZ::Render
-

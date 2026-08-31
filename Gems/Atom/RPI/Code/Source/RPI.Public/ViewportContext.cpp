@@ -183,17 +183,28 @@ namespace AZ
             }
         }
 
+        Name ViewportContext::MirroredContextName() const
+        {
+            if (!m_manager || m_id != m_manager->m_defaultViewportContextId)
+            {
+                return Name();
+            }
+
+            const Name defaultName = m_manager->GetDefaultViewportContextName();
+            return m_name != defaultName ? defaultName : Name();
+        }
+
         void ViewportContext::OnBeginPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+            NotifyByName(&ViewportContextNotificationBus::Events::OnRenderTick);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
         void ViewportContext::OnEndPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
+            NotifyByName(&ViewportContextNotificationBus::Events::WaitForRender);
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
         }
 

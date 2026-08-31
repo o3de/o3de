@@ -32,7 +32,13 @@ namespace AZ::Render
             return nullptr;
         }
 
-        AzFramework::NativeWindowHandle windowHandle = RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
+        RPI::ViewportContextPtr viewportContext = RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        if (!viewportContext)
+        {
+            return nullptr;
+        }
+
+        AzFramework::NativeWindowHandle windowHandle = viewportContext->GetWindowHandle();
         if (!windowHandle)
         {
             return nullptr;

@@ -26,14 +26,12 @@
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
-#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Slice/SliceRequestComponent.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
@@ -122,8 +120,6 @@ namespace AzToolsFramework
             AzToolsFramework::Components::EditorLevelComponentAPIComponent::CreateDescriptor(),
             AzToolsFramework::Components::PropertyTreeEditorComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntitySearchComponent::CreateDescriptor(),
-            AzToolsFramework::Components::EditorIntersectorComponent::CreateDescriptor(),
-            AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),

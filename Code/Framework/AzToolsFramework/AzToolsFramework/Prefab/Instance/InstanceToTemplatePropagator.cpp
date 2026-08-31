@@ -10,25 +10,21 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Component/Entity.h>
 
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        AzFramework::EntityContextId InstanceToTemplatePropagator::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-
         void InstanceToTemplatePropagator::RegisterInstanceToTemplateInterface()
         {
             AZ::Interface<InstanceToTemplateInterface>::Register(this);
-
-            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             //get instance id associated with entityId
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
@@ -159,7 +155,7 @@ namespace AzToolsFramework
                 return AZ::Dom::Path();
             }
 
-            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(GetEntityWorldId(entityId));
 
             if (!focusedInstance.has_value())
             {

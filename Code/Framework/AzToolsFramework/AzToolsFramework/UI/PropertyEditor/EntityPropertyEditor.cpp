@@ -628,10 +628,7 @@ namespace AzToolsFramework
         EntityPropertyEditorRequestBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
 
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(editorEntityContextId);
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(GetActiveWorldId());
 
         m_spacer = nullptr;
 
@@ -676,9 +673,8 @@ namespace AzToolsFramework
         //this is the way to do it without overriding or registering with all child widgets
         qApp->installEventFilter(this);
 
-        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-            GetEntityContextId());
-        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(GetActiveWorldId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetActiveWorldId());
 
         m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
 
@@ -968,6 +964,17 @@ namespace AzToolsFramework
         return m_selectedEntityIds.size() == 1 && IsEntitySelected(id);
     }
 
+    void EntityPropertyEditor::OnActiveWorldChanged(
+        [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+    {
+        ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(newWorldId);
+        ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(newWorldId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(newWorldId);
+    }
+
     void EntityPropertyEditor::OnStartPlayInEditor()
     {
         setEnabled(false);
@@ -1016,7 +1023,9 @@ namespace AzToolsFramework
         // Prefabs layout logic
 
         // If this is the container entity for the root instance, treat it like a level entity.
-        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+        AZ::EntityId levelContainerEntityId = m_selectedEntityIds.empty()
+            ? m_prefabPublicInterface->GetLevelInstanceContainerEntityId()
+            : m_prefabPublicInterface->GetLevelInstanceContainerEntityId(GetEntityWorldId(m_selectedEntityIds.front()));
         if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), levelContainerEntityId) != m_selectedEntityIds.end())
         {
             if (m_selectedEntityIds.size() > 1)
@@ -1033,12 +1042,8 @@ namespace AzToolsFramework
             // If this is the container entity for the currently focused prefab, utilize a separate layout.
             if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
             {
-                AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-                EditorEntityContextRequestBus::BroadcastResult(
-                    editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
                 AZ::EntityId focusedPrefabContainerEntityId =
-                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId::CreateNull());
                 if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), focusedPrefabContainerEntityId) !=
                     m_selectedEntityIds.end())
                 {
@@ -5391,10 +5396,7 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         AzToolsFramework::EditorInspectorComponentNotificationBus::MultiHandler::BusConnect(entityId);
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(entityId);
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-        AzToolsFramework::FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+        AzToolsFramework::FocusModeNotificationBus::Handler::BusConnect(GetEntityWorldId(entityId));
     }
 
     void EntityPropertyEditor::DisconnectFromEntityBuses(const AZ::EntityId& entityId)

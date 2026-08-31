@@ -14,6 +14,8 @@
 #include "Settings.h"
 #include "IUndoManagerListener.h"
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <QString>
 #include "QtUtilWin.h"
 
@@ -69,8 +71,10 @@ CUndoManager::~CUndoManager()
 {
 
     m_bRecording = false;
-    ClearRedoStack();
-    ClearUndoStack();
+    for (auto& [worldId, undo] : m_worldUndo)
+    {
+        ClearWorldUndo(undo);
+    }
 
     delete m_currentUndo;
     delete m_assetManagerUndoInterruptor;
@@ -96,6 +100,7 @@ void CUndoManager::Begin()
 
     // Begin Creates a new undo object.
     m_currentUndo = new CUndoStep;
+    m_currentUndoWorldId = AzToolsFramework::GetActiveWorldId();
 
     m_bRecording = true;
     //CLogFile::WriteLine( "<Undo> Begin OK" );
@@ -157,18 +162,19 @@ void CUndoManager::Accept(const QString& name)
             GetIEditor()->SetModifiedFlag();
         }
 
-        // If accepting new undo object, must clear all redo stack.
-        ClearRedoStack();
-
         m_currentUndo->SetName(name);
         // Normal recording.
         // Keep max undo steps.
-        while (m_undoStack.size() && (m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
+        WorldUndo& undo = GetWorldUndo(m_currentUndoWorldId);
+
+        // If accepting new undo object, must clear all redo stack.
+        ClearWorldRedoStack(undo);
+        while (undo.m_undoStack.size() && (undo.m_undoStack.size() >= GetIEditor()->GetEditorSettings()->undoLevels || GetDatabaseSize() > 100 * 1024 * 1024))
         {
-            delete m_undoStack.front();
-            m_undoStack.pop_front();
+            delete undo.m_undoStack.front();
+            undo.m_undoStack.pop_front();
         }
-        m_undoStack.push_back(m_currentUndo);
+        undo.m_undoStack.push_back(m_currentUndo);
         //CLogFile::FormatLine( "Undo Object Accepted (Undo:%d,Redo:%d, Size=%dKb)",m_undoStack.size(),m_redoStack.size(),GetDatabaseSize()/1024 );
 
         // If undo accepted, document modified.
@@ -258,24 +264,25 @@ void CUndoManager::Redo(int numSteps)
     BeginUndoTransaction();
     m_bRedoing = false;
 
-    if (!m_redoStack.empty())
+    WorldUndo& undo = GetWorldUndo();
+    if (!undo.m_redoStack.empty())
     {
         Suspend();
-        while (numSteps-- > 0 && !m_redoStack.empty() && !m_bClearRedoStackQueued)
+        while (numSteps-- > 0 && !undo.m_redoStack.empty() && !m_bClearRedoStackQueued)
         {
             m_bRedoing = true;
-            CUndoStep* redo = m_redoStack.back();
+            CUndoStep* redo = undo.m_redoStack.back();
             redo->Redo();
 
             AZ_Printf("CUndoManager",
                 "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
-                m_undoStack.size(),
-                m_redoStack.size(),
+                undo.m_undoStack.size(),
+                undo.m_redoStack.size(),
                 redo->GetName().toUtf8().constData());
 
-            m_redoStack.pop_back();
+            undo.m_redoStack.pop_back();
             // Push undo object to redo stack.
-            m_undoStack.push_back(redo);
+            undo.m_undoStack.push_back(redo);
             m_bRedoing = false;
         }
         Resume();
@@ -318,24 +325,25 @@ void CUndoManager::Undo(int numSteps)
     BeginUndoTransaction();
     m_bUndoing = false;
 
-    if (!m_undoStack.empty())
+    WorldUndo& worldUndo = GetWorldUndo();
+    if (!worldUndo.m_undoStack.empty())
     {
         Suspend();
-        while (numSteps-- > 0 && !m_undoStack.empty())
+        while (numSteps-- > 0 && !worldUndo.m_undoStack.empty())
         {
             m_bUndoing = true;
-            CUndoStep* undo = m_undoStack.back();
+            CUndoStep* undo = worldUndo.m_undoStack.back();
             undo->Undo(true);
 
             AZ_Printf("CUndoManager",
                 "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
-                m_undoStack.size(),
-                m_redoStack.size(),
+                worldUndo.m_undoStack.size(),
+                worldUndo.m_redoStack.size(),
                 undo->GetName().toUtf8().constData());
 
-            m_undoStack.pop_back();
+            worldUndo.m_undoStack.pop_back();
             // Push undo object to redo stack.
-            m_redoStack.push_back(undo);
+            worldUndo.m_redoStack.push_back(undo);
             m_bUndoing = false;
         }
         Resume();
@@ -390,23 +398,30 @@ void CUndoManager::ClearRedoStack()
     }
     m_bClearRedoStackQueued = false;
 
-    for (AZStd::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
-    {
-        delete *it;
-    }
-    m_redoStack.clear();
+    ClearWorldRedoStack(GetWorldUndo());
 
     SignalNumUndoRedoToListeners();
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CUndoManager::ClearWorldRedoStack(WorldUndo& undo)
+{
+    for (CUndoStep* step : undo.m_redoStack)
+    {
+        delete step;
+    }
+    undo.m_redoStack.clear();
+}
+
+//////////////////////////////////////////////////////////////////////////
 void CUndoManager::ClearUndoStack()
 {
-    for (AZStd::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+    WorldUndo& undo = GetWorldUndo();
+    for (AZStd::list<CUndoStep*>::iterator it = undo.m_undoStack.begin(); it != undo.m_undoStack.end(); it++)
     {
         delete *it;
     }
-    m_undoStack.clear();
+    undo.m_undoStack.clear();
 
     SignalNumUndoRedoToListeners();
 }
@@ -414,11 +429,12 @@ void CUndoManager::ClearUndoStack()
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::ClearUndoStack(int num)
 {
+    WorldUndo& undo = GetWorldUndo();
     int i = num;
-    while (i > 0 && !m_undoStack.empty())
+    while (i > 0 && !undo.m_undoStack.empty())
     {
-        delete m_undoStack.front();
-        m_undoStack.pop_front();
+        delete undo.m_undoStack.front();
+        undo.m_undoStack.pop_front();
         i--;
     }
 
@@ -428,11 +444,12 @@ void CUndoManager::ClearUndoStack(int num)
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::ClearRedoStack(int num)
 {
+    WorldUndo& undo = GetWorldUndo();
     int i = num;
-    while (i > 0 && !m_redoStack.empty())
+    while (i > 0 && !undo.m_redoStack.empty())
     {
-        delete m_redoStack.back();
-        m_redoStack.pop_back();
+        delete undo.m_redoStack.back();
+        undo.m_redoStack.pop_back();
         i--;
     }
 
@@ -442,13 +459,13 @@ void CUndoManager::ClearRedoStack(int num)
 //////////////////////////////////////////////////////////////////////////
 bool CUndoManager::IsHaveRedo() const
 {
-    return !m_redoStack.empty();
+    return !GetWorldUndo().m_redoStack.empty();
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CUndoManager::IsHaveUndo() const
 {
-    return !m_undoStack.empty();
+    return !GetWorldUndo().m_undoStack.empty();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -472,23 +489,24 @@ void CUndoManager::Resume()
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
-    return static_cast<int>(m_undoStack.size());
+    return static_cast<int>(GetWorldUndo().m_undoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetRedoStackLen() const
 {
-    return static_cast<int>(m_redoStack.size());
+    return static_cast<int>(GetWorldUndo().m_redoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 std::vector<QString> CUndoManager::GetUndoStackNames() const
 {
-    std::vector<QString> undos(m_undoStack.size());
+    WorldUndo& undo = GetWorldUndo();
+    std::vector<QString> undos(undo.m_undoStack.size());
     int i = 0;
     QString text;
 
-    for (auto it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+    for (auto it = undo.m_undoStack.begin(); it != undo.m_undoStack.end(); it++)
     {
         QString objNames = (*it)->GetObjectNames();
         text = (*it)->GetName() + objNames;
@@ -508,11 +526,12 @@ std::vector<QString> CUndoManager::GetUndoStackNames() const
 //////////////////////////////////////////////////////////////////////////
 std::vector<QString> CUndoManager::GetRedoStackNames() const
 {
-    std::vector<QString> redos(m_redoStack.size());
+    WorldUndo& undo = GetWorldUndo();
+    std::vector<QString> redos(undo.m_redoStack.size());
     int i = 0;
     QString text;
 
-    for (auto it = m_redoStack.begin(); it != m_redoStack.end(); it++)
+    for (auto it = undo.m_redoStack.begin(); it != undo.m_redoStack.end(); it++)
     {
         text = (*it)->GetName() + (*it)->GetObjectNames();
         if (text.length() > UNDOREDO_BUTTON_POPUP_TEXT_WIDTH)
@@ -532,14 +551,13 @@ std::vector<QString> CUndoManager::GetRedoStackNames() const
 int CUndoManager::GetDatabaseSize()
 {
     int size = 0;
+    for (auto& [worldId, undo] : m_worldUndo)
     {
-        for (CUndoStep* step : m_undoStack)
+        for (CUndoStep* step : undo.m_undoStack)
         {
             size += step->GetSize();
         }
-    }
-    {
-        for (CUndoStep* step : m_redoStack)
+        for (CUndoStep* step : undo.m_redoStack)
         {
             size += step->GetSize();
         }
@@ -551,8 +569,12 @@ int CUndoManager::GetDatabaseSize()
 void CUndoManager::Flush()
 {
     m_bRecording = false;
-    ClearRedoStack();
-    ClearUndoStack();
+    m_bClearRedoStackQueued = false;
+    for (auto& [worldId, undo] : m_worldUndo)
+    {
+        ClearWorldUndo(undo);
+    }
+    m_worldUndo.clear();
 
     delete m_currentUndo;
     m_currentUndo = nullptr;
@@ -561,11 +583,58 @@ void CUndoManager::Flush()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CUndoManager::FlushWorld(const AzFramework::EntityContextId& worldId)
+{
+    if (auto worldIt = m_worldUndo.find(worldId); worldIt != m_worldUndo.end())
+    {
+        ClearWorldUndo(worldIt->second);
+        m_worldUndo.erase(worldIt);
+    }
+
+    if (m_bRecording)
+    {
+        m_bRecording = false;
+        delete m_currentUndo;
+        m_currentUndo = nullptr;
+    }
+
+    SignalNumUndoRedoToListeners();
+}
+
+//////////////////////////////////////////////////////////////////////////
+CUndoManager::WorldUndo& CUndoManager::GetWorldUndo() const
+{
+    return GetWorldUndo(AzToolsFramework::GetActiveWorldId());
+}
+
+//////////////////////////////////////////////////////////////////////////
+CUndoManager::WorldUndo& CUndoManager::GetWorldUndo(const AzFramework::EntityContextId& worldId) const
+{
+    return m_worldUndo[worldId];
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CUndoManager::ClearWorldUndo(WorldUndo& undo)
+{
+    for (CUndoStep* step : undo.m_undoStack)
+    {
+        delete step;
+    }
+    for (CUndoStep* step : undo.m_redoStack)
+    {
+        delete step;
+    }
+    undo.m_undoStack.clear();
+    undo.m_redoStack.clear();
+}
+
+//////////////////////////////////////////////////////////////////////////
 CUndoStep* CUndoManager::GetNextUndo()
 {
-    if (!m_undoStack.empty())
+    WorldUndo& undo = GetWorldUndo();
+    if (!undo.m_undoStack.empty())
     {
-        return m_undoStack.back();
+        return undo.m_undoStack.back();
     }
     return nullptr;
 }
@@ -573,9 +642,10 @@ CUndoStep* CUndoManager::GetNextUndo()
 //////////////////////////////////////////////////////////////////////////
 CUndoStep* CUndoManager::GetNextRedo()
 {
-    if (!m_redoStack.empty())
+    WorldUndo& undo = GetWorldUndo();
+    if (!undo.m_redoStack.empty())
     {
-        return m_redoStack.back();
+        return undo.m_redoStack.back();
     }
     return nullptr;
 }
@@ -636,9 +706,10 @@ void CUndoManager::EndRestoreTransaction()
 
 void CUndoManager::SignalNumUndoRedoToListeners()
 {
+    WorldUndo& undo = GetWorldUndo();
     for (IUndoManagerListener* listener : m_listeners)
     {
-        listener->SignalNumUndoRedo(static_cast<unsigned int>(m_undoStack.size()), static_cast<unsigned int>(m_redoStack.size()));
+        listener->SignalNumUndoRedo(static_cast<unsigned int>(undo.m_undoStack.size()), static_cast<unsigned int>(undo.m_redoStack.size()));
     }
 }
 

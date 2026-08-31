@@ -245,6 +245,8 @@ namespace AZ
             m_scene = scene;
             m_pass = nullptr;
             m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
+            SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
                         
             ReInit();
@@ -266,7 +268,9 @@ namespace AZ
             m_outputScope = OutputScopeType::RenderPipeline;
             m_scene = pipeline->GetScene();
             m_pass = nullptr;
-            m_drawFilter = pipeline->GetDrawFilterMask();
+            m_drawFilter = pipeline->GetPipelineInstanceDrawFilterMask();
+
+            SceneNotificationBus::Handler::BusDisconnect();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
             
             ReInit();

@@ -67,6 +67,7 @@ namespace AzToolsFramework
             AZStd::unordered_set<Instance*> m_uniqueInstancesForPropagation;
 
             AZ::Event<GameModeState>::Handler m_GameModeEventHandler;
+            PrefabEditorEntityOwnershipInterface* m_gameModeEventSource = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
             bool m_isRootPrefabInstanceLoaded = false;
             bool m_shouldPausePropagation = false;

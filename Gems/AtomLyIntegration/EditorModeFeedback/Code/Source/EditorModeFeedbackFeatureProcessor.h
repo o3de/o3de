@@ -14,7 +14,9 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 
 namespace AZ
 {
@@ -47,7 +49,13 @@ namespace AZ
             //! Enable or disable the rendering editor mode feedback.
             void SetEnableRender(bool enableRender);
 
+            const EditorStateBase* GetEditorState(EditorState editorState) const;
+
         private:
+            AzFramework::EntityContextId GetWorldId();
+
+            AzFramework::EntityContextId m_worldId = AzFramework::EntityContextId::CreateNull();
+
             //! The pass system for the editor state feedback effects.
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
 

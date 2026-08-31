@@ -10,7 +10,9 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_map.h>
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -24,6 +26,7 @@ namespace AzToolsFramework
     class AZTF_API FocusModeSystemComponent final
         : public AZ::Component
         , private FocusModeInterface
+        , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
     {
@@ -51,6 +54,9 @@ namespace AzToolsFramework
         const EntityIdList& GetFocusedEntities(AzFramework::EntityContextId entityContextId) override;
         bool IsInFocusSubTree(AZ::EntityId entityId) const override;
 
+        // EditorEntityContextNotificationBus overrides ...
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
+
         // EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId parentId, AZ::EntityId childId) override;
         void OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId) override;
@@ -59,10 +65,16 @@ namespace AzToolsFramework
         void OnPrefabInstancePropagationEnd() override;
 
     private:
-        void RefreshFocusedEntityIdList();
+        struct WorldFocus
+        {
+            AZ::EntityId m_focusRoot;
+            EntityIdList m_focusedEntityIdList;
+        };
 
-        AZ::EntityId m_focusRoot;
-        EntityIdList m_focusedEntityIdList;
+        void SetFocusRootForWorld(const AzFramework::EntityContextId& worldId, AZ::EntityId entityId);
+        static void RefreshFocusedEntityIdList(WorldFocus& focus);
+
+        AZStd::unordered_map<AzFramework::EntityContextId, WorldFocus> m_worldFocus;
     };
 
 } // namespace AzToolsFramework

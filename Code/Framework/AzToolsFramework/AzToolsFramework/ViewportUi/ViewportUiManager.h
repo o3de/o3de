@@ -71,6 +71,7 @@ namespace AzToolsFramework::ViewportUi
         void DisconnectViewportUiBus();
         //! Initializes the Viewport UI by attaching it to the given parent and render overlay.
         void InitializeViewportUi(QWidget* parent, QWidget* renderOverlay);
+        void SetViewportUiRenderOverlay(QWidget* renderOverlay);
         //! Updates all registered elements to display up to date.
         void Update();
 

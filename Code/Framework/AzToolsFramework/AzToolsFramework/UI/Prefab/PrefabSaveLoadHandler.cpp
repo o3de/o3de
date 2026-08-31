@@ -16,6 +16,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -128,13 +129,48 @@ namespace AzToolsFramework
             AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
             AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+            AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         }
 
         PrefabSaveHandler::~PrefabSaveHandler()
         {
+            AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
+        }
+
+        AZ::s32 PrefabSaveHandler::GetPriority() const
+        {
+            return 1;
+        }
+
+        bool PrefabSaveHandler::IsPrefabSourcePath(const AZStd::string& sourcePath)
+        {
+            AZStd::string extension;
+            AZ::StringFunc::Path::GetExtension(sourcePath.c_str(), extension);
+            return AZ::StringFunc::Equal(s_prefabFileExtension, extension.c_str());
+        }
+
+        void PrefabSaveHandler::OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled)
+        {
+            if (alreadyHandled)
+            {
+                return;
+            }
+
+            const AssetBrowser::SourceAssetBrowserEntry* source =
+                AssetBrowser::SourceAssetBrowserEntry::GetSourceByUuid(assetId.m_guid);
+            if (!source || !IsPrefabSourcePath(source->GetFullPath()))
+            {
+                return;
+            }
+
+            const AZ::IO::Path levelPath = s_prefabLoaderInterface->GenerateRelativePath(source->GetFullPath().c_str());
+
+            bool opened = false;
+            EditorRequestBus::BroadcastResult(opened, &EditorRequests::OpenLevelInNewViewport, levelPath.Native());
+            alreadyHandled = opened;
         }
 
         bool PrefabSaveHandler::GetPrefabSaveLocation(AZStd::string& path, AZ::u32 settingsId)

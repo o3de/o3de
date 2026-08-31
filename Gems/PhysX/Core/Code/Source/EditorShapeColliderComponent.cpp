@@ -686,7 +686,8 @@ namespace PhysX
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {
-            m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
+            Physics::EditorWorldBus::BroadcastResult(
+                m_editorSceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, GetEntityId());
         }
 
         UpdateSingleSidedSettings();

@@ -69,8 +69,6 @@ namespace AzToolsFramework
             //! @param climbUpResult The given climb-up object that contains the root and a path from an instance to the root.
             void GenerateContainerEntityDomFromClimbUpResult(PrefabDom& containerEntityDom, const InstanceClimbUpResult& climbUpResult) const;
 
-            static AzFramework::EntityContextId s_editorEntityContextId;
-
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

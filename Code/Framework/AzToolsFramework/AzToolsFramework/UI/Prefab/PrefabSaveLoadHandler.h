@@ -17,6 +17,7 @@ namespace AZ
 }
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -69,6 +70,7 @@ namespace AzToolsFramework
             , public AzQtComponents::DragAndDropEventsBus::Handler
             , public AzQtComponents::DragAndDropItemViewEventsBus::Handler
             , private AzToolsFramework::AssetSystemBus::Handler
+            , private AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator);
@@ -125,6 +127,8 @@ namespace AzToolsFramework
             static void GenerateSuggestedPrefabPath(
                 const AZStd::string& prefabName, const AZStd::string& targetDirectory, AZStd::string& suggestedFullPath);
 
+            static bool IsPrefabSourcePath(const AZStd::string& sourcePath);
+
         private:
 
             //! AssetSystemBus notification handlers
@@ -132,6 +136,10 @@ namespace AzToolsFramework
             //! Called by the AssetProcessor when the source file has been removed.
             void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
             //! @}
+
+            // AssetBrowserInteractionNotificationBus overrides ...
+            AZ::s32 GetPriority() const override;
+            void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
 
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);

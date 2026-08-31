@@ -9,9 +9,9 @@
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -32,10 +32,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusUndo::Capture(AZ::EntityId entityId)
     {
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        m_beforeEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(entityContextId);
+        m_beforeEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(GetEntityWorldId(entityId));
         m_afterEntityId = entityId;
     }
 

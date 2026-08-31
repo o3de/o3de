@@ -10,10 +10,19 @@
 #include <Pass/State/FocusedEntityState.h>
 #include <Pass/State/SelectedEntityState.h>
 
+#include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Utils/Utils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Scene/Scene.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AZ
 {
@@ -48,10 +57,51 @@ namespace AZ
             EnableSceneNotification();
 
             EditorStateList editorStates;
-            editorStates.push_back(AZStd::make_unique<FocusedEntityState>());
+            editorStates.push_back(AZStd::make_unique<FocusedEntityState>(
+                [this]
+                {
+                    return GetWorldId();
+                }));
             editorStates.push_back(AZStd::make_unique<SelectedEntityState>());
             m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStates));
             AZ::TickBus::Handler::BusConnect();
+        }
+
+        AzFramework::EntityContextId EditorModeFeatureProcessor::GetWorldId()
+        {
+            if (!m_worldId.IsNull())
+            {
+                return m_worldId;
+            }
+
+            auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
+            AZStd::shared_ptr<AzFramework::Scene> owningScene =
+                sceneSystem ? sceneSystem->GetScene(GetParentScene()->GetName().GetStringView()) : nullptr;
+            auto* renderScene = owningScene ? owningScene->FindSubsystemInScene<RPI::ScenePtr>() : nullptr;
+            if (!renderScene || renderScene->get() != GetParentScene())
+            {
+                return AzToolsFramework::GetEntityContextId();
+            }
+
+            auto worldId = AzFramework::EntityContextId::CreateNull();
+            if (auto* entityContext = owningScene->FindSubsystemInScene<AzFramework::EntityContext::SceneStorageType>();
+                entityContext && *entityContext)
+            {
+                worldId = (*entityContext)->GetContextId();
+            }
+
+            m_worldId = AzToolsFramework::GetEntityContextId();
+            if (!worldId.IsNull())
+            {
+                AZStd::shared_ptr<AzFramework::Scene> worldScene;
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, worldId);
+                if (worldScene)
+                {
+                    m_worldId = worldId;
+                }
+            }
+            return m_worldId;
         }
 
         void EditorModeFeatureProcessor::Deactivate()
@@ -115,8 +165,15 @@ namespace AZ
                 if(auto it = m_maskRenderers.find(mask);
                     it != m_maskRenderers.end())
                 {
-                    it->second.RenderMaskEntities(m_maskMaterial, entities);
-                } 
+                    auto sceneEntities = entities;
+                    AZStd::erase_if(
+                        sceneEntities,
+                        [this](const AZ::EntityId& entityId)
+                        {
+                            return RPI::Scene::GetSceneForEntityId(entityId) != GetParentScene();
+                        });
+                    it->second.RenderMaskEntities(m_maskMaterial, sceneEntities);
+                }
             }
         }
 
@@ -142,6 +199,11 @@ namespace AZ
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
+        }
+
+        const EditorStateBase* EditorModeFeatureProcessor::GetEditorState(EditorState editorState) const
+        {
+            return m_editorStatePassSystem ? m_editorStatePassSystem->GetEditorState(editorState) : nullptr;
         }
 
         void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)

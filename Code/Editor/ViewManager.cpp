@@ -14,13 +14,22 @@
 
 #include "ViewManager.h"
 
+// Qt
+#include <QTimer>
+
 // AzCore
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
+// Atom
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 // Editor
 #include "Settings.h"
@@ -28,6 +37,8 @@
 #include "LayoutWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
+#include "QtViewPaneManager.h"
+#include "ViewPane.h"
 
 #include <AzCore/Console/IConsole.h>
 
@@ -44,6 +55,48 @@ bool CViewManager::IsMultiViewportEnabled()
     }
 
     return isMultiViewportEnabled;
+}
+
+static void AttachDeferredViewport(CLayoutViewPane* viewPane, QWidget* pendingLevelHost)
+{
+    const AzFramework::EntityContextId activeWorldId = AzToolsFramework::GetActiveWorldId();
+
+    QTimer::singleShot(
+        0, viewPane,
+        [viewPane, pendingLevelHost, activeWorldId]
+        {
+            auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            int viewportId = 0;
+            while (viewportContextManager && viewportContextManager->GetViewportContextById(viewportId))
+            {
+                ++viewportId;
+            }
+
+            viewPane->SetId(viewportId);
+
+            pendingLevelHost->setProperty("ViewportId", viewportId);
+
+            viewPane->AttachViewport(new EditorViewportWidget("Perspective", viewPane));
+
+            const QByteArray levelPath = pendingLevelHost->property("PendingLevelPath").toString().toUtf8();
+
+            AzFramework::EntityContextId worldId = activeWorldId;
+            if (!levelPath.isEmpty())
+            {
+                AzFramework::EntityContextId levelWorldId = AzFramework::EntityContextId::CreateNull();
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    levelWorldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld,
+                    AZ::IO::PathView(levelPath.constData()));
+                AZ_Error("EditorWorld", !levelWorldId.IsNull(), "Could not load '%s' as an editor world",
+                    levelPath.constData());
+                if (!levelWorldId.IsNull())
+                {
+                    worldId = levelWorldId;
+                }
+            }
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewportId, worldId);
+        });
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -66,9 +119,26 @@ CViewManager::CViewManager()
     QtViewOptions viewportOptions;
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
+    viewportOptions.showInMenu = false;
+    viewportOptions.isDisabledInComponentMode = false;
+    viewportOptions.isDisabledInImGuiMode = false;
 
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
+
+    QtViewOptions dockableViewportOptions = viewportOptions;
+    dockableViewportOptions.paneRect = QRect(0, 0, 800, 450);
+    dockableViewportOptions.showInMenu = true;
+    QtViewPaneManager::instance()->RegisterPane(
+        LyViewPane::EditorViewport,
+        LyViewPane::CategoryViewport,
+        [](QWidget* parent = nullptr) -> QWidget*
+        {
+            auto* pane = new CLayoutViewPane(parent);
+            AttachDeferredViewport(pane, pane);
+            return pane;
+        },
+        dockableViewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }
@@ -99,12 +169,34 @@ void CViewManager::RegisterViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
-    if (m_pSelectedView == pViewport)
+    const bool wasSelected = m_pSelectedView == pViewport;
+    if (wasSelected)
     {
         m_pSelectedView = nullptr;
     }
+
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
+
+    if (wasSelected)
+    {
+        SelectViewport(m_viewports.empty() ? nullptr : m_viewports.front());
+    }
+    else
+    {
+        AnchorViewportUiTo(m_pSelectedView);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CViewManager::AnchorViewportUiTo(CViewport* pViewport)
+{
+    QtViewport* target = viewport_cast<QtViewport*>(pViewport);
+    MainWindow* mainWindow = MainWindow::instance();
+    if (target && mainWindow)
+    {
+        mainWindow->AnchorViewportUiTo(target->GetRenderOverlay());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,10 +258,25 @@ m_viewports[i]->ResetContent();
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::IdleUpdate()
 {
+    if (MainWindow* mainWindow = MainWindow::instance())
+    {
+        mainWindow->UpdateViewportUi();
+    }
+
+    const bool documentReady = GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady();
+
+    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
     // Update each attached view,
     for (int i = 0; i < m_viewports.size(); i++)
     {
-        if (m_viewports[i]->GetType() != ET_ViewportCamera || (GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady()))
+        AzFramework::EntityContextId viewportWorldId = editorWorldId;
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, m_viewports[i]->GetViewportId());
+
+        if (m_viewports[i]->GetType() != ET_ViewportCamera || documentReady || viewportWorldId != editorWorldId)
         {
             m_viewports[i]->Update();
         }
@@ -266,9 +373,27 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
+    if (MainWindow* mainWindow = MainWindow::instance())
+    {
+        mainWindow->SetActiveView(m_pSelectedView ? m_pSelectedView->GetViewPane() : nullptr);
+    }
+
     if (m_pSelectedView != nullptr)
     {
         m_pSelectedView->SetSelected(true);
+
+        if (auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
+        {
+            if (viewportContextManager->GetViewportContextById(m_pSelectedView->GetViewportId()))
+            {
+                viewportContextManager->SetDefaultViewportContext(m_pSelectedView->GetViewportId());
+            }
+        }
+
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::SetFocusedViewport, m_pSelectedView->GetViewportId());
+
+        AnchorViewportUiTo(m_pSelectedView);
     }
 }
 

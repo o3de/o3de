@@ -228,6 +228,11 @@ namespace AzToolsFramework
             return true;
         }
 
+        if (!IsEditedWorldVisibleInViewport(mouseInteractionEvent.m_mouseInteraction.m_interactionId.m_viewportId))
+        {
+            return false;
+        }
+
         using AzToolsFramework::ViewportInteraction::MouseEvent;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
         // store the current interaction for use in DrawManipulators
@@ -265,7 +270,10 @@ namespace AzToolsFramework
 
     bool EditorDefaultSelection::InternalHandleMouseViewportInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        if (m_entitySnapDragHandler.HandleMouseViewportInteraction(mouseInteraction))
+        const bool editedWorldVisible =
+            IsEditedWorldVisibleInViewport(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
+
+        if (editedWorldVisible && m_entitySnapDragHandler.HandleMouseViewportInteraction(mouseInteraction))
         {
             return true;
         }
@@ -274,7 +282,15 @@ namespace AzToolsFramework
         const bool componentModeBefore = InComponentMode();
 
         bool handled = false;
-        if (!componentModeBefore)
+        if (!editedWorldVisible)
+        {
+            if (componentModeBefore && mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
+                mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+            {
+                EndComponentMode();
+            }
+        }
+        else if (!componentModeBefore)
         {
             // enumerate all ComponentModeDelegateRequestBus and check if any triggered AddComponentModes
             ComponentModeFramework::ComponentModeDelegateRequestBus::EnumerateHandlers(
@@ -344,6 +360,11 @@ namespace AzToolsFramework
         if (m_transformComponentSelection)
         {
             m_transformComponentSelection->DisplayViewportSelection(viewportInfo, debugDisplay);
+        }
+
+        if (!IsEditedWorldVisibleInViewport(viewportInfo.m_viewportId))
+        {
+            return;
         }
 
         // poll and set the keyboard modifiers to ensure the mouse interaction is up to date

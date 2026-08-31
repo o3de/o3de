@@ -14,7 +14,9 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <CryCommon/StlUtils.h>
 #include <vector>
 
@@ -206,6 +208,10 @@ public:
     //! Must be done on level reloads or global Fetch operation.
     void Flush();
 
+    //! Flush the Undo and redo buffers of a single world.
+    //! Must be done when a world is torn down, its steps no longer resolve.
+    void FlushWorld(const AzFramework::EntityContextId& worldId);
+
     //! Get Next Undo Item and Next Redo Item -- Vera, Confetti
     CUndoStep* GetNextUndo();
     CUndoStep* GetNextRedo();
@@ -231,6 +237,17 @@ private: // ---------------------------------------------------------------
     void SignalNumUndoRedoToListeners();
     void SignalUndoFlushedToListeners();
 
+    struct WorldUndo
+    {
+        AZStd::list<CUndoStep*> m_undoStack;
+        AZStd::list<CUndoStep*> m_redoStack;
+    };
+
+    WorldUndo& GetWorldUndo() const;
+    WorldUndo& GetWorldUndo(const AzFramework::EntityContextId& worldId) const;
+    static void ClearWorldUndo(WorldUndo& undo);
+    static void ClearWorldRedoStack(WorldUndo& undo);
+
     bool                                            m_bRecording;
     int                                             m_suspendCount;
 
@@ -240,11 +257,11 @@ private: // ---------------------------------------------------------------
     bool                                            m_bClearRedoStackQueued;
 
     CUndoStep*                             m_currentUndo;
+    AzFramework::EntityContextId           m_currentUndoWorldId;
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 
-    AZStd::list<CUndoStep*>      m_undoStack;
-    AZStd::list<CUndoStep*>      m_redoStack;
+    mutable AZStd::unordered_map<AzFramework::EntityContextId, WorldUndo> m_worldUndo;
 
     AZStd::vector<IUndoManagerListener*> m_listeners;
 };

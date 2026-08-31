@@ -25,7 +25,8 @@ namespace AZ::Render
     {
     public:
         // EBusTraits overrides ...
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        //! Every scene's feature processor owns a state instance for each editor state.
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = EditorState;
 

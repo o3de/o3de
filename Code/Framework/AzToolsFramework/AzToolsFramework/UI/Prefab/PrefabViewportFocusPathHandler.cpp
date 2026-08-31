@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QTimer>
 
@@ -19,10 +20,6 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusPathWidget::PrefabFocusPathWidget()
     {
-        // Initialize internal variables
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-
         m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
         if (m_prefabFocusPublicInterface == nullptr)
         {
@@ -37,7 +34,7 @@ namespace AzToolsFramework::Prefab
             this,
             [&](const QString&, int linkIndex)
             {
-                m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+                m_prefabFocusPublicInterface->FocusOnPathIndex(GetActiveWorldId(), linkIndex);
 
                 // Manually refresh path
                 QTimer::singleShot(
@@ -50,16 +47,29 @@ namespace AzToolsFramework::Prefab
             }
         );
 
-        PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
-        ViewportEditorModeNotificationsBus::Handler::BusConnect(m_editorEntityContextId);
+        PrefabFocusNotificationBus::Handler::BusConnect(GetActiveWorldId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetActiveWorldId());
+        EditorEntityContextNotificationBus::Handler::BusConnect();
 
         Refresh();
     }
 
     PrefabFocusPathWidget::~PrefabFocusPathWidget()
     {
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         PrefabFocusNotificationBus::Handler::BusDisconnect();
+    }
+
+    void PrefabFocusPathWidget::OnActiveWorldChanged(
+        [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+    {
+        PrefabFocusNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        PrefabFocusNotificationBus::Handler::BusConnect(newWorldId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(newWorldId);
+
+        Refresh();
     }
 
     void PrefabFocusPathWidget::OnPrefabFocusChanged(
@@ -110,7 +120,7 @@ namespace AzToolsFramework::Prefab
         }
         
         // Push new Path
-        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(GetActiveWorldId()).c_str());
 
         // Add icons to the widget
         setDefaultIcon(QString(":/Entity/prefab_edit.svg"));

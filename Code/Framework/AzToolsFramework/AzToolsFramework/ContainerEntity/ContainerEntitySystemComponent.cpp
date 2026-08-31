@@ -9,11 +9,14 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/algorithm.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
 {
@@ -210,17 +213,21 @@ namespace AzToolsFramework
 
     void ContainerEntitySystemComponent::OnEntityStreamLoadSuccess()
     {
-        // We don't yet support multiple entity contexts, so just use the default.
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         Clear(editorEntityContextId);
     }
 
-    void ContainerEntitySystemComponent::RefreshAllContainerEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    void ContainerEntitySystemComponent::RefreshAllContainerEntities(AzFramework::EntityContextId entityContextId) const
     {
+        const AzFramework::EntityContextId worldId = ResolveWorldId(entityContextId);
         for (AZ::EntityId containerEntityId : m_containers)
         {
+            if (GetEntityWorldId(containerEntityId) != worldId)
+            {
+                continue;
+            }
             ContainerEntityNotificationBus::Broadcast(
                 &ContainerEntityNotificationBus::Events::OnContainerEntityStatusChanged, containerEntityId, m_openContainers.contains(containerEntityId));
         }
@@ -228,23 +235,21 @@ namespace AzToolsFramework
 
     ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
-        // We don't yet support multiple entity contexts, so only clear the default.
-        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        auto belongsToContext = [&entityContextId](const AZ::EntityId& containerEntityId)
+        {
+            auto owningContextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                owningContextId, containerEntityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            return owningContextId.IsNull() || owningContextId == entityContextId;
+        };
 
-        if (entityContextId != editorEntityContextId)
+        if (AZStd::any_of(m_containers.begin(), m_containers.end(), belongsToContext))
         {
             return AZ::Failure(AZStd::string(
-                "Error in ContainerEntitySystemComponent::Clear - cannot clear non-default Entity Context!"));
+                "ContainerEntitySystemComponent: Clear called while this context still has registered containers."));
         }
 
-        if (!m_containers.empty())
-        {
-            return AZ::Failure(AZStd::string(
-                "Error in ContainerEntitySystemComponent::Clear - cannot clear container states if entities are still registered!"));
-        }
-
-        m_openContainers.clear();
+        AZStd::erase_if(m_openContainers, belongsToContext);
 
         return AZ::Success();
     }

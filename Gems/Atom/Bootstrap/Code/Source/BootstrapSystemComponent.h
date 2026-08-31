@@ -118,6 +118,8 @@ namespace AZ
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
+                AZStd::vector<AzFramework::Scene::RemovalEvent::Handler> m_atomSceneRemovalHandlers;
+
                 AZStd::unique_ptr<AzFramework::NativeWindow> m_nativeWindow;
                 AzFramework::NativeWindowHandle m_windowHandle = nullptr;
                 RPI::ViewportContextPtr m_viewportContext;

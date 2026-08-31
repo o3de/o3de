@@ -55,7 +55,6 @@ namespace AzToolsFramework
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             InstanceDomGenerator m_instanceDomGenerator;
-            static AzFramework::EntityContextId s_editorEntityContextId;
         };
     }
 }

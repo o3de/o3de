@@ -50,6 +50,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QApplication>
 #include <QMainWindow>
@@ -61,7 +62,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        AzFramework::EntityContextId PrefabIntegrationManager::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
@@ -118,9 +118,6 @@ namespace AzToolsFramework
                 m_readOnlyEntityPublicInterface,
                 "Prefab - could not get ReadOnlyEntityPublicInterface on PrefabIntegrationManager construction.");
 
-            // Get EditorEntityContextId
-            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
             // Initialize Editor functionality for the Prefab Focus Handler
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             prefabFocusInterface->InitializeEditorInterfaces();
@@ -147,7 +144,7 @@ namespace AzToolsFramework
                 ActionManagerRegistrationNotificationBus::Handler::BusConnect();
             }
             
-            PrefabFocusNotificationBus::Handler::BusConnect(s_editorEntityContextId);
+            PrefabFocusNotificationBus::Handler::BusConnect(GetActiveWorldId());
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             EntityPropertyEditorNotificationBus::Handler::BusConnect();
@@ -704,9 +701,9 @@ namespace AzToolsFramework
 
                 m_actionManagerInterface->InstallEnabledStateCallback(
                     actionIdentifier,
-                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface]() -> bool
                     {
-                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                        return prefabFocusPublicInterface->GetPrefabFocusPathLength(GetActiveWorldId()) > 1;
                     }
                 );
 
@@ -731,18 +728,18 @@ namespace AzToolsFramework
                     EditorIdentifiers::MainWindowActionContextIdentifier,
                     actionIdentifier,
                     actionProperties,
-                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]()
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface]()
                     {
-                        prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(editorEntityContextId);
+                        prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetActiveWorldId());
                     }
                 );
 
                 m_actionManagerInterface->InstallEnabledStateCallback(
                     actionIdentifier,
-                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, editorEntityContextId = s_editorEntityContextId]() -> bool
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface]() -> bool
                     {
                         return !ComponentModeFramework::InComponentMode() &&
-                            prefabFocusPublicInterface->GetPrefabFocusPathLength(editorEntityContextId) > 1;
+                            prefabFocusPublicInterface->GetPrefabFocusPathLength(GetActiveWorldId()) > 1;
                     }
                 );
 
@@ -1062,7 +1059,7 @@ namespace AzToolsFramework
 
                     // If only one entity is selected, don't show the option if it's the container entity of the focused instance.
                     if (selectedEntities.size() == 1 &&
-                        s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId) == selectedEntities.front())
+                        s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(GetActiveWorldId()) == selectedEntities.front())
                     {
                         return false;
                     }
@@ -1114,6 +1111,13 @@ namespace AzToolsFramework
                 PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveDown");
         }
 
+        void PrefabIntegrationManager::OnActiveWorldChanged(
+            [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+        {
+            PrefabFocusNotificationBus::Handler::BusDisconnect();
+            PrefabFocusNotificationBus::Handler::BusConnect(newWorldId);
+        }
+
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
         {
             // Focus on the root prefab (AZ::EntityId() will default to it).
@@ -1129,7 +1133,7 @@ namespace AzToolsFramework
                 0,
                 [&]()
                 {
-                    s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
+                    s_containerEntityInterface->RefreshAllContainerEntities(GetActiveWorldId());
                 }
             );
         }
@@ -1282,7 +1286,7 @@ namespace AzToolsFramework
             // Remove focused instance container entity if it's part of the list
             auto focusedContainerIter = AZStd::find(
                 selectedEntities.begin(), selectedEntities.end(),
-                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId));
+                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(GetActiveWorldId()));
             if (focusedContainerIter != selectedEntities.end())
             {
                 selectedEntities.erase(focusedContainerIter);
@@ -1452,7 +1456,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_ClosePrefab()
         {
-            s_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+            s_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetActiveWorldId());
         }
 
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
@@ -1794,7 +1798,7 @@ namespace AzToolsFramework
         {
             if (s_prefabFocusInterface)
             {
-                TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
+                TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(GetActiveWorldId());
                 m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
             }
         }

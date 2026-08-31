@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <QLayout>
+#include <QCloseEvent>
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QToolBar>
@@ -61,6 +62,20 @@ static const std::pair<int, int> ViewportResolutions[] =
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
 static constexpr int SortKeySpacing = 100;
 
+static AZ::AtomBridge::ViewportInfoDisplayState CurrentViewportInfoDisplayState()
+{
+    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+        state, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
+    return state;
+}
+
+static void SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState state)
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, state);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CLayoutViewPane
 //////////////////////////////////////////////////////////////////////////
@@ -82,8 +97,10 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+    static bool sharedDefinitionsClaimed = false;
+    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface && !sharedDefinitionsClaimed)
     {
+        sharedDefinitionsClaimed = true;
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
@@ -154,14 +171,15 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
-    // Register top viewport toolbar.
     AzToolsFramework::ToolBarProperties toolBarProperties;
     toolBarProperties.m_name = "Viewport ToolBar";
     m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
 
     // Add toolbar to top of viewport.
-    QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
-    addToolBar(Qt::TopToolBarArea, toolBar);
+    if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
+    {
+        addToolBar(Qt::TopToolBarArea, toolBar);
+    }
 }
 
 void CLayoutViewPane::OnActionRegistrationHook()
@@ -212,17 +230,15 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->OnToggleDisplayInfo();
+                SetViewportInfoDisplayState(aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
+                    (aznumeric_cast<int>(CurrentViewportInfoDisplayState()) + 1) %
+                    aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid)));
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                return CurrentViewportInfoDisplayState() != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
             }
         );
 
@@ -238,17 +254,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetNormalViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo;
             }
         );
 
@@ -265,17 +277,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetFullViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::FullInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::FullInfo;
             }
         );
 
@@ -292,17 +300,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetCompactViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo;
             }
         );
 
@@ -319,17 +323,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            [viewportTitleDlg = m_viewportTitleDlg]
+            []
             {
-                viewportTitleDlg->SetNoViewportInfo();
+                SetViewportInfoDisplayState(AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
             },
             []() -> bool
             {
-                AZ::AtomBridge::ViewportInfoDisplayState currentState = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-                AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-                    currentState, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-
-                return currentState == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+                return CurrentViewportInfoDisplayState() == AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
             });
 
         m_actionManagerInterface->AddActionToUpdater(
@@ -558,6 +558,24 @@ void CLayoutViewPane::SetViewClass(const QString& sClass)
 QString CLayoutViewPane::GetViewClass() const
 {
     return m_viewPaneClass;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLayoutViewPane::closeEvent(QCloseEvent* event)
+{
+    // Shutdown reaches viewports by more than one route, and not all of them run MainWindow's close
+    // handler first, so also stand down once the system itself is quitting.
+    MainWindow* mainWindow = MainWindow::instance();
+    const bool editorShuttingDown =
+        (mainWindow && mainWindow->IsClosing()) || (gEnv && gEnv->pSystem && gEnv->pSystem->IsQuitting());
+
+    if (m_viewport && !editorShuttingDown && GetIEditor()->GetViewManager()->GetNumberOfGameViewports() <= 1)
+    {
+        event->ignore();
+        return;
+    }
+
+    AzQtComponents::ToolBarArea::closeEvent(event);
 }
 
 //////////////////////////////////////////////////////////////////////////

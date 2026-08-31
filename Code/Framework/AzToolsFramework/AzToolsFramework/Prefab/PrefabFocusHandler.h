@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/functional.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -67,7 +69,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
-        
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
@@ -76,40 +77,55 @@ namespace AzToolsFramework::Prefab
 
         // EditorEntityContextNotificationBus overrides ...
         void OnPrepareForContextReset() override;
-        
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
+        void OnWorldLoaded(const AzFramework::EntityContextId& worldId) override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
+
         // EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;
 
         // PrefabPublicNotifications overrides ...
         void OnPrefabInstancePropagationEnd() override;
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
-        
+
     private:
+        struct WorldFocus
+        {
+            RootAliasPath m_rootAliasFocusPath = RootAliasPath();
+            //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
+            AZ::IO::Path m_filenameFocusPath;
+            int m_rootAliasFocusPathLength = 0;
+            PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
+        };
+
+        WorldFocus& GetWorldFocus(const AzFramework::EntityContextId& worldId) const;
+
+        void RefreshWorldsWithMatchingInstance(const AZStd::function<bool(const Instance&)>& predicate);
+
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
 
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
-        void RefreshInstanceFocusPath();
+        PrefabFocusOperationResult FocusOnWorldRootInstance(const AzFramework::EntityContextId& worldId);
+        void RefreshInstanceFocusPath(const AzFramework::EntityContextId& worldId, WorldFocus& focus) const;
 
         // helper function.  Finds out which prefab instance is currently focused, and creates
         // a selection command that will select the container entity.
         // uses the reference entity Id to figure out which context should be queried.
         SelectionCommand* CreateSelectionCommandForFocusedPrefab(AZ::EntityId referenceId);
 
-        void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
+        void SetInstanceContainersOpenState(
+            const AzFramework::EntityContextId& worldId, const RootAliasPath& rootAliasPath, bool openState) const;
         void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
 
-        void SwitchToEditScope() const;
+        void SwitchToEditScope(const AzFramework::EntityContextId& worldId) const;
 
-        InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
+        InstanceOptionalReference GetInstanceReference(
+            const AzFramework::EntityContextId& worldId, RootAliasPath rootAliasPath) const;
 
-        //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
-        RootAliasPath m_rootAliasFocusPath = RootAliasPath();
-        //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
-        AZ::IO::Path m_filenameFocusPath;
-        //! The length of the current focus path. Stored to simplify internal checks.
-        int m_rootAliasFocusPathLength = 0;
-        //! The current focus mode.
-        PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
+        mutable AZStd::unordered_map<AzFramework::EntityContextId, WorldFocus> m_worldFocus;
+        //! The focus mode a world starts out in.
+        PrefabEditScope m_defaultPrefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;

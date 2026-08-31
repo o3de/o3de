@@ -20,6 +20,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -41,9 +42,11 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -51,6 +54,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
@@ -72,6 +76,8 @@
 #include <Editor/DisplaySettings.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/LevelRoots.h>
+#include <Editor/LyViewPaneNames.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
@@ -80,6 +86,8 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QDir>
+#include <QFileInfo>
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
@@ -351,7 +359,8 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
 {
     if (GetIEditor() && GetIEditor()->GetViewManager())
     {
-        CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+        CViewManager* viewManager = GetIEditor()->GetViewManager();
+        CViewport* view = viewManager->GetSelectedViewport() ? viewManager->GetSelectedViewport() : viewManager->GetGameViewport();
         if (view)
         {
             int width, height;
@@ -494,11 +503,32 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-void SandboxIntegrationManager::OnPrepareForContextReset()
+void SandboxIntegrationManager::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
 {
-    // Deselect everything.
-    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
+    GetIEditor()->GetUndoManager()->FlushWorld(worldId);
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::FlushWorldUndo, worldId);
+}
+
+void SandboxIntegrationManager::OnActiveWorldChanged(
+    [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+{
+    // Viewports unbind from their worlds as the editor tears down, which changes the active world.
+    // The title is meaningless by then and the main window is already on its way out.
+    MainWindow* mainWindow = MainWindow::instance();
+    auto* cryEdit = CCryEditApp::instance();
+    if (!mainWindow || mainWindow->IsClosing() || !cryEdit)
+    {
+        return;
+    }
+
+    AZStd::string levelPath;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, newWorldId);
+
+    const AZStd::string levelName = AZ::IO::Path(levelPath).Stem().Native();
+
+    cryEdit->SetEditorWindowTitle(
+        nullptr, AZ::Utils::GetProjectDisplayName().c_str(), levelName.empty() ? nullptr : levelName.c_str());
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()
@@ -608,7 +638,8 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
+    CViewManager* viewManager = GetIEditor()->GetViewManager();
+    if (CViewport* view = viewManager->GetSelectedViewport() ? viewManager->GetSelectedViewport() : viewManager->GetGameViewport();
         view && m_contextMenuViewPoint.has_value())
     {
         worldPosition = AzToolsFramework::FindClosestPickIntersection(
@@ -638,12 +669,22 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
     AZ::Vector3 center;
     aabb.GetAsSphere(center, radius);
 
+    const AzFramework::EntityContextId entitiesWorldId = AzToolsFramework::GetEntityWorldId(entityIds.front());
+
     auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
     const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
     for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
     {
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
+            AzFramework::EntityContextId viewportWorldId = entitiesWorldId;
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportContext->GetId());
+            if (viewportWorldId != entitiesWorldId)
+            {
+                continue;
+            }
+
             if (const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
                     viewportContext->GetCameraTransform(),
                     AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix()),
@@ -651,7 +692,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                     radius);
                 nextCameraTransform.has_value())
             {
-                SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(*nextCameraTransform);
+                SandboxEditor::HandleViewportCameraTransitionFromSetting(viewportContext->GetId(), *nextCameraTransform);
             }
         }
     }
@@ -882,6 +923,63 @@ void SandboxIntegrationManager::OpenViewPane(const char* paneName)
 QDockWidget* SandboxIntegrationManager::InstanceViewPane(const char* paneName)
 {
     return QtViewPaneManager::instance()->InstancePane(paneName);
+}
+
+static bool IsLevelSourcePath(AZStd::string_view levelPath)
+{
+    auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    if (!prefabLoader)
+    {
+        return false;
+    }
+
+    const QFileInfo levelFile(QString::fromUtf8(prefabLoader->GetFullPath(AZ::IO::PathView(levelPath)).c_str()));
+    if (levelFile.completeBaseName().compare(levelFile.dir().dirName(), Qt::CaseInsensitive) != 0)
+    {
+        return false;
+    }
+
+    const QString absolutePath = QDir::cleanPath(levelFile.absoluteFilePath());
+    for (const LevelRoots::Root& root : LevelRoots::Enumerate())
+    {
+        if (absolutePath.startsWith(QDir::cleanPath(root.absolutePath) + '/', Qt::CaseInsensitive))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool SandboxIntegrationManager::OpenLevelInNewViewport(AZStd::string_view levelPath)
+{
+    if (levelPath.empty() || !IsLevelSourcePath(levelPath))
+    {
+        return false;
+    }
+
+    const QString levelPathText = QString::fromUtf8(levelPath.data(), aznumeric_cast<int>(levelPath.size()));
+
+    QtViewPane* viewportPane = QtViewPaneManager::instance()->GetPane(LyViewPane::EditorViewport);
+    if (!viewportPane)
+    {
+        return false;
+    }
+
+    const QtViewPane* openedPane = QtViewPaneManager::instance()->OpenPane(
+        LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
+
+    if (!openedPane || openedPane->m_dockWidgetInstances.isEmpty())
+    {
+        return false;
+    }
+
+    if (QWidget* paneWidget = openedPane->m_dockWidgetInstances.last()->widget())
+    {
+        paneWidget->setProperty("PendingLevelPath", levelPathText);
+    }
+
+    return true;
 }
 
 void SandboxIntegrationManager::CloseViewPane(const char* paneName)

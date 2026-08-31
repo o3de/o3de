@@ -100,6 +100,8 @@ namespace AzToolsFramework
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
         void OnFocusInEntityOutliner(const EntityIdList& entityIdList) override;
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
 
         /// EditorEntityInfoNotificationBus implementation
         void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId /*childId*/) override;

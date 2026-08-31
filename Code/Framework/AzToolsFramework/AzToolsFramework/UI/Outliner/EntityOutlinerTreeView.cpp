@@ -15,6 +15,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
@@ -61,11 +62,8 @@ namespace AzToolsFramework
             (m_readOnlyEntityPublicInterface != nullptr),
             "EntityOutlinerTreeView requires a ReadOnlyEntityPublicInterface instance on Construction.");
 
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-
-        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+        FocusModeNotificationBus::Handler::BusConnect(GetActiveWorldId());
+        EditorEntityContextNotificationBus::Handler::BusConnect();
 
         viewport()->setMouseTracking(true);
 
@@ -83,9 +81,17 @@ namespace AzToolsFramework
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
     {
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         FocusModeNotificationBus::Handler::BusDisconnect();
 
         ClearQueuedMouseEvent();
+    }
+
+    void EntityOutlinerTreeView::OnActiveWorldChanged(
+        [[maybe_unused]] const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
+    {
+        FocusModeNotificationBus::Handler::BusDisconnect();
+        FocusModeNotificationBus::Handler::BusConnect(newWorldId);
     }
 
     void EntityOutlinerTreeView::setAutoExpandDelay(int delay)

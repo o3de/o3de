@@ -425,6 +425,7 @@ namespace AZ
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
+                m_atomSceneRemovalHandlers.clear();
                 m_viewportContext.reset();
                 m_nativeWindow = nullptr;
                 m_windowHandle = nullptr;
@@ -571,9 +572,8 @@ namespace AZ
                     return atomSceneHandle.lock();
                 }
 
-                // Create and register a scene with all available feature processors
                 RPI::SceneDescriptor sceneDesc;
-                sceneDesc.m_nameId = AZ::Name("Main");
+                sceneDesc.m_nameId = AZ::Name(scene->GetName());
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
                 atomScene->Activate();
@@ -581,6 +581,23 @@ namespace AZ
                 // Register scene to RPI system so it will be processed/rendered per tick
                 RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
                 scene->SetSubsystem(atomScene);
+
+                if (scene != m_defaultFrameworkScene.get())
+                {
+                    auto& removalHandler = m_atomSceneRemovalHandlers.emplace_back(
+                        AzFramework::Scene::RemovalEvent::Handler(
+                            [atomScene](
+                                [[maybe_unused]] AzFramework::Scene& removedScene,
+                                [[maybe_unused]] AzFramework::Scene::RemovalEventType eventType) mutable
+                            {
+                                if (atomScene)
+                                {
+                                    RPI::RPISystemInterface::Get()->UnregisterScene(atomScene);
+                                    atomScene = nullptr;
+                                }
+                            }));
+                    scene->ConnectToEvents(removalHandler);
+                }
 
                 atomSceneHandle = atomScene;
 

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 
-from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorSingleTest, EditorTestSuite
 
 
 @pytest.mark.SUITE_main
@@ -208,3 +208,33 @@ class TestAutomationOverrides(EditorTestSuite):
 
     class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
         from .tests.overrides import EditEntity_UnderNestedInstance as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationMultiViewport(EditorTestSuite):
+
+    # These tests drive viewport panes and the Asset Browser, so they cannot run in -BatchMode.
+    global_extra_cmdline_args = ["-autotest_mode"]
+
+    class test_MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_LevelFromAssetBrowser_OpensInItsOwnViewport as test_module
+
+    class test_MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ReopeningALevel_OpensASecondViewportOnTheSameWorld as test_module
+
+    class test_MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ClosingAViewport_ReturnsItToTheMainWorld as test_module
+
+    class test_MultiViewport_BackgroundViewport_DoesNotStealTheActiveWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_BackgroundViewport_DoesNotStealTheActiveWorld as test_module
+
+    class test_MultiViewport_LastViewport_CannotBeClosed(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_LastViewport_CannotBeClosed as test_module
+
+    class test_MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_ClosingTheFirstViewport_KeepsTheViewportUi as test_module
+
+    class test_MultiViewport_WindowTitle_FollowsTheActiveWorld(EditorSingleTest):
+        from .tests.multi_viewport import MultiViewport_WindowTitle_FollowsTheActiveWorld as test_module

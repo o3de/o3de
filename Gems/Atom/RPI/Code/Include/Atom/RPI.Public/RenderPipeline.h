@@ -228,6 +228,12 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
+            //! Mask containing only this pipeline instance's unique name tag. Pipeline-scoped draws
+            //! must be stamped with this: the full mask also carries the material-pipeline tag,
+            //! which is shared between pipelines created from the same asset and would match every
+            //! one of them.
+            RHI::DrawFilterMask GetPipelineInstanceDrawFilterMask() const;
+
             //! Get the RenderPipelineDescriptor which was used to create this RenderPipeline
             const RenderPipelineDescriptor& GetDescriptor() const;
 

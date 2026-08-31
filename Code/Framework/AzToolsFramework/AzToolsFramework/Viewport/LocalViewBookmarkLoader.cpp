@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -161,7 +162,7 @@ namespace AzToolsFramework
 
     static AZ::IO::Path GenerateBookmarkFileName()
     {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
         Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
@@ -515,13 +516,19 @@ namespace AzToolsFramework
 
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
-        auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        auto prefabEditorEntityOwnershipInterface = GetWorldOwnershipService();
         if (!prefabEditorEntityOwnershipInterface)
         {
             return nullptr;
         }
 
-        const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+        Prefab::InstanceOptionalReference rootInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        if (!rootInstance.has_value())
+        {
+            return nullptr;
+        }
+
+        const AZ::EntityId containerEntityId = rootInstance->get().GetContainerEntityId();
         if (!containerEntityId.IsValid())
         {
             return nullptr;

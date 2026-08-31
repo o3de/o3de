@@ -54,7 +54,6 @@
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <AzToolsFramework/Render/EditorIntersectorComponent.h>
 #include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
@@ -63,7 +62,6 @@
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
@@ -180,18 +178,19 @@ namespace AzToolsFramework
     ToolsApplication::ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : AzFramework::Application(argc, argv, AZStd::move(componentAppSettings))
         , m_selectionBounds(AZ::Aabb())
-        , m_undoStack(nullptr)
         , m_currentBatchUndo(nullptr)
         , m_isDuringUndoRedo(false)
         , m_isInIsolationMode(false)
     {
         ToolsApplicationRequests::Bus::Handler::BusConnect();
+        EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     ToolsApplication::~ToolsApplication()
     {
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -228,12 +227,10 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::AssetBundleComponent>(),
                 azrtti_typeid<AzToolsFramework::ArchiveComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceDependencyBrowserComponent>(),
-                azrtti_typeid<AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent>(),
                 azrtti_typeid<Components::EditorEntityModelComponent>(),
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::ViewportSnapping::ViewportSnappingSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
-                azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
@@ -273,8 +270,6 @@ namespace AzToolsFramework
     void ToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
         Application::StartCommon(systemEntity);
-
-        m_undoStack = new UndoSystem::UndoStack(10, nullptr);
     }
 
     void ToolsApplication::Stop()
@@ -289,12 +284,10 @@ namespace AzToolsFramework
                 undoCacheInterface->Clear();
             }
 
-            delete m_undoStack;
-            m_undoStack = nullptr;
-
             // Release any memory used by ToolsApplication before Application::Stop() destroys the allocators.
             m_selectedEntities.set_capacity(0);
             m_highlightedEntities.set_capacity(0);
+            m_inactiveWorldSelections.clear();
             m_dirtyEntities = {};
 
             // This resets the editor context thereby asking the systems that own the entities to destroy them. By doing this, we are
@@ -459,6 +452,12 @@ namespace AzToolsFramework
 
         MarkEntityDeselected(entity->GetId());
         SetEntityHighlighted(entity->GetId(), false);
+
+        // A destroyed entity must not come back when its world is made active again.
+        for (auto& [worldId, selection] : m_inactiveWorldSelections)
+        {
+            selection.erase(AZStd::remove(selection.begin(), selection.end(), entity->GetId()), selection.end());
+        }
 
         ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::EntityDeregistered, entity->GetId());
 
@@ -1200,13 +1199,13 @@ namespace AzToolsFramework
 
     void ToolsApplication::UndoPressed()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            if (m_undoStack->CanUndo())
+            if (undoStack->CanUndo())
             {
                 m_isDuringUndoRedo = true;
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
-                m_undoStack->Undo();
+                undoStack->Undo();
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
@@ -1219,13 +1218,13 @@ namespace AzToolsFramework
 
     void ToolsApplication::RedoPressed()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            if (m_undoStack->CanRedo())
+            if (undoStack->CanRedo())
             {
                 m_isDuringUndoRedo = true;
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::BeforeUndoRedo);
-                m_undoStack->Redo();
+                undoStack->Redo();
                 ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::AfterUndoRedo);
                 m_isDuringUndoRedo = false;
 
@@ -1236,13 +1235,64 @@ namespace AzToolsFramework
         }
     }
 
-    void ToolsApplication::FlushUndo()
+    void ToolsApplication::OnActiveWorldChanged(
+        const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId)
     {
-        if (m_undoStack)
+        if (!previousWorldId.IsNull())
         {
-            m_undoStack->Reset();
+            m_inactiveWorldSelections[previousWorldId] = m_selectedEntities;
         }
 
+        EntityIdList restoredSelection;
+        if (auto selectionIt = m_inactiveWorldSelections.find(newWorldId); selectionIt != m_inactiveWorldSelections.end())
+        {
+            restoredSelection = selectionIt->second;
+            m_inactiveWorldSelections.erase(selectionIt);
+        }
+
+        // Go through the normal path so the inspector, outliner and manipulators all follow.
+        SetSelectedEntities(restoredSelection);
+
+        // Highlighting tracks the cursor, so it belongs to whatever the cursor is now over.
+        m_highlightedEntities.clear();
+    }
+
+    void ToolsApplication::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        m_inactiveWorldSelections.erase(worldId);
+    }
+
+    UndoSystem::UndoStack* ToolsApplication::GetWorldUndoStack(const AzFramework::EntityContextId& worldId)
+    {
+        auto& undoStack = m_worldUndoStacks[worldId];
+        if (!undoStack)
+        {
+            undoStack = AZStd::make_unique<UndoSystem::UndoStack>(nullptr);
+        }
+        return undoStack.get();
+    }
+
+    UndoSystem::UndoStack* ToolsApplication::GetUndoStack()
+    {
+        return GetWorldUndoStack(GetActiveWorldId());
+    }
+
+    void ToolsApplication::FlushUndo()
+    {
+        m_worldUndoStacks.clear();
+
+        DiscardCurrentUndoBatch();
+    }
+
+    void ToolsApplication::FlushWorldUndo(const AzFramework::EntityContextId& worldId)
+    {
+        m_worldUndoStacks.erase(worldId);
+
+        DiscardCurrentUndoBatch();
+    }
+
+    void ToolsApplication::DiscardCurrentUndoBatch()
+    {
         if (m_currentBatchUndo)
         {
             delete m_currentBatchUndo;
@@ -1255,9 +1305,9 @@ namespace AzToolsFramework
 
     void ToolsApplication::FlushRedo()
     {
-        if (m_undoStack)
+        if (UndoSystem::UndoStack* undoStack = GetUndoStack())
         {
-            m_undoStack->Slice();
+            undoStack->Slice();
         }
     }
 
@@ -1268,6 +1318,7 @@ namespace AzToolsFramework
         if (!m_currentBatchUndo)
         {
             m_currentBatchUndo = aznew UndoSystem::BatchCommand(label, 0);
+            m_currentBatchWorldId = GetActiveWorldId();
 
             // notify Cry undo has started (SandboxIntegrationManager)
             // Only do this at the root level. OnEndUndo will be called at the root
@@ -1287,7 +1338,7 @@ namespace AzToolsFramework
 
     UndoSystem::URSequencePoint* ToolsApplication::ResumeUndoBatch(UndoSystem::URSequencePoint* expected, const char* label)
     {
-        if ((!m_undoStack) || (!expected))
+        if (!expected)
         {
             return BeginUndoBatch(label);
         }
@@ -1305,12 +1356,13 @@ namespace AzToolsFramework
 
         // if we just finished an undo, and its the top operation or contains the resume operation, reopen it.
         // note that we re-attach the root to the current undo batch, but we return the child found.
-        UndoSystem::URSequencePoint* topOperation = m_undoStack->GetTop();
+        UndoSystem::UndoStack* undoStack = GetWorldUndoStack(m_currentBatchWorldId);
+        UndoSystem::URSequencePoint* topOperation = undoStack->GetTop();
         if (topOperation)
         {
             if (UndoSystem::URSequencePoint* searcher = topOperation->Find(expected); searcher)
             {
-                m_currentBatchUndo = m_undoStack->PopTop();
+                m_currentBatchUndo = undoStack->PopTop();
                 return searcher;
             }
         }
@@ -1371,9 +1423,9 @@ namespace AzToolsFramework
                 &ToolsApplicationEvents::Bus::Events::OnEndUndo, m_currentBatchUndo->GetName().c_str(), changed);
 
             // record each undo batch
-            if (m_undoStack && changed)
+            if (changed)
             {
-                m_undoStack->Post(m_currentBatchUndo);
+                GetWorldUndoStack(m_currentBatchWorldId)->Post(m_currentBatchUndo);
             }
             else
             {

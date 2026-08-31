@@ -32,7 +32,7 @@ namespace AzToolsFramework
 
     class AZTF_API PrefabEditorEntityOwnershipService
         : public AzFramework::PrefabEntityOwnershipService
-        , private PrefabEditorEntityOwnershipInterface
+        , public PrefabEditorEntityOwnershipInterface
     {
     public:
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
@@ -102,6 +102,8 @@ namespace AzToolsFramework
         
         void StartPlayInEditor() override;
         void StopPlayInEditor() override;
+        void SuspendEditorEntities() override;
+        void ResumeEditorEntities() override;
 
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
         bool IsRootPrefabAssigned() const override;
@@ -136,6 +138,8 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference InstantiatePrefab(
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
+        Prefab::InstanceOptionalReference LoadRootPrefab(AZ::IO::PathView filePath) override;
+
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         Prefab::TemplateId GetRootPrefabTemplateId() override;
 
@@ -144,13 +148,16 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
+        void SignalGameModeEvent(GameModeState state);
+
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
         ValidateEntitiesCallback m_validateEntitiesCallback;
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
-        Prefab::PrefabOverridePublicHandler m_prefabOverridePublicHandler;
+
+        AZStd::unique_ptr<Prefab::PrefabOverridePublicHandler> m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
         Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -158,7 +165,9 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+
         AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
+        bool m_ownsInterface = false;
     };
 }

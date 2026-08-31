@@ -119,11 +119,11 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         EditorEntityModelRequestBus::Handler::BusConnect();
 
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-        if (!editorEntityContextId.IsNull())
+        EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+        if (!m_editorEntityContextId.IsNull())
         {
-            AzFramework::EntityContextEventBus::Handler::BusConnect(editorEntityContextId);
+            AzFramework::EntityContextEventBus::MultiHandler::BusConnect(m_editorEntityContextId);
         }
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
@@ -133,7 +133,7 @@ namespace AzToolsFramework
     EditorEntityModel::~EditorEntityModel()
     {
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-        AzFramework::EntityContextEventBus::Handler::BusDisconnect();
+        AzFramework::EntityContextEventBus::MultiHandler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
         EditorTransformChangeNotificationBus::Handler::BusDisconnect();
@@ -142,26 +142,61 @@ namespace AzToolsFramework
         EntityCompositionNotificationBus::Handler::BusDisconnect();
     }
 
-    void EditorEntityModel::Reset()
+    void EditorEntityModel::Reset(const AzFramework::EntityContextId& worldId)
     {
         m_preparingForContextReset = false;
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        //disconnect all entity ids
-        EditorEntitySortNotificationBus::MultiHandler::BusDisconnect();
 
         //resetting model content and state, notifying any observers
         EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoResetBegin);
 
         m_enableChildReorderHandler = false;
 
-        m_entityInfoTable.clear();
-        m_entityOrphanTable.clear();
+        if (worldId.IsNull())
+        {
+            //disconnect all entity ids
+            EditorEntitySortNotificationBus::MultiHandler::BusDisconnect();
 
-        ClearQueuedEntityAdds();
+            m_entityInfoTable.clear();
+            m_entityOrphanTable.clear();
 
-        //AZ::EntityId::InvalidEntityId is the value of the parent entity id for any non-parented entity
-        //registering AZ::EntityId::InvalidEntityId as a ghost root entity so requests can be made without special cases
-        AddEntity(AZ::EntityId());
+            ClearQueuedEntityAdds();
+
+            //AZ::EntityId::InvalidEntityId is the value of the parent entity id for any non-parented entity
+            //registering AZ::EntityId::InvalidEntityId as a ghost root entity so requests can be made without special cases
+            AddEntity(AZ::EntityId());
+        }
+        else
+        {
+            auto& rootInfo = GetInfo(AZ::EntityId());
+            auto& rootOrphans = m_entityOrphanTable[AZ::EntityId()];
+
+            for (auto it = m_entityInfoTable.begin(); it != m_entityInfoTable.end();)
+            {
+                const AZ::EntityId entityId = it->first;
+
+                auto owningWorldId = AzFramework::EntityContextId::CreateNull();
+                AzFramework::EntityIdContextQueryBus::EventResult(
+                    owningWorldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+
+                if (owningWorldId == worldId)
+                {
+                    if (rootInfo.HasChild(entityId))
+                    {
+                        rootInfo.RemoveChild(entityId);
+                    }
+
+                    EditorEntitySortNotificationBus::MultiHandler::BusDisconnect(entityId);
+                    rootOrphans.erase(entityId);
+                    m_entityOrphanTable.erase(entityId);
+                    it = m_entityInfoTable.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
 
         m_enableChildReorderHandler = true;
 
@@ -645,15 +680,28 @@ namespace AzToolsFramework
         }
     }
 
+    void EditorEntityModel::OnWorldLoaded(const AzFramework::EntityContextId& worldId)
+    {
+        if (!AzFramework::EntityContextEventBus::MultiHandler::BusIsConnectedId(worldId))
+        {
+            AzFramework::EntityContextEventBus::MultiHandler::BusConnect(worldId);
+        }
+    }
+
+    void EditorEntityModel::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        AzFramework::EntityContextEventBus::MultiHandler::BusDisconnect(worldId);
+    }
+
     void EditorEntityModel::OnPrepareForContextReset()
     {
         m_preparingForContextReset = true;
-        Reset();
+        Reset(m_editorEntityContextId);
     }
 
     void EditorEntityModel::OnEntityStreamLoadBegin()
     {
-        Reset();
+        Reset(m_editorEntityContextId);
     }
 
     void EditorEntityModel::OnEntityStreamLoadSuccess()
@@ -696,12 +744,12 @@ namespace AzToolsFramework
 
     void EditorEntityModel::OnEntityStreamLoadFailed()
     {
-        Reset();
+        Reset(m_editorEntityContextId);
     }
 
     void EditorEntityModel::OnEntityContextReset()
     {
-        Reset();
+        Reset(*AzFramework::EntityContextEventBus::GetCurrentBusId());
     }
 
     void EditorEntityModel::OnEntityContextLoadedFromStream(const AZ::SliceComponent::EntityList&)

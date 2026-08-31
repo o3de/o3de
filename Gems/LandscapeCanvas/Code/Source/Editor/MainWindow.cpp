@@ -475,16 +475,11 @@ namespace LandscapeCanvasEditor
         return config;
     }
 
-    AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-    
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
-
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            s_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
 
         m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
         AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
@@ -869,7 +864,8 @@ namespace LandscapeCanvasEditor
         using namespace AzFramework::Terrain;
 
         // Detect if it's possible to create a new entity in the current context
-        AZ::EntityId focusRootEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+        AZ::EntityId focusRootEntityId =
+            m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId::CreateNull());
         if (m_readOnlyEntityPublicInterface->IsReadOnly(focusRootEntityId))
         {
             // Abort

@@ -13,6 +13,8 @@
 
 #include "IEditorImpl.h"
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 // Qt
 #include <QByteArray>
 
@@ -286,7 +288,8 @@ CCryEditDoc* CEditorImpl::GetDocument() const
 
 bool CEditorImpl::IsLevelLoaded() const
 {
-    return GetDocument() && GetDocument()->IsDocumentReady();
+    auto* ownershipService = AzToolsFramework::GetWorldOwnershipService();
+    return ownershipService && ownershipService->IsRootPrefabAssigned();
 }
 
 void CEditorImpl::SetDocument(CCryEditDoc* pDoc)
@@ -1018,8 +1021,7 @@ void CEditorImpl::ShowStatusText(bool bEnable)
 
 void CEditorImpl::ReduceMemory()
 {
-    GetIEditor()->GetUndoManager()->ClearRedoStack();
-    GetIEditor()->GetUndoManager()->ClearUndoStack();
+    GetIEditor()->FlushUndo();
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();

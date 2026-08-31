@@ -66,7 +66,7 @@ namespace AzToolsFramework
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
-            AZ::EntityId GetLevelInstanceContainerEntityId() const override;
+            AZ::EntityId GetLevelInstanceContainerEntityId(AzFramework::EntityContextId worldId) const override;
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 

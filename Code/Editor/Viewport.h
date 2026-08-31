@@ -241,6 +241,7 @@ public:
     virtual void OnTitleMenu([[maybe_unused]] QMenu* menu) {}
 
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
+    CLayoutViewPane* GetViewPane() const { return m_viewPane; }
 
     CViewport *asCViewport() override { return this; }
 
@@ -486,7 +487,10 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
-    AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUi;
+public:
+    QWidget* GetRenderOverlay() { return &m_renderOverlay; }
+
+protected:
 
     float m_selectionTolerance;
     QMenu m_cViewMenu;

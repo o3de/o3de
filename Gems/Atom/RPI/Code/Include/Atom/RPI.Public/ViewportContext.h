@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/SceneBus.h>
 #include <Atom/RPI.Public/ViewGroup.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 
 namespace AZ
@@ -163,6 +164,21 @@ namespace AZ
             AZStd::vector<ViewChangedEvent> m_viewChangedEvents;
 
             ViewportIdEvent m_aboutToBeDestroyedEvent;
+
+            //! Sends a name-addressed notification under this context's own name, and under the default
+            //! context name too while this context is the designated default (see SetDefaultViewportContext).
+            template<typename Function, typename... Args>
+            void NotifyByName(Function function, Args&&... args) const
+            {
+                ViewportContextNotificationBus::Event(m_name, function, args...);
+                if (const Name mirroredName = MirroredContextName(); !mirroredName.IsEmpty())
+                {
+                    ViewportContextNotificationBus::Event(mirroredName, function, args...);
+                }
+            }
+
+            //! The default context name while this context is the designated default, otherwise empty.
+            Name MirroredContextName() const;
 
             ViewportContextManager* m_manager = nullptr;
             AZStd::fixed_vector<RenderPipelinePtr, MaxViewTypes> m_currentPipelines;

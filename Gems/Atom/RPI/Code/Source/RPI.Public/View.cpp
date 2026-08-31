@@ -653,6 +653,11 @@ namespace AZ
 
         void View::UpdateSrg()
         {
+            if (m_shaderResourceGroup && m_shaderResourceGroup->IsQueuedForCompile())
+            {
+                return;
+            }
+
             if (m_clipSpaceOffset.IsZero())
             {
                 m_worldToClipPrevMatrixWithOffset = m_viewToClipPrevMatrix * m_worldToViewPrevMatrix;

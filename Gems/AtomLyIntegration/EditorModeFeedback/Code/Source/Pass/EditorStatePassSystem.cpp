@@ -15,8 +15,11 @@
 #include <Pass/Child/EditorModeBlurPass.h>
 #include <Pass/Child/EditorModeOutlinePass.h>
 
+#include <EditorModeFeedbackFeatureProcessor.h>
+
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace AZ::Render
 {
@@ -32,6 +35,15 @@ namespace AZ::Render
     EditorStatePassSystem::EditorStatePassSystem(EditorStateList&& editorStates)
         : m_editorStates(AZStd::move(editorStates))
     {
+        m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
+
+        static bool passCreatorsRegistered = false;
+        if (passCreatorsRegistered)
+        {
+            return;
+        }
+        passCreatorsRegistered = true;
+
         auto* passSystem = RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
         passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
@@ -91,7 +103,6 @@ namespace AZ::Render
             }
 
             // Entity mask passes
-            m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
             for (const auto& drawList : m_masks)
             {
                 RPI::PassRequest pass;
@@ -193,6 +204,19 @@ namespace AZ::Render
         }
     }
 
+    const EditorStateBase* EditorStatePassSystem::GetEditorState(EditorState editorState) const
+    {
+        for (const auto& state : m_editorStates)
+        {
+            if (state->GetState() == editorState)
+            {
+                return state.get();
+            }
+        }
+
+        return nullptr;
+    }
+
     EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStates() const
     {
         EntityMaskMap entityMaskMap;
@@ -250,5 +274,13 @@ namespace AZ::Render
         {
             state->RemoveParentPassForPipeline(renderPipeline->GetId());
         }
+    }
+
+    bool IsEditorStateEnabledForPass(const RPI::Pass& pass, EditorState editorState)
+    {
+        RPI::Scene* scene = pass.GetRenderPipeline() ? pass.GetRenderPipeline()->GetScene() : nullptr;
+        auto* featureProcessor = scene ? scene->GetFeatureProcessor<EditorModeFeatureProcessor>() : nullptr;
+        const EditorStateBase* state = featureProcessor ? featureProcessor->GetEditorState(editorState) : nullptr;
+        return state && state->IsEnabled();
     }
 } // namespace AZ::Render

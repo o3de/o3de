@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
@@ -78,6 +79,7 @@
 #include "ViewportManipulatorController.h"
 
 // Atom
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -88,8 +90,6 @@
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-
-EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
@@ -133,6 +133,27 @@ namespace AZ::ViewportHelpers
             m_editorViewportWidget.OnStartPlayInEditorBegin();
         }
 
+        void OnViewportWorldChanged(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId&) override
+        {
+            if (viewportId == m_editorViewportWidget.GetViewportId())
+            {
+                m_editorViewportWidget.UpdateScene();
+            }
+        }
+
+        void OnWorldLoaded(const AzFramework::EntityContextId& worldId) override
+        {
+            AzFramework::EntityContextId viewportWorldId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                viewportWorldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld,
+                m_editorViewportWidget.GetViewportId());
+
+            if (viewportWorldId == worldId)
+            {
+                m_editorViewportWidget.UpdateScene();
+            }
+        }
+
     private:
         EditorViewportWidget& m_editorViewportWidget;
     };
@@ -160,45 +181,33 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
     undoBatch.MarkEntityDirty(entityId);
 }
 
-static void PopViewGroupForDefaultContext()
+AZ::RPI::ViewGroupPtr EditorViewportWidget::ViewGroupForThisViewport() const
 {
     auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (!atomViewportRequests)
+    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+    if (!atomViewportRequests || !viewportContext)
     {
-        return;
+        return nullptr;
     }
 
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
-    {
-        return;
-    }
+    return atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName());
+}
 
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+void EditorViewportWidget::PopViewGroupForThisViewport()
+{
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PopViewGroup(contextName, viewGroup);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PopViewGroup(
+            m_renderViewport->GetViewportContext()->GetName(), viewGroup);
     }
 }
 
-static void PushViewGroupForDefaultContext()
+void EditorViewportWidget::PushViewGroupForThisViewport()
 {
-    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (!atomViewportRequests)
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
-        return;
-    }
-
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
-    {
-        return;
-    }
-
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
-    {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushViewGroup(contextName, viewGroup);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(
+            m_renderViewport->GetViewportContext()->GetName(), viewGroup);
     }
 }
 
@@ -237,25 +246,22 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
-    if (!m_pPrimaryViewport)
-    {
-        SetAsActiveViewport();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
-    if (m_pPrimaryViewport == this)
-    {
-        m_pPrimaryViewport = nullptr;
-    }
+    m_editorEntityNotifications.reset();
+
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
+        static_cast<AzFramework::ViewportId>(GetViewportId()),
+        AzFramework::EntityContextId::CreateNull());
 
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
 
     m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
-    m_editorEntityNotifications.reset();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
     Camera::CameraNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetUndoManager()->RemoveListener(this);
@@ -382,7 +388,10 @@ bool EditorViewportWidget::event(QEvent* event)
     switch (event->type())
     {
     case QEvent::WindowActivate:
-        GetIEditor()->GetViewManager()->SelectViewport(this);
+        if (IsSelectedViewport())
+        {
+            GetIEditor()->GetViewManager()->SelectViewport(this);
+        }
         // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
         // get the keyrelease event anyways)
         m_keyDown.clear();
@@ -395,16 +404,6 @@ bool EditorViewportWidget::event(QEvent* event)
     }
 
     return QtViewport::event(event);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::UpdateContent(int flags)
-{
-    QtViewport::UpdateContent(flags);
-    if (flags & eUpdateObjects)
-    {
-        m_bUpdateViewport = true;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,29 +422,6 @@ void EditorViewportWidget::Update()
     if (!isVisible())
     {
         return;
-    }
-
-    // Don't wait for changes to update the focused viewport.
-    if (CheckRespondToInput())
-    {
-        m_bUpdateViewport = true;
-    }
-
-    // While Renderer doesn't support fast rendering of the scene to more then 1 viewport
-    // render only focused viewport if more then 1 are opened and always update is off.
-    if (!m_isOnPaint && m_viewManager->GetNumberOfGameViewports() > 1 && GetType() == ET_ViewportCamera)
-    {
-        if (m_pPrimaryViewport != this)
-        {
-            if (CheckRespondToInput()) // If this is the focused window, set primary viewport.
-            {
-                SetAsActiveViewport();
-            }
-            else if (!m_bUpdateViewport) // Skip this viewport.
-            {
-                return;
-            }
-        }
     }
 
     const bool isGameMode = GetIEditor()->IsInGameMode();
@@ -542,7 +518,6 @@ void EditorViewportWidget::Update()
     QtViewport::Update();
 
     PopDisableRendering();
-    m_bUpdateViewport = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -676,9 +651,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    m_isOnPaint = true;
     Update();
-    m_isOnPaint = false;
 
     if (GetIEditor()->IsInGameMode())
     {
@@ -690,11 +663,15 @@ void EditorViewportWidget::OnBeginPrepareRender()
     // Draw 2D helpers.
     m_debugDisplay->DepthTestOff();
     auto prevState = m_debugDisplay->GetState();
-    m_debugDisplay->SetState(0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
+    m_debugDisplay->SetState(
+        0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack |
+        AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
 
     AzFramework::ViewportDebugDisplayEventBus::Event(
-        AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
-        AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
+        AzToolsFramework::GetEntityContextId(),
+        &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
+        AzFramework::ViewportInfo{ GetViewportId() },
+        *m_debugDisplay);
 
     m_debugDisplay->SetState(prevState);
     m_debugDisplay->DepthTestOn();
@@ -715,7 +692,7 @@ void EditorViewportWidget::RenderAll()
 
     m_entityVisibilityQuery.DisplayVisibility(*m_debugDisplay);
 
-    if (m_manipulatorManager != nullptr)
+    if (m_manipulatorManager != nullptr && AzToolsFramework::IsEditedWorldVisibleInViewport(GetViewportId()))
     {
         namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
@@ -736,7 +713,8 @@ void EditorViewportWidget::RenderAll()
 //////////////////////////////////////////////////////////////////////////
 float EditorViewportWidget::GetAspectRatio() const
 {
-    return gSettings.viewports.fDefaultAspectRatio;
+    return height() > 0 ? aznumeric_cast<float>(width()) / aznumeric_cast<float>(height())
+                        : gSettings.viewports.fDefaultAspectRatio;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -748,6 +726,23 @@ void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
+
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    visibleEntitiesOut.erase(
+        AZStd::remove_if(
+            visibleEntitiesOut.begin(),
+            visibleEntitiesOut.end(),
+            [&worldId](const AZ::EntityId entityId)
+            {
+                AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
+                AzFramework::EntityIdContextQueryBus::EventResult(
+                    owningContextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+                return owningContextId != worldId;
+            }),
+        visibleEntitiesOut.end());
 }
 
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
@@ -808,9 +803,9 @@ void EditorViewportWidget::SetViewportId(int id)
 
     UpdateScene();
 
-    if (m_pPrimaryViewport == this)
+    if (IsSelectedViewport())
     {
-        SetAsActiveViewport();
+        GetIEditor()->GetViewManager()->SelectViewport(this);
     }
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
@@ -888,10 +883,12 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
 {
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
-    m_viewportUi.ConnectViewportUiBus(GetViewportId());
     AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
-    AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+    if (!AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers())
+    {
+        AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+    }
 }
 
 void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
@@ -899,9 +896,24 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
     AzFramework::ViewportBorderRequestBus::Handler::BusDisconnect();
-    m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
+
+    CViewManager* viewManager = GetIEditor() ? GetIEditor()->GetViewManager() : nullptr;
+    for (int index = 0, count = viewManager ? viewManager->GetViewCount() : 0;
+         index < count && !AzFramework::InputSystemCursorConstraintRequestBus::HasHandlers();
+         ++index)
+    {
+        if (auto* viewport = viewport_cast<EditorViewportWidget*>(viewManager->GetView(index)); viewport && viewport != this)
+        {
+            viewport->AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
+        }
+    }
+}
+
+bool EditorViewportWidget::IsSelectedViewport() const
+{
+    return GetIEditor()->GetViewManager()->GetSelectedViewport() == this;
 }
 
 namespace AZ::ViewportHelpers
@@ -988,16 +1000,19 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     // Set ourself as the active viewport so the following actions create a camera from this view
     GetIEditor()->GetViewManager()->SelectViewport(this);
 
-    CGameEngine* gameEngine = GetIEditor()->GetGameEngine();
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto prefabEditorEntityOwnershipInterface = AzToolsFramework::GetWorldOwnershipService(worldId);
+    const bool worldHasLevel = prefabEditorEntityOwnershipInterface && prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned();
 
     if (Camera::EditorCameraSystemRequestBus::HasHandlers())
     {
         action = menu->addAction(tr("Create camera entity from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
-        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        if (!gameEngine || !gameEngine->IsLevelLoaded() ||
-            (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
+        if (!worldHasLevel)
         {
             action->setEnabled(false);
             action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1005,7 +1020,7 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         }
     }
 
-    if (!gameEngine || !gameEngine->IsLevelLoaded())
+    if (!worldHasLevel)
     {
         action->setEnabled(false);
         action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1134,12 +1149,6 @@ void EditorViewportWidget::ResizeView(int width, int height)
         window->move(0, 0);
         window->resize(window->size() + deltaSize);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-EditorViewportWidget* EditorViewportWidget::GetPrimaryViewport()
-{
-    return m_pPrimaryViewport;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1351,21 +1360,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
     return 1.f;
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::CheckRespondToInput() const
-{
-    if (!Editor::EditorQtApplication::IsActive())
-    {
-        return false;
-    }
-
-    if (!hasFocus() && !m_renderViewport->hasFocus())
-    {
-        return false;
-    }
-
-    return true;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
@@ -1428,13 +1422,7 @@ void EditorViewportWidget::SetFOV(const float fov)
     }
     else
     {
-        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        if (!viewSystem)
-        {
-            return;
-        }
-
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        if (auto viewGroup = ViewGroupForThisViewport())
         {
             auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
             AZ::SetPerspectiveMatrixFOV(viewToClip, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
@@ -1454,13 +1442,7 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        if (!viewSystem)
-        {
-            return AZ::Constants::HalfPi; // 90 degrees (default)
-        }
-
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        if (auto viewGroup = ViewGroupForThisViewport())
         {
             return AZ::GetPerspectiveMatrixFOV(viewGroup->GetView()->GetViewToClipMatrix());
         }
@@ -1486,6 +1468,15 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     // if they've picked the same camera, then that means they want to toggle
     if (viewEntityId.IsValid())
     {
+        if (!IsSelectedViewport())
+        {
+            if (m_viewEntityId.IsValid())
+            {
+                SetDefaultCamera();
+            }
+            return;
+        }
+
         // Any such events for game entities should be filtered out by the check above
         AZ_Error(
             "EditorViewportWidget", Camera::EditorCameraViewRequestBus::FindFirstHandler(viewEntityId) != nullptr,
@@ -1499,7 +1490,7 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
 
         PostCameraSet();
     }
-    else
+    else if (m_viewEntityId.IsValid())
     {
         SetDefaultCamera();
     }
@@ -1511,7 +1502,7 @@ void EditorViewportWidget::SetDefaultCamera()
     if (m_viewEntityId.IsValid())
     {
         // remove pushed view group for view entity (editor camera component in 'Be this camera' mode
-        PopViewGroupForDefaultContext();
+        PopViewGroupForThisViewport();
     }
 
     m_viewEntityId.SetInvalid();
@@ -1528,20 +1519,14 @@ void EditorViewportWidget::SetDefaultCamera()
     // update camera matrix according to near / far values
     SetDefaultCameraNearFar();
 
-    PushViewGroupForDefaultContext();
+    PushViewGroupForThisViewport();
 
     PostCameraSet();
 }
 
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
-    {
-        return;
-    }
-
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    if (auto viewGroup = ViewGroupForThisViewport())
     {
         auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
@@ -1655,6 +1640,11 @@ void EditorViewportWidget::CycleCamera()
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
+    if (!IsSelectedViewport())
+    {
+        return;
+    }
+
     // This is an editor event, so is only serviced during edit mode, not play game mode
     if (m_playInEditorState != PlayInEditorState::Editor)
     {
@@ -1676,7 +1666,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
         // assigned, ensure we pop it from the stack before assigning a new one
         if (m_viewEntityId.IsValid())
         {
-            PopViewGroupForDefaultContext();
+            PopViewGroupForThisViewport();
         }
 
         Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
@@ -1691,7 +1681,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 
 bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 {
-    if (m_pPrimaryViewport == this)
+    if (IsSelectedViewport())
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1711,7 +1701,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 
 AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 {
-    if (m_pPrimaryViewport == this)
+    if (IsSelectedViewport())
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1728,7 +1718,7 @@ AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 
 AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 {
-    if (m_pPrimaryViewport == this)
+    if (IsSelectedViewport())
     {
         return GetFOV();
     }
@@ -1737,7 +1727,7 @@ AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
 {
-    if (m_pPrimaryViewport == this)
+    if (IsSelectedViewport())
     {
         cameraState = m_renderViewport->GetCameraState();
         return true;
@@ -1968,66 +1958,73 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
 void EditorViewportWidget::UpdateScene()
 {
-    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-    if (sceneSystem)
-    {
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
-        if (mainScene)
-        {
-            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
-            m_renderViewport->SetScene(mainScene);
-            auto viewportContext = m_renderViewport->GetViewportContext();
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
 
-            // Don't enable the render pipeline until a level has been loaded
-            // Also show/hide the RenderViewportWidget accordingly so that we get the
-            // expected gradient background when no level is loaded
-            auto renderPipeline = viewportContext->GetCurrentPipeline();
-            if (renderPipeline)
+    AZStd::shared_ptr<AzFramework::Scene> worldScene;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, worldId);
+    if (!worldScene || !m_renderViewport)
+    {
+        return;
+    }
+
+    auto viewportContext = m_renderViewport->GetViewportContext();
+    AZ::RPI::ScenePtr previousRenderScene = viewportContext ? viewportContext->GetRenderScene() : nullptr;
+
+    AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+    m_renderViewport->SetScene(worldScene);
+    if (!viewportContext)
+    {
+        return;
+    }
+
+    AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene();
+
+    if (previousRenderScene && previousRenderScene != renderScene)
+    {
+        if (auto previousPipeline = previousRenderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
+        {
+            previousRenderScene->RemoveRenderPipeline(previousPipeline->GetId());
+        }
+
+        const int deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
+        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            const AZ::RPI::RenderPipelineId brdfPipelineId(
+                AZStd::string::format("BRDFTexturePipeline_%d_%d", GetViewportId(), deviceIndex));
+            if (previousRenderScene->GetRenderPipeline(brdfPipelineId))
             {
-                if (GetIEditor()->IsLevelLoaded())
-                {
-                    m_renderViewport->show();
-                    renderPipeline->AddToRenderTick();
-                }
-                else
-                {
-                    m_renderViewport->hide();
-                    renderPipeline->RemoveFromRenderTick();
-                }
+                previousRenderScene->RemoveRenderPipeline(brdfPipelineId);
             }
         }
     }
-}
 
-void EditorViewportWidget::SetAsActiveViewport()
-{
-    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-
-    const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
-
-    // If another viewport was active before, restore its name to its per-ID one.
-    if (m_pPrimaryViewport && m_pPrimaryViewport != this && m_pPrimaryViewport->m_renderViewport)
+    if (!renderScene)
     {
-        auto viewportContext = m_pPrimaryViewport->m_renderViewport->GetViewportContext();
-        if (viewportContext)
-        {
-            // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
-            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
-            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
-        }
+        return;
     }
+    AZ::RPI::SceneNotificationBus::Handler::BusConnect(renderScene->GetId());
 
-    m_pPrimaryViewport = this;
-    if (m_renderViewport)
+    // Don't enable the render pipeline until a level has been loaded
+    // Also show/hide the RenderViewportWidget accordingly so that we get the
+    // expected gradient background when no level is loaded
+    auto* ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
+    const bool worldHasLevel = ownershipService && ownershipService->IsRootPrefabAssigned();
+
+    auto renderPipeline = viewportContext->GetCurrentPipeline();
+    if (renderPipeline)
     {
-        auto viewportContext = m_renderViewport->GetViewportContext();
-        if (viewportContext)
+        if (worldHasLevel)
         {
-            // Push our camera onto the default viewport's view stack to preserve camera state continuity
-            // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
-            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
+            m_renderViewport->show();
+            renderPipeline->AddToRenderTick();
+        }
+        else
+        {
+            m_renderViewport->hide();
+            renderPipeline->RemoveFromRenderTick();
         }
     }
 }
@@ -2112,14 +2109,7 @@ AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
-    if (!layout)
-    {
-        AZ_Assert(false, "CRenderViewport: No View Manager layout");
-        return false;
-    }
-
-    // Doesn't work with split layout
-    if (layout->GetLayout() != EViewLayout::ET_Layout0)
+    if (layout && layout->GetLayout() > EViewLayout::ET_Layout0)
     {
         return false;
     }
@@ -2180,8 +2170,13 @@ void EditorViewportWidget::StopFullscreenPreview()
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(50, 50);
 
+    if (m_viewPane)
+    {
+        m_viewPane->DetachViewport();
+        m_viewPane->AttachViewport(this);
+    }
     // Attach this viewport to the primary view pane (whose index is 0).
-    if (CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout())
+    else if (CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout())
     {
         if (CLayoutViewPane* viewPane = layout->GetViewPaneByIndex(0))
         {
@@ -2217,9 +2212,15 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 {
     if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
     {
-        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
-        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
-            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+        const auto* worldEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ worldId });
+        const auto* editorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+
+        if ((worldEditorModes && worldEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus)) ||
+            (editorModes && editorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component)))
         {
             AzFramework::ViewportBorderPadding viewportBorderPadding = {};
             viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;
@@ -2232,4 +2233,3 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
-

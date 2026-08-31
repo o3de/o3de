@@ -30,6 +30,8 @@
 
 #include "MainWindow.h"
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
 #include <algorithm>
 #include <QScopedValueRollback>
 
@@ -96,13 +98,15 @@ struct ViewLayoutState
     QVector<QString> viewPanes;
     QByteArray mainWindowState;
     QMap<QString, QRect> fakeDockWidgetGeometries;
+    QMap<QString, QString> viewportLevels;
 };
 Q_DECLARE_METATYPE(ViewLayoutState)
 
 static QDataStream &operator<<(QDataStream & out, const ViewLayoutState&myObj)
 {
-    int placeHolderVersion = 1;
-    out << myObj.viewPanes << myObj.mainWindowState << placeHolderVersion << myObj.fakeDockWidgetGeometries;
+    int placeHolderVersion = 2;
+    out << myObj.viewPanes << myObj.mainWindowState << placeHolderVersion << myObj.fakeDockWidgetGeometries
+        << myObj.viewportLevels;
     return out;
 }
 
@@ -116,6 +120,11 @@ static QDataStream& operator>>(QDataStream& in, ViewLayoutState& myObj)
     {
         in >> version;
         in >> myObj.fakeDockWidgetGeometries;
+    }
+
+    if (version >= 2 && !in.atEnd())
+    {
+        in >> myObj.viewportLevels;
     }
 
     return in;
@@ -729,7 +738,28 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
             }
             else
             {
-                m_advancedDockManager->disableAutoSaveLayout(newDockWidget);
+                auto instanceName = [&name](int number)
+                {
+                    return QStringLiteral("%1 (%2)").arg(name).arg(number);
+                };
+                auto nameTaken = [pane](const QString& objectName)
+                {
+                    for (const DockWidget* dockWidget : pane->m_dockWidgetInstances)
+                    {
+                        if (dockWidget->objectName() == objectName)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+
+                int instanceNumber = 2;
+                while (nameTaken(instanceName(instanceNumber)))
+                {
+                    ++instanceNumber;
+                }
+                newDockWidget->setObjectName(instanceName(instanceNumber));
             }
 
             newDockWidget->setVisible(true);
@@ -1046,8 +1076,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         }
     }
 
-    // First, close all the open panes
-    if (!ClosePanesWithRollback(QVector<QString>()))
+    if (!ClosePanesWithRollback(QVector<QString>{ QString(LyViewPane::EditorViewport) }))
     {
         return;
     }
@@ -1071,6 +1100,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 
         ViewLayoutState state;
 
+        state.viewPanes.push_back(LyViewPane::EditorViewport);
         state.viewPanes.push_back(LyViewPane::EntityOutliner);
         state.viewPanes.push_back(LyViewPane::Inspector);
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
@@ -1095,6 +1125,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     }
 
     // Reset the default view panes to be opened. Used for restoring default layout and component entity layout.
+    const QtViewPane* viewportViewPane = OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* InspectorViewPane = OpenPane(LyViewPane::Inspector, QtViewPane::OpenMode::UseDefaultState);
@@ -1105,11 +1136,17 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [this, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
+    QTimer::singleShot(0, [this, viewportViewPane, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
     {
         // If we are using the new docking, set the right dock area to be absolute
         // so that the inspector will be to the right of the viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
+
+        if (viewportViewPane)
+        {
+            m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, viewportViewPane->m_dockWidget);
+            viewportViewPane->m_dockWidget->setFloating(false);
+        }
 
         // Retrieve the width and height of the screen that our main window is on so we can
         // use it later for resizing our panes. The main window ends up being maximized
@@ -1215,25 +1252,7 @@ void QtViewPaneManager::SaveLayout(QString layoutName)
         return;
     }
 
-    layoutName = layoutName.trimmed();
-
-    ViewLayoutState state;
-    for (const QtViewPane& pane : m_registeredPanes)
-    {
-        // Include all visible and tabbed panes in our layout, since tabbed panes
-        // won't be visible if they aren't the active tab, but still need to be
-        // retained in the layout
-        if (pane.IsVisible() || AzQtComponents::DockTabWidget::IsTabbed(pane.m_dockWidget))
-        {
-            state.viewPanes.push_back(pane.m_dockWidget->PaneName());
-        }
-    }
-
-    state.mainWindowState = m_advancedDockManager->saveState();
-
-    state.fakeDockWidgetGeometries = m_fakeDockWidgetGeometries;
-
-    SaveStateToLayout(state, layoutName);
+    SaveStateToLayout(GetLayout(), layoutName.trimmed());
 
     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
@@ -1336,6 +1355,39 @@ bool QtViewPaneManager::DeserializeLayout(const XmlNodeRef& parentNode)
     return RestoreLayout(state);
 }
 
+static void RecordViewportLevel(ViewLayoutState& state, DockWidget* dockWidget, const QString& paneKey)
+{
+    QWidget* paneWidget = dockWidget->widget();
+    const QVariant viewportId = paneWidget ? paneWidget->property("ViewportId") : QVariant();
+    if (!viewportId.isValid() || viewportId.toInt() < 0)
+    {
+        return;
+    }
+
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, viewportId.toInt());
+
+    // The editor's own world takes its level from the document when the editor starts, so recording a
+    // level for it here would load that level a second time into a world of its own.
+    AzFramework::EntityContextId editorWorldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        editorWorldId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+    if (worldId == editorWorldId)
+    {
+        return;
+    }
+
+    AZStd::string levelPath;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        levelPath, &AzToolsFramework::EditorEntityContextRequests::GetWorldLevelPath, worldId);
+
+    if (!levelPath.empty())
+    {
+        state.viewportLevels.insert(paneKey, QString::fromUtf8(levelPath.c_str()));
+    }
+}
+
 ViewLayoutState QtViewPaneManager::GetLayout() const
 {
     ViewLayoutState state;
@@ -1348,6 +1400,17 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
         if (pane.IsVisible() || AzQtComponents::DockTabWidget::IsTabbed(pane.m_dockWidget))
         {
             state.viewPanes.push_back(pane.m_dockWidget->PaneName());
+            RecordViewportLevel(state, pane.m_dockWidget, pane.m_dockWidget->PaneName());
+        }
+
+        for (DockWidget* dockWidget : pane.m_dockWidgetInstances)
+        {
+            if (dockWidget != pane.m_dockWidget &&
+                (dockWidget->isVisible() || AzQtComponents::DockTabWidget::IsTabbed(dockWidget)))
+            {
+                state.viewPanes.push_back(dockWidget->objectName());
+                RecordViewportLevel(state, dockWidget, dockWidget->objectName());
+            }
         }
     }
 
@@ -1356,6 +1419,35 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
     state.fakeDockWidgetGeometries = m_fakeDockWidgetGeometries;
 
     return state;
+}
+
+void QtViewPaneManager::OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath)
+{
+    if (GetPane(paneName))
+    {
+        // The primary viewport shows the editor's own world, whose level the document opens. Restoring
+        // a pending level onto it would load that level a second time into a world of its own.
+        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        return;
+    }
+
+    const int suffixStart = paneName.lastIndexOf(QStringLiteral(" ("));
+    const QString baseName = suffixStart > 0 && paneName.endsWith(QLatin1Char(')')) ? paneName.left(suffixStart) : QString();
+    QtViewPane* basePane = baseName.isEmpty() ? nullptr : GetPane(baseName);
+    if (basePane && basePane->m_options.canHaveMultipleInstances)
+    {
+        const QtViewPane* openedPane = OpenPane(
+            baseName, QtViewPane::OpenMode::OnlyOpen | QtViewPane::OpenMode::MultiplePanes | QtViewPane::OpenMode::RestoreLayout);
+        if (openedPane && !basePane->m_dockWidgetInstances.isEmpty())
+        {
+            DockWidget* dockWidget = basePane->m_dockWidgetInstances.last();
+            dockWidget->setObjectName(paneName);
+            if (dockWidget->widget() && !levelPath.isEmpty())
+            {
+                dockWidget->widget()->setProperty("PendingLevelPath", levelPath);
+            }
+        }
+    }
 }
 
 
@@ -1422,6 +1514,13 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
         }
     }
 
+    if (layoutName == s_lastLayoutName && !state.viewPanes.contains(LyViewPane::EditorViewport))
+    {
+        static const QString preViewportPaneLayout = "User Pre-Viewport-Pane Layout";
+        SaveStateToLayout(state, preViewportPaneLayout);
+        return false;
+    }
+
     if (!ClosePanesWithRollback(state.viewPanes))
     {
         return false;
@@ -1439,7 +1538,7 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPaneForLayoutRestore(paneName, state.viewportLevels.value(paneName));
     }
 
     // must do this after opening all of the panes!
@@ -1471,7 +1570,7 @@ bool QtViewPaneManager::RestoreLayout(const ViewLayoutState& state)
 
     for (const QString& paneName : state.viewPanes)
     {
-        OpenPane(paneName, QtViewPane::OpenMode::OnlyOpen);
+        OpenPaneForLayoutRestore(paneName, state.viewportLevels.value(paneName));
     }
 
     // must do this after opening all of the panes!

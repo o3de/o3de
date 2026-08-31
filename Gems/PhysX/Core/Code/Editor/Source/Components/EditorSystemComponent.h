@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
@@ -54,7 +55,7 @@ namespace PhysX
         void Deactivate() override;
 
         // Physics::EditorWorldBus overrides...
-        AzPhysics::SceneHandle GetEditorSceneHandle() const override;
+        AzPhysics::SceneHandle GetEditorSceneHandle(AZ::EntityId entityId) const override;
 
         // ActionManagerRegistrationNotificationBus overrides ...
         void OnActionRegistrationHook() override;
@@ -65,11 +66,14 @@ namespace PhysX
         // AzToolsFramework::EditorEntityContextNotificationBus overrides...
         void OnStartPlayInEditorBegin() override;
         void OnStopPlayInEditor() override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
+
+        void SetEditorScenesEnabled(bool enabled);
 
         // AztoolsFramework::EditorEvents overrides...
         void NotifyRegisterViews() override;
 
-        AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+        mutable AZStd::unordered_map<AzFramework::EntityContextId, AzPhysics::SceneHandle> m_editorWorldScenes;
 
         // Assets related data
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;

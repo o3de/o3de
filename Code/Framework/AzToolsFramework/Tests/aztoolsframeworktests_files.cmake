@@ -97,6 +97,8 @@ set(FILES
     Prefab/Link/PrefabLinkDomTestFixture.h
     Prefab/Link/PrefabLinkDomTests.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
+    Prefab/MultiWorldTests.cpp
+    Prefab/PrefabSaveLoadHandlerTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
     Prefab/Overrides/PrefabInspectorOverrideTestFixture.cpp

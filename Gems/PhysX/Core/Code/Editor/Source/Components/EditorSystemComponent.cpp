@@ -99,13 +99,6 @@ namespace PhysX
         m_materialAssetBuilder.BusConnect(materialAssetBuilderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, materialAssetBuilderDescriptor);
 
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
-            editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
-            m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
-        }
-
         PhysX::Editor::RegisterPropertyTypes();
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -122,9 +115,12 @@ namespace PhysX
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            physicsSystem->RemoveScene(m_editorWorldSceneHandle);
+            for (const auto& [worldId, sceneHandle] : m_editorWorldScenes)
+            {
+                physicsSystem->RemoveScene(sceneHandle);
+            }
         }
-        m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+        m_editorWorldScenes.clear();
 
         m_materialAssetBuilder.BusDisconnect();
 
@@ -139,9 +135,74 @@ namespace PhysX
         m_assetHandlers.clear();
     }
 
-    AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
+    AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle(AZ::EntityId entityId) const
     {
-        return m_editorWorldSceneHandle;
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        if (entityId.IsValid())
+        {
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                worldId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+        }
+        if (worldId.IsNull())
+        {
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                worldId, &AzToolsFramework::EditorEntityContextRequests::GetActiveWorldId);
+        }
+        if (worldId.IsNull())
+        {
+            return AzPhysics::InvalidSceneHandle;
+        }
+
+        if (auto sceneIt = m_editorWorldScenes.find(worldId); sceneIt != m_editorWorldScenes.end())
+        {
+            return sceneIt->second;
+        }
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return AzPhysics::InvalidSceneHandle;
+        }
+
+        AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
+        editorWorldConfiguration.m_sceneName =
+            AZStd::string::format("%s %s", AzPhysics::EditorPhysicsSceneName, worldId.ToFixedString().c_str());
+
+        const AzPhysics::SceneHandle sceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
+        m_editorWorldScenes.emplace(worldId, sceneHandle);
+        return sceneHandle;
+    }
+
+    void EditorSystemComponent::OnWorldDestroyed(const AzFramework::EntityContextId& worldId)
+    {
+        auto sceneIt = m_editorWorldScenes.find(worldId);
+        if (sceneIt == m_editorWorldScenes.end())
+        {
+            return;
+        }
+
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            physicsSystem->RemoveScene(sceneIt->second);
+        }
+        m_editorWorldScenes.erase(sceneIt);
+    }
+
+    void EditorSystemComponent::SetEditorScenesEnabled(bool enabled)
+    {
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return;
+        }
+
+        for (const auto& [worldId, sceneHandle] : m_editorWorldScenes)
+        {
+            if (AzPhysics::Scene* scene = physicsSystem->GetScene(sceneHandle))
+            {
+                scene->SetEnabled(enabled);
+            }
+        }
     }
 
     void EditorSystemComponent::OnActionRegistrationHook()
@@ -164,24 +225,12 @@ namespace PhysX
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()
     {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
-            {
-                scene->SetEnabled(false);
-            }
-        }
+        SetEditorScenesEnabled(false);
     }
 
     void EditorSystemComponent::OnStopPlayInEditor()
     {
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (AzPhysics::Scene* scene = physicsSystem->GetScene(m_editorWorldSceneHandle))
-            {
-                scene->SetEnabled(true);
-            }
-        }
+        SetEditorScenesEnabled(true);
     }
 
 

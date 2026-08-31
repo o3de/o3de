@@ -9,6 +9,8 @@
 #include <Pass/State/EditorStateBufferCopyPass.h>
 #include <Pass/State/EditorStateBufferCopyPassData.h>
 
+#include <Pass/EditorStatePassSystem.h>
+
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ::Render
@@ -36,6 +38,7 @@ namespace AZ::Render
                 "EditorStateBufferCopyPass", false, "[EditorStateBufferCopyPassData '%s']: Trying to construct without valid EditorStateBufferCopyPassData!", GetPathName().GetCStr());
             return false;
         }
-        return passData->editorStatePass->IsEnabled();
+
+        return IsEditorStateEnabledForPass(*this, passData->editorState);
     }
 } // namespace AZ::Render

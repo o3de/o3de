@@ -874,6 +874,15 @@ namespace AZ
             return m_drawFilterMask;
         }
 
+        RHI::DrawFilterMask RenderPipeline::GetPipelineInstanceDrawFilterMask() const
+        {
+            if (m_drawFilterTagForPipelineInstanceName.IsValid())
+            {
+                return static_cast<RHI::DrawFilterMask>(1 << m_drawFilterTagForPipelineInstanceName.GetIndex());
+            }
+            return m_drawFilterMask;
+        }
+
         void RenderPipeline::SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
         {   
             m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);

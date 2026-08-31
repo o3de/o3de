@@ -39,7 +39,7 @@
 namespace AzToolsFramework
 {
     class AZTF_API EditorEntityModel
-        : public AzFramework::EntityContextEventBus::Handler
+        : public AzFramework::EntityContextEventBus::MultiHandler
         , public EditorEntityContextNotificationBus::Handler
         , public EditorEntitySortNotificationBus::MultiHandler
         , public ToolsApplicationEvents::Bus::Handler
@@ -83,6 +83,8 @@ namespace AzToolsFramework
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
         //////////////////////////////////////////////////////////////////////////
         void OnPrepareForContextReset() override;
+        void OnWorldLoaded(const AzFramework::EntityContextId& worldId) override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
         void OnEntityStreamLoadBegin() override;
         void OnEntityStreamLoadSuccess() override;
         void OnEntityStreamLoadFailed() override;
@@ -138,7 +140,7 @@ namespace AzToolsFramework
         void RemoveFromChildrenWithOverrides(const EntityIdList& parentEntityIds, const AZ::EntityId& entityId) override;
 
     private:
-        void Reset();
+        void Reset(const AzFramework::EntityContextId& worldId = AzFramework::EntityContextId::CreateNull());
         void ProcessQueuedEntityAdds();
         void ClearQueuedEntityAdds();
         void AddEntity(AZ::EntityId entityId);
@@ -360,5 +362,7 @@ namespace AzToolsFramework
         AZ::EntityId m_postInstantiateSliceParent;
         bool m_gotInstantiateSliceDetails = false;
         bool m_isPrefabPropagationInProgress = false;
+
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
     };
 }

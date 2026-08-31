@@ -17,6 +17,7 @@
 // forward declaration.
 class CLayoutWnd;
 class CViewport;
+class QtViewport;
 
 namespace AzToolsFramework
 {
@@ -108,6 +109,8 @@ private:
     void IdleUpdate();
     void RegisterViewport(CViewport* vp);
     void UnregisterViewport(CViewport* vp);
+
+    void AnchorViewportUiTo(CViewport* pViewport);
 
 private:
     CViewManager();

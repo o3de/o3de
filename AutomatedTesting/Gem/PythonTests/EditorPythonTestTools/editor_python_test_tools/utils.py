@@ -98,6 +98,18 @@ class TestHelper:
             TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
             assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
 
+        # Opening a level while a secondary viewport is selected loads it into that viewport's own world rather than
+        # reloading the editor level, so everything asserted afterwards would refer to the wrong world.
+        try:
+            import azlmbr.bus as bus
+            import azlmbr.editor as editor
+            assert editor.EditorEntityContextRequestBus(bus.Broadcast, "GetActiveWorldId") == \
+                editor.EditorEntityContextRequestBus(bus.Broadcast, "GetEditorEntityContextId"), \
+                "Opening a level while a secondary viewport is selected would target that viewport's world instead " \
+                "of the editor level. Select the main viewport first."
+        except ModuleNotFoundError:
+            pass
+
         Report.info("Open level {}/{}".format(directory, level))
         if no_prompt:
             success = general.open_level_no_prompt(os.path.join(directory, level))

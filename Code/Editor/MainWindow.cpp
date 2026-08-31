@@ -393,20 +393,22 @@ void MainWindow::InitCentralWidget()
     setCentralWidget(m_viewPaneHost);
     m_viewPaneHost->setCentralWidget(m_pLayoutWnd);
 
-    if (MainWindow::instance()->IsPreview())
+    if (IsPreview())
     {
         m_pLayoutWnd->CreateLayout(ET_Layout0, true, ET_ViewportModel);
+        connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
     }
     else
     {
-        if (!m_pLayoutWnd->LoadConfig())
+        m_viewPaneHost->takeCentralWidget();
+        m_pLayoutWnd->hide();
+
+        if (const QtViewPane* viewportPane = m_viewPaneManager->OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState))
         {
-            m_pLayoutWnd->CreateLayout(ET_Layout0);
+            m_viewPaneHost->addDockWidget(Qt::LeftDockWidgetArea, viewportPane->m_dockWidget);
+            viewportPane->m_dockWidget->setFloating(false);
         }
     }
-
-    // make sure the layout wnd knows to reset it's layout and settings
-    connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
 
     AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
 }
@@ -466,6 +468,7 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    m_isClosing = true;
     gSettings.Save(true);
 
     AzFramework::SystemCursorState currentCursorState;
@@ -490,17 +493,23 @@ void MainWindow::closeEvent(QCloseEvent* event)
                 &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                 currentCursorState);
         }
+        m_isClosing = false;
         event->ignore();
         return;
     }
 
     SaveConfig();
 
+    Editor::EditorQtApplication::instance()->EnableOnIdle(false);
+
     // Some of the panes may ask for confirmation to save changes before closing.
     if (!QtViewPaneManager::instance()->ClosePanesWithRollback(QVector<QString>()) ||
         !GetIEditor() ||
         !GetIEditor()->GetLevelIndependentFileMan()->PromptChangedFiles())
     {
+        m_isClosing = false;
+        Editor::EditorQtApplication::instance()->EnableOnIdle(true);
+
         if (isInGameMode)
         {
             // make sure the mouse is turned back off if returning to the game.
@@ -512,8 +521,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
-
-    Editor::EditorQtApplication::instance()->EnableOnIdle(false);
 
     if (GetIEditor()->GetDocument())
     {
@@ -574,6 +581,37 @@ void UndoRedoToolButton::Update(int count)
 bool MainWindow::IsPreview() const
 {
     return GetIEditor()->IsInPreviewMode();
+}
+
+bool MainWindow::IsClosing() const
+{
+    return m_isClosing;
+}
+
+void MainWindow::AnchorViewportUiTo(QWidget* renderOverlay)
+{
+    if (!renderOverlay)
+    {
+        return;
+    }
+
+    if (!m_viewportUiInitialized)
+    {
+        m_viewportUi.InitializeViewportUi(this, renderOverlay);
+        m_viewportUi.ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
+        m_viewportUiInitialized = true;
+        return;
+    }
+
+    m_viewportUi.SetViewportUiRenderOverlay(renderOverlay);
+}
+
+void MainWindow::UpdateViewportUi()
+{
+    if (m_viewportUiInitialized)
+    {
+        m_viewportUi.Update();
+    }
 }
 
 MainStatusBar* MainWindow::StatusBar() const

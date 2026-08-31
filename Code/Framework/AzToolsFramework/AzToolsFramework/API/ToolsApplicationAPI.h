@@ -18,6 +18,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/Slice/SliceComponent.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -294,6 +295,11 @@ namespace AzToolsFramework
          * Notifies the application that the undo stack needs to be flushed
          */
         virtual void FlushUndo() = 0;
+
+        /*!
+         * Notifies the application that a world was torn down and its undo stack needs to be dropped
+         */
+        virtual void FlushWorldUndo(const AzFramework::EntityContextId& worldId) = 0;
 
         /*!
         * Notifies the application that the redo stack needs to be sliced (removed)
@@ -780,6 +786,10 @@ namespace AzToolsFramework
 
         /// Opens a new instance of an Editor window by name and returns the dock widget container
         virtual QDockWidget* InstanceViewPane(const char* /*paneName*/) { return nullptr; }
+
+        //! Opens the level at this source path as a world of its own in an additional viewport, raising the
+        //! viewport that already shows it if there is one. Returns false when the path does not name a level.
+        virtual bool OpenLevelInNewViewport(AZStd::string_view /*levelPath*/) { return false; }
 
         /// Closes an Editor window by name.
         /// If the view pane was registered with the ViewPaneOptions.isDeletable set to true (the default), this will delete the view pane, if it was open.

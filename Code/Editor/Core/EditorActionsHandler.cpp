@@ -1381,6 +1381,30 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Z");
     }
 
+    // Add Viewport
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.addViewport";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Add Viewport";
+        actionProperties.m_description = "Open an additional dockable editor viewport.";
+        actionProperties.m_category = "View";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                QtViewPaneManager::instance()->OpenPane(
+                    LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState | QtViewPane::OpenMode::MultiplePanes);
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
+    }
+
     // View Bookmarks
     InitializeViewBookmarkActions();
 
@@ -2059,6 +2083,7 @@ void EditorActionsHandler::OnMenuBindingHook()
         }
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::ViewportMenuIdentifier, 200);
         {
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.addViewport", 50);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.goToPosition", 100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.centerOnSelection", 200);
             m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportMenuIdentifier, EditorIdentifiers::GoToLocationMenuIdentifier, 300);

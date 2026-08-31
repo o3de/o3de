@@ -22,6 +22,8 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -53,7 +55,14 @@ void QtViewport::BuildDragDropContext(
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    GetIEditor()->GetViewManager()->SelectViewport(this);
+
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }
@@ -76,7 +85,12 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 
 void QtViewport::dragMoveEvent(QDragMoveEvent* event)
 {
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }
@@ -100,7 +114,14 @@ void QtViewport::dragMoveEvent(QDragMoveEvent* event)
 void QtViewport::dropEvent(QDropEvent* event)
 {
     using namespace AzQtComponents;
-    if (!GetIEditor()->GetGameEngine()->IsLevelLoaded())
+    GetIEditor()->GetViewManager()->SelectViewport(this);
+
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
+    const auto ownershipService = AzToolsFramework::GetWorldOwnershipService(worldId);
+    if (!ownershipService || !ownershipService->IsRootPrefabAssigned())
     {
         return;
     }
@@ -196,8 +217,6 @@ QtViewport::QtViewport(QWidget* parent)
     m_renderOverlay.setMouseTracking(true);
     m_renderOverlay.setObjectName("renderOverlay");
     m_renderOverlay.winId(); // Force the render overlay to create a backing native window
-
-    m_viewportUi.InitializeViewportUi(this, &m_renderOverlay);
 
     setAcceptDrops(true);
 }
@@ -326,8 +345,6 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    m_viewportUi.Update();
-
     m_bAdvancedSelectMode = false;
 
     if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())

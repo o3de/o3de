@@ -227,6 +227,7 @@ private:
     ViewLayoutState GetLayout() const;
     bool RestoreLayout(const ViewLayoutState& state);
     void SaveStateToLayout(const ViewLayoutState& state, const QString& layoutName);
+    void OpenPaneForLayoutRestore(const QString& paneName, const QString& levelPath);
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     QDockWidget* ShowFakeNonDockableDockWidget(AzQtComponents::StyledDockWidget* dockWidget, QtViewPane* pane);

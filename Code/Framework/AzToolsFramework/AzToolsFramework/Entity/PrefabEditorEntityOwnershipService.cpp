@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -35,12 +36,19 @@ namespace AzToolsFramework
         : m_entityContextId(entityContextId)
         , m_serializeContext(serializeContext)
     {
-        AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(this);
+        m_ownsInterface = AZ::Interface<Prefab::PrefabOverridePublicInterface>::Get() == nullptr;
+        if (m_ownsInterface)
+        {
+            m_prefabOverridePublicHandler = AZStd::make_unique<Prefab::PrefabOverridePublicHandler>();
+        }
     }
 
     PrefabEditorEntityOwnershipService::~PrefabEditorEntityOwnershipService()
     {
-        AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(this);
+        if (m_ownsInterface)
+        {
+            m_prefabOverridePublicHandler.reset();
+        }
     }
 
     void PrefabEditorEntityOwnershipService::Initialize()
@@ -61,8 +69,12 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance =
-            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
+        const AZStd::string placeholderPath = m_ownsInterface
+            ? AZStd::string("newLevel.prefab")
+            : AZStd::string::format("newLevel_%s.prefab", m_entityContextId.ToFixedString().c_str());
+
+        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(
+            m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, placeholderPath.c_str()));
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -77,7 +89,11 @@ namespace AzToolsFramework
         if (m_rootInstance != nullptr)
         {
             m_rootInstance.reset();
-            m_prefabSystemComponent->RemoveAllTemplates();
+
+            if (m_ownsInterface)
+            {
+                m_prefabSystemComponent->RemoveAllTemplates();
+            }
         }
     }
 
@@ -94,7 +110,13 @@ namespace AzToolsFramework
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
-                m_prefabSystemComponent->RemoveAllTemplates();
+
+                const Prefab::InstanceSetConstReference remainingInstances =
+                    AZ::Interface<Prefab::TemplateInstanceMapperInterface>::Get()->FindInstancesOwnedByTemplate(templateId);
+                if (!remainingInstances.has_value() || remainingInstances->get().empty())
+                {
+                    m_prefabSystemComponent->RemoveTemplate(templateId);
+                }
             }
             m_rootInstance->SetContainerEntityName("Level");
         }
@@ -430,6 +452,47 @@ namespace AzToolsFramework
         return AZStd::nullopt;
     }
 
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::LoadRootPrefab(AZ::IO::PathView filePath)
+    {
+        Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(filePath);
+        if (templateId == Prefab::InvalidTemplateId)
+        {
+            templateId = m_loaderInterface->LoadTemplateFromFile(filePath);
+        }
+
+        if (templateId == Prefab::InvalidTemplateId)
+        {
+            AZ_Error("Prefab", false, "Could not load a level template from '%.*s'.", AZ_STRING_ARG(filePath.Native()));
+            return AZStd::nullopt;
+        }
+
+        AZStd::unique_ptr<Prefab::Instance> rootPrefabInstance =
+            m_prefabSystemComponent->InstantiatePrefab(templateId, AZStd::nullopt, {});
+
+        if (!rootPrefabInstance)
+        {
+            return AZStd::nullopt;
+        }
+
+        rootPrefabInstance->SetTemplateId(templateId);
+        rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
+        rootPrefabInstance->SetContainerEntityName("Level");
+
+        m_rootInstance = AZStd::move(rootPrefabInstance);
+        m_isRootPrefabAssigned = true;
+
+        EntityList entities;
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [&entities](AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
+        HandleEntitiesAdded(entities);
+
+        return *m_rootInstance;
+    }
+
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetRootPrefabInstance()
     {
         AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
@@ -492,6 +555,11 @@ namespace AzToolsFramework
         }
     }
 
+    void PrefabEditorEntityOwnershipService::SignalGameModeEvent(GameModeState state)
+    {
+        m_gameModeEvent.Signal(state);
+    }
+
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
         if (auto* instanceUpdateExecutor = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get(); instanceUpdateExecutor)
@@ -502,7 +570,7 @@ namespace AzToolsFramework
         }
         // This is a workaround until the replacement for GameEntityContext is done
         AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
-        m_gameModeEvent.Signal(GameModeState::Started);
+        SignalGameModeEvent(GameModeState::Started);
 
         if (m_rootInstance && !m_playInEditorData.m_isEnabled)
         {
@@ -547,9 +615,23 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_rootInstance->GetAllEntitiesInHierarchy([this](AZStd::unique_ptr<AZ::Entity>& entity)
+            SuspendEditorEntities();
+
+            m_playInEditorData.m_isEnabled = true;
+        }
+    }
+
+    void PrefabEditorEntityOwnershipService::SuspendEditorEntities()
+    {
+        if (!m_rootInstance || !m_playInEditorData.m_deactivatedEntities.empty())
+        {
+            return;
+        }
+
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [this](AZStd::unique_ptr<AZ::Entity>& entity)
             {
-                AZ_Assert(entity, "Invalid entity found in root instance while starting play in editor.");
+                AZ_Assert(entity, "Invalid entity found in root instance while suspending editor entities.");
                 if (entity->GetState() == AZ::Entity::State::Active)
                 {
                     entity->Deactivate();
@@ -557,9 +639,18 @@ namespace AzToolsFramework
                 }
                 return true;
             });
+    }
 
-            m_playInEditorData.m_isEnabled = true;
+    void PrefabEditorEntityOwnershipService::ResumeEditorEntities()
+    {
+        auto& deactivatedEntities = m_playInEditorData.m_deactivatedEntities;
+        for (auto it = deactivatedEntities.rbegin(); it != deactivatedEntities.rend(); ++it)
+        {
+            AZ_Assert(*it, "Invalid entity added to list for re-activation after suspending editor entities.");
+            (*it)->Activate();
         }
+
+        deactivatedEntities.clear();
     }
 
     void PrefabEditorEntityOwnershipService::StopPlayInEditor()
@@ -573,9 +664,8 @@ namespace AzToolsFramework
 
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
-                [allSpawnableAssetData = m_playInEditorData.m_assetsCache.GetAssetContainer().MoveAllInMemorySpawnableAssets(),
-                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities),
-                 this]([[maybe_unused]] uint32_t generation) mutable
+                [this, allSpawnableAssetData = m_playInEditorData.m_assetsCache.GetAssetContainer().MoveAllInMemorySpawnableAssets(),
+                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]([[maybe_unused]] uint32_t generation) mutable
                 {
                     auto end = deactivatedEntities.rend();
                     for (auto it = deactivatedEntities.rbegin(); it != end; ++it)
@@ -597,7 +687,7 @@ namespace AzToolsFramework
 
                     // This is a workaround until the replacement for GameEntityContext is done
                     AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
-                    m_gameModeEvent.Signal(GameModeState::Stopped);
+                    SignalGameModeEvent(GameModeState::Stopped);
                 });
             m_playInEditorData.m_entities.Clear();
 

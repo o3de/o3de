@@ -52,7 +52,7 @@ public:
     void OnToolBarBindingHook() override;
 
     // Set get this pane id.
-    void SetId(int id) { m_id = id; }
+    void SetId(int id) { m_id = id; setProperty("ViewportId", id); }
     int GetId() { return m_id; }
 
     void SetViewClass(const QString& sClass);
@@ -103,6 +103,7 @@ protected:
     void OnMenuMaximized();
 
     void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
     void OnDestroy();
     void focusInEvent(QFocusEvent* event) override;
 
@@ -126,7 +127,6 @@ private:
     QString m_viewPaneClass;
     bool m_bFullscreen;
 
-    CViewportTitleDlg* m_viewportTitleDlg;
     int m_id;
     int m_nBorder;
 

@@ -67,6 +67,8 @@ AZ_POP_DISABLE_WARNING
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
@@ -2662,40 +2664,13 @@ void CCryEditApp::OnCreateLevel()
 //////////////////////////////////////////////////////////////////////////
 bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 {
-    bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
-    if (GetIEditor()->GetDocument()->IsDocumentReady() && bIsDocModified)
+    if (!GetIEditor()->GetDocument()->SaveModified())
     {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        auto* prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
-        AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
-
-        if (prefabEditorEntityOwnershipInterface == nullptr || prefabIntegrationInterface == nullptr)
-        {
-            return false;
-        }
-
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-        int prefabSaveSelection = prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
-
-        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
-        // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
-        // QDialogButtonBox::AcceptRole(0).
-        switch (1 - prefabSaveSelection)
-        {
-        case QDialogButtonBox::AcceptRole:
-            bIsDocModified = false;
-            break;
-        case QDialogButtonBox::RejectRole:
-            wasCreateLevelOperationCancelled = true;
-            return false;
-        case QDialogButtonBox::InvalidRole:
-            // Set Modified flag to false to prevent show Save unchanged dialog again
-            GetIEditor()->GetDocument()->SetModifiedFlag(false);
-            break;
-        }
-
+        wasCreateLevelOperationCancelled = true;
+        return false;
     }
+
+    const bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
 
     const char* temporaryLevelName = GetIEditor()->GetDocument()->GetTemporaryLevelName();
 
@@ -2844,6 +2819,22 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
 {
     if (m_openingLevel)
     {
+        return GetIEditor()->GetDocument();
+    }
+
+    CViewport* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
+    if (viewport && viewport->GetViewportId() != AzToolsFramework::ViewportUi::DefaultViewportId)
+    {
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            worldId, &AzToolsFramework::EditorEntityContextRequests::LoadWorld, AZ::IO::PathView(filename));
+        AZ_Error("EditorWorld", !worldId.IsNull(), "Could not load '%s' as an editor world", filename);
+
+        if (!worldId.IsNull())
+        {
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld, viewport->GetViewportId(), worldId);
+        }
         return GetIEditor()->GetDocument();
     }
 

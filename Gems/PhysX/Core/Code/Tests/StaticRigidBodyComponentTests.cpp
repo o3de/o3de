@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <PhysX/PhysXLocks.h>
@@ -23,7 +24,8 @@ namespace PhysXEditorTests
     int GetEditorStaticRigidBodyCount()
     {
         AzPhysics::SceneHandle sceneHandle;
-        Physics::EditorWorldBus::BroadcastResult(sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle);
+        Physics::EditorWorldBus::BroadcastResult(
+            sceneHandle, &Physics::EditorWorldRequests::GetEditorSceneHandle, AZ::EntityId());
 
         physx::PxScene* pxScene = nullptr;
 
@@ -38,6 +40,42 @@ namespace PhysXEditorTests
         PHYSX_SCENE_READ_LOCK(pxScene);
 
         return pxScene->getNbActors(physx::PxActorTypeFlag::eRIGID_STATIC);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorPhysicsScene_EntitiesInDifferentWorlds_UseDifferentScenes)
+    {
+        // Each world being edited gets its own editor physics scene, so that colliders in one level
+        // cannot interact with, or be found by edit time queries against, another level.
+        AzFramework::EntityContext worldA;
+        AzFramework::EntityContext worldB;
+        worldA.InitContext();
+        worldB.InitContext();
+
+        AZ::Entity* entityInWorldA = worldA.CreateEntity("EntityInWorldA");
+        AZ::Entity* entityInWorldB = worldB.CreateEntity("EntityInWorldB");
+        ASSERT_NE(entityInWorldA, nullptr);
+        ASSERT_NE(entityInWorldB, nullptr);
+
+        AzPhysics::SceneHandle sceneForWorldA = AzPhysics::InvalidSceneHandle;
+        AzPhysics::SceneHandle sceneForWorldB = AzPhysics::InvalidSceneHandle;
+        Physics::EditorWorldBus::BroadcastResult(
+            sceneForWorldA, &Physics::EditorWorldRequests::GetEditorSceneHandle, entityInWorldA->GetId());
+        Physics::EditorWorldBus::BroadcastResult(
+            sceneForWorldB, &Physics::EditorWorldRequests::GetEditorSceneHandle, entityInWorldB->GetId());
+
+        EXPECT_NE(sceneForWorldA, AzPhysics::InvalidSceneHandle);
+        EXPECT_NE(sceneForWorldB, AzPhysics::InvalidSceneHandle);
+        EXPECT_NE(sceneForWorldA, sceneForWorldB)
+            << "Entities in two different worlds share one editor physics scene";
+
+        // Asking again for the same world must not create a second scene for it.
+        AzPhysics::SceneHandle sceneForWorldAAgain = AzPhysics::InvalidSceneHandle;
+        Physics::EditorWorldBus::BroadcastResult(
+            sceneForWorldAAgain, &Physics::EditorWorldRequests::GetEditorSceneHandle, entityInWorldA->GetId());
+        EXPECT_EQ(sceneForWorldA, sceneForWorldAAgain);
+
+        worldA.DestroyContext();
+        worldB.DestroyContext();
     }
 
     void AddEditorBoxShapeComponent(EntityPtr& editorEntity)

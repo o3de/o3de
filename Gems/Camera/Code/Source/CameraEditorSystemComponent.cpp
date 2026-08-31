@@ -29,6 +29,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
@@ -76,12 +77,9 @@ namespace Camera
 
     void CameraEditorSystemComponent::CreateCameraEntityFromViewport()
     {
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            entityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
-
         if (const auto prefabFocusInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
-            prefabFocusInterface && prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(entityContextId))
+            prefabFocusInterface &&
+            prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId::CreateNull()))
         {
             return;
         }
@@ -161,17 +159,15 @@ namespace Camera
                 []() -> bool
                 {
                     if (const auto prefabEditorEntityOwnershipInterface =
-                            AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+                            AzToolsFramework::GetWorldOwnershipService(AzFramework::EntityContextId::CreateNull());
                         prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
                     {
                         return false;
                     }
 
-                    auto entityContextId = AzFramework::EntityContextId::CreateNull();
-                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                        entityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
                     if (const auto prefabFocusInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
-                        prefabFocusInterface && prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(entityContextId))
+                        prefabFocusInterface &&
+                        prefabFocusInterface->IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId::CreateNull()))
                     {
                         return false;
                     }

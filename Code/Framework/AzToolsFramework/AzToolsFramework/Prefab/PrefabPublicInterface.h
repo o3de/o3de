@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
@@ -163,7 +164,8 @@ namespace AzToolsFramework
              * Gets the entity id for the instance container of the level instance.
              * @return The entity id of the instance container for the currently loaded level.
              */
-            virtual AZ::EntityId GetLevelInstanceContainerEntityId() const = 0;
+            virtual AZ::EntityId GetLevelInstanceContainerEntityId(
+                AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull()) const = 0;
 
             /**
              * Get the file path to the prefab file for the prefab instance owning the entity provided.

@@ -35,6 +35,8 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    class PrefabEditorEntityOwnershipService;
+
     namespace UndoSystem
     {
         class UndoCacheInterface;
@@ -48,9 +50,8 @@ namespace AzToolsFramework
      */
     class AZTF_API EditorEntityContextComponent
         : public AZ::Component
-        , public AzFramework::EntityContext
         , private EditorEntityContextRequestBus::Handler
-        , private EditorEntityContextPickingRequestBus::Handler
+        , private EditorEntityContextPickingRequestBus::MultiHandler
         , private EditorLegacyGameModeNotificationBus::Handler
     {
     public:
@@ -69,8 +70,7 @@ namespace AzToolsFramework
 
         //////////////////////////////////////////////////////////////////////////
         // EditorEntityContextRequestBus
-        AzFramework::EntityContextId GetEditorEntityContextId() override { return GetContextId(); }
-        AzFramework::EntityContext* GetEditorEntityContextInstance() override { return this; }
+        AzFramework::EntityContextId GetEditorEntityContextId() override { return m_editorWorldId; }
         void ResetEditorContext() override;
 
         AZ::EntityId CreateNewEditorEntity(const char* name) override;
@@ -84,14 +84,6 @@ namespace AzToolsFramework
                                  AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
         bool DestroyEditorEntity(AZ::EntityId entityId) override;
 
-        bool SaveToStreamForEditor(
-            AZ::IO::GenericStream& stream,
-            const EntityList& entitiesInLayers,
-            AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers) override;
-
-        void GetLooseEditorEntities(EntityList& entityList) override;
-        
-        bool SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType) override;
         bool LoadFromStream(AZ::IO::GenericStream& stream) override;
         bool LoadFromStreamWithLayers(AZ::IO::GenericStream& stream, QString levelPakFile) override;
 
@@ -107,17 +99,22 @@ namespace AzToolsFramework
 
         bool MapEditorIdToRuntimeId(const AZ::EntityId& editorId, AZ::EntityId& runtimeId) override;
         bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) override;
+
+        AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) override;
+        void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) override;
+        AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) override;
+        AzFramework::EntityContextId GetActiveWorldId() override;
+        void SetFocusedViewport(AzFramework::ViewportId viewportId) override;
+        PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) override;
+        AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) override;
+        AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) override;
+        void SaveWorlds() override;
+        AZStd::vector<Prefab::TemplateId> GetModifiedWorldTemplateIds() override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
         // EditorEntityContextPickingRequestBus
         bool SupportsViewportEntityIdPicking() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::EntityContext
-        void PrepareForContextReset() override;
-        bool ValidateEntitiesAreValidForContext(const EntityList& entities) override;
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::ReflectContext* context);
@@ -137,11 +134,12 @@ namespace AzToolsFramework
             dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
             dependent.push_back(AZ_CRC_CE("SliceSystemService"));
             dependent.push_back(AZ_CRC_CE("PrefabSystem"));
+            dependent.push_back(AZ_CRC_CE("AzFrameworkConfigurationSystemComponentService"));
+            dependent.push_back(AZ_CRC_CE("SceneSystemComponentService"));
         }
 
     protected:
-        void OnContextEntitiesAdded(const EntityList& entities) override;
-        void OnContextEntityRemoved(const AZ::EntityId& id) override;
+        virtual bool ShouldHandleContextEntityChanges() const { return true; }
 
         void SetupEditorEntity(AZ::Entity* entity);
         void SetupEditorEntities(const EntityList& entities);
@@ -150,7 +148,17 @@ namespace AzToolsFramework
 
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
-        
+
+        class EditorWorld;
+
+        AzFramework::EntityContextId FindEntityWorldId(AZ::EntityId entityId);
+
+        void RebindViewportsShowingWorld(const AzFramework::EntityContextId& worldId);
+
+        void BindActiveWorldInterface();
+
+        EditorWorld* FindWorld(const AzFramework::EntityContextId& worldId) const;
+
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
         void OnStopGameModeRequest() override;
@@ -163,6 +171,8 @@ namespace AzToolsFramework
         //! List of selected entities prior to entering game.
         EntityIdList m_selectedBeforeStartingGame;
 
+        AzFramework::EntityContextId m_playingWorldId = AzFramework::EntityContextId::CreateNull();
+
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
         using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
 
@@ -174,6 +184,12 @@ namespace AzToolsFramework
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
+
+        AZStd::vector<EditorWorld*> ModifiedWorlds() const;
+        AzFramework::EntityContextId m_editorWorldId = AzFramework::EntityContextId::CreateNull();
+        AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<EditorWorld>> m_worlds;
+        AZStd::unordered_map<AzFramework::ViewportId, AzFramework::EntityContextId> m_viewportWorlds;
+        AzFramework::ViewportId m_focusedViewportId = AzFramework::InvalidViewportId;
     };
 } // namespace AzToolsFramework
 

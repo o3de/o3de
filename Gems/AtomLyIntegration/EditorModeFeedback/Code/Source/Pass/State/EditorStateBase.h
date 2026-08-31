@@ -57,6 +57,8 @@ namespace AZ::Render
         //! Returns the entities that should be rendered to the entity mask for this editor state.
         [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
 
+        EditorState GetState() const;
+
         //! Returns the name of this editor state.
         const AZStd::string& GetStateName() const;
 

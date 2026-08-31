@@ -19,6 +19,8 @@ namespace AzToolsFramework
 {
     //! FocusModeInterface
     //! Interface to handle the Editor Focus Mode.
+    //! Each world (editor entity context) keeps its own focus root: entity ids resolve to their
+    //! owning world's focus, and a null context id addresses the active world.
     class FocusModeInterface
     {
     public:

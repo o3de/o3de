@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
@@ -152,8 +153,7 @@ namespace AtomToolsFramework
             return;
         }
 
-        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
-        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        if (auto existingScene = scene->FindSubsystemInScene<AZ::RPI::ScenePtr>())
         {
             m_viewportContext->SetRenderScene(*existingScene);
 
@@ -252,6 +252,10 @@ namespace AtomToolsFramework
                 QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
                 if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
                 {
+                    if (auto pipeline = m_viewportContext->GetCurrentPipeline())
+                    {
+                        pipeline->RemoveFromScene();
+                    }
                     SendWindowCloseEvent();
                 }
                 break;

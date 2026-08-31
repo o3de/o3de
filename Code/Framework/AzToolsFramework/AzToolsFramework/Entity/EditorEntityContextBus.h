@@ -9,12 +9,15 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
@@ -23,8 +26,15 @@ namespace AZ
     class Entity;
 }
 
+namespace AzFramework
+{
+    class Scene;
+}
+
 namespace AzToolsFramework
 {
+    class PrefabEditorEntityOwnershipInterface;
+
     /**
      * Bus for making requests to the edit-time entity context component.
      */
@@ -45,8 +55,6 @@ namespace AzToolsFramework
 
         /// Retrieve the Id of the editor entity context.
         virtual AzFramework::EntityContextId GetEditorEntityContextId() = 0;
-
-        virtual AzFramework::EntityContext* GetEditorEntityContextInstance() = 0;
 
         /// Creates an entity in the editor context.
         /// \return the EntityId for the created Entity
@@ -83,23 +91,6 @@ namespace AzToolsFramework
         virtual bool CloneEditorEntities(const EntityIdList& sourceEntities, 
                                          EntityList& resultEntities, 
                                          AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) = 0;
-
-        /// Saves the context's slice root to the specified buffer. Entities are saved as-is (with editor components).
-        /// \param stream The stream to save the editor entity context to.
-        /// \param entitiesInLayers A list of entities that were saved into layers. These won't be saved to the editor entity context stream.
-        /// \return true if successfully saved. Failure is only possible if serialization data is corrupt.
-        virtual bool SaveToStreamForEditor(
-            AZ::IO::GenericStream& stream,
-            const EntityList& entitiesInLayers,
-            AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers) = 0;
-
-        /// Returns entities that are not part of a slice.
-        /// \param entityList The entity list to populate with loose entities.
-        virtual void GetLooseEditorEntities(EntityList& entityList) = 0;
-
-        /// Saves the context's slice root to the specified buffer. Entities undergo conversion for game: editor -> game components.
-        /// \return true if successfully saved. Failure is only possible if serialization data is corrupt.
-        virtual bool SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType) = 0;
 
         /// Loads the context's slice root from the specified buffer.
         /// \return true if successfully loaded. Failure is possible if the source file is corrupt or data could not be up-converted.
@@ -147,6 +138,38 @@ namespace AzToolsFramework
         /// \param destination parameter for editor entity Id
         /// \return true if runtime Id was found in the Id map
         virtual bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) = 0;
+
+        //! A world is an edit-time entity context owning one level as its root prefab and rendering in
+        //! its own scene. The editor entity context is one such world. Throughout this API a null world
+        //! id addresses the active world, and every other id addresses the world it names.
+
+        //! Returns the world already showing this level if there is one - a level is never loaded twice.
+        virtual AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) = 0;
+
+        //! Every viewport is bound to the world it shows; binding a null world id unbinds it. A world
+        //! whose last viewport unbinds is torn down.
+        virtual void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) = 0;
+        virtual AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) = 0;
+
+        //! The focused viewport's world. Derived state, so recording the focused viewport has no side
+        //! effects beyond the OnActiveWorldChanged notification.
+        virtual AzFramework::EntityContextId GetActiveWorldId() = 0;
+        virtual void SetFocusedViewport(AzFramework::ViewportId viewportId) = 0;
+
+        virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
+        virtual AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) = 0;
+
+        //! The source path of the level a world holds, empty for the editor context (whose level the
+        //! editor owns) and for an unknown world.
+        virtual AZStd::string GetWorldLevelPath(const AzFramework::EntityContextId& worldId) = 0;
+
+        //! Saves every world with unsaved changes except the editor context, whose level the editor
+        //! saves itself.
+        virtual void SaveWorlds() = 0;
+
+        //! Root prefab template ids of the worlds with unsaved changes, the editor context aside - it prompts
+        //! for its own level. Closing the editor asks about each of these before letting it go.
+        virtual AZStd::vector<Prefab::TemplateId> GetModifiedWorldTemplateIds() = 0;
     };
 
     using EditorEntityContextRequestBus = AZ::EBus<EditorEntityContextRequests>;
@@ -165,6 +188,20 @@ namespace AzToolsFramework
 
         /// Fired after the context is reset.
         virtual void OnContextReset() {}
+
+        //! Fired when the focused viewport's world changed (per-world editor state follows it).
+        virtual void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& /*previousWorldId*/, const AzFramework::EntityContextId& /*newWorldId*/) {}
+
+        //! Fired when a viewport was bound to a different world (the viewport rebinds its scene).
+        virtual void OnViewportWorldChanged(
+            AzFramework::ViewportId /*viewportId*/, const AzFramework::EntityContextId& /*worldId*/) {}
+
+        //! Fired once a world's level has instantiated (per-world editor state initializes here).
+        virtual void OnWorldLoaded(const AzFramework::EntityContextId& /*worldId*/) {}
+
+        //! Fired after a world was torn down (per-world editor state drops its entries).
+        virtual void OnWorldDestroyed(const AzFramework::EntityContextId& /*worldId*/) {}
 
         //! Fired when an Editor entity is created
         virtual void OnEditorEntityCreated(const AZ::EntityId& /*entityId*/) {}

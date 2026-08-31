@@ -13,6 +13,8 @@
 #include <QVector>
 #endif
 
+#include <SandboxAPI.h>
+
 namespace LevelRoots
 {
     //----------------------------------------------------------------------
@@ -51,7 +53,7 @@ namespace LevelRoots
     // matches the requested mode. The list ordering is stable and safe to
     // use as the order of top-level items in a tree view.
     //----------------------------------------------------------------------
-    QVector<Root> Enumerate(Mode mode = Mode::ExistingOnly);
+    SANDBOX_API QVector<Root> Enumerate(Mode mode = Mode::ExistingOnly);
 
     //----------------------------------------------------------------------
     // Returns true when absolutePath sits anywhere underneath the project

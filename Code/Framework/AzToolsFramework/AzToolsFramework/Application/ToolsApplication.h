@@ -10,8 +10,11 @@
 
 
 #include <AzCore/base.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/SimpleAsset.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
@@ -28,6 +31,7 @@ namespace AzToolsFramework
     class AZTF_API ToolsApplication
         : public AzFramework::Application
         , private ToolsApplicationRequests::Bus::Handler
+        , private EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
@@ -91,6 +95,7 @@ namespace AzToolsFramework
         void UndoPressed() override;
         void RedoPressed() override;
         void FlushUndo() override;
+        void FlushWorldUndo(const AzFramework::EntityContextId& worldId) override;
         void FlushRedo() override;
         UndoSystem::URSequencePoint* BeginUndoBatch(const char* label) override;
         UndoSystem::URSequencePoint* ResumeUndoBatch(UndoSystem::URSequencePoint* token, const char* label) override;
@@ -111,7 +116,7 @@ namespace AzToolsFramework
         bool IsSelected(const AZ::EntityId& entityId) override;
         bool IsSliceRootEntity(const AZ::EntityId& entityId) override;
 
-        UndoSystem::UndoStack* GetUndoStack() override { return m_undoStack; }
+        UndoSystem::UndoStack* GetUndoStack() override;
         UndoSystem::URSequencePoint* GetCurrentUndoBatch() override { return m_currentBatchUndo; }
 
         EntityIdSet GatherEntitiesAndAllDescendents(const EntityIdList& inputEntities) override;
@@ -170,12 +175,23 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         void CreateUndosForDirtyEntities();
+        void DiscardCurrentUndoBatch();
+        UndoSystem::UndoStack* GetWorldUndoStack(const AzFramework::EntityContextId& worldId);
+
+        // EditorEntityContextNotificationBus overrides ...
+        void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& previousWorldId, const AzFramework::EntityContextId& newWorldId) override;
+        void OnWorldDestroyed(const AzFramework::EntityContextId& worldId) override;
         void ConsistencyCheckUndoCache();
         AZ::Aabb                            m_selectionBounds;
         EntityIdList                        m_selectedEntities;
         EntityIdList                        m_highlightedEntities;
-        UndoSystem::UndoStack*              m_undoStack;
+        //! The selection of every world that is not the active one. Each world keeps its own, so that
+        //! switching between levels does not carry one level's selection into another.
+        AZStd::unordered_map<AzFramework::EntityContextId, EntityIdList> m_inactiveWorldSelections;
+        AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<UndoSystem::UndoStack>> m_worldUndoStacks;
         UndoSystem::URSequencePoint*        m_currentBatchUndo;
+        AzFramework::EntityContextId        m_currentBatchWorldId;
         AZStd::unordered_set<AZ::EntityId>  m_dirtyEntities;
         AZStd::unordered_set<AZ::EntityId>  m_ignoredEntities;
         bool                                m_isDuringUndoRedo;
