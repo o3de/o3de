@@ -1,0 +1,4 @@
+class C
+{
+	int member = 3;  // #EC 43 default member init not supported
+};

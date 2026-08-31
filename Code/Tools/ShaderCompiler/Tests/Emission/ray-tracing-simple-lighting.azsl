@@ -1,0 +1,223 @@
+// AZSL version of the example raytracing shader found here:
+// https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/Desktop/D3D12Raytracing/src/D3D12RaytracingSimpleLighting/Raytracing.hlsl
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ List of intrinsic declarations used in this shader:
+
+struct RayDesc
+{
+    float3 Origin;
+    float  TMin;
+    float3 Direction;
+    float  TMax;
+};
+
+uint3 DispatchRaysIndex();
+
+uint3 DispatchRaysDimensions();
+
+Template<payload_t>
+void TraceRay(RaytracingAccelerationStructure AccelerationStructure,
+              uint RayFlags,
+              uint InstanceInclusionMask,
+              uint RayContributionToHitGroupIndex,
+              uint MultiplierForGeometryContributionToHitGroupIndex,
+              uint MissShaderIndex,
+              RayDesc Ray,
+              inout payload_t Payload);
+
+struct BuiltInTriangleIntersectionAttributes
+{
+    float2 barycentrics;
+};
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+// [Atom-2078] TODO support using namespace
+// It's probably enough just to reemit this and don't make sense of it - for now
+// using namespace DirectX;
+
+struct SceneConstantBuffer
+{
+    float4x4 projectionToWorld;
+    float4 cameraPosition;
+    float4 lightPosition;
+    float4 lightAmbientColor;
+    float4 lightDiffuseColor;
+};
+
+struct CubeConstantBuffer
+{
+    float4 albedo;
+};
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+};
+
+ShaderResourceGroupSemantic RaySemantic
+{
+    FrequencyId = 0u;
+};
+
+ShaderResourceGroup RaySRG : RaySemantic
+{
+    RaytracingAccelerationStructure Scene;                   // : register(t0, space0);
+    RWTexture2D<float4> RenderTarget;                        // : register(u0);
+    ByteAddressBuffer Indices;                               // : register(t1, space0);
+    StructuredBuffer<Vertex> Vertices;                       // : register(t2, space0);
+    ConstantBuffer<SceneConstantBuffer> g_sceneCB;           // : register(b0);
+    ConstantBuffer<CubeConstantBuffer> g_cubeCB;             // : register(b1);
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Load three 16 bit indices from a byte addressed buffer.
+uint3 Load3x16BitIndices(uint offsetBytes)
+{
+    uint3 indices_;
+
+    // ByteAdressBuffer loads must be aligned at a 4 byte boundary.
+    // Since we need to read three 16 bit indices: { 0, 1, 2 } 
+    // aligned at a 4 byte boundary as: { 0 1 } { 2 0 } { 1 2 } { 0 1 } ...
+    // we will load 8 bytes (~ 4 indices { a b | c d }) to handle two possible index triplet layouts,
+    // based on first index's offsetBytes being aligned at the 4 byte boundary or not:
+    //  Aligned:     { 0 1 | 2 - }
+    //  Not aligned: { - 0 | 1 2 }
+    const uint dwordAlignedOffset = offsetBytes & ~3;    
+    const uint2 four16BitIndices = RaySRG::Indices.Load2(dwordAlignedOffset);
+ 
+    // Aligned: { 0 1 | 2 - } => retrieve first three 16bit indices
+    if (dwordAlignedOffset == offsetBytes)
+    {
+        indices_.x = four16BitIndices.x & 0xffff;
+        indices_.y = (four16BitIndices.x >> 16) & 0xffff;
+        indices_.z = four16BitIndices.y & 0xffff;
+    }
+    else // Not aligned: { - 0 | 1 2 } => retrieve last three 16bit indices
+    {
+        indices_.x = (four16BitIndices.x >> 16) & 0xffff;
+        indices_.y = four16BitIndices.y & 0xffff;
+        indices_.z = (four16BitIndices.y >> 16) & 0xffff;
+    }
+
+    return indices_;
+}
+
+// [Atom-942] TODO support typedef
+// typedef BuiltInTriangleIntersectionAttributes MyAttributes;
+struct RayPayload
+{
+    float4 color;
+};
+
+// Retrieve hit world position.
+float3 HitWorldPosition()
+{
+    return WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+}
+
+// Retrieve attribute at a hit position interpolated from vertex attributes using the hit's barycentrics.
+float3 HitAttribute(float3 vertexAttribute[3], BuiltInTriangleIntersectionAttributes attr)
+{
+    return vertexAttribute[0] +
+        attr.barycentrics.x * (vertexAttribute[1] - vertexAttribute[0]) +
+        attr.barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
+}
+
+// Generate a ray in world space for a camera pixel corresponding to an index from the dispatched 2D grid.
+// TODO support inline ? (are raytraced shaders not always inlined??)
+// inline 
+void GenerateCameraRay(uint2 index, out float3 origin, out float3 direction)
+{
+    float2 xy = index + 0.5f; // center in the middle of the pixel.
+    float2 screenPos = xy / DispatchRaysDimensions().xy * 2.0 - 1.0;
+
+    // Invert Y for DirectX-style coordinates.
+    screenPos.y = -screenPos.y;
+
+    // Unproject the pixel coordinate into a ray.
+    float4 world = mul(float4(screenPos, 0, 1), RaySRG::g_sceneCB.projectionToWorld);
+
+    world.xyz /= world.w;
+    origin = RaySRG::g_sceneCB.cameraPosition.xyz;
+    direction = normalize(world.xyz - origin);
+}
+
+// Diffuse lighting calculation.
+float4 CalculateDiffuseLighting(float3 hitPosition, float3 normal)
+{
+    float3 pixelToLight = normalize(RaySRG::g_sceneCB.lightPosition.xyz - hitPosition);
+
+    // Diffuse contribution.
+    float fNDotL = max(0.0f, dot(pixelToLight, normal));
+
+    return RaySRG::g_cubeCB.albedo * RaySRG::g_sceneCB.lightDiffuseColor * fNDotL;
+}
+
+[shader("raygeneration")]
+void MyRaygenShader()
+{
+    float3 rayDir;
+    float3 origin;
+    
+    // Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
+    GenerateCameraRay(DispatchRaysIndex().xy, origin, rayDir);
+
+    // Trace the ray.
+    // Set the ray's extents.
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = rayDir;
+    // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
+    // TMin should be kept small to prevent missing geometry at close contact areas.
+    ray.TMin = 0.001;
+    ray.TMax = 10000.0;
+    RayPayload payload_ = { float4(0, 0, 0, 0) };
+    TraceRay(RaySRG::Scene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, ray, payload_);
+
+    // Write the raytraced color to the output texture.
+    RaySRG::RenderTarget[DispatchRaysIndex().xy] = payload_.color;
+}
+
+[shader("closesthit")]
+void MyClosestHitShader(inout RayPayload a_payload, in BuiltInTriangleIntersectionAttributes attr)
+{
+    float3 hitPosition = HitWorldPosition();
+
+    // Get the base index of the triangle's first 16 bit index.
+    uint indexSizeInBytes = 2;
+    uint indicesPerTriangle = 3;
+    uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
+    uint baseIndex = PrimitiveIndex() * triangleIndexStride;
+
+    // Load up 3 16 bit indices for the triangle.
+    const uint3 indices_ = Load3x16BitIndices(baseIndex);
+
+    // Retrieve corresponding vertex normals for the triangle vertices.
+    float3 vertexNormals[3] = { 
+        RaySRG::Vertices[indices_[0]].normal, 
+        RaySRG::Vertices[indices_[1]].normal, 
+        RaySRG::Vertices[indices_[2]].normal 
+    };
+
+    // Compute the triangle's normal.
+    // This is redundant and done for illustration purposes 
+    // as all the per-vertex normals are the same and match triangle's normal in this sample. 
+    float3 triangleNormal = HitAttribute(vertexNormals, attr);
+
+    float4 diffuseColor = CalculateDiffuseLighting(hitPosition, triangleNormal);
+    float4 color = RaySRG::g_sceneCB.lightAmbientColor + diffuseColor;
+
+    a_payload.color = color;
+}
+
+[shader("miss")]
+void MyMissShader(inout RayPayload a_payload)
+{
+    float4 background = float4(0.0f, 0.2f, 0.4f, 1.0f);
+    a_payload.color = background;
+}

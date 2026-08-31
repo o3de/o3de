@@ -1,0 +1,17 @@
+// Error: Option (Samples) cannot specify a minimum for its range that is greater than its maximum!
+[[range(9, 5)]]
+option int Samples = 5;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Emitter Error 263: Option (optionName) cannot specify a minimum for its range that is greater than its maximum!
+// #EC 263

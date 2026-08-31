@@ -1,0 +1,18 @@
+enum ColorSpaceId
+{
+    SRGB,
+    LinearSRGB,
+    ACEScg,
+    ACES2065,
+    Invalid
+};
+
+ShaderResourceGroupSemantic SRG_Main
+{
+    FrequencyId = 0;
+}
+
+ShaderResourceGroup MainSrg : SRG_Main
+{
+    ColorSpaceId m_textureColorSpaceId;   // #EC 45  non packable kind of type
+}

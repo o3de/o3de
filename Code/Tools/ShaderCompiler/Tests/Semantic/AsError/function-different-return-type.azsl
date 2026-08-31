@@ -1,0 +1,2 @@
+int func();
+float func(){}  // #EC 39

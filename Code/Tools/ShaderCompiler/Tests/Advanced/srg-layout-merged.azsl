@@ -1,0 +1,21 @@
+ShaderResourceGroupSemantic Slot0  { FrequencyId = 4; };
+ShaderResourceGroupSemantic Slot1  { FrequencyId = 5; };
+ShaderResourceGroupSemantic Slot2  { FrequencyId = 6; };
+
+ShaderResourceGroup SRG0 : Slot0
+{
+    float4 float4Test00;
+    Sampler dynamicSampler0;
+}
+
+ShaderResourceGroup SRG1 : Slot1
+{
+    float4 float4Test01;
+    Sampler dynamicSampler1;
+}
+
+ShaderResourceGroup SRG2 : Slot2
+{
+    float4 float4Test02;
+    Sampler dynamicSampler2;
+}

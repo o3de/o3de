@@ -1,0 +1,5 @@
+" TextureCube < float4 > S_t : register ( t0 , space0 ) ; "
+^"SamplerComparisonState S_grass : register ( s0 , space0 ) ;"
+"static sampler S_grass"
+"ComparisonFunc = Never ;"
+"float4 MainPS"

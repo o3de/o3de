@@ -1,0 +1,111 @@
+// Compiling this shader should fail if --use-spaces is NOT specified,
+// because SRG1 declares an unbounded array.
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroupSemantic slot2
+{
+    FrequencyId = 2;
+};
+
+struct MyStruct
+{
+    float3 m_a;
+};
+
+ShaderResourceGroup SRG1 : slot1
+{
+    Sampler m_bilinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Point;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+    
+    ConstantBuffer<MyStruct> m_data;
+    Texture2D<float4> m_probeIrradiance;
+    RWTexture2D<float4> m_probeRayTrace;
+    float m_ambientMultiplier;
+    
+    // directional Lights
+    struct DirectionalLight
+    {
+        float3 m_direction;
+    };
+    StructuredBuffer<DirectionalLight> m_directionalLights;
+
+    // diffuse IBL
+    Sampler m_diffuseEnvMapSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    
+    TextureCube m_diffuseEnvMap;
+    float4 m_iblOrientation;
+    
+    struct ClosestHitData
+    {
+        uint     m_indexOffset;
+    };
+   
+    ClosestHitData    m_closestHitData[2];
+
+    ByteAddressBuffer m_meshBuffers[];
+};
+
+ShaderResourceGroup SRG2 : slot2
+{
+    Sampler m_bilinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Point;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+    
+    ConstantBuffer<MyStruct> m_data;
+    Texture2D<float4> m_probeIrradiance;
+    RWTexture2D<float4> m_probeRayTrace;
+    float m_ambientMultiplier;
+    
+    // directional Lights
+    struct DirectionalLight
+    {
+        float3 m_direction;
+    };
+    StructuredBuffer<DirectionalLight> m_directionalLights;
+
+    // diffuse IBL
+    Sampler m_diffuseEnvMapSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    
+    TextureCube m_diffuseEnvMap;
+    float4 m_iblOrientation;
+    
+    struct ClosestHitData
+    {
+        uint     m_indexOffset;
+    };
+   
+    ClosestHitData    m_closestHitData[2];
+
+    ByteAddressBuffer m_meshBuffers[];
+};

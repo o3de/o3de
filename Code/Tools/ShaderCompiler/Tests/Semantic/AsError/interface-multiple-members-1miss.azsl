@@ -1,0 +1,27 @@
+interface interf
+{
+    int func0();
+    int func1();
+    void func2();
+    float func3(int arg1);
+    float func4(int);
+    MyT func5();
+    MyT func6(MyT);
+    MyT func7(MyT arg1);
+    float4x4 func8(double arg1, float3x3 arg2, int, bool);
+};
+
+class s : interf
+{
+    int func0() {}
+    void func2() {}
+    float func3(int arg1) {}
+    float func4(int) {}
+    MyT func5() {}
+    MyT func6(MyT) {}
+    MyT func7(MyT arg1) {}
+    float4x4 func8(double arg1, float3x3 arg2, int, bool) {}
+};
+
+// Semantic Error 18: line 14::0 'class /s does not redefine /interf/func1'
+// #EC 18

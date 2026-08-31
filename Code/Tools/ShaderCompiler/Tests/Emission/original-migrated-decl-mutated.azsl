@@ -1,0 +1,11 @@
+void PSMain()
+{
+    class S
+    {
+        void GetDiffuseHolderInCB()
+        {
+        }
+    } local_s;
+    
+    local_s.GetDiffuseHolderInCB();
+}

@@ -1,0 +1,23 @@
+// Make sure the attribute sequences don't interfere with multiarray closure ]]
+[[global::output_format("R16G16B16A16_FLOAT")]]
+[[global::output_format(0, "R32")]]
+[[global::output_format(1, "R32G32")]]
+[[global::output_format(2, "R32A32")]]
+[[global::output_format(3, "R16G16B16A16_UNORM")]]
+[[global::output_format(4, "R16G16B16A16_SNORM")]]
+[[global::output_format(5, "R16G16B16A16_UINT")]]
+[[global::output_format(6, "R16G16B16A16_SINT")]]
+[[global::output_format(7, "R32G32B32A32")]]
+
+struct V { float3 normal; };
+static const V Vertices[8];
+static const uint3 Indices;
+
+void F()
+{
+    float3 vertexNormals[3] = { 
+        Vertices[Indices[0]].normal, 
+        Vertices[Indices[1]].normal, 
+        Vertices[Indices[2]].normal 
+    };
+}

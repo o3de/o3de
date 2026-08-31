@@ -1,0 +1,296 @@
+ShaderResourceGroupSemantic UpdatePerEmpty
+{
+    FrequencyId = 0u;
+};
+
+ShaderResourceGroupSemantic UpdatePerBuffer
+{
+    FrequencyId = 2;
+};
+
+ShaderResourceGroupSemantic UpdatePerSampler
+{
+    FrequencyId = 3;
+};
+
+ShaderResourceGroupSemantic UpdatePerCB
+{
+    FrequencyId = 0x1;
+};
+
+ShaderResourceGroup PerEmpty : UpdatePerEmpty
+{
+    // Empty shader resource group
+};
+
+ShaderResourceGroup PerTexture : UpdatePerEmpty
+{
+    Texture1D                                   partial_[20];    // texturePredefinedType
+};
+
+ShaderResourceGroup PerTexture : UpdatePerEmpty
+{
+    Texture1D                                   partial_;        // texturePredefinedType
+    Texture1D<float4>                           m_tex1DG;        // genericTexturePredefinedType
+    Texture1DArray                              m_tex1DArray;    // texturePredefinedType
+    Texture1DArray<float4>                      m_tex1DArrayG;   // genericTexturePredefinedType
+    RasterizerOrderedTexture1D                  m_tex1DR;        // texturePredefinedType
+    RasterizerOrderedTexture1D<float4>          m_tex1DRG;       // genericTexturePredefinedType
+    RasterizerOrderedTexture1DArray             m_tex1DRArray;   // texturePredefinedType
+    RasterizerOrderedTexture1DArray<float4>     m_tex1DRArrayG;  // genericTexturePredefinedType
+    Texture2D                                   m_tex2D;         // texturePredefinedType
+    Texture2D<float4>                           m_tex2DG;        // genericTexturePredefinedType
+    Texture2DArray                              m_tex2DArray;    // texturePredefinedType
+    Texture2DArray<float4>                      m_tex2DArrayG;   // genericTexturePredefinedType
+    RasterizerOrderedTexture2D                  m_tex2DR;        // texturePredefinedType
+    RasterizerOrderedTexture2D<float4>          m_tex2DRG;       // genericTexturePredefinedType
+    RasterizerOrderedTexture2DArray             m_tex2DRArray;   // texturePredefinedType
+    RasterizerOrderedTexture2DArray<float4>     m_tex2DRArrayG;  // genericTexturePredefinedType
+    Texture2DMS<float4>                         m_tex2DMS;       // msTexturePredefinedType
+    Texture2DMS<float4, 4>                      m_tex2DMS4;      // msTexturePredefinedType
+    Texture2DMSArray<float4>                    m_tex2DMSArray;  // msTexturePredefinedType
+    Texture2DMSArray<float4, 8>                 m_tex2DMSArray8; // msTexturePredefinedType
+    Texture3D                                   m_tex3D;         // texturePredefinedType
+    Texture3D<float4>                           m_tex3DG;        // genericTexturePredefinedType
+    RasterizerOrderedTexture3D                  m_tex3DR;        // texturePredefinedType
+    RasterizerOrderedTexture3D<float4>          m_tex3DRG;       // genericTexturePredefinedType
+    TextureCube                                 m_texCube;       // texturePredefinedType
+    TextureCube<float4>                         m_texCubeG;      // genericTexturePredefinedType
+    RWTexture1D                                 partial2_;       // texturePredefinedType
+    RWTexture1D<float4>                         m_texRW1DG;      // genericTexturePredefinedType
+    RWTexture1DArray                            m_texRW1DArray;  // texturePredefinedType
+    RWTexture1DArray<float4>                    m_texRW1DArrayG; // genericTexturePredefinedType
+    RWTexture2D                                 m_texRW2D;       // texturePredefinedType
+    RWTexture2D<float4>                         m_texRW2DG;      // genericTexturePredefinedType
+    RWTexture2DArray                            m_texRW2DArray;  // texturePredefinedType
+    RWTexture2DArray<float4>                    m_texRW2DArrayG; // genericTexturePredefinedType
+    RWTexture3D                                 m_texRW3D;       // texturePredefinedType
+    RWTexture3D<float4>                         m_texRW3DG;      // genericTexturePredefinedType
+};
+
+struct UserStruct
+{
+    int      partial_;
+    float    m_myFloat;
+    double   m_myDouble;
+    bool     m_myBool;
+};
+
+ShaderResourceGroup PerBuffer : UpdatePerBuffer
+{
+    AppendStructuredBuffer<UserStruct>                 m_bufferView;
+    ConsumeStructuredBuffer<UserStruct>                m_bufferView;
+    Buffer<float>                                      m_bufferView;
+    ByteAddressBuffer                                  m_bufferView;
+    StructuredBuffer<UserStruct>                       m_bufferView;
+    RWBuffer<float4x4>                                 m_bufferView;
+    RWByteAddressBuffer                                m_bufferView;
+    RWStructuredBuffer<UserStruct>                     m_bufferView;
+    RasterizerOrderedBuffer<int4>                      m_bufferView;
+    RasterizerOrderedByteAddressBuffer                 m_bufferView;
+    RasterizerOrderedStructuredBuffer<UserStruct>      m_bufferView;
+	RWStructuredBuffer<int32_t>                       m_bufferView;
+	RWStructuredBuffer<uint32_t>                       m_bufferView;
+	RWStructuredBuffer<int64_t>                       m_bufferView;
+	RWStructuredBuffer<uint64_t>                       m_bufferView;
+};
+
+ShaderResourceGroup PerSampler : UpdatePerSampler
+{
+    Sampler m_dynamicSampler_1;
+    Sampler m_staticSampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Mirror;
+        AddressW = Clamp;
+        AddressV = Border;                 // Syntax should pass, semantics no - redefinition of AddressV
+        AddressW = MirrorOnce;             // Syntax should pass, semantics no - redefinition of AddressW
+        BorderColor = OpaqueBlack;
+        BorderColor = TransparentBlack;    // Syntax should pass, semantics no - redefinition of BorderColor
+        BorderColor = OpaqueWhite;         // Syntax should pass, semantics no - redefinition of BorderColor
+        MinFilter = Point;
+        MagFilter = Linear;
+        MipFilter = Point;
+        MaxLOD = 0.5f;
+        MinLOD = 1.5f;
+        MipLODBias = 1.1;
+        ComparisonFunc = Never;
+        ComparisonFunc = Less;             // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = Equal;            // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = LessEqual;        // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = Greater;          // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = NotEqual;         // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = GreaterEqual;     // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ComparisonFunc = Always;           // Syntax should pass, semantics no - redefinition of ComparisonFunc
+        ReductionType = Filter;
+        ReductionType = Comparison;        // Syntax should pass, semantics no - redefinition of ReductionType
+        ReductionType = Minimum;           // Syntax should pass, semantics no - redefinition of ReductionType
+        ReductionType = Maximum;           // Syntax should pass, semantics no - redefinition of ReductionType
+    };
+    Sampler m_dynamicSampler_2;
+    Sampler m_dynamicSampler_Array[4];
+};
+
+struct SomeStructOutsideSRG
+{
+    float4x4                             m_sameNameVariable;
+};
+
+ShaderResourceGroup PerCB : UpdatePerCB
+{
+    struct SomeInsideStruct
+    {
+        float4x4                         m_sameNameVariable;
+    };
+
+    struct MaterialConstants
+    {
+        struct SomeNestedStruct
+        {
+            float4x4                     m_sameNameVariable;
+        }                                m_inlinedStructInstance;
+
+        SomeStructOutsideSRG             m_outsideScopeStruct;
+        SomeInsideStruct                 m_insideScopeStruct;
+        SomeNestedStruct                 m_nestedStruct;
+        bool                             m_sameNameVariable;
+        bool1                            m_sameNameVariable;
+        bool2                            m_sameNameVariable;
+        bool3                            m_sameNameVariable;
+        bool4                            m_sameNameVariable;
+        bool1x1                          m_sameNameVariable;
+        bool1x2                          m_sameNameVariable;
+        bool1x3                          m_sameNameVariable;
+        bool1x4                          m_sameNameVariable;
+        bool2x1                          m_sameNameVariable;
+        bool2x2                          m_sameNameVariable;
+        bool2x3                          m_sameNameVariable;
+        bool2x4                          m_sameNameVariable;
+        bool3x1                          m_sameNameVariable;
+        bool3x2                          m_sameNameVariable;
+        bool3x3                          m_sameNameVariable;
+        bool3x4                          m_sameNameVariable;
+        bool4x1                          m_sameNameVariable;
+        bool4x2                          m_sameNameVariable;
+        bool4x3                          m_sameNameVariable;
+        bool4x4                          m_sameNameVariable;
+        double                           m_sameNameVariable;
+        double1                          m_sameNameVariable;
+        double2                          m_sameNameVariable;
+        double3                          m_sameNameVariable;
+        double4                          m_sameNameVariable;
+        double1x1                        m_sameNameVariable;
+        double1x2                        m_sameNameVariable;
+        double1x3                        m_sameNameVariable;
+        double1x4                        m_sameNameVariable;
+        double2x1                        m_sameNameVariable;
+        double2x2                        m_sameNameVariable;
+        double2x3                        m_sameNameVariable;
+        double2x4                        m_sameNameVariable;
+        double3x1                        m_sameNameVariable;
+        double3x2                        m_sameNameVariable;
+        double3x3                        m_sameNameVariable;
+        double3x4                        m_sameNameVariable;
+        double4x1                        m_sameNameVariable;
+        double4x2                        m_sameNameVariable;
+        double4x3                        m_sameNameVariable;
+        double4x4                        m_sameNameVariable;
+        float                            m_sameNameVariable;
+        float1                           m_sameNameVariable;
+        float2                           m_sameNameVariable;
+        float3                           m_sameNameVariable;
+        float4                           m_sameNameVariable;
+        float1x1                         m_sameNameVariable;
+        float1x2                         m_sameNameVariable;
+        float1x3                         m_sameNameVariable;
+        float1x4                         m_sameNameVariable;
+        float2x1                         m_sameNameVariable;
+        float2x2                         m_sameNameVariable;
+        float2x3                         m_sameNameVariable;
+        float2x4                         m_sameNameVariable;
+        float3x1                         m_sameNameVariable;
+        float3x2                         m_sameNameVariable;
+        float3x3                         m_sameNameVariable;
+        float3x4                         m_sameNameVariable;
+        float4x1                         m_sameNameVariable;
+        float4x2                         m_sameNameVariable;
+        float4x3                         m_sameNameVariable;
+        float4x4                         m_sameNameVariable;
+        half                             m_sameNameVariable;
+        half1                            m_sameNameVariable;
+        half2                            m_sameNameVariable;
+        half3                            m_sameNameVariable;
+        half4                            m_sameNameVariable;
+        half1x1                          m_sameNameVariable;
+        half1x2                          m_sameNameVariable;
+        half1x3                          m_sameNameVariable;
+        half1x4                          m_sameNameVariable;
+        half2x1                          m_sameNameVariable;
+        half2x2                          m_sameNameVariable;
+        half2x3                          m_sameNameVariable;
+        half2x4                          m_sameNameVariable;
+        half3x1                          m_sameNameVariable;
+        half3x2                          m_sameNameVariable;
+        half3x3                          m_sameNameVariable;
+        half3x4                          m_sameNameVariable;
+        half4x1                          m_sameNameVariable;
+        half4x2                          m_sameNameVariable;
+        half4x3                          m_sameNameVariable;
+        half4x4                          m_sameNameVariable;
+        int                              m_sameNameVariable;
+		int32_t                          m_sameNameVariable;
+		int64_t                          m_sameNameVariable;
+        int1                             m_sameNameVariable;
+        int2                             m_sameNameVariable;
+        int3                             m_sameNameVariable;
+        int4                             m_sameNameVariable;
+        int1x1                           m_sameNameVariable;
+        int1x2                           m_sameNameVariable;
+        int1x3                           m_sameNameVariable;
+        int1x4                           m_sameNameVariable;
+        int2x1                           m_sameNameVariable;
+        int2x2                           m_sameNameVariable;
+        int2x3                           m_sameNameVariable;
+        int2x4                           m_sameNameVariable;
+        int3x1                           m_sameNameVariable;
+        int3x2                           m_sameNameVariable;
+        int3x3                           m_sameNameVariable;
+        int3x4                           m_sameNameVariable;
+        int4x1                           m_sameNameVariable;
+        int4x2                           m_sameNameVariable;
+        int4x3                           m_sameNameVariable;
+        int4x4                           m_sameNameVariable;
+        uint                             m_sameNameVariable;
+		uint32_t                         m_sameNameVariable;
+		uint64_t                         m_sameNameVariable;
+        uint1                            m_sameNameVariable;
+        uint2                            m_sameNameVariable;
+        uint3                            m_sameNameVariable;
+        uint4                            m_sameNameVariable;
+        uint1x1                          m_sameNameVariable;
+        uint1x2                          m_sameNameVariable;
+        uint1x3                          m_sameNameVariable;
+        uint1x4                          m_sameNameVariable;
+        uint2x1                          m_sameNameVariable;
+        uint2x2                          m_sameNameVariable;
+        uint2x3                          m_sameNameVariable;
+        uint2x4                          m_sameNameVariable;
+        uint3x1                          m_sameNameVariable;
+        uint3x2                          m_sameNameVariable;
+        uint3x3                          m_sameNameVariable;
+        uint3x4                          m_sameNameVariable;
+        uint4x1                          m_sameNameVariable;
+        uint4x2                          m_sameNameVariable;
+        uint4x3                          m_sameNameVariable;
+        uint4x4                          m_sameNameVariable;
+        bool                             m_sameNameArray[16];
+        double                           m_sameNameArray[16];
+        float                            m_sameNameArray[16];
+        int                              m_sameNameArray[16];
+        uint                             m_sameNameArray[16];
+        half                             m_life[3];
+    };
+    
+    ConstantBuffer<MaterialConstants>    m_materialConstants;
+};

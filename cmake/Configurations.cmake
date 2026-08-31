@@ -228,6 +228,48 @@ foreach(def ${O3DE_REQUIRED_DEFINITIONS})
     endif()
 endforeach()
 
+#! o3de_disable_warnings: Disables warnings in the current CMake variable scope
+#
+# O3DE's warning policy is stored in CMAKE_C_FLAGS and CMAKE_CXX_FLAGS.
+# The Visual Studio generator maps /we and /wd options to separate project properties and gives /we precedence,
+# so adding target-level /wd options cannot reliably override the inherited policy.
+# Remove the explicit warning options before creating targets,
+# then append the platform's complete warning suppression options.
+function(o3de_disable_warnings)
+    set(flag_variables CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+    set(configurations ${LY_CONFIGURATION_TYPES} ${CMAKE_CONFIGURATION_TYPES})
+    if(CMAKE_BUILD_TYPE)
+        list(APPEND configurations ${CMAKE_BUILD_TYPE})
+    endif()
+    list(REMOVE_DUPLICATES configurations)
+
+    foreach(configuration IN LISTS configurations)
+        string(TOUPPER ${configuration} upper_configuration)
+        list(APPEND flag_variables
+            CMAKE_C_FLAGS_${upper_configuration}
+            CMAKE_CXX_FLAGS_${upper_configuration}
+        )
+    endforeach()
+
+    if(MSVC)
+        foreach(flag_variable IN LISTS flag_variables)
+            string(REGEX REPLACE "/we[0-9]+" "" ${flag_variable} "${${flag_variable}}")
+            string(REGEX REPLACE "/W[0-4]" "" ${flag_variable} "${${flag_variable}}")
+            string(REGEX REPLACE "/WX-?" "" ${flag_variable} "${${flag_variable}}")
+        endforeach()
+    endif()
+
+    set(disable_warning_options ${O3DE_COMPILE_OPTION_DISABLE_WARNINGS})
+    list(REMOVE_ITEM disable_warning_options PRIVATE PUBLIC INTERFACE)
+    string(JOIN " " disable_warning_flags ${disable_warning_options})
+    string(APPEND CMAKE_C_FLAGS " ${disable_warning_flags}")
+    string(APPEND CMAKE_CXX_FLAGS " ${disable_warning_flags}")
+
+    foreach(flag_variable IN LISTS flag_variables)
+        set(${flag_variable} "${${flag_variable}}" PARENT_SCOPE)
+    endforeach()
+endfunction()
+
 # This is a good place to set global options based on the above:
 
 if (USE_FAST_MATH)

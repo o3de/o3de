@@ -1,0 +1,1 @@
+" float4 m ( float4 : COLOR ) : SV_Target0 "

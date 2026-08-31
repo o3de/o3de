@@ -1,0 +1,47 @@
+GlobalRootSignature MyGlobalRootSignature =
+{
+    "DescriptorTable(UAV(u0)),"                     // Output texture
+    "SRV(t0),"                                      // Acceleration structure
+    "CBV(b0),"                                      // Scene constants
+    "DescriptorTable(SRV(t1, numDescriptors = 2))"  // Static index and vertex buffers.
+};
+
+LocalRootSignature MyLocalRootSignature = 
+{
+    "RootConstants(num32BitConstants = 4, b1)"  // Cube constants 
+};
+
+TriangleHitGroup MyHitGroup =
+{
+    "",                    // AnyHit
+    "MyClosestHitShader",  // ClosestHit
+};
+
+ProceduralPrimitiveHitGroup MyProceduralHitGroup =
+{
+    "MyAnyHit",       // AnyHit
+    "MyClosestHit",   // ClosestHit
+    "MyIntersection"  // Intersection
+};
+
+SubobjectToExportsAssociation MyLocalRootSignatureAssociation =
+{
+    "MyLocalRootSignature",    // Subobject name
+    "MyHitGroup;MyMissShader"  // Exports association 
+};
+
+RaytracingShaderConfig MyShaderConfig =
+{
+    16,  // Max payload size
+    8    // Max attribute size
+};
+
+RaytracingPipelineConfig MyPipelineConfig =
+{
+    1  // Max trace recursion depth
+};
+
+StateObjectConfig MyStateObjectConfig = 
+{ 
+    STATE_OBJECT_FLAGS_ALLOW_LOCAL_DEPENDENCIES_ON_EXTERNAL_DEFINITONS
+};

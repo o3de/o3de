@@ -1,0 +1,42 @@
+struct S
+{
+};
+
+interface Parent
+{
+    void f(S);   // ref 1
+};
+
+class Child : Parent
+{
+    S m_s;   // ref 2
+    void f(S a_s) override  // ref 3
+    {
+        m_s = (S)a_s;  // ref 4
+    }
+
+    void g()
+    {
+        S local_s;  // ref 5
+        f(local_s);
+    }
+};
+
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup SRG : freq
+{
+    ConstantBuffer<::S> cb;  // ref 6
+}
+
+struct SS
+{
+    struct S
+    {
+        ::S member;  // ref 7
+    };
+};
+
+static S g_var;  // ref 8
+
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

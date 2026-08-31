@@ -1,0 +1,15 @@
+// Below: static variables are global, but not externally visible.
+static int g_i;  // global
+
+// Below: global non-static vriables are extern by default.
+//  We forbid them, because they conflict with our SRG shader resource model
+int e_i;         // no flag = extern
+
+float4 PSMain() : SV_Target0
+{
+    g_i++;
+    return float4(e_i, g_i, 0, 1);
+}
+
+// Semantic Error 12: line 7::4 'global variable e_i cannot be non static (or extern or uniform). AZSL data binding model uses ShaderResourceGroup.'
+// #EC 12

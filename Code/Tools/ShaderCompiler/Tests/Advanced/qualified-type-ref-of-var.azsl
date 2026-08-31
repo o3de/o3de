@@ -1,0 +1,23 @@
+class C
+{
+    class D
+    {
+    };
+};
+
+void func()
+{
+    C::D d;
+    // need to verify that the compiler understood this type correctly.
+    // c.f. qualified-type-ref-of-var.py
+
+    typeof(d) d2;  // while we're at it, let's check that form too.
+
+    struct S {} d3;  // and that one too.
+
+    matrix<half, 3, 4> mh34;  // hard (WIP !)
+
+    RWBuffer<float4x4> rwbf;  // harder
+
+    StructuredBuffer< struct Inl {} > sbInl;  // hardest
+}
