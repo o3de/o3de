@@ -1,0 +1,18 @@
+// Templated ConstantBuffers should not accept class type as template
+ShaderResourceGroupSemantic UpdateFrequency
+{
+    FrequencyId = 0;
+};
+
+class MyClass
+{
+    int m_myInt;
+};
+
+ShaderResourceGroup ThatHasClasses : UpdateFrequency
+{
+    ConstantBuffer<MyClass> m_myCB; 
+};
+
+// Semantic Error 28: line 14::28 'ConstantBuffer<T>'s generic type /MyClass must be a struct, but seen as Class'
+// #EC 28

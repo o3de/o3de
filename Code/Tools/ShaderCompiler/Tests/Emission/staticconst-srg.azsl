@@ -1,0 +1,13 @@
+ShaderResourceGroupSemantic BindingPerPass
+{
+FrequencyId = 3;
+};
+
+ShaderResourceGroup PassSrg : BindingPerPass
+{
+    static const uint MaxCascadeCount = 4;
+    struct DirectionalLight
+    {
+        float4x4 m_depthBiasMatrix[MaxCascadeCount];
+    } m_directionalLight[1];
+}

@@ -1,0 +1,96 @@
+ShaderResourceGroupSemantic Slot0  {    FrequencyId = 0; };
+ShaderResourceGroupSemantic Slot1  {    FrequencyId = 1; };
+ShaderResourceGroupSemantic Slot2  {    FrequencyId = 2; };
+ShaderResourceGroupSemantic Slot3  {    FrequencyId = 3; };
+ShaderResourceGroupSemantic Slot4  {    FrequencyId = 4; };
+ShaderResourceGroupSemantic Slot5  {    FrequencyId = 5; };
+
+ShaderResourceGroup SRG0 : Slot0
+{
+    float4 float4Test00;
+    Sampler m_dynamicSampler_1;
+    float4 float4Test01;
+    SamplerComparisonState m_staticSampler1
+    {
+        ComparisonFunc = Never;
+    };
+    float4 float4Test02;
+    RWTexture3D m_texRW3D;
+    float4 float4Test03;
+    Sampler m_dynamicSampler_Array[4];
+    SamplerComparisonState m_staticSampler2
+    {
+        ComparisonFunc = Never;
+    };
+    float4 float4Test04;
+};
+
+ShaderResourceGroup SRG1 : Slot1
+{
+    struct SomeInsideStruct
+    {
+        float4x4                         m_someMatrix;
+    };
+
+    struct MaterialConstants
+    {
+        struct SomeNestedStruct
+        {
+            float4x4                     m_someMatrix;
+        }                                m_inlinedStructInstance;      // nested in the struct declaration
+        SomeInsideStruct                 m_insideScopeStruct;          // declared in the same SRG
+        bool4                            m_someBoolVariable;
+        double                           m_someDoubleVariable;
+    };
+    
+    ConstantBuffer<MaterialConstants>    m_materialConstants;
+    Texture2D                                   m_tex2D;         // texturePredefinedType
+    Texture2D<float4>                           m_tex2DG;        // genericTexturePredefinedType
+    Texture2DArray                              m_tex2DArray;    // texturePredefinedType
+    Texture2DArray<float4>                      m_tex2DArrayG;   // genericTexturePredefinedType
+};
+
+ShaderResourceGroup SRG2 : Slot2
+{
+    float4 exampleColor;
+    Texture2D                                   m_tex2D;         // texturePredefinedType
+    Texture2D<float4>                           m_tex2DG;        // genericTexturePredefinedType
+    Texture2DArray                              m_tex2DArray;    // texturePredefinedType
+    Texture2DArray<float4>                      m_tex2DArrayG;   // genericTexturePredefinedType
+    RWTexture2D                                 m_texRW2D;       // texturePredefinedType
+    RWTexture2D<float4>                         m_texRW2DG;      // genericTexturePredefinedType
+    RWTexture2DArray                            m_texRW2DArray;  // texturePredefinedType
+    RWTexture2DArray<float4>                    m_texRW2DArrayG; // genericTexturePredefinedType
+};
+
+ShaderResourceGroup SRG3 : Slot3
+{
+    float4 exampleColor;
+    RWTexture2D                                 m_texRW2D[4];       // texturePredefinedType
+    RWTexture2D<float4>                         m_texRW2DG;      // genericTexturePredefinedType
+    RWTexture2DArray                            m_texRW2DArray;  // texturePredefinedType
+    RWTexture2DArray<float4>                    m_texRW2DArrayG; // genericTexturePredefinedType
+};
+
+struct UserStruct
+{
+    int      m_myInt;
+    float    m_myFloat;
+    double   m_myDouble;
+    bool     m_myBool;
+};
+
+ShaderResourceGroup SRG4 : Slot4
+{
+    AppendStructuredBuffer<UserStruct>                 m_appendView;
+    ConsumeStructuredBuffer<UserStruct>                m_consumeView;
+    Buffer<float>                                      m_bufferView[3];
+    StructuredBuffer<UserStruct>                       m_structuredView;
+    RWBuffer<float4x4>                                 m_rwView;
+    RasterizerOrderedBuffer<int4>                      m_roView;
+};
+
+ShaderResourceGroup SRG5 : Slot5
+{
+    float4 exampleColor;
+};

@@ -1,0 +1,37 @@
+﻿ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+/* tester */
+ShaderResourceGroup SRG : slot1
+{
+    struct CB
+    {
+        float4 color;
+    };
+    ConstantBuffer<CB> m_uniforms;
+
+    [[input_attachment_index(0)]]
+    SubpassInputDS<float4> m_sub;
+
+    float4x4 projection;
+};
+
+float4 ReadSourceFromTile(SubpassInputDS spi)
+{
+    return spi.SubpassLoad(int3(0,0,0));
+}
+
+// vertex
+float4 MainVS(float4 position : POSITION0) : POSITION0
+{
+    return mul(SRG::projection, position );
+}
+
+// pixel
+float4 MainPS(float2 uv : TEXCOORD0) : SV_Target0
+{
+    // SubpassInput si = SRG::m_sub;
+    return SRG::m_uniforms.color + ReadSourceFromTile(SRG::m_sub);
+}

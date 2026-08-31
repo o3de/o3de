@@ -1,0 +1,19 @@
+void MySRG__f ( float ); // attack
+void MySRG__f1 ( float ); // attack chained
+
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup MySRG : freq
+{
+    void _f(int){}
+    void _f(float){}
+}
+
+// super attack
+ShaderResourceGroupSemantic freq2
+{ FrequencyId = 2; }
+ShaderResourceGroup MySRG_ : freq2
+{
+    void f(int){}
+    void f(float){}
+}

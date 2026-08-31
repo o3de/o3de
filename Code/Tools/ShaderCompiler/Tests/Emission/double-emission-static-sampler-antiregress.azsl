@@ -1,0 +1,15 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup S : slot1
+{
+    TextureCube<float4> t;
+    static sampler grass {ComparisonFunc = Never;};
+};
+
+float4 MainPS(float2 uv : TEXCOORD0) : SV_Target0
+{
+    return S::t.Sample(S::grass, float3(1,0,0));
+}

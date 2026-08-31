@@ -1,0 +1,9 @@
+ShaderResourceGroupSemantic UpdateFrequency
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroup ThatHasFunctions : UpdateFrequency
+{
+    void func() { } // valid
+};

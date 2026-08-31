@@ -1,0 +1,11 @@
+interface my_name
+{
+    anytype Somefunction();
+};
+
+class s : my_name
+{
+};
+
+// Semantic Error 18: line 6::0 'class /s does not redefine /my_name/Somefunction' 
+// #EC 18

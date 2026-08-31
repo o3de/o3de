@@ -1,0 +1,5 @@
+float4 VerbatimColor(float4 inColor)
+{
+    return inColor + float4(0, 0, 1, 0);
+}
+

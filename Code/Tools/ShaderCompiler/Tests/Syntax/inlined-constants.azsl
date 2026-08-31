@@ -1,0 +1,13 @@
+inline int  shadowCascade;
+inline bool calculateShadows;
+
+ShaderResourceGroupSemantic UpdatePerEmpty
+{
+    FrequencyId = 0u;
+};
+
+ShaderResourceGroup PerMaterial : UpdatePerEmpty
+{
+    int  shadow;
+    bool calculate;
+};

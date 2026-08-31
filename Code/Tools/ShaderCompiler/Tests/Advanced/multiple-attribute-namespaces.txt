@@ -1,0 +1,8 @@
+ 
+"[[ mt :: foo ]]            "
+"struct VSInput         "
+"[[ vk :: location ( 0 ) ]]    "
+"float4 pos : POSITION ; "
+"[[ vk :: location ( 1 ) ]]    "
+"float3 norm : NORMAL ;  "
+

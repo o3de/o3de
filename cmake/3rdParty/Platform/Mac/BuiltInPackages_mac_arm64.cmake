@@ -37,5 +37,4 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac-arm64             
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev6-mac-arm64                   TARGETS astc-encoder                PACKAGE_HASH a416c2d3b6d77c0c971691f5aef19bee2cade464cd4d368ebec40bb58eeb2a41)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac-arm64                TARGETS ISPCTexComp                 PACKAGE_HASH 0992e6662f193379cdc9ba8ab9b7a24404564df9bcc5f39d9527b7258ae4172c)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-mac-arm64                          TARGETS lz4                         PACKAGE_HASH d85fe35ce176967199fe6e11fce684e6c05f0c5533892a3785a458872a1d5229)
-ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-mac-arm64                       TARGETS azslc                       PACKAGE_HASH ff7c0bb755ae1fc7f2f5e2b02bb4ddfdf85deea5b22ba2f8baae4ff7b0fc8374)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac-arm64                      TARGETS SQLite                      PACKAGE_HASH 6fa05df3f97fed97bdef293ac85b250ffe443a43e776ad54312b7b356d41fccb)

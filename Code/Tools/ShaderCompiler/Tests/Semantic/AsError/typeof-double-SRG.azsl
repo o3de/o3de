@@ -1,0 +1,2 @@
+typeof(A)::::B c;  // #EC 514
+// Syntax Error 514: line 1::11 'double scope resolution operator forbidden at this position'

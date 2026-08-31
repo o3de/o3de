@@ -1,0 +1,26 @@
+// Syntax error of function declaration inside struct.
+// Syntax error #516: structs cannot have member functions; consider using a class.
+// #EC 516
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct SomeStruct
+{
+    float4 m_color;
+
+    float4 GetColor();
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    SomeStruct m_data;
+};
+
+float4 MainPS() : SV_Target0
+{
+    float4 color = DemoSrg::m_data.GetColor();
+    return color;
+}

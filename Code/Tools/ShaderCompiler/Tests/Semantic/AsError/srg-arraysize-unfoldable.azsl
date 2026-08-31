@@ -1,0 +1,13 @@
+int dynamic_uniform;
+
+ShaderResourceGroupSemantic freq1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRG : freq1
+{
+    Buffer<float4> stuff[dynamic_uniform];  // ERROR at semantic check: (6): in array dimension specifier: variable /dynamic_uniform couldn't be folded to a constant (tip: use --semantic --verbose to diagnose why)
+};
+
+// TODO
