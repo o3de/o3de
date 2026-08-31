@@ -25,28 +25,28 @@
 //  then override the function from IAllocator in the header (without depending on the define),
 //  and then implement the different behavior in this cpp or another cpp in AzCore.
 
-// HPHA uses the high performance heap allocator for system allocations
-#define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
+// mimalloc uses the high performance heap allocator for system allocations
+#define AZCORE_SYSTEM_ALLOCATOR_MIMALLOC 1
 
 // malloc uses basic OS malloc for system allocations.  This is useful when using ASAN or other memory checking such as the CRT debug heap.
 // when ASAN is enabled by CMake, this is set by default.  See AZCORE_SYSTEM_ALLOCATOR_MALLOC in AzCore's CMakeLists.txt
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
 #if !defined(AZCORE_SYSTEM_ALLOCATOR)
-    // We are using here AZCORE_SYSTEM_ALLOCATOR_HPHA for the sake of passing unit tests.
+    // We are using here AZCORE_SYSTEM_ALLOCATOR_MIMALLOC for the sake of passing unit tests.
     // But it's been found that, when using Vulkan, and working with levels that have
     // large amount of meshes, entering/Exiting game mode puts lost of stress in memory allocation that crashes
-    // when using HPHA. With AZCORE_SYSTEM_ALLOCATOR_MALLOC crashes don't occur.
+    // when using MIMALLOC. With AZCORE_SYSTEM_ALLOCATOR_MALLOC crashes don't occur.
     // TODO: Review Github Issue #18597
-    #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
+    #define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_MIMALLOC
 #endif
 
-#if (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_HPHA) && (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MALLOC)
-    #error AZCORE_SYSTEM_ALLOCATOR is an invalid value, it needs to be either AZCORE_SYSTEM_ALLOCATOR_HPHA or AZCORE_SYSTEM_ALLOCATOR_MALLOC
+#if (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MIMALLOC) && (AZCORE_SYSTEM_ALLOCATOR != AZCORE_SYSTEM_ALLOCATOR_MALLOC)
+    #error AZCORE_SYSTEM_ALLOCATOR is an invalid value, it needs to be either AZCORE_SYSTEM_ALLOCATOR_MIMALLOC or AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #endif
 
-#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
-#include <AzCore/Memory/HphaAllocator.h>
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MIMALLOC)
+#include <AzCore/Memory/MimallocAllocator.h>
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
 #include <AzCore/std/parallel/atomic.h>
 #endif
@@ -90,8 +90,8 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA)
-        m_subAllocator = AZStd::make_unique<HphaSchema>();
+#if (AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MIMALLOC)
+        m_subAllocator = AZStd::make_unique<MimallocSchema>();
 #endif
         return true;
     }

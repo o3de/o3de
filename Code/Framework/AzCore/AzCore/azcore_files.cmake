@@ -439,12 +439,12 @@ set(FILES
     Memory/AllocatorWrapper.h
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
-    Memory/HphaAllocator.cpp
-    Memory/HphaAllocator.h
     Memory/IAllocator.h
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
+    Memory/MimallocAllocator.cpp
+    Memory/MimallocAllocator.h
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h

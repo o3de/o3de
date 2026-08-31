@@ -7,24 +7,24 @@
  */
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/HphaAllocator.h>
+#include <AzCore/Memory/MimallocAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace UnitTest
 {
-    class HphaSchema_TestAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
+    class MimallocSchema_TestAllocator : public AZ::SimpleSchemaAllocator<AZ::MimallocSchema>
     {
     public:
-        AZ_TYPE_INFO(HphaSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
+        AZ_TYPE_INFO(MimallocSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
-        using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
+        using Base = AZ::SimpleSchemaAllocator<AZ::MimallocSchema>;
 
-        HphaSchema_TestAllocator()
+        MimallocSchema_TestAllocator()
         {
             Create();
         }
 
-        ~HphaSchema_TestAllocator() override = default;
+        ~MimallocSchema_TestAllocator() override = default;
     };
 
     static const size_t s_kiloByte = 1024;
@@ -38,10 +38,10 @@ namespace UnitTest
     static const AllocationSizeArray s_mixedAllocationSizes = { 2,   s_kiloByte, 59,  4 * s_kiloByte, 128, 200 * s_kiloByte,
                                                                 250, s_megaByte, 512, 2 * s_megaByte };
 
-    class HphaSchemaTestParameters
+    class MimallocSchemaTestParameters
     {
     public:
-        HphaSchemaTestParameters(const AllocationSizeArray& allocationSizes,
+        MimallocSchemaTestParameters(const AllocationSizeArray& allocationSizes,
                                  size_t numberOfAllocationsPerSize)
             : m_allocationSizes(allocationSizes)
             , m_numberOfAllocationsPerSize(numberOfAllocationsPerSize)
@@ -51,55 +51,55 @@ namespace UnitTest
         const size_t m_numberOfAllocationsPerSize;
     };
 
-    class HphaSchemaTestFixture
+    class MimallocSchemaTestFixture
         : public LeakDetectionFixture
-        , public ::testing::WithParamInterface<HphaSchemaTestParameters>
+        , public ::testing::WithParamInterface<MimallocSchemaTestParameters>
     {
     };
 
-    TEST_P(HphaSchemaTestFixture, Allocate)
+    TEST_P(MimallocSchemaTestFixture, Allocate)
     {
         AZStd::vector<void*, AZ::OSStdAllocator> allocations;
-        const HphaSchemaTestParameters& testParameters = GetParam();
+        const MimallocSchemaTestParameters& testParameters = GetParam();
         const size_t totalNumberOfAllocations = testParameters.m_allocationSizes.size() * testParameters.m_numberOfAllocationsPerSize;
         for (size_t i = 0; i < totalNumberOfAllocations; ++i)
         {
             const size_t allocationIndex = allocations.size();
             const size_t allocationSize = testParameters.m_allocationSizes[allocationIndex % testParameters.m_allocationSizes.size()];
-            void* allocation = AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().Allocate(allocationSize, 0);
+            void* allocation = AZ::AllocatorInstance<MimallocSchema_TestAllocator>::Get().Allocate(allocationSize, 0);
             ASSERT_NE(nullptr, allocation);
-            EXPECT_LE(allocationSize, AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().AllocationSize(allocation));
+            EXPECT_LE(allocationSize, AZ::AllocatorInstance<MimallocSchema_TestAllocator>::Get().AllocationSize(allocation));
             allocations.emplace_back(allocation);
         }
 
         const size_t numberOfAllocations = allocations.size();
         for (size_t i = 0; i < numberOfAllocations; ++i)
         {
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().DeAllocate(allocations[i], testParameters.m_allocationSizes[i % testParameters.m_allocationSizes.size()]);
+            AZ::AllocatorInstance<MimallocSchema_TestAllocator>::Get().DeAllocate(allocations[i], testParameters.m_allocationSizes[i % testParameters.m_allocationSizes.size()]);
         }
     }
 
-    static const AZStd::array<HphaSchemaTestParameters, 2> s_smallInstancesParameters = {
-         HphaSchemaTestParameters(s_smallAllocationSizes, 2),
-         HphaSchemaTestParameters(s_smallAllocationSizes, 100)
+    static const AZStd::array<MimallocSchemaTestParameters, 2> s_smallInstancesParameters = {
+         MimallocSchemaTestParameters(s_smallAllocationSizes, 2),
+         MimallocSchemaTestParameters(s_smallAllocationSizes, 100)
     };
     INSTANTIATE_TEST_SUITE_P(Small,
-        HphaSchemaTestFixture,
+        MimallocSchemaTestFixture,
         ::testing::ValuesIn(s_smallInstancesParameters));
 
-    static const AZStd::array<HphaSchemaTestParameters, 2> s_bigInstancesParameters = {
-         HphaSchemaTestParameters(s_bigAllocationSizes, 2),
-         HphaSchemaTestParameters(s_bigAllocationSizes, 100)
+    static const AZStd::array<MimallocSchemaTestParameters, 2> s_bigInstancesParameters = {
+         MimallocSchemaTestParameters(s_bigAllocationSizes, 2),
+         MimallocSchemaTestParameters(s_bigAllocationSizes, 100)
     };
     INSTANTIATE_TEST_SUITE_P(Big,
-        HphaSchemaTestFixture,
+        MimallocSchemaTestFixture,
         ::testing::ValuesIn(s_bigInstancesParameters));
 
-    static const AZStd::array<HphaSchemaTestParameters, 2> s_mixedInstancesParameters = {
-         HphaSchemaTestParameters(s_mixedAllocationSizes, 2),
-         HphaSchemaTestParameters(s_mixedAllocationSizes, 100)
+    static const AZStd::array<MimallocSchemaTestParameters, 2> s_mixedInstancesParameters = {
+         MimallocSchemaTestParameters(s_mixedAllocationSizes, 2),
+         MimallocSchemaTestParameters(s_mixedAllocationSizes, 100)
     };
     INSTANTIATE_TEST_SUITE_P(Mixed,
-        HphaSchemaTestFixture,
+        MimallocSchemaTestFixture,
         ::testing::ValuesIn(s_mixedInstancesParameters));
 }

@@ -166,8 +166,7 @@ set(FILES
     Math/VectorNPerformanceTests.cpp
     Math/PackedVectorTest.cpp
     Memory/AllocatorBenchmarks.cpp
-    Memory/HphaAllocator.cpp
-    Memory/HphaAllocatorErrorDetection.cpp
+    Memory/MimallocAllocator.cpp
     Memory/LeakDetection.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
@@ -275,6 +274,5 @@ set(FILES
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     EnumTests.cpp
-    Memory/HphaAllocator.cpp
-    Memory/HphaAllocatorErrorDetection.cpp
+    Memory/MimallocAllocator.cpp
 )
