@@ -485,6 +485,8 @@ namespace UnitTest
     {
         using PlaceHolderComponent = TestComponentModeComponent<PlaceHolderComponentMode>;
 
+        GetApplication()->RegisterComponentDescriptor(PlaceHolderComponent::CreateDescriptor());
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::Entity* entity = nullptr;
@@ -494,10 +496,7 @@ namespace UnitTest
 
         // Add placeholder component which implements component mode.
         entity->CreateComponent<PlaceHolderComponent>();
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
         entity->Activate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

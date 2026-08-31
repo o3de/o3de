@@ -38,6 +38,8 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -327,7 +329,39 @@ namespace UnitTest
 
             AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
+            InitializeRootPrefab();
+
             SetUpEditorFixtureImpl();
+        }
+
+        virtual void InitializeRootPrefab()
+        {
+            using AzToolsFramework::Prefab::InstanceOptionalReference;
+            using AzToolsFramework::Prefab::EntityOptionalReference;
+            using AzToolsFramework::PrefabEditorEntityOwnershipInterface;
+            using AzToolsFramework::Prefab::PrefabFocusPublicInterface;
+            using AzToolsFramework::Prefab::PrefabFocusOperationResult;
+            using AzToolsFramework::ToolsApplicationRequestBus;
+
+            if (auto* ownershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get(); ownershipInterface)
+            {
+                // you can create an application manually that already has all of this stuff initialized.
+                if (!ownershipInterface->IsRootPrefabAssigned())
+                {
+                    ownershipInterface->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+                }
+
+                InstanceOptionalReference rootInstance = ownershipInterface->GetRootPrefabInstance();
+                ASSERT_TRUE(rootInstance.has_value());
+
+                // Focus on root prefab instance.
+                auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+                EXPECT_TRUE(prefabFocusPublicInterface != nullptr);
+                PrefabFocusOperationResult focusResult =prefabFocusPublicInterface->FocusOnOwningPrefab(rootInstance->get().GetContainerEntityId());
+                EXPECT_TRUE(focusResult.IsSuccess());
+            }
+
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{});
         }
 
         void TearDown() override final
@@ -507,11 +541,15 @@ namespace UnitTest
 
     /// Create an Entity as it would appear in the Editor.
     /// Optional second parameter of Entity pointer if required.
-    AZ::EntityId CreateDefaultEditorEntity(const char* name, AZ::Entity** outEntity = nullptr);
+    AZ::EntityId CreateDefaultEditorEntity(const char* name, AZ::Entity** outEntity = nullptr, AZ::EntityId parentId = AZ::EntityId());
 
     /// Create a Layer Entity as it would appear in the Editor.
     /// Optional second parameter of Entity pointer if required.
     AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity = nullptr);
+
+    /// Get the EntityId of the root prefab instance in the editor (the "level" entity, also known as
+    /// the root instance's container entity)
+    AZ::EntityId GetRootInstanceEntityId();
 
     /// Create a component for a given entity if the component is missing.
     template<class ComponentType>

@@ -497,7 +497,8 @@ namespace AzToolsFramework
         if (auto* instanceUpdateExecutor = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get(); instanceUpdateExecutor)
         {
             // flush any remaining template instance updates in the queue, before we start play.
-            instanceUpdateExecutor->UpdateTemplateInstancesInQueue();
+            const bool flush = true;
+            instanceUpdateExecutor->UpdateTemplateInstancesInQueue(flush);
             instanceUpdateExecutor->SetShouldPauseInstancePropagation(true);
         }
         // This is a workaround until the replacement for GameEntityContext is done
