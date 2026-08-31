@@ -10,13 +10,17 @@
 #include <sentry.h>
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/typetraits/conditional.h>
+#include <AzCore/std/typetraits/is_integral.h>
 
 #include <atomic>
 #include <cstdio>
-#include <cstdlib>
 
 namespace SentryCrash
 {
@@ -66,32 +70,28 @@ namespace SentryCrash
             }
         }
 
-        void ReadSetting(AZ::SettingsRegistryInterface* registry, const char* leaf, uint64_t& out)
+        // One overload for every integral width: size_t and uint64_t are the same type on 64-bit
+        // Windows, so separate overloads for them are a redefinition there but not elsewhere.
+        template<class IntegralType, class = AZStd::enable_if_t<AZStd::is_integral_v<IntegralType>>>
+        void ReadSetting(AZ::SettingsRegistryInterface* registry, const char* leaf, IntegralType& out)
         {
             AZ::s64 value{};
             if (registry->Get(value, SettingsKey(leaf).c_str()) && value >= 0)
             {
-                out = static_cast<uint64_t>(value);
-            }
-        }
-
-        void ReadSetting(AZ::SettingsRegistryInterface* registry, const char* leaf, size_t& out)
-        {
-            AZ::s64 value{};
-            if (registry->Get(value, SettingsKey(leaf).c_str()) && value >= 0)
-            {
-                out = static_cast<size_t>(value);
+                out = static_cast<IntegralType>(value);
             }
         }
 
         AZStd::string GetUserProfilePath()
         {
+            char buffer[AZ::IO::MaxPathLength];
 #if defined(AZ_PLATFORM_WINDOWS)
-            constexpr const char* profile = "USERPROFILE";
+            constexpr const char* profileVar = "USERPROFILE";
 #else
-            const char* profile = "HOME";
+            constexpr const char* profileVar = "HOME";
 #endif
-            if (auto outcome = AZ::Utils::GetEnv(AZStd::span(buffer, AZ_ARRAY_SIZE(buffer)), profileVar); outcome.IsSuccess())
+            if (auto outcome = AZ::Utils::GetEnv(AZStd::span(buffer, AZ_ARRAY_SIZE(buffer)), profileVar);
+                outcome.IsSuccess())
             {
                 return AZStd::string(outcome.GetValue());
             }
@@ -155,7 +155,8 @@ namespace SentryCrash
 
             for (const char* container : { "exception", "threads" })
             {
-                sentry_value_t values = sentry_value_get_by_key(sentry_value_get_by_key(event, container), "values");
+                sentry_value_t values =
+                    sentry_value_get_by_key(sentry_value_get_by_key(event, container), "values");
                 if (sentry_value_get_type(values) != SENTRY_VALUE_TYPE_LIST)
                 {
                     continue;
@@ -163,7 +164,8 @@ namespace SentryCrash
                 const size_t count = sentry_value_get_length(values);
                 for (size_t i = 0; i < count; ++i)
                 {
-                    ScrubStacktrace(sentry_value_get_by_key(sentry_value_get_by_index(values, i), "stacktrace"));
+                    ScrubStacktrace(
+                        sentry_value_get_by_key(sentry_value_get_by_index(values, i), "stacktrace"));
                 }
             }
 
@@ -199,7 +201,8 @@ namespace SentryCrash
             {
                 return;
             }
-            
+            // Plain stdio rather than the engine's file APIs: this runs from the crash handler,
+            // where the less machinery touched the better.
             FILE* file = nullptr;
             azfopen(&file, s_recoveryMarkerPath.c_str(), "wb");
             if (file)
@@ -234,11 +237,11 @@ namespace SentryCrash
             return event;
         }
 
-        void OnCrashedLastRun(void*)
+        void OnCrashedLastRun(const sentry_envelope_t*, void*)
         {
             s_crashedLastRun = 1;
         }
-    } // namespace
+    }
 
     Config LoadConfig(AZStd::string_view moduleTag, AZStd::string_view appRoot)
     {
@@ -298,7 +301,10 @@ namespace SentryCrash
 
         if (config.m_dsn.empty())
         {
-            AZ_Warning("CrashReporting", false, "No Sentry DSN configured (%sSentryDsn) - crash reporting is disabled", SettingsPrefix);
+            AZ_Warning(
+                "CrashReporting", false,
+                "No Sentry DSN configured (%sSentryDsn) - crash reporting is disabled",
+                SettingsPrefix);
             return false;
         }
 
@@ -327,7 +333,8 @@ namespace SentryCrash
         }
         if (!config.m_externalReporterPath.empty())
         {
-            sentry_options_set_external_crash_reporter_path(options, config.m_externalReporterPath.c_str());
+            sentry_options_set_external_crash_reporter_path(
+                options, config.m_externalReporterPath.c_str());
         }
         if (!config.m_proxy.empty())
         {
@@ -353,12 +360,16 @@ namespace SentryCrash
         sentry_options_set_crashpad_wait_for_upload(options, config.m_waitForUpload ? 1 : 0);
 
         sentry_options_set_require_user_consent(options, config.m_requireUserConsent ? 1 : 0);
-        sentry_options_set_send_default_pii(options, config.m_sendDefaultPii ? 1 : 0);
+        //sentry_options_set_send_default_pii(options, config.m_sendDefaultPii ? 1 : 0);
         sentry_options_set_before_send(options, ScrubEvent, nullptr);
 
         sentry_options_set_auto_session_tracking(options, config.m_autoSessionTracking ? 1 : 0);
+        // Both toggles are deprecated with no replacement - upstream is removing the opt-out, not
+        // the feature. Keep honouring them until they actually disappear.
+        SENTRY_SUPPRESS_DEPRECATED;
         sentry_options_set_enable_logs(options, config.m_enableLogs ? 1 : 0);
         sentry_options_set_enable_metrics(options, config.m_enableMetrics ? 1 : 0);
+        SENTRY_RESTORE_DEPRECATED;
         sentry_options_set_traces_sample_rate(options, config.m_tracesSampleRate);
         sentry_options_set_enable_app_hang_tracking(options, config.m_enableAppHangTracking ? 1 : 0);
         sentry_options_set_app_hang_timeout(options, config.m_appHangTimeoutMs);
@@ -374,14 +385,8 @@ namespace SentryCrash
 
         // Published so the companion reporter process - launched by crashpad, inheriting this
         // environment - can find the marker without re-deriving the database path.
-        AZStd::string recoveryEnv = s_recoveryMarkerPath;
-#if defined(AZ_PLATFORM_WINDOWS)
-        _putenv_s(RecoveryEnvVar, recoveryEnv.c_str());
-        _putenv_s("SENTRY_DSN", config.m_dsn.c_str());
-#else
-        setenv(RecoveryEnvVar, recoveryEnv.c_str(), 1);
-        setenv("SENTRY_DSN", config.m_dsn.c_str(), 1);
-#endif
+        AZ::Utils::SetEnv(RecoveryEnvVar, s_recoveryMarkerPath.c_str(), true);
+        AZ::Utils::SetEnv("SENTRY_DSN", config.m_dsn.c_str(), true);
 
         if (sentry_init(options) != 0)
         {
@@ -397,9 +402,7 @@ namespace SentryCrash
         AZ_TracePrintf(
             "CrashReporting",
             "Sentry crash reporting initialized for %s (environment=%s, database=%s)\n",
-            config.m_moduleTag.c_str(),
-            config.m_environment.c_str(),
-            config.m_databasePath.c_str());
+            config.m_moduleTag.c_str(), config.m_environment.c_str(), config.m_databasePath.c_str());
         return true;
     }
 
@@ -426,8 +429,13 @@ namespace SentryCrash
 
     AZStd::string GetRecoveryMarkerPath()
     {
-        const char* fromEnv = std::getenv(RecoveryEnvVar);
-        return fromEnv ? AZStd::string(fromEnv) : s_recoveryMarkerPath;
+        char buffer[AZ::IO::MaxPathLength];
+        if (auto outcome = AZ::Utils::GetEnv(AZStd::span(buffer, AZ_ARRAY_SIZE(buffer)), RecoveryEnvVar);
+            outcome.IsSuccess())
+        {
+            return AZStd::string(outcome.GetValue());
+        }
+        return s_recoveryMarkerPath;
     }
 
     bool CrashedLastRun()
@@ -457,7 +465,8 @@ namespace SentryCrash
         sentry_add_breadcrumb(crumb);
     }
 
-    void SetContext(const char* key, const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& values)
+    void SetContext(
+        const char* key, const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& values)
     {
         if (!s_initialized || !key)
         {
@@ -483,4 +492,4 @@ namespace SentryCrash
             sentry_app_hang_heartbeat();
         }
     }
-} // namespace SentryCrash
+}
