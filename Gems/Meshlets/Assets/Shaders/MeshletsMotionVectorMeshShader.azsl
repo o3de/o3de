@@ -6,7 +6,7 @@
  *
  */
 
-// Meshlet MOTION VECTOR pass — HARDWARE MESH SHADER path.
+// Meshlet MOTION VECTOR pass -- HARDWARE MESH SHADER path.
 //
 // The mesh-shader counterpart of MeshletsMotionVector.azsl (vertex-pull). Unlike
 // the depth and shadow mesh shaders this one has a REAL pixel shader: it writes
@@ -20,7 +20,7 @@
 // NOTE ON OBJECT ID: the vertex-pull path resolves objectId through
 // MeshletsInstanceRenderSrg::ResolveObjectId(SV_InstanceID) because it supports
 // hardware-instanced draws. The mesh-shader path issues one DispatchMesh per
-// instance, so there is no SV_InstanceID to resolve — it reads
+// instance, so there is no SV_InstanceID to resolve -- it reads
 // MeshletsMeshInstanceSrg::m_objectId directly, matching MeshletsDepthMeshShader
 // and MeshletsForwardMeshShader. Each instance therefore still gets its OWN
 // previous transform, which is what prevents ghosting.
@@ -30,7 +30,7 @@
 // Pulls in scenesrg_all.srgi + MeshletsMeshObjectSrg/MeshletsMeshInstanceSrg.
 #include <MeshletsMeshRenderSrg.azsli>
 
-// Must match the other meshlet mesh shaders — clusters are baked at <=128 verts /
+// Must match the other meshlet mesh shaders -- clusters are baked at <=128 verts /
 // <=256 tris, within the DX12 mesh-shader per-group limits.
 #define MESHLETS_MS_MAX_VERTICES   128
 #define MESHLETS_MS_MAX_TRIANGLES  256
@@ -66,7 +66,7 @@ void MeshletsMotionVectorMS(
 
     const uint objectId = MeshletsMeshInstanceSrg::m_objectId;
 
-    // KEEP both current AND previous object-to-world transforms — the previous one
+    // KEEP both current AND previous object-to-world transforms -- the previous one
     // is what drives the motion vector.
     const float4x4 worldMatrix     = SceneSrg::GetObjectToWorldMatrix(objectId);
     const float4x4 worldMatrixPrev = SceneSrg::GetObjectToWorldMatrixPrev(objectId);
@@ -99,7 +99,7 @@ void MeshletsMotionVectorMS(
 // AS-culled variant (opt-in r_meshletsMsCullAS, MeshletsMotionVectorMeshShaderCulled.shader):
 // same emit as MeshletsMotionVectorMS but driven by the shared cluster-cull AS's
 // payload, matching the culled forward PSO's AS group counts (one geometry view
-// per DrawPacket). No per-triangle cull — the motion pass depth-tests GreaterEqual
+// per DrawPacket). No per-triangle cull -- the motion pass depth-tests GreaterEqual
 // against the prepass, so extra triangles resolve correctly.
 // ---------------------------------------------------------------------------
 #include <MeshletsCullAS.azsli>

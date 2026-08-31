@@ -6,7 +6,7 @@
  *
  */
 
-// GPU-Driven Indirect Depth Pass — Vertex Pulling Architecture
+// GPU-Driven Indirect Depth Pass -- Vertex Pulling Architecture
 //
 // This shader uses SV_VertexID to pull vertex positions from GPU buffers
 // rather than traditional vertex assembly (InputAssembly stage).
@@ -15,11 +15,11 @@
 // position buffer via bindless access.
 //
 // Data flow per vertex:
-//   m_gpuDrivenBatchId (rootconstant) → batchId; SV_VertexID → localVertexId (full 32-bit)
-//   batchId → batchBaseOffset + SV_InstanceID → instanceSlot → meshInfoIndex
-//   meshInfo → LoadIndex(triangleIndex) → vertex indices
-//   meshInfo → LoadPosition(vertexIndex) → object-space position
-//   objectToWorld → viewProjection → SV_Position
+//   m_gpuDrivenBatchId (rootconstant) -> batchId; SV_VertexID -> localVertexId (full 32-bit)
+//   batchId -> batchBaseOffset + SV_InstanceID -> instanceSlot -> meshInfoIndex
+//   meshInfo -> LoadIndex(triangleIndex) -> vertex indices
+//   meshInfo -> LoadPosition(vertexIndex) -> object-space position
+//   objectToWorld -> viewProjection -> SV_Position
 
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
@@ -38,7 +38,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     StructuredBuffer<uint> m_batchBaseOffset;
 };
 
-// No vertex assembly inputs — this pass uses vertex pulling.
+// No vertex assembly inputs -- this pass uses vertex pulling.
 // SV_VertexID is the full 32-bit local vertex index; batchId is the per-draw root constant.
 struct VSInput
 {
@@ -66,7 +66,7 @@ VSDepthOutput IndirectDepthVS(VSInput IN)
     MeshInfo meshInfo;
     if (!GetMeshInfoEntry(meshInfoIndex, meshInfo))
     {
-        // Invalid mesh info — emit degenerate vertex
+        // Invalid mesh info -- emit degenerate vertex
         OUT.m_position = float4(0, 0, -1, 0);
         return OUT;
     }
@@ -86,7 +86,7 @@ VSDepthOutput IndirectDepthVS(VSInput IN)
     // Load object-space position from the position buffer
     float3 localPosition = LoadPosition(meshInfo, vertexIndex);
 
-    // Transform: object space → world space → clip space
+    // Transform: object space -> world space -> clip space
     float4x4 objectToWorld = GpuDriven_GetObjectToWorldMatrixBySlot(instanceSlot, PassSrg::m_visibleInstanceIds);
     float4 worldPosition = mul(objectToWorld, float4(localPosition, 1.0));
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);

@@ -22,7 +22,7 @@ namespace AZ::Meshlets
     //! at AcquireInstance time.
     //!
     //! Subscribes to AzFramework::AssetCatalogEventBus so packs added/removed
-    //! by AssetProcessor while the editor is running update the map live —
+    //! by AssetProcessor while the editor is running update the map live --
     //! without this, a freshly-baked .azmeshletpack wouldn't appear until
     //! the editor restarts.
     class PackResolver
@@ -53,13 +53,13 @@ namespace AZ::Meshlets
         //! id, and update the map.
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 
-        //! Fires when an existing catalog asset changes — e.g., AP
+        //! Fires when an existing catalog asset changes -- e.g., AP
         //! re-processed the sidecar after a builder version bump, or the
         //! artist edited the JSON's cluster params. Re-evaluate the pack
         //! the same way we would on Added: read its header, refresh the
         //! map entry. Critical for the case where the previous build of
         //! the pack had the wrong m_assetType in the catalog and got
-        //! filtered out — without Changed handling the editor would
+        //! filtered out -- without Changed handling the editor would
         //! never see the re-emitted product until restart.
         void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
 

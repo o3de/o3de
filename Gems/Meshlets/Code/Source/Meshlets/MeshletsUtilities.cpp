@@ -99,7 +99,7 @@ namespace AZ
             // caller to do a post-creation UpdateData. That works for ReadOnly
             // pool buffers (compute reads them fine) but on AMD with ReadWrite
             // pool buffers the post-creation UpdateData appears to silently not
-            // commit before the next frame's GPU read — every read returns
+            // commit before the next frame's GPU read -- every read returns
             // zeros. Using the BufferAsset initial-data path here routes the
             // upload through the engine's StreamBuffer fenced-upload mechanism
             // (see Buffer::Init in RPI.Public/Buffer/Buffer.cpp) which is

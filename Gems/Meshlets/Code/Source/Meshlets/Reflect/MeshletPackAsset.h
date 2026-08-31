@@ -35,7 +35,7 @@ namespace AZ::Meshlets
         const MeshletPackReader& GetReader() const { return m_reader; }
 
         //! Convenience: read the PackHeader record. Returns nullptr if absent
-        //! (which would indicate a malformed pack — Parse should have rejected).
+        //! (which would indicate a malformed pack -- Parse should have rejected).
         const PackHeaderRecord* GetPackHeader() const;
 
     private:

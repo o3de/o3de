@@ -128,13 +128,13 @@ namespace AZ
             //! forward packet binds ONE geometry view (AS group counts), so its depth and
             //! motion items need PSOs that carry the SAME shared cluster-cull AS
             //! (MeshletsCullAS.azsli) rather than the plain Mesh-only PSOs. Shared retry
-            //! helper — safe no-op until the shader asset is processed.
+            //! helper -- safe no-op until the shader asset is processed.
             bool InitCulledMeshVariant(
                 const char* shaderPath, const char* label,
                 Data::Instance<RPI::Shader>& shaderOut, const RHI::PipelineState*& pipelineStateOut);
 
             //! Writes the per-instance AS cull constants (world rows, frustum planes,
-            //! camera, toggles) WITHOUT compiling — callers decide when to Compile().
+            //! camera, toggles) WITHOUT compiling -- callers decide when to Compile().
             void WriteMeshShaderCullConstants(
                 const Data::Instance<RPI::ShaderResourceGroup>& srg, const AZ::Frustum& frustum,
                 const AZ::Vector3& cameraPos, const AZ::Matrix4x4& objectToWorld, bool dagCutActive);
@@ -253,15 +253,15 @@ namespace AZ
                 bool m_motionPassEnabled  = true;
                 bool m_useDebugShader     = false;  //!< Force the UV debug shader over PBR forward.
                 //! Debug: flat per-cluster (meshlet) coloring on the forward pass.
-                //! Cull-independent — visualizes the meshlet decomposition directly.
+                //! Cull-independent -- visualizes the meshlet decomposition directly.
                 bool m_meshletColorMode   = false;
                 // ---- LOD debug (Step C) ----
                 //! Force every instance to this LOD, overriding screen-coverage selection.
                 //! -1 = auto (screen-coverage, the shipping behaviour). 0..K-1 forces that
-                //! LOD (clamped per-instance to what its pack actually has) — the key A/B
+                //! LOD (clamped per-instance to what its pack actually has) -- the key A/B
                 //! tool: force LOD0 vs a coarse LOD and compare GPU pass times + visuals.
                 int m_forceLodIndex = -1;
-                // Cluster culling — opt-in (off by default so the proven whole-mesh
+                // Cluster culling -- opt-in (off by default so the proven whole-mesh
                 // path is untouched until toggled on in the debug tab).
                 bool m_cullEnabled  = false;
                 bool m_frustumCull  = true;
@@ -290,7 +290,7 @@ namespace AZ
 
             //! Null every live DrawPacket so they are rebuilt on the next Render().
             //! Call this whenever the pipeline state changes (shader reload, pass
-            //! reconstruction) — DrawPackets hold raw pointers to the pipeline state
+            //! reconstruction) -- DrawPackets hold raw pointers to the pipeline state
             //! and SRGs, so they become dangling when those objects are freed.
             void InvalidateAllDrawPackets();
 
@@ -395,7 +395,7 @@ namespace AZ
                 const AZ::Frustum& frustum, const AZ::Vector3& cameraPos,
                 uint32_t& outVisible, uint32_t& outCulled);
 
-            //! Phase 6 GPU cull: lazily create this instance's GPU cull resources —
+            //! Phase 6 GPU cull: lazily create this instance's GPU cull resources --
             //! the cull SRG (binds the mesh's GPU bounds/descriptor buffers + a
             //! dedicated args buffer), the args buffer, the static indirect geometry
             //! view (clusterCount fixed-slot commands), and the cull dispatch item.
@@ -406,7 +406,7 @@ namespace AZ
             //! SRG (transform + world-space frustum planes + flags), recompile it, and
             //! queue the cull dispatch + the args-buffer attachment. The dispatch fills
             //! the args buffer on the GPU; the static packet draws clusterCount
-            //! commands (culled clusters have instanceCount=0). Cheap — no per-frame
+            //! commands (culled clusters have instanceCount=0). Cheap -- no per-frame
             //! packet rebuild. outVisible/outCulled are estimates (the GPU does the
             //! real cull; counts here reflect the CPU-side equivalent for the HUD).
             void UpdateGpuCullInstance(
@@ -459,7 +459,7 @@ namespace AZ
             Data::Instance<MultiDispatchComputePass> m_computePass;
             Data::Instance<MeshletsRenderPass> m_renderPass;
             //! GPU cull: early compute pass (runs cull dispatches, writes args UAV)
-            //! and barrier pass (declares args Indirect → UAV->Indirect transition
+            //! and barrier pass (declares args Indirect -> UAV->Indirect transition
             //! before the standard raster passes consume them). Both are
             //! MultiDispatchComputePass instances injected before DepthPrePass.
             Data::Instance<MultiDispatchComputePass> m_cullComputePass;
@@ -469,11 +469,11 @@ namespace AZ
             //! HiZ per-cluster occlusion (opt-in m_debugControls.m_hiZCull): the persistent
             //! double-buffered HiZ pyramid pass instance in this pipeline (MainPipeline's
             //! GpuCullAndDrawPass/HiZGeneratePass, now HiZGeneratePersistentTemplate).
-            //! Found in InitCullPasses; null when the pipeline has none → HiZ cull stays off.
+            //! Found in InitCullPasses; null when the pipeline has none -> HiZ cull stays off.
             RPI::Ptr<RPI::HiZGeneratePass> m_hiZGeneratePass;
             //! Per-frame resolved bind state: the LAST-COMPLETED pyramid slot (safe to read
             //! early in the frame) + the world->clip of the camera that rendered it (the
-            //! PREVIOUS frame's — projecting current bounds with the pyramid's own matrix
+            //! PREVIOUS frame's -- projecting current bounds with the pyramid's own matrix
             //! keeps the depth comparison in the pyramid's clip space). Valid only when the
             //! toggle is on, the pyramid is populated, and the barrier pass exists to
             //! transition the image to shader-read.
@@ -496,7 +496,7 @@ namespace AZ
             bool m_lastDagLod = false;
 
             //! Two-pass occlusion (opt-in r_meshletsTwoPassOcclusion): the injected
-            //! late-depth pass (PASS 2 — draws disoccluded clusters after this frame's
+            //! late-depth pass (PASS 2 -- draws disoccluded clusters after this frame's
             //! HiZ reduce), the late PSO, and a monotonic frame id for the per-cluster
             //! visibility ledgers (starts at 1: a fresh zeroed ledger never matches).
             Data::Instance<MeshletsRenderPass> m_lateDepthPass;
@@ -507,8 +507,8 @@ namespace AZ
             uint32_t m_frameId = 1;
             bool m_lastTwoPass = false;
             //! Per-frame scratch: visibility-ledger imports for the barrier pass
-            //! (ReadWrite/compute — establishes UAV state + a sync point before the
-            //! depth prepass) and the late pass (ReadWrite on its own scope — the sync
+            //! (ReadWrite/compute -- establishes UAV state + a sync point before the
+            //! depth prepass) and the late pass (ReadWrite on its own scope -- the sync
             //! point AFTER pass 1's AS writes).
             AZStd::vector<MeshletsImportedAttachment> m_visFrameAttachmentsScratch;
 
@@ -521,7 +521,7 @@ namespace AZ
 
             //! Phase 7 streaming (opt-in r_meshletsStreaming; v1 = design phase 2:
             //! pages classify/load/evict against the slot budget while RENDERING still
-            //! draws the monolithic buffers — the paged GPU pools + residency-aware
+            //! draws the monolithic buffers -- the paged GPU pools + residency-aware
             //! cut are the next work package; this fixes the interfaces and proves the
             //! residency behavior with live stats).
             MeshletsPageResidency m_pageResidency;
@@ -537,7 +537,7 @@ namespace AZ
             Data::Instance<RPI::Shader> m_pageUploadShader;
             uint32_t m_pagePoolSlotCount = 0;
             //! Per-frame upload work (appended into the cull pass's lists at feed time
-            //! — the cull scratches are cleared later in Render than the streaming
+            //! -- the cull scratches are cleared later in Render than the streaming
             //! block runs).
             AZStd::vector<RHI::DispatchItem*> m_pageUploadItemsScratch;
             AZStd::vector<MeshletsImportedAttachment> m_pageUploadAttachmentsScratch;
@@ -620,10 +620,10 @@ namespace AZ
             // attachments (declared ReadWrite on the cull compute pass, Indirect on
             // the barrier pass).
             AZStd::vector<RHI::DispatchItem*> m_cullDispatchItemsScratch;
-            //! Compute-pass attachments (ReadWrite + SRG finalize) — only instances that
+            //! Compute-pass attachments (ReadWrite + SRG finalize) -- only instances that
             //! actually re-cull this frame (changed camera/transform).
             AZStd::vector<MeshletsImportedAttachment> m_cullArgsAttachmentsScratch;
-            //! Barrier-pass attachments (compacted->SRV, args->Indirect) — EVERY active
+            //! Barrier-pass attachments (compacted->SRV, args->Indirect) -- EVERY active
             //! GPU-cull instance every frame, so a skipped instance's buffers stay in the
             //! read state the standard passes consume (they keep last frame's compacted
             //! data, which is still valid because nothing moved).
@@ -658,12 +658,12 @@ namespace AZ
             // Forward PBR pass: pipeline state + DrawListTag for the "forward"
             // DrawItem. Like shadow, this is rendered by the STANDARD Atom
             // ForwardPass (which binds the ForwardPassSrg lighting resources for
-            // every draw item it submits), so no gem-private pass is needed —
+            // every draw item it submits), so no gem-private pass is needed --
             // only the PSO + tag. Replaces the debug-shader render path.
             const RHI::PipelineState* m_forwardPipelineState = nullptr;
             RHI::DrawListTag m_forwardDrawListTag;
 
-            // Phase 5: hardware mesh-shader forward path (MeshletsForwardMeshShader —
+            // Phase 5: hardware mesh-shader forward path (MeshletsForwardMeshShader --
             // Mesh + Fragment entry points, DispatchMesh PSO, same "forward" tag so the
             // standard ForwardPass renders it). Gated by r_meshletsHwMeshShader + the
             // device's m_meshShader feature bit.
@@ -690,7 +690,7 @@ namespace AZ
             //! Tracks the r_meshletsMsCullAS toggle so a change rebuilds all packets.
             bool m_lastMsCullAS = false;
 
-            // Hardware mesh-shader depth prepass (MeshletsDepthMeshShader — Mesh entry
+            // Hardware mesh-shader depth prepass (MeshletsDepthMeshShader -- Mesh entry
             // only, no Fragment). Reuses the existing "depth" DrawListTag
             // (m_depthDrawListTag) since both .shader files declare "DrawList":"depth",
             // so only a separate PSO is needed (the depth pass's render-attachment
@@ -704,14 +704,14 @@ namespace AZ
             Data::Instance<RPI::Shader> m_meshMotionShader;
             const RHI::PipelineState* m_meshMotionPipelineState = nullptr;
 
-            // AS-culled depth/motion PSOs (opt-in r_meshletsMsCullAS) — same shared
+            // AS-culled depth/motion PSOs (opt-in r_meshletsMsCullAS) -- same shared
             // cluster-cull AS as the culled forward PSO so all items in the packet
             // consume the same AS-group-count geometry view. Same "depth"/"motion" tags.
             Data::Instance<RPI::Shader> m_meshDepthCullShader;
             const RHI::PipelineState* m_meshDepthCullPipelineState = nullptr;
             Data::Instance<RPI::Shader> m_meshMotionCullShader;
             const RHI::PipelineState* m_meshMotionCullPipelineState = nullptr;
-            //! Phase 6 shadow-side DAG cut: AS-culled shadow PSO (cut-only mode — the
+            //! Phase 6 shadow-side DAG cut: AS-culled shadow PSO (cut-only mode -- the
             //! shadow instance SRG zeroes every camera-view cull toggle). Used only
             //! while the DAG cut is active; otherwise shadows stay on the plain
             //! all-leaves mesh shadow PSO.

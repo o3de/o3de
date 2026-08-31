@@ -44,14 +44,14 @@ namespace AZ
 {
     namespace Meshlets
     {
-        // GPU cull thread-group size — MUST match MESHLETS_CULL_GROUP in MeshletsCull.azsl
+        // GPU cull thread-group size -- MUST match MESHLETS_CULL_GROUP in MeshletsCull.azsl
         // AND MeshletsDispatchItem's MESHLETS_THREAD_GROUP_SIZE (so InitDispatch issues
         // exactly one group). The compaction shader strides clusters within the group.
         static constexpr uint32_t MeshletsCullGroupSize = 64;
 
         // Kill-switch for the actual GPU dispatch path. When 0 (default),
         // AcquireInstance returns InvalidInstanceHandle BEFORE constructing
-        // a MeshletsRenderObject — i.e. the meshlet asset pipeline still
+        // a MeshletsRenderObject -- i.e. the meshlet asset pipeline still
         // runs (sidecar -> .azmeshletpack, PackResolver maps model->pack)
         // and the editor's "Use Virtual Geometry" toggle still surfaces
         // pack status, but no compute dispatch or vertex-pull draw runs.
@@ -91,7 +91,7 @@ namespace AZ
 
         // Phase 5: hardware mesh-shader render path. When on (and the GPU reports
         // mesh-shader support), each meshlet instance's camera packet is a single
-        // forward DrawItem driven by DispatchMesh — one threadgroup per cluster, the
+        // forward DrawItem driven by DispatchMesh -- one threadgroup per cluster, the
         // mesh shader pulls cluster vertices/triangles directly (no index buffer, no
         // input assembler). FIRST SLICE: forward pass only with a flat per-cluster
         // debug color (proves the mesh-shader emit); no shadow/depth/motion items.
@@ -100,7 +100,7 @@ namespace AZ
             AZ::ConsoleFunctorFlags::Null,
             "If true and the GPU supports hardware mesh shaders, meshlet instances "
             "render through DispatchMesh (one threadgroup per cluster, flat per-cluster "
-            "debug color, forward pass only — first bring-up slice). If false (default), "
+            "debug color, forward pass only -- first bring-up slice). If false (default), "
             "the vertex-pull hardware-IA path is used.");
 
         // Phase 5: amplification-shader per-cluster cull + per-triangle cull (backface/
@@ -161,7 +161,7 @@ namespace AZ
         // every dispatched cluster in a per-instance visibility ledger; the persistent
         // HiZ pass then reduces THIS frame's pyramid; PASS 2 = the injected
         // MeshletsLateDepthPass re-tests only the skipped clusters against the fresh
-        // pyramid and draws the disoccluded survivors — completing the depth buffer in
+        // pyramid and draws the disoccluded survivors -- completing the depth buffer in
         // the SAME frame (no one-frame disocclusion pop, no pyramid feedback).
         // Forward/motion then cull against THIS frame's pyramid directly. Requires
         // r_meshletsMsCullAS; off (default) keeps occlusion-safe depth (pass 1 without
@@ -170,7 +170,7 @@ namespace AZ
         // docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md).
         // v1 = the design's phase 2: the CPU residency manager classifies every leaf
         // page of every v4 (generate_pages) pack against the DAG-cut camera, loads/
-        // evicts against the slot budget and reports live stats — while RENDERING
+        // evicts against the slot budget and reports live stats -- while RENDERING
         // still draws the monolithic (duplicate-fallback) buffers. The paged GPU
         // pools + residency-aware cut consume these exact interfaces next.
         AZ_CVAR(bool, r_meshletsStreaming, false, nullptr,
@@ -203,7 +203,7 @@ namespace AZ
 
         namespace
         {
-            //! One shared derivation for a page's residency key — the classifier
+            //! One shared derivation for a page's residency key -- the classifier
             //! request path and the load/evict reverse path MUST agree.
             uint64_t MeshletsPageKey(const MeshRenderData* mrd, uint32_t pageIndex)
             {
@@ -257,7 +257,7 @@ namespace AZ
             // RenderObject / Instance. Those SRGs reference the pipeline state and
             // shader that belong to the pass being torn down. If the DrawPacket
             // survives into the next frame (e.g. already queued in the View's draw
-            // list) while the pass — and its pipeline state — are destroyed, the
+            // list) while the pass -- and its pipeline state -- are destroyed, the
             // item.m_shaderResourceGroups pointer inside the DrawItem becomes dangling
             // and CommitShaderResources faults with a garbage address.
             //
@@ -437,7 +437,7 @@ namespace AZ
                     m_cullBarrierPass = static_cast<MultiDispatchComputePass*>(p.get());
                 }
             }
-            // Two-pass occlusion PASS 2 (optional — absent pipeline just leaves it off).
+            // Two-pass occlusion PASS 2 (optional -- absent pipeline just leaves it off).
             m_lateDepthPass = nullptr;
             {
                 RPI::PassFilter f = RPI::PassFilter::CreateWithPassName(Name("MeshletsLateDepthPass"), renderPipeline);
@@ -447,7 +447,7 @@ namespace AZ
                 }
             }
             // HiZ per-cluster occlusion: the persistent double-buffered pyramid instance
-            // (MainPipeline's GpuCullAndDrawPass child). Optional — absent pipeline just
+            // (MainPipeline's GpuCullAndDrawPass child). Optional -- absent pipeline just
             // leaves HiZ cull off.
             m_hiZGeneratePass = nullptr;
             {
@@ -458,7 +458,7 @@ namespace AZ
                     m_hiZGeneratePass = static_cast<RPI::HiZGeneratePass*>(p.get());
                 }
             }
-            // Not fatal if absent — GPU cull simply stays unavailable; CPU cull and the
+            // Not fatal if absent -- GPU cull simply stays unavailable; CPU cull and the
             // whole-mesh path are unaffected.
             return m_cullComputePass && m_cullBarrierPass;
         }
@@ -570,13 +570,13 @@ namespace AZ
             }
             if (!m_cullComputeShader || !m_drawIndirectSignature)
             {
-                return false;   // Cull pass/shader/signature not ready yet — retry next frame.
+                return false;   // Cull pass/shader/signature not ready yet -- retry next frame.
             }
             if (!instance.RenderObject->EnsureCullGpuBuffers(meshRenderData))
             {
                 return false;   // Per-mesh cluster bounds/descriptors not on the GPU yet.
             }
-            // The per-cluster cull draws slices of the mesh's STATIC index buffer — ensure it
+            // The per-cluster cull draws slices of the mesh's STATIC index buffer -- ensure it
             // (and IndexBufferViewRHI / IndirectGeometryView for the whole-mesh shadow) exist.
             if (!instance.RenderObject->EnsureIndirectArgs(meshRenderData, m_drawIndirectSignature.get()))
             {
@@ -595,7 +595,7 @@ namespace AZ
                 return false;
             }
 
-            // The mesh's STATIC index buffer (real expanded vertex indices) must exist — the
+            // The mesh's STATIC index buffer (real expanded vertex indices) must exist -- the
             // per-cluster cull draws slices of it (EnsureCullGpuBuffers/EnsureIndirectArgs ran above).
             (void)indexCount;
 
@@ -649,7 +649,7 @@ namespace AZ
                 {
                     return false;
                 }
-                // Phase 6 DAG cut records (v3 packs only) — optional; m_doDagCut stays
+                // Phase 6 DAG cut records (v3 packs only) -- optional; m_doDagCut stays
                 // 0 when unbound so the shader never reads it then.
                 if (meshRenderData.DagNodesBuffer)
                 {
@@ -678,7 +678,7 @@ namespace AZ
             // Forward hardware-IA streams: add NORMAL,TANGENT,BITANGENT,UV in the SAME order
             // right after POSITION so this view's stream layout is identical to
             // IndirectGeometryView ([POSITION,NORMAL,TANGENT,BITANGENT,UV]). Without these the
-            // forward 5-channel layout would have unbound channels on the GPU-cull path → hang.
+            // forward 5-channel layout would have unbound channels on the GPU-cull path -> hang.
             if (meshRenderData.ForwardStreamsValid)
             {
                 instance.GpuCullGeometryView.AddStreamBufferView(meshRenderData.NormalStreamView);
@@ -718,7 +718,7 @@ namespace AZ
             }
             auto& srg = instance.CullSrg;
 
-            // Object->world as 3 rows (shader does explicit row·point — no matrix major-ness).
+            // Object->world as 3 rows (shader does explicit row·point -- no matrix major-ness).
             const RHI::ShaderInputConstantIndex r0 = srg->FindShaderInputConstantIndex(Name("m_worldRow0"));
             const RHI::ShaderInputConstantIndex r1 = srg->FindShaderInputConstantIndex(Name("m_worldRow1"));
             const RHI::ShaderInputConstantIndex r2 = srg->FindShaderInputConstantIndex(Name("m_worldRow2"));
@@ -726,7 +726,7 @@ namespace AZ
             srg->SetConstant(r1, objectToWorld.GetRow(1));
             srg->SetConstant(r2, objectToWorld.GetRow(2));
 
-            // 6 world-space frustum planes (xyz=inward normal, w=d) — same convention as
+            // 6 world-space frustum planes (xyz=inward normal, w=d) -- same convention as
             // the CPU IntersectSphere path so GPU/CPU cull agree.
             {
                 float planeData[24];
@@ -866,7 +866,7 @@ namespace AZ
 
             // Build the pipeline state for the shadow draw item.
             // Shadow maps use their own render targets (per-cascade), so we cannot
-            // call SetOutputFromPass here — the PSO render target config is set up
+            // call SetOutputFromPass here -- the PSO render target config is set up
             // by the shadow system at draw time. The shader variant's default state
             // plus the scene's ConfigurePipelineState provides the correct depth bias,
             // cull mode, and depth compare function.
@@ -883,12 +883,12 @@ namespace AZ
                     AZ_Warning("Meshlets", false,
                         "InitShadowShader: Scene::ConfigurePipelineState returned false for "
                         "DrawListTag 'shadow' (tag=%u). The shadow render attachment "
-                        "configuration will be empty — the PSO may fail to compile on "
+                        "configuration will be empty -- the PSO may fail to compile on "
                         "some RHI backends. This usually means the shadow passes haven't "
                         "registered their pipeline state yet. Will retry on next "
                         "pipeline change.",
                         m_shadowDrawListTag.GetIndex());
-                    // Don't abort — AcquirePipelineState may still succeed on
+                    // Don't abort -- AcquirePipelineState may still succeed on
                     // backends that tolerate an empty attachment config for
                     // depth-only passes, and the PSO is re-created on every
                     // pipeline-changed event anyway.
@@ -919,7 +919,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitShadowShader: OK — shadowDrawListTag=%u, pipelineState=%p\n",
+                "InitShadowShader: OK -- shadowDrawListTag=%u, pipelineState=%p\n",
                 m_shadowDrawListTag.GetIndex(), m_shadowPipelineState);
             return true;
         }
@@ -928,7 +928,7 @@ namespace AZ
         {
             // Like shadow/forward: the meshlet writes depth via a standard
             // "depth"-tagged DrawItem that Atom's early DepthPrePass renders into
-            // the main depth buffer. No gem-private pass needed — we only build the
+            // the main depth buffer. No gem-private pass needed -- we only build the
             // PSO + acquire the tag. This is what makes meshlets occlude correctly
             // and receive shadows (the late gem depth pass ran after the
             // depth-consuming effects, causing translucency + shadow leak-through).
@@ -1001,7 +1001,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitDepthShader: OK — depthDrawListTag=%u, pipelineState=%p\n",
+                "InitDepthShader: OK -- depthDrawListTag=%u, pipelineState=%p\n",
                 m_depthDrawListTag.GetIndex(), m_depthPipelineState);
             return true;
         }
@@ -1045,7 +1045,7 @@ namespace AZ
 
             // The forward shader has ~29 lighting options implemented as
             // specialization constants. Bake them with their default values
-            // (shadows on, all light types on, IBL on, opacity = Opaque) — these
+            // (shadows on, all light types on, IBL on, opacity = Opaque) -- these
             // are exactly the full-featured defaults we want. Passing the option
             // group also silences the "Configuring PipelineStateDescriptor
             // without specializing option o_..." errors that the no-arg overload
@@ -1075,7 +1075,7 @@ namespace AZ
             // its OWN AddBuffer() (= a separate vertex buffer), matching the dedicated per-
             // attribute IA buffers created in EnsureIndirectArgs. The channel ORDER here MUST
             // match the geometry views' AddStreamBufferView order exactly
-            // (POSITION,NORMAL,TANGENT,BITANGENT,UV) — a mismatch passes validation but renders
+            // (POSITION,NORMAL,TANGENT,BITANGENT,UV) -- a mismatch passes validation but renders
             // garbage. Formats mirror the pack's vertex-stream formats.
             {
                 RHI::InputStreamLayoutBuilder layoutBuilder;
@@ -1101,7 +1101,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitForwardShader: OK — forwardDrawListTag=%u, pipelineState=%p\n",
+                "InitForwardShader: OK -- forwardDrawListTag=%u, pipelineState=%p\n",
                 m_forwardDrawListTag.GetIndex(), m_forwardPipelineState);
             return true;
         }
@@ -1115,7 +1115,7 @@ namespace AZ
 
             // Phase 5 (hardware mesh shader): Mesh + Fragment entry points, rendered by
             // the STANDARD ForwardPass via the same "forward" tag. Mirrors
-            // InitForwardShader except there is NO input-stream layout — the mesh path
+            // InitForwardShader except there is NO input-stream layout -- the mesh path
             // has no input assembler (the DX12 backend builds a mesh stream-PSO when
             // the variant carries a mesh function).
             const char* shaderPath = "Shaders/MeshletsForwardMeshShader.azshader";
@@ -1124,7 +1124,7 @@ namespace AZ
                     shaderPath, RPI::AssetUtils::TraceLevel::Warning);
             if (!shaderAsset.GetId().IsValid())
             {
-                // Not processed yet (or missing) — retry on the next pipeline change.
+                // Not processed yet (or missing) -- retry on the next pipeline change.
                 return false;
             }
 
@@ -1145,7 +1145,7 @@ namespace AZ
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, meshOptions);
 
             // Pull the forward pass's render-attachment configuration (5 MRTs +
-            // depth/stencil) + multisample state — the mesh stream-PSO needs them
+            // depth/stencil) + multisample state -- the mesh stream-PSO needs them
             // exactly like the classic graphics PSO does.
             RPI::Scene* scene = GetParentScene();
             if (scene)
@@ -1159,7 +1159,7 @@ namespace AZ
                 }
             }
 
-            // NO m_inputStreamLayout — the mesh-shader pipeline has no input assembler.
+            // NO m_inputStreamLayout -- the mesh-shader pipeline has no input assembler.
             // Back-face culling to match the vertex-pull forward pass.
             pipelineStateDescriptor.m_renderStates.m_rasterState.m_cullMode =
                 AZ::RHI::CullMode::Back;
@@ -1174,7 +1174,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitMeshForwardShader: OK — meshForwardDrawListTag=%u, pipelineState=%p\n",
+                "InitMeshForwardShader: OK -- meshForwardDrawListTag=%u, pipelineState=%p\n",
                 m_meshForwardDrawListTag.GetIndex(), m_meshForwardPipelineState);
             return true;
         }
@@ -1195,7 +1195,7 @@ namespace AZ
                     shaderPath, RPI::AssetUtils::TraceLevel::Warning);
             if (!shaderAsset.GetId().IsValid())
             {
-                // Not processed yet (or missing) — retry on the next pipeline change.
+                // Not processed yet (or missing) -- retry on the next pipeline change.
                 return false;
             }
 
@@ -1207,7 +1207,7 @@ namespace AZ
                 return false;
             }
 
-            // Reuse the existing "depth" DrawListTag — both MeshletsDepthPass.shader
+            // Reuse the existing "depth" DrawListTag -- both MeshletsDepthPass.shader
             // and MeshletsDepthMeshShader.shader declare "DrawList":"depth", so the
             // tags are identical and Atom's early DepthPrePass picks this item up.
             const RHI::DrawListTag meshDepthDrawListTag = m_meshDepthShader->GetDrawListTag();
@@ -1233,7 +1233,7 @@ namespace AZ
                 }
             }
 
-            // NO m_inputStreamLayout — the mesh-shader pipeline has no input assembler.
+            // NO m_inputStreamLayout -- the mesh-shader pipeline has no input assembler.
             // Back-face culling to match the vertex-pull depth prepass.
             pipelineStateDescriptor.m_renderStates.m_rasterState.m_cullMode =
                 AZ::RHI::CullMode::Back;
@@ -1248,7 +1248,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitMeshDepthShader: OK — depthDrawListTag=%u, pipelineState=%p\n",
+                "InitMeshDepthShader: OK -- depthDrawListTag=%u, pipelineState=%p\n",
                 meshDepthDrawListTag.GetIndex(), m_meshDepthPipelineState);
             return true;
         }
@@ -1419,7 +1419,7 @@ namespace AZ
                     shaderPath, RPI::AssetUtils::TraceLevel::Warning);
             if (!shaderAsset.GetId().IsValid())
             {
-                // Not processed yet (or missing) — retry on the next pipeline change.
+                // Not processed yet (or missing) -- retry on the next pipeline change.
                 return false;
             }
 
@@ -1452,7 +1452,7 @@ namespace AZ
             }
 
             // NO m_inputStreamLayout (no input assembler). Back-face culling to match
-            // the vertex-pull forward pass and the default mesh-shader PSO — the
+            // the vertex-pull forward pass and the default mesh-shader PSO -- the
             // per-triangle backface test in MeshletsForwardPassMSCulled is a redundant
             // (earlier, cheaper) pre-filter, not a replacement for this.
             pipelineStateDescriptor.m_renderStates.m_rasterState.m_cullMode =
@@ -1468,7 +1468,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitMeshCullForwardShader: OK — pipelineState=%p\n", m_meshCullForwardPipelineState);
+                "InitMeshCullForwardShader: OK -- pipelineState=%p\n", m_meshCullForwardPipelineState);
             return true;
         }
 
@@ -1482,7 +1482,7 @@ namespace AZ
             }
 
             // Same lazy-retry pattern as InitMeshCullForwardShader: the *Culled.shader
-            // asset may not be processed yet — safe no-op until it is.
+            // asset may not be processed yet -- safe no-op until it is.
             Data::Asset<RPI::ShaderAsset> shaderAsset =
                 RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderAsset>(
                     shaderPath, RPI::AssetUtils::TraceLevel::Warning);
@@ -1527,7 +1527,7 @@ namespace AZ
                 return false;
             }
 
-            AZ_TracePrintf("Meshlets", "InitCulledMeshVariant(%s): OK — pipelineState=%p\n",
+            AZ_TracePrintf("Meshlets", "InitCulledMeshVariant(%s): OK -- pipelineState=%p\n",
                 label, pipelineStateOut);
             return true;
         }
@@ -1536,7 +1536,7 @@ namespace AZ
         {
             // Same standard-tag pattern as depth/shadow/forward: the meshlet emits a
             // "motion"-tagged DrawItem rendered by Atom's standard MeshMotionVector
-            // pass. No gem-private pass needed — only the PSO + tag.
+            // pass. No gem-private pass needed -- only the PSO + tag.
             const char* shaderPath = "Shaders/MeshletsMotionVector.azshader";
             Data::Asset<RPI::ShaderAsset> shaderAsset =
                 RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderAsset>(
@@ -1606,7 +1606,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitMotionShader: OK — motionDrawListTag=%u, pipelineState=%p\n",
+                "InitMotionShader: OK -- motionDrawListTag=%u, pipelineState=%p\n",
                 m_motionDrawListTag.GetIndex(), m_motionPipelineState);
             return true;
         }
@@ -1623,7 +1623,7 @@ namespace AZ
             // SV_VertexID in the vertex-pull (empty-IA) path, whereas an index
             // buffer's StartIndexLocation is well-defined. Matches the 20-byte
             // DrawIndexedIndirectCommand {indexCount, instanceCount, startIndex,
-            // baseVertex, startInstance} — one per visible cluster.
+            // baseVertex, startInstance} -- one per visible cluster.
             RHI::IndirectBufferLayout layout;
             layout.AddIndirectCommand(RHI::IndirectCommandDescriptor(RHI::IndirectCommandType::DrawIndexed));
             if (!layout.Finalize())
@@ -1647,7 +1647,7 @@ namespace AZ
             }
 
             AZ_TracePrintf("Meshlets",
-                "InitIndirectDrawSignature: OK — byteStride=%u\n",
+                "InitIndirectDrawSignature: OK -- byteStride=%u\n",
                 m_drawIndirectSignature->GetByteStride());
 
             // GPU cull single-compacted-draw path: a NON-indexed Draw command (16-byte
@@ -1732,7 +1732,7 @@ namespace AZ
                 TryAutoInjectPasses(renderPipeline);
             }
             // GPU cull: inject the early compute + barrier pass before DepthPrePass.
-            // Best-effort and independent of the main meshlet passes — failure just
+            // Best-effort and independent of the main meshlet passes -- failure just
             // leaves GPU cull unavailable (CPU cull / whole-mesh paths still work).
             TryAutoInjectCullPass(renderPipeline);
         }
@@ -1852,7 +1852,7 @@ namespace AZ
             // indirection, as StructuredBuffer<uint> copies of the pack-owned slices
             // recorded in ComputeBuffersDescriptors (their m_bufferData points into
             // pack memory, which the render object keeps alive). Deliberately NOT the
-            // typed Buffer<uint> compute buffers — that SRV path is unproven on this
+            // typed Buffer<uint> compute buffers -- that SRV path is unproven on this
             // AMD GPU (NumElements bug).
             if (meshRenderData.ComputeBuffersDescriptors.size() <=
                 static_cast<size_t>(ComputeStreamsSemantics::MeshletsIndicesIndirection))
@@ -1860,7 +1860,7 @@ namespace AZ
                 return false;
             }
             // Phase 4 VRAM reclaim: streaming-exclusive meshes never get the monolithic
-            // triangle/indirection copies — all geometry decode goes through the page
+            // triangle/indirection copies -- all geometry decode goes through the page
             // pool (the AS refuses any cluster the pool cannot serve).
             if (!meshRenderData.MonolithicDropped)
             {
@@ -1944,7 +1944,7 @@ namespace AZ
                 ok &= UtilityClass::BindBufferToSrg("Meshlets",
                     meshRenderData.RenderBuffers[static_cast<uint8_t>(RenderStreamsSemantics::UVs)], bind, srg);
             }
-            // Streaming-exclusive: the monolithic stream slots stay null (never read —
+            // Streaming-exclusive: the monolithic stream slots stay null (never read --
             // the AS's m_pagedExclusive gate rejects every cluster until paged mode is
             // live, and paged clusters fetch from the pool exclusively).
             // Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS): m_clusterBounds is
@@ -1963,7 +1963,7 @@ namespace AZ
                 bind.m_paramNameInSrg = Name{ "m_clusterBounds" };
                 ok &= UtilityClass::BindBufferToSrg("Meshlets", meshRenderData.ClusterBoundsBuffer, bind, srg);
             }
-            // Phase 6 DAG cut records — same guarded pattern as m_clusterBounds (the
+            // Phase 6 DAG cut records -- same guarded pattern as m_clusterBounds (the
             // layout only carries m_dagNodes where a compiled entry references it, and
             // the buffer only exists for v3 packs).
             if (meshRenderData.DagNodesBuffer &&
@@ -2006,7 +2006,7 @@ namespace AZ
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name{ "m_leafClusterCount" }), leafClusterCount);
             // Streaming-exclusive: with no monolithic fallback, the AS must reject
             // EVERYTHING until paged mode is live (startup frames would otherwise
-            // fetch null stream buffers). Guarded — only the culled layout carries it.
+            // fetch null stream buffers). Guarded -- only the culled layout carries it.
             if (srg->FindShaderInputConstantIndex(Name{ "m_pagedExclusive" }).IsValid())
             {
                 srg->SetConstant(
@@ -2016,7 +2016,7 @@ namespace AZ
             srg->Compile();
 
             // DispatchMesh geometry view: one threadgroup per cluster, no index buffer,
-            // no IA streams — the mesh shader pulls everything from the SRG. LEAF count:
+            // no IA streams -- the mesh shader pulls everything from the SRG. LEAF count:
             // the uncull MS path has no cut and must never emit DAG interiors.
             meshRenderData.MeshShaderGeometryView.SetDrawArguments(
                 RHI::DrawArguments(RHI::DispatchMeshDirect(leafClusterCount, 1, 1)));
@@ -2032,7 +2032,7 @@ namespace AZ
 
             meshRenderData.MeshShaderResourcesReady = true;
             AZ_TracePrintf("Meshlets",
-                "EnsureMeshShaderResources: OK — %u leaf / %u cull clusters (dag=%d), DispatchMesh(%u,1,1).\n",
+                "EnsureMeshShaderResources: OK -- %u leaf / %u cull clusters (dag=%d), DispatchMesh(%u,1,1).\n",
                 leafClusterCount, cullClusterCount, dagActive ? 1 : 0, leafClusterCount);
             return true;
         }
@@ -2056,7 +2056,7 @@ namespace AZ
             {
                 return false;
             }
-            // Shader/PSO: lazy retry — the shader asset may not have been processed
+            // Shader/PSO: lazy retry -- the shader asset may not have been processed
             // when the pipeline initialized.
             if (!m_meshForwardPipelineState && !InitMeshForwardShader())
             {
@@ -2072,7 +2072,7 @@ namespace AZ
             // the uncull MS references only m_objectId, so the AS's m_clusterBounds (object
             // SRG) and every cull field (instance SRG: m_frustumPlanes/m_worldToClip/
             // m_cameraPosition/m_do*Cull/m_worldRow*/m_hiZTexture) are stripped from its
-            // layouts. SRGs therefore CANNOT be shared across the two PSOs — each must be
+            // layouts. SRGs therefore CANNOT be shared across the two PSOs -- each must be
             // created from the same shader asset as the PSO it binds to, and rebuilt when
             // the mode flips.
             const bool useCullAS = r_meshletsMsCullAS && InitMeshCullForwardShader();
@@ -2170,7 +2170,7 @@ namespace AZ
                     }
                     else
                     {
-                        // No camera yet — force passthrough for this frame rather than
+                        // No camera yet -- force passthrough for this frame rather than
                         // culling against garbage planes.
                         instance.MeshShaderInstanceSrg->SetConstant(
                             instance.MeshShaderInstanceSrg->FindShaderInputConstantIndex(Name{ "m_doFrustumCull" }), 0u);
@@ -2190,13 +2190,13 @@ namespace AZ
             drawPacketBuilder.AddShaderResourceGroup(meshRenderData.MeshShaderObjectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(instance.MeshShaderInstanceSrg->GetRHIShaderResourceGroup());
 
-            // Forward PBR material SRG (SRG_PerMaterial) — the source model's PBR
+            // Forward PBR material SRG (SRG_PerMaterial) -- the source model's PBR
             // textures + factors. Resolve from the model's MaterialAsset and bind as
             // the 3rd DrawItem SRG, exactly like the vertex-pull forward path
             // (BuildInstanceDrawPacket). The mesh shader now declares MeshletsMaterialSrg,
             // so a layout-compatible SRG is created from m_meshForwardShader's asset.
             // Defer the whole packet if it isn't ready yet (material asset still loading)
-            // — binding the forward item without it would read garbage.
+            // -- binding the forward item without it would read garbage.
             {
                 Data::Instance<RPI::ShaderResourceGroup> materialSrg;
                 if (instance.RenderObject->EnsureMaterialSrg(instance.MeshIndex, m_meshForwardShader))
@@ -2231,7 +2231,7 @@ namespace AZ
             meshDrawRequest.m_sortKey = 0;
             drawPacketBuilder.AddDrawItem(meshDrawRequest);
 
-            // DEPTH prepass item ("depth" tag) — reuses the SAME geometry view /
+            // DEPTH prepass item ("depth" tag) -- reuses the SAME geometry view /
             // DispatchMesh args and the packet-wide SRGs already bound above; the
             // depth shader simply doesn't declare MeshletsMaterialSrg, so that extra
             // binding is harmlessly unused (exactly as the vertex-pull depth/motion
@@ -2242,7 +2242,7 @@ namespace AZ
             //
             // Under useCullAS the packet's ONE geometry view dispatches
             // ceil(clusterCount/MESHLETS_AS_GROUP) AS groups, so the depth item needs
-            // the AS-culled depth PSO (MeshletsDepthMeshShaderCulled.shader — carries
+            // the AS-culled depth PSO (MeshletsDepthMeshShaderCulled.shader -- carries
             // the SAME shared cluster-cull AS as the forward item); the plain
             // (no-amplification) depth PSO is only correct on the non-AS path.
             const RHI::PipelineState* depthPso = nullptr;
@@ -2271,7 +2271,7 @@ namespace AZ
                 {
                     // Phase 6 occlusion-safe depth: the depth item gets its OWN packet
                     // with its OWN cull-layout instance SRG whose m_doHiZCull is never
-                    // set — a HiZ-occluded depth prepass would render incomplete depth
+                    // set -- a HiZ-occluded depth prepass would render incomplete depth
                     // and poison next frame's pyramid (false-culls feed back). Frustum/
                     // cone/DAG constants mirror the camera SRG each frame
                     // (UpdateMeshShaderCullInstance refreshes it).
@@ -2318,7 +2318,7 @@ namespace AZ
             }
 
             // Two-pass occlusion PASS 2 (opt-in r_meshletsTwoPassOcclusion): the
-            // visibility ledger + the late-depth packet ("meshletslatedepth" tag →
+            // visibility ledger + the late-depth packet ("meshletslatedepth" tag ->
             // the injected MeshletsLateDepthPass, after this frame's HiZ reduce).
             instance.LateDepthDrawPacket = nullptr;
             if (useCullAS && r_meshletsTwoPassOcclusion && m_lateDepthPass &&
@@ -2332,7 +2332,7 @@ namespace AZ
                 }
                 if (!instance.VisFrameBuffer)
                 {
-                    // One u32 frame-id per (full DAG range) cluster. GPU-only — never
+                    // One u32 frame-id per (full DAG range) cluster. GPU-only -- never
                     // CPU-uploaded (the ReadWrite pool's CPU upload path is the broken
                     // one on this AMD GPU; pure UAV usage is fine). Frame-counter
                     // encoding: a fresh zeroed ledger never equals m_frameId (>= 1),
@@ -2438,7 +2438,7 @@ namespace AZ
             // ---- Shadow casting ----
             // Shadows are a SEPARATE DrawPacket (its own geometry view), submitted to the
             // CSM cascade views. Casting deliberately uses the CLASSIC vertex-pull shadow
-            // PSO over the WHOLE mesh — exactly like every other path in this file — because
+            // PSO over the WHOLE mesh -- exactly like every other path in this file -- because
             // camera-side per-cluster culling is wrong for a light's point of view. So the
             // mesh path needs NO mesh/amplification shadow shader; it only has to build the
             // vertex-pull prerequisites that BuildInstanceDrawPacket would normally have
@@ -2446,7 +2446,7 @@ namespace AZ
             //   * EnsureIndirectArgs -> IndirectGeometryView + POSITION-only IA buffer
             //     + PositionStreamValid   (idempotent; cheap after the first frame)
             //   * instance.InstanceSrg  -> the CLASSIC MeshletsInstanceRenderSrg layout
-            //     (NOT MeshShaderInstanceSrg — different SRG, incompatible layout)
+            //     (NOT MeshShaderInstanceSrg -- different SRG, incompatible layout)
             // meshRenderData.ObjectSrg already exists (built during render-object init).
             // Without this the instance casts no shadow at all: ShadowDrawPacket stayed
             // null, so nothing was ever added to the DirectionalLightView cascade views.
@@ -2472,7 +2472,7 @@ namespace AZ
             const bool meshShadowReady = m_meshShadowPipelineState || InitMeshShadowShader();
             // Phase 6 shadow-side DAG cut: while the cut is active (and the culled
             // shadow PSO is processed), shadows render the SAME cut the camera passes
-            // draw — the AS in "cut-only" mode (per-frame update zeroes every
+            // draw -- the AS in "cut-only" mode (per-frame update zeroes every
             // camera-view cull toggle on the shadow SRG; a light must rasterize
             // clusters outside the camera frustum). Otherwise shadows keep the plain
             // all-leaves mesh shadow PSO.
@@ -2482,7 +2482,7 @@ namespace AZ
                     "Shaders/MeshletsShadowMeshShaderCulled.azshader", "shadow",
                     m_meshShadowCullShader, m_meshShadowCullPipelineState);
             // Streaming-exclusive: the plain (uncull) mesh shadow reads the monolithic
-            // stream buffers, which do not exist — only the DAG-cut shadow can draw.
+            // stream buffers, which do not exist -- only the DAG-cut shadow can draw.
             const RHI::PipelineState* shadowPso = dagShadow ? m_meshShadowCullPipelineState
                 : ((meshShadowReady && !meshRenderData.MonolithicDropped) ? m_meshShadowPipelineState : nullptr);
             Data::Instance<RPI::ShaderResourceGroup> shadowInstanceSrg = instance.MeshShaderInstanceSrg;
@@ -2509,7 +2509,7 @@ namespace AZ
                             instance.ObjectId.GetIndex());
                         // Fresh SRG data is zeroed: with every cull toggle 0 the AS
                         // draws exactly the leaf set until the per-frame update writes
-                        // the cut constants — safe on creation frames.
+                        // the cut constants -- safe on creation frames.
                         instance.MeshShadowInstanceSrg->Compile();
                     }
                 }
@@ -2617,7 +2617,7 @@ namespace AZ
         {
             if (!instance.MeshShaderInstanceSrg)
             {
-                return;   // packet not built yet this frame — nothing to refresh
+                return;   // packet not built yet this frame -- nothing to refresh
             }
             if (!instance.MeshShaderInstanceSrgBuiltForCull)
             {
@@ -2655,12 +2655,12 @@ namespace AZ
 
             WriteMeshShaderCullConstants(instance.MeshShaderInstanceSrg, frustum, cameraPos, objectToWorld, dagCutActive);
             // HiZ per-cluster occlusion on the CAMERA (forward/motion) SRG:
-            //   * two-pass ON: THIS frame's pyramid + THIS frame's matrix — legal
+            //   * two-pass ON: THIS frame's pyramid + THIS frame's matrix -- legal
             //     because the late pass's declared HiZInput read (ordered after the
             //     mip-chain writes) transitioned the current slot for every later
             //     scope, and exact because pass 2 completed the depth it reduces from.
             //     (m_hiZPrevCullMat already holds THIS frame's matrix by the time this
-            //     runs — the stash block assigns it after resolving the prev-frame pair.)
+            //     runs -- the stash block assigns it after resolving the prev-frame pair.)
             //   * two-pass OFF: the last-completed (prev-frame) pyramid + its matrix,
             //     as before.
             if (twoPassActive)
@@ -2687,10 +2687,10 @@ namespace AZ
             }
 
             // Depth prepass SRG (PASS 1 when two-pass is on):
-            //   * two-pass ON: prev-frame HiZ occlusion is safe again — pass 2
-            //     completes the depth — and visMode 1 records every dispatched
+            //   * two-pass ON: prev-frame HiZ occlusion is safe again -- pass 2
+            //     completes the depth -- and visMode 1 records every dispatched
             //     cluster in the ledger.
-            //   * two-pass OFF: occlusion-safe depth — the SRG mirrors the camera
+            //   * two-pass OFF: occlusion-safe depth -- the SRG mirrors the camera
             //     constants but NEVER gets the HiZ override (an occluded depth
             //     prepass would poison next frame's pyramid).
             if (instance.MeshDepthInstanceSrg)
@@ -2731,7 +2731,7 @@ namespace AZ
                 }
             }
 
-            // Phase 6 shadow-side DAG cut: cut-only mode — the DAG cut (main-camera
+            // Phase 6 shadow-side DAG cut: cut-only mode -- the DAG cut (main-camera
             // error metric, so shadow geometry matches the shaded cut exactly) with
             // every camera-view cull FORCED OFF: a light must rasterize clusters
             // outside the camera frustum, backfacing to the camera, or occluded from
@@ -2753,7 +2753,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& srg, const AZ::Frustum& frustum,
             const AZ::Vector3& cameraPos, const AZ::Matrix4x4& objectToWorld, bool dagCutActive)
         {
-            // Object->world as 3 rows (shader does explicit row·point — no matrix
+            // Object->world as 3 rows (shader does explicit row·point -- no matrix
             // major-ness), same convention as MeshletsCull.azsl's per-instance update.
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_worldRow0")), objectToWorld.GetRow(0));
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_worldRow1")), objectToWorld.GetRow(1));
@@ -2776,7 +2776,7 @@ namespace AZ
                 srg->FindShaderInputConstantIndex(Name("m_doFrustumCull")), m_debugControls.m_frustumCull ? 1u : 0u);
             srg->SetConstant(
                 srg->FindShaderInputConstantIndex(Name("m_doConeCull")), m_debugControls.m_coneCull ? 1u : 0u);
-            // HiZ pyramid is never wired to the AS path in this slice — always off, a
+            // HiZ pyramid is never wired to the AS path in this slice -- always off, a
             // safe no-op (see MeshletsMeshRenderSrg.azsli's m_hiZTexture note).
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_doHiZCull")), 0u);
 
@@ -2801,7 +2801,7 @@ namespace AZ
             }
 
             // ---- One-time lookups: cluster->page, leaf simplification groups (via
-            // ParentIndex — exact, no float matching), level-1 parent -> group.
+            // ParentIndex -- exact, no float matching), level-1 parent -> group.
             if (!mrd.PagedLookupsBuilt)
             {
                 mrd.ClusterToPage.assign(dagCount, 0xFFFFFFFFu);
@@ -2828,7 +2828,7 @@ namespace AZ
                         const uint32_t firstParent = mrd.PersistentParentIndex[leaf];
                         if (firstParent == 0xFFFFFFFFu)
                         {
-                            continue;   // rootless leaf — no coarser fallback exists
+                            continue;   // rootless leaf -- no coarser fallback exists
                         }
                         auto [it, added] = groupByFirstParent.emplace(
                             firstParent, static_cast<uint32_t>(mrd.LeafGroups.size()));
@@ -2936,7 +2936,7 @@ namespace AZ
                     const uint32_t g = (c - leafCount < mrd.InteriorToGroup.size())
                         ? mrd.InteriorToGroup[c - leafCount] : 0xFFFFFFFFu;
                     // Level-1 parents mirror their leaf group; level-2+ children are
-                    // always-resident interiors — always refinable.
+                    // always-resident interiors -- always refinable.
                     complete = (g != 0xFFFFFFFFu) ? groupComplete[g] : true;
                 }
                 value |= complete ? (1u << 31) : 0u;
@@ -2996,7 +2996,7 @@ namespace AZ
             }
 
             // Streaming-exclusive meshes must NEVER fall through to the vertex-pull
-            // path — its ObjectSrg stream views were deliberately never created.
+            // path -- its ObjectSrg stream views were deliberately never created.
             // Null packets render nothing until the paged path's prerequisites arrive.
             if (meshRenderData.MonolithicDropped)
             {
@@ -3039,7 +3039,7 @@ namespace AZ
                     AZ_Error("Meshlets", false, "Failed to bind Render Constant [m_objectId]");
                     return false;
                 }
-                // Step B: this is the NON-instanced (cull-on / single-instance) path — force
+                // Step B: this is the NON-instanced (cull-on / single-instance) path -- force
                 // m_useInstancing = 0 so the VS reads m_objectId, never m_instanceObjectIds.
                 // Explicit for safety even though SRG constants default to 0.
                 const RHI::ShaderInputConstantIndex useInstHandle =
@@ -3073,7 +3073,7 @@ namespace AZ
                     if (!meshRenderData.RenderBuffers[s])
                     {
                         AZ_Error("Meshlets", false,
-                            "BuildInstanceDrawPacket: render stream %u (%s) has no buffer — "
+                            "BuildInstanceDrawPacket: render stream %u (%s) has no buffer -- "
                             "cannot build a safe DrawPacket",
                             s, meshRenderData.RenderBuffersDescriptors[s].m_bufferName.GetCStr());
                         return false;
@@ -3082,7 +3082,7 @@ namespace AZ
                 if (meshRenderData.IndexCount == 0)
                 {
                     AZ_Error("Meshlets", false,
-                        "BuildInstanceDrawPacket: IndexCount is 0 — nothing to draw");
+                        "BuildInstanceDrawPacket: IndexCount is 0 -- nothing to draw");
                     return false;
                 }
             }
@@ -3099,7 +3099,7 @@ namespace AZ
 
             // Phase 6b (increment 1a): draw indirectly. EnsureIndirectArgs builds a
             // per-mesh geometry view holding a single static DrawIndirectCommand
-            // {IndexCount,1,0,0} — same output as the prior DrawLinear, but on the
+            // {IndexCount,1,0,0} -- same output as the prior DrawLinear, but on the
             // indirect path the cull compute will later drive. Falls back to direct
             // DrawLinear if the signature/buffer aren't available.
             // Ensure the per-mesh whole-mesh indirect args + index buffer exist (the
@@ -3149,7 +3149,7 @@ namespace AZ
             // Forward PBR (primary) is rendered by the standard ForwardPass and
             // requires the per-material SRG (frequency PerMaterial). Resolve + bind
             // it here so it applies to the forward DrawItem. If it isn't ready yet
-            // (material asset still loading), defer the whole packet and retry —
+            // (material asset still loading), defer the whole packet and retry --
             // binding the forward item without its material SRG would read garbage.
             // Debug tab can force the UV debug shader or disable the forward item.
             const bool useForward = (m_forwardPipelineState && m_forwardDrawListTag.IsValid())
@@ -3187,7 +3187,7 @@ namespace AZ
 
             // PERF (hardware input-assembly): explicit stream-index sets. The depth/shadow/
             // motion PSOs declare a POSITION-only layout (1 channel), so they select stream
-            // [0] only — NOT the view's full set (the view now carries 5 streams; using
+            // [0] only -- NOT the view's full set (the view now carries 5 streams; using
             // GetFullStreamBufferIndices() there would feed a 5-index set into a 1-channel
             // layout and DXGI_DEVICE_HUNG on AMD). The forward PSO declares the 5-channel
             // layout and selects [0..4] in the matching order. These are stream INDICES into
@@ -3204,14 +3204,14 @@ namespace AZ
             // renders meshlet depth into the main depth buffer (read by
             // FullscreenShadow, SSAO, reflections, and the forward depth test).
             // This is the fix for meshlets appearing translucent / shadows passing
-            // through — the previous gem-private depth pass ran after OpaquePass,
+            // through -- the previous gem-private depth pass ran after OpaquePass,
             // too late for those depth-consuming effects.
             // PERF: the depth PSO uses a hardware POSITION input layout (not vertex-pull).
             // It can only be drawn when this mesh has a valid POSITION IA stream AND the
-            // selected geometry view actually carries it (ValidateStreamBufferViews) — a
+            // selected geometry view actually carries it (ValidateStreamBufferViews) -- a
             // stale/missing IA channel would DXGI_DEVICE_HUNG on AMD. If the IA buffer
             // failed to allocate, the depth item is skipped (safe; the mesh still renders
-            // forward — depth-consuming effects degrade rather than crashing).
+            // forward -- depth-consuming effects degrade rather than crashing).
             if (m_depthPipelineState && m_depthDrawListTag.IsValid() && m_debugControls.m_depthPassEnabled &&
                 meshRenderData.PositionStreamValid)
             {
@@ -3235,11 +3235,11 @@ namespace AZ
 
             // NOTE: the shadow DrawItem is NOT added to this (camera) packet. With
             // per-cluster cull active the camera geometry view is the CULLED set, which is
-            // wrong for shadows — back-facing-to-camera clusters still cast shadows. The
+            // wrong for shadows -- back-facing-to-camera clusters still cast shadows. The
             // shadow is built into a SEPARATE whole-mesh packet (instance.ShadowDrawPacket)
             // below so shadows always render every cluster.
 
-            // DrawItem: motion vectors — rendered by the standard MeshMotionVector
+            // DrawItem: motion vectors -- rendered by the standard MeshMotionVector
             // pass (tag "motion"). Produces per-pixel screen-space motion so TAA /
             // temporal upscaling don't ghost the meshlet when the camera or object
             // moves. Depth-tests (reverse-Z) against the prepass buffer.
@@ -3257,13 +3257,13 @@ namespace AZ
                 ++drawItemCount;
             }
 
-            // DrawItem: forward PBR (primary) — rendered by the standard ForwardPass.
+            // DrawItem: forward PBR (primary) -- rendered by the standard ForwardPass.
             // (useForward + the material SRG were resolved/bound above.)
             // PERF (hardware input-assembly): the forward PSO declares a 5-channel layout
             // (POSITION,NORMAL,TANGENT,BITANGENT,UV). It can ONLY be drawn when the mesh has
             // valid POSITION + forward IA streams AND the selected geometry view carries all 5
             // (ValidateStreamBufferViews). If the IA buffers failed to allocate, SKIP the
-            // forward item — binding a partial/empty layout would DXGI_DEVICE_HUNG on AMD.
+            // forward item -- binding a partial/empty layout would DXGI_DEVICE_HUNG on AMD.
             const bool forwardIaReady =
                 useForward && meshRenderData.PositionStreamValid && meshRenderData.ForwardStreamsValid &&
                 RHI::ValidateStreamBufferViews(m_forwardInputLayout, *geometryView, allFive);
@@ -3275,7 +3275,7 @@ namespace AZ
                 forwardDrawRequest.m_streamIndices = allFive;   // POSITION,NORMAL,TANGENT,BITANGENT,UV.
                 // Stencil ref marks meshlet pixels so the downstream Reflections
                 // (IBL specular) and DiffuseGlobalIllumination fullscreen passes
-                // process them — identical to standard opaque meshes.
+                // process them -- identical to standard opaque meshes.
                 forwardDrawRequest.m_stencilRef = static_cast<uint8_t>(
                     Render::StencilRefs::UseIBLSpecularPass | Render::StencilRefs::UseDiffuseGIPass);
                 forwardDrawRequest.m_sortKey = 0;
@@ -3284,12 +3284,12 @@ namespace AZ
             }
             else if (useForward)
             {
-                // Forward shader is selected but its hardware-IA streams aren't ready —
+                // Forward shader is selected but its hardware-IA streams aren't ready --
                 // skip the forward item this build (do NOT bind a partial layout). The
                 // depth/motion/shadow items above still render; rendering degrades safely.
                 AZ_WarningOnce("Meshlets", false,
                     "BuildInstanceDrawPacket: forward hardware-IA streams not ready "
-                    "(PositionStreamValid=%d ForwardStreamsValid=%d) — skipping forward DrawItem.",
+                    "(PositionStreamValid=%d ForwardStreamsValid=%d) -- skipping forward DrawItem.",
                     meshRenderData.PositionStreamValid ? 1 : 0,
                     meshRenderData.ForwardStreamsValid ? 1 : 0);
             }
@@ -3336,7 +3336,7 @@ namespace AZ
             instance.LateDepthDrawPacket = nullptr;
             // PERF (hardware input-assembly): the shadow PSO uses a POSITION-only layout, so
             // the shadow item selects stream [0] of the WHOLE-MESH IndirectGeometryView (always
-            // every cluster — shadows cast from off-camera geometry too). Gated on
+            // every cluster -- shadows cast from off-camera geometry too). Gated on
             // PositionStreamValid + the debug validate check; if the IA buffer failed the shadow
             // item is skipped (meshlet stops casting shadows but does not hang).
             if (m_shadowPipelineState && m_shadowDrawListTag.IsValid() &&
@@ -3364,7 +3364,7 @@ namespace AZ
             if (!m_debugControls.m_cullEnabled)
             {
                 AZ_TracePrintf("Meshlets",
-                    "BuildInstanceDrawPacket: OK — vertexCount=%u, objectId=%u, "
+                    "BuildInstanceDrawPacket: OK -- vertexCount=%u, objectId=%u, "
                     "depthPass=%s, shadowPass=%s, motionPass=%s, forwardPass=%s\n",
                     meshRenderData.IndexCount,
                     instance.ObjectId.GetIndex(),
@@ -3408,13 +3408,13 @@ namespace AZ
 
             if (visible == 0)
             {
-                // Entire instance culled — draw nothing this frame.
+                // Entire instance culled -- draw nothing this frame.
                 instance.CullResourcesReady = false;
                 instance.DrawPacket = nullptr;
                 return;
             }
 
-            // Per-instance ring of indirect-args buffers (rotates per frame → no
+            // Per-instance ring of indirect-args buffers (rotates per frame -> no
             // CPU-writes-while-GPU-reads hazard; the AMD-safe per-frame pattern).
             if (!instance.CullArgsRing)
             {
@@ -3441,7 +3441,7 @@ namespace AZ
                 0, visible * 5 * static_cast<uint32_t>(sizeof(AZ::u32)),
                 m_drawIndirectSignature->GetByteStride());
             instance.CameraGeometryView.SetIndexBufferView(meshRenderData.IndexBufferViewRHI);
-            // Hardware-IA streams (rebuilt per frame — clear+add is idempotent). Re-add ALL
+            // Hardware-IA streams (rebuilt per frame -- clear+add is idempotent). Re-add ALL
             // streams in the SAME order as IndirectGeometryView so the layout matches:
             // [POSITION,NORMAL,TANGENT,BITANGENT,UV]. ClearStreamBufferViews() drops the prior
             // frame's set first; we then re-add POSITION, plus the forward four when valid.
@@ -3611,19 +3611,19 @@ namespace AZ
             // stores raw pointers to the SRG objects (ObjectSrg, InstanceSrg). If we
             // let the unique_ptr destroy the instance without nulling the DrawPacket
             // first, the DrawPacket's ref-count drops to zero, freeing the arena that
-            // held the SRG pointer array — but the View's draw list still holds the
+            // held the SRG pointer array -- but the View's draw list still holds the
             // old DrawPacket address, and SubmitDrawItems will read freed memory.
             //
             // Setting DrawPacket = nullptr releases the RHI::Ptr, freeing the packet
-            // here (assuming the View doesn't hold its own Ptr — it stores raw *).
+            // here (assuming the View doesn't hold its own Ptr -- it stores raw *).
             // That's intentional: the packet becomes invalid this frame, but the
             // View's SubmitDrawItems iterates draw items that were filtered by
             // DrawListTag during AddDrawPacket; since we null the DrawPacket *after*
-            // AddDrawPackets already ran (Render → RemoveInstance is called from
+            // AddDrawPackets already ran (Render -> RemoveInstance is called from
             // ReleaseInstance which is called from component teardown, not from
             // Render itself), the timing is:
-            //   Frame N: Render() → AddDrawPackets (packet in view) → GPU submits
-            //   Frame N+1: DeletePending → RemoveInstance → null packet → Render()
+            //   Frame N: Render() -> AddDrawPackets (packet in view) -> GPU submits
+            //   Frame N+1: DeletePending -> RemoveInstance -> null packet -> Render()
             // The destruction happens between frames, which is safe.
             instance->DrawPacket = nullptr;
             // Step B: remove from its hardware-instancing group FIRST (marks the group
@@ -3639,7 +3639,7 @@ namespace AZ
         }
 
         //==============================================================================
-        // Step B: hardware instancing — group management + per-group packet build.
+        // Step B: hardware instancing -- group management + per-group packet build.
         //==============================================================================
         void MeshletsFeatureProcessor::AddInstanceToGroup(MeshletsRenderInstance* instance)
         {
@@ -3673,7 +3673,7 @@ namespace AZ
             auto mit = AZStd::find(group.m_members.begin(), group.m_members.end(), instance);
             if (mit != group.m_members.end())
             {
-                // Order of remaining members may shift (swap-and-pop) — that's fine: the
+                // Order of remaining members may shift (swap-and-pop) -- that's fine: the
                 // objectId buffer is rebuilt from member order on the next dirty rebuild,
                 // and SV_InstanceID indexes that fresh buffer, so consistency holds.
                 *mit = group.m_members.back();
@@ -3695,7 +3695,7 @@ namespace AZ
         {
             if (!group.m_dirty)
             {
-                return true;   // up to date — nothing to do.
+                return true;   // up to date -- nothing to do.
             }
             if (group.m_members.empty())
             {
@@ -3706,7 +3706,7 @@ namespace AZ
             }
             if (!m_renderPass || !m_renderShader || !meshRenderData.ObjectSrg)
             {
-                return false;   // pipeline not ready yet — retry next frame (still dirty).
+                return false;   // pipeline not ready yet -- retry next frame (still dirty).
             }
 
             const uint32_t memberCount = static_cast<uint32_t>(group.m_members.size());
@@ -3742,7 +3742,7 @@ namespace AZ
             // SV_InstanceID -> m_instanceObjectIds path in every VS) and m_objectId=0
             // (unused on the instanced path; set for determinism). Bind the group's
             // objectId StructuredBuffer as m_instanceObjectIds. No shader-option /
-            // variant-key machinery — the branch is a plain SRG-constant runtime branch,
+            // variant-key machinery -- the branch is a plain SRG-constant runtime branch,
             // robust across all four pass shaders.
             {
                 group.m_instanceSrg = RPI::ShaderResourceGroup::Create(
@@ -3780,7 +3780,7 @@ namespace AZ
                 return false;
             }
             // Configure EXACTLY like IndirectGeometryView (same index buffer, same 5 streams in
-            // order POSITION,NORMAL,TANGENT,BITANGENT,UV) BUT with a DIRECT indexed draw — NOT
+            // order POSITION,NORMAL,TANGENT,BITANGENT,UV) BUT with a DIRECT indexed draw -- NOT
             // indirect. SetDrawInstanceArguments is IGNORED on the indirect path (instanceCount
             // would stay 1 and instancing would silently draw a single instance / hang on AMD).
             group.m_instancedGeometryView.Reset();
@@ -3796,7 +3796,7 @@ namespace AZ
                     group.m_instancedGeometryView.AddStreamBufferView(meshRenderData.UvStreamView);
                 }
             }
-            // RHI::DrawIndexed ctor is (vertexOffset, indexCount, indexOffset) — NOT the
+            // RHI::DrawIndexed ctor is (vertexOffset, indexCount, indexOffset) -- NOT the
             // brace-init order. Use it explicitly so we don't transpose fields.
             group.m_instancedGeometryView.SetDrawArguments(
                 RHI::DrawArguments(RHI::DrawIndexed(
@@ -3923,7 +3923,7 @@ namespace AZ
                 return false;
             }
 
-            // Separate instanced SHADOW packet — whole-mesh (all members cast). Uses the SAME
+            // Separate instanced SHADOW packet -- whole-mesh (all members cast). Uses the SAME
             // instanced geometry view + instanceCount=memberCount so EVERY instance casts.
             if (m_shadowPipelineState && m_shadowDrawListTag.IsValid() &&
                 m_debugControls.m_shadowPassEnabled &&
@@ -3973,7 +3973,7 @@ namespace AZ
             for (auto renderObject : m_renderObjectsMarkedForDeletion)
             {
                 // Drop every live instance of this render object.
-                // Null each DrawPacket first — the packet holds raw SRG pointers into
+                // Null each DrawPacket first -- the packet holds raw SRG pointers into
                 // the ObjectSrg owned by the renderObject we're about to delete.
                 for (auto it = m_instances.begin(); it != m_instances.end(); )
                 {
@@ -4035,7 +4035,7 @@ namespace AZ
                 }
             }
             // Step B: the hardware-instanced (cull-off) packets also reference the
-            // (now-stale) PSOs/SRGs — null them and mark every group dirty so the next
+            // (now-stale) PSOs/SRGs -- null them and mark every group dirty so the next
             // Render() rebuilds them. Keep the per-group SRG instance (recreated lazily
             // in RebuildInstanceGroup if needed) but drop the packets.
             for (auto& [key, group] : m_instanceGroups)
@@ -4265,15 +4265,15 @@ namespace AZ
             // this frame's bindable pyramid ONCE, before any cull-constant update
             // (compute path's UpdateGpuCullInstance and the AS path's
             // UpdateMeshShaderCullInstance both consume m_hiZBind*).
-            //   * image  = the LAST-COMPLETED persistent pyramid slot — written last
+            //   * image  = the LAST-COMPLETED persistent pyramid slot -- written last
             //     frame, untouched this frame (the HiZ pass ping-pongs), so it is
             //     safe for our early-in-frame consumers. Gated on the pyramid being
             //     populated (an unpopulated slot is undefined driver memory).
-            //   * matrix = LAST frame's cull-camera world->clip — the camera that
+            //   * matrix = LAST frame's cull-camera world->clip -- the camera that
             //     rendered the depth the pyramid was reduced from. Projecting with
             //     it keeps the depth comparison in the pyramid's own clip space.
             //   * requires m_cullBarrierPass: it is what imports the image into the
-            //     frame graph with Read usage (UAV->shader-read transition) — never
+            //     frame graph with Read usage (UAV->shader-read transition) -- never
             //     bind the image without that barrier.
             // ===================================================================
             m_hiZBindImage = nullptr;
@@ -4301,7 +4301,7 @@ namespace AZ
             // ===================================================================
             // Phase 6 cluster-DAG cut: per-frame projection stash. The pixel scale
             // MUST come from the pure projection (ViewToClip[1][1] = cot(FovY/2)),
-            // NOT the combined WorldToClip — the same rotation-collapse root cause
+            // NOT the combined WorldToClip -- the same rotation-collapse root cause
             // the coverage LOD ladder hit. Viewport = the pipeline's (possibly
             // render-scaled) output size, which also feeds the per-triangle
             // pixel-size gates. While this stash is invalid, every DAG-aware
@@ -4324,7 +4324,7 @@ namespace AZ
                 }
             }
             // ===================================================================
-            // Phase 7 streaming (v1 residency tracking — see the cvar comment):
+            // Phase 7 streaming (v1 residency tracking -- see the cvar comment):
             // classify every leaf page of every DAG-paged mesh against the DAG-cut
             // camera, let the residency core load/evict within the slot budget, and
             // surface the stats. "Load" is immediate in v1 (the pack bytes are
@@ -4335,7 +4335,7 @@ namespace AZ
             if (r_meshletsStreaming && m_dagBindValid && m_transformServiceFeatureProcessor)
             {
                 // Phase 4 soak: a live budget change (r_meshletsStreamingPoolMB) tears
-                // the pool down and rebuilds it — everything falls back coarse for a
+                // the pool down and rebuilds it -- everything falls back coarse for a
                 // few frames, then the classifier reloads the wanted set. This is the
                 // budget-sweep mechanism.
                 if (m_pageResidencyInitialized &&
@@ -4348,7 +4348,7 @@ namespace AZ
                         m_pagedMapDirty.insert(meshAndPage.first);
                     }
                     AZ_TracePrintf("Meshlets",
-                        "Streaming: pool budget changed (%u MB -> %u MB) — pool rebuilt, "
+                        "Streaming: pool budget changed (%u MB -> %u MB) -- pool rebuilt, "
                         "pages will reload against the new slot count.\n",
                         m_lastStreamingPoolMB, static_cast<uint32_t>(r_meshletsStreamingPoolMB));
                 }
@@ -4361,7 +4361,7 @@ namespace AZ
                         1u, static_cast<uint32_t>(poolBytes / (PageSlotU32s * sizeof(AZ::u32))));
                     m_pageResidency.Init(slots);
                     m_pagePoolSlotCount = slots;
-                    // GPU-only pool (never CPU-written — the upload compute fills slots),
+                    // GPU-only pool (never CPU-written -- the upload compute fills slots),
                     // so the ReadWrite pool's broken CPU-upload path is never exercised.
                     SrgBufferDescriptor poolDesc(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
@@ -4473,7 +4473,7 @@ namespace AZ
                     {
                         AZ_Warning("Meshlets", false,
                             "Streaming: page payload (%u words) exceeds the pool slot or the "
-                            "PageData section — page skipped (its clusters fall back coarse).",
+                            "PageData section -- page skipped (its clusters fall back coarse).",
                             payloadU32s);
                         m_pageResidency.CancelLoad(key);
                         m_pagedMapDirty.insert(mrd);
@@ -4494,7 +4494,7 @@ namespace AZ
                             m_pageUploadShader->GetAsset(), AZ::Name{ "MeshletsPageUploadSrg" });
                     if (!staging || !uploadSrg)
                     {
-                        AZ_Warning("Meshlets", false, "Streaming: page staging/SRG creation failed — skipped.");
+                        AZ_Warning("Meshlets", false, "Streaming: page staging/SRG creation failed -- skipped.");
                         m_pageResidency.CancelLoad(key);
                         m_pagedMapDirty.insert(mrd);
                         continue;
@@ -4502,7 +4502,7 @@ namespace AZ
                     const uint32_t slot = m_pageResidency.OnLoaded(key);
                     if (slot == MeshletsPageResidency::InvalidSlot)
                     {
-                        continue;   // raced a Clear — nothing reserved any more
+                        continue;   // raced a Clear -- nothing reserved any more
                     }
                     {
                         SrgBufferDescriptor srcBind;
@@ -4573,7 +4573,7 @@ namespace AZ
                 m_streamingTrackedPages = 0;
                 m_pageUploadItemsScratch.clear();
                 m_pageUploadAttachmentsScratch.clear();
-                // Flip every mesh back to monolithic fetch — a stale m_pagedMode=1
+                // Flip every mesh back to monolithic fetch -- a stale m_pagedMode=1
                 // against a cleared residency set would read garbage slots.
                 for (auto& instance : m_instances)
                 {
@@ -4608,7 +4608,7 @@ namespace AZ
             }
 
             // Two-pass occlusion: bump the ledger frame id once per frame (equality
-            // encoding — wrap keeps correctness, just never let it hit 0, the value a
+            // encoding -- wrap keeps correctness, just never let it hit 0, the value a
             // fresh ledger holds).
             ++m_frameId;
             if (m_frameId == 0)
@@ -4617,7 +4617,7 @@ namespace AZ
             }
 
             // Toggling the DAG (or two-pass occlusion) bakes different dispatch
-            // counts / packets / SRG constants into the cached state — force a full
+            // counts / packets / SRG constants into the cached state -- force a full
             // rebuild, same pattern as the r_meshletsHwMeshShader/r_meshletsMsCullAS
             // toggles.
             if (r_meshletsDagLod != m_lastDagLod || r_meshletsTwoPassOcclusion != m_lastTwoPass)
@@ -4681,7 +4681,7 @@ namespace AZ
                     // ROOT-CAUSE FIX ("lowest LOD always visible"): yScale MUST come from
                     // the PURE PROJECTION (ViewToClip), NOT the combined WorldToClip. The
                     // combined matrix folds in the camera's rotation, so element(1,1)
-                    // collapses toward 0 as the camera pitches/yaws — making coverage ~0
+                    // collapses toward 0 as the camera pitches/yaws -- making coverage ~0
                     // and dumping every instance to LOD3 whenever you look around. The
                     // ViewToClip (1,1) is cot(FovY/2), rotation-independent. Fetched once.
                     const AZ::Vector3 camPos = view->GetViewToWorldMatrix().GetTranslation();
@@ -4702,7 +4702,7 @@ namespace AZ
                         // the chosen LOD into [0, availableLods-1] so a coarse pick on
                         // a 1-LOD (stale) pack just resolves to LOD0.
                         MeshletsRenderObject* ro = instance->RenderObject;
-                        // LOD0 mesh render data for bounds (bounds are LOD-invariant —
+                        // LOD0 mesh render data for bounds (bounds are LOD-invariant --
                         // a coarser LOD shares LOD0's extent). Guard the mesh slot.
                         ModelLodDataArray& lod0Array = ro->GetMeshletsRenderData(0);
                         if (instance->MeshIndex >= lod0Array.size() || !lod0Array[instance->MeshIndex])
@@ -4756,7 +4756,7 @@ namespace AZ
                             continue;   // skip coverage selection for this instance.
                         }
 
-                        // Phase 6 cluster DAG: the DAG *is* the LOD system — pin the
+                        // Phase 6 cluster DAG: the DAG *is* the LOD system -- pin the
                         // instance to LOD0 (whose cluster range holds every DAG level)
                         // and let the per-cluster cut pick detail. The ladder's
                         // hysteresis/group machinery goes dormant, not deleted.
@@ -4782,7 +4782,7 @@ namespace AZ
                         MeshletsRenderObject::EnsureMeshBounds(lod0Mrd);
                         if (lod0Mrd.MeshBoundsRadius < 0.0f)
                         {
-                            continue;   // bounds unavailable — leave LOD as-is.
+                            continue;   // bounds unavailable -- leave LOD as-is.
                         }
 
                         const AZ::Transform xform =
@@ -4855,9 +4855,9 @@ namespace AZ
                             // DETAIL-BIASED deadband. Recalibrated so VISIBLE objects stay HIGH
                             // detail (Nanite intent): a statue filling ~18% of the vertical view
                             // is LOD0 (the old 0.5 gate needed it to fill HALF the screen, which
-                            // is why on-screen statues looked coarse). The deadband — promote to
+                            // is why on-screen statues looked coarse). The deadband -- promote to
                             // a finer LOD at the nominal boundary, demote to a coarser LOD only
-                            // when coverage drops well past it — keeps the silhouette crisp AND
+                            // when coverage drops well past it -- keeps the silhouette crisp AND
                             // replaces the frame-counter hysteresis that let boundary instances
                             // thrash group membership every frame.
                             constexpr float kLodCov[3]   = { 0.18f, 0.08f, 0.03f };  // LOD0|1, 1|2, 2|3
@@ -4878,7 +4878,7 @@ namespace AZ
                         }
                         if (wantLod == instance->LodIndex)
                         {
-                            continue;   // already correct — no group churn.
+                            continue;   // already correct -- no group churn.
                         }
                         // Apply immediately; the deadband above (not a frame counter) is what
                         // prevents boundary flicker.
@@ -4911,7 +4911,7 @@ namespace AZ
             // Step B: the per-instance packets feed ONLY the cull-ON (opt-in) path now.
             // The cull-OFF default path draws via per-group hardware-instanced packets
             // (rebuilt below in the submit block), so this per-instance retry runs only
-            // when cull is enabled — avoids building unused per-instance packets every
+            // when cull is enabled -- avoids building unused per-instance packets every
             // frame in the default case.
             if (m_renderPass && m_debugControls.m_cullEnabled)
             {
@@ -4934,7 +4934,7 @@ namespace AZ
             // instance of that object reads from it, so doing the work once is correct.
             //
             // SP1: alongside the dispatch items, build the per-frame list of
-            // imported attachments — one per RW compute output (m_indices and
+            // imported attachments -- one per RW compute output (m_indices and
             // m_uvs) per object. Both passes need the same list so the frame
             // graph can wire UAV (compute) -> SRV (render) barriers between
             // the dedicated per-object buffers.
@@ -4943,7 +4943,7 @@ namespace AZ
 
             for (MeshletsRenderObject* renderObject : m_meshletsRenderObjects)
             {
-                // Iterate EVERY LOD slot, not just LOD0 — each LOD has its own
+                // Iterate EVERY LOD slot, not just LOD0 -- each LOD has its own
                 // dedicated per-mesh m_indices/m_uvs buffers, so each needs its own
                 // uniquely-identified frame-graph attachment. (A null mesh slot is
                 // legitimate now: a mesh with fewer LODs than the object's max
@@ -4957,7 +4957,7 @@ namespace AZ
                         auto& renderData = modelLodArray[meshIdx];
                         if (!renderData)
                         {
-                            continue;   // mesh has no data at this LOD (missing level) — skip.
+                            continue;   // mesh has no data at this LOD (missing level) -- skip.
                         }
                         // SP1: compute is fully suppressed. The m_indices/m_uvs
                         // buffers are populated via the CPU pre-bake at construction
@@ -4970,7 +4970,7 @@ namespace AZ
                         // frames (the frame graph keys state tracking off the id) and
                         // unique across all of them (otherwise two attachments collide).
                         // Object address + REAL lod index + mesh index + stream name
-                        // gives both — crucially the lod must be the real index (not a
+                        // gives both -- crucially the lod must be the real index (not a
                         // hardcoded 0), else LOD0's and LOD1's buffers for the same mesh
                         // would share an attachment id and corrupt state tracking.
                         const uintptr_t objKey = reinterpret_cast<uintptr_t>(renderObject);
@@ -5012,7 +5012,7 @@ namespace AZ
             }
 
             // Debug: meshlet (cluster) coloring. Apply the toggle to every object's
-            // per-object SRG only when it changes — it's a flat shader branch keyed
+            // per-object SRG only when it changes -- it's a flat shader branch keyed
             // off an SRG constant, so no DrawPacket rebuild is needed.
             if (m_debugControls.m_meshletColorMode != m_lastMeshletColorMode ||
                 static_cast<bool>(r_meshletsDagDebugColor) != m_lastDagDebugColor)
@@ -5060,7 +5060,7 @@ namespace AZ
             m_cullBarrierAttachmentsScratch.clear();
 
             // A cull enable/disable or CPU<->GPU switch changes which geometry view each
-            // packet must use — force a rebuild by clearing the per-instance packets.
+            // packet must use -- force a rebuild by clearing the per-instance packets.
             const bool cullModeChanged =
                 (m_debugControls.m_cullEnabled != m_cullWasEnabled) ||
                 (m_debugControls.m_gpuCull != m_lastGpuCull);
@@ -5082,7 +5082,7 @@ namespace AZ
                 RPI::ViewPtr cameraView = m_renderPipeline ? m_renderPipeline->GetDefaultView() : nullptr;
                 if (cameraView)
                 {
-                    // Column-major, no ReverseDepth arg — matches Atom's own view-frustum
+                    // Column-major, no ReverseDepth arg -- matches Atom's own view-frustum
                     // construction (e.g. SimplePointLightFeatureProcessor). Using RowMajor /
                     // ReverseDepth here inverted the frustum so every cluster read as Exterior.
                     const AZ::Matrix4x4 liveMat = cameraView->GetWorldToClipMatrix();
@@ -5149,7 +5149,7 @@ namespace AZ
                             // TWO-LEVEL CULL: a cheap whole-instance frustum test against the
                             // mesh bounding sphere decides the path. This is the key win for
                             // "many objects on screen": fully-visible instances draw whole-mesh
-                            // (no per-cluster compaction — that compute copies the entire index
+                            // (no per-cluster compaction -- that compute copies the entire index
                             // buffer every frame for zero culling benefit when nothing is off
                             // screen), and fully-off-screen instances are dropped outright. Only
                             // instances straddling the frustum run the per-cluster GPU cull.
@@ -5169,7 +5169,7 @@ namespace AZ
 
                             if (instTest == AZ::IntersectResult::Exterior)
                             {
-                                // Fully off screen — draw nothing (camera + shadow).
+                                // Fully off screen -- draw nothing (camera + shadow).
                                 instance->DrawPacket = nullptr;
                                 instance->ShadowDrawPacket = nullptr;
                                 instance->DepthDrawPacket = nullptr;
@@ -5178,7 +5178,7 @@ namespace AZ
                                 continue;
                             }
 
-                            // Visible — run the per-cluster (surfel) GPU cull. The compute writes
+                            // Visible -- run the per-cluster (surfel) GPU cull. The compute writes
                             // only visible clusters' DrawIndexedIndirect commands + a count; the
                             // camera packet draws them via DrawIndexedIndirectCount over the STATIC
                             // (vertex-cache-friendly) index buffer, so each visible cluster's slice
@@ -5186,16 +5186,16 @@ namespace AZ
                             // instance-level test above just skips fully-off-screen objects cheaply.
                             if (!instance->GpuCullDrawActive)
                             {
-                                instance->DrawPacket = nullptr;   // entering culled state — rebuild packet
+                                instance->DrawPacket = nullptr;   // entering culled state -- rebuild packet
                                 instance->GpuCullDrawActive = true;
                             }
-                            // Skip the recompute when neither the camera nor this object moved — last
+                            // Skip the recompute when neither the camera nor this object moved -- last
                             // frame's command/count buffers are still valid; just re-declare them on
                             // the barrier pass so their state stays read-ready for the draw.
                             const bool gpuTransformChanged =
                                 !instance->HasLastCullTransform || !xform.IsClose(instance->LastCullTransform);
                             // HiZ active => never skip: the pyramid ping-pongs EVERY frame, so a
-                            // skipped instance's CullSrg would keep last frame's image — the slot
+                            // skipped instance's CullSrg would keep last frame's image -- the slot
                             // the HiZ pass is WRITING this frame (also: occlusion is
                             // view-dependent per frame, the cull must re-run regardless).
                             // DAG cut active => never skip either: the cut is view-dependent
@@ -5219,7 +5219,7 @@ namespace AZ
                         }
 
                         // CPU path: skip the cull + packet rebuild when nothing changed
-                        // for this instance — the existing packet still draws the correct set.
+                        // for this instance -- the existing packet still draws the correct set.
                         const AZ::Transform xform =
                             m_transformServiceFeatureProcessor->GetTransformForId(instance->ObjectId);
                         const bool transformChanged =
@@ -5249,7 +5249,7 @@ namespace AZ
             }
             else if (m_cullWasEnabled)
             {
-                // Cull just turned off — Step B: the cull-OFF path draws via per-group
+                // Cull just turned off -- Step B: the cull-OFF path draws via per-group
                 // hardware-instanced packets, NOT per-instance packets. Drop the now-stale
                 // per-instance cull state and mark every group dirty so the submit block
                 // below rebuilds the instanced packets.
@@ -5333,7 +5333,7 @@ namespace AZ
                         const AZ::Vector3 liveCullCameraPos = cullView->GetViewToWorldMatrix().GetTranslation();
 
                         // Freeze-cull debug (same snapshot state the CPU/compute cull block
-                        // maintains — shared members, same edge detection, so enabling both
+                        // maintains -- shared members, same edge detection, so enabling both
                         // paths freezes them to the SAME camera). While frozen, the AS keeps
                         // culling against the snapshot so you can fly the real camera around
                         // and see exactly which clusters were culled.
@@ -5374,7 +5374,7 @@ namespace AZ
             //     shared model into ONE hardware-instanced DrawIndexed per group per
             //     pass. Rebuild dirty groups, then submit ONE camera + ONE shadow
             //     packet per group. Whole-group submit (no per-instance frustum cull
-            //     on the instanced path — out of scope for Step B; instancing draws
+            //     on the instanced path -- out of scope for Step B; instancing draws
             //     all members cheaply).
             //   CULL ON (opt-in): UNCHANGED per-instance path (the cull block above
             //     set up each instance's culled packet); do NOT group.
@@ -5399,7 +5399,7 @@ namespace AZ
                     MeshRenderData& mrd = *lod[key.m_meshIndex];
 
                     // Rebuild only if dirty (membership changed / first build / invalidated).
-                    // Transform changes do NOT dirty the group — SceneSrg supplies the live
+                    // Transform changes do NOT dirty the group -- SceneSrg supplies the live
                     // per-objectId transforms each frame, indexed by SV_InstanceID.
                     if (group.m_dirty)
                     {
@@ -5456,7 +5456,7 @@ namespace AZ
                     }
                     // Two-pass occlusion PASS 2: the late-depth packet, plus this
                     // instance's visibility-ledger import (declared RW on the barrier
-                    // pass — pre-depth UAV state/sync — AND on the late pass — the
+                    // pass -- pre-depth UAV state/sync -- AND on the late pass -- the
                     // post-pass-1 sync point).
                     if (instance && r_meshletsTwoPassOcclusion && instance->LateDepthDrawPacket &&
                         instance->VisFrameBuffer && instance->VisFrameBuffer->GetRHIBuffer())
@@ -5526,7 +5526,7 @@ namespace AZ
 
             // Two-pass occlusion PASS 2: the late pass opens its scope (and thereby
             // declares its HiZInput read + the ledger RW imports) only on frames with
-            // actual late work — its scope is what makes the CURRENT pyramid legal to
+            // actual late work -- its scope is what makes the CURRENT pyramid legal to
             // sample from every later pass, so this gate and the per-instance
             // twoPassActive checks must agree (both key off LateDepthDrawPacket).
             if (m_lateDepthPass)
@@ -5571,7 +5571,7 @@ namespace AZ
                 m_cullComputePass->SetImportedAttachments(m_cullArgsAttachmentsScratch);
                 m_cullComputePass->AddDispatchItems(m_cullDispatchItemsScratch);
                 // Barrier pass: EVERY active instance (incl. skipped) so every compacted/
-                // args buffer is transitioned to its read state for the draws — a skipped
+                // args buffer is transitioned to its read state for the draws -- a skipped
                 // instance redraws last frame's still-valid compacted data.
                 m_cullBarrierPass->SetIndirectBarrierAttachments(m_cullBarrierAttachmentsScratch);
                 // The barrier pass runs no dispatches.
@@ -5581,7 +5581,7 @@ namespace AZ
                 // when HiZ is off/unavailable so no stale image lingers on the pass.
                 m_cullBarrierPass->SetHiZReadImage(m_hiZBindValid ? m_hiZBindImage : nullptr);
                 // Two-pass occlusion: the visibility ledgers, declared ReadWrite here
-                // (pre-depth UAV state + a sync point) — pass 1's AS then writes them
+                // (pre-depth UAV state + a sync point) -- pass 1's AS then writes them
                 // inside the DepthPrePass scope in that established state.
                 m_cullBarrierPass->SetImportedAttachments(m_visFrameAttachmentsScratch);
             }
@@ -5594,8 +5594,8 @@ namespace AZ
             //
             // Previously we only added through m_renderPass->AddDrawPackets,
             // which submits to the render pass's own view (the main camera).
-            // Shadow cascade views — separate Views created by the shadow
-            // system — never received the meshlet DrawPackets, so meshlets
+            // Shadow cascade views -- separate Views created by the shadow
+            // system -- never received the meshlet DrawPackets, so meshlets
             // could not cast shadows.
             for (const RPI::ViewPtr& view : packet.m_views)
             {

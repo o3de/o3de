@@ -25,10 +25,10 @@ namespace AZ::Meshlets::Builders
     //! does at runtime today into a builder-side function:
     //!   1. meshopt_optimizeVertexFetch (per-mesh, reorders for cluster locality)
     //!   2. meshopt_buildMeshlets (max_vertices/max_triangles/cone_weight)
-    //!   3. encode triangle indices as 3×8-bit-in-u32 (top byte zero)
+    //!   3. encode triangle indices as 3x8-bit-in-u32 (top byte zero)
     //!   4. emit .azmeshletpack v1 with kinds 0-5 populated
     //!
-    //! Deterministic: same SourceMeshSet → byte-identical pack output.
+    //! Deterministic: same SourceMeshSet -> byte-identical pack output.
     BuildResult BuildPackBytes(const SourceMeshSet& source);
 
 } // namespace AZ::Meshlets::Builders

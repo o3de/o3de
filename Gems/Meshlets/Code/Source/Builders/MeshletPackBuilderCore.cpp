@@ -36,8 +36,8 @@ namespace AZ::Meshlets::Builders
             // Meshlet output (cluster set for this mesh's LOD 0).
             AZStd::vector<ClusterDescriptor> m_clusters;
             AZStd::vector<ClusterBoundsRecord> m_clusterBounds; //!< Parallel to m_clusters (Phase 6 culling).
-            AZStd::vector<AZ::u32> m_encodedTriangles;  //!< 3×8-bit packed in u32.
-            AZStd::vector<AZ::u32> m_vertexIndirection; //!< meshlet-local → mesh-global.
+            AZStd::vector<AZ::u32> m_encodedTriangles;  //!< 3x8-bit packed in u32.
+            AZStd::vector<AZ::u32> m_vertexIndirection; //!< meshlet-local -> mesh-global.
 
             // AABB.
             float m_aabbMin[3] = {  std::numeric_limits<float>::max(),
@@ -143,7 +143,7 @@ namespace AZ::Meshlets::Builders
                                               src.m_name.c_str());
                 return false;
             }
-            // Indices must come in triangle triples — meshoptimizer assumes
+            // Indices must come in triangle triples -- meshoptimizer assumes
             // index_count is divisible by 3 and will read past the buffer
             // otherwise.
             if ((src.m_indices.size() % 3) != 0)
@@ -157,16 +157,16 @@ namespace AZ::Meshlets::Builders
             // calls buildTriangleAdjacency which dereferences indices into a
             // per-vertex counts array; an OOB index becomes
             // EXCEPTION_ACCESS_VIOLATION inside meshoptimizer's clusterizer.cpp
-            // (no validation — it just trusts the caller). We've seen this on
+            // (no validation -- it just trusts the caller). We've seen this on
             // .glb assets where SceneAPI emits sub-meshes whose index buffer
-            // outlives a vertex-buffer trim — better to fail this one mesh than
+            // outlives a vertex-buffer trim -- better to fail this one mesh than
             // crash the whole AssetBuilder process.
             for (size_t i = 0; i < src.m_indices.size(); ++i)
             {
                 if (src.m_indices[i] >= vertexCount)
                 {
                     error = AZStd::string::format(
-                        "Mesh '%s' index[%zu]=%u is out of bounds (vertexCount=%zu) — "
+                        "Mesh '%s' index[%zu]=%u is out of bounds (vertexCount=%zu) -- "
                         "source mesh has malformed topology",
                         src.m_name.c_str(), i,
                         static_cast<unsigned>(src.m_indices[i]),
@@ -175,7 +175,7 @@ namespace AZ::Meshlets::Builders
                 }
             }
 
-            // 1. meshopt_optimizeVertexFetch — reorder vertices for cluster locality.
+            // 1. meshopt_optimizeVertexFetch -- reorder vertices for cluster locality.
             AZStd::vector<AZ::u32> remappedIndices(src.m_indices);
             AZStd::vector<float> p(src.m_positions);
             AZStd::vector<float> n(src.m_normals);
@@ -209,7 +209,7 @@ namespace AZ::Meshlets::Builders
             // vertex cache BEFORE clusterizing. This improves intra-cluster ACMR
             // (meshopt_buildMeshlets respects the existing index order when it
             // greedily packs triangles into clusters). It only reorders triangles
-            // — no geometry / vertex-attribute change — so it is safe for every LOD.
+            // -- no geometry / vertex-attribute change -- so it is safe for every LOD.
             meshopt_optimizeVertexCache(remappedIndices.data(), remappedIndices.data(),
                                         remappedIndices.size(), newVertexCount);
 
@@ -239,7 +239,7 @@ namespace AZ::Meshlets::Builders
             meshletVertices.resize(last.vertex_offset + last.vertex_count);
             meshletTriangleBytes.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3u));
 
-            // 3. Encode triangles 3×u8 → u32, rewrite triangle_offset from
+            // 3. Encode triangles 3xu8 -> u32, rewrite triangle_offset from
             //    byte-offset into u32-offset (one u32 per triangle). Also compute
             //    per-cluster bounds (Phase 6 GPU culling): a bounding sphere
             //    (frustum cull) and a normal cone (backface cull) via meshopt.
@@ -328,18 +328,18 @@ namespace AZ::Meshlets::Builders
         // buffer with meshopt_simplify to \p ratio of LOD0's index count. The
         // simplified index buffer references a SUBSET of LOD0's vertices, so all
         // vertex attributes (normal/tangent/bitangent/UV) are PRESERVED verbatim
-        // for the surviving vertices — no attribute re-derivation. Unreferenced
+        // for the surviving vertices -- no attribute re-derivation. Unreferenced
         // vertices are left in place; BuildOneMesh's meshopt_optimizeVertexFetch
         // pass compacts them out when it builds the LOD's streams.
         //
         // \p outNormalizedError receives meshopt_simplify's resulting error,
         // which meshoptimizer documents as already "relative to mesh extents"
-        // (dimensionless, [0,1] range) — i.e. already scale-independent, the same
+        // (dimensionless, [0,1] range) -- i.e. already scale-independent, the same
         // property the LodError pack section wants. No further AABB-diagonal
         // division is needed on top of what meshopt already normalizes by.
         //
         // Returns false if simplify could not meaningfully reduce the mesh
-        // (result index count >= ~95% of the input) — the caller stops adding
+        // (result index count >= ~95% of the input) -- the caller stops adding
         // LODs for that mesh (fewer LODs is fine). \p outNormalizedError is left
         // at 0.0 in that case.
         bool GenerateSimplifiedLod(const SourceMesh& lod0, float ratio, SourceMesh& out, float& outNormalizedError)
@@ -408,7 +408,7 @@ namespace AZ::Meshlets::Builders
         }
 
         // ================================================================
-        // Phase 6 — cluster-simplification DAG (see
+        // Phase 6 -- cluster-simplification DAG (see
         // docs/superpowers/specs/2026-08-31-meshlets-phase6-cluster-dag-lod-design.md).
         // Runs AFTER BuildOneMesh, entirely in the mesh's compacted (post-
         // optimizeVertexFetch) vertex space: simplification only ever selects a
@@ -417,7 +417,7 @@ namespace AZ::Meshlets::Builders
         // ================================================================
 
         //! Clusterize \p indices (mesh-local vertex ids) and APPEND the resulting
-        //! meshlets to \p out's cluster/bounds/triangle/indirection arrays — the same
+        //! meshlets to \p out's cluster/bounds/triangle/indirection arrays -- the same
         //! emission BuildOneMesh does for LOD0, with offsets continuing the existing
         //! arrays. Returns the number of clusters appended (0 on failure).
         AZ::u32 AppendClustersFromIndexBuffer(
@@ -505,7 +505,7 @@ namespace AZ::Meshlets::Builders
 
         //! Build the cluster DAG on top of \p out's leaf clusters (which BuildOneMesh
         //! just produced). Appends interior-level clusters (leaf-first layout) and
-        //! fills m_dagNodes / m_leafClusterCount. Crack-freedom invariants (design §2):
+        //! fills m_dagNodes / m_leafClusterCount. Crack-freedom invariants (design section 2):
         //! locked group boundaries, ONE shared error/sphere per simplification group
         //! (stamped on every parent's self record and every member's parent record),
         //! and max()-propagated monotonic errors.
@@ -589,7 +589,7 @@ namespace AZ::Meshlets::Builders
                 {
                     if (members.size() < 2)
                     {
-                        continue;   // nothing to merge — stays a root of the DAG
+                        continue;   // nothing to merge -- stays a root of the DAG
                     }
                     mergedIndices.clear();
                     for (AZ::u32 member : members)
@@ -624,13 +624,13 @@ namespace AZ::Meshlets::Builders
 
                     // "Did not shrink by at least ~15%" => locked borders dominate this
                     // group; keep its clusters as DAG roots rather than emitting a
-                    // near-duplicate level (design §9: the DAG just ends shallower).
+                    // near-duplicate level (design section 9: the DAG just ends shallower).
                     if (newIndexCount == 0 || newIndexCount >= mergedIndices.size() - mergedIndices.size() / 7)
                     {
                         continue;
                     }
 
-                    // Group-shared, monotonic error + enclosing sphere (design §2).
+                    // Group-shared, monotonic error + enclosing sphere (design section 2).
                     float groupError = resultError;
                     memberSphereCenters.clear();
                     memberSphereRadii.clear();
@@ -655,7 +655,7 @@ namespace AZ::Meshlets::Builders
                         continue;   // members stay roots
                     }
                     parentsEmitted += parentCount;
-                    // Phase 7: exact group->children mapping (ParentIndex section) —
+                    // Phase 7: exact group->children mapping (ParentIndex section) --
                     // every member records its group's FIRST parent (parents are
                     // contiguous); the new parents start as roots.
                     out.m_parentIndex.resize(out.m_clusters.size(), 0xFFFFFFFFu);
@@ -692,7 +692,7 @@ namespace AZ::Meshlets::Builders
 
                 if (parentsEmitted == 0)
                 {
-                    break;   // no group could simplify — DAG complete
+                    break;   // no group could simplify -- DAG complete
                 }
                 levelFirst = nextLevelFirst;
                 levelCount = parentsEmitted;
@@ -705,7 +705,7 @@ namespace AZ::Meshlets::Builders
         }
 
         // ================================================================
-        // Phase 7 — leaf streaming pages (see
+        // Phase 7 -- leaf streaming pages (see
         // docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md).
         // ================================================================
 
@@ -784,7 +784,7 @@ namespace AZ::Meshlets::Builders
         }
 
         //! Slice the interior DAG levels into always-resident pages: plain contiguous
-        //! runs of <= PageMaxClusters (no spatial partition, no permutation — they are
+        //! runs of <= PageMaxClusters (no spatial partition, no permutation -- they are
         //! pinned resident, so locality does not matter; what matters is that EVERY
         //! cluster the AS path can draw has a pool slot, which is what lets the
         //! monolithic buffers eventually be dropped for the AS path). Runs after
@@ -930,7 +930,7 @@ namespace AZ::Meshlets::Builders
         //   - if fewer than kTargetLodCount levels exist, the remaining coarser
         //     levels are GENERATED from LOD0 via meshopt_simplify (the
         //     "generate" path). Generation stops early if simplify can't shrink
-        //     the mesh further — a mesh may therefore end with < kTargetLodCount
+        //     the mesh further -- a mesh may therefore end with < kTargetLodCount
         //     LODs, which is fine.
         // Each LOD is then clusterized by BuildOneMesh independently.
         //
@@ -968,7 +968,7 @@ namespace AZ::Meshlets::Builders
             AZStd::vector<float> lodErrorChain;
             lodChain.reserve(kTargetLodCount);
             lodErrorChain.reserve(kTargetLodCount);
-            // Phase 6 cluster DAG: the DAG *is* the LOD system — a single "LOD" entry
+            // Phase 6 cluster DAG: the DAG *is* the LOD system -- a single "LOD" entry
             // whose cluster range holds every DAG level (leaves first). The discrete
             // chain (baked or generated) is skipped entirely.
             const AZ::u32 effectiveTargetLodCount = source.m_generateClusterDag ? 1 : kTargetLodCount;
@@ -993,7 +993,7 @@ namespace AZ::Meshlets::Builders
                 float generatedError = 0.0f;
                 if (!GenerateSimplifiedLod(lod0, ratio, generated, generatedError))
                 {
-                    // Could not collapse further — stop adding LODs for this mesh.
+                    // Could not collapse further -- stop adding LODs for this mesh.
                     break;
                 }
                 lodChain.push_back(AZStd::move(generated));
@@ -1002,7 +1002,7 @@ namespace AZ::Meshlets::Builders
 
             // Clusterize each LOD slice. A LOD that fails to build (e.g. a
             // degenerate generated level) is dropped rather than failing the
-            // whole pack — but LOD0 failing is fatal.
+            // whole pack -- but LOD0 failing is fatal.
             meshLodOutputs[i].reserve(lodChain.size());
             for (size_t lodIdx = 0; lodIdx < lodChain.size(); ++lodIdx)
             {
@@ -1073,7 +1073,7 @@ namespace AZ::Meshlets::Builders
         AZStd::vector<AZ::u8> meshDescPrefixAndLods;
         AZStd::vector<AZ::u8> nameBlob;
 
-        // Aggregate vertex streams: sum over every (mesh, LOD) output — each LOD
+        // Aggregate vertex streams: sum over every (mesh, LOD) output -- each LOD
         // gets its OWN vertex slice in the pack-global streams.
         AZ::u32 totalVertexCount = 0;
         for (const auto& lods : meshLodOutputs)
@@ -1139,7 +1139,7 @@ namespace AZ::Meshlets::Builders
                 MeshDescriptorLodEntry lod{};
                 lod.m_clusterFirst = clusterCursor;
                 // DAG meshes: m_clusterCount = LEAVES only (everything that draws "all
-                // clusters" keeps drawing exactly the LOD0 set — no interior overlap);
+                // clusters" keeps drawing exactly the LOD0 set -- no interior overlap);
                 // m_dagClusterCount = the full leaf+interior range for the DAG-aware
                 // AS path. Non-DAG meshes: total clusters / 0, exactly as before.
                 const AZ::u32 totalClusters = static_cast<AZ::u32>(o.m_clusters.size());
@@ -1171,7 +1171,7 @@ namespace AZ::Meshlets::Builders
                                         o.m_clusterBounds.begin(),
                                         o.m_clusterBounds.end());
 
-                // Phase 6 DAG nodes (parallel to allClusters; spatial — no rebasing).
+                // Phase 6 DAG nodes (parallel to allClusters; spatial -- no rebasing).
                 // BuildMeshDag fills one record per cluster for DAG meshes; the section
                 // is only written when the pack opts in, so the parallel invariant only
                 // has to hold then.
@@ -1252,7 +1252,7 @@ namespace AZ::Meshlets::Builders
         MeshletPackWriter writer;
         writer.BeginPack();
 
-        // Kind 0 — PackHeader (1 record).
+        // Kind 0 -- PackHeader (1 record).
         PackHeaderRecord packHeader{};
         // Write GUID as 16 raw bytes + sub-id (matching the AssetId-as-raw-bytes
         // layout introduced in the Task 2 spec correction).
@@ -1272,7 +1272,7 @@ namespace AZ::Meshlets::Builders
         }
         writer.AddSection(SectionKind::PackHeader, &packHeader, sizeof(packHeader));
 
-        // Kind 1 — MeshDescriptors. Layout: for each mesh, one MeshDescriptorPrefix
+        // Kind 1 -- MeshDescriptors. Layout: for each mesh, one MeshDescriptorPrefix
         // followed by prefix.m_lodCount MeshDescriptorLodEntry records (already
         // assembled into meshDescPrefixAndLods in mesh order during the assembly
         // loop), then the concatenated name blob.
@@ -1283,20 +1283,20 @@ namespace AZ::Meshlets::Builders
         meshDescBytes.insert(meshDescBytes.end(), nameBlob.begin(), nameBlob.end());
         writer.AddSection(SectionKind::MeshDescriptors, meshDescBytes.data(), meshDescBytes.size());
 
-        // Kind 2 — ClusterDescriptors.
+        // Kind 2 -- ClusterDescriptors.
         writer.AddSection(SectionKind::ClusterDescriptors,
                           allClusters.data(),
                           allClusters.size() * sizeof(ClusterDescriptor));
 
-        // Kind 6 — ConeBounds (Phase 6 GPU culling): one ClusterBoundsRecord per
+        // Kind 6 -- ConeBounds (Phase 6 GPU culling): one ClusterBoundsRecord per
         // cluster, in the same pack-global order as ClusterDescriptors. The runtime
-        // uploads these to a StructuredBuffer the cull compute reads. Optional —
+        // uploads these to a StructuredBuffer the cull compute reads. Optional --
         // older packs without this section simply skip culling.
         writer.AddSection(SectionKind::ConeBounds,
                           allClusterBounds.data(),
                           allClusterBounds.size() * sizeof(ClusterBoundsRecord));
 
-        // Kind 7 — DagNodes (Phase 6, pack v3): per-cluster DAG cut records, parallel
+        // Kind 7 -- DagNodes (Phase 6, pack v3): per-cluster DAG cut records, parallel
         // to ClusterDescriptors. Written ONLY for DAG-enabled sidecars so every other
         // pack stays a byte-identical v2 (no global re-bake).
         if (source.m_generateClusterDag)
@@ -1307,7 +1307,7 @@ namespace AZ::Meshlets::Builders
                               allDagNodes.size() * sizeof(DagNodeRecord));
         }
 
-        // Kind 11/12/14 — streaming pages (Phase 7, pack v4). The v3 monolithic
+        // Kind 11/12/14 -- streaming pages (Phase 7, pack v4). The v3 monolithic
         // sections above stay in the pack too (duplicate-fallback: streaming OFF
         // renders exactly like a v3 pack).
         if (source.m_generatePages)
@@ -1323,25 +1323,25 @@ namespace AZ::Meshlets::Builders
                               allParentIndex.size() * sizeof(AZ::u32));
         }
 
-        // Kind 8 — LodError: one float per MeshDescriptorLodEntry record (see the
+        // Kind 8 -- LodError: one float per MeshDescriptorLodEntry record (see the
         // per-LOD assembly loop above), parallel to those records in the same
-        // order. Optional — older packs without this section fall back to
+        // order. Optional -- older packs without this section fall back to
         // screen-coverage LOD selection at runtime.
         writer.AddSection(SectionKind::LodError,
                           allLodErrors.data(),
                           allLodErrors.size() * sizeof(float));
 
-        // Kind 3 — TriangleIndices (encoded).
+        // Kind 3 -- TriangleIndices (encoded).
         writer.AddSection(SectionKind::TriangleIndices,
                           allEncodedTris.data(),
                           allEncodedTris.size() * sizeof(AZ::u32));
 
-        // Kind 4 — VertexIndirection.
+        // Kind 4 -- VertexIndirection.
         writer.AddSection(SectionKind::VertexIndirection,
                           allIndirection.data(),
                           allIndirection.size() * sizeof(AZ::u32));
 
-        // Kind 13 — ExpandedIndices (SP1 v2).
+        // Kind 13 -- ExpandedIndices (SP1 v2).
         //
         // Pre-compute the flat triangle vertex index list here so the runtime
         // doesn't have to do CPU expansion AND doesn't need to rely on the
@@ -1349,7 +1349,7 @@ namespace AZ::Meshlets::Builders
         // UAV->SRV barrier problem on AMD that we could not reliably solve
         // without changing the upload mechanism). Putting the data in the
         // pack means PackInit can point an SRV's m_bufferData directly at
-        // pack-asset memory — the exact same upload path that positions,
+        // pack-asset memory -- the exact same upload path that positions,
         // normals, tangents, and bitangents use.
         //
         // Encoding: for each cluster in pack-global order, walk its triangles
@@ -1393,7 +1393,7 @@ namespace AZ::Meshlets::Builders
                               expandedIndices.size() * sizeof(AZ::u32));
         }
 
-        // Kind 5 — VertexStreams (sub-header + 5 descriptors + stream data).
+        // Kind 5 -- VertexStreams (sub-header + 5 descriptors + stream data).
         VertexStreamSubHeader sub{};
         sub.m_totalVertexCount = totalVertexCount;
         sub.m_streamCount      = 5;

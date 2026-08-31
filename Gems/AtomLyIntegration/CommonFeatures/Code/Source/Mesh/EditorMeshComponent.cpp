@@ -51,7 +51,7 @@ namespace AZ
             // failure. Authors (or updates) a *.meshletpack JSON in the project's
             // Assets/MeshletPacks/ directory using the supplied cluster budgets. If a
             // sidecar already exists, only the max_vertices/max_triangles values are
-            // updated in place (the rest — source id, cone weight, mesh filter — is
+            // updated in place (the rest -- source id, cone weight, mesh filter -- is
             // preserved), and only when they actually differ.
             AZStd::string TryAutoAuthorMeshletPackSidecar(
                 const AZ::Data::AssetId& modelAssetId,
@@ -98,7 +98,7 @@ namespace AZ
                     targetDir.c_str(), stem.c_str());
 
                 // If a sidecar already exists, UPDATE its cluster budgets in place
-                // (preserving source id / cone weight / mesh filter) when they differ —
+                // (preserving source id / cone weight / mesh filter) when they differ --
                 // this is what lets the artist change cluster size from the Mesh
                 // component on an already-baked model and trigger a re-bake.
                 if (io->Exists(targetPath.c_str()))
@@ -271,7 +271,7 @@ namespace AZ
                                 // point to EditorMeshComponent::OnConfigurationChanged from within Class<MeshComponentConfig>
                                 // (EditContext asserts "Attribute doesn't belong to MeshComponentConfig class"). The
                                 // base EditorComponentAdapter calls OnConfigurationChanged on framework commit events
-                                // (entity deselect, save, undo) — the auto-author runs from there.
+                                // (entity deselect, save, undo) -- the auto-author runs from there.
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &MeshComponentConfig::m_meshletMaxVerticesPerCluster,
                               "Max Vertices/Cluster",
@@ -521,7 +521,7 @@ namespace AZ
                     AZ_TracePrintf("Meshlets", "Auto-author: pack status = %d (NoPack=2, NotChecked=0)\n", static_cast<int>(status));
                     // The sidecar writer is idempotent: it CREATES the sidecar when
                     // missing and UPDATES the cluster budgets in place when they changed.
-                    // Author/update on every commit while meshlets is enabled — this
+                    // Author/update on every commit while meshlets is enabled -- this
                     // covers both first-enable (NoPack/NotChecked) and a later cluster-size
                     // edit on an already-baked model (Ok). (status is still traced above.)
                     {

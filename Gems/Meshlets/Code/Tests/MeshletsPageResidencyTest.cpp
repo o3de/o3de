@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
 
-// Phase 7 streaming — residency core behavior (design §2). Pure-CPU checks: near
+// Phase 7 streaming -- residency core behavior (design section 2). Pure-CPU checks: near
 // pages load, far pages don't, the budget is a hard cap, LRU eviction reclaims cold
 // pages under pressure, the hysteresis band prevents boundary thrash, and duplicate
 // per-instance submissions of one page never double-allocate.
@@ -96,7 +96,7 @@ namespace UnitTest
         }
         // Page 1 drifts into the hysteresis band (errPx between tau/1.5 and tau):
         // still resident, must NOT be evicted even when another page wants the slot?
-        // It must: in-band means "not wanted now" but also "not cold" — the design's
+        // It must: in-band means "not wanted now" but also "not cold" -- the design's
         // band only stops eviction while below budget pressure. Under pressure the
         // wanted page wins ONLY if the resident one is cold (below the floor).
         {

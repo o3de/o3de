@@ -6,12 +6,12 @@
  *
  */
 
-// Meshlet forward pass — HARDWARE MESH SHADER path (Phase 5, first slice).
+// Meshlet forward pass -- HARDWARE MESH SHADER path (Phase 5, first slice).
 //
 // Rendered by the STANDARD Atom ForwardPass (DrawListTag "forward"), exactly like
 // the vertex-pull MeshletsForwardPass.azsl, so it inherits the ForwardPassSrg
 // lighting resources for free. This first slice runs one threadgroup per cluster
-// (DispatchMesh(clusterCount,1,1)) with NO amplification/cull stage yet — the mesh
+// (DispatchMesh(clusterCount,1,1)) with NO amplification/cull stage yet -- the mesh
 // shader transforms each cluster's vertices and emits its triangles directly (no
 // input assembler, no index buffer). The pixel shader outputs a flat per-cluster
 // debug color so the meshlet decomposition is directly visible and correctness of
@@ -31,7 +31,7 @@
 
 // Standard forward pass SRG (SRG_PerPass): shadowmaps, tile light data, BRDF map,
 // samplers. Bound by the standard Atom ForwardPass for the whole pass, so the mesh
-// path (DrawListTag "forward") inherits it for free — exactly like the vertex-pull
+// path (DrawListTag "forward") inherits it for free -- exactly like the vertex-pull
 // MeshletsForwardPass.azsl. PerPass carries no ShaderVariantFallback, so it does not
 // collide with the PerDraw fallback SRG (MeshletsMeshInstanceSrg).
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
@@ -155,7 +155,7 @@ void MeshletsForwardPassMS(
 // is left un-culled.
 // ---------------------------------------------------------------------------
 // NOTE: SetMeshOutputCounts must be called exactly once, uniformly, by every thread,
-// and — per the mesh-shader spec — BEFORE any thread writes to the out vertices/
+// and -- per the mesh-shader spec -- BEFORE any thread writes to the out vertices/
 // indices arrays. The final triangle count isn't known until after the per-triangle
 // cull runs, so vertices are staged into this groupshared buffer (not outVerts)
 // first; only after SetMeshOutputCounts is called do threads copy the staged data
@@ -309,7 +309,7 @@ void MeshletsForwardPassMSCulled(
     // Phase 7 streaming: when paged mode is on, EVERY cluster the AS can dispatch
     // has a resident pool slot (the AS refused anything else), so geometry is
     // fetched from the page pool instead of the monolithic buffers. Resolved once
-    // per group — groupId/clusterId are uniform.
+    // per group -- groupId/clusterId are uniform.
     const MeshletsPagedCluster pagedCluster =
         (MeshletsMeshObjectSrg::m_pagedMode != 0u)
             ? MeshletsMeshObjectSrg::GetPagedCluster(clusterId)
@@ -433,7 +433,7 @@ void MeshletsForwardPassMSCulled(
     }
 }
 
-// Full PBR pixel shader — byte-for-byte the vertex-pull MeshletsForwardPass.azsl PS
+// Full PBR pixel shader -- byte-for-byte the vertex-pull MeshletsForwardPass.azsl PS
 // body, except that the bitangent is reconstructed from m_tangent.w here rather than
 // interpolated. Everything downstream of the tangent frame -- material sampling /
 // Surface build / lighting / 5-target pack -- is literal reuse. Result: a mesh-shader-drawn mesh looks identical to a

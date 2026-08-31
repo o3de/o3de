@@ -6,7 +6,7 @@
  */
 
 // Phase 7 streaming-page builder invariants (see
-// docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md §1).
+// docs/superpowers/specs/2026-08-31-meshlets-streaming-paging-design.md section 1).
 // Self-containment is the load-bearing property: rendering a resident page must
 // touch nothing outside its payload, so every payload is decoded here and checked
 // bit-for-bit against the monolithic (fallback) data.

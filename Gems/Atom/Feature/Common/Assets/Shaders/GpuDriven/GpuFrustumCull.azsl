@@ -32,7 +32,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 // Extract frustum planes from the view-projection matrix.
 // Each plane is stored as float4 (normal.xyz, distance).
-// The planes face inward — a point is inside the frustum if dot(plane, point) >= 0.
+// The planes face inward -- a point is inside the frustum if dot(plane, point) >= 0.
 void ExtractFrustumPlanes(row_major float4x4 viewProj, out float4 planes[6])
 {
     // Left
@@ -111,7 +111,7 @@ float4 ProjectSphereToScreenAABB(float3 center, float radius, row_major float4x4
 
     if (clipCenter.w <= 0.0)
     {
-        // Behind camera — return full-screen AABB to force visibility
+        // Behind camera -- return full-screen AABB to force visibility
         return float4(0, 0, 1, 1);
     }
 
@@ -294,18 +294,18 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
         }
 
         // Compute cross-fade alpha for this LOD level.
-        // At the lower boundary (transitioning to coarser LOD): alpha fades from 1 → 0
-        // At the upper boundary (transitioning to finer LOD):   alpha fades from 0 → 1
+        // At the lower boundary (transitioning to coarser LOD): alpha fades from 1 -> 0
+        // At the upper boundary (transitioning to finer LOD):   alpha fades from 0 -> 1
         float crossFadeAlpha = 1.0;
 
         if (screenCoverage < instance.m_lodScreenCoverageMin)
         {
-            // Below min — fading out (this is the outgoing finer LOD)
+            // Below min -- fading out (this is the outgoing finer LOD)
             crossFadeAlpha = saturate((screenCoverage - expandedMin) / LOD_CROSSFADE_MARGIN);
         }
         else if (screenCoverage > instance.m_lodScreenCoverageMax)
         {
-            // Above max — fading in (this is the outgoing coarser LOD)
+            // Above max -- fading in (this is the outgoing coarser LOD)
             crossFadeAlpha = saturate((expandedMax - screenCoverage) / LOD_CROSSFADE_MARGIN);
         }
 
@@ -321,7 +321,7 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
         // separate RWStructuredBuffer<float> output is needed.  For now the CPU-set
         // value in GpuInstanceData.m_lodCrossFadeAlpha is used (always 1.0 until the
         // CPU LOD selector populates it).
-        // SceneSrg::m_gpuInstanceData is SRV — cannot write here.
+        // SceneSrg::m_gpuInstanceData is SRV -- cannot write here.
     }
 
     // Instance survived culling -- record it for batch collection.

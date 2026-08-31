@@ -22,7 +22,7 @@ namespace AZ::Meshlets::Builders
 {
     //! Scenemanifest rule. When present on an FBX's IMeshGroup, the SceneAPI
     //! export module produces a sibling .azmeshletpack. UI surfaces this rule
-    //! under "Add Modifier" → "Meshlet Pack Rule" in the Asset Editor.
+    //! under "Add Modifier" -> "Meshlet Pack Rule" in the Asset Editor.
     class MeshletPackRule : public AZ::SceneAPI::DataTypes::IRule
     {
     public:

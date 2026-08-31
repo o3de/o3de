@@ -12,7 +12,7 @@
 // "forward"). The pass binds the ForwardPassSrg (directional/projected
 // shadowmaps, tile light data, BRDF map, samplers) before submitting every
 // DrawItem in the pass, so the meshlet DrawItem automatically has access to all
-// lighting resources — exactly like a standard mesh. We only declare the
+// lighting resources -- exactly like a standard mesh. We only declare the
 // matching SRG and pull in the standard lighting headers.
 //
 // Output is the full 5-target MainPipeline ForwardPassOutput (diffuse,
@@ -25,7 +25,7 @@
 // source model's actual material textures.
 //
 // PERF: the vertex shader uses hardware input-assembly like the depth/shadow/
-// motion shaders — a 5-channel layout (POSITION,NORMAL,TANGENT,BITANGENT,UV)
+// motion shaders -- a 5-channel layout (POSITION,NORMAL,TANGENT,BITANGENT,UV)
 // fetched through the hardware index buffer (post-transform vertex-cache reuse),
 // replacing the prior SV_VertexID -> StructuredBuffer vertex-pull. The matching
 // PSO input layout + dedicated per-attribute IA buffers are set up in
@@ -48,14 +48,14 @@
 // fallback SRG (MeshletsInstanceRenderSrg) that stores the shader-option key.
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
-// Per-material SRG (SRG_PerMaterial) — the source model's PBR textures + factors,
+// Per-material SRG (SRG_PerMaterial) -- the source model's PBR textures + factors,
 // extracted at runtime. Bound on the forward DrawItem by the feature processor.
 #include <MeshletsMaterialSrg.azsli>
 
 // Color-space conversion (LinearSrgb -> AcesCg). Atom's PBR pipeline does its
 // lighting math in AcesCg working space; a baseColor texture sampled raw is in
 // linear-sRGB and would feed the wrong color space into the BRDF. The standard
-// Atom material path applies this conversion in GetBaseColorInput — see
+// Atom material path applies this conversion in GetBaseColorInput -- see
 // BaseColorInput.azsli line 55. We mirror that exactly.
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
@@ -97,7 +97,7 @@ struct VSOutput
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
     //! Debug: cluster (meshlet) id resolved in the VS from the linear index.
-    //! nointerpolation — it's a per-primitive integer, not something to lerp.
+    //! nointerpolation -- it's a per-primitive integer, not something to lerp.
     nointerpolation uint m_clusterId : UV2;
 };
 
@@ -129,7 +129,7 @@ VSOutput MeshletsForwardPassVS(VSInput IN)
     OUT.m_clusterId     = 0u;
 
     // Hardware input-assembly: attributes come straight from the bound vertex streams
-    // (POSITION,NORMAL,TANGENT,BITANGENT,UV) — no SV_VertexID / StructuredBuffer pulls.
+    // (POSITION,NORMAL,TANGENT,BITANGENT,UV) -- no SV_VertexID / StructuredBuffer pulls.
     float3 localPosition = IN.m_position;
 
     // Step B: hardware-instanced draws select objectId via SV_InstanceID (when
@@ -161,7 +161,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
     // When enabled, bypass PBR entirely and emit a flat unlit color keyed off the
     // cluster id so the meshlet decomposition is directly visible. Output as
     // emissive (specular target) with zero albedo/diffuse/F0 so IBL/SSR passes add
-    // nothing — the composited result is the flat color.
+    // nothing -- the composited result is the flat color.
     if (MeshletsObjectRenderSrg::m_meshletDebugColor != 0u)
     {
         const float3 clusterColor = MeshletsObjectRenderSrg::MeshletDebugColor(IN.m_clusterId);
@@ -192,7 +192,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
     // Base color: m_baseColor.rgb already holds color.rgb * baseColor.factor from
     // the CPU. When the texture is bound, sample it and convert into Atom's AcesCg
     // working color space before applying the Multiply blend (this matches
-    // GetBaseColorInput + BlendBaseColor in StandardPBR exactly — see
+    // GetBaseColorInput + BlendBaseColor in StandardPBR exactly -- see
     // BaseColorInput.azsli line 55).
     real3 baseColor = (real3)MeshletsMaterialSrg::m_baseColor.rgb;
     if (matFlags & MESHLETS_MAT_FLAG_BASECOLOR_MAP)
@@ -202,7 +202,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
         baseColor *= sampledAlbedo;
     }
 
-    // Metallic: texture takes precedence over factor when the map is bound — they
+    // Metallic: texture takes precedence over factor when the map is bound -- they
     // are NOT multiplied. (Multiplying made everything dielectric whenever
     // metallic.factor=0, even on areas the texture marks as metal.)
     real metallic;
@@ -217,7 +217,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
 
     // Roughness: with a texture, remap by lerp(lower, upper, tex.r) per StandardPBR.
     // (Multiplying factor*tex.r capped roughness too low and made everything mirror-
-    // smooth — that was the "chrome" look.)
+    // smooth -- that was the "chrome" look.)
     real roughness;
     if (matFlags & MESHLETS_MAT_FLAG_ROUGHNESS_MAP)
     {
@@ -252,7 +252,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
     // Ambient occlusion: GetOcclusionInput in OcclusionInput.azsli uses
     //   occlusion = pow(tex.r, factor) when the texture is bound, else 1.0.
     // Without AO, ambient + specular lighting fills crevices and the surface
-    // looks brighter / more reflective than the standard mesh — exactly the
+    // looks brighter / more reflective than the standard mesh -- exactly the
     // "still reflective" symptom.
     real diffuseAO = 1.0;
     if (matFlags & MESHLETS_MAT_FLAG_DIFFUSE_AO_MAP)
@@ -302,7 +302,7 @@ ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
     // fields to 1.0, and FinalizeLighting() multiplies the accumulated direct
     // lighting by them. Without the copy, our texture-sampled AO never reaches
     // the lighting math and the surface looks brighter / more reflective than
-    // the standard mesh — that was the "still shiny" symptom.
+    // the standard mesh -- that was the "still shiny" symptom.
     LightingData lightingData;
     lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
     lightingData.specularResponse =

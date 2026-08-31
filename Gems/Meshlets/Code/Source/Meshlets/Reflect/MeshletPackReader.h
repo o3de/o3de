@@ -15,7 +15,7 @@
 namespace AZ::Meshlets
 {
     //! Validates and indexes a .azmeshletpack byte buffer in place. Does not own
-    //! the buffer — caller keeps it alive for the reader's lifetime.
+    //! the buffer -- caller keeps it alive for the reader's lifetime.
     //!
     //! Forward compatibility: unknown SectionKind values from future sub-projects
     //! are exposed by HasSection / GetSection but should be ignored by SP1

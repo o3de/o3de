@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  * Smoke-test: bake a pack in-test, load it via the asset class, confirm the
- * runtime can read its sections. Does NOT exercise the full RHI bind path —
+ * runtime can read its sections. Does NOT exercise the full RHI bind path --
  * that needs the renderer up and is done in the Phase 6 integration test.
  */
 

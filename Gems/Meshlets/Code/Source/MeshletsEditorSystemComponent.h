@@ -48,7 +48,7 @@ namespace AZ
             void Deactivate() override;
 
 #ifdef IMGUI_ENABLED
-            // ImGui::ImGuiUpdateListenerBus::Handler — the meshlet debug tab.
+            // ImGui::ImGuiUpdateListenerBus::Handler -- the meshlet debug tab.
             void OnImGuiUpdate() override;
             void OnImGuiMainMenuUpdate() override;
 

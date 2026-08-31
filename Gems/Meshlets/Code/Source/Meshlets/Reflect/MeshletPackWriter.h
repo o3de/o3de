@@ -34,7 +34,7 @@ namespace AZ::Meshlets
 
         //! Emit the assembled pack bytes into outBytes. Returns false on internal error
         //! (currently never; reserved for future structural validation).
-        //! After End, the writer is in a finalized state — call BeginPack again to reuse.
+        //! After End, the writer is in a finalized state -- call BeginPack again to reuse.
         bool End(AZStd::vector<AZ::u8>& outBytes);
 
     private:

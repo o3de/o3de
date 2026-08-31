@@ -13,7 +13,7 @@
 // MeshletsFeatureProcessor (InitShadowShader); the per-mesh POSITION stream is
 // bound via the geometry view's StreamBufferView. The shadow system provides
 // ViewSrg::m_viewProjectionMatrix with the light's VP matrix per cascade.
-// No pixel shader — depth-only write into the shadowmap.
+// No pixel shader -- depth-only write into the shadowmap.
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>

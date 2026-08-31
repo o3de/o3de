@@ -13,7 +13,7 @@
 //
 // Deliberately SEPARATE from MeshletsPerObjectRenderSrg.azsli (the VS/vertex-pull
 // path) so the mesh-shader shaders are fully isolated from the existing 5 render
-// shaders — no shared-SRG layout churn, no risk to the vertex-pull path.
+// shaders -- no shared-SRG layout churn, no risk to the vertex-pull path.
 //
 // The mesh shader runs ONE threadgroup per cluster (DispatchMesh(clusterCount,1,1)),
 // reads that cluster's descriptor, transforms its vertices, and emits its triangles.
@@ -76,7 +76,7 @@ ShaderResourceGroup MeshletsMeshInstanceSrg : SRG_PerDraw
     //! gates (replacing their old fixed 1080p reference when nonzero). Set every
     //! frame by UpdateMeshShaderCullInstance regardless of the DAG toggle.
     float2 m_viewportSize;
-    //! cot(FovY/2) * viewportHeight * 0.5 — the pure-projection pixel scale for
+    //! cot(FovY/2) * viewportHeight * 0.5 -- the pure-projection pixel scale for
     //! MeshletsDagProjectedErrorPx (rotation-independent).
     float m_dagProjScale;
     //! Cut threshold in pixels (r_meshletsDagErrorPx).
@@ -122,7 +122,7 @@ ShaderResourceGroup MeshletsMeshObjectSrg : SRG_PerObject
 
     //! Per-cluster triangle lists: one uint = 3x8-bit cluster-local vertex indices
     //! (top byte unused). Slice for cluster c starts at descriptor.m_triangleOffset.
-    //! StructuredBuffer (not typed Buffer<uint>) — the typed-buffer SRV path mis-sets
+    //! StructuredBuffer (not typed Buffer<uint>) -- the typed-buffer SRV path mis-sets
     //! NumElements on this AMD/DX12 combo (see MeshletsPerObjectRenderSrg.azsli).
     StructuredBuffer<uint> m_meshletsTriangles;
 
@@ -136,7 +136,7 @@ ShaderResourceGroup MeshletsMeshObjectSrg : SRG_PerObject
     StructuredBuffer<ClusterBoundsRecord> m_clusterBounds;
 
     //! Phase 6 cluster DAG (pack v3): per-cluster cut records, parallel to
-    //! m_meshletsDescriptors (leaf-first). Unbound for v2 packs — reads then return
+    //! m_meshletsDescriptors (leaf-first). Unbound for v2 packs -- reads then return
     //! zeros (selfError 0 => reads as "leaf"), and the cut is never enabled anyway.
     StructuredBuffer<MeshletDagNodeRecord> m_dagNodes;
 
@@ -148,7 +148,7 @@ ShaderResourceGroup MeshletsMeshObjectSrg : SRG_PerObject
     uint m_pagedMode;
     //! Phase 4 VRAM reclaim: 1 = this mesh has NO monolithic geometry buffers
     //! (r_meshletsStreamingExclusive at load). Until m_pagedMode goes live the AS
-    //! must reject every cluster — a monolithic fallback fetch would read null SRVs.
+    //! must reject every cluster -- a monolithic fallback fetch would read null SRVs.
     uint m_pagedExclusive;
     //! The single global page pool: fixed PageSlotU32s-word slots, layout
     //! {header4}{PagedClusterRecord[clusterCount] as 4xu32}{triWords}{indirection}

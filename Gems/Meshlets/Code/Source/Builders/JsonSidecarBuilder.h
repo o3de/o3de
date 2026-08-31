@@ -23,21 +23,21 @@ namespace AZ::Meshlets::Builders
         static constexpr const char* ProductExt  = ".azmeshletpack";
         // v4: JobProduct now records the correct MeshletPackAsset type id
         // (previously used CreateRandom, which left every .azmeshletpack entry
-        // in the catalog with a random type — PackResolver filters by type to
+        // in the catalog with a random type -- PackResolver filters by type to
         // find packs, so the editor's runtime warning "No .azmeshletpack
         // product registered" fired even when the product existed). Bumping
         // forces AP to re-emit all products with the correct type so the
         // catalog's m_assetType matches azrtti_typeid<MeshletPackAsset>().
-        // v5: pack format v2 — adds SectionKind::ExpandedIndices so the
+        // v5: pack format v2 -- adds SectionKind::ExpandedIndices so the
         //     runtime can point an SRV at pre-baked flat triangle indices
         //     (no runtime CPU expansion, no compute-pass cross-pass barrier).
-        // v6: Phase 6 — adds SectionKind::ConeBounds (per-cluster bounding
+        // v6: Phase 6 -- adds SectionKind::ConeBounds (per-cluster bounding
         //     sphere + normal cone) for GPU frustum + backface cluster culling.
         // v7: cluster-budget defaults raised 64/64 -> 128/256 and the import-rule
         //     range widened to the meshopt caps (verts<=255, tris<=512 multiple-of-4),
         //     with build-time clamping. Bump forces a re-bake so existing models pick
         //     up the larger clusters (fewer per-cluster draws / better cache).
-        // v8: LOD system — packs now carry K LODs per mesh (MeshDescriptorPrefix
+        // v8: LOD system -- packs now carry K LODs per mesh (MeshDescriptorPrefix
         //     .m_lodCount > 1 with K MeshDescriptorLodEntry records, each owning its
         //     own cluster/vertex/triangle slice). LODs are baked from the source
         //     model's own LODs and, where absent, generated from LOD0 via

@@ -71,7 +71,7 @@ namespace AZ
             //! Meshlet cluster budgets written into the auto-authored .meshletpack
             //! sidecar when meshlets are enabled (and re-written when these change in
             //! the editor). Larger clusters => fewer clusters => fewer per-cluster draw
-            //! commands and better post-transform vertex-cache reuse — the dominant cost
+            //! commands and better post-transform vertex-cache reuse -- the dominant cost
             //! when many meshlet instances are on screen. The builder clamps to the
             //! meshopt hard limits (vertices<=255, triangles<=512 & multiple-of-4).
             //! These are AUTHORING values: changing them re-writes the sidecar so

@@ -13,7 +13,7 @@
 // vertex-pull. The matching POSITION-only PSO input layout is built in
 // MeshletsFeatureProcessor (InitMotionShader). Renders per-pixel screen-space
 // motion for TAA / temporal upscaling via Atom's standard MeshMotionVector pass
-// (DrawListTag "motion"), exactly like a standard mesh — so the meshlet does not
+// (DrawListTag "motion"), exactly like a standard mesh -- so the meshlet does not
 // ghost when the camera or the object moves.
 //
 // Math mirrors MeshMotionVector.azsli (the standard mesh path):
@@ -56,7 +56,7 @@ VSOutput MeshletsMotionVectorVS(VSInput IN)
     // KEEP both current AND previous object-to-world transforms (prev drives the
     // motion vector). Step B: hardware-instanced draws select objectId via
     // SV_InstanceID (when m_useInstancing != 0), so EVERY instance gets its OWN
-    // prev transform — no ghosting; the non-instanced path keeps m_objectId.
+    // prev transform -- no ghosting; the non-instanced path keeps m_objectId.
     const uint objectId = MeshletsInstanceRenderSrg::ResolveObjectId(IN.m_instanceId);
     const float4x4 worldMatrix     = SceneSrg::GetObjectToWorldMatrix(objectId);
     const float4x4 worldMatrixPrev = SceneSrg::GetObjectToWorldMatrixPrev(objectId);

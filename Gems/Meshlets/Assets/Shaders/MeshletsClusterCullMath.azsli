@@ -147,9 +147,9 @@ struct MeshletDagNodeRecord
 
 //! Projected screen-space error, in pixels, of an object-space (sphere, error)
 //! pair already transformed to world space. projScale = cot(FovY/2) *
-//! viewportHeight * 0.5 (pure projection — rotation-independent, the same
+//! viewportHeight * 0.5 (pure projection -- rotation-independent, the same
 //! yScale lesson as the coverage LOD ladder). Camera inside the sphere returns
-//! +inf: forces refinement toward children — conservative and stable.
+//! +inf: forces refinement toward children -- conservative and stable.
 float MeshletsDagProjectedErrorPx(float3 centerW, float radiusW, float errW, float3 cameraPosW, float projScale)
 {
     const float dist = length(centerW - cameraPosW) - radiusW;
@@ -179,7 +179,7 @@ float2 MeshletsDagNodeErrorsPx(
 //! True if the DAG cut selects this cluster: its own (group) error is acceptable
 //! on screen AND its parent group's is not. The builder's invariants (monotonic
 //! max()-propagated errors, group-shared records, parent spheres enclosing self
-//! spheres) guarantee exactly one level per DAG path passes — a complete,
+//! spheres) guarantee exactly one level per DAG path passes -- a complete,
 //! crack-free cut with no traversal. Leaves have selfError 0 (always eligible);
 //! roots have parentError FLT_MAX (never rejected as "parent good enough").
 bool MeshletsDagCutAccepts(

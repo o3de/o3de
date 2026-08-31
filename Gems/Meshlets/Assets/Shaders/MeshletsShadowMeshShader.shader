@@ -36,7 +36,7 @@
     },
 
     // The Fragment entry is an EMPTY pixel shader, present only to satisfy azslc's
-    // input-assembly reflection — see the comment on MeshletsShadowPassPS in the
+    // input-assembly reflection -- see the comment on MeshletsShadowPassPS in the
     // .azsl, and the longer version in MeshletsDepthMeshShader.azsl.
 
     // Same tag as the vertex-pull MeshletsShadowPass.shader, so every shadowmap

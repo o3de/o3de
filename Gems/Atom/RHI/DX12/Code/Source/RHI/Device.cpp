@@ -615,7 +615,7 @@ namespace AZ
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif
 
-            // Mesh-shader capability probe (Phase 0 spike — log only; the persistent
+            // Mesh-shader capability probe (Phase 0 spike -- log only; the persistent
             // m_features.m_meshShader bit lands in Phase 1). Hardware mesh+amplification
             // shaders need OPTIONS7.MeshShaderTier >= TIER_1 AND Shader Model >= 6.5.
             {

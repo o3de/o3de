@@ -88,7 +88,7 @@ namespace UnitTest
     TEST(MeshletPackReader, IgnoresUnknownSectionKindsForwardCompat)
     {
         // Future SP2-SP6 packs may include kinds 6-12. A v1 reader must accept
-        // them silently (forward-compat per spec §5.5 / north-star §5.5).
+        // them silently (forward-compat per spec section 5.5 / north-star section 5.5).
         MeshletPackWriter w;
         w.BeginPack();
         AZ::u8 known[5] = {};

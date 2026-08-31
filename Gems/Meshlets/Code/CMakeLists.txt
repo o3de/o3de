@@ -45,7 +45,7 @@ ly_add_target(
 # Atom_RHI.Reflect uses PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE because
 # it has the supporting __declspec(dllexport) decorations + an
 # ATOM_RHI_REFLECT_EXPORTS macro; we don't decorate Meshlets headers,
-# so STATIC is the right type — otherwise downstream consumers hit
+# so STATIC is the right type -- otherwise downstream consumers hit
 # unresolved-external link errors on Windows non-monolithic builds.
 ly_add_target(
     NAME ${gem_name}.Reflect STATIC
@@ -196,7 +196,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Static
             PUBLIC
                 # PUBLIC so IMGUI_ENABLED and imgui headers propagate to the GEM_MODULE
-                # that links this static lib — the editor component's class definition
+                # that links this static lib -- the editor component's class definition
                 # is guarded on IMGUI_ENABLED and must be identical in every TU.
                 Gem::ImGui.imguilib
                 Gem::ImGui.Static
@@ -229,7 +229,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     # The .Tools alias loads the Editor module in tool contexts (e.g. O3DE Editor).
     # The .Builders alias is NOT created here because a real Meshlets.Builders GEM_MODULE
-    # target already exists above — creating an alias with the same name would conflict.
+    # target already exists above -- creating an alias with the same name would conflict.
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 

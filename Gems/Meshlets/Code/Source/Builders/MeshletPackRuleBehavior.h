@@ -25,7 +25,7 @@ namespace AZ::Meshlets::Builders
     //! gem rule that is merely reflected never appears in the UI. Because
     //! ManifestMetaInfoBus is a Multiple-handler bus, this behavior connects as
     //! an additional handler and appends MeshletPackRule's typeid for IMeshGroup
-    //! targets that don't already own one — mirroring the per-rule pattern in
+    //! targets that don't already own one -- mirroring the per-rule pattern in
     //! ManifestMetaInfoHandler::GetAvailableModifiers.
     class MeshletPackRuleBehavior
         : public AZ::SceneAPI::SceneCore::BehaviorComponent

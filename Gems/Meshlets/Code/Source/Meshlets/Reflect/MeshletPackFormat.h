@@ -12,7 +12,7 @@
 namespace AZ::Meshlets
 {
     //! On-disk byte-layout structs for .azmeshletpack v1.
-    //! See docs/superpowers/specs/2026-05-08-meshlets-asset-pipeline-design.md §4.
+    //! See docs/superpowers/specs/2026-05-08-meshlets-asset-pipeline-design.md section 4.
     //!
     //! AssetId is stored as raw GUID bytes + sub-id (see PackHeaderRecord);
     //! consumers that want to reconstruct AZ::Data::AssetId include
@@ -21,7 +21,7 @@ namespace AZ::Meshlets
     inline constexpr AZ::u32 PackMagic   = 0x504C544D;  // 'MTLP' little-endian
     inline constexpr AZ::u32 PackVersion = 2;  // SP1 v2: adds SectionKind::ExpandedIndices.
     //! Phase 6 v3: adds SectionKind::DagNodes + MeshDescriptorLodEntry::m_dagClusterCount.
-    //! Written ONLY for packs whose sidecar opts into "generate_cluster_dag" — non-DAG
+    //! Written ONLY for packs whose sidecar opts into "generate_cluster_dag" -- non-DAG
     //! packs stay byte-identical v2. Readers accept both.
     inline constexpr AZ::u32 PackVersionDag = 3;
     //! Phase 7 v4 (streaming): v3 + PageTable/PageData (self-contained LEAF pages) +
@@ -151,7 +151,7 @@ namespace AZ::Meshlets
         AZ::u32 m_materialId;     //!< Reserved for SP5; must be 0xFFFFFFFF in SP1.
         AZ::u32 m_dagClusterCount; //!< Phase 6 (v3): TOTAL clusters incl. interior DAG
                                    //!< levels, starting at m_clusterFirst. 0 = no DAG
-                                   //!< (was m_reserved0 — always 0 in v1/v2 packs).
+                                   //!< (was m_reserved0 -- always 0 in v1/v2 packs).
         AZ::u64 m_reserved1;
     };
     static_assert(sizeof(MeshDescriptorLodEntry) == 32, "MeshDescriptorLodEntry must be 32 bytes");
@@ -206,7 +206,7 @@ namespace AZ::Meshlets
     static_assert(sizeof(DagNodeRecord) == 48, "DagNodeRecord must be 48 bytes");
 
     //! Kind 11 (PageTable, Phase 7 / pack v4): one record per streaming page. Pages
-    //! hold LEAF clusters only (v1 — the always-resident set is every interior DAG
+    //! hold LEAF clusters only (v1 -- the always-resident set is every interior DAG
     //! level, so any budget renders correct-but-coarser geometry); each page's
     //! clusters are CONTIGUOUS in pack-global cluster order (the builder permutes
     //! leaves into page order before the DAG is built on top of them).
@@ -221,7 +221,7 @@ namespace AZ::Meshlets
     //!   float bitangents[3 * m_vertexCount]
     //!   float uvs       [2 * m_vertexCount]
     //! Self-contained: rendering a resident page touches nothing outside its payload
-    //! (vertices shared with other pages are duplicated — the ~10-15% overhead that
+    //! (vertices shared with other pages are duplicated -- the ~10-15% overhead that
     //! buys trivial residency).
     struct PageTableRecord
     {
@@ -233,7 +233,7 @@ namespace AZ::Meshlets
         AZ::u32 m_vertexCount;        //!< Page-local unique vertices.
         AZ::u32 m_triangleWords;      //!< Actual triangle words in the payload.
         AZ::u32 m_indirCount;         //!< Actual indirection entries (== sum of cluster vertex counts).
-        //! Bit 0 (PageFlagAlwaysResident): interior-DAG-level page — pinned resident
+        //! Bit 0 (PageFlagAlwaysResident): interior-DAG-level page -- pinned resident
         //! for the mesh's lifetime (the coarse fallback that makes fail-safe-coarse
         //! possible at ANY budget). Interior pages are contiguous emission runs, not
         //! spatial partitions (locality is irrelevant for always-resident data).
@@ -241,7 +241,7 @@ namespace AZ::Meshlets
         float   m_aabbMin[3];         //!< Object-space bounds of the page's clusters.
         float   m_aabbMax[3];
         //! max over the page's leaves of their parentError: the residency classifier
-        //! needs this page iff errPx(pageBounds, m_maxParentError) > tau — i.e. some
+        //! needs this page iff errPx(pageBounds, m_maxParentError) > tau -- i.e. some
         //! leaf's parent is NOT good enough on screen, so leaves must render.
         float   m_maxParentError;
         AZ::u32 m_reserved1;

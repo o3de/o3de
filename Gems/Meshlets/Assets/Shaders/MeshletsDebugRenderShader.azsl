@@ -27,7 +27,7 @@
 // as the default ShaderVariantFallback (AZSLc IR error #128). The C++ side
 // (MeshletsRenderPass::LoadShader) is patched to check
 // FindShaderResourceGroupLayout("PassSrg") first and skip SRG creation when
-// the layout is absent — so omitting the declaration here is the cleanest
+// the layout is absent -- so omitting the declaration here is the cleanest
 // fix and avoids any cross-pass shared-resource state tracking entirely.
 
 // Vertex Assembly streams will NOT be used - it is shown below as reference

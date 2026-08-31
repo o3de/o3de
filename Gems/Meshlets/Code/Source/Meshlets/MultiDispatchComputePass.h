@@ -43,7 +43,7 @@ namespace AZ::Meshlets
         AZ::RHI::BufferViewDescriptor m_viewDescriptor;
         //! GPU cull: optional per-instance SRG whose \ref m_finalizeInputName UAV input
         //! must be bound to THIS attachment's frame-graph (scope-backed) view and then
-        //! compiled — inside the compute pass's CompileResources, so the GPU-writable
+        //! compiled -- inside the compute pass's CompileResources, so the GPU-writable
         //! input validates as a registered frame attachment (Atom requires every
         //! UAV-bound SRG resource to be a scheduler attachment for hazard tracking).
         //! Null for non-finalize imports. When the same SRG appears on multiple
@@ -57,7 +57,7 @@ namespace AZ::Meshlets
         AZ::RHI::ScopeAttachmentUsage m_barrierUsage = AZ::RHI::ScopeAttachmentUsage::Indirect;
         AZ::RHI::ScopeAttachmentStage m_barrierStage = AZ::RHI::ScopeAttachmentStage::DrawIndirect;
         //! Two-pass occlusion: when set, MeshletsRenderPass declares this attachment
-        //! ReadWrite (UAV) instead of its default Read/SRV — used for the per-cluster
+        //! ReadWrite (UAV) instead of its default Read/SRV -- used for the per-cluster
         //! visibility ledger the late-depth pass's AS both reads and writes.
         bool m_renderPassReadWrite = false;
     };

@@ -6,7 +6,7 @@
  */
 
 // Phase 6 cluster-DAG builder invariants (see
-// docs/superpowers/specs/2026-08-31-meshlets-phase6-cluster-dag-lod-design.md §2/§7).
+// docs/superpowers/specs/2026-08-31-meshlets-phase6-cluster-dag-lod-design.md section 2/section 7).
 // These are the crack-freedom guarantees the runtime cut test relies on; a
 // violation here shows up on screen as holes/overlaps, so they get a hard test.
 
@@ -130,7 +130,7 @@ namespace UnitTest
         const AZ::u32 leafCount = pack.m_lod.m_clusterCount;
         const AZ::u32 dagCount = pack.m_lod.m_dagClusterCount;
         ASSERT_GT(leafCount, 1u);
-        // A trivially-simplifiable dense grid MUST have produced interior levels —
+        // A trivially-simplifiable dense grid MUST have produced interior levels --
         // if this fires, the group/simplify loop silently built nothing.
         ASSERT_GT(dagCount, leafCount);
 

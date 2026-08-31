@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
 
-// Phase 4 soak, simulated deterministically against the residency core (design §5.4).
+// Phase 4 soak, simulated deterministically against the residency core (design section 5.4).
 // The GPU half of the soak (visual coarsening, upload timing) needs a build; these
 // tests pin the BEHAVIORAL half: budget sweeps converge, teleports recover within the
 // throttle bound, the hysteresis band suppresses boundary thrash (and its absence
-// provably causes it), slot accounting never leaks — including through CancelLoad —
+// provably causes it), slot accounting never leaks -- including through CancelLoad --
 // and a long random-walk run holds every invariant.
 
 #include <AzTest/AzTest.h>
@@ -142,7 +142,7 @@ namespace UnitTest
             for (uint32_t cycle = 0; cycle < 100; ++cycle)
             {
                 // Camera swings between the two pages: each half-cycle one page is
-                // clearly wanted and the other sits at ~0.8 tau — INSIDE a 1.5+ band
+                // clearly wanted and the other sits at ~0.8 tau -- INSIDE a 1.5+ band
                 // (not cold), but BELOW tau (not wanted). errPx = 100/dist.
                 const bool atA = (cycle % 2) == 0;
                 const MeshletsPageResidency::PageRequest pages[] = {

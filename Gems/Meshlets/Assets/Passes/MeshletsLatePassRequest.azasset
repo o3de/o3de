@@ -6,7 +6,7 @@
         "Name": "MeshletsLateDepthPass",
         "TemplateName": "MeshletsLateDepthPassTemplate",
         "Enabled": true,
-        // Injected via RenderPipeline::AddPassAfter("GpuCullAndDrawPass") — see
+        // Injected via RenderPipeline::AddPassAfter("GpuCullAndDrawPass") -- see
         // MeshletsFeatureProcessor::TryAutoInjectLatePass. DepthMSAA is the raster
         // depth target the standard depth prepass (and forward pass) use; HiZOutput
         // is THIS frame's persistent pyramid, exposed by GpuCullAndDrawPass so the

@@ -23,7 +23,7 @@ namespace AZ::Meshlets::Builders
     {
         AZStd::string m_name;
 
-        // Vertex streams — interleaved per-attribute, total count = vertex count.
+        // Vertex streams -- interleaved per-attribute, total count = vertex count.
         // All five must be populated; an absent UV/Tangent/Bitangent in the
         // source must be synthesized (zero-fill or reconstructed) before this
         // struct is built.

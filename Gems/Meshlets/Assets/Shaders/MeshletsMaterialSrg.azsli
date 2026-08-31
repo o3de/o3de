@@ -13,7 +13,7 @@
 // ----------------------------------------------------------------------------
 // Per-material SRG for meshlet PBR (Phase 4).
 //
-// Frequency SRG_PerMaterial (space 2) — does not collide with the meshlet's
+// Frequency SRG_PerMaterial (space 2) -- does not collide with the meshlet's
 // per-object (1, vertex buffers) / per-draw (0, object id) / per-pass (4,
 // forward lighting) SRGs.
 //
@@ -63,7 +63,7 @@ ShaderResourceGroup MeshletsMaterialSrg : SRG_PerMaterial
     //! the shader can unconditionally add it without an extra branch.
     float3 m_emissiveColor;
     float  m_emissiveIntensity;
-    //! Bitfield of which maps are present — see MESHLETS_MAT_FLAG_* below.
+    //! Bitfield of which maps are present -- see MESHLETS_MAT_FLAG_* below.
     uint   m_flags;
 };
 

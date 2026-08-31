@@ -117,7 +117,7 @@ namespace AZ::Render
         void     RecordOversizedSubmesh(const char* meshName, uint32_t indexCount);
         void     ResetFrameOversizedCount();
         // These accessors are safe to call from the main/render thread only.
-        // They do NOT acquire m_mutex — call from the same thread as UploadBuffer.
+        // They do NOT acquire m_mutex -- call from the same thread as UploadBuffer.
         uint32_t GetOversizedFrameCount() const { return m_oversizedFrameCount; }
         uint32_t GetOversizedTotalCount() const { return m_oversizedTotalCount; }
         const AZStd::fixed_vector<OversizedEntry, 16>& GetOversizedLog() const { return m_oversizedLog; }

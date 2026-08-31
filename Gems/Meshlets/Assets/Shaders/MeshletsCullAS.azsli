@@ -8,7 +8,7 @@
 
 #pragma once
 
-// Phase 5 AS cluster cull — the SHARED amplification stage for every AS-culled
+// Phase 5 AS cluster cull -- the SHARED amplification stage for every AS-culled
 // meshlet PSO (forward / depth / motion). One definition so the three passes can
 // never disagree on which clusters survive: each *Culled.shader lists
 // MeshletsCullClustersAS as its Amplification entry and pairs it with its own
@@ -38,14 +38,14 @@ groupshared uint s_asSurvivorCount;
 bool MeshletClusterVisible(uint clusterId)
 {
     // Phase 4 streaming-exclusive gate: this mesh has no monolithic geometry, so
-    // until the page pool carries it (m_pagedMode) NOTHING may dispatch — any
+    // until the page pool carries it (m_pagedMode) NOTHING may dispatch -- any
     // fallback fetch would read null stream buffers.
     if (MeshletsMeshObjectSrg::m_pagedExclusive != 0u && MeshletsMeshObjectSrg::m_pagedMode == 0u)
     {
         return false;
     }
 
-    // Phase 6 cluster-DAG cut — MUST run before the passthrough early-out below:
+    // Phase 6 cluster-DAG cut -- MUST run before the passthrough early-out below:
     // when the cut is active the dispatch covers the FULL leaf+interior range and
     // only cut-selected clusters may draw; when it is OFF (v2 pack, invalid
     // projection stash, toggle transition) interior DAG clusters are refused
@@ -60,14 +60,14 @@ bool MeshletClusterVisible(uint clusterId)
             MeshletsMeshInstanceSrg::m_dagProjScale);
         if (errs.y <= MeshletsMeshInstanceSrg::m_dagErrorPx)
         {
-            return false;   // parent group is good enough on screen — never draw
+            return false;   // parent group is good enough on screen -- never draw
         }
         const bool isLeaf = clusterId < MeshletsMeshObjectSrg::m_leafClusterCount;
         if (MeshletsMeshObjectSrg::m_pagedMode != 0u)
         {
-            // Phase 7 fail-safe-coarse (design §3): a leaf whose group is not fully
+            // Phase 7 fail-safe-coarse (design section 3): a leaf whose group is not fully
             // resident FAILS the cut, and its (always-resident) parent is FORCED to
-            // draw instead — group-shared bits keep it crack-free. m_pagedMode only
+            // draw instead -- group-shared bits keep it crack-free. m_pagedMode only
             // turns on once every interior page is uploaded, so the forced parent
             // always has data.
             const uint map = MeshletsMeshObjectSrg::m_pagedClusterMap[clusterId];
@@ -88,23 +88,23 @@ bool MeshletClusterVisible(uint clusterId)
                 }
                 if (errs.x > MeshletsMeshInstanceSrg::m_dagErrorPx && groupComplete)
                 {
-                    return false;   // children should refine — and they CAN (all resident)
+                    return false;   // children should refine -- and they CAN (all resident)
                 }
             }
         }
         else if (!isLeaf && errs.x > MeshletsMeshInstanceSrg::m_dagErrorPx)
         {
-            return false;   // plain (non-paged) cut: interior too coarse — children draw
+            return false;   // plain (non-paged) cut: interior too coarse -- children draw
         }
     }
     else
     {
         if (clusterId >= MeshletsMeshObjectSrg::m_leafClusterCount)
         {
-            return false;   // interior DAG cluster with the cut off — leaves only
+            return false;   // interior DAG cluster with the cut off -- leaves only
         }
         // Paged mode with the cut off: a leaf whose page is not resident must not
-        // dispatch — on a streaming-exclusive mesh there is no monolithic fallback
+        // dispatch -- on a streaming-exclusive mesh there is no monolithic fallback
         // to decode it from (and on a non-exclusive mesh this simply matches what
         // the pool can serve; the monolithic path still draws when paging is off).
         if (MeshletsMeshObjectSrg::m_pagedMode != 0u &&

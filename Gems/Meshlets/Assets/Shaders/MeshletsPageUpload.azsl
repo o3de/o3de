@@ -6,12 +6,12 @@
  *
  */
 
-// Phase 7 streaming, PASS-agnostic page upload (design §2's "double-buffered upload"):
+// Phase 7 streaming, PASS-agnostic page upload (design section 2's "double-buffered upload"):
 // copies one page payload from a freshly-created STAGING buffer (the ReadOnly-pool
-// initial-data path — the only CPU->GPU upload path proven on this AMD GPU) into its
+// initial-data path -- the only CPU->GPU upload path proven on this AMD GPU) into its
 // reserved slot of the global page pool, prefixed by the 4-word slot header. Runs as
 // a dispatch on the meshlets cull compute pass (before DepthPrePass), with the pool
-// imported ReadWrite there and transitioned to shader-read by the barrier pass —
+// imported ReadWrite there and transitioned to shader-read by the barrier pass --
 // exactly the machinery the cull args already use.
 
 #include <Atom/Features/SrgSemantics.azsli>

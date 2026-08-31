@@ -6,10 +6,10 @@
  *
  */
 
-// GPU-Driven Shaded Forward Pass — Vertex Pulling Architecture
+// GPU-Driven Shaded Forward Pass -- Vertex Pulling Architecture
 //
 // Turns the GPU-driven indirect path from depth-only into an actual renderer. Vertex pulling
-// matches IndirectDepthPass.azsl exactly (same batchId/instanceSlot/meshInfoIndex resolution) —
+// matches IndirectDepthPass.azsl exactly (same batchId/instanceSlot/meshInfoIndex resolution) --
 // read that file first if this one is unclear on the indirection.
 //
 // Material resolution is bindless via the FallbackPBRMaterial path (MaterialInfoUtil.azsli /
@@ -17,16 +17,16 @@
 // every mesh's material (regardless of authored material type: StandardPBR, EnhancedPBR, etc) down
 // to one common {baseColor, normal, metallic, roughness, emissive} representation at scene-build
 // time, indexed 1:1 by meshInfoIndex. Consequence: ONE shader variant covers every material type an
-// eligible mesh can carry — no per-material-type PSO family is needed on the C++ side for the
+// eligible mesh can carry -- no per-material-type PSO family is needed on the C++ side for the
 // material lookup itself. MeshInfo::m_materialTypeId remains available (loaded via GetMeshInfoEntry)
 // for whatever batching/sort key the C++ side wants, but this shader does not branch on it.
 //
 // Lighting: this now calls the SAME EvaluateLighting_ForwardPass() the CPU-driven forward pass
-// calls (Pipeline/Forward/ForwardPassEvaluateLighting.azsli) — directional/simple-point/simple-spot
+// calls (Pipeline/Forward/ForwardPassEvaluateLighting.azsli) -- directional/simple-point/simple-spot
 // /point/disk/capsule/quad/polygon lights, shadows (directional cascades + projected), decals and
 // tiled light culling all run through it unmodified. That is possible now because
 // IndirectRasterPass::CompileResources() calls the base RasterPass::CompileResources() and resolves
-// every PassSrg slot BY NAME (only the true indirect-args buffer is tagged NoBind) — Pass SRG
+// every PassSrg slot BY NAME (only the true indirect-args buffer is tagged NoBind) -- Pass SRG
 // resources are no longer capped at two hand-bound buffers.
 //
 // FallbackPBRMaterial supplies the Surface/LightingData types and the Init/Finalize glue that make
@@ -36,21 +36,21 @@
 // from this shader's own rasterized VS output (positionWS/normalWS/tangentWS/bitangentWS/uv0)
 // instead of FallbackPBRMaterial's EvaluateVertexGeometry/EvaluatePixelGeometry, because those
 // re-derive geometry from an object-transform + barycentric path built for compute/RT callers, not
-// for a rasterized vertex-pull VS that already has interpolated attributes — same reasoning
+// for a rasterized vertex-pull VS that already has interpolated attributes -- same reasoning
 // IndirectDepthPass.azsl already applies to skip re-deriving what rasterization gives for free.
 //
 // ponytail: no IBL. ApplyIbl_ForwardPass (Pipeline/Forward/ForwardPassIbl.azsli) takes its local
-// reflection-probe data from ObjectSrg::m_reflectionProbeData/m_reflectionProbeCubeMap — a per-draw
+// reflection-probe data from ObjectSrg::m_reflectionProbeData/m_reflectionProbeCubeMap -- a per-draw
 // SRG bound by the CPU per-mesh, per-instance, which does not exist (and cannot: one indirect draw
 // covers many differently-probed instances) for an indirect vertex-pull batch. PIPELINE_HAS_OBJECT_SRG
 // is set to 0 below, which is this exact file's own built-in escape valve for pipelines without an
-// ObjectSrg — it compiles ApplyIbl_ForwardPass down to a no-op instead of faking probe data. This is
+// ObjectSrg -- it compiles ApplyIbl_ForwardPass down to a no-op instead of faking probe data. This is
 // a smaller gap than it sounds: for opaque, non-transparent surfaces (all GpuDrivenEligibility allows
 // today) the real forward pass already sets useDiffuseIbl = isTransparent = false and useSpecularIbl
 // only from an explicit per-mesh/material opt-in flag that GPU-driven meshes don't set, so shipping
 // opaque IBL is computed by a separate downstream pass over the forward GBuffer outputs
 // (DiffuseOutput/SpecularOutput/AlbedoOutput/SpecularF0Output/NormalOutput in Forward.pass), not in
-// this pass — a GBuffer split this single-render-target pass does not produce. Upgrade path: if a
+// this pass -- a GBuffer split this single-render-target pass does not produce. Upgrade path: if a
 // GPU-driven GBuffer/composite split is ever built, IBL joins it the same way it joins the CPU path.
 //
 // ponytail: mip 0 always for material texture sampling (no screen-space-derivative mip selection).
@@ -84,7 +84,7 @@ rootconstant uint m_gpuDrivenBatchId;
 //   m_tileLightData, m_lightListRemapped                -- tiled light-culling pass outputs
 //   LinearSampler, PointSampler                         -- static samplers used across the above
 // (m_linearDepthTexture / m_isOriginalDepth from ForwardPassSrg.azsli are NOT declared: nothing on
-// the code path this shader actually calls reads them — LightCullingTileIterator::Init only takes
+// the code path this shader actually calls reads them -- LightCullingTileIterator::Init only takes
 // the screen position + the two buffers above, it does not sample linear depth.)
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback // WithFallback: the lighting path below pulls
                                                         // in `option` shader variants (LightingOptions.azsli,
@@ -127,7 +127,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback // WithFallback: the ligh
     };
 }
 
-// No ObjectSrg exists for indirect vertex-pull draws (see the IBL ponytail note above) — this must
+// No ObjectSrg exists for indirect vertex-pull draws (see the IBL ponytail note above) -- this must
 // be defined before ForwardPassEvaluateLighting.azsli pulls in Pipeline/Forward/ForwardPassIbl.azsli.
 #define PIPELINE_HAS_OBJECT_SRG 0
 
@@ -156,7 +156,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback // WithFallback: the ligh
 
 #include <Atom/Features/Pipeline/Forward/ForwardPassEvaluateLighting.azsli>
 
-// No vertex assembly inputs — this pass uses vertex pulling, same as IndirectDepthPass.azsl.
+// No vertex assembly inputs -- this pass uses vertex pulling, same as IndirectDepthPass.azsl.
 struct VSInput
 {
     uint m_vertexId   : SV_VertexID;
@@ -187,7 +187,7 @@ VSForwardOutput GpuDrivenForwardVS(VSInput IN)
     MeshInfo meshInfo;
     if (!GetMeshInfoEntry(meshInfoIndex, meshInfo))
     {
-        // Invalid mesh info — emit degenerate vertex, matches IndirectDepthPass.azsl's convention.
+        // Invalid mesh info -- emit degenerate vertex, matches IndirectDepthPass.azsl's convention.
         OUT.m_position = float4(0, 0, -1, 0);
         return OUT;
     }
@@ -228,11 +228,11 @@ float4 GpuDrivenForwardPS(VSForwardOutput IN) : SV_Target0
         return float4(0, 0, 0, 1);
     }
 
-    // ponytail: mip 0 always — see file header.
+    // ponytail: mip 0 always -- see file header.
     TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, PassSrg::LinearSampler, IN.m_uv0, 0.0);
 
     // Built directly from this shader's own interpolated VS output rather than
-    // EvaluatePixelGeometry_FallbackPBR — see file header for why.
+    // EvaluatePixelGeometry_FallbackPBR -- see file header for why.
     PixelGeometryData_FallbackPBR geoData = (PixelGeometryData_FallbackPBR)0;
     geoData.positionWS = IN.m_positionWS;
     geoData.vertexNormal = normalize(IN.m_normalWS);
@@ -247,12 +247,12 @@ float4 GpuDrivenForwardPS(VSForwardOutput IN) : SV_Target0
     viewPositions[0] = ViewSrg::m_worldPosition.xyz;
 
     // The real forward lighting path: directional/punctual/area lights, shadows, decals and tiled
-    // light culling, exactly as the CPU-driven forward pass evaluates them. IBL is a no-op here —
+    // light culling, exactly as the CPU-driven forward pass evaluates them. IBL is a no-op here --
     // see the file-header ponytail note.
     LightingData lightingData = EvaluateLighting_ForwardPass(surface, IN.m_position, viewPositions);
 
     float3 color = float3(lightingData.diffuseLighting) + float3(lightingData.specularLighting[0]) + float3(lightingData.emissiveLighting);
 
-    // ponytail: alpha hardcoded opaque — see file header.
+    // ponytail: alpha hardcoded opaque -- see file header.
     return float4(color, 1.0f);
 }

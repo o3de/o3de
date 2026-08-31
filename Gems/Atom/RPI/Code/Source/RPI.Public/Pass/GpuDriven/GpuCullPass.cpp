@@ -43,9 +43,9 @@ namespace AZ
         {
             // Set buffer view descriptors to match the shader SRG variable types.
             // Each buffer must have the correct stride/format for its SRG binding:
-            //   m_indirectDrawArgs  → RWStructuredBuffer<DrawIndirectCommand> (stride 16)
-            //   m_drawCount         → RWByteAddressBuffer (Raw)
-            //   m_visibleInstanceIds → RWStructuredBuffer<uint> (stride 4)
+            //   m_indirectDrawArgs  -> RWStructuredBuffer<DrawIndirectCommand> (stride 16)
+            //   m_drawCount         -> RWByteAddressBuffer (Raw)
+            //   m_visibleInstanceIds -> RWStructuredBuffer<uint> (stride 4)
             static const Name indirectDrawArgsBufferName("IndirectDrawArgsBuffer");
             static const Name drawCountBufferName("DrawCountBuffer");
             static const Name survivorsBufferName("SurvivorsBuffer");
@@ -75,7 +75,7 @@ namespace AZ
                 }
                 else if (attachment->m_name == drawCountBufferName || attachment->m_name == survivorCountBufferName)
                 {
-                    // RWByteAddressBuffer → Raw view (Format::R32_UINT internally)
+                    // RWByteAddressBuffer -> Raw view (Format::R32_UINT internally)
                     attachment->m_descriptor.m_bufferView =
                         RHI::BufferViewDescriptor::CreateRaw(0, AZStd::max(4u, byteCount));
                 }

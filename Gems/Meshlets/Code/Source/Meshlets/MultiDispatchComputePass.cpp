@@ -81,7 +81,7 @@ namespace AZ
             // GPU cull: finalize each per-instance cull SRG HERE (inside the frame-graph
             // scope, after SetupFrameGraphDependencies imported the args buffer). Binding
             // the scope-backed view of the args UAV and compiling now means the
-            // GPU-writable m_outArgs input validates as a registered frame attachment —
+            // GPU-writable m_outArgs input validates as a registered frame attachment --
             // doing this in the feature processor (before the import) fails with
             // "DeviceBuffer ... is not an attachment on the frame scheduler".
             {
@@ -170,7 +170,7 @@ namespace AZ
             // SP1 diagnostic: emit a trace each time the queued-dispatch-item count
             // CHANGES from the previously reported count. This stays silent in
             // steady state (e.g. one item every frame) but lets us see whether the
-            // per-frame feature-processor → compute-pass plumbing is actually
+            // per-frame feature-processor -> compute-pass plumbing is actually
             // queuing work. If we never see "queued N>0 items" here the dispatch
             // is being silently dropped upstream.
             const int32_t currentCount = static_cast<int32_t>(m_dispatchItems.size());
@@ -295,7 +295,7 @@ namespace AZ
             // declare Read (compute-stage) scope usage. The image was UAV-written by
             // LAST frame's HiZ mip chain and is NOT touched by any pass this frame
             // (the HiZGeneratePass ping-pongs to the other slot), so this is the only
-            // scope that puts it in the frame graph — the declared Read transitions it
+            // scope that puts it in the frame graph -- the declared Read transitions it
             // UAV->shader-read here, before the standard depth/forward/motion passes
             // sample it via the meshlet cull SRGs (bound directly, not as a pass
             // attachment). AttachmentImage carries its own unique attachment id.

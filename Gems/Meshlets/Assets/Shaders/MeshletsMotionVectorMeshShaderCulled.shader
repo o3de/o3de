@@ -3,7 +3,7 @@
 
     // AS-culled motion vector PSO (opt-in r_meshletsMsCullAS). Split from
     // MeshletsMotionVectorMeshShader.shader for the same reason as the forward and
-    // depth pairs — the shipped no-cull PSO must keep its plain DispatchMesh
+    // depth pairs -- the shipped no-cull PSO must keep its plain DispatchMesh
     // semantics. Pairs the SHARED cluster-cull AS (MeshletsCullAS.azsli) with the
     // payload-driven MeshletsMotionVectorMSCulled entry.
     //

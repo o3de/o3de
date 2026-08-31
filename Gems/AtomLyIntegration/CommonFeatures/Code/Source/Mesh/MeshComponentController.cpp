@@ -1012,7 +1012,7 @@ namespace AZ
                 break;
             case PRS::NoPack:
                 m_configuration.m_meshletPackStatus =
-                    "No meshlet pack for this model — flag the source FBX with a Meshlet Pack rule, "
+                    "No meshlet pack for this model -- flag the source FBX with a Meshlet Pack rule, "
                     "or author a sibling .meshletpack JSON.";
                 break;
             case PRS::LoadFailed:
@@ -1020,7 +1020,7 @@ namespace AZ
                 break;
             case PRS::PassesAbsent:
                 m_configuration.m_meshletPackStatus =
-                    "Meshlet renderer disabled — MeshletsParentPass is not in this pipeline.";
+                    "Meshlet renderer disabled -- MeshletsParentPass is not in this pipeline.";
                 break;
             case PRS::NotChecked:
             default:

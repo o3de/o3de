@@ -8,7 +8,7 @@ renders them without per-frame CPU meshletization.
 
 SP1 complete: asset-pipeline infrastructure (source-to-pack ingestion,
 runtime loading, basic rendering). Mesh shaders, GPU culling, LOD, HZB, 
-vis-buffer, and streaming are tracked separately across SP2–SP6 per the
+vis-buffer, and streaming are tracked separately across SP2-SP6 per the
 north-star architecture doc (`docs/superpowers/specs/2026-05-08-meshlets-architecture.md`).
 The current debug shader outputs UV-as-color.
 
@@ -55,7 +55,7 @@ a sibling `.azmeshletpack` product exists for the referenced mesh asset. To
 produce a pack:
 
 - **Scenemanifest rule path:** Add a rule to the source FBX's scenemanifest
-  (Asset Editor → Add Modifier → Meshlet Pack Rule). AssetProcessor will
+  (Asset Editor -> Add Modifier -> Meshlet Pack Rule). AssetProcessor will
   generate a `.azmeshletpack` product.
 - **JSON sidecar path:** Author a `*.meshletpack` JSON descriptor next to
   the source FBX. AssetProcessor will load the descriptor and produce the
@@ -69,7 +69,7 @@ pack is missing or invalid, the status field reads diagnostic information.
 
 | Template | Purpose |
 |---|---|
-| `MeshletsParentPassTemplate` | Container; owns the compute → render dependency |
+| `MeshletsParentPassTemplate` | Container; owns the compute -> render dependency |
 | `MeshletsComputePassTemplate` | Builds the index buffer per visible meshlet |
 | `MeshletsRenderPassTemplate` | Rasterizes the rebuilt index buffer |
 
@@ -113,7 +113,7 @@ Runtime (SP1)
 After enabling the gem in a project:
 
 1. Drop a production-shaped FBX into your assets folder.
-2. Add a `MeshletPackRule` via the Asset Editor (Add Modifier → Meshlet Pack Rule).
+2. Add a `MeshletPackRule` via the Asset Editor (Add Modifier -> Meshlet Pack Rule).
 3. Wait for AssetProcessor to complete; confirm `<model>.azmeshletpack` appears in the cache.
 4. Create an entity with a `MeshComponent` pointing to the FBX.
 5. Toggle "Use Virtual Geometry (Meshlets)" on.
@@ -124,11 +124,11 @@ After enabling the gem in a project:
 
 ## Known limitations (Tier 2+ work)
 
-- No frustum / cone / occlusion culling — every meshlet is dispatched and
+- No frustum / cone / occlusion culling -- every meshlet is dispatched and
   rasterized every frame
 - No hierarchical LOD selection (always uses LOD 0)
-- No instancing — N copies of a mesh produce N dispatches
-- No PBR / material binding — debug shader only
+- No instancing -- N copies of a mesh produce N dispatches
+- No PBR / material binding -- debug shader only
 - No indirect draw or dispatch
 - No mesh shaders (rasterization only)
 - Hard-coded 256 MB shared buffer; no growth strategy

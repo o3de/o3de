@@ -13,7 +13,7 @@
 // StructuredBuffer with no cache) and is the main cost reduction for the depth
 // prepass. The matching PSO input layout is built in MeshletsFeatureProcessor
 // (InitDepthShader) and the per-mesh POSITION stream is bound via the geometry
-// view's StreamBufferView. No pixel shader — depth-only write.
+// view's StreamBufferView. No pixel shader -- depth-only write.
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg_all.srgi>

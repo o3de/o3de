@@ -7,12 +7,12 @@
  * End-to-end integration test for the .azmeshletpack pipeline.
  *
  *   .fbx (with MeshletPackRule scenemanifest)
- *     → AssetProcessor (MeshletsBuilders module loaded)
- *     → .azmeshletpack product registered with product-dependency on .azmodel
- *     → Runtime AssetManager loads the pack
- *     → MeshletsRenderObject constructed from pack data without crashing
+ *     -> AssetProcessor (MeshletsBuilders module loaded)
+ *     -> .azmeshletpack product registered with product-dependency on .azmodel
+ *     -> Runtime AssetManager loads the pack
+ *     -> MeshletsRenderObject constructed from pack data without crashing
  *
- * Renderer-end verification is manual (smoke test §9.5).
+ * Renderer-end verification is manual (smoke test section 9.5).
  */
 
 #include <AzTest/AzTest.h>

@@ -19,7 +19,7 @@ namespace UnitTest
 
     namespace
     {
-        // Build a deterministic 4-triangle quad (2 triangles per face × 2 faces).
+        // Build a deterministic 4-triangle quad (2 triangles per face x 2 faces).
         // 6 vertices, 4 triangles, total 12 source indices.
         SourceMeshSet MakeQuadFixture()
         {
@@ -305,7 +305,7 @@ namespace UnitTest
     {
         // The small quad fixture is below GenerateSimplifiedLod's minimum-size floor,
         // so it stays at a single LOD (LOD0, never simplified). The LodError section
-        // is still written (one 0.0 record per LOD entry — see BuildPackBytes) but must
+        // is still written (one 0.0 record per LOD entry -- see BuildPackBytes) but must
         // never contain a non-zero value here; the runtime's fallback-to-screen-coverage
         // decision (MeshRenderData::HasLodError) is a separate, section-presence check,
         // not a value check, so this guards the "always well-defined, never garbage"

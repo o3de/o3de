@@ -120,7 +120,7 @@ namespace AZ
         {
             RasterPass::SetupFrameGraphDependencies(frameGraph);
 
-            // Override the estimated item count — IndirectRasterPass submits one ExecuteIndirect
+            // Override the estimated item count -- IndirectRasterPass submits one ExecuteIndirect
             // call per non-empty bucket, not individual draw items. This must match exactly how
             // many submits BuildCommandListInternal will issue, or the frame graph will assign
             // submit ranges that skip/duplicate indices. With no buckets set (e.g. the depth-only

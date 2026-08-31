@@ -6,13 +6,13 @@
     // entry. The AS runs in "cut-only" mode for shadows: the feature processor
     // zeroes m_doFrustumCull/m_doConeCull/m_doHiZCull on the shadow instance SRG
     // (a light must rasterize clusters outside the CAMERA frustum), so the only
-    // rejection is the main-view DAG cut — shadow geometry matches the shaded cut
+    // rejection is the main-view DAG cut -- shadow geometry matches the shaded cut
     // exactly. Split from MeshletsShadowMeshShader.shader for the same reason as
     // every other culled pair: the shipped no-cull PSO keeps plain DispatchMesh
     // semantics.
     //
     // Render state mirrors MeshletsShadowMeshShader.shader exactly (LessEqual +
-    // depth bias — shadow maps are NOT reverse-Z here).
+    // depth bias -- shadow maps are NOT reverse-Z here).
     "DepthStencilState" :
     {
         "Depth" :

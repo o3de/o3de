@@ -82,7 +82,7 @@ namespace AZ::Meshlets::Builders
             &AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, desc);
 
         // SceneAPI exporter is registered by SceneAPI's ExportingComponent
-        // base class automatically when the module loads — no extra
+        // base class automatically when the module loads -- no extra
         // registration call needed here per spike findings.
     }
 

@@ -137,7 +137,7 @@ namespace AZ
             // Per Pass Srg
             //
             // SP1 fix: the meshlets render shader no longer declares (or needs)
-            // a PassSrg — all data is per-object (MeshletsObjectRenderSrg
+            // a PassSrg -- all data is per-object (MeshletsObjectRenderSrg
             // m_indices/m_uvs/m_positions/...) or per-instance
             // (MeshletsInstanceRenderSrg). The base RasterPass tolerates a null
             // m_shaderResourceGroup (CompileResources early-outs on null), so
@@ -165,7 +165,7 @@ namespace AZ
                 }
                 else
                 {
-                    // Shader has no PassSrg — that's intentional after the
+                    // Shader has no PassSrg -- that's intentional after the
                     // dedicated-per-object-buffer refactor. Leave
                     // m_shaderResourceGroup null; RasterPass handles that.
                     m_shaderResourceGroup = nullptr;
@@ -406,7 +406,7 @@ namespace AZ
             // costing a whole geometry pass per frame. m_hasDrawWork is set by the feature
             // processor each frame (true only when the forward shader failed and a
             // debug-fallback item exists). NOTE: do NOT gate on m_lastReportedDrawPacketCount
-            // — that counter is fed by the now-unused AddDrawPackets() path and stays stale.
+            // -- that counter is fed by the now-unused AddDrawPackets() path and stays stale.
             if (!m_hasDrawWork)
             {
                 return;

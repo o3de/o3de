@@ -75,7 +75,7 @@ namespace AZ::Meshlets
         {
             return 0.0f;
         }
-        // Distance to the CLOSEST point of the aabb — conservative (the shader cut
+        // Distance to the CLOSEST point of the aabb -- conservative (the shader cut
         // subtracts the sphere radius the same way). Inside the box => refine.
         const AZ::Vector3 closest = camera.m_position.GetClamp(
             page.m_worldAabb.GetMin(), page.m_worldAabb.GetMax());
@@ -172,7 +172,7 @@ namespace AZ::Meshlets
                 break;
             }
             ++considered;
-            // Multiple instances may submit the same page key in one Update — the
+            // Multiple instances may submit the same page key in one Update -- the
             // first emission reserved a slot and set the pending flag; skip repeats.
             {
                 PageState& state = m_pageStates[want.m_key];
@@ -184,7 +184,7 @@ namespace AZ::Meshlets
             if (m_freeSlots.empty() && !tryEvictOne())
             {
                 --considered;   // this one was not served
-                break;   // pool full of wanted/pending pages — coarser geometry carries the frame
+                break;   // pool full of wanted/pending pages -- coarser geometry carries the frame
             }
             // Reserve the slot NOW so loads can never over-commit the pool.
             const uint32_t slot = m_freeSlots.back();
@@ -214,7 +214,7 @@ namespace AZ::Meshlets
         auto it = m_pageStates.find(key);
         if (it == m_pageStates.end() || !it->second.m_loadPending || it->second.m_slot == InvalidSlot)
         {
-            return InvalidSlot;   // raced a Clear() — caller drops the upload
+            return InvalidSlot;   // raced a Clear() -- caller drops the upload
         }
         it->second.m_loadPending = false;
         m_residentSlots[key] = it->second.m_slot;

@@ -6,7 +6,7 @@
  *
  */
 
-// GPU per-cluster (surfel) cull → compacted indirect DRAW COMMANDS (Phase 6, GPU path).
+// GPU per-cluster (surfel) cull -> compacted indirect DRAW COMMANDS (Phase 6, GPU path).
 //
 // ONE thread-group per instance. The group frustum + backface-cone culls every
 // cluster (same math as the CPU MeshletsRenderObject::CullClustersToCommands) and,
@@ -15,11 +15,11 @@
 // into m_outCommands, then thread 0 writes the visible-command count to m_outCount.
 //
 // The render passes then issue ONE DrawIndexedIndirectCount over the mesh's STATIC
-// index buffer (the real expanded vertex-index stream — the same buffer the whole-mesh
+// index buffer (the real expanded vertex-index stream -- the same buffer the whole-mesh
 // draw uses). Each command renders that cluster's slice of the index buffer, so:
 //   * only visible clusters are drawn (surfel culling), AND
 //   * the post-transform vertex cache reuses shaded vertices within each cluster
-//     (the slice indexes real mesh vertices) — the win the previous "compact the index
+//     (the slice indexes real mesh vertices) -- the win the previous "compact the index
 //     stream" approach forfeited (it was non-indexed, every corner a unique SV_VertexID).
 // Because the index buffer is static (never GPU-written), there is no UAV->SRV index
 // barrier to get wrong; only the small command + count buffers transition UAV->Indirect.
@@ -70,7 +70,7 @@ ShaderResourceGroup MeshletsCullSrg : SRG_PerObject
     //! m_outCount[0] = number of visible commands == the indirect draw's count.
     RWStructuredBuffer<uint> m_outCount;
 
-    // Per-instance cull parameters (object->world as 3 explicit rows — major-ness safe).
+    // Per-instance cull parameters (object->world as 3 explicit rows -- major-ness safe).
     float4 m_worldRow0;
     float4 m_worldRow1;
     float4 m_worldRow2;
@@ -105,7 +105,7 @@ ShaderResourceGroup MeshletsCullSrg : SRG_PerObject
 //! own bound resources).
 bool ClusterVisible(uint clusterId)
 {
-    // Phase 6 cluster-DAG cut — before the passthrough early-out, same ordering
+    // Phase 6 cluster-DAG cut -- before the passthrough early-out, same ordering
     // (and same shared math) as the AS path's MeshletClusterVisible so the two
     // stay correctness oracles for each other.
     if (MeshletsCullSrg::m_doDagCut != 0u)

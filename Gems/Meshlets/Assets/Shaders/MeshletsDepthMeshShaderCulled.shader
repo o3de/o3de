@@ -5,7 +5,7 @@
     // MeshletsDepthMeshShader.shader for the same reason the forward pair is split:
     // adding an Amplification stage to the default depth PSO would change the shipped
     // no-cull path's dispatch semantics. This PSO pairs the SHARED cluster-cull AS
-    // (MeshletsCullAS.azsli — the same entry the culled forward PSO uses, so depth
+    // (MeshletsCullAS.azsli -- the same entry the culled forward PSO uses, so depth
     // and forward can never disagree on surviving clusters) with the payload-driven
     // MeshletsDepthPassMSCulled entry.
     //

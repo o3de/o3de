@@ -6,14 +6,14 @@
  *
  */
 
-// Meshlet SHADOW pass — HARDWARE MESH SHADER path.
+// Meshlet SHADOW pass -- HARDWARE MESH SHADER path.
 //
 // The mesh-shader counterpart of MeshletsShadowPass.azsl (vertex-pull). Position
 // only, exactly like MeshletsDepthMeshShader.azsl; the only differences live in the
 // .shader descriptor (LessEqual depth test, depth bias, DrawList "shadow").
 //
 // WHY THIS MATTERS FOR PERF: shadows are usually the heaviest geometry cost in the
-// frame — every cascade rasterizes the whole visible set again. With only forward
+// frame -- every cascade rasterizes the whole visible set again. With only forward
 // and depth on DispatchMesh, a directional light with 4 cascades left 5 of ~7
 // geometry passes on the vertex-pull path, which is SLOWER than the standard mesh
 // path because it loses the post-transform vertex cache and re-transforms shared
@@ -29,7 +29,7 @@
 // Pulls in scenesrg_all.srgi + MeshletsMeshObjectSrg/MeshletsMeshInstanceSrg.
 #include <MeshletsMeshRenderSrg.azsli>
 
-// Must match MeshletsForwardMeshShader.azsl / MeshletsDepthMeshShader.azsl —
+// Must match MeshletsForwardMeshShader.azsl / MeshletsDepthMeshShader.azsl --
 // clusters are baked at <=128 verts / <=256 tris, within the DX12 mesh-shader
 // per-group limits.
 #define MESHLETS_MS_MAX_VERTICES   128
@@ -61,7 +61,7 @@ void MeshletsShadowPassMS(
     const uint objectId = MeshletsMeshInstanceSrg::m_objectId;
     const float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectId);
 
-    // Position only — a shadow map writes depth and nothing else.
+    // Position only -- a shadow map writes depth and nothing else.
     for (uint v = groupThreadId; v < vertexCount; v += MESHLETS_MS_THREADS)
     {
         const uint meshVertex = MeshletsMeshObjectSrg::m_meshletsIndicesLookup[cluster.m_vertexOffset + v];
@@ -70,7 +70,7 @@ void MeshletsShadowPassMS(
         const float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
 
         VSOutput o;
-        // Rebound per cascade by the shadowmap pass — this is the light's VP.
+        // Rebound per cascade by the shadowmap pass -- this is the light's VP.
         o.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPos, 1.0));
         outVerts[v] = o;
     }
@@ -89,11 +89,11 @@ void MeshletsShadowPassMS(
 
 // ---------------------------------------------------------------------------
 // Phase 6 shadow-side DAG cut (MeshletsShadowMeshShaderCulled.shader): payload-
-// driven variant fed by the SHARED cluster-cull AS in "cut-only" mode — the
+// driven variant fed by the SHARED cluster-cull AS in "cut-only" mode -- the
 // feature processor sets m_doFrustumCull/m_doConeCull/m_doHiZCull to 0 on the
 // shadow instance SRG (a light must rasterize clusters outside the CAMERA
 // frustum), leaving only the DAG cut. The shadow geometry therefore matches the
-// camera passes' cut exactly — no detail mismatch between depth and shadow.
+// camera passes' cut exactly -- no detail mismatch between depth and shadow.
 // ---------------------------------------------------------------------------
 #include <MeshletsCullAS.azsli>
 
@@ -118,7 +118,7 @@ void MeshletsShadowPassMSCulled(
     const uint objectId = MeshletsMeshInstanceSrg::m_objectId;
     const float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectId);
 
-    // Phase 7 streaming: paged (pool) fetch when active — see the forward variant.
+    // Phase 7 streaming: paged (pool) fetch when active -- see the forward variant.
     const MeshletsPagedCluster pagedCluster =
         (MeshletsMeshObjectSrg::m_pagedMode != 0u)
             ? MeshletsMeshObjectSrg::GetPagedCluster(clusterId)
@@ -141,7 +141,7 @@ void MeshletsShadowPassMSCulled(
         const float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
 
         VSOutput o;
-        // Rebound per cascade by the shadowmap pass — this is the light's VP.
+        // Rebound per cascade by the shadowmap pass -- this is the light's VP.
         o.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPos, 1.0));
         outVerts[v] = o;
     }
@@ -158,7 +158,7 @@ void MeshletsShadowPassMSCulled(
     }
 }
 
-// Empty pixel shader — see the long note in MeshletsDepthMeshShader.azsl. Short
+// Empty pixel shader -- see the long note in MeshletsDepthMeshShader.azsl. Short
 // version: azslc counts entry functions from input-assembly reflection, a Mesh
 // entry contributes none, and a mesh-ONLY shader fails to build with "The number of
 // valid shader entry functions ... was 0!". An output-free PS keeps this a

@@ -22,8 +22,8 @@
 #include <Atom/RHI.Reflect/Format.h>
 
 // MeshletPackAsset is the runtime type the catalog must record for products
-// of this builder — used as the JobProduct's m_assetType. PackResolver filters
-// catalog assets by this exact type id when populating its model→pack map.
+// of this builder -- used as the JobProduct's m_assetType. PackResolver filters
+// catalog assets by this exact type id when populating its model->pack map.
 #include <Meshlets/Reflect/MeshletPackAsset.h>
 
 namespace AZ::Meshlets::Builders
@@ -74,13 +74,13 @@ namespace AZ::Meshlets::Builders
         // The descriptor stores the source AssetId as the textual "{uuid}:subid"
         // form because AZ::Data::AssetId is not a supported JSON deserialization
         // target (the JSON serializer warns and skips it). Parse the string
-        // here via AssetId::CreateString — same routine the catalog uses.
+        // here via AssetId::CreateString -- same routine the catalog uses.
         const AZ::Data::AssetId sourceModelAssetId =
             AZ::Data::AssetId::CreateString(desc.m_sourceModelAssetIdStr);
         if (!sourceModelAssetId.IsValid())
         {
             AZ_Error("Meshlets.JsonBuilder", false,
-                "Sidecar source_model_asset_id %s is not a valid AssetId — "
+                "Sidecar source_model_asset_id %s is not a valid AssetId -- "
                 "expected '{uuid}:subid' (e.g. '{7953FDEE-467C-544C-8512-DD559B57525A}:10b47c3d').",
                 desc.m_sourceModelAssetIdStr.c_str());
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -88,8 +88,8 @@ namespace AZ::Meshlets::Builders
         }
 
         // Step 2: load the referenced .azmodel synchronously.
-        // (Per spec §5.3 — blocking load, normal Asset::AssetManager::GetAsset.)
-        // Build SourceMeshSet by walking EVERY source LOD the model ships —
+        // (Per spec section 5.3 -- blocking load, normal Asset::AssetManager::GetAsset.)
+        // Build SourceMeshSet by walking EVERY source LOD the model ships --
         // mirrors what MeshletsRenderObject::CreateMeshletsFromModelAsset did
         // today (which only read LOD0), but runs offline once and bakes the
         // full LOD chain into the pack. Meshes are matched across LODs by
@@ -299,9 +299,9 @@ namespace AZ::Meshlets::Builders
         out.Close();
 
         // Use MeshletPackAsset's stable type id (not CreateRandom!) so the
-        // catalog records the right asset type — PackResolver filters by this
+        // catalog records the right asset type -- PackResolver filters by this
         // type to know which catalog entries are .azmeshletpack products and
-        // populate its model→pack map. Using CreateRandom here breaks runtime
+        // populate its model->pack map. Using CreateRandom here breaks runtime
         // resolution: the editor's "No .azmeshletpack product registered"
         // warning fires even when the product file exists, because the
         // catalog's m_assetType for it never matches azrtti_typeid<MeshletPackAsset>().

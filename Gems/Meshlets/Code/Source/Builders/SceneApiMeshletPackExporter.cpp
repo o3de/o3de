@@ -42,7 +42,7 @@ namespace AZ::Meshlets::Builders
         // for adding MeshletPackRule to an FBX still works (the rule class is
         // reflected by MeshletsBuildersSystemComponent), but exporting the
         // resulting .azmeshletpack from the SceneAPI graph needs an updated
-        // walk against the current SceneAPI API surface — too much drift from
+        // walk against the current SceneAPI API surface -- too much drift from
         // the SP1 plan's reference patterns to land safely in this sweep.
         AZ_TracePrintf("Meshlets.SceneBuilder",
             "SceneAPI export path stubbed for SP1. Use a .meshletpack JSON "

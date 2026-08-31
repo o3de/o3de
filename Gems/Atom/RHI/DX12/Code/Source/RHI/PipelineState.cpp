@@ -150,7 +150,7 @@ namespace AZ
                 // Diagnostic (no debug layer needed): dump the HRESULT + the key stream inputs so the
                 // failure cause is unambiguous in the normal log. hr=0x80070057 (E_INVALIDARG) with a
                 // complete desc (msLen>0, psLen>0, rtCount matches the PS outputs, rootSig!=null) almost
-                // always means the root signature kept ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT — i.e. the
+                // always means the root signature kept ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT -- i.e. the
                 // Mesh/Amplification SRG visibility was not reflected, so PipelineLayout did not drop the
                 // IA flag (which D3D12 forbids on a mesh PSO). See PipelineLayout.cpp usesMeshStage log.
                 AZ_Error("PipelineState", false,

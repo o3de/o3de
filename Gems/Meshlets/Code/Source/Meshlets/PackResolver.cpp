@@ -48,7 +48,7 @@ namespace AZ::Meshlets
     namespace
     {
         // Shared body for Added and Changed: load the pack, read header,
-        // refresh the model→pack map entry. Pulled out so the two event
+        // refresh the model->pack map entry. Pulled out so the two event
         // handlers don't drift.
         void IngestPackByAssetId(
             const AZ::Data::AssetId& assetId,
@@ -73,7 +73,7 @@ namespace AZ::Meshlets
             AZStd::lock_guard<AZStd::mutex> lock(mutex);
             modelToPackMap[modelId] = assetId;
             AZ_TracePrintf("Meshlets",
-                "PackResolver: %s — pack %s mapped to model %s\n",
+                "PackResolver: %s -- pack %s mapped to model %s\n",
                 eventLabel,
                 assetId.ToString<AZStd::string>().c_str(),
                 modelId.ToString<AZStd::string>().c_str());
@@ -98,7 +98,7 @@ namespace AZ::Meshlets
             return;
         }
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        // Linear sweep is fine — the map is at most O(meshlet-enabled-models).
+        // Linear sweep is fine -- the map is at most O(meshlet-enabled-models).
         for (auto it = m_modelToPackMap.begin(); it != m_modelToPackMap.end(); )
         {
             if (it->second == assetId)

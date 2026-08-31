@@ -172,7 +172,7 @@ namespace AZ
             {
                 meshRenderData.RenderBuffers.resize(meshRenderData.RenderBuffersDescriptors.size());
                 AZ_TracePrintf("Meshlets",
-                    "CreateAndBindRenderBuffers: streaming-exclusive mesh — %zu monolithic "
+                    "CreateAndBindRenderBuffers: streaming-exclusive mesh -- %zu monolithic "
                     "stream buffers skipped.\n", meshRenderData.RenderBuffersDescriptors.size());
                 return true;
             }
@@ -182,7 +182,7 @@ namespace AZ
             meshRenderData.RenderBuffers.resize(streamsNum);
 
             // Create and bind each render buffer to the per-object SRG.
-            // All buffers use Format::Unknown (StructuredBuffer SRVs) — the Atom
+            // All buffers use Format::Unknown (StructuredBuffer SRVs) -- the Atom
             // DX12 backend has a bug in typed-buffer SRV creation that sets
             // NumElements=1 for pool-allocated buffers. StructuredBuffer SRVs use
             // a different code path that sets NumElements correctly.
@@ -192,7 +192,7 @@ namespace AZ
                 if (!bufferDesc.m_bufferData)
                 {
                     AZ_Warning("Meshlets", false,
-                        "Render stream %u (%s) has no m_bufferData — skipping.",
+                        "Render stream %u (%s) has no m_bufferData -- skipping.",
                         stream, bufferDesc.m_bufferName.GetCStr());
                     continue;
                 }
@@ -253,7 +253,7 @@ namespace AZ
                     if (!meshRenderData.TriangleClusterBuffer)
                     {
                         AZ_Warning("Meshlets", false,
-                            "Failed to create/bind m_triangleCluster buffer — meshlet debug coloring disabled.");
+                            "Failed to create/bind m_triangleCluster buffer -- meshlet debug coloring disabled.");
                     }
                 }
 
@@ -340,7 +340,7 @@ namespace AZ
                 if (isUVs || isIndices)
                 {
                     // SP1 fix: the compute SRG declares m_uvs and m_indices as
-                    // ReadWrite (RWBuffer in HLSL → UAV). Atom's RHI validates
+                    // ReadWrite (RWBuffer in HLSL -> UAV). Atom's RHI validates
                     // that any ReadWrite buffer view bound to an SRG must be a
                     // frame-graph attachment (for cross-pass hazard tracking).
                     //
@@ -359,7 +359,7 @@ namespace AZ
                     // This flag is the same hack the legacy SharedBuffer
                     // sub-view path used in MeshletsUtilities.cpp:183. Using
                     // dedicated per-object buffers is what unblocks the AMD
-                    // page-fault issue (SP1) — the validation bypass here is a
+                    // page-fault issue (SP1) -- the validation bypass here is a
                     // necessary stop-gap until proper imported-attachment
                     // wiring lands.
                     RHI::BufferViewDescriptor viewDesc;
@@ -424,7 +424,7 @@ namespace AZ
             }
             if (!forwardShader)
             {
-                return false; // Forward shader not loaded yet — retry next frame.
+                return false; // Forward shader not loaded yet -- retry next frame.
             }
 
             // Resolve the source model's MaterialAsset for this mesh (LOD 0).
@@ -470,7 +470,7 @@ namespace AZ
                 Data::Instance<RPI::Material> material = RPI::Material::FindOrCreate(materialAsset);
                 if (!material)
                 {
-                    return false; // Material shaders not ready — retry next frame.
+                    return false; // Material shaders not ready -- retry next frame.
                 }
 
                 const auto getFloat = [&material](const char* name, float def) -> float
@@ -504,7 +504,7 @@ namespace AZ
                 roughnessFactor = getFloat("roughness.factor", 0.5f);
                 // The bounds are shown in the editor only when the texture is
                 // bound, but the property still exists on the material instance
-                // — pick them up so the texture remap matches StandardPBR.
+                // -- pick them up so the texture remap matches StandardPBR.
                 roughnessLowerBound = getFloat("roughness.lowerBound", 0.0f);
                 roughnessUpperBound = getFloat("roughness.upperBound", 1.0f);
                 normalFactor = getFloat("normal.factor", 1.0f);
@@ -514,7 +514,7 @@ namespace AZ
                 if (getBool("metallic.useTexture", true))  { metallicMap = getImage("metallic.textureMap"); }
                 if (getBool("roughness.useTexture", true)) { roughnessMap = getImage("roughness.textureMap"); }
 
-                // Occlusion (AO). pow() exponent gates strength — default is 1.0
+                // Occlusion (AO). pow() exponent gates strength -- default is 1.0
                 // (identity); higher values darken the AO more aggressively. Without
                 // AO the meshlet looks visibly brighter / more reflective than the
                 // standard mesh because crevices get full ambient + IBL.
@@ -524,7 +524,7 @@ namespace AZ
                 if (getBool("occlusion.specularUseTexture", true)) { specularOcclusionMap = getImage("occlusion.specularTextureMap"); }
 
                 // Emissive. Only contribute when emissive.enable is true (default
-                // false) — otherwise emissive bright spots would appear that the
+                // false) -- otherwise emissive bright spots would appear that the
                 // standard shader correctly suppresses. The map alone doesn't
                 // imply emissive is on; the material's enable flag rules.
                 const bool emissiveEnable = getBool("emissive.enable", false);
@@ -610,7 +610,7 @@ namespace AZ
             meshRenderData->MaterialResolved = true;
 
             AZ_TracePrintf("Meshlets",
-                "EnsureMaterialSrg: mesh %u — material=%s, flags=0x%x, baseColor=(%.2f,%.2f,%.2f), "
+                "EnsureMaterialSrg: mesh %u -- material=%s, flags=0x%x, baseColor=(%.2f,%.2f,%.2f), "
                 "metallic=%.2f, roughness=%.2f (texRange %.2f..%.2f), normalFactor=%.2f, "
                 "aoFactors=(%.2f diff, %.2f spec), emissive=(%.2f,%.2f,%.2f)*%.2f\n",
                 meshIndex, materialAsset.GetId().IsValid() ? "model" : "default", flags,
@@ -633,22 +633,22 @@ namespace AZ
             }
             if (!signature)
             {
-                return false;  // Signature not created yet — retry later.
+                return false;  // Signature not created yet -- retry later.
             }
 
-            // PERF — vertex-cache reuse. The hardware index buffer is the mesh's EXPANDED
+            // PERF -- vertex-cache reuse. The hardware index buffer is the mesh's EXPANDED
             // vertex-index stream (one mesh-vertex index per triangle corner), NOT a [0..N)
             // identity. With the real indices, SV_VertexID == the mesh vertex index, so the
             // post-transform vertex cache reuses shaded vertices across the (many) triangles
-            // that share a vertex — and meshlet data is ordered for exactly this locality.
+            // that share a vertex -- and meshlet data is ordered for exactly this locality.
             // The vertex shader then uses SV_VertexID directly (GetMeshVertexIndex), dropping
             // the per-corner m_indices[] StructuredBuffer load. The old identity buffer made
-            // every corner a unique SV_VertexID, defeating the cache → 3-6x redundant vertex
+            // every corner a unique SV_VertexID, defeating the cache -> 3-6x redundant vertex
             // shading across depth/motion/forward/shadow. This benefits the whole-mesh draw
             // AND the CPU per-cluster draws (which slice the same buffer via StartIndexLocation).
             // Phase 4 VRAM reclaim: no index/IA buffers for streaming-exclusive meshes.
             // Callers already treat "not ready" as "skip this path" (lazy-load guards),
-            // which is exactly the intended behavior here — permanently.
+            // which is exactly the intended behavior here -- permanently.
             if (meshRenderData.MonolithicDropped)
             {
                 return false;
@@ -665,7 +665,7 @@ namespace AZ
                 // FULL expanded slab, not IndexCount: for Phase 6 DAG packs the slab
                 // also holds the interior clusters' index slices (after the leaves),
                 // which the DAG-aware per-cluster indirect draws slice into. All
-                // whole-mesh DRAW counts remain IndexCount (leaf-only) — the extra
+                // whole-mesh DRAW counts remain IndexCount (leaf-only) -- the extra
                 // tail is only ever reached via per-cluster StartIndexLocation.
                 const AZ::u32 slabIndexCount =
                     static_cast<AZ::u32>(meshRenderData.PersistentExpandedIndices.size());
@@ -696,7 +696,7 @@ namespace AZ
             // m_positions StructuredBuffer. The depth/shadow/motion passes fetch position
             // through the hardware vertex fetcher instead of 3 scalar SRV loads/vertex. Kept
             // SEPARATE from the SRV stream (AMD hangs if InputAssembly+ShaderRead share one
-            // buffer — SharedBuffer.cpp). On failure (e.g. the pool rejects a 12-byte typed
+            // buffer -- SharedBuffer.cpp). On failure (e.g. the pool rejects a 12-byte typed
             // vertex stride) PositionStreamValid stays false and the IA passes self-skip
             // (ValidateStreamBufferViews) rather than hang.
             meshRenderData.PositionStreamValid = false;
@@ -737,14 +737,14 @@ namespace AZ
             // vertex buffers (NORMAL R32G32B32_FLOAT/12B, TANGENT R32G32B32A32_FLOAT/16B,
             // BITANGENT R32G32B32_FLOAT/12B, UV R32G32_FLOAT/8B), each created exactly like
             // PositionIaBuffer (StaticInputAssembly pool, InputAssembly bind flag ONLY,
-            // NEVER combined with ShaderRead — AMD DEVICE_HUNG). The source bytes are the
+            // NEVER combined with ShaderRead -- AMD DEVICE_HUNG). The source bytes are the
             // SAME tightly-packed pack data the StructuredBuffer SRVs read (m_bufferData),
             // verified to use exactly these strides in MeshletPackBuilderCore. Added to
             // IndirectGeometryView in the EXACT order POSITION,NORMAL,TANGENT,BITANGENT,UV so
             // the view's streams are [0]=POSITION,[1]=NORMAL,[2]=TANGENT,[3]=BITANGENT,[4]=UV,
             // matching m_forwardInputLayout's channel order. ForwardStreamsValid is set true
             // ONLY if POSITION + all four allocated; on any failure we add NO partial streams
-            // (that would desync the stream indices) and leave the forward IA path off — the
+            // (that would desync the stream indices) and leave the forward IA path off -- the
             // forward DrawItem then self-skips rather than binding a partial layout (hang).
             meshRenderData.ForwardStreamsValid = false;
             if (meshRenderData.PositionStreamValid && meshRenderData.VertexCount > 0)
@@ -848,7 +848,7 @@ namespace AZ
             meshRenderData.IndirectReady = true;
 
             AZ_TracePrintf("Meshlets",
-                "EnsureIndirectArgs: OK — indexed indirect, indexCount=%u\n", meshRenderData.IndexCount);
+                "EnsureIndirectArgs: OK -- indexed indirect, indexCount=%u\n", meshRenderData.IndexCount);
             return true;
         }
 
@@ -895,11 +895,11 @@ namespace AZ
             if (bounds.empty() || descs.empty())
             {
                 AZ_Warning("Meshlets", false,
-                    "EnsureCullGpuBuffers: missing cluster bounds/descriptors — GPU cull data unavailable.");
+                    "EnsureCullGpuBuffers: missing cluster bounds/descriptors -- GPU cull data unavailable.");
                 return false;
             }
 
-            // Per-cluster bounds (sphere + cone), 48 bytes each → StructuredBuffer<ClusterBoundsRecord>.
+            // Per-cluster bounds (sphere + cone), 48 bytes each -> StructuredBuffer<ClusterBoundsRecord>.
             {
                 SrgBufferDescriptor boundsDesc(
                     RPI::CommonBufferPoolType::ReadOnly,
@@ -911,7 +911,7 @@ namespace AZ
                 meshRenderData.ClusterBoundsBuffer = UtilityClass::CreateBuffer("Meshlets", boundsDesc, nullptr);
             }
 
-            // Per-cluster descriptors (triangle offset/count), 16 bytes each → StructuredBuffer<ClusterDescriptor>.
+            // Per-cluster descriptors (triangle offset/count), 16 bytes each -> StructuredBuffer<ClusterDescriptor>.
             {
                 SrgBufferDescriptor descDesc(
                     RPI::CommonBufferPoolType::ReadOnly,
@@ -929,8 +929,8 @@ namespace AZ
                 return false;
             }
 
-            // Phase 6 cluster DAG (pack v3): per-cluster cut records, 48 bytes each →
-            // StructuredBuffer<DagNodeRecord>. Absent (null) for v2 packs — the DAG cut
+            // Phase 6 cluster DAG (pack v3): per-cluster cut records, 48 bytes each ->
+            // StructuredBuffer<DagNodeRecord>. Absent (null) for v2 packs -- the DAG cut
             // stays disabled and nothing binds it.
             if (meshRenderData.DagClusterCount > 0 && !meshRenderData.PersistentDagNodes.empty())
             {
@@ -949,7 +949,7 @@ namespace AZ
             EnsureMeshBounds(meshRenderData);   // two-level cull whole-mesh bounding sphere
             meshRenderData.CullGpuBuffersReady = true;
             AZ_TracePrintf("Meshlets",
-                "EnsureCullGpuBuffers: OK — %zu clusters (bounds + descriptors) on GPU.\n", bounds.size());
+                "EnsureCullGpuBuffers: OK -- %zu clusters (bounds + descriptors) on GPU.\n", bounds.size());
             return true;
         }
 
@@ -977,12 +977,12 @@ namespace AZ
             const AZStd::vector<ClusterDescriptor>& clusters = mrd->PersistentClusterDescriptors;
             const AZStd::vector<ClusterBoundsRecord>& bounds = mrd->PersistentClusterBounds;
             // LEAF clusters only: for Phase 6 DAG packs the persistent arrays also hold
-            // interior DAG clusters (after the leaves) — the CPU cull path is not
+            // interior DAG clusters (after the leaves) -- the CPU cull path is not
             // DAG-aware and drawing interiors on top of leaves would double-render.
             const size_t clusterCount = AZStd::GetMin(clusters.size(), size_t(mrd->MeshletsCount));
             const bool haveBounds = (!bounds.empty() && bounds.size() >= clusterCount);
 
-            // Max basis length → conservative world-space radius scale (handles non-uniform scale).
+            // Max basis length -> conservative world-space radius scale (handles non-uniform scale).
             const float scaleX = objectToWorld.GetColumnAsVector3(0).GetLength();
             const float scaleY = objectToWorld.GetColumnAsVector3(1).GetLength();
             const float scaleZ = objectToWorld.GetColumnAsVector3(2).GetLength();
@@ -1011,7 +1011,7 @@ namespace AZ
 
                     // Backface normal-cone cull (meshopt convention): the cluster is
                     // entirely back-facing if dot(normalize(apex - eye), axis) >= cutoff.
-                    // cutoff >= 1 means meshopt produced no valid cone → never cull.
+                    // cutoff >= 1 means meshopt produced no valid cone -> never cull.
                     if (isVisible && doConeCull && b.m_coneCutoff < 1.0f)
                     {
                         const AZ::Vector3 apexW =

@@ -14,14 +14,14 @@
 namespace AZ::Meshlets
 {
     // Phase 4 VRAM-reclaim switch: for v4 (paged) meshes, skip creating every
-    // monolithic geometry buffer — the mesh renders exclusively through the AS-cull
+    // monolithic geometry buffer -- the mesh renders exclusively through the AS-cull
     // paged path (requires r_meshletsHwMeshShader + r_meshletsMsCullAS +
     // r_meshletsDagLod + r_meshletsStreaming at runtime; with any of them off such
     // meshes render nothing, by design). Load-time decision: flip + reload the level.
     AZ_CVAR(bool, r_meshletsStreamingExclusive, false, nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "If true at pack load, paged (v4) meshes skip their monolithic geometry "
-        "buffers entirely — the actual VRAM reclaim. They then render ONLY via the "
+        "buffers entirely -- the actual VRAM reclaim. They then render ONLY via the "
         "AS-cull + DAG + streaming path; every other meshlet path self-skips.");
 
     MeshletsRenderObject::MeshletsRenderObject(
@@ -79,7 +79,7 @@ namespace AZ::Meshlets
         }
 
         // Iterate the pack's MeshDescriptors section and build one
-        // MeshRenderData per mesh × LOD.
+        // MeshRenderData per mesh x LOD.
         const auto& reader = packAsset->GetReader();
         auto meshDescBytes  = reader.GetSection(SectionKind::MeshDescriptors);
         auto clusterBytes   = reader.GetSection(SectionKind::ClusterDescriptors);
@@ -90,24 +90,24 @@ namespace AZ::Meshlets
         // all clusters of all meshes in pack-global order). Per-mesh slice
         // start = 3 * triBase (where triBase = first cluster's pack-global
         // triangleOffset). Length = 3 * sum(cluster.triangleCount). Use this
-        // directly as the m_indices SRV's data — no runtime CPU expansion or
+        // directly as the m_indices SRV's data -- no runtime CPU expansion or
         // compute pass needed.
         auto expandedIdxBytes = reader.GetSection(SectionKind::ExpandedIndices);
         // Phase 6: per-cluster bounds (sphere + normal cone) for cluster culling.
-        // Optional — packs built before builder v6 lack it; culling then draws every cluster.
+        // Optional -- packs built before builder v6 lack it; culling then draws every cluster.
         auto coneBoundsBytes = reader.GetSection(SectionKind::ConeBounds);
         const ClusterBoundsRecord* clusterBoundsAll = coneBoundsBytes.empty()
             ? nullptr : reinterpret_cast<const ClusterBoundsRecord*>(coneBoundsBytes.data());
 
         // Phase 6 cluster DAG (pack v3): per-cluster cut records, parallel to
-        // ClusterDescriptors like ConeBounds. Optional — v2 packs lack it and the
+        // ClusterDescriptors like ConeBounds. Optional -- v2 packs lack it and the
         // runtime keeps the discrete-LOD behavior.
         auto dagNodesBytes = reader.GetSection(SectionKind::DagNodes);
         const DagNodeRecord* dagNodesAll = dagNodesBytes.empty()
             ? nullptr : reinterpret_cast<const DagNodeRecord*>(dagNodesBytes.data());
 
         // Phase 7 streaming (pack v4): leaf pages + exact group->children mapping.
-        // Optional — v2/v3 packs lack them and streaming simply stays unavailable.
+        // Optional -- v2/v3 packs lack them and streaming simply stays unavailable.
         auto pageTableBytes = reader.GetSection(SectionKind::PageTable);
         const PageTableRecord* pageTableAll = pageTableBytes.empty()
             ? nullptr : reinterpret_cast<const PageTableRecord*>(pageTableBytes.data());
@@ -137,7 +137,7 @@ namespace AZ::Meshlets
 
         // ----------------------------------------------------------------
         // Parse the VertexStreams sub-header + 5 per-stream descriptors.
-        // Layout: VertexStreamSubHeader (8 B) + streamCount × VertexStreamDescriptor (24 B each)
+        // Layout: VertexStreamSubHeader (8 B) + streamCount x VertexStreamDescriptor (24 B each)
         // followed by the concatenated stream data.
         // ----------------------------------------------------------------
         if (vsBytes.size() < sizeof(VertexStreamSubHeader))
@@ -196,7 +196,7 @@ namespace AZ::Meshlets
             {
                 if (sp + sizeof(MeshDescriptorPrefix) > end)
                 {
-                    break;   // truncated — stop scanning.
+                    break;   // truncated -- stop scanning.
                 }
                 const auto* prefix = reinterpret_cast<const MeshDescriptorPrefix*>(sp);
                 const AZ::u16 lodCount = prefix->m_lodCount;
@@ -206,7 +206,7 @@ namespace AZ::Meshlets
                 if (static_cast<AZ::u64>(end - sp) <
                     sizeof(MeshDescriptorPrefix) + lodEntriesBytes)
                 {
-                    break;   // truncated — the entries don't fit.
+                    break;   // truncated -- the entries don't fit.
                 }
                 if (lodCount > maxLodCount)
                 {
@@ -217,7 +217,7 @@ namespace AZ::Meshlets
         }
         // Each LOD slot is indexed by meshIdx and pre-sized to the full mesh count
         // with nullptr placeholders. A mesh that has fewer LODs than maxLodCount
-        // leaves nullptr at its meshIdx in the higher LOD slots — keeping
+        // leaves nullptr at its meshIdx in the higher LOD slots -- keeping
         // m_modelRenderData[lod][meshIdx] aligned to logical mesh meshIdx for EVERY
         // lod (consumers index by MeshIndex and already null-check the slot).
         m_modelRenderData.assign(maxLodCount, ModelLodDataArray(hdr->m_meshCount, nullptr));
@@ -229,7 +229,7 @@ namespace AZ::Meshlets
             hdr->m_maxVerticesPerCluster, hdr->m_maxTrianglesPerCluster);
 
         // Second pass: build render data. The raw pointer p ALWAYS advances by the
-        // FULL per-mesh record (prefix + ALL K LOD entries) before the next mesh —
+        // FULL per-mesh record (prefix + ALL K LOD entries) before the next mesh --
         // it is NEVER left mid-record. We snapshot the per-mesh LOD-entry block
         // bounds up front, advance p past the whole mesh, THEN instantiate each
         // LOD's render data from the snapshotted pointers. This decoupling is the
@@ -276,7 +276,7 @@ namespace AZ::Meshlets
                 auto* meshRenderData = aznew MeshRenderData();
 
                 // Geometric-error LOD metric: lodErrorsAll[lodEntryGlobalIndex] parallels
-                // this exact (mesh, LOD) record — same pack-global order the builder wrote
+                // this exact (mesh, LOD) record -- same pack-global order the builder wrote
                 // it in (mesh order outer, LOD order inner). Bounds-checked since older
                 // packs may have a shorter (empty) section.
                 if (lodErrorsAll != nullptr && lodEntryGlobalIndex < lodErrorCount)
@@ -289,14 +289,14 @@ namespace AZ::Meshlets
                 const AZ::u32 meshClusterCount = lodEntry->m_clusterCount;
                 const AZ::u32 meshVertexCount  = lodEntry->m_vertexCount;
                 const AZ::u32 meshVertexFirst  = lodEntry->m_vertexFirst;
-                // Upper-bound size for the output index slab — every cluster
+                // Upper-bound size for the output index slab -- every cluster
                 // can have AT MOST maxTrianglesPerCluster triangles, but the
                 // ACTUAL written count is sum(cluster.m_triangleCount)*3, which
                 // we compute in the cluster scan below and assign to
                 // meshRenderData->IndexCount. Using the upper bound for the
                 // RWBuffer allocation is fine (it's just a capacity ceiling);
                 // using it for the DRAW vertex count is what hung the GPU
-                // (DXGI_ERROR_DEVICE_HUNG) — the vertex shader fetched
+                // (DXGI_ERROR_DEVICE_HUNG) -- the vertex shader fetched
                 // uninitialized indices from m_meshletsSharedBuffer slots the
                 // compute never touched. Now IndexCount is set from the actual
                 // totalTriangles*3 sum after the cluster scan.
@@ -311,7 +311,7 @@ namespace AZ::Meshlets
 
                 meshRenderData->MeshletsCount = meshClusterCount;
                 meshRenderData->VertexCount = meshVertexCount;
-                // IndexCount intentionally set below — needs totalTriangles first.
+                // IndexCount intentionally set below -- needs totalTriangles first.
 
                 // --------------------------------------------------------
                 // Step 1: Slice + re-base cluster descriptors for this mesh.
@@ -338,7 +338,7 @@ namespace AZ::Meshlets
                 AZ::u32 indirBase = 0;
                 AZ::u32 totalTriangles  = 0;       // FULL slice (incl. DAG interiors)
                 AZ::u32 totalIndirection = 0;      // FULL slice
-                AZ::u32 leafTriangles = 0;         // leaves only — the drawable set
+                AZ::u32 leafTriangles = 0;         // leaves only -- the drawable set
                 bool firstCluster = true;
                 for (AZ::u32 c = 0; c < sliceClusterCount; ++c)
                 {
@@ -384,7 +384,7 @@ namespace AZ::Meshlets
                 // descriptors (for building indirect commands: each cluster's expanded
                 // indices live at [triangleOffset*3, +triangleCount*3)) and the matching
                 // per-cluster bounds slice (object-space sphere + cone for the cull test).
-                // Both cover the FULL DAG range for DAG packs — consumers that must stay
+                // Both cover the FULL DAG range for DAG packs -- consumers that must stay
                 // leaf-only cap at MeshletsCount, not at these vectors' sizes.
                 meshRenderData->PersistentClusterDescriptors.assign(
                     rebasedClusters.begin(), rebasedClusters.end());
@@ -424,7 +424,7 @@ namespace AZ::Meshlets
                                 lodEntry->m_clusterFirst + meshClusterCount)
                         {
                             AZ_Warning("Meshlets", false,
-                                "MeshletsRenderObject: malformed page record %zu — skipped.", pg);
+                                "MeshletsRenderObject: malformed page record %zu -- skipped.", pg);
                             continue;
                         }
                         rec.m_clusterFirst -= lodEntry->m_clusterFirst;   // -> mesh-local
@@ -450,7 +450,7 @@ namespace AZ::Meshlets
                     {
                         meshRenderData->MonolithicDropped = true;
                         AZ_TracePrintf("Meshlets",
-                            "MeshletsRenderObject: mesh %u is STREAMING-EXCLUSIVE — "
+                            "MeshletsRenderObject: mesh %u is STREAMING-EXCLUSIVE -- "
                             "monolithic geometry buffers skipped (paged path only).\n", m);
                     }
                 }
@@ -463,7 +463,7 @@ namespace AZ::Meshlets
                 meshRenderData->ComputeBuffersDescriptors.resize(
                     uint8_t(ComputeStreamsSemantics::NumBufferStreams));
 
-                // [0] MeshletsData — StructuredBuffer<ClusterDescriptor>
+                // [0] MeshletsData -- StructuredBuffer<ClusterDescriptor>
                 meshRenderData->ComputeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsData)] =
                     SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadOnly,
@@ -474,7 +474,7 @@ namespace AZ::Meshlets
                         reinterpret_cast<uint8_t*>(rebasedClusters.data())
                     );
 
-                // [1] MeshletsTriangles — Buffer<uint>
+                // [1] MeshletsTriangles -- Buffer<uint>
                 meshRenderData->ComputeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsTriangles)] =
                     SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadOnly,
@@ -486,7 +486,7 @@ namespace AZ::Meshlets
                         const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(trisAll + triBase))
                     );
 
-                // [2] MeshletsIndicesLookup — Buffer<uint>
+                // [2] MeshletsIndicesLookup -- Buffer<uint>
                 meshRenderData->ComputeBuffersDescriptors[uint8_t(ComputeStreamsSemantics::MeshletsIndicesIndirection)] =
                     SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadOnly,
@@ -506,7 +506,7 @@ namespace AZ::Meshlets
                 // issue with ReadWrite-pool dedicated buffers on AMD). Using
                 // the initial-data path routes the upload through the engine's
                 // StreamBuffer fenced mechanism, which is the same path the
-                // vertex-stream buffers (positions/normals/etc.) use — and
+                // vertex-stream buffers (positions/normals/etc.) use -- and
                 // those have always rendered correctly.
                 //
                 // The expanded data is stored as members of meshRenderData
@@ -542,7 +542,7 @@ namespace AZ::Meshlets
                             };
                             // LOD-CORRECTNESS FIX: the builder bakes VertexIndirection
                             // values as PACK-GLOBAL vertex indices (local + this LOD's
-                            // vertexFirst — MeshletPackBuilderCore.cpp:572 'idx + vertexCursor').
+                            // vertexFirst -- MeshletPackBuilderCore.cpp:572 'idx + vertexCursor').
                             // But each LOD's vertex IA buffer is sliced/offset by
                             // meshVertexFirst (this file ~line 648), so its element 0 is the
                             // LOD's first vertex. The index buffer must therefore be LOD-LOCAL
@@ -575,13 +575,13 @@ namespace AZ::Meshlets
                         actualIndexCount, m, meshClusterCount);
                 }
 
-                // [3] UVs — Buffer<float2>, CPU-baked debug coloring (no compute writes for SP1).
+                // [3] UVs -- Buffer<float2>, CPU-baked debug coloring (no compute writes for SP1).
                 //
                 // SP1 critical fix: use the ReadOnly pool (same as the vertex
                 // streams positions/normals/tangents/bitangents on
                 // MeshletsRenderObject.cpp lines 79/96/110/121). The ReadWrite
                 // pool's StreamBuffer upload path is silently broken on AMD
-                // here — uploads return success and the fence signals, but the
+                // here -- uploads return success and the fence signals, but the
                 // device buffer ends up with garbage (uninitialized GPU memory
                 // patterns rather than the CPU-supplied data). Routing through
                 // the ReadOnly pool uses the proven upload path that the
@@ -590,7 +590,7 @@ namespace AZ::Meshlets
                 // The compute SRG (MeshletsDataSrg) declares these slots as
                 // RWBuffer; the bind will reject a Read-only-flagged buffer.
                 // That's fine because compute is suppressed (see
-                // MeshletsFeatureProcessor::Render — we never push the
+                // MeshletsFeatureProcessor::Render -- we never push the
                 // dispatch item to the compute pass). CreateAndBindCompute-
                 // SrgAndDispatch is now a no-op at construction.
                 //
@@ -607,7 +607,7 @@ namespace AZ::Meshlets
                         reinterpret_cast<uint8_t*>(expandedUVs.data())
                     );
 
-                // [4] Indices — Buffer<uint>, CPU-baked expanded index list.
+                // [4] Indices -- Buffer<uint>, CPU-baked expanded index list.
                 // Size to actualIndexCount (244332) instead of capacity
                 // (meshIndexCount = 244416). The render draws only actualIndex
                 // Count vertices so the capacity slots were unused, and using
@@ -645,7 +645,7 @@ namespace AZ::Meshlets
                     // outputs UVs and Indices) as dedicated RPI::Buffer instances
                     // instead of sub-views into the SharedBuffer. The SharedBuffer
                     // sub-view path was causing GPU page faults on AMD: the
-                    // frame-graph state-tracking for two passes (compute UAV →
+                    // frame-graph state-tracking for two passes (compute UAV ->
                     // render SRV) operating on different views of the same
                     // underlying resource was emitting wrong / incomplete
                     // barriers, leaving the GPU reading uninitialized/UAV-state
@@ -692,7 +692,7 @@ namespace AZ::Meshlets
                 // SP1 note: this UpdateData is now REDUNDANT for streams that
                 // already set m_bufferData (those get the data via the
                 // initial-data path above). It's kept for backward compatibility
-                // — UpdateData on an already-populated buffer is harmless.
+                // -- UpdateData on an already-populated buffer is harmless.
                 if (computeOk)
                 {
                     // [0] MeshletsData: re-based cluster descriptors (local vector).
@@ -730,7 +730,7 @@ namespace AZ::Meshlets
                     // the pattern that reliably lands data on AMD here. The
                     // initial-data path alone (via the StreamBuffer fenced
                     // upload) was returning success but the buffer still read
-                    // garbage after WaitForUpload — the post-creation
+                    // garbage after WaitForUpload -- the post-creation
                     // UpdateData is what actually commits the data.
                     {
                         SrgBufferDescriptor& bd =
@@ -835,7 +835,7 @@ namespace AZ::Meshlets
 
                 // SP1: compute pass is fully suppressed (see comments around
                 // the ReadOnly pool selection above). We do NOT create the
-                // compute SRG / dispatch item at construction either — the
+                // compute SRG / dispatch item at construction either -- the
                 // RWBuffer<uint> slots in MeshletsDataSrg would reject the
                 // now-ReadOnly-pool buffers, and there is no GPU work that
                 // would consume the SRG anyway. Tier 2 / Epic E re-introduces
@@ -864,7 +864,7 @@ namespace AZ::Meshlets
 
         m_sourceModelAsset = sourceModelAsset;
         // Hold a strong ref to the pack asset so its byte buffer outlives the
-        // SrgBufferDescriptors and BufferViews built above — those reference
+        // SrgBufferDescriptors and BufferViews built above -- those reference
         // raw pointers into MeshletPackAsset::m_bytes via the reader's spans.
         m_packAsset = packAsset;
     }

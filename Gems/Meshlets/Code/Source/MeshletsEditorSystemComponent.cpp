@@ -148,7 +148,7 @@ namespace AZ
                     ImGui::Separator();
                     ImGui::TextUnformatted("Debug coloring");
                     // Flat per-cluster (meshlet) color on the forward pass. No packet
-                    // rebuild needed — the feature processor applies it via an SRG
+                    // rebuild needed -- the feature processor applies it via an SRG
                     // constant. Works with or without culling.
                     ImGui::Checkbox("Meshlet colors", &ctrl.m_meshletColorMode);
                     ImGui::SameLine();

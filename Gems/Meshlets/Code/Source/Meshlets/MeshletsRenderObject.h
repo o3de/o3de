@@ -97,7 +97,7 @@ namespace AZ
             //! StartIndexLocation + i (the linear index), so the existing
             //! m_indices[SV_VertexID] vertex shader works UNCHANGED while per-cluster
             //! commands select their slice via StartIndexLocation. (StartVertexLocation
-            //! on a non-indexed draw does NOT offset SV_VertexID in vertex-pull — that
+            //! on a non-indexed draw does NOT offset SV_VertexID in vertex-pull -- that
             //! was the C1 failure.)
             Data::Instance<RPI::Buffer> IndexBuffer;
             RHI::IndexBufferView IndexBufferViewRHI;
@@ -106,7 +106,7 @@ namespace AZ
             //! POSITION (R32G32B32_FLOAT), holding the same data as the m_positions
             //! StructuredBuffer but bound through the hardware vertex fetcher instead of
             //! 3 scalar SRV loads/vertex. Kept SEPARATE from the SRV stream buffer (AMD
-            //! hangs when InputAssembly+ShaderRead share one buffer — see SharedBuffer.cpp).
+            //! hangs when InputAssembly+ShaderRead share one buffer -- see SharedBuffer.cpp).
             //! Added to every geometry view; the depth/shadow/motion pipeline states declare
             //! a matching POSITION-only InputStreamLayout and select it via DrawRequest
             //! stream indices. PositionStreamValid gates whether the IA path is active.
@@ -116,7 +116,7 @@ namespace AZ
             //! PERF (hardware input-assembly, FORWARD): dedicated InputAssembly vertex
             //! buffers for the remaining four attributes used by the forward PBR pass,
             //! mirroring PositionIaBuffer exactly (each its own buffer; InputAssembly bind
-            //! flag ONLY, never combined with ShaderRead — AMD DEVICE_HUNG otherwise). The
+            //! flag ONLY, never combined with ShaderRead -- AMD DEVICE_HUNG otherwise). The
             //! forward PSO declares a 5-channel input layout (POSITION,NORMAL,TANGENT,
             //! BITANGENT,UV) and selects these via DrawRequest stream indices. The
             //! StructuredBuffer SRV copies are kept in the PerObject SRG for cull/debug.
@@ -156,7 +156,7 @@ namespace AZ
 
             //! Phase 7 streaming (pack v4): this mesh's leaf pages. m_clusterFirst is
             //! rebased MESH-LOCAL; payloads are slices of PageData (pack-asset memory,
-            //! kept alive by the render object's pack reference — same lifetime
+            //! kept alive by the render object's pack reference -- same lifetime
             //! contract as ComputeBuffersDescriptors' m_bufferData pointers).
             AZStd::vector<PageTableRecord> PersistentPageTable;
             //! Per-cluster FIRST-parent index (rebased mesh-local; 0xFFFFFFFF = root),
@@ -169,7 +169,7 @@ namespace AZ
             //! exact simplification-group bookkeeping derived from PersistentParentIndex
             //! (the fail-safe-coarse cut needs group-shared completeness bits), the
             //! cluster->page lookup, and the per-cluster paged map GPU buffer
-            //! (recreated on any residency change — the proven initial-data path).
+            //! (recreated on any residency change -- the proven initial-data path).
             struct LeafGroup
             {
                 AZ::u32 m_parentFirst = 0;    //!< Mesh-local first parent cluster.
@@ -182,13 +182,13 @@ namespace AZ
             AZStd::vector<AZ::u32> InteriorToGroup; //!< (cluster - leafCount) -> LeafGroups index for level-1 parents (0xFFFFFFFF = level-2+).
             bool PagedLookupsBuilt = false;
             Data::Instance<RPI::Buffer> PagedClusterMapBuffer;
-            //! True once every always-resident (interior) page is uploaded — the
+            //! True once every always-resident (interior) page is uploaded -- the
             //! object SRG's m_pagedMode mirrors this.
             bool PagedModeActive = false;
             //! Phase 4 VRAM-reclaim switch (r_meshletsStreamingExclusive at pack load):
             //! the monolithic geometry buffers (vertex-stream SRVs, expanded-index SRV,
             //! index/IA buffers, MS triangle/indirection copies) are NEVER created for
-            //! this mesh — it renders ONLY through the AS-cull paged path. Every other
+            //! this mesh -- it renders ONLY through the AS-cull paged path. Every other
             //! path sees permanently-not-ready resources and self-skips (the lazy-load
             //! guards). Decided at load; a cvar flip requires a level reload.
             bool MonolithicDropped = false;
@@ -215,7 +215,7 @@ namespace AZ
             //! Phase 5 (hardware mesh shader): per-mesh resources for the DispatchMesh
             //! render path. The cluster triangle words + vertex indirection are uploaded
             //! as StructuredBuffer<uint> copies (from the pack-owned slices recorded in
-            //! ComputeBuffersDescriptors — the compute path's typed Buffer<uint> SRVs are
+            //! ComputeBuffersDescriptors -- the compute path's typed Buffer<uint> SRVs are
             //! unproven on this AMD GPU, see the typed-buffer note above). The object SRG
             //! is MeshletsMeshObjectSrg (cluster + vertex-stream data, mesh-shader shader
             //! layout); the geometry view carries DispatchMeshDirect{clusterCount,1,1}
@@ -229,7 +229,7 @@ namespace AZ
             //! Which mesh-shader PSO MeshShaderObjectSrg was built for. azslc runs with
             //! --strip-unused-srgs, so the uncull and AS-cull shaders have DIFFERENT
             //! MeshletsMeshObjectSrg layouts (m_clusterBounds is stripped from the uncull
-            //! one — only the AS reads it). An SRG must therefore be created from the SAME
+            //! one -- only the AS reads it). An SRG must therefore be created from the SAME
             //! shader asset as the PSO it is bound to; flipping r_meshletsMsCullAS forces a
             //! rebuild rather than sharing one instance across both.
             bool MeshShaderSrgBuiltForCull = false;
@@ -246,14 +246,14 @@ namespace AZ
             //! Two-level cull: a conservative object-space bounding sphere for the WHOLE
             //! mesh (union of cluster bounds). The per-instance frustum test against this
             //! decides whether to skip the instance (fully outside), draw it whole-mesh
-            //! with no per-cluster cull (fully inside — nothing to frustum-cull, so the
+            //! with no per-cluster cull (fully inside -- nothing to frustum-cull, so the
             //! compaction compute is pure overhead), or run the GPU cluster cull (straddles
             //! the frustum). MeshBoundsRadius < 0 means "not computed yet".
             AZ::Vector3 MeshBoundsCenter = AZ::Vector3::CreateZero();
             float MeshBoundsRadius = -1.0f;
 
             //! Geometric-error LOD metric (SectionKind::LodError): meshopt_simplify's
-            //! resultError for this (mesh, LOD) — already scale-independent ("relative
+            //! resultError for this (mesh, LOD) -- already scale-independent ("relative
             //! to mesh extents", dimensionless [0,1], per meshoptimizer's own docs).
             //! 0.0 for LOD0 and for source-supplied/"baked" LODs. HasLodError is false
             //! for packs built before builder v9 (section absent); the LOD selector
@@ -287,7 +287,7 @@ namespace AZ
             // ---- Per-frame screen-coverage LOD selection (hysteresis state) ----
             //! The LOD the coverage heuristic currently wants. When it differs from
             //! LodIndex it must persist for LodPendingFrames consecutive frames (the
-            //! deadband below) before LodIndex actually changes — this stops an
+            //! deadband below) before LodIndex actually changes -- this stops an
             //! instance hovering on a LOD boundary from rebuilding its instance group
             //! every frame (per-frame group churn hazard).
             uint32_t LodPendingIndex = 0;
@@ -296,10 +296,10 @@ namespace AZ
             Render::TransformServiceFeatureProcessorInterface::ObjectId ObjectId;
             Data::Instance<RPI::ShaderResourceGroup> InstanceSrg;
             //! Phase 5 (hardware mesh shader): per-instance SRG for the mesh-shader path
-            //! (MeshletsMeshInstanceSrg — carries m_objectId). Created from the mesh-shader
+            //! (MeshletsMeshInstanceSrg -- carries m_objectId). Created from the mesh-shader
             //! shader asset; independent of InstanceSrg (different SRG layout).
             Data::Instance<RPI::ShaderResourceGroup> MeshShaderInstanceSrg;
-            //! Which mesh-shader PSO MeshShaderInstanceSrg was built for — same
+            //! Which mesh-shader PSO MeshShaderInstanceSrg was built for -- same
             //! stripped-layout rule as MeshRenderData::MeshShaderSrgBuiltForCull. The
             //! uncull MS references only m_objectId, so every AS cull field
             //! (m_frustumPlanes/m_worldToClip/m_cameraPosition/m_do*Cull/m_worldRow*/
@@ -310,7 +310,7 @@ namespace AZ
             //! when r_meshletsMsCullAS is active: the shadow MS is the UNCULL shader
             //! (a light's view must rasterize every cluster), so it cannot bind the
             //! cull-layout MeshShaderInstanceSrg above. Unused (null) when the camera
-            //! packet is uncull too — MeshShaderInstanceSrg is shared then.
+            //! packet is uncull too -- MeshShaderInstanceSrg is shared then.
             Data::Instance<RPI::ShaderResourceGroup> MeshShadowInstanceSrg;
             //! Owning ref to the DrawPacket. DrawPacketBuilder::End() returns an
             //! RHI::Ptr; if we stored a raw pointer instead, the temporary Ptr would
@@ -324,18 +324,18 @@ namespace AZ
             RHI::Ptr<RHI::DrawPacket> ShadowDrawPacket;
             //! Phase 6 occlusion-safe depth: under the AS-cull path the depth prepass
             //! item lives in its OWN packet with its own instance SRG (MeshDepthInstanceSrg)
-            //! so the depth draw NEVER applies HiZ occlusion — a HiZ-culled depth prepass
+            //! so the depth draw NEVER applies HiZ occlusion -- a HiZ-culled depth prepass
             //! would poison the next frame's pyramid (false-culls feed back). Null when
             //! the depth item rides the camera packet (non-AS path).
             RHI::Ptr<RHI::DrawPacket> DepthDrawPacket;
             //! Cull-layout instance SRG for DepthDrawPacket: same constants as
-            //! MeshShaderInstanceSrg each frame EXCEPT m_doHiZCull stays 0 — unless
+            //! MeshShaderInstanceSrg each frame EXCEPT m_doHiZCull stays 0 -- unless
             //! two-pass occlusion is active, when it becomes PASS 1 (prev-frame HiZ +
             //! visMode 1, safe because the late pass completes the depth).
             Data::Instance<RPI::ShaderResourceGroup> MeshDepthInstanceSrg;
 
             //! Two-pass occlusion PASS 2 (opt-in r_meshletsTwoPassOcclusion): the
-            //! late-depth packet ("meshletslatedepth" tag → MeshletsLateDepthPass,
+            //! late-depth packet ("meshletslatedepth" tag -> MeshletsLateDepthPass,
             //! after this frame's HiZ reduce) + its cull-layout instance SRG (visMode
             //! 2, THIS frame's pyramid) + the per-cluster visibility ledger (one u32
             //! frame-id per DAG-range cluster; frame-counter encoding, never cleared).
@@ -373,7 +373,7 @@ namespace AZ
             //! DrawIndexedIndirect command (5 u32) per VISIBLE cluster into CullCommandBuffer
             //! (sized clusterCount), and writes the visible-command count into CullCountBuffer.
             //! The instance is drawn with a single DrawIndexedIndirectCount over the mesh's
-            //! STATIC index buffer — each command renders one visible cluster's slice, with
+            //! STATIC index buffer -- each command renders one visible cluster's slice, with
             //! full vertex-cache reuse. Both UAV-written by the compute and consumed as
             //! indirect args; dedicated per-instance (the frame-graph UAV->Indirect barrier +
             //! single-queue in-order execution handle cross-frame hazards). No compacted
@@ -414,7 +414,7 @@ namespace AZ
             Name s_textureCoordinatesName;
             Name s_indicesName;
 
-            // NEW — pack-driven constructor. Coexists with the old one until Phase 5.
+            // NEW -- pack-driven constructor. Coexists with the old one until Phase 5.
             MeshletsRenderObject(Data::Asset<RPI::ModelAsset> sourceModelAsset,
                                  Data::Asset<AZ::Meshlets::MeshletPackAsset> packAsset,
                                  MeshletsFeatureProcessor* meshletsFeatureProcessor);
@@ -455,7 +455,7 @@ namespace AZ
 
             //! Phase 4: lazily resolve the source model's material for \p meshIndex and
             //! build the per-mesh MeshletsMaterialSrg (baseColor/normal/metallic/
-            //! roughness maps + factors) used by the forward PBR shader. Idempotent —
+            //! roughness maps + factors) used by the forward PBR shader. Idempotent --
             //! does nothing if already resolved. Requires the forward shader (for the
             //! SRG layout). Returns true if MaterialSrg is ready to bind (including the
             //! graceful default-material fallback); false only if it should be retried
@@ -464,7 +464,7 @@ namespace AZ
 
             //! The material SRG resolved on LOD0 for \p meshIndex (null if not yet
             //! resolved / out of range). Materials are slot-shared across LODs, so a
-            //! draw of any LOD of this mesh binds the SAME SRG — callers building a
+            //! draw of any LOD of this mesh binds the SAME SRG -- callers building a
             //! LOD>0 packet fetch it here rather than re-resolving per LOD. Call
             //! EnsureMaterialSrg first to populate it.
             Data::Instance<RPI::ShaderResourceGroup> GetMaterialSrgForMesh(uint32_t meshIndex) const
@@ -530,7 +530,7 @@ namespace AZ
             AZStd::string m_name;
             Data::Asset<RPI::ModelAsset> m_sourceModelAsset;
             //! Held to keep MeshletPackAsset::m_bytes alive for the render object's
-            //! lifetime — the SrgBufferDescriptors and BufferViews built by the
+            //! lifetime -- the SrgBufferDescriptors and BufferViews built by the
             //! pack-driven constructor reference into the pack's byte buffer. Without
             //! this strong ref, the pack asset's destructor would free m_bytes while
             //! the runtime is still reading from it via the bound vertex streams.

@@ -6,7 +6,7 @@
     // gem-injected MeshletsLateDepthPass, which runs AFTER this frame's HiZ pyramid
     // is reduced. Its instance SRG runs the AS in visMode 2: only clusters pass 1
     // skipped are tested (against THIS frame's pyramid) and the disoccluded
-    // survivors complete the depth buffer — removing the one-frame disocclusion pop
+    // survivors complete the depth buffer -- removing the one-frame disocclusion pop
     // and guaranteeing the pyramid is never built from a feedback-culled depth.
     //
     // Depth state matches the depth prepass exactly (reverse-Z, write on).

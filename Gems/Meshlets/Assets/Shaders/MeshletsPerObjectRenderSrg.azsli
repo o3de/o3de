@@ -25,7 +25,7 @@
 // DrawIndexedInstanced per pass. Each invocation reads its objectId from
 // m_instanceObjectIds[SV_InstanceID] instead of the per-draw m_objectId scalar.
 // The branch is driven by the m_useInstancing SRG CONSTANT (a runtime branch the
-// root variant compiles both sides of) — NOT a shader option / variant key. A
+// root variant compiles both sides of) -- NOT a shader option / variant key. A
 // constant is used deliberately: it is robust across all four pass shaders (no
 // per-shader variant-key bit-position concern) and needs no baked PSO variants.
 // The non-instanced (cull-on / single-instance) path leaves m_useInstancing = 0
@@ -125,7 +125,7 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
     //! so a corrupt or out-of-range index in m_indices cannot cause a GPU hang.
     //!
     //! When m_vertexCount is 0 (CPU hasn't bound the constant, or the SRG
-    //! layout doesn't include it yet) the clamp is skipped — the index is
+    //! layout doesn't include it yet) the clamp is skipped -- the index is
     //! passed through unclamped. This avoids the invisible-mesh bug where
     //! min(vertexIndex, max(0,1)-1) == 0 collapsed every vertex to index 0,
     //! producing degenerate zero-area triangles.
@@ -197,12 +197,12 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
 // per-object static m_indices; when GPU cull's single-compacted-draw path is
 // active (m_useCompactedIndices != 0), reads the per-instance compacted stream
 // the cull compute produced. Centralised here so all 5 render shaders share one
-// gated read — the default (non-cull) path is byte-identical to before.
+// gated read -- the default (non-cull) path is byte-identical to before.
 // ----------------------------------------------------------------------------
 uint GetMeshVertexIndex(uint linearIndex)
 {
     // ALL meshlet draws (whole-mesh, CPU cull, AND GPU per-cluster cull) are INDEXED over
-    // the mesh's expanded vertex-index stream — the IA already resolved corner -> mesh
+    // the mesh's expanded vertex-index stream -- the IA already resolved corner -> mesh
     // vertex, so SV_VertexID IS the mesh vertex index. Use it directly (no m_indices[]
     // load); repeated indices hit the post-transform vertex cache (the whole point). GPU
     // cull simply restricts WHICH index-buffer slices are drawn (visible clusters), via

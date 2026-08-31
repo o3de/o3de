@@ -60,7 +60,7 @@ namespace AZ
             void SetImportedAttachments(const AZStd::vector<MeshletsImportedAttachment>& attachments);
 
             //! PERF: in the shipping (forward-PBR-healthy) path this gem-private pass
-            //! has ZERO draw items — meshlets render through the STANDARD ForwardPass via
+            //! has ZERO draw items -- meshlets render through the STANDARD ForwardPass via
             //! the "forward" tag. It only draws when the forward shader failed and the
             //! per-instance packet emitted the "MeshletsDrawList" debug-fallback item.
             //! Yet a RasterPass still opens a full-res color+depth scope every frame
