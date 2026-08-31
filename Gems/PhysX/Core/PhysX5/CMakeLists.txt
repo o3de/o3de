@@ -17,7 +17,16 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
-    ly_add_target(NAME physx_5_dependency NAMESPACE Gem INTERFACE BUILD_DEPENDENCIES INTERFACE ciso646-include 3rdParty::PhysX5)
+    # The PhysX 5 SDK static libraries have circular dependencies on each other, FindPhysX5.cmake orders 
+    # them as a best-effort chain, but that isn't always sufficient for a single-pass GNU ld/lld link.
+    if(PAL_PLATFORM_NAME STREQUAL "Linux")
+        set(physx_5_link_group_start "-Wl,--start-group")
+        set(physx_5_link_group_end "-Wl,--end-group")
+    else()
+        set(physx_5_link_group_start)
+        set(physx_5_link_group_end)
+    endif()
+    ly_add_target(NAME physx_5_dependency NAMESPACE Gem INTERFACE BUILD_DEPENDENCIES INTERFACE ciso646-include ${physx_5_link_group_start} 3rdParty::PhysX5 ${physx_5_link_group_end})
     set(physx_dependency physx_5_dependency)
     set(physx_files ../Code/physx_files.cmake)
     set(physx_module_files physx_module_files.cmake)
