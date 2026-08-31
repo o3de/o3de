@@ -1,0 +1,291 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// ----------------------------------------------------------------------------
+// SRGs for the HARDWARE MESH-SHADER meshlet render path (Phase 5).
+//
+// Deliberately SEPARATE from MeshletsPerObjectRenderSrg.azsli (the VS/vertex-pull
+// path) so the mesh-shader shaders are fully isolated from the existing 5 render
+// shaders — no shared-SRG layout churn, no risk to the vertex-pull path.
+//
+// The mesh shader runs ONE threadgroup per cluster (DispatchMesh(clusterCount,1,1)),
+// reads that cluster's descriptor, transforms its vertices, and emits its triangles.
+// The cluster descriptor + triangle + indirection buffers already exist on the GPU
+// (created in MeshletsRenderObjectPackInit for the compute path); the feature
+// processor binds them to MeshletsMeshObjectSrg. The decode mirrors the compute
+// reference in MeshletsCompute.azsl (GetGlobalVertexIndicesAndTriOffset).
+// ----------------------------------------------------------------------------
+
+#include <scenesrg_all.srgi>
+
+// ClusterBoundsRecord (sphere + backface cone) + the pure frustum/cone/HiZ cull
+// math -- shared with the compute GPU-cull path (MeshletsCull.azsl). Used by
+// MeshletsCullClustersAS (Phase 5, opt-in r_meshletsMsCullAS); dead-stripped from
+// the default (non-AS) MeshletsForwardPassMS entry point.
+#include <MeshletsClusterCullMath.azsli>
+
+//! Per-mesh, re-based cluster descriptor (mesh-local offsets). Layout matches the
+//! ClusterDescriptor / MeshletDescriptor used everywhere else in the gem.
+struct MeshletDescriptor
+{
+    uint m_vertexOffset;      //!< Into m_meshletsIndicesLookup (uint steps).
+    uint m_triangleOffset;    //!< Into m_meshletsTriangles (uint steps; one uint = 3x8-bit).
+    uint m_vertexCount;       //!< Vertices in this cluster (<= 128).
+    uint m_triangleCount;     //!< Triangles in this cluster (<= 256).
+};
+
+// ----------------------------------------------------------------------------
+// Per-draw (per-instance): the objectId used to fetch this instance's transform
+// from the scene-wide arrays. Non-instanced path for the first mesh-shader slice.
+// ----------------------------------------------------------------------------
+ShaderResourceGroup MeshletsMeshInstanceSrg : SRG_PerDraw
+{
+    uint m_objectId;
+
+    // ---- Phase 5 AS/triangle cull (opt-in r_meshletsMsCullAS) ----
+    // Per-instance cull params consumed ONLY by MeshletsCullClustersAS. Unused (dead-
+    // stripped) by the default MeshletsForwardPassMS entry point, so their presence
+    // here is layout-only for that path -- byte-identical rendered output when the
+    // AS-cull PSO isn't the one bound. Mirrors MeshletsCullSrg's per-instance fields
+    // (MeshletsCull.azsl) so the AS composes the same MeshletsClusterCullMath.azsli
+    // functions the same way.
+    float4 m_worldRow0;
+    float4 m_worldRow1;
+    float4 m_worldRow2;
+    float4 m_frustumPlanes[6];
+    float4 m_cameraPosition;
+    row_major float4x4 m_worldToClip;
+    //! The last-completed slot of the persistent HiZ pyramid (previous frame's depth,
+    //! reduced), bound by UpdateMeshShaderCullInstance when the HiZ debug toggle is on.
+    //! Left unbound otherwise -- GetDimensions then reads 0x0 and the HiZ test safely
+    //! no-ops, same "optional" contract as MeshletsCullSrg::m_hiZTexture.
+    Texture2D<float> m_hiZTexture;
+    uint m_doFrustumCull;
+    uint m_doConeCull;
+    uint m_doHiZCull;
+
+    // ---- Phase 6 cluster-DAG cut (opt-in r_meshletsDagLod) ----
+    //! Render-target size in pixels. Also feeds the per-triangle micro/big-triangle
+    //! gates (replacing their old fixed 1080p reference when nonzero). Set every
+    //! frame by UpdateMeshShaderCullInstance regardless of the DAG toggle.
+    float2 m_viewportSize;
+    //! cot(FovY/2) * viewportHeight * 0.5 — the pure-projection pixel scale for
+    //! MeshletsDagProjectedErrorPx (rotation-independent).
+    float m_dagProjScale;
+    //! Cut threshold in pixels (r_meshletsDagErrorPx).
+    float m_dagErrorPx;
+    //! 0 = cut disabled: only LEAF clusters (< MeshletsMeshObjectSrg::m_leafClusterCount)
+    //! are drawable, so interior DAG clusters can never double-draw even while the
+    //! cut constants are not yet valid (creation frames, toggle transitions).
+    uint m_doDagCut;
+
+    // ---- Two-pass occlusion (opt-in r_meshletsTwoPassOcclusion) ----
+    //! Per-cluster visibility ledger: the m_frameId of the last frame each cluster
+    //! was dispatched. Frame-counter encoding => no per-frame clear pass. UAV,
+    //! written only by the AS in visMode 1/2; bound (non-null) ONLY on the depth
+    //! (pass 1) and late-depth (pass 2) instance SRGs -- forward/motion/shadow run
+    //! visMode 0 and never touch it.
+    RWStructuredBuffer<uint> m_clusterVisFrame;
+    //! Monotonic frame counter (wrap-safe: equality test only).
+    uint m_frameId;
+    //! 0 = ledger untouched; 1 = pass 1 (prev-frame HiZ; record every dispatched
+    //! cluster); 2 = pass 2 (skip clusters already recorded this frame, test the
+    //! rest against THIS frame's pyramid, record its own survivors).
+    uint m_visMode;
+}
+
+// ----------------------------------------------------------------------------
+// Per-object: cluster + vertex data shared by every instance of this mesh.
+//
+// Vertex streams are StructuredBuffer<T> (not typed Buffer<T>) for the same
+// AMD/DX12 NumElements=1 reason documented in MeshletsPerObjectRenderSrg.azsli.
+// ----------------------------------------------------------------------------
+ShaderResourceGroup MeshletsMeshObjectSrg : SRG_PerObject
+{
+    uint m_vertexCount;          //!< Total mesh vertices (bounds clamp).
+    uint m_clusterCount;         //!< Clusters the AS tests: leaf count, or the FULL
+                                 //!< leaf+interior DAG range when the DAG cut is active.
+    uint m_meshletDebugColor;    //!< 0 = PBR, 1 = flat per-cluster color, 2 = DAG level color.
+    uint m_leafClusterCount;     //!< Phase 6: leaf-only count (== m_clusterCount for v2
+                                 //!< packs; was m_pad0). The AS refuses interior clusters
+                                 //!< whenever the DAG cut is off.
+
+    //! Per-cluster descriptors, re-based to mesh-local offsets. Indexed by SV_GroupID.
+    StructuredBuffer<MeshletDescriptor> m_meshletsDescriptors;
+
+    //! Per-cluster triangle lists: one uint = 3x8-bit cluster-local vertex indices
+    //! (top byte unused). Slice for cluster c starts at descriptor.m_triangleOffset.
+    //! StructuredBuffer (not typed Buffer<uint>) — the typed-buffer SRV path mis-sets
+    //! NumElements on this AMD/DX12 combo (see MeshletsPerObjectRenderSrg.azsli).
+    StructuredBuffer<uint> m_meshletsTriangles;
+
+    //! Cluster-local vertex index -> mesh global vertex index. Slice for cluster c
+    //! starts at descriptor.m_vertexOffset.
+    StructuredBuffer<uint> m_meshletsIndicesLookup;
+
+    //! Per-cluster bounds (sphere + backface cone), indexed by the SAME cluster id
+    //! as m_meshletsDescriptors (mesh-local, re-based). Read ONLY by
+    //! MeshletsCullClustersAS's per-cluster cull test; unused by the default MS entry.
+    StructuredBuffer<ClusterBoundsRecord> m_clusterBounds;
+
+    //! Phase 6 cluster DAG (pack v3): per-cluster cut records, parallel to
+    //! m_meshletsDescriptors (leaf-first). Unbound for v2 packs — reads then return
+    //! zeros (selfError 0 => reads as "leaf"), and the cut is never enabled anyway.
+    StructuredBuffer<MeshletDagNodeRecord> m_dagNodes;
+
+    // ---- Phase 7 streaming (r_meshletsStreaming; v4 packs, AS path only) ----
+    //! 0 = monolithic fetch; 1 = every AS-path cluster fetches from the page pool.
+    //! The feature processor sets 1 ONLY once all of this mesh's always-resident
+    //! (interior) pages are uploaded, so a mapped interior always exists as the
+    //! coarse fallback.
+    uint m_pagedMode;
+    //! Phase 4 VRAM reclaim: 1 = this mesh has NO monolithic geometry buffers
+    //! (r_meshletsStreamingExclusive at load). Until m_pagedMode goes live the AS
+    //! must reject every cluster — a monolithic fallback fetch would read null SRVs.
+    uint m_pagedExclusive;
+    //! The single global page pool: fixed PageSlotU32s-word slots, layout
+    //! {header4}{PagedClusterRecord[clusterCount] as 4xu32}{triWords}{indirection}
+    //! {pos|norm|tan|bitan|uv floats as u32 bits}. See MeshletPackFormat.h.
+    StructuredBuffer<uint> m_pagePool;
+    //! Per-cluster paged map, rebuilt by the CPU on any residency change:
+    //!   [31] group-complete: leaf = every page of my simplification group's leaves
+    //!        is resident; interior (level-1) = my LEAF children's group complete;
+    //!        interior (level-2+) = always 1 (children are always-resident).
+    //!   [30] valid: this cluster's own page is resident (slot/local meaningful).
+    //!   [29:8] slot, [7:0] page-local cluster index.
+    StructuredBuffer<uint> m_pagedClusterMap;
+
+    //! Mesh vertex streams (indexed by the global mesh vertex index).
+    StructuredBuffer<float>  m_positions;   //!< 3 floats/vertex.
+    StructuredBuffer<float>  m_normals;     //!< 3 floats/vertex.
+    //! w = bitangent winding sign. The mesh-shader path reconstructs the bitangent
+    //! as sign * cross(N, T) in the pixel shader, so there is deliberately NO
+    //! m_bitangents stream here: azslc runs with --strip-unused-srgs, and an unused
+    //! member would be stripped from the layout while C++ still bound it, failing
+    //! the whole MeshletsMeshObjectSrg build (same trap documented on m_clusterBounds).
+    StructuredBuffer<float4> m_tangents;    //!< 1 float4/vertex (w = winding).
+    StructuredBuffer<float2> m_uvs;         //!< 1 float2/vertex.
+
+    float3 GetPosition(uint vertexIndex)
+    {
+        uint safe = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        uint i = safe * 3u;
+        return float3(m_positions[i], m_positions[i + 1u], m_positions[i + 2u]);
+    }
+
+    float3 GetNormal(uint vertexIndex)
+    {
+        uint safe = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        uint i = safe * 3u;
+        return float3(m_normals[i], m_normals[i + 1u], m_normals[i + 2u]);
+    }
+
+    float4 GetTangent(uint vertexIndex)
+    {
+        uint safe = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        return m_tangents[safe];
+    }
+
+    float2 GetUV(uint vertexIndex)
+    {
+        uint safe = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        return m_uvs[safe];
+    }
+
+    // ---- Phase 7 paged fetch helpers (AS-culled MS entries only) ----
+    // MUST equal AZ::Meshlets::PageSlotU32s (MeshletPackFormat.h):
+    // 4 + 16*4 + 16*256 + 16*128 + 16*128*15.
+    #define MESHLETS_PAGE_SLOT_U32S 36932
+
+    //! Resolved view of one paged cluster: absolute pool word offsets.
+    struct MeshletsPagedCluster
+    {
+        uint m_valid;
+        uint m_triAt;         //!< First triangle word of THIS cluster.
+        uint m_indirAt;       //!< First indirection entry of THIS cluster.
+        uint m_posAt;         //!< Page vertex-stream bases (index with page-local ids).
+        uint m_normAt;
+        uint m_tanAt;
+        uint m_bitanAt;
+        uint m_uvAt;
+    };
+
+    MeshletsPagedCluster GetPagedCluster(uint clusterId)
+    {
+        MeshletsPagedCluster v = (MeshletsPagedCluster)0;
+        const uint map = m_pagedClusterMap[clusterId];
+        v.m_valid = (map >> 30) & 1u;
+        if (v.m_valid == 0u)
+        {
+            return v;
+        }
+        const uint slot  = (map >> 8) & 0x3FFFFFu;
+        const uint local = map & 0xFFu;
+        const uint base  = slot * MESHLETS_PAGE_SLOT_U32S;
+        const uint pageClusterCount = m_pagePool[base + 0];
+        const uint pageVertexCount  = m_pagePool[base + 1];
+        const uint pageTriWords     = m_pagePool[base + 2];
+        const uint pageIndirCount   = m_pagePool[base + 3];
+        const uint recsAt = base + 4u;
+        const uint rec = recsAt + local * 4u;
+        const uint trisAt  = recsAt + pageClusterCount * 4u;
+        const uint indirAt = trisAt + pageTriWords;
+        const uint posAt   = indirAt + pageIndirCount;
+        v.m_triAt   = trisAt + m_pagePool[rec + 0];
+        v.m_indirAt = indirAt + m_pagePool[rec + 2];
+        v.m_posAt   = posAt;
+        v.m_normAt  = posAt   + 3u * pageVertexCount;
+        v.m_tanAt   = v.m_normAt  + 3u * pageVertexCount;
+        v.m_bitanAt = v.m_tanAt   + 4u * pageVertexCount;
+        v.m_uvAt    = v.m_bitanAt + 3u * pageVertexCount;
+        return v;
+    }
+
+    uint   GetPagedTriangleWord(MeshletsPagedCluster v, uint t) { return m_pagePool[v.m_triAt + t]; }
+    uint   GetPagedVertexId(MeshletsPagedCluster v, uint localV) { return m_pagePool[v.m_indirAt + localV]; }
+    float3 GetPagedPosition(MeshletsPagedCluster v, uint pageVertex)
+    {
+        const uint i = v.m_posAt + pageVertex * 3u;
+        return float3(asfloat(m_pagePool[i]), asfloat(m_pagePool[i + 1u]), asfloat(m_pagePool[i + 2u]));
+    }
+    float3 GetPagedNormal(MeshletsPagedCluster v, uint pageVertex)
+    {
+        const uint i = v.m_normAt + pageVertex * 3u;
+        return float3(asfloat(m_pagePool[i]), asfloat(m_pagePool[i + 1u]), asfloat(m_pagePool[i + 2u]));
+    }
+    float4 GetPagedTangent(MeshletsPagedCluster v, uint pageVertex)
+    {
+        const uint i = v.m_tanAt + pageVertex * 4u;
+        return float4(asfloat(m_pagePool[i]), asfloat(m_pagePool[i + 1u]),
+                      asfloat(m_pagePool[i + 2u]), asfloat(m_pagePool[i + 3u]));
+    }
+    float3 GetPagedBiTangent(MeshletsPagedCluster v, uint pageVertex)
+    {
+        const uint i = v.m_bitanAt + pageVertex * 3u;
+        return float3(asfloat(m_pagePool[i]), asfloat(m_pagePool[i + 1u]), asfloat(m_pagePool[i + 2u]));
+    }
+    float2 GetPagedUV(MeshletsPagedCluster v, uint pageVertex)
+    {
+        const uint i = v.m_uvAt + pageVertex * 2u;
+        return float2(asfloat(m_pagePool[i]), asfloat(m_pagePool[i + 1u]));
+    }
+
+    //! Stable vivid per-cluster color (matches the vertex-pull path's MeshletDebugColor).
+    float3 MeshletDebugColor(uint clusterId)
+    {
+        uint h = clusterId;
+        h ^= h >> 16; h *= 0x7feb352du; h ^= h >> 15; h *= 0x846ca68bu; h ^= h >> 16;
+        float3 c = float3(
+            ( h        & 0x3FFu) / 1023.0,
+            ((h >> 10) & 0x3FFu) / 1023.0,
+            ((h >> 20) & 0x3FFu) / 1023.0);
+        return 0.25 + 0.75 * c;
+    }
+}

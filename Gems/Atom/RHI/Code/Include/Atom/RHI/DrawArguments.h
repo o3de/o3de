@@ -44,6 +44,12 @@ namespace AZ::RHI
         {
         }
 
+        DrawArguments(const DispatchMeshDirect& dispatchMesh)
+            : m_type{ DrawType::DispatchMesh }
+            , m_dispatchMesh{ dispatchMesh }
+        {
+        }
+
         //! Returns the device-specific DeviceDrawArguments for the given index
         DeviceDrawArguments GetDeviceDrawArguments(int deviceIndex) const
         {
@@ -55,6 +61,8 @@ namespace AZ::RHI
                 return DeviceDrawArguments(m_linear);
             case DrawType::Indirect:
                 return DeviceDrawArguments(DeviceDrawIndirect{ m_indirect.m_maxSequenceCount, m_indirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_indirect.m_indirectBufferByteOffset, m_indirect.m_countBuffer ? m_indirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_indirect.m_countBufferByteOffset });
+            case DrawType::DispatchMesh:
+                return DeviceDrawArguments(m_dispatchMesh);
             default:
                 return DeviceDrawArguments();
             }
@@ -65,6 +73,7 @@ namespace AZ::RHI
             DrawIndexed m_indexed;
             DrawLinear m_linear;
             DrawIndirect m_indirect;
+            DispatchMeshDirect m_dispatchMesh;
         };
     };
 }

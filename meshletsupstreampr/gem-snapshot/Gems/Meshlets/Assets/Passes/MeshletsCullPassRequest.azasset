@@ -1,0 +1,11 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "MeshletsGpuCullParentPass",
+        "TemplateName": "MeshletsGpuCullParentPassTemplate",
+        "Enabled": true,
+        "Connections": []
+    }
+}

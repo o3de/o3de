@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsCullComputePassTemplate",
+            "PassClass": "MultiDispatchComputePass",
+            // GPU cluster-cull compute. Instantiated TWICE by the parent below:
+            //   - MeshletsCullComputePass: runs the per-instance cull dispatches and
+            //     declares each args buffer ReadWrite (UAV write).
+            //   - MeshletsCullBarrierPass: runs NO dispatches and declares the same
+            //     args buffers Indirect (DrawIndirect), so the frame graph emits the
+            //     UAV->IndirectArgument transition before the standard raster passes
+            //     consume them. The feature processor drives the difference per name.
+            // No slots / connections: compute-only, no render targets. The shader has
+            // no PassSrg (all data is per-instance MeshletsCullSrg), which ComputePass
+            // handles gracefully.
+            "Slots": [],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/MeshletsCull.shader"
+                }
+            },
+            "Connections": []
+        }
+    }
+}

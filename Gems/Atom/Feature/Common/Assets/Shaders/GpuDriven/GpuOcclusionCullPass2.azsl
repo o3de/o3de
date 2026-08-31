@@ -1,0 +1,171 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Phase 7: two-pass occlusion culling -- pass 2.
+//
+// Handles everything pass 1 did NOT already redraw (its batch bit is not set): frustum test, then a
+// real Hi-Z occlusion test against pass 1's OWN depth output for this frame (not DepthPrePass -- see
+// HiZGeneratePersistentTemplate / GpuTwoPassOcclusionCull.pass). Anything that survives is marked
+// visible in the persistent bitfield so pass 1 redraws it next frame without re-testing occlusion.
+//
+// The bitfield is only ever SET here, never cleared -- see OcclusionVisibility.azsli and the
+// GpuTwoPassOcclusionCull.pass file header for why that is a deliberate, conservative simplification
+// (never wrongly culls; caps how much a batch that becomes newly occluded stops costing over time).
+//
+// Wired but OFF by default: see GpuCullPass::CompileResources / r_gpuTwoPassOcclusionCulling.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/GpuDriven/GpuInstanceData.azsli>
+#include <Atom/Features/GpuDriven/GpuDrivenConstants.azsli>
+#include <Atom/Features/GpuDriven/OcclusionVisibility.azsli>
+#include <Atom/Features/GpuDriven/GpuOcclusionCullCommon.azsli>
+#include <Atom/Features/IndirectRendering.azsli>
+
+#define GPU_CULL_THREAD_GROUP_SIZE 64
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Input: Hi-Z pyramid built from pass 1's own depth output this frame.
+    Texture2D<float> m_hiZTexture;
+
+    // Persistent, cross-frame: read (to skip what pass 1 already drew) AND written (to mark newly
+    // proven-visible batches for next frame's pass 1). Same physical buffer as pass 1's -- see
+    // GpuTwoPassOcclusionCull.pass's Connections for GpuOcclusionCullPass2.
+    RWStructuredBuffer<uint> m_visibilityBitfield;
+
+    // Output: compact survivor list of (instanceIndex, batchId) pairs. Scatter consumes it.
+    RWStructuredBuffer<uint2> m_survivors;
+
+    // Output: atomic length of the survivor list.
+    RWByteAddressBuffer m_survivorCount;
+
+    // Output: per-batch visible-instance count (atomic increment). Build prefix-sums these.
+    RWStructuredBuffer<uint> m_batchCount;
+};
+
+[numthreads(GPU_CULL_THREAD_GROUP_SIZE, 1, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint instanceIndex = dispatchThreadID.x;
+    if (instanceIndex >= SceneSrg::m_gpuInstanceCount)
+    {
+        return;
+    }
+
+    GpuInstanceData instance = SceneSrg::m_gpuInstanceData[instanceIndex];
+
+    // Skip released/inactive slots and skinned meshes (handled by CPU path)
+    if (instance.m_flags & (GpuInstanceFlag_Released | GpuInstanceFlag_Skinned))
+    {
+        return;
+    }
+
+    // Already drawn by pass 1 this frame -- nothing left to do for it here.
+    if (IsBatchMarkedVisible(PassSrg::m_visibilityBitfield, instance.m_batchId))
+    {
+        return;
+    }
+
+    float4 frustumPlanes[6];
+    ExtractFrustumPlanes(ViewSrg::m_viewProjectionMatrix, frustumPlanes);
+
+    if (!FrustumTestSphere(frustumPlanes, instance.m_boundingSphereCenter, instance.m_boundingSphereRadius))
+    {
+        return;
+    }
+
+    // Hi-Z occlusion test against pass 1's own depth output for this frame (see file header).
+    // Same conservative construction as the single-pass kernel: rounds mip selection UP, and skips
+    // the test entirely (never culls) if no Hi-Z texture is bound.
+    {
+        uint hiZW, hiZH;
+        PassSrg::m_hiZTexture.GetDimensions(hiZW, hiZH);
+
+        if (hiZW > 0 && hiZH > 0)
+        {
+            float4 screenAABB = ProjectSphereToScreenAABB(
+                instance.m_boundingSphereCenter,
+                instance.m_boundingSphereRadius,
+                ViewSrg::m_viewProjectionMatrix);
+
+            float hiZDepth = SampleHiZ(screenAABB, PassSrg::m_hiZTexture);
+
+            float3 viewForward = -float3(ViewSrg::m_viewMatrix[2][0], ViewSrg::m_viewMatrix[2][1], ViewSrg::m_viewMatrix[2][2]);
+
+            float closestDepth = ComputeClosestDepth(
+                instance.m_boundingSphereCenter,
+                instance.m_boundingSphereRadius,
+                ViewSrg::m_viewProjectionMatrix,
+                viewForward);
+
+            if (closestDepth < hiZDepth)
+            {
+                return;
+            }
+        }
+    }
+
+    // LOD selection (same as pass 1 / the single-pass kernel).
+    float screenCoverage = ComputeScreenCoverage(
+        instance.m_boundingSphereCenter,
+        instance.m_boundingSphereRadius,
+        ViewSrg::m_worldPosition,
+        ViewSrg::m_projectionMatrix);
+
+    static const float LOD_CROSSFADE_MARGIN = 0.05;
+
+    if (instance.m_lodCount > 1)
+    {
+        float expandedMin = instance.m_lodScreenCoverageMin - LOD_CROSSFADE_MARGIN;
+        float expandedMax = instance.m_lodScreenCoverageMax + LOD_CROSSFADE_MARGIN;
+
+        if (screenCoverage < expandedMin || screenCoverage > expandedMax)
+        {
+            return;
+        }
+
+        float crossFadeAlpha = 1.0;
+
+        if (screenCoverage < instance.m_lodScreenCoverageMin)
+        {
+            crossFadeAlpha = saturate((screenCoverage - expandedMin) / LOD_CROSSFADE_MARGIN);
+        }
+        else if (screenCoverage > instance.m_lodScreenCoverageMax)
+        {
+            crossFadeAlpha = saturate((expandedMax - screenCoverage) / LOD_CROSSFADE_MARGIN);
+        }
+
+        if (crossFadeAlpha < 0.01)
+        {
+            return;
+        }
+    }
+
+    // Newly proven visible this frame -- seed next frame's pass 1 so it does not need an occlusion
+    // test to redraw it.
+    MarkBatchVisible(PassSrg::m_visibilityBitfield, instance.m_batchId);
+
+    // Instance survived culling -- record it for batch collection.
+    uint batchId = instance.m_batchId;
+
+    InterlockedAdd(PassSrg::m_batchCount[batchId], 1);
+
+    uint survivorSlot;
+    PassSrg::m_survivorCount.InterlockedAdd(0, 1, survivorSlot);
+
+    uint maxSurvivors;
+    uint survivorStride;
+    PassSrg::m_survivors.GetDimensions(maxSurvivors, survivorStride);
+    if (survivorSlot >= maxSurvivors)
+    {
+        return;
+    }
+    PassSrg::m_survivors[survivorSlot] = uint2(instanceIndex, batchId);
+}

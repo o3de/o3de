@@ -1,0 +1,168 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{5AA2AB27-B2C7-5629-9FC7-C4B88E1CFF3A}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletscompute.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{E5BE84EA-07D3-548E-A3D1-65C9C6CCB0E9}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletsdepthpass.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{9713030B-DA68-5B7B-B6C7-9E819EDD1A55}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletsparent.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{CFEC8FBF-AEEF-5278-89B1-1ACF8F2069EC}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletspassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{72C22F4E-0C76-5C3D-A1B1-F40EF088D6F4}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletspasstemplates.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{AE28CB16-3B93-5BE3-A6ED-E7B22813F661}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/meshletsrender.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{D1BDE103-3C4D-5014-B75C-D748451480F5}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletscompute.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{C5901328-3EFC-524A-8111-1A0F817F52BB}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletsdebugrendershader.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{9862BD19-3FF7-527D-8B8C-C01339B7B51E}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletsdepthpass.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{72466965-F3B1-58D8-B6B1-8D4885052735}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletsforwardpass.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{ECCC5A78-AEB6-5F2C-BB1E-3735328A6970}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletsmotionvector.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{E15F077A-C597-5AE4-8C84-E7B1AAE4CD66}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/meshletsshadowpass.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{B248B72E-9DAF-56A7-B9A8-ED087CE332EA}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletscull.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{0CE11C5A-CFBD-53E9-9F30-DB589A01BACC}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsdepthmeshshader.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{6632473A-F6B4-5752-95FE-199B8950D928}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsforwardmeshshader.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{AB010F46-C67A-5DFF-A3B5-5FDF5E2161D4}"
+            },
+            "platformFlags": 1,
+            "pathHint": "passes/meshletscullcompute.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{57FB2826-FD79-5C65-8539-87717F076DCA}"
+            },
+            "platformFlags": 1,
+            "pathHint": "passes/meshletsgpucull.pass"
+        },
+        {
+            "assetId": {
+                "guid": "{2E98F79E-827D-5B61-82F9-6FC1057DA519}"
+            },
+            "platformFlags": 1,
+            "pathHint": "passes/meshletscullpassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{2C1240E3-25DF-5A17-8F4D-CAC6DF0000E2}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsdepthmeshshaderculled.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{41F4CCD4-C867-50F0-878F-EB6F220D85F6}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsforwardmeshshaderculled.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{FD613FEA-C3FE-5176-B637-A412575680F5}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsmotionvectormeshshader.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{894E94F7-979C-5226-B8D5-59B26DA9FEE9}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsmotionvectormeshshaderculled.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{FFC976A3-550C-5F7B-A846-B51C70ACD0E3}"
+            },
+            "platformFlags": 1,
+            "pathHint": "shaders/meshletsshadowmeshshader.azshader"
+        }
+    ]
+}

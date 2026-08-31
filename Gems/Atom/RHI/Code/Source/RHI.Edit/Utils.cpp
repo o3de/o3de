@@ -312,7 +312,20 @@ namespace AZ::RHI
         uint32_t exitCode = 0;
         bool timedOut = false;
 
-        const AZStd::sys_time_t maxWaitTimeSeconds = 300;
+        // 300s was too short for the heaviest shaders in this tree. The standardmultilayerpbr and
+        // enhancedpbr material types take 10-11 minutes of ProcessJob time each even on the host
+        // platform, and a single DXC invocation for one of their pixel shaders can exceed five
+        // minutes on a loaded machine -- which is normal here, since the AssetProcessor runs a
+        // dozen builders at once.
+        //
+        // The failure was indistinguishable from a compile error in the log ("Could not compile the
+        // shader function PixelShader"), with the timeout line several entries earlier, so it read
+        // as broken shader source rather than a deadline. 13 assets failed this way on an otherwise
+        // clean xbox build.
+        //
+        // Raising a timeout only allows more time before erroring, so it cannot mask a genuine
+        // failure -- a real compile error still returns promptly with diagnostics.
+        const AZStd::sys_time_t maxWaitTimeSeconds = 1800;
         const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
         const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
@@ -418,6 +431,10 @@ namespace AZ::RHI
             return RHI::ShaderStage::Vertex;
         case ShaderHardwareStage::RayTracing:
             return RHI::ShaderStage::RayTracing;
+        case ShaderHardwareStage::Mesh:
+            return RHI::ShaderStage::Mesh;
+        case ShaderHardwareStage::Amplification:
+            return RHI::ShaderStage::Amplification;
         }
         AZ_Assert(false, "Unable to find RHI Shader stage given RPI ShaderStageType %d", stageType);
         return RHI::ShaderStage::Unknown;

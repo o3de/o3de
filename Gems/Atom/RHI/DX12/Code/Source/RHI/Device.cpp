@@ -15,6 +15,8 @@
 #include <RHI/Fence.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -23,6 +25,23 @@
 #include <AzCore/Memory/AllocatorInstance.h>
 
 #include <Atom/RHI.Reflect/DX12/DX12Bus.h>
+
+// ---- Phase-0 throwaway hardware mesh-shader spike (REMOVE after validation) ----
+// Set to 1 to compile + run a one-shot D3D12 mesh-shader smoke test during device
+// init: validates R1 (hand-rolled stream-subobject mesh PSO, since the vendored
+// d3dx12.h has no stream helpers), R2 (DispatchMesh via a QI'd ID3D12GraphicsCommandList6),
+// and no DEVICE_HUNG, by rendering a red fullscreen triangle to a 16x16 offscreen
+// RTV and reading back the centre pixel. Output goes to the "MeshSpike" trace window.
+//
+// VALIDATED 2026-06-22 on AMD RDNA: all green (PSO create OK, DispatchMesh OK,
+// no DEVICE_HUNG, centre pixel = red). Now DEACTIVATED but KEPT as the proven
+// reference implementation for the Phase-2 real stream-PSO + DispatchMesh path.
+// Uncomment the #define below to re-run the smoke test.
+// #define O3DE_MESH_SHADER_SPIKE 1
+#if defined(O3DE_MESH_SHADER_SPIKE)
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/vector.h>
+#endif
 
 namespace AZ
 {
@@ -143,6 +162,16 @@ namespace AZ
 
             m_commandQueueContext.Init(*this);
 
+            // First point at which both the native device and a real graphics queue exist, which is
+            // what a GPU profiler needs to create its timestamp query heap and resolve command lists.
+            // Null unless the Profiler gem is enabled and has already activated - this gem must not
+            // depend on it, so there is nothing to fall back to if the ordering goes the other way.
+            if (auto* gpuProfiler = AZ::Interface<AZ::Debug::GpuProfiler>::Get())
+            {
+                gpuProfiler->InitNativeDevice(
+                    GetDevice(), m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetPlatformQueue());
+            }
+
             m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(platLimitsDesc->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
 
             m_samplerCache.SetCapacity(SamplerCacheCapacity);
@@ -207,6 +236,276 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 #endif
+
+#if defined(O3DE_MESH_SHADER_SPIKE)
+        namespace
+        {
+            // One subobject in a D3D12 pipeline-state stream: a void*-aligned
+            // { type-tag, payload } pair. Hand-rolled because the vendored d3dx12.h
+            // has no CD3DX12_PIPELINE_STATE_STREAM helpers (plan risk R1).
+            template<typename T, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type>
+            struct alignas(void*) SpikeSubobject
+            {
+                D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_type = Type;
+                T m_value{};
+            };
+
+            AZStd::vector<uint8_t> SpikeLoadBlob(const char* path)
+            {
+                AZStd::vector<uint8_t> bytes;
+                AZ::IO::SystemFile file;
+                if (!file.Open(path, AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
+                {
+                    return bytes;
+                }
+                bytes.resize(static_cast<size_t>(file.Length()));
+                if (!bytes.empty())
+                {
+                    file.Read(bytes.size(), bytes.data());
+                }
+                file.Close();
+                return bytes;
+            }
+
+            // Throwaway: intentionally leaks its COM objects (runs once at startup).
+            void RunMeshShaderSpike(ID3D12DeviceX* device)
+            {
+                const char* msPath = "F:\\engine\\_spike\\tri_ms.dxil";
+                const char* psPath = "F:\\engine\\_spike\\tri_ps.dxil";
+                AZStd::vector<uint8_t> ms = SpikeLoadBlob(msPath);
+                AZStd::vector<uint8_t> ps = SpikeLoadBlob(psPath);
+                if (ms.empty() || ps.empty())
+                {
+                    AZ_TracePrintf("MeshSpike", "FAIL: could not load DXIL (ms=%zu ps=%zu) from %s\n", ms.size(), ps.size(), msPath);
+                    return;
+                }
+                AZ_TracePrintf("MeshSpike", "loaded DXIL ms=%zu ps=%zu bytes\n", ms.size(), ps.size());
+
+                // Empty root signature -- NO ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT (invalid for a mesh PSO).
+                D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
+                rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+                ID3DBlob* sigBlob = nullptr;
+                ID3DBlob* errBlob = nullptr;
+                HRESULT hr = D3D12SerializeRootSignature(&rsDesc, D3D_ROOT_SIGNATURE_VERSION_1, &sigBlob, &errBlob);
+                if (FAILED(hr))
+                {
+                    AZ_TracePrintf("MeshSpike", "FAIL: D3D12SerializeRootSignature hr=0x%08X\n", static_cast<unsigned>(hr));
+                    return;
+                }
+                ID3D12RootSignature* rootSig = nullptr;
+                hr = device->CreateRootSignature(0, sigBlob->GetBufferPointer(), sigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSig));
+                sigBlob->Release();
+                if (errBlob)
+                {
+                    errBlob->Release();
+                }
+                if (FAILED(hr))
+                {
+                    AZ_TracePrintf("MeshSpike", "FAIL: CreateRootSignature hr=0x%08X\n", static_cast<unsigned>(hr));
+                    return;
+                }
+
+                // R1: hand-rolled stream-subobject mesh PSO (MS + PS, no IA, no primitive topology).
+                struct MeshPsoStream
+                {
+                    SpikeSubobject<ID3D12RootSignature*, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE> m_rootSig;
+                    SpikeSubobject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS> m_ms;
+                    SpikeSubobject<D3D12_SHADER_BYTECODE, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS> m_ps;
+                    SpikeSubobject<D3D12_RASTERIZER_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER> m_raster;
+                    SpikeSubobject<D3D12_BLEND_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND> m_blend;
+                    SpikeSubobject<D3D12_DEPTH_STENCIL_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL> m_depth;
+                    SpikeSubobject<DXGI_SAMPLE_DESC, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC> m_sampleDesc;
+                    SpikeSubobject<UINT, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK> m_sampleMask;
+                    SpikeSubobject<D3D12_RT_FORMAT_ARRAY, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS> m_rtFormats;
+                } stream;
+
+                stream.m_rootSig.m_value = rootSig;
+                stream.m_ms.m_value.pShaderBytecode = ms.data();
+                stream.m_ms.m_value.BytecodeLength = ms.size();
+                stream.m_ps.m_value.pShaderBytecode = ps.data();
+                stream.m_ps.m_value.BytecodeLength = ps.size();
+
+                D3D12_RASTERIZER_DESC raster = {};
+                raster.FillMode = D3D12_FILL_MODE_SOLID;
+                raster.CullMode = D3D12_CULL_MODE_NONE;
+                raster.DepthClipEnable = TRUE;
+                stream.m_raster.m_value = raster;
+
+                D3D12_BLEND_DESC blend = {};
+                blend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+                stream.m_blend.m_value = blend;
+
+                D3D12_DEPTH_STENCIL_DESC depth = {};
+                depth.DepthEnable = FALSE;
+                depth.StencilEnable = FALSE;
+                stream.m_depth.m_value = depth;
+
+                stream.m_sampleDesc.m_value.Count = 1;
+                stream.m_sampleDesc.m_value.Quality = 0;
+                stream.m_sampleMask.m_value = 0xFFFFFFFFu;
+
+                D3D12_RT_FORMAT_ARRAY rtf = {};
+                rtf.NumRenderTargets = 1;
+                rtf.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+                stream.m_rtFormats.m_value = rtf;
+
+                D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = {};
+                streamDesc.SizeInBytes = sizeof(stream);
+                streamDesc.pPipelineStateSubobjectStream = &stream;
+                ID3D12PipelineState* pso = nullptr;
+                hr = device->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pso));
+                AZ_TracePrintf("MeshSpike", "R1 hand-rolled stream-PSO CreatePipelineState hr=0x%08X -> %s\n",
+                    static_cast<unsigned>(hr), SUCCEEDED(hr) ? "OK" : "FAIL");
+                if (FAILED(hr))
+                {
+                    return;
+                }
+
+                // 16x16 offscreen render target.
+                const UINT w = 16;
+                const UINT h = 16;
+                D3D12_HEAP_PROPERTIES defaultHeap = {};
+                defaultHeap.Type = D3D12_HEAP_TYPE_DEFAULT;
+                D3D12_RESOURCE_DESC texDesc = {};
+                texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+                texDesc.Width = w;
+                texDesc.Height = h;
+                texDesc.DepthOrArraySize = 1;
+                texDesc.MipLevels = 1;
+                texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                texDesc.SampleDesc.Count = 1;
+                texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+                texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+                ID3D12Resource* rtTex = nullptr;
+                hr = device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &texDesc,
+                    D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&rtTex));
+                if (FAILED(hr))
+                {
+                    AZ_TracePrintf("MeshSpike", "FAIL: CreateCommittedResource(rt) hr=0x%08X\n", static_cast<unsigned>(hr));
+                    return;
+                }
+
+                D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+                rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+                rtvHeapDesc.NumDescriptors = 1;
+                ID3D12DescriptorHeap* rtvHeap = nullptr;
+                device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+                D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+                device->CreateRenderTargetView(rtTex, nullptr, rtvHandle);
+
+                // Readback buffer sized to the texture's copyable footprint.
+                D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
+                UINT numRows = 0;
+                UINT64 rowSizeBytes = 0;
+                UINT64 totalBytes = 0;
+                device->GetCopyableFootprints(&texDesc, 0, 1, 0, &footprint, &numRows, &rowSizeBytes, &totalBytes);
+                D3D12_HEAP_PROPERTIES readbackHeap = {};
+                readbackHeap.Type = D3D12_HEAP_TYPE_READBACK;
+                D3D12_RESOURCE_DESC bufDesc = {};
+                bufDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+                bufDesc.Width = totalBytes;
+                bufDesc.Height = 1;
+                bufDesc.DepthOrArraySize = 1;
+                bufDesc.MipLevels = 1;
+                bufDesc.Format = DXGI_FORMAT_UNKNOWN;
+                bufDesc.SampleDesc.Count = 1;
+                bufDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+                ID3D12Resource* readback = nullptr;
+                hr = device->CreateCommittedResource(&readbackHeap, D3D12_HEAP_FLAG_NONE, &bufDesc,
+                    D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&readback));
+                if (FAILED(hr))
+                {
+                    AZ_TracePrintf("MeshSpike", "FAIL: CreateCommittedResource(readback) hr=0x%08X\n", static_cast<unsigned>(hr));
+                    return;
+                }
+
+                // Independent DIRECT queue / allocator / list (isolated from Atom's).
+                D3D12_COMMAND_QUEUE_DESC qDesc = {};
+                qDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                ID3D12CommandQueue* queue = nullptr;
+                device->CreateCommandQueue(&qDesc, IID_PPV_ARGS(&queue));
+                ID3D12CommandAllocator* alloc = nullptr;
+                device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&alloc));
+                ID3D12GraphicsCommandList* list = nullptr;
+                device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, alloc, nullptr, IID_PPV_ARGS(&list));
+
+                // R2: reach DispatchMesh via QI to List6 (do NOT bump the base typedef).
+                ID3D12GraphicsCommandList6* list6 = nullptr;
+                hr = list->QueryInterface(IID_PPV_ARGS(&list6));
+                AZ_TracePrintf("MeshSpike", "R2 QueryInterface(ID3D12GraphicsCommandList6) hr=0x%08X -> %s\n",
+                    static_cast<unsigned>(hr), SUCCEEDED(hr) ? "OK" : "FAIL");
+                if (FAILED(hr))
+                {
+                    return;
+                }
+
+                list6->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+                const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+                list6->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+                D3D12_VIEWPORT vp = { 0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h), 0.0f, 1.0f };
+                list6->RSSetViewports(1, &vp);
+                D3D12_RECT scissor = { 0, 0, static_cast<LONG>(w), static_cast<LONG>(h) };
+                list6->RSSetScissorRects(1, &scissor);
+                list6->SetGraphicsRootSignature(rootSig);
+                list6->SetPipelineState(pso);
+                list6->DispatchMesh(1, 1, 1);
+
+                D3D12_RESOURCE_BARRIER barrier = {};
+                barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                barrier.Transition.pResource = rtTex;
+                barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+                barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                list6->ResourceBarrier(1, &barrier);
+
+                D3D12_TEXTURE_COPY_LOCATION dst = {};
+                dst.pResource = readback;
+                dst.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+                dst.PlacedFootprint = footprint;
+                D3D12_TEXTURE_COPY_LOCATION src = {};
+                src.pResource = rtTex;
+                src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+                src.SubresourceIndex = 0;
+                list6->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+                list6->Close();
+
+                ID3D12CommandList* lists[] = { list6 };
+                queue->ExecuteCommandLists(1, lists);
+                ID3D12Fence* fence = nullptr;
+                device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+                queue->Signal(fence, 1);
+                if (fence->GetCompletedValue() < 1)
+                {
+                    HANDLE evt = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+                    if (evt)
+                    {
+                        fence->SetEventOnCompletion(1, evt);
+                        WaitForSingleObject(evt, 5000);
+                        CloseHandle(evt);
+                    }
+                }
+
+                const HRESULT drr = device->GetDeviceRemovedReason();
+                AZ_TracePrintf("MeshSpike", "DispatchMesh submitted+waited. GetDeviceRemovedReason=0x%08X -> %s\n",
+                    static_cast<unsigned>(drr), (drr == S_OK) ? "OK (no hang)" : "DEVICE REMOVED/HUNG");
+
+                void* mapped = nullptr;
+                D3D12_RANGE readRange = { 0, static_cast<SIZE_T>(totalBytes) };
+                if (SUCCEEDED(readback->Map(0, &readRange, &mapped)) && mapped)
+                {
+                    const UINT rowPitch = footprint.Footprint.RowPitch;
+                    const uint8_t* base = static_cast<const uint8_t*>(mapped);
+                    const uint8_t* px = base + (h / 2) * rowPitch + (w / 2) * 4;
+                    const bool isRed = (px[0] > 200 && px[1] < 50 && px[2] < 50);
+                    AZ_TracePrintf("MeshSpike", "centre pixel RGBA=(%u,%u,%u,%u) EXPECT ~(255,0,0,255) red -> %s\n",
+                        px[0], px[1], px[2], px[3], isRed ? "TRIANGLE RENDERED (PASS)" : "NOT RED (FAIL)");
+                    D3D12_RANGE noWrite = { 0, 0 };
+                    readback->Unmap(0, &noWrite);
+                }
+                AZ_TracePrintf("MeshSpike", "spike complete\n");
+            }
+        } // anonymous namespace
+#endif // O3DE_MESH_SHADER_SPIKE
 
         void Device::InitFeatures()
         {
@@ -316,6 +615,32 @@ namespace AZ
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif
 
+            // Mesh-shader capability probe (Phase 0 spike — log only; the persistent
+            // m_features.m_meshShader bit lands in Phase 1). Hardware mesh+amplification
+            // shaders need OPTIONS7.MeshShaderTier >= TIER_1 AND Shader Model >= 6.5.
+            {
+                D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7{};
+                const bool meshTierOk =
+                    SUCCEEDED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7))) &&
+                    options7.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED;
+
+                // CheckFeatureSupport returns min(requested, supported), so querying 6.5
+                // yields exactly 6.5 when supported and a lower value otherwise.
+                D3D12_FEATURE_DATA_SHADER_MODEL sm65{ D3D_SHADER_MODEL_6_5 };
+                const bool sm65Ok =
+                    SUCCEEDED(GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &sm65, sizeof(sm65))) &&
+                    sm65.HighestShaderModel >= D3D_SHADER_MODEL_6_5;
+
+                m_features.m_meshShader = meshTierOk && sm65Ok;
+
+                AZ_TracePrintf(
+                    "DX12",
+                    "Mesh-shader probe: MeshShaderTier=%d SM6.5=%d -> meshShader=%d\n",
+                    static_cast<int>(options7.MeshShaderTier),
+                    sm65Ok ? 1 : 0,
+                    (meshTierOk && sm65Ok) ? 1 : 0);
+            }
+
             m_limits.m_maxImageDimension1D = D3D12_REQ_TEXTURE1D_U_DIMENSION;
             m_limits.m_maxImageDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
             m_limits.m_maxImageDimension3D = D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
@@ -326,6 +651,10 @@ namespace AZ
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
             m_limits.m_maxConstantBufferSize = D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 4u * 4u; // 4096 vectors * 4 values per vector * 4 bytes per value
             m_limits.m_maxBufferSize = D3D12_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM * (1024u * 1024u); // 2048 MB
+
+#if defined(O3DE_MESH_SHADER_SPIKE)
+            RunMeshShaderSpike(GetDevice());
+#endif
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
@@ -438,8 +767,17 @@ namespace AZ
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
         {
+            // GetPLACEDImageAllocationInfo, not GetImageAllocationInfo. Every caller of this is the
+            // aliased/transient heap picking a heap offset for a resource that CreateImagePlaced will
+            // then stamp with GetPlacedTextureAlignment() (4MB for MSAA) in resourceDesc.Alignment --
+            // and D3D12 validates the offset against THAT, not against the driver's raw value.
+            // Desktop hides the discrepancy because GetResourceAllocationInfo already reports 4MB for
+            // MSAA there, so the max() is a no-op and Windows behaviour is unchanged. Xbox reports
+            // less, the allocator picked a 64KB-aligned offset, and CreatePlacedResource failed with
+            //   "the resource must be aligned to 4194304 ... resource offset in the heap is 199491584"
+            // at the first frame-graph compile. Keep the two alignment sources agreeing here.
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
-            GetImageAllocationInfo(descriptor, allocationInfo);
+            GetPlacedImageAllocationInfo(descriptor, allocationInfo);
 
             RHI::ResourceMemoryRequirements memoryRequirements;
             memoryRequirements.m_alignmentInBytes = allocationInfo.Alignment;
@@ -563,9 +901,12 @@ namespace AZ
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image, nullptr, 0);
         }
 
+        // initialState is [[maybe_unused]] because it is only read inside
+        // #ifdef AZ_DX12_DXR_SUPPORT below. A DX12 build without DXR leaves it unreferenced,
+        // which is C4100 and an error under warnings-as-errors.
         void Device::ConvertBufferDescriptorToResourceDesc(
             const RHI::BufferDescriptor& bufferDescriptor,
-            D3D12_RESOURCE_STATES initialState,
+            [[maybe_unused]] D3D12_RESOURCE_STATES initialState,
             D3D12_RESOURCE_DESC& output)
         {
             ConvertBufferDescriptor(bufferDescriptor, output);
@@ -594,7 +935,7 @@ namespace AZ
                 &allocDesc,
                 &resourceDesc,
                 initialState,
-                nullptr,
+                NULL,
                 &allocation,
                 IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
 
@@ -863,9 +1204,9 @@ namespace AZ
             return m_commandListAllocator.Allocate(hardwareQueueClass);
         }
 
-        RHI::ConstPtr<PipelineLayout> Device::AcquirePipelineLayout(const RHI::PipelineLayoutDescriptor& descriptor)
+        RHI::ConstPtr<PipelineLayout> Device::AcquirePipelineLayout(const RHI::PipelineLayoutDescriptor& descriptor, bool forceMeshRootSignatureFlags, bool forceRayTracingRootSignatureFlags)
         {
-            return m_pipelineLayoutCache.Allocate(descriptor);
+            return m_pipelineLayoutCache.Allocate(descriptor, forceMeshRootSignatureFlags, forceRayTracingRootSignatureFlags);
         }
 
         ID3D12DeviceX* Device::GetDevice()

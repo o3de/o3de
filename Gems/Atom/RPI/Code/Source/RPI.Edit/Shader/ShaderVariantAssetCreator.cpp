@@ -49,7 +49,9 @@ namespace AZ
 
             if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
                 m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
-                m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
+                m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment) ||
+                m_asset->GetShaderStageFunction(RHI::ShaderStage::Mesh) ||
+                m_asset->GetShaderStageFunction(RHI::ShaderStage::Amplification))
             {
                 foundDrawFunctions = true;
             }
@@ -66,10 +68,13 @@ namespace AZ
                 return false;
             }
 
+            // A mesh-shader program is Mesh(+Amplification)+Fragment with NO vertex function, which is
+            // valid; only a classic raster fragment without a vertex OR mesh stage is an error.
             if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment) &&
-                !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex))
+                !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex) &&
+                !m_asset->GetShaderStageFunction(RHI::ShaderStage::Mesh))
             {
-                ReportError("Shader Variant with StableId '%u' has a fragment function but no vertex function.", m_asset->m_stableId);
+                ReportError("Shader Variant with StableId '%u' has a fragment function but no vertex or mesh function.", m_asset->m_stableId);
                 return false;
             }
 

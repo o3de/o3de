@@ -231,6 +231,10 @@ namespace AZ
                     return RHI::ShaderHardwareStage::Vertex;
                 case RPI::ShaderStageType::RayTracing:
                     return RHI::ShaderHardwareStage::RayTracing;
+                case RPI::ShaderStageType::Mesh:
+                    return RHI::ShaderHardwareStage::Mesh;
+                case RPI::ShaderStageType::Amplification:
+                    return RHI::ShaderHardwareStage::Amplification;
                 }
                 AZ_Assert(false, "Unable to find Shader stage given RPI ShaderStage %d", stageType);
                 return RHI::ShaderHardwareStage::Invalid;

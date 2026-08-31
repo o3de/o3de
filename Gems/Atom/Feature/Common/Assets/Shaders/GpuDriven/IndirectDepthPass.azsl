@@ -1,0 +1,95 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// GPU-Driven Indirect Depth Pass — Vertex Pulling Architecture
+//
+// This shader uses SV_VertexID to pull vertex positions from GPU buffers
+// rather than traditional vertex assembly (InputAssembly stage).
+// IndirectRasterPass issues ExecuteIndirect with non-indexed Draw commands;
+// each vertex invocation manually reads from the mesh's index buffer and
+// position buffer via bindless access.
+//
+// Data flow per vertex:
+//   m_gpuDrivenBatchId (rootconstant) → batchId; SV_VertexID → localVertexId (full 32-bit)
+//   batchId → batchBaseOffset + SV_InstanceID → instanceSlot → meshInfoIndex
+//   meshInfo → LoadIndex(triangleIndex) → vertex indices
+//   meshInfo → LoadPosition(vertexIndex) → object-space position
+//   objectToWorld → viewProjection → SV_Position
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#define GPU_DRIVEN_RENDERING
+#include <Atom/Features/GpuDriven/GpuDrivenConstants.azsli>
+#include <Atom/Features/GpuDriven/GpuDrivenAccess.azsli>
+#include <Atom/Features/MeshInfo/MeshInfoBufferUtil.azsli>
+
+// Per-draw batch id, set by the RootConstants indirect command (see IndirectRasterPass signature).
+rootconstant uint m_gpuDrivenBatchId;
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    StructuredBuffer<uint> m_visibleInstanceIds;
+    StructuredBuffer<uint> m_batchBaseOffset;
+};
+
+// No vertex assembly inputs — this pass uses vertex pulling.
+// SV_VertexID is the full 32-bit local vertex index; batchId is the per-draw root constant.
+struct VSInput
+{
+    uint m_vertexId   : SV_VertexID;
+    uint m_instanceId : SV_InstanceID;
+};
+
+struct VSDepthOutput
+{
+    precise float4 m_position : SV_Position;
+};
+
+VSDepthOutput IndirectDepthVS(VSInput IN)
+{
+    VSDepthOutput OUT;
+
+    // batchId comes from the per-draw root constant; localVertexId is the full 32-bit SV_VertexID.
+    uint batchId = m_gpuDrivenBatchId;
+    uint localVertexId = IN.m_vertexId;
+    uint instanceSlot = PassSrg::m_batchBaseOffset[batchId] + IN.m_instanceId;
+
+    // Look up instance data: instanceSlot -> original instance index -> mesh info
+    uint meshInfoIndex = GpuDriven_GetMeshInfoIndexBySlot(instanceSlot, PassSrg::m_visibleInstanceIds);
+
+    MeshInfo meshInfo;
+    if (!GetMeshInfoEntry(meshInfoIndex, meshInfo))
+    {
+        // Invalid mesh info — emit degenerate vertex
+        OUT.m_position = float4(0, 0, -1, 0);
+        return OUT;
+    }
+
+    // Vertex pulling: read index buffer, then position buffer.
+    // localVertexId ranges from 0 to indexCount-1.
+    // Every 3 consecutive localVertexIds form one triangle.
+    uint triangleIndex = localVertexId / 3;
+    uint vertexInTriangle = localVertexId % 3;
+
+    // Load the 3 vertex indices for this triangle from the index buffer
+    uint3 triVertexIndices = LoadIndex(meshInfo, triangleIndex);
+
+    // Select the vertex index for this specific vertex invocation
+    uint vertexIndex = triVertexIndices[vertexInTriangle];
+
+    // Load object-space position from the position buffer
+    float3 localPosition = LoadPosition(meshInfo, vertexIndex);
+
+    // Transform: object space → world space → clip space
+    float4x4 objectToWorld = GpuDriven_GetObjectToWorldMatrixBySlot(instanceSlot, PassSrg::m_visibleInstanceIds);
+    float4 worldPosition = mul(objectToWorld, float4(localPosition, 1.0));
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    return OUT;
+}

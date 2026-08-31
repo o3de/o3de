@@ -145,6 +145,27 @@
                     ]
                 },
                 {
+                    "Name": "GpuCullAndDrawPass",
+                    "TemplateName": "GpuCullAndDrawTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "OpaquePass",
                     "TemplateName": "OpaqueParentTemplate",
                     "Connections": [
@@ -198,6 +219,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
@@ -211,6 +239,64 @@
                                 "Attachment": "PipelineOutput"
                             }
                         }
+                    ]
+                },
+                {
+                    // Shaded GPU-driven forward pass: draws every GpuDrivenEligibility-eligible
+                    // instance (opaque, static, StandardPBR, forward-contributing) that the CPU
+                    // MeshDrawPacket/ForwardPass skipped. Composites onto OpaquePass's lit color
+                    // (RenderTargetInputOutput, Load not Clear -- see GpuDrivenForward.pass), which by
+                    // this point in the pipeline is already MSAA-resolved (OpaquePass:Output comes out
+                    // of DiffuseSpecularMergePass, downstream of MSAAResolveDiffusePass/
+                    // MSAAResolveSpecularPass). Depth-tests/writes against DepthPrePass:Depth (the
+                    // resolved depth), not DepthMSAA -- matching TransparentPass's own DepthStencil
+                    // connection below and GpuCullDebugPass's DepthStencilInput a few passes down, both
+                    // of which read the same resolved OpaquePass:Output/DepthPrePass:Depth pair. Using
+                    // DepthMSAA here mismatches OpaquePass:Output's sample count and is invalid within
+                    // one scope (RHI asserts on the overlapping/write-access attachment check). GPU-driven
+                    // geometry therefore does not receive SSAO/GTAO/subsurface-scattering/reflections,
+                    // since those already baked into OpaquePass:Output before this pass runs. Known,
+                    // currently-unaddressed limitation for GPU-driven content (including future
+                    // vegetation); not fixed here. Runs before GpuCullDebugPass so the debug overlay
+                    // (when enabled) draws on top of the real shaded result, not underneath it.
+                    "Name": "GpuDrivenForwardPass",
+                    "TemplateName": "GpuDrivenForwardTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        { "LocalSlot": "IndirectDrawArgs",   "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "IndirectDrawArgs" } },
+                        { "LocalSlot": "VisibleInstanceIds", "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "VisibleInstanceIds" } },
+                        { "LocalSlot": "BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "DirectionalLightShadowmap",      "AttachmentRef": { "Pass": "Shadows", "Attachment": "DirectionalShadowmap" } },
+                        { "LocalSlot": "ExponentialShadowmapDirectional","AttachmentRef": { "Pass": "Shadows", "Attachment": "DirectionalESM" } },
+                        { "LocalSlot": "ProjectedShadowmap",             "AttachmentRef": { "Pass": "Shadows", "Attachment": "ProjectedShadowmap" } },
+                        { "LocalSlot": "ExponentialShadowmapProjected",  "AttachmentRef": { "Pass": "Shadows", "Attachment": "ProjectedESM" } },
+                        { "LocalSlot": "TileLightData",       "AttachmentRef": { "Pass": "LightCullingPass", "Attachment": "TileLightData" } },
+                        { "LocalSlot": "LightListRemapped",   "AttachmentRef": { "Pass": "LightCullingPass", "Attachment": "LightListRemapped" } },
+                        { "LocalSlot": "DepthStencilInputOutput", "AttachmentRef": { "Pass": "DepthPrePass", "Attachment": "Depth" } },
+                        { "LocalSlot": "RenderTargetInputOutput", "AttachmentRef": { "Pass": "OpaquePass", "Attachment": "Output" } }
+                    ]
+                },
+                {
+                    // Plumbing-first GPU-driven debug overlay. Draws culled survivors in per-instance hue over the
+                    // lit opaque color, depth-tested vs the resolved (non-MSAA) prepass depth. Runs after OpaquePass
+                    // (produces the color), before TransparentPass (reads it). Consumes the cull buffers exposed by
+                    // GpuCullAndDrawPass.
+                    //
+                    // Controlled by r_gpuCullingDebugView (default off, i.e. MaxDrawCount forced to 0): the pass
+                    // itself stays enabled in the pipeline, but MeshFeatureProcessor's routing block only feeds it
+                    // a nonzero MaxDrawCount when the CVar is on. Also needs (a) a STANDARD-mesh scene (meshlet
+                    // meshes use the Meshlets gem path and never register here) and (b) r_gpuDrivenRendering=1 set
+                    // BEFORE the scene loads (AcquireSlot is CVAR-gated) to have any GPU-driven instances to show.
+                    // The dedicated 'gpuculldebug' tag avoids colliding with the forward pass.
+                    "Name": "GpuCullDebugPass",
+                    "TemplateName": "GpuCullDebugTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        { "LocalSlot": "IndirectDrawArgs",        "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "IndirectDrawArgs" } },
+                        { "LocalSlot": "VisibleInstanceIds",      "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "VisibleInstanceIds" } },
+                        { "LocalSlot": "BatchBaseOffset",         "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "DepthStencilInput",       "AttachmentRef": { "Pass": "DepthPrePass", "Attachment": "Depth" } },
+                        { "LocalSlot": "RenderTargetInputOutput", "AttachmentRef": { "Pass": "GpuDrivenForwardPass", "Attachment": "RenderTargetInputOutput" } }
                     ]
                 },
                 {

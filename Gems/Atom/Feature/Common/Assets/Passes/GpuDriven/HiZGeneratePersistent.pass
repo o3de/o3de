@@ -1,0 +1,52 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HiZGeneratePersistentTemplate",
+            "PassClass": "HiZGeneratePass",
+            "Slots": [
+                {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": ["Depth"]
+                    }
+                },
+                {
+                    "Name": "HiZOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "HiZPyramidPersistent",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_FLOAT",
+                        "BindFlags": ["ShaderReadWrite"]
+                    },
+                    "GenerateFullMipChain": true
+                }
+            ],
+            "PassData": {
+                "$type": "DownsampleMipChainPassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/GpuDriven/HiZDownsample.shader"
+                }
+            }
+        }
+    }
+}

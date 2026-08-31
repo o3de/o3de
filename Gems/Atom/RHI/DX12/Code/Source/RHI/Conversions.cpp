@@ -603,6 +603,12 @@ namespace AZ
             {
                 resourceFlags = RHI::ResetBits(resourceFlags, D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE);
             }
+            if (RHI::CheckBitsAll(bufferFlags, RHI::BufferBindFlags::Indirect))
+            {
+                // No-op on desktop (FLAG_NONE). On Xbox this is required at creation time or the
+                // transition to INDIRECT_ARGUMENT is rejected outright -- see DX12_Xbox.h.
+                resourceFlags = RHI::SetBits(resourceFlags, AZ_DX12_INDIRECT_BUFFER_RESOURCE_FLAGS);
+            }
             return resourceFlags;
         }
 
@@ -1215,6 +1221,10 @@ namespace AZ
                 return D3D12_SHADER_VISIBILITY_ALL;
             case RHI::ShaderStageMask::RayTracing:
                 return D3D12_SHADER_VISIBILITY_ALL;
+            case RHI::ShaderStageMask::Mesh:
+                return D3D12_SHADER_VISIBILITY_MESH;
+            case RHI::ShaderStageMask::Amplification:
+                return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
             default:
                 AZ_Assert(false, "Invalid shader stage mask %d", static_cast<uint32_t>(mask));
                 return D3D12_SHADER_VISIBILITY_ALL;
@@ -1477,8 +1487,14 @@ namespace AZ
                     return DXGI_SCALING_NONE;
                 case RHI::Scaling::Stretch:
                     return DXGI_SCALING_STRETCH;
+#if !defined(AZ_DX12_NO_DXGI_SCALING_ASPECT_RATIO_STRETCH)
+                // DXGI_SCALING_ASPECT_RATIO_STRETCH is not defined on every platform -- the
+                // GDK's D3D12 header declares only DXGI_SCALING_NONE and DXGI_SCALING_STRETCH.
+                // Platforms lacking it define AZ_DX12_NO_DXGI_SCALING_ASPECT_RATIO_STRETCH and
+                // fall through to the default below, which is DXGI_SCALING_STRETCH.
                 case RHI::Scaling::AspectRatioStretch:
                     return DXGI_SCALING_ASPECT_RATIO_STRETCH;
+#endif
                 default:
                     return DXGI_SCALING_STRETCH;
             }

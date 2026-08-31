@@ -30,6 +30,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <Meshlets/MeshletsFeatureProcessorInterface.h>
+
 namespace AZ
 {
     namespace Render
@@ -76,7 +78,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    ->Version(4, &MeshComponentControllerVersionUtility::VersionConverter)
+                    ->Version(5, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
@@ -88,7 +90,14 @@ namespace AZ
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
                     ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
-                    ->Field("LightingChannelConfig", &MeshComponentConfig::m_lightingChannelConfig);
+                    ->Field("LightingChannelConfig", &MeshComponentConfig::m_lightingChannelConfig)
+                    ->Field("UseMeshlets", &MeshComponentConfig::m_useMeshlets)
+                    ->Field("MeshletMaxVerticesPerCluster", &MeshComponentConfig::m_meshletMaxVerticesPerCluster)
+                    ->Field("MeshletMaxTrianglesPerCluster", &MeshComponentConfig::m_meshletMaxTrianglesPerCluster)
+                    // SP1: pack-resolution status (read-only diagnostic populated by
+                    // MeshComponentController::RefreshMeshletPackStatus). Serialized as
+                    // empty by default; populated at runtime each tick.
+                    ->Field("MeshletPackStatus", &MeshComponentConfig::m_meshletPackStatus);
             }
         }
 
@@ -263,6 +272,15 @@ namespace AZ
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
+            // Look up the Meshlets feature processor only when the toggle is on. If the
+            // Meshlets gem isn't enabled in the project this returns null; we log once
+            // in HandleModelChange and silently fall back to the standard mesh path.
+            if (m_configuration.m_useMeshlets)
+            {
+                m_meshletsFeatureProcessor =
+                    RPI::Scene::GetFeatureProcessorForEntity<Meshlets::MeshletsFeatureProcessorInterface>(entityId);
+            }
+
             m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
             AZ::NonUniformScaleRequestBus::Event(
@@ -288,6 +306,16 @@ namespace AZ
 
         void MeshComponentController::Deactivate()
         {
+            // Release the meshlet instance before tearing down the standard handle so the
+            // Meshlets feature processor still has its referenced render object alive.
+            if (m_meshletsFeatureProcessor &&
+                m_meshletInstance != Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle)
+            {
+                m_meshletsFeatureProcessor->ReleaseInstance(m_meshletInstance);
+                m_meshletInstance = Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle;
+            }
+            m_meshletsFeatureProcessor = nullptr;
+
             // Buses must be disconnected after unregistering the model, otherwise they can't deliver the events during the process.
             UnregisterModel();
 
@@ -324,6 +352,14 @@ namespace AZ
             if (m_meshFeatureProcessor)
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
+            }
+
+            // Mirror the transform to the meshlet instance when active so the meshlet
+            // draws stay in sync with the entity.
+            if (m_meshletsFeatureProcessor &&
+                m_meshletInstance != Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle)
+            {
+                m_meshletsFeatureProcessor->SetInstanceTransform(m_meshletInstance, world);
             }
 
             // ensure the render geometry is kept in sync with any changes to the entity the mesh is on
@@ -421,6 +457,44 @@ namespace AZ
                     m_entityComponentIdPair.GetEntityId());
 
                 MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+
+                // ----- Meshlets toggle handling -----
+                // Done here (not in Activate) because we need the model asset fully loaded
+                // before AcquireInstance can build the meshlet data on the GPU.
+                if (m_configuration.m_useMeshlets &&
+                    m_meshletInstance == Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle)
+                {
+                    if (!m_meshletsFeatureProcessor)
+                    {
+                        // Toggle is on but the Meshlets gem isn't enabled in this project.
+                        // Log once and fall back to standard rendering.
+                        AZ_WarningOnce("MeshComponentController", false,
+                            "Entity has 'Use Virtual Geometry (Meshlets)' enabled but the Meshlets "
+                            "gem is not active in this project. Falling back to standard rendering.");
+                    }
+                    else
+                    {
+                        m_meshletInstance = m_meshletsFeatureProcessor->AcquireInstance(modelAsset);
+                        if (m_meshletInstance != Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle)
+                        {
+                            // Suppress the standard mesh draws so the geometry isn't rendered twice.
+                            // The standard handle stays alive so material assignment, LOD bookkeeping
+                            // and bounds queries continue to work.
+                            m_meshFeatureProcessor->SetVisible(m_meshHandle, false);
+
+                            // Push the current world transform once; subsequent updates flow through
+                            // OnTransformChanged.
+                            if (m_transformInterface)
+                            {
+                                m_meshletsFeatureProcessor->SetInstanceTransform(
+                                    m_meshletInstance, m_transformInterface->GetWorldTM());
+                            }
+                        }
+                    }
+                }
+
+                // Update the pack-resolution status diagnostic field
+                RefreshMeshletPackStatus();
             }
         }
 
@@ -475,6 +549,14 @@ namespace AZ
         {
             if (m_meshFeatureProcessor && m_meshHandle.IsValid())
             {
+                // Drop the meshlet instance first; the standard mesh handle's release follows.
+                if (m_meshletsFeatureProcessor &&
+                    m_meshletInstance != Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle)
+                {
+                    m_meshletsFeatureProcessor->ReleaseInstance(m_meshletInstance);
+                    m_meshletInstance = Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle;
+                }
+
                 MeshComponentNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
@@ -896,6 +978,55 @@ namespace AZ
             }
 
             return foundTag;
+        }
+
+        Meshlets::MeshletsFeatureProcessorInterface* MeshComponentController::GetMeshletsFeatureProcessor() const
+        {
+            AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
+            AZ::RPI::Scene* scene = AZ::RPI::Scene::GetSceneForEntityId(entityId);
+            if (!scene)
+            {
+                return nullptr;
+            }
+            return scene->GetFeatureProcessor<Meshlets::MeshletsFeatureProcessorInterface>();
+        }
+
+        void MeshComponentController::RefreshMeshletPackStatus()
+        {
+            if (!m_configuration.m_useMeshlets || !m_configuration.m_modelAsset.IsReady())
+            {
+                m_configuration.m_meshletPackStatus.clear();
+                return;
+            }
+            auto* fp = GetMeshletsFeatureProcessor();
+            if (!fp)
+            {
+                m_configuration.m_meshletPackStatus = "Meshlets feature processor not present in this scene.";
+                return;
+            }
+            using PRS = Meshlets::MeshletsFeatureProcessorInterface::PackResolutionStatus;
+            switch (fp->GetPackStatus(m_configuration.m_modelAsset.GetId()))
+            {
+            case PRS::Ok:
+                m_configuration.m_meshletPackStatus = "OK";
+                break;
+            case PRS::NoPack:
+                m_configuration.m_meshletPackStatus =
+                    "No meshlet pack for this model — flag the source FBX with a Meshlet Pack rule, "
+                    "or author a sibling .meshletpack JSON.";
+                break;
+            case PRS::LoadFailed:
+                m_configuration.m_meshletPackStatus = "Pack failed to load. Check the cache and AssetProcessor logs.";
+                break;
+            case PRS::PassesAbsent:
+                m_configuration.m_meshletPackStatus =
+                    "Meshlet renderer disabled — MeshletsParentPass is not in this pipeline.";
+                break;
+            case PRS::NotChecked:
+            default:
+                m_configuration.m_meshletPackStatus = "Acquiring...";
+                break;
+            }
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(

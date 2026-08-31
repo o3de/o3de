@@ -14,8 +14,9 @@ namespace AZ
     namespace DX12
     {
         PipelineLayout::PipelineLayout(PipelineLayoutCache& parentCache)
-            : m_parentCache{&parentCache}
-        {}
+            : m_parentCache{ &parentCache }
+        {
+        }
 
         PipelineLayout::~PipelineLayout()
         {
@@ -87,12 +88,14 @@ namespace AZ
             return m_hash;
         }
 
-        void PipelineLayout::Init(ID3D12DeviceX* dx12Device, const RHI::PipelineLayoutDescriptor& descriptor)
+        void PipelineLayout::Init(
+            ID3D12DeviceX* dx12Device, const RHI::PipelineLayoutDescriptor& descriptor, bool forceMeshRootSignatureFlags, bool forceRayTracingRootSignatureFlags)
         {
             m_hash = descriptor.GetHash();
 
             const uint32_t groupLayoutCount = static_cast<uint32_t>(descriptor.GetShaderResourceGroupLayoutCount());
-            AZ_Assert(groupLayoutCount <= RHI::Limits::Pipeline::ShaderResourceGroupCountMax, "Exceeded ShaderResourceGroupLayout count limit.");
+            AZ_Assert(
+                groupLayoutCount <= RHI::Limits::Pipeline::ShaderResourceGroupCountMax, "Exceeded ShaderResourceGroupLayout count limit.");
 
             AZStd::vector<D3D12_ROOT_PARAMETER> parameters;
             AZStd::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges[RHI::Limits::Pipeline::ShaderResourceGroupCountMax];
@@ -104,13 +107,24 @@ namespace AZ
             const PipelineLayoutDescriptor* dx12Descriptor = azrtti_cast<const PipelineLayoutDescriptor*>(&descriptor);
             AZ_Assert(dx12Descriptor, "Trying to create a pipeline layout without a DX12 pipeline layout descriptor");
 
+            // Mesh/amplification PSO layouts: the SRG reflection does not currently emit Mesh/Amplification
+            // visibility bits, so per-stage visibility derived from the mask would deny the mesh shader access
+            // to its own SRGs (e.g. an SRG the pixel stage also uses maps to VISIBILITY_PIXEL). For a mesh
+            // layout we force ALL-stage visibility on every root parameter (always safe) and drop the
+            // IA-input-layout root-sig flag below (D3D12 forbids it on a mesh PSO).
+            auto meshAwareVisibility = [forceMeshRootSignatureFlags](RHI::ShaderStageMask stageMask) -> D3D12_SHADER_VISIBILITY
+            {
+                return forceMeshRootSignatureFlags ? D3D12_SHADER_VISIBILITY_ALL : ConvertShaderStageMask(stageMask);
+            };
+
             /**
              * If the pipeline layout uses an inline constant binding, that becomes the very first
              * parameter in the root signature.
              */
             const RootConstantBinding& rootConstantBinding = dx12Descriptor->GetRootConstantBinding();
 
-            // [GFX TODO][ATOM-622] Support Inline Constant in Shader Assets. At the moment inline constants are not saved anywhere in the shader asset.
+            // [GFX TODO][ATOM-622] Support Inline Constant in Shader Assets. At the moment inline constants are not saved anywhere in the
+            // shader asset.
             m_hasRootConstants = (rootConstantBinding.m_constantCount > 0);
 
             if (m_hasRootConstants)
@@ -141,8 +155,9 @@ namespace AZ
             }
 
             // Construct a list of indexes sorted by frequency.
-            // nVidia recommends to construct the root signature with higher execution frequency first https://developer.nvidia.com/dx12-dos-and-donts#roots
-            // [GFX TODO][ATOM-550] Investigate and Modify DX12 RHI to be able to use different Pipeline Layouts depending on GPU.
+            // nVidia recommends to construct the root signature with higher execution frequency first
+            // https://developer.nvidia.com/dx12-dos-and-donts#roots [GFX TODO][ATOM-550] Investigate and Modify DX12 RHI to be able to use
+            // different Pipeline Layouts depending on GPU.
             AZStd::vector<uint8_t> indexesSortedByFrequency(groupLayoutCount);
             uint32_t usedSlotIndex = 0;
             for (uint32_t slot = 0; slot < m_slotToIndexTable.size(); ++slot)
@@ -156,11 +171,13 @@ namespace AZ
             }
             AZ_Assert(usedSlotIndex == groupLayoutCount, "Unexpected number of used slots");
 
-            // Next, front-load by frequency the SRG Constants. Each SRG with Constants adds a constant buffer entry as root parameters of the root signature.
+            // Next, front-load by frequency the SRG Constants. Each SRG with Constants adds a constant buffer entry as root parameters of
+            // the root signature.
             for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *dx12Descriptor->GetShaderResourceGroupLayout(groupLayoutIndex);
-                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
+                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo =
+                    dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
 
                 if (groupLayout.GetConstantDataSize())
                 {
@@ -171,7 +188,7 @@ namespace AZ
                     D3D12_ROOT_PARAMETER parameter;
                     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 
-                    parameter.ShaderVisibility = ConvertShaderStageMask(groupBindInfo.m_constantDataBindingInfo.m_shaderStageMask);
+                    parameter.ShaderVisibility = meshAwareVisibility(groupBindInfo.m_constantDataBindingInfo.m_shaderStageMask);
 
                     parameter.Descriptor.ShaderRegister = cbvRegister;
                     parameter.Descriptor.RegisterSpace = registerSpace;
@@ -185,7 +202,8 @@ namespace AZ
             for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
-                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
+                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo =
+                    dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
                 const ShaderResourceGroupVisibility& groupVisibility = dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
 
                 if (groupLayout.GetGroupSizeForBuffers() || groupLayout.GetGroupSizeForImages())
@@ -193,7 +211,10 @@ namespace AZ
                     for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
                     {
                         auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputBuffer.m_name);
-                        AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputBuffer.m_name.GetCStr());
+                        AZ_Assert(
+                            findIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                            "Could not find register for shader input %s",
+                            shaderInputBuffer.m_name.GetCStr());
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
                         descriptorRange.RegisterSpace = bindingInfo.m_spaceId;
@@ -222,7 +243,10 @@ namespace AZ
                     for (const RHI::ShaderInputImageDescriptor& shaderInputImage : groupLayout.GetShaderInputListForImages())
                     {
                         auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputImage.m_name);
-                        AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputImage.m_name.GetCStr());
+                        AZ_Assert(
+                            findIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                            "Could not find register for shader input %s",
+                            shaderInputImage.m_name.GetCStr());
 
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
@@ -247,7 +271,7 @@ namespace AZ
 
                     D3D12_ROOT_PARAMETER parameter;
                     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    parameter.ShaderVisibility = ConvertShaderStageMask(groupVisibility.m_descriptorTableShaderStageMask);
+                    parameter.ShaderVisibility = meshAwareVisibility(groupVisibility.m_descriptorTableShaderStageMask);
                     parameter.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptorRanges[groupLayoutIndex].size());
                     parameter.DescriptorTable.pDescriptorRanges = descriptorRanges[groupLayoutIndex].data();
 
@@ -260,7 +284,8 @@ namespace AZ
                 {
                     auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputBufferUnboundedArray.m_name);
                     AZ_Assert(
-                        findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s",
+                        findIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                        "Could not find register for shader input %s",
                         shaderInputBufferUnboundedArray.m_name.GetCStr());
                     const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                     D3D12_DESCRIPTOR_RANGE descriptorRange;
@@ -288,7 +313,8 @@ namespace AZ
                 {
                     auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputImageUnboundedArray.m_name);
                     AZ_Assert(
-                        findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s",
+                        findIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                        "Could not find register for shader input %s",
                         shaderInputImageUnboundedArray.m_name.GetCStr());
                     const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                     D3D12_DESCRIPTOR_RANGE descriptorRange;
@@ -316,7 +342,8 @@ namespace AZ
                     D3D12_ROOT_PARAMETER parameter;
                     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
                     parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-                    parameter.DescriptorTable.NumDescriptorRanges = static_cast<uint32_t>(unboundedArraydescriptorRanges[groupLayoutIndex].size());
+                    parameter.DescriptorTable.NumDescriptorRanges =
+                        static_cast<uint32_t>(unboundedArraydescriptorRanges[groupLayoutIndex].size());
                     parameter.DescriptorTable.pDescriptorRanges = unboundedArraydescriptorRanges[groupLayoutIndex].data();
 
                     m_indexToRootParameterBindingTable[groupLayoutIndex].m_bindlessTable = RootParameterIndex(parameters.size());
@@ -328,7 +355,8 @@ namespace AZ
             for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
-                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
+                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo =
+                    dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
                 const ShaderResourceGroupVisibility& groupVisibility = dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
 
                 if (groupLayout.GetGroupSizeForSamplers())
@@ -336,7 +364,10 @@ namespace AZ
                     for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : groupLayout.GetShaderInputListForSamplers())
                     {
                         auto findIt = groupBindInfo.m_resourcesRegisterMap.find(shaderInputSampler.m_name);
-                        AZ_Assert(findIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", shaderInputSampler.m_name.GetCStr());
+                        AZ_Assert(
+                            findIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                            "Could not find register for shader input %s",
+                            shaderInputSampler.m_name.GetCStr());
 
                         const RHI::ResourceBindingInfo& bindingInfo = findIt->second;
                         D3D12_DESCRIPTOR_RANGE descriptorRange;
@@ -351,7 +382,7 @@ namespace AZ
 
                     D3D12_ROOT_PARAMETER parameter;
                     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-                    parameter.ShaderVisibility = ConvertShaderStageMask(groupVisibility.m_descriptorTableShaderStageMask);
+                    parameter.ShaderVisibility = meshAwareVisibility(groupVisibility.m_descriptorTableShaderStageMask);
                     parameter.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(samplerDescriptorRanges[groupLayoutIndex].size());
                     parameter.DescriptorTable.pDescriptorRanges = samplerDescriptorRanges[groupLayoutIndex].data();
 
@@ -364,39 +395,109 @@ namespace AZ
             for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
-                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
+                const RHI::ShaderResourceGroupBindingInfo& groupBindInfo =
+                    dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
 
                 for (const RHI::ShaderInputStaticSamplerDescriptor& samplerInput : groupLayout.GetStaticSamplers())
                 {
                     auto findRegisterIt = groupBindInfo.m_resourcesRegisterMap.find(samplerInput.m_name);
-                    AZ_Assert(findRegisterIt != groupBindInfo.m_resourcesRegisterMap.end(), "Could not find register for shader input %s", samplerInput.m_name.GetCStr());
-                    
+                    AZ_Assert(
+                        findRegisterIt != groupBindInfo.m_resourcesRegisterMap.end(),
+                        "Could not find register for shader input %s",
+                        samplerInput.m_name.GetCStr());
+
                     const RHI::ResourceBindingInfo& bindingInfo = findRegisterIt->second;
                     D3D12_STATIC_SAMPLER_DESC desc;
                     ConvertStaticSampler(
-                        samplerInput.m_samplerState, bindingInfo.m_registerId, bindingInfo.m_spaceId,
-                        ConvertShaderStageMask(bindingInfo.m_shaderStageMask), desc);
+                        samplerInput.m_samplerState,
+                        bindingInfo.m_registerId,
+                        bindingInfo.m_spaceId,
+                        meshAwareVisibility(bindingInfo.m_shaderStageMask),
+                        desc);
 
                     staticSamplers.push_back(desc);
                 }
             }
 
+            // A mesh/amplification PSO has no input assembler, so its root signature must NOT carry
+            // D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT (CreatePipelineState rejects
+            // the mesh PSO otherwise). We know it is a mesh layout from the explicit signal passed by the
+            // mesh PSO path; as a fallback we also honour any SRG reflected as Mesh/Amplification-visible.
+            bool usesMeshStage = forceMeshRootSignatureFlags;
+            if (!usesMeshStage)
+            {
+                for (const uint32_t groupLayoutIndex : indexesSortedByFrequency)
+                {
+                    const ShaderResourceGroupVisibility& meshGroupVisibility =
+                        dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
+                    if ((meshGroupVisibility.m_descriptorTableShaderStageMask &
+                         (RHI::ShaderStageMask::Mesh | RHI::ShaderStageMask::Amplification)) != RHI::ShaderStageMask::None)
+                    {
+                        usesMeshStage = true;
+                        break;
+                    }
+                }
+            }
+
             D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-            rootSignatureDesc.Flags = AZ_DX12_ROOT_SIGNATURE_FLAGS;
+            rootSignatureDesc.Flags = usesMeshStage ? D3D12_ROOT_SIGNATURE_FLAG_NONE : AZ_DX12_ROOT_SIGNATURE_FLAGS;
+            if (forceRayTracingRootSignatureFlags)
+            {
+                // Per-platform extra flags for a signature consumed by a ray tracing pipeline.
+                // No-op on desktop (FLAG_NONE); on Xbox this is D3D12XBOX_ROOT_SIGNATURE_FLAG_RAYTRACING,
+                // without which XDXR state-object creation fails -- see DX12_Xbox.h for the full story.
+                rootSignatureDesc.Flags |= AZ_DX12_RAY_TRACING_ROOT_SIGNATURE_FLAGS;
+            }
             rootSignatureDesc.NumParameters = static_cast<uint32_t>(parameters.size());
             rootSignatureDesc.pParameters = parameters.data();
             rootSignatureDesc.NumStaticSamplers = static_cast<uint32_t>(staticSamplers.size());
             rootSignatureDesc.pStaticSamplers = staticSamplers.data();
 
             Microsoft::WRL::ComPtr<ID3DBlob> pOutBlob, pErrorBlob;
-            D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf());
-            AZ_Assert(pOutBlob, "Failed to serialize root signature: ErrorBlob [%s]", pErrorBlob ? reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()) : "No error data returned");
+            const HRESULT serializeHr = D3D12SerializeRootSignature(
+                &rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf());
+            if (FAILED(serializeHr) || !pOutBlob)
+            {
+                // Serialization failed (e.g. an invalid mesh-stage root signature). We must NOT dereference the
+                // null blob below: doing so kills this thread before m_isCompiled is set, and every thread spinning
+                // in PipelineLayoutCache::Allocate's while(!m_isCompiled) loop would then hang forever (editor freeze).
+                // Log the real HRESULT + D3D error blob, leave m_signature null (dependent PSOs fail gracefully via
+                // the null-layout check in CommandList::CommitShaderResources), and release the waiters.
+                AZ_Error(
+                    "DX12",
+                    false,
+                    "MeshRootSig: D3D12SerializeRootSignature FAILED. hr=0x%08X mesh=%d params=%u samplers=%u flags=0x%X ErrorBlob [%s]",
+                    static_cast<unsigned int>(serializeHr),
+                    forceMeshRootSignatureFlags ? 1 : 0,
+                    rootSignatureDesc.NumParameters,
+                    rootSignatureDesc.NumStaticSamplers,
+                    rootSignatureDesc.Flags,
+                    pErrorBlob ? reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()) : "No error data returned");
+                m_isCompiled = true;
+                return;
+            }
 
             Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
-            AssertSuccess(dx12Device->CreateRootSignature(1, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_GRAPHICS_PPV_ARGS(rootSignature.GetAddressOf())));
+            const HRESULT createHr = dx12Device->CreateRootSignature(
+                1, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_GRAPHICS_PPV_ARGS(rootSignature.GetAddressOf()));
+            if (FAILED(createHr) || !rootSignature)
+            {
+                AZ_Error(
+                    "DX12",
+                    false,
+                    "MeshRootSig: CreateRootSignature FAILED. hr=0x%08X mesh=%d params=%u samplers=%u flags=0x%X",
+                    static_cast<unsigned int>(createHr),
+                    forceMeshRootSignatureFlags ? 1 : 0,
+                    rootSignatureDesc.NumParameters,
+                    rootSignatureDesc.NumStaticSamplers,
+                    rootSignatureDesc.Flags);
+                m_isCompiled = true;
+                return;
+            }
             m_signature = rootSignature.Get();
 
-            AZStd::wstring name = AZStd::wstring::format(L"RootSig (%d %d %d)", rootSignatureDesc.NumParameters, rootSignatureDesc.NumStaticSamplers, rootSignatureDesc.Flags);
+            AZStd::wstring name = AZStd::wstring::format(
+                L"RootSig (%d %d %d)", rootSignatureDesc.NumParameters, rootSignatureDesc.NumStaticSamplers, rootSignatureDesc.Flags);
             m_signature->SetName(name.data());
 
             // This will signal other waiting threads that the root signature is now ready.
@@ -408,11 +509,25 @@ namespace AZ
             return *m_layoutDescriptor;
         }
 
-        RHI::ConstPtr<PipelineLayout> PipelineLayoutCache::Allocate(const RHI::PipelineLayoutDescriptor& descriptor)
+        RHI::ConstPtr<PipelineLayout> PipelineLayoutCache::Allocate(
+            const RHI::PipelineLayoutDescriptor& descriptor, bool forceMeshRootSignatureFlags, bool forceRayTracingRootSignatureFlags)
         {
             AZ_Assert(m_parentDevice, "Cache is not initialized.");
 
-            const uint64_t hashCode = static_cast<uint64_t>(descriptor.GetHash());
+            uint64_t hashCode = static_cast<uint64_t>(descriptor.GetHash());
+            // A mesh layout drops the IA flag + forces ALL-stage visibility, so it must never share a
+            // cache entry with a non-mesh layout that hashes identically.
+            if (forceMeshRootSignatureFlags)
+            {
+                hashCode ^= 0x9E3779B97F4A7C15ull;
+            }
+            // Same reasoning for ray tracing: on Xbox the RT flag changes the serialized signature
+            // (memory-based ABI), so an RT layout must not share a cache entry with a non-RT layout
+            // that hashes identically. Different constant so mesh/RT/plain all key separately.
+            if (forceRayTracingRootSignatureFlags)
+            {
+                hashCode ^= 0xC2B2AE3D27D4EB4Full;
+            }
             bool isFirstCompile = false;
 
             RHI::Ptr<PipelineLayout> layout;
@@ -433,7 +548,7 @@ namespace AZ
 
             if (isFirstCompile)
             {
-                layout->Init(m_parentDevice->GetDevice(), descriptor);
+                layout->Init(m_parentDevice->GetDevice(), descriptor, forceMeshRootSignatureFlags, forceRayTracingRootSignatureFlags);
             }
             else
             {
@@ -496,5 +611,5 @@ namespace AZ
                 delete pipelineLayout;
             }
         }
-    }
-}
+    } // namespace DX12
+} // namespace AZ

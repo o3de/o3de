@@ -57,6 +57,8 @@ namespace AZ
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Mesh;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Amplification;
 
             return hasRasterProgram;
         }
@@ -178,6 +180,8 @@ namespace AZ
             // Stage profile name parameter
             // Note: RayTracing shaders must be compiled with version 6_3, while the rest of the stages
             // are compiled with version 6_2, so RayTracing cannot share the version constant.
+            // Note: Mesh and Amplification shaders require Shader Model 6.5, so they cannot share the
+            // version constant either (mirrors how RayTracing gets its own explicit profile above).
             const AZStd::string shaderModelVersion = "6_2";
             const AZStd::unordered_map<RHI::ShaderHardwareStage, AZStd::string> stageToProfileName =
             {
@@ -185,7 +189,9 @@ namespace AZ
                 {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"}
+                {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"},
+                {RHI::ShaderHardwareStage::Mesh,                   "ms_6_5"},
+                {RHI::ShaderHardwareStage::Amplification,          "as_6_5"}
             };
             auto profileIt = stageToProfileName.find(shaderStageType);
             if (profileIt == stageToProfileName.end())
@@ -226,6 +232,14 @@ namespace AZ
                 break;
             case RHI::ShaderHardwareStage::Fragment:
                 RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fvk-use-dx-position-w"});
+                break;
+            case RHI::ShaderHardwareStage::Mesh:
+            case RHI::ShaderHardwareStage::Amplification:
+                // CRITICAL: With default flags, `dxc -spirv -T ms_6_5/as_6_5` emits the NVIDIA-only
+                // SPV_NV_mesh_shader extension, which will NOT load on AMD (or any driver exposing only
+                // VK_EXT_mesh_shader). Forcing the Vulkan 1.3 target environment makes DXC emit the
+                // portable SPV_EXT_mesh_shader instead. Do NOT apply -fvk-invert-y to mesh/amplification.
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fspv-target-env=vulkan1.3" });
                 break;
             case RHI::ShaderHardwareStage::Compute:
             case RHI::ShaderHardwareStage::RayTracing:

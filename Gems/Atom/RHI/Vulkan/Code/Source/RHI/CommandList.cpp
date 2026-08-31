@@ -9,6 +9,8 @@
 #include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/DeviceIndirectBufferSignature.h>
 #include <Atom/RHI/DeviceRayTracingCompactionQueryPool.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/lock.h>
@@ -310,6 +312,13 @@ namespace AZ
 
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
+            const bool useDrawMarker = RHI::RHISystemInterface::Get()->GpuMarkersEnabled() &&
+                r_gpuMarkersPerDraw && drawItem.m_debugLabel != nullptr;
+            if (useDrawMarker)
+            {
+                BeginDebugLabel(drawItem.m_debugLabel);
+            }
+
             switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
@@ -390,9 +399,20 @@ namespace AZ
 
                 break;
             }
+            case RHI::DrawType::DispatchMesh:
+            {
+                // Mesh/amplification shader dispatch (vkCmdDrawMeshTasksEXT) is not yet wired up on Vulkan (Phase 2).
+                AZ_Assert(false, "DispatchMesh not yet implemented on Vulkan (Phase 2)");
+                break;
+            }
             default:
                 AZ_Assert(false, "DrawType is invalid.");
                 break;
+            }
+
+            if (useDrawMarker)
+            {
+                EndDebugLabel();
             }
 
             // Restore the scissors if needed.

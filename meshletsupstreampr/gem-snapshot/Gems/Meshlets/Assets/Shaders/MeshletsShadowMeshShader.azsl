@@ -1,0 +1,168 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Meshlet SHADOW pass — HARDWARE MESH SHADER path.
+//
+// The mesh-shader counterpart of MeshletsShadowPass.azsl (vertex-pull). Position
+// only, exactly like MeshletsDepthMeshShader.azsl; the only differences live in the
+// .shader descriptor (LessEqual depth test, depth bias, DrawList "shadow").
+//
+// WHY THIS MATTERS FOR PERF: shadows are usually the heaviest geometry cost in the
+// frame — every cascade rasterizes the whole visible set again. With only forward
+// and depth on DispatchMesh, a directional light with 4 cascades left 5 of ~7
+// geometry passes on the vertex-pull path, which is SLOWER than the standard mesh
+// path because it loses the post-transform vertex cache and re-transforms shared
+// vertices per index. Meshlets therefore could not win no matter how well the
+// forward pass performed. This pass is the biggest single piece of closing that.
+//
+// Atom rebinds ViewSrg::m_viewProjectionMatrix with the light's VP matrix per
+// cascade (see the comment in MeshletsShadowPass.azsl), so the transform here is
+// identical to the depth variant and needs no shadow-specific SRG.
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg_all.srgi>
+// Pulls in scenesrg_all.srgi + MeshletsMeshObjectSrg/MeshletsMeshInstanceSrg.
+#include <MeshletsMeshRenderSrg.azsli>
+
+// Must match MeshletsForwardMeshShader.azsl / MeshletsDepthMeshShader.azsl —
+// clusters are baked at <=128 verts / <=256 tris, within the DX12 mesh-shader
+// per-group limits.
+#define MESHLETS_MS_MAX_VERTICES   128
+#define MESHLETS_MS_MAX_TRIANGLES  256
+#define MESHLETS_MS_THREADS        128
+
+struct VSOutput
+{
+    precise float4 m_position : SV_Position;
+};
+
+[outputtopology("triangle")]
+[numthreads(MESHLETS_MS_THREADS, 1, 1)]
+void MeshletsShadowPassMS(
+    uint groupThreadId : SV_GroupThreadID,
+    uint groupId       : SV_GroupID,
+    out vertices VSOutput outVerts[MESHLETS_MS_MAX_VERTICES],
+    out indices  uint3    outTris[MESHLETS_MS_MAX_TRIANGLES])
+{
+    // One threadgroup == one cluster. m_meshletsDescriptors is re-based per-mesh,
+    // so SV_GroupID indexes it directly. Decode mirrors MeshletsDepthPassMS exactly
+    // so the shadow map rasterizes the same triangles the depth prepass does.
+    const MeshletDescriptor cluster = MeshletsMeshObjectSrg::m_meshletsDescriptors[groupId];
+
+    const uint vertexCount   = min(cluster.m_vertexCount,   (uint)MESHLETS_MS_MAX_VERTICES);
+    const uint triangleCount = min(cluster.m_triangleCount, (uint)MESHLETS_MS_MAX_TRIANGLES);
+    SetMeshOutputCounts(vertexCount, triangleCount);
+
+    const uint objectId = MeshletsMeshInstanceSrg::m_objectId;
+    const float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectId);
+
+    // Position only — a shadow map writes depth and nothing else.
+    for (uint v = groupThreadId; v < vertexCount; v += MESHLETS_MS_THREADS)
+    {
+        const uint meshVertex = MeshletsMeshObjectSrg::m_meshletsIndicesLookup[cluster.m_vertexOffset + v];
+
+        const float3 localPos = MeshletsMeshObjectSrg::GetPosition(meshVertex);
+        const float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
+
+        VSOutput o;
+        // Rebound per cascade by the shadowmap pass — this is the light's VP.
+        o.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPos, 1.0));
+        outVerts[v] = o;
+    }
+
+    // Unpacked 8-bit indices are cluster-LOCAL (0..vertexCount-1) and index the
+    // emitted vertex array directly.
+    for (uint t = groupThreadId; t < triangleCount; t += MESHLETS_MS_THREADS)
+    {
+        const uint encodedTri = MeshletsMeshObjectSrg::m_meshletsTriangles[cluster.m_triangleOffset + t];
+        outTris[t] = uint3(
+            (encodedTri      ) & 0xffu,
+            (encodedTri >>  8) & 0xffu,
+            (encodedTri >> 16) & 0xffu);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6 shadow-side DAG cut (MeshletsShadowMeshShaderCulled.shader): payload-
+// driven variant fed by the SHARED cluster-cull AS in "cut-only" mode — the
+// feature processor sets m_doFrustumCull/m_doConeCull/m_doHiZCull to 0 on the
+// shadow instance SRG (a light must rasterize clusters outside the CAMERA
+// frustum), leaving only the DAG cut. The shadow geometry therefore matches the
+// camera passes' cut exactly — no detail mismatch between depth and shadow.
+// ---------------------------------------------------------------------------
+#include <MeshletsCullAS.azsli>
+
+[outputtopology("triangle")]
+[numthreads(MESHLETS_MS_THREADS, 1, 1)]
+void MeshletsShadowPassMSCulled(
+    uint groupThreadId : SV_GroupThreadID,
+    uint groupId       : SV_GroupID,
+    in payload MeshletPayload payload,
+    out vertices VSOutput outVerts[MESHLETS_MS_MAX_VERTICES],
+    out indices  uint3    outTris[MESHLETS_MS_MAX_TRIANGLES])
+{
+    // The AS only ever writes valid (< clusterCount) ids and dispatches exactly
+    // survivorCount MS groups, so groupId indexes the payload directly.
+    const uint clusterId = payload.m_clusterIds[groupId];
+    const MeshletDescriptor cluster = MeshletsMeshObjectSrg::m_meshletsDescriptors[clusterId];
+
+    const uint vertexCount   = min(cluster.m_vertexCount,   (uint)MESHLETS_MS_MAX_VERTICES);
+    const uint triangleCount = min(cluster.m_triangleCount, (uint)MESHLETS_MS_MAX_TRIANGLES);
+    SetMeshOutputCounts(vertexCount, triangleCount);
+
+    const uint objectId = MeshletsMeshInstanceSrg::m_objectId;
+    const float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectId);
+
+    // Phase 7 streaming: paged (pool) fetch when active — see the forward variant.
+    const MeshletsPagedCluster pagedCluster =
+        (MeshletsMeshObjectSrg::m_pagedMode != 0u)
+            ? MeshletsMeshObjectSrg::GetPagedCluster(clusterId)
+            : (MeshletsPagedCluster)0;
+    const bool paged = pagedCluster.m_valid != 0u;
+
+    for (uint v = groupThreadId; v < vertexCount; v += MESHLETS_MS_THREADS)
+    {
+        float3 localPos;
+        if (paged)
+        {
+            localPos = MeshletsMeshObjectSrg::GetPagedPosition(
+                pagedCluster, MeshletsMeshObjectSrg::GetPagedVertexId(pagedCluster, v));
+        }
+        else
+        {
+            const uint meshVertex = MeshletsMeshObjectSrg::m_meshletsIndicesLookup[cluster.m_vertexOffset + v];
+            localPos = MeshletsMeshObjectSrg::GetPosition(meshVertex);
+        }
+        const float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
+
+        VSOutput o;
+        // Rebound per cascade by the shadowmap pass — this is the light's VP.
+        o.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPos, 1.0));
+        outVerts[v] = o;
+    }
+
+    for (uint t = groupThreadId; t < triangleCount; t += MESHLETS_MS_THREADS)
+    {
+        const uint encodedTri = paged
+            ? MeshletsMeshObjectSrg::GetPagedTriangleWord(pagedCluster, t)
+            : MeshletsMeshObjectSrg::m_meshletsTriangles[cluster.m_triangleOffset + t];
+        outTris[t] = uint3(
+            (encodedTri      ) & 0xffu,
+            (encodedTri >>  8) & 0xffu,
+            (encodedTri >> 16) & 0xffu);
+    }
+}
+
+// Empty pixel shader — see the long note in MeshletsDepthMeshShader.azsl. Short
+// version: azslc counts entry functions from input-assembly reflection, a Mesh
+// entry contributes none, and a mesh-ONLY shader fails to build with "The number of
+// valid shader entry functions ... was 0!". An output-free PS keeps this a
+// depth-only draw and still permits early-Z.
+void MeshletsShadowPassPS(VSOutput IN)
+{
+}

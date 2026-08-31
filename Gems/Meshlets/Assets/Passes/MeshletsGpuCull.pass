@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsGpuCullParentPassTemplate",
+            "PassClass": "ParentPass",
+            // Early GPU-cull container, injected before DepthPrePass. Compute-only,
+            // so no render-target slots. Child order matters: the compute pass writes
+            // the args buffers (UAV), then the barrier pass declares them Indirect —
+            // the frame graph inserts the UAV->IndirectArgument transition between the
+            // two scopes, before any standard pass consumes the args as indirect draws.
+            "Slots": [],
+            "PassRequests": [
+                {
+                    "Name": "MeshletsCullComputePass",
+                    "TemplateName": "MeshletsCullComputePassTemplate",
+                    "Connections": []
+                },
+                {
+                    "Name": "MeshletsCullBarrierPass",
+                    "TemplateName": "MeshletsCullComputePassTemplate",
+                    "Connections": []
+                }
+            ]
+        }
+    }
+}

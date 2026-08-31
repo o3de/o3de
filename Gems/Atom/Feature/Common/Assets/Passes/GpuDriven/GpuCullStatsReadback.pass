@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuCullStatsReadbackTemplate",
+            "PassClass": "GpuCullStatsReadbackPass",
+            "Slots": [
+                {
+                    "Name": "SurvivorCount",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Copy"
+                }
+            ]
+        }
+    }
+}

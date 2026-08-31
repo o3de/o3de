@@ -1,0 +1,36 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsLateDepthPassTemplate",
+            "PassClass": "MeshletsRenderPass",
+            // Two-pass occlusion PASS 2: draws the "meshletslatedepth" items (the
+            // disoccluded clusters pass 1 skipped) into the pipeline depth buffer,
+            // AFTER GpuCullAndDrawPass has reduced this frame's HiZ pyramid.
+            //
+            // HiZInput is a declared Shader read of the persistent pyramid — the
+            // frame graph orders the UAV->shader-read transition after the mip-chain
+            // writes, which is what makes it legal for this pass's AS (and every
+            // later pass's, e.g. the forward AS) to sample the CURRENT pyramid.
+            "Slots": [
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "HiZInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "meshletslatedepth",
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

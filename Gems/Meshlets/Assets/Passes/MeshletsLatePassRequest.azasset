@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "MeshletsLateDepthPass",
+        "TemplateName": "MeshletsLateDepthPassTemplate",
+        "Enabled": true,
+        // Injected via RenderPipeline::AddPassAfter("GpuCullAndDrawPass") — see
+        // MeshletsFeatureProcessor::TryAutoInjectLatePass. DepthMSAA is the raster
+        // depth target the standard depth prepass (and forward pass) use; HiZOutput
+        // is THIS frame's persistent pyramid, exposed by GpuCullAndDrawPass so the
+        // read is a declared connection (ordered after the mip-chain writes).
+        "Connections": [
+            { "LocalSlot": "DepthStencilInputOutput", "AttachmentRef": { "Pass": "DepthPrePass", "Attachment": "DepthMSAA" } },
+            { "LocalSlot": "HiZInput", "AttachmentRef": { "Pass": "GpuCullAndDrawPass", "Attachment": "HiZOutput" } }
+        ]
+    }
+}

@@ -16,6 +16,9 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>                // AZ::IO::MaxPathLength, for the GXDK root buffer
+#include <AzCore/PlatformId/PlatformDefaults.h> // AZ::PlatformXbox, for the per-target header choice
+#include <AzCore/Utils/Utils.h>                 // AZ::Utils::GetEnv, to locate the GDK console dxc
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -25,8 +28,16 @@ namespace AZ
     {
         static const char* DX12ApiName = "dx12";
         static const char* DX12ShaderPlatformName = "DX12ShaderPlatform";
+        // THESE ARE PER-TARGET-PLATFORM, NOT PER-HOST. This builder serves every DX12 asset
+        // platform, so "Windows" here is the folder for the pc target, not for the machine running
+        // the build.
+        //
+        // The sub-directory is the PAL-style folder name, which is NOT the asset platform
+        // identifier: the "pc" platform's headers live under "Windows". Hence the explicit mapping
+        // in GetAzslHeader below rather than composing the path from platform.m_identifier.
         static const char* PlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/DX12/PlatformHeader.hlsli";
         static const char* AzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/DX12/AzslcHeader.azsli";
+        static const char* AzslShaderHeaderXbox = "Builders/ShaderHeaders/Platform/Xbox/DX12/AzslcHeader.azsli";
 
         ShaderPlatformInterface::ShaderPlatformInterface(uint32_t apiUniqueIndex)
             : RHI::ShaderPlatformInterface(apiUniqueIndex), m_apiName{ DX12ApiName }
@@ -91,6 +102,9 @@ namespace AZ
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
+            // Mesh and Amplification stages form a mesh-shader raster program (PipelineStateType::Draw).
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Mesh;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Amplification;
 
             return hasRasterProgram;
         }
@@ -172,7 +186,7 @@ namespace AZ
         }
 
         bool ShaderPlatformInterface::CompilePlatformInternal(
-            [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
+            const AssetBuilderSDK::PlatformInfo& platform,
             const AZStd::string& shaderSourcePath,
             const AZStd::string& functionName,
             RHI::ShaderHardwareStage shaderStage,
@@ -185,6 +199,7 @@ namespace AZ
             AZStd::string specializationOffsetsFile;
             // Compile HLSL shader to byte code
             bool compiledSucessfully = CompileHLSLShader(
+                platform,                                // which asset platform this job is for; selects the compiler
                 shaderSourcePath,                        // shader source filepath
                 tempFolderPath,                          // AP job temp folder
                 functionName,                            // name of function that is the entry point
@@ -219,11 +234,32 @@ namespace AZ
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            AZ_UNUSED(platform);
+            // Previously this discarded @platform and always returned the Windows header, so every
+            // DX12 target -- including consoles -- was built against Platform/Windows/DX12, which in
+            // turn pulls in Atom/RPI/Platform/Windows/AzslcPlatformHeader.azsli. Adding a
+            // Platform/Xbox/DX12 folder therefore had no effect at all: nothing ever asked for it.
+            //
+            // It matters because that header is where a platform states its shader-visible traits
+            // (UNBOUNDED_SIZE, AZ_TRAITS_MATERIALS_USE_SAMPLER_ARRAY, the real/half typedefs).
+            // Silently borrowing another platform's is only harmless while the two agree; the moment
+            // they diverge the symptom is a shader compile error with no mention of the header.
+            //
+            // Vulkan solves the same problem by branching on a platform tag (HasTag("mobile")).
+            // Tags are the wrong key here: "dx12" is carried by both pc and xbox, so it cannot
+            // separate them. The identifier can.
+            if (platform.m_identifier == AZ::PlatformXbox)
+            {
+                return AzslShaderHeaderXbox;
+            }
+
+            // Everything else keeps the previous behaviour, deliberately: pc maps to the Windows
+            // folder, and any DX12 target added later gets a working default rather than a missing
+            // file. A new console should be added as an explicit case above.
             return AzslShaderHeader;
         }
 
         bool ShaderPlatformInterface::CompileHLSLShader(
+            const AssetBuilderSDK::PlatformInfo& platform,
             const AZStd::string& shaderSourceFile,
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
@@ -234,8 +270,55 @@ namespace AZ
             AZStd::string& specializationOffsetsFile,
             const bool useSpecializationConstants) const
         {
-            // Shader compiler executable
-            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxc.exe");
+            // Shader compiler executable.
+            //
+            // The xbox platform must use the GDK's console dxc, not the desktop DXC package. The
+            // console compiler embeds final, precompiled console ISA into the DXIL container; plain
+            // desktop DXIL is accepted by the console driver but forces a runtime recompile of every
+            // shader at PSO creation ("XBSC W1003: Runtime Recompilation Required ... No precompiled
+            // shader available"), which costs minutes of startup on every single launch. The console
+            // compiler precompiles by default -- no extra flag is needed.
+            //
+            // Resolved through the GXDKLatest environment variable, which the GDK installer sets, so
+            // no SDK version is hardcoded here. Failing the job when it is missing is deliberate:
+            // silently falling back to desktop DXC would produce a package that boots and renders,
+            // making the multi-minute startup indistinguishable from a bug -- exactly the state this
+            // branch exists to remove.
+            //
+            // GATED OFF until root signatures are embedded at build time. The console compiler's
+            // precompile step requires a root signature in the DXIL container -- every shader fails
+            // with "Precompilation failed - Could not find root signature in dxil container"
+            // otherwise, because Atom builds root signatures at RUNTIME (PipelineLayout::Init) and
+            // never embeds one. The path to turn this on: generate the textual root signature from
+            // this builder's own PipelineLayoutDescriptor, mirroring PipelineLayout::Init's exact
+            // traversal (frequency-sorted params; root constants first; per-SRG CBV, resource table,
+            // bindless table with offset=0, sampler table; static samplers; mesh drops the IA flag;
+            // serialize as rootsig_1_0 to match the runtime's D3D_ROOT_SIGNATURE_VERSION_1), and pass
+            // it via -rootsig-define. Until then, xbox uses the desktop DXC like pc: the console
+            // driver accepts that DXIL but recompiles every shader at PSO creation (XBSC W1003),
+            // which costs minutes of startup per launch.
+            constexpr bool consoleShaderPrecompileImplemented = false;
+            AZStd::string dxcRelativePath;
+            if (consoleShaderPrecompileImplemented && platform.m_identifier == AZ::PlatformXbox)
+            {
+                char gxdkRoot[AZ::IO::MaxPathLength] = { 0 };
+                if (!AZ::Utils::GetEnv(AZStd::span<char>(gxdkRoot), "GXDKLatest") || gxdkRoot[0] == '\0')
+                {
+                    AZ_Error(
+                        DX12ShaderPlatformName, false,
+                        "The GXDKLatest environment variable is not set, so the console shader compiler cannot be "
+                        "found. Building %s shaders requires the GDK. Install it, or build from an environment where "
+                        "GXDKLatest points at <GDK>/<version>/GXDK/.",
+                        platform.m_identifier.c_str());
+                    return false;
+                }
+                dxcRelativePath = AZStd::string(gxdkRoot);
+                AzFramework::StringFunc::Path::Join(dxcRelativePath.c_str(), "bin/Scarlett/dxc.exe", dxcRelativePath);
+            }
+            else
+            {
+                dxcRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxc.exe");
+            }
 
             // NOTE:
             // Running DX12 on PC with DXIL shaders requires modern GPUs and at least Windows 10 Build 1803 or later for Shader Model 6.2
@@ -256,6 +339,8 @@ namespace AZ
             // Stage profile name parameter
             // Note: RayTracing shaders must be compiled with version 6_3, while the rest of the stages
             // are compiled with version 6_2, so RayTracing cannot share the version constant.
+            // Mesh and Amplification shaders require Shader Model 6.5, so they also use an explicit
+            // profile string ("ms_6_5"/"as_6_5") rather than the shared shaderModelVersion constant.
             const AZStd::string shaderModelVersion = "6_2";
             const AZStd::unordered_map<RHI::ShaderHardwareStage, AZStd::string> stageToProfileName =
             {
@@ -263,6 +348,8 @@ namespace AZ
                 {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
+                {RHI::ShaderHardwareStage::Mesh,                   "ms_6_5"},
+                {RHI::ShaderHardwareStage::Amplification,          "as_6_5"},
                 {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"}
             };
             auto profileIt = stageToProfileName.find(shaderStageType);

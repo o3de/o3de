@@ -61,6 +61,11 @@ namespace AZ
                 descriptorForDraw.m_vertexFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Vertex);
                 descriptorForDraw.m_geometryFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Geometry);
                 descriptorForDraw.m_fragmentFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Fragment);
+                // Hardware mesh-shader stages (null on a classic vertex-pipeline shader). When a mesh
+                // function is present the DX12 backend builds a mesh-shader stream PSO instead of the
+                // vertex/geometry/fragment graphics PSO.
+                descriptorForDraw.m_meshFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Mesh);
+                descriptorForDraw.m_amplificationFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Amplification);
                 descriptorForDraw.m_renderStates = *m_renderStates;
                 break;
             }

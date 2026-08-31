@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// GPU-Driven Cull Debug Visualization
+//
+// Renders all instances that survived GPU frustum culling using a per-draw-ID
+// debug color. Uses the same vertex-pulling architecture as IndirectDepthPass.
+// Each visible mesh gets a deterministic color derived from its draw ID,
+// making it easy to verify culling correctness and identify individual draws.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#define GPU_DRIVEN_RENDERING
+#include <Atom/Features/GpuDriven/GpuDrivenConstants.azsli>
+#include <Atom/Features/GpuDriven/GpuDrivenAccess.azsli>
+#include <Atom/Features/MeshInfo/MeshInfoBufferUtil.azsli>
+
+// Per-draw batch id, set by the RootConstants indirect command (see IndirectRasterPass signature).
+rootconstant uint m_gpuDrivenBatchId;
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    StructuredBuffer<uint> m_visibleInstanceIds;
+    StructuredBuffer<uint> m_batchBaseOffset;
+};
+
+struct VSInput
+{
+    uint m_vertexId   : SV_VertexID;
+    uint m_instanceId : SV_InstanceID;
+};
+
+struct VSOutput
+{
+    precise float4 m_position : SV_Position;
+    nointerpolation float3 m_debugColor : COLOR0;
+};
+
+// Simple hash-to-color: generates a distinct, saturated color from an integer ID.
+float3 DebugColorFromId(uint id)
+{
+    // Use a golden-ratio-based hue rotation for good color separation
+    float hue = frac(float(id) * 0.618033988749895);
+    float saturation = 0.7;
+    float value = 0.9;
+
+    // HSV to RGB
+    float h = hue * 6.0;
+    float c = value * saturation;
+    float x = c * (1.0 - abs(fmod(h, 2.0) - 1.0));
+    float m = value - c;
+
+    float3 rgb;
+    if      (h < 1.0) rgb = float3(c, x, 0);
+    else if (h < 2.0) rgb = float3(x, c, 0);
+    else if (h < 3.0) rgb = float3(0, c, x);
+    else if (h < 4.0) rgb = float3(0, x, c);
+    else if (h < 5.0) rgb = float3(x, 0, c);
+    else              rgb = float3(c, 0, x);
+
+    return rgb + float3(m, m, m);
+}
+
+VSOutput GpuCullDebugVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    uint batchId = m_gpuDrivenBatchId;
+    uint localVertexId = IN.m_vertexId;
+    uint instanceSlot = PassSrg::m_batchBaseOffset[batchId] + IN.m_instanceId;
+
+    uint meshInfoIndex = GpuDriven_GetMeshInfoIndexBySlot(instanceSlot, PassSrg::m_visibleInstanceIds);
+
+    MeshInfo meshInfo;
+    if (!GetMeshInfoEntry(meshInfoIndex, meshInfo))
+    {
+        OUT.m_position = float4(0, 0, -1, 0);
+        OUT.m_debugColor = float3(1, 0, 0); // Red = invalid
+        return OUT;
+    }
+
+    // Vertex pulling
+    uint triangleIndex = localVertexId / 3;
+    uint vertexInTriangle = localVertexId % 3;
+    uint3 triVertexIndices = LoadIndex(meshInfo, triangleIndex);
+    uint vertexIndex = triVertexIndices[vertexInTriangle];
+    float3 localPosition = LoadPosition(meshInfo, vertexIndex);
+
+    // Transform to clip space
+    float4x4 objectToWorld = GpuDriven_GetObjectToWorldMatrixBySlot(instanceSlot, PassSrg::m_visibleInstanceIds);
+    float4 worldPosition = mul(objectToWorld, float4(localPosition, 1.0));
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    // Assign debug color based on the visible-instance slot (one color per visible instance)
+    OUT.m_debugColor = DebugColorFromId(instanceSlot);
+
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput GpuCullDebugPS(VSOutput IN)
+{
+    PSOutput OUT;
+    OUT.m_color = float4(IN.m_debugColor, 1.0);
+    return OUT;
+}

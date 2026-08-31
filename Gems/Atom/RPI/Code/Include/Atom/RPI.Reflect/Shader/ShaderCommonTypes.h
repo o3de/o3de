@@ -53,7 +53,11 @@ namespace AZ
             TessellationEvaluation,
             Fragment,
             Compute,
-            RayTracing
+            RayTracing,
+            // Hardware mesh-shader pipeline authoring stages. Tail-appended to preserve the
+            // serialized ordinals of the stages above.
+            Mesh,
+            Amplification
         };
 
         ATOM_RPI_REFLECT_API const char* ToString(ShaderStageType shaderStageType);

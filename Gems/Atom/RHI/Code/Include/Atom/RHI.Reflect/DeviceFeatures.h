@@ -20,14 +20,25 @@ namespace AZ::RHI
 {
     struct ATOM_RHI_REFLECT_API DeviceFeatures
     {
+        // NOTE: these three were the only members of this struct without a default
+        // member initializer. RHI::Device holds DeviceFeatures by value (Device.h) and
+        // is created with aznew, so an unset member is default-initialized -- i.e.
+        // indeterminate, and reading it is undefined behaviour. DX12, Vulkan and Metal
+        // all assign them explicitly during device init, but the Null backend never
+        // populates m_features at all, so under "-rhi=null" these three read garbage.
+        // That matters because the null backend is the intended way to validate a new
+        // platform independently of graphics; nondeterministic feature reporting defeats
+        // the purpose. Defaulting to false matches the conservative convention every
+        // other optional feature here already follows.
+
         //! Whether the adapter supports geometry shaders.
-        bool m_geometryShader;
+        bool m_geometryShader = false;
 
         //! Whether the adapter supports compute shaders.
-        bool m_computeShader;
+        bool m_computeShader = false;
 
         //! Whether color attachments can utilize independent blend modes.
-        bool m_independentBlend;
+        bool m_independentBlend = false;
 
         //! Whether the adapter supports dual source blending.
         bool m_dualSourceBlending = false;
@@ -67,6 +78,9 @@ namespace AZ::RHI
 
         //! Whether Ray Tracing supports CLAS structures.
         bool m_rayTracingClas = false;
+
+        //! Whether hardware mesh + amplification (task/object) shaders are available.
+        bool m_meshShader = false;
 
         //! Whether Unbounded Array support is available.
         bool m_unboundedArrays = false;

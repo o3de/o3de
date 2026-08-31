@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// GPU-Driven Batch Scatter: place each survivor's instance index into its batch's
+// contiguous slot in the visible-id list, so each batch's instances are addressable
+// as [m_batchBaseOffset[batchId], + count) for an instanced indirect draw.
+
+#include <scenesrg_all.srgi>
+
+#define SCATTER_THREADS 64
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    StructuredBuffer<uint2> m_survivors;          // in: (instanceIndex, batchId)
+    ByteAddressBuffer m_survivorCount;            // in: survivor list length
+    StructuredBuffer<uint> m_batchBaseOffset;     // in: per-batch base slot
+    RWStructuredBuffer<uint> m_batchWriteCursor;  // in/out: per-batch running cursor
+    RWStructuredBuffer<uint> m_visibleInstanceIds;// out: contiguous-per-batch instance indices
+};
+
+[numthreads(SCATTER_THREADS, 1, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint i = dispatchThreadID.x;
+    uint survivorCount = PassSrg::m_survivorCount.Load(0);
+    if (i >= survivorCount)
+    {
+        return;
+    }
+
+    uint2 survivor = PassSrg::m_survivors[i];
+    uint instanceIndex = survivor.x;
+    uint batchId = survivor.y;
+
+    uint local;
+    InterlockedAdd(PassSrg::m_batchWriteCursor[batchId], 1, local);
+    uint slot = PassSrg::m_batchBaseOffset[batchId] + local;
+
+    uint maxVisible, stride;
+    PassSrg::m_visibleInstanceIds.GetDimensions(maxVisible, stride);
+    if (slot < maxVisible)
+    {
+        PassSrg::m_visibleInstanceIds[slot] = instanceIndex;
+    }
+}
