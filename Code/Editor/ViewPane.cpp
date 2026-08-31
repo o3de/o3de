@@ -513,8 +513,8 @@ void CLayoutViewPane::OnMenuBindingHook()
         // first because the entries above quantise a value, while this snaps to what is in the
         // level - related enough to share the menu, different enough not to read as one group.
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 850);
-        m_menuManagerInterface->AddSubMenuToMenu(
-            EditorIdentifiers::ViewportOptionsMenuIdentifier, EditorIdentifiers::EditModifySnapToMenuIdentifier, 900);
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.geometrySnapping", 875);
     }
 }
 
@@ -531,6 +531,11 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier,
+        "o3de.action.edit.snap.geometrySnapping",
+        EditorIdentifiers::EditModifySnapToMenuIdentifier,
+        850);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }
