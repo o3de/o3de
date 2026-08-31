@@ -269,14 +269,6 @@
                 "Path": "Passes/Shadow/SparseVirtualShadowmaps.pass"
             },
             {
-                "Name": "VsmMarkPagesTemplate",
-                "Path": "Passes/Shadow/VsmMarkPages.pass"
-            },
-            {
-                "Name": "VsmPageRequestsReadbackTemplate",
-                "Path": "Passes/Shadow/VsmPageRequestsReadback.pass"
-            },
-            {
                 "Name": "LightCullingRemapTemplate",
                 "Path": "Passes/LightCullingRemap.pass"
             },
@@ -671,7 +663,7 @@
             {
                 "Name": "PaniniProjectionTemplate",
                 "Path": "Passes/PaniniProjection.pass"
-            }, 
+            },
             {
                 "Name": "FilmGrainTemplate",
                 "Path": "Passes/FilmGrain.pass"
@@ -711,34 +703,6 @@
             {
                 "Name": "GpuTwoPassOcclusionCullTemplate",
                 "Path": "Passes/GpuDriven/GpuTwoPassOcclusionCull.pass"
-            },
-            {
-                "Name": "VsmFindFreePagesTemplate",
-                "Path": "Passes/Shadow/VsmFindFreePages.pass"
-            },
-            {
-                "Name": "VsmAllocatePagesTemplate",
-                "Path": "Passes/Shadow/VsmAllocatePages.pass"
-            },
-            {
-                "Name": "VsmClearPagesTemplate",
-                "Path": "Passes/Shadow/VsmClearPages.pass"
-            },
-            {
-                "Name": "VsmDirtyHiZTemplate",
-                "Path": "Passes/Shadow/VsmDirtyHiZ.pass"
-            },
-            {
-                "Name": "VsmCollectDirtyPagesTemplate",
-                "Path": "Passes/Shadow/VsmCollectDirtyPages.pass"
-            },
-            {
-                "Name": "VsmClearFusedPagePoolTemplate",
-                "Path": "Passes/Shadow/VsmClearFusedPagePool.pass"
-            },
-            {
-                "Name": "VsmFusedCullDrawTemplate",
-                "Path": "Passes/Shadow/VsmFusedCullDraw.pass"
             },
             {
                 "Name": "IndirectRasterTemplate",
