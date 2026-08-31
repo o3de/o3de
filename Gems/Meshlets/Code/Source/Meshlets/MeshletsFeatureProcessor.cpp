@@ -718,7 +718,7 @@ namespace AZ
             }
             auto& srg = instance.CullSrg;
 
-            // Object->world as 3 rows (shader does explicit row·point -- no matrix major-ness).
+            // Object->world as 3 rows (shader does explicit row*point -- no matrix major-ness).
             const RHI::ShaderInputConstantIndex r0 = srg->FindShaderInputConstantIndex(Name("m_worldRow0"));
             const RHI::ShaderInputConstantIndex r1 = srg->FindShaderInputConstantIndex(Name("m_worldRow1"));
             const RHI::ShaderInputConstantIndex r2 = srg->FindShaderInputConstantIndex(Name("m_worldRow2"));
@@ -2753,7 +2753,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& srg, const AZ::Frustum& frustum,
             const AZ::Vector3& cameraPos, const AZ::Matrix4x4& objectToWorld, bool dagCutActive)
         {
-            // Object->world as 3 rows (shader does explicit row·point -- no matrix
+            // Object->world as 3 rows (shader does explicit row*point -- no matrix
             // major-ness), same convention as MeshletsCull.azsl's per-instance update.
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_worldRow0")), objectToWorld.GetRow(0));
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_worldRow1")), objectToWorld.GetRow(1));

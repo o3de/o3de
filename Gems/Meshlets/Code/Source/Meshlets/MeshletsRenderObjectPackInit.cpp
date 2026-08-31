@@ -677,7 +677,7 @@ namespace AZ::Meshlets
 
                 // SP1: block until all streaming uploads complete. WaitForUpload
                 // is a no-op for buffers that used the synchronous initial-data
-                // path (≤ 64KB) or post-creation UpdateData; for the StreamBuffer
+                // path (<= 64KB) or post-creation UpdateData; for the StreamBuffer
                 // path it does a fenced CPU wait per device. This adds a
                 // one-time construction-cost block but eliminates the data race.
                 if (!streamingBuffers.empty())
