@@ -493,19 +493,13 @@ namespace AZ
             return;
         }
 
-        static constexpr int32_t masks[] =
-        {
-            -1, -1, -1, -1,
-            -1,  0,  0,  0,
-            -1, -1,  0,  0,
-            -1, -1, -1,  0
-        };
+        // A non-empty vector has between one and four valid values in its final SIMD element.
+        const int32_t validElementCount = static_cast<int32_t>(((m_numElements - 1) % 4) + 1);
+        const Simd::Vec4::Int32Type elementIndices = Simd::Vec4::LoadImmediate(0, 1, 2, 3);
+        const Simd::Vec4::FloatType mask =
+            Simd::Vec4::CastToFloat(Simd::Vec4::CmpLt(elementIndices, Simd::Vec4::Splat(validElementCount)));
 
         const AZStd::size_t lastElement = m_values.size() - 1;
-        const AZStd::size_t trailingZeroElements = 4 * (m_numElements % 4);
-        const Simd::Vec4::FloatType mask =
-            Simd::Vec4::CastToFloat(Simd::Vec4::LoadUnaligned(&masks[trailingZeroElements]));
-
         m_values[lastElement].SetSimdValue(Simd::Vec4::And(m_values[lastElement].GetSimdValue(), mask));
     }
 

@@ -440,20 +440,14 @@ namespace AZ
         const AZStd::size_t lastRowGroup = m_numRowGroups - 1;
         const AZStd::size_t lastColGroup = m_numColGroups - 1;
         const Simd::Vec4::FloatType zero = Simd::Vec4::ZeroFloat();
-        static constexpr int32_t masks[] =
-        {
-            -1, -1, -1, -1,
-            -1,  0,  0,  0,
-            -1, -1,  0,  0,
-            -1, -1, -1,  0
-        };
+        // A non-empty matrix has between one and four valid rows in its final SIMD row group.
+        const int32_t validRowCount = static_cast<int32_t>(((m_rowCount - 1) % 4) + 1);
+        const Simd::Vec4::Int32Type rowIndices = Simd::Vec4::LoadImmediate(0, 1, 2, 3);
+        const Simd::Vec4::FloatType mask =
+            Simd::Vec4::CastToFloat(Simd::Vec4::CmpLt(rowIndices, Simd::Vec4::Splat(validRowCount)));
 
         // Fix last row values
         {
-            const AZStd::size_t trailingZeroElements = 4 * (m_rowCount % 4);
-            const Simd::Vec4::FloatType mask =
-                Simd::Vec4::CastToFloat(Simd::Vec4::LoadUnaligned(&masks[trailingZeroElements]));
-
             for (AZStd::size_t colIter = 0; colIter < GetColumnGroups(); ++colIter)
             {
                 Matrix4x4& lastBlock = GetSubmatrix(lastRowGroup, colIter);
