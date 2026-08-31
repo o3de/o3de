@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 
+
 #include <Scene/PhysXSceneSimulationEventCallback.h>
 #include <Scene/PhysXSceneSimulationFilterCallback.h>
 
@@ -81,10 +82,14 @@ namespace PhysX
 
         physx::PxControllerManager* GetOrCreateControllerManager();
 
-        //! Apply batched transform sync events for the current simulation pass. 
+        //! Apply batched transform sync events for the current simulation pass.
         //! This will clear the batched data for the next simulation pass.
         void FlushTransformSync();
-        
+
+        //! Replay the scene events the simulation thread deferred, one record per sub-step.
+        //! Called on the main thread; a no-op unless a simulation thread is running.
+        void FlushDeferredFinishEvents();
+
     private:
 
         //! Data structure for efficient unique vector functionality.
@@ -108,8 +113,8 @@ namespace PhysX
 
         void FlushQueuedEvents();
         void ClearDeferedDeletions();
-        void ProcessTriggerEvents();
-        void ProcessCollisionEvents();
+        void ProcessTriggerEvents(AzPhysics::TriggerEventList& triggerEvents);
+        void ProcessCollisionEvents(AzPhysics::CollisionEventList& collisionEvents);
 
         void UpdateAzProfilerDataPoints();
 
@@ -126,6 +131,17 @@ namespace PhysX
         // When we run the batched transform sync, the accumulated simulation time is provided
         // to tell how much time was simulated in this full pass.
         float m_accumulatedDeltaTime = 0.0f;
+
+        // One simulation sub-step's events, cached by the free-running thread and replayed in order.
+        struct DeferredStepEvents
+        {
+            float m_deltaTime = 0.0f;
+            AzPhysics::CollisionEventList m_collisionEvents; //!< Owned copies - the SDK lists are
+            AzPhysics::TriggerEventList m_triggerEvents;     //!< only valid inside the callback.
+        };
+
+        // Filled by the simulation thread, drained by the main thread - both under the scene write lock.
+        AZStd::vector<DeferredStepEvents> m_deferredStepEvents;
 
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;

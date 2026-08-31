@@ -629,7 +629,7 @@ namespace PhysX
             // Keep the event signal outside of the scene lock since there may be handlers that want to lock the scene for write
             m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
 
-            if (physx_batchTransformSync)
+            if (physx_batchTransformSync ||  GetPhysXSystem()->IsSimulationThreadRunning())
             {
                 m_queuedActiveBodyIndices.IncreaseCapacity(activeBodyHandles.size());
 
@@ -647,12 +647,26 @@ namespace PhysX
             }
         }
 
-        FlushQueuedEvents();
-        ClearDeferedDeletions();
-
+        if (GetPhysXSystem()->IsSimulationThreadRunning())
         {
-            AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
-            m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+            //! We are on thread, so cache the events and flush them from Main thread.
+            DeferredStepEvents& stepEvents = m_deferredStepEvents.emplace_back();
+            stepEvents.m_deltaTime = m_currentDeltaTime;
+            stepEvents.m_triggerEvents = m_simulationEventCallback.GetQueuedTriggerEvents();
+            stepEvents.m_collisionEvents = m_simulationEventCallback.GetQueuedCollisionEvents();
+            m_simulationEventCallback.FlushQueuedTriggerEvents();
+            m_simulationEventCallback.FlushQueuedCollisionEvents();
+        }
+        else
+        {
+            //! PhysX simulation is on main thread - run directly callbacks.
+            FlushQueuedEvents();
+            ClearDeferedDeletions();
+
+            {
+                AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
+                m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+            }
         }
 
         UpdateAzProfilerDataPoints();
@@ -661,10 +675,39 @@ namespace PhysX
     void PhysXScene::FlushQueuedEvents()
     {
         //send queued trigger events
-        ProcessTriggerEvents();
+        ProcessTriggerEvents(m_simulationEventCallback.GetQueuedTriggerEvents());
+        m_simulationEventCallback.FlushQueuedTriggerEvents();
 
         //send queued collision events
-        ProcessCollisionEvents();
+        ProcessCollisionEvents(m_simulationEventCallback.GetQueuedCollisionEvents());
+        m_simulationEventCallback.FlushQueuedCollisionEvents();
+    }
+
+    void PhysXScene::FlushDeferredFinishEvents()
+    {
+        if (m_deferredStepEvents.empty())
+        {
+            return;
+        }
+        AZ_PROFILE_SCOPE(Physics, "PhysXScene::FlushDeferredFinishEvents");
+
+        //! Replayed per sub-step, not coalesced: handlers integrate against the step delta and the
+        //! collision lists are documented as one sub-step's worth.
+        for (DeferredStepEvents& stepEvents : m_deferredStepEvents)
+        {
+            m_currentDeltaTime = stepEvents.m_deltaTime;
+
+            ProcessTriggerEvents(stepEvents.m_triggerEvents);
+            ProcessCollisionEvents(stepEvents.m_collisionEvents);
+            ClearDeferedDeletions();
+
+            {
+                AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
+                m_sceneSimulationFinishEvent.Signal(m_sceneHandle, stepEvents.m_deltaTime);
+            }
+        }
+
+        m_deferredStepEvents.clear();
     }
 
     void PhysXScene::SetEnabled(bool enable)
@@ -1178,11 +1221,10 @@ namespace PhysX
         }
     }
 
-    void PhysXScene::ProcessTriggerEvents()
+    void PhysXScene::ProcessTriggerEvents(AzPhysics::TriggerEventList& triggers)
     {
         AZ_PROFILE_SCOPE(Physics, "PhysXScene::ProcessTriggerEvents");
 
-        AzPhysics::TriggerEventList& triggers = m_simulationEventCallback.GetQueuedTriggerEvents();
         if (triggers.empty())
         {
             return; // nothing to signal
@@ -1200,16 +1242,12 @@ namespace PhysX
                 triggerEvent.m_otherBody->ProcessTriggerEvent(triggerEvent);
             }
         }
-
-        //cleanup events for next simulate
-        m_simulationEventCallback.FlushQueuedTriggerEvents();
     }
 
-    void PhysXScene::ProcessCollisionEvents()
+    void PhysXScene::ProcessCollisionEvents(AzPhysics::CollisionEventList& collisions)
     {
         AZ_PROFILE_SCOPE(Physics, "PhysXScene::ProcessCollisionEvents");
 
-        AzPhysics::CollisionEventList& collisions = m_simulationEventCallback.GetQueuedCollisionEvents();
         if (collisions.empty())
         {
             return; //nothing to signal
@@ -1236,9 +1274,6 @@ namespace PhysX
                 collision.m_body1->ProcessCollisionEvent(collision);
             }
         }
-
-        //cleanup events for next simulate
-        m_simulationEventCallback.FlushQueuedCollisionEvents();
     }
 
     void PhysXScene::UpdateAzProfilerDataPoints()
@@ -1347,7 +1382,9 @@ namespace PhysX
             }
         };
 
-        if (physx_parallelTransformSync)
+        //! ApplyParallel's tasks take a read lock while we wait on them - deadlocks under the write
+        //! lock the caller holds while a simulation thread is running.
+        if (physx_parallelTransformSync && !GetPhysXSystem()->IsSimulationThreadRunning())
         {
             m_queuedActiveBodyIndices.ApplyParallel(transformSync, m_pxScene);
         }
