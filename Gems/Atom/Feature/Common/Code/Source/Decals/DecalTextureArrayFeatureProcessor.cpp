@@ -473,7 +473,8 @@ namespace AZ
             const bool wasExistingTextureArrayFoundForGivenLayout = textureArrayIndex != -1;
             if (m_textureArrayList.size() == NumTextureArrays && !wasExistingTextureArrayFoundForGivenLayout)
             {
-                const auto& diffuse = layout.m_maps[DecalMapType_Diffuse];
+                // Only read by AZ_Warning, which compiles out in configurations that disable it.
+                [[maybe_unused]] const auto& diffuse = layout.m_maps[DecalMapType_Diffuse];
                 AZ_Warning(
                     "DecalTextureArrayFeatureProcessor",
                     false,
