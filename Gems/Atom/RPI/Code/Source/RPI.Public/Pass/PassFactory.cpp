@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/CopyPass.h>
-#include <Atom/RPI.Public/Pass/CullAndDrawPassGroup.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/GpuDriven/GpuCullPass.h>
 #include <Atom/RPI.Public/Pass/GpuDriven/HiZGeneratePass.h>
@@ -82,7 +81,6 @@ namespace AZ
             AddPassCreator(Name("GpuCullPass"), &GpuCullPass::Create);
             AddPassCreator(Name("HiZGeneratePass"), &HiZGeneratePass::Create);
             AddPassCreator(Name("IndirectRasterPass"), &IndirectRasterPass::Create);
-            AddPassCreator(Name("CullAndDrawPassGroup"), &CullAndDrawPassGroup::Create);
         }
 
         PassFactory::CreatorIndex PassFactory::FindCreatorIndex(Name passClassName)
