@@ -10,6 +10,7 @@ set(MESHOPTIMIZER_TARGET meshoptimizer)
 if (TARGET 3rdParty::${MESHOPTIMIZER_TARGET})
     return()
 endif()
+
 block()
     o3de_fetch_content(${MESHOPTIMIZER_TARGET}
         VERSION "v1.2"
@@ -21,13 +22,28 @@ block()
     )
     set(MESHOPT_INSTALL OFF)
     FetchContent_MakeAvailable(meshoptimizer)
+
+    get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+    FetchContent_GetProperties(${MESHOPTIMIZER_TARGET} SOURCE_DIR meshoptimizer_source_dir)
+
+    ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
+    set_property(TARGET ${MESHOPTIMIZER_TARGET} PROPERTY FOLDER "${relative_this_gem_root}/External")
+
+    add_library(3rdParty::${MESHOPTIMIZER_TARGET} ALIAS ${MESHOPTIMIZER_TARGET})
+    ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findmeshoptimizer.cmake DESTINATION cmake/3rdParty)
+    ly_install(FILES ${meshoptimizer_source_dir}/LICENSE.md DESTINATION include/meshoptimizer COMPONENT CORE)
+
+    # install the libraries making sure to use different directories for debug/release/etc
+    set(BASE_LIBRARY_FOLDER "lib/${PAL_PLATFORM_NAME}")
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${conf} UCONF)
+    ly_install(TARGETS ${MESHOPTIMIZER_TARGET}
+        ARCHIVE
+            DESTINATION "${BASE_LIBRARY_FOLDER}/${conf}"
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            CONFIGURATIONS ${conf}
+    )
+    endforeach()
 endblock()
-
-get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
-set_property(TARGET ${MESHOPTIMIZER_TARGET} PROPERTY FOLDER "${relative_this_gem_root}/External")
-
-add_library(3rdParty::${MESHOPTIMIZER_TARGET} ALIAS ${MESHOPTIMIZER_TARGET})
-ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findmeshoptimizer.cmake DESTINATION cmake/3rdParty)
 
 set(meshoptimizer_FOUND TRUE PARENT_SCOPE)
