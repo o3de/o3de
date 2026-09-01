@@ -44,9 +44,19 @@ float4 GenerateWorldPosition(
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
     const int materialType = params.m_materialType;
 
+    // Texture sampling nodes emit Texture2D::Sample, which needs screen-space derivatives to pick a mip and is only
+    // legal in a pixel shader. Anything a graph routes into Position Offset is evaluated right here, in the vertex
+    // stage, so a graph with a texture feeding Position Offset failed with
+    //     error: Opcode Sample not valid in shader model vs_6_2
+    // CS_SAMPLERS is the engine's existing flag for "this stage has no derivatives" -- GoboTexture, ParallaxMapping,
+    // AlphaUtils, Ibl and Ltc all use it that way -- and sample_texture_2d already carries a SampleLevel branch
+    // behind it. Defining it across the generated block selects that branch for vertex evaluation only. It sits
+    // outside the BEGIN/END markers so the graph compiler, which rewrites only what is between them, preserves it.
+    #define CS_SAMPLERS
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
+    #undef CS_SAMPLERS
 
     #undef O3DE_MC_UV
 

@@ -72,6 +72,13 @@ namespace AtomToolsFramework
         // @param notify Send a notification that the active graph has changed.
         void SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId, bool notify);
 
+        //! Creates the node supplied by GraphViewSettings and splices it onto a connection at the requested scene position.
+        bool CreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId, const AZ::Vector2& scenePosition);
+        //! Creates the configured splicing node at the midpoint of the single selected connection.
+        bool CreateSplicingNodeOnSelectedConnection();
+        bool CanCreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId) const;
+        bool CanCreateSplicingNodeOnSelectedConnection() const;
+
     protected:
         void CreateActions();
 
@@ -145,6 +152,7 @@ namespace AtomToolsFramework
         QAction* m_actionPaste = {};
         QAction* m_actionDelete = {};
         QAction* m_actionDuplicate = {};
+        QAction* m_actionCreateSplicingNode = {};
 
         QAction* m_actionRemoveUnusedNodes = {};
         QAction* m_actionRemoveUnusedElements = {};

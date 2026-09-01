@@ -19,6 +19,7 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 #include <GraphCanvas/Widgets/AssetEditorToolbar/AssetEditorToolbar.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/GeneralMenuActions/GeneralMenuActions.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/BookmarkContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CollapsedNodeGroupContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/CommentContextMenu.h>
@@ -29,6 +30,7 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SlotContextMenu.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
+#include <GraphCanvas/Utils/GraphUtils.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
@@ -44,6 +46,41 @@
 
 namespace AtomToolsFramework
 {
+    namespace
+    {
+        class CreateSplicingNodeContextMenuAction final
+            : public GraphCanvas::EditContextMenuAction
+        {
+        public:
+            CreateSplicingNodeContextMenuAction(AZStd::string_view actionName, GraphView* graphView, QObject* parent)
+                : GraphCanvas::EditContextMenuAction(actionName, parent)
+                , m_graphView(graphView)
+            {
+            }
+
+            using GraphCanvas::EditContextMenuAction::TriggerAction;
+            GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(
+                const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePosition) override
+            {
+                AZ_UNUSED(graphId);
+                return m_graphView && m_graphView->CreateSplicingNodeOnConnection(GetTargetId(), scenePosition)
+                    ? GraphCanvas::ContextMenuAction::SceneReaction::PostUndo
+                    : GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+            }
+
+        protected:
+            using GraphCanvas::EditContextMenuAction::RefreshAction;
+            void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override
+            {
+                AZ_UNUSED(graphId);
+                setEnabled(m_graphView && m_graphView->CanCreateSplicingNodeOnConnection(targetId));
+            }
+
+        private:
+            GraphView* m_graphView = {};
+        };
+    } // namespace
+
     GraphView::GraphView(
         const AZ::Crc32& toolId, const GraphCanvas::GraphId& activeGraphId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : QWidget(parent)
@@ -153,6 +190,81 @@ namespace AtomToolsFramework
         AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
     }
 
+    bool GraphView::CanCreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId) const
+    {
+        return m_activeGraphId.IsValid() && m_graphViewSettingsPtr &&
+            m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn && GraphCanvas::GraphUtils::IsSpliceableConnection(connectionId);
+    }
+
+    bool GraphView::CanCreateSplicingNodeOnSelectedConnection() const
+    {
+        AZStd::vector<GraphCanvas::ConnectionId> selectedConnections;
+        GraphCanvas::SceneRequestBus::EventResult(
+            selectedConnections, m_activeGraphId, &GraphCanvas::SceneRequests::GetSelectedConnections);
+        return selectedConnections.size() == 1 && CanCreateSplicingNodeOnConnection(selectedConnections.front());
+    }
+
+    bool GraphView::CreateSplicingNodeOnConnection(
+        const GraphCanvas::ConnectionId& connectionId, const AZ::Vector2& scenePosition)
+    {
+        if (!CanCreateSplicingNodeOnConnection(connectionId))
+        {
+            return false;
+        }
+
+        AZStd::unique_ptr<GraphCanvas::GraphCanvasMimeEvent> mimeEvent(
+            m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn());
+        if (!mimeEvent)
+        {
+            return false;
+        }
+
+        GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
+        AZ::Vector2 dropPosition = scenePosition;
+        if (!mimeEvent->ExecuteEvent(scenePosition, dropPosition, m_activeGraphId))
+        {
+            return false;
+        }
+
+        const GraphCanvas::NodeId nodeId = mimeEvent->GetCreatedNodeId();
+        GraphCanvas::ConnectionSpliceConfig spliceConfig;
+        if (!nodeId.IsValid() || !GraphCanvas::GraphUtils::SpliceNodeOntoConnection(nodeId, connectionId, spliceConfig))
+        {
+            if (nodeId.IsValid())
+            {
+                GraphCanvas::GraphUtils::DeleteOutermostNode(m_activeGraphId, nodeId);
+            }
+            return false;
+        }
+
+        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
+        GraphCanvas::SceneMemberUIRequestBus::Event(nodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+        GraphCanvas::SceneNotificationBus::Event(m_activeGraphId, &GraphCanvas::SceneNotifications::PostCreationEvent);
+        return true;
+    }
+
+    bool GraphView::CreateSplicingNodeOnSelectedConnection()
+    {
+        AZStd::vector<GraphCanvas::ConnectionId> selectedConnections;
+        GraphCanvas::SceneRequestBus::EventResult(
+            selectedConnections, m_activeGraphId, &GraphCanvas::SceneRequests::GetSelectedConnections);
+        if (selectedConnections.size() != 1)
+        {
+            return false;
+        }
+
+        QPointF sourcePosition;
+        QPointF targetPosition;
+        GraphCanvas::ConnectionRequestBus::EventResult(
+            sourcePosition, selectedConnections.front(), &GraphCanvas::ConnectionRequests::GetSourcePosition);
+        GraphCanvas::ConnectionRequestBus::EventResult(
+            targetPosition, selectedConnections.front(), &GraphCanvas::ConnectionRequests::GetTargetPosition);
+        const AZ::Vector2 scenePosition(
+            aznumeric_cast<float>((sourcePosition.x() + targetPosition.x()) * 0.5),
+            aznumeric_cast<float>((sourcePosition.y() + targetPosition.y()) * 0.5));
+        return CreateSplicingNodeOnConnection(selectedConnections.front(), scenePosition);
+    }
+
 
     void GraphView::CreateActions()
     {
@@ -197,6 +309,16 @@ namespace AtomToolsFramework
             GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DeleteSelection);
         }, QKeySequence::Delete);
+        if (m_graphViewSettingsPtr && m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn &&
+            !m_graphViewSettingsPtr->m_createSplicingNodeActionName.empty() &&
+            !m_graphViewSettingsPtr->m_createSplicingNodeShortcut.empty())
+        {
+            m_actionCreateSplicingNode = makeAction(
+                "menuEdit",
+                tr(m_graphViewSettingsPtr->m_createSplicingNodeActionName.c_str()),
+                [this]() { CreateSplicingNodeOnSelectedConnection(); },
+                QKeySequence(QString::fromUtf8(m_graphViewSettingsPtr->m_createSplicingNodeShortcut.c_str())));
+        }
 
         makeSeperator("menuEdit");
         m_actionRemoveUnusedNodes = makeAction("menuEdit", tr("Remove Unused Nodes"), [this](){
@@ -352,6 +474,10 @@ namespace AtomToolsFramework
         m_actionPaste->setEnabled(canPaste);
         m_actionDelete->setEnabled(hasSelection);
         m_actionDuplicate->setEnabled(hasCopiableSelection);
+        if (m_actionCreateSplicingNode)
+        {
+            m_actionCreateSplicingNode->setEnabled(hasGraph && CanCreateSplicingNodeOnSelectedConnection());
+        }
 
         m_actionRemoveUnusedNodes->setEnabled(hasGraph);
         m_actionRemoveUnusedElements->setEnabled(hasGraph);
@@ -450,6 +576,12 @@ namespace AtomToolsFramework
         const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint)
     {
         GraphCanvas::ConnectionContextMenu contextMenu(m_toolId);
+        if (m_graphViewSettingsPtr && !m_graphViewSettingsPtr->m_createSplicingNodeActionName.empty() &&
+            m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn)
+        {
+            contextMenu.AddMenuAction(aznew CreateSplicingNodeContextMenuAction(
+                m_graphViewSettingsPtr->m_createSplicingNodeActionName, this, &contextMenu));
+        }
         return HandleContextMenu(contextMenu, connectionId, screenPoint, scenePoint);
     }
 
