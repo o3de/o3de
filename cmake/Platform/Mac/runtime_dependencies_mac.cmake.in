@@ -70,6 +70,12 @@ if (NOT LY_INSTALL_NAME_TOOL)
     message(FATAL_ERROR "Unable to locate 'install_name_tool'")
 endif()
 
+# Multiple targets can stage the same runtime dependency into a shared output directory during a parallel build.
+# Keep the locks outside the output directory so they are not mistaken for runtime artifacts.
+cmake_path(GET CMAKE_CURRENT_LIST_FILE PARENT_PATH runtime_dependency_script_directory)
+cmake_path(APPEND runtime_dependency_lock_directory "${runtime_dependency_script_directory}" "locks")
+file(MAKE_DIRECTORY "${runtime_dependency_lock_directory}")
+
 # IS_NEWER_THAN returns true if:
 # 1. file1 is newer than file2
 # 2. Either file1 or file2 do not exist
@@ -251,6 +257,15 @@ function(o3de_copy_file_to_filesystem)
     if(NOT ${same_location})
         if(NOT EXISTS "${target_directory}")
             file(MAKE_DIRECTORY "${target_directory}")
+        endif()
+
+        # Runtime-dependency scripts execute concurrently and frequently copy the same file.
+        # Serialize the timestamp check and copy so multiple scripts cannot replace the same destination at once.
+        string(SHA256 target_file_hash "${target_file}")
+        set(target_file_lock "${runtime_dependency_lock_directory}/${target_file_hash}.lock")
+        file(LOCK "${target_file_lock}" GUARD FUNCTION TIMEOUT 300 RESULT_VARIABLE lock_result)
+        if(NOT "${lock_result}" STREQUAL "0")
+            message(FATAL_ERROR "Failed to lock '${target_file}' for runtime dependency staging: ${lock_result}")
         endif()
 
         unset(is_source_newer)

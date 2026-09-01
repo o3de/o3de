@@ -8,6 +8,7 @@
 #
 
 set -o errexit # exit on the first failure encountered
+set -o pipefail # preserve the cmake failure when build output is piped through xcbeautify
 
 BASEDIR=$(dirname "$0")
 source $BASEDIR/env_mac.sh
@@ -55,16 +56,16 @@ do
 
     # Use xcbeautify to format the output if available
     if command -v xcbeautify &> /dev/null; then
-        xcbeautify_args="--is-ci --disable-logging"
+        xcbeautify_args="--is-ci --disable-logging --preserve-unbeautified"
 
         if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
             xcbeautify_args="${xcbeautify_args} --renderer github-actions"
         fi
 
-        build_cmd="${build_cmd} | xcbeautify ${xcbeautify_args}"
+        build_cmd="${build_cmd} 2>&1 | xcbeautify ${xcbeautify_args}"
     fi
 
-    eval ${build_cmd}
+    eval "${build_cmd}"
 done
 
 popd
