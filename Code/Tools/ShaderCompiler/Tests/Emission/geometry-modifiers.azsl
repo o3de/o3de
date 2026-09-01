@@ -1,0 +1,42 @@
+// Assuming GSSceneIn and PSSceneIn are valid types declared somewhere
+// Azslc might complain if they're undefined, but won't error
+
+[maxvertexcount(3)]
+void GSScenePt( point GSSceneIn input[6], inout TriangleStream<PSSceneIn> OutputStream )
+{   
+    PSSceneIn output = (PSSceneIn)0;
+    OutputStream.Append( output );
+    OutputStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GSSceneLn( line GSSceneIn input[6], inout TriangleStream<PSSceneIn> OutputStream )
+{   
+    PSSceneIn output = (PSSceneIn)0;
+    OutputStream.Append( output );
+    OutputStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GSSceneTr( triangle GSSceneIn input[6], inout TriangleStream<PSSceneIn> OutputStream )
+{   
+    PSSceneIn output = (PSSceneIn)0;
+    OutputStream.Append( output );
+    OutputStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GSSceneLnA( lineadj GSSceneIn input[6], inout TriangleStream<PSSceneIn> OutputStream )
+{   
+    PSSceneIn output = (PSSceneIn)0;
+    OutputStream.Append( output );
+    OutputStream.RestartStrip();
+}
+
+[maxvertexcount(3)]
+void GSSceneTrA( triangleadj GSSceneIn input[6], inout TriangleStream<PSSceneIn> OutputStream )
+{   
+    PSSceneIn output = (PSSceneIn)0;
+    OutputStream.Append( output );
+    OutputStream.RestartStrip();
+}

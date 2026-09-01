@@ -1,0 +1,5 @@
+int var;
+float var() {}
+
+// dxc   says: error: redefinition of 'var' as different kind of symbol
+// azslc says: ERROR at semantic check: (2): redeclaration of a symbol (/var) with a different kind: Function but was Variable

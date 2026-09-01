@@ -1,0 +1,7 @@
+void f(int){}
+void f(float){}
+
+// Versions 1.4.x and under:
+//    error 'One Definition Rule: function /f is already defined first seen line 1'
+// Version 1.5 and up:
+//    ok

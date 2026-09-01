@@ -1,0 +1,5 @@
+struct A{};
+
+static A A;  // #EC32
+
+// Semantic error 32: redeclaration of /A with a different kind: Variable but was Struct, first seen line 1

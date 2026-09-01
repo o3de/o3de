@@ -1,0 +1,39 @@
+int f(int);
+int _(int);
+
+interface Parent
+{
+    int f(int);  // decl
+};
+
+class Child : Parent
+{
+    int f(int) override  // should be understood as part of the family of Parent::f. but can't be a seenat since 2 separate symbols
+    { }
+
+    int g()
+    {
+        f(2);  // ref to Child::f
+               // [note: should resolve to Parent::f if we hadn't the obligation to implement f.
+               //        this is called "dominance in inheritance" and has major implications for SymbolManager::LookupSymbol]
+        ::f(3);  // resolves to the global one
+        
+        _(f(1));  // ref 2 in the parameter list
+        
+        int a = 5 + f(0);  // ref 3. from an expression
+        _(5 + Child::f(0));  // ref 4. qualified in an expression in a parameter list.
+    }
+};
+
+Child getchild() { Child c; return c; }
+
+int4 psmain(): SV_Target0
+{
+    Child c;
+    int i = c.f(1); // ref 5. direct member call
+    getchild().f(2); // ref 6. call through (abstract-machine) unnamed temporary
+    int j = f(0); // fake ref (is ::f)
+    int j2 = ::f(0); // fake ref
+    return int4(c.f(0), i, 0, 1);  // ref 7. in constructor expression
+}
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

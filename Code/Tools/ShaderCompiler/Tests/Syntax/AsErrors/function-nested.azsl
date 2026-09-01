@@ -1,0 +1,8 @@
+float4 main():SV_Target
+{
+    float nested()  // let's forbid nested functions
+    {
+        return 2.0;
+    }
+    return float4(nested(), 0, 0, 1);
+}

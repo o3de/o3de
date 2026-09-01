@@ -1,0 +1,7 @@
+# make sure that the PSMain body gets cleaned up from the migrated content
+"class PSMain_vd_S"
+"void GetDiffuseHolderInCB ( )"
+"void PSMain ( )"
+"{"
+";"
+"}"

@@ -108,7 +108,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
         3rdParty::SPIRVCross
-        3rdParty::azslc
+        AZ::Azslc
 )
 
 # Inject the gem name into the Module source file

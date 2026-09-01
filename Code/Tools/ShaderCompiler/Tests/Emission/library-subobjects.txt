@@ -1,0 +1,19 @@
+"GlobalRootSignature MyGlobalRootSignature = {"
+'" DescriptorTable ( UAV ( u0 ) ) , " " SRV ( t0 ) , " " CBV ( b0 ) , " " DescriptorTable ( SRV ( t1 , numDescriptors = 2 ) ) " } ;'
+"CBV ( b0 ) , "
+"DescriptorTable ( SRV ( t1 , numDescriptors = 2 ) ) "
+"LocalRootSignature MyLocalRootSignature = {"
+'" RootConstants ( num32BitConstants = 4 , b1'
+"TriangleHitGroup MyHitGroup ="
+"MyClosestHitShader"
+"ProceduralPrimitiveHitGroup MyProceduralHitGroup = {"
+'" MyAnyHit " , " MyClosestHit " , " MyIntersection " } ;'
+"SubobjectToExportsAssociation MyLocalRootSignatureAssociation ="
+"MyLocalRootSignature"
+"MyHitGroup ; MyMissShader"
+"RaytracingShaderConfig MyShaderConfig ="
+"16 , 8"
+"RaytracingPipelineConfig MyPipelineConfig ="
+"1"
+"StateObjectConfig MyStateObjectConfig ="
+"STATE_OBJECT_FLAGS_ALLOW_LOCAL_DEPENDENCIES_ON_EXTERNAL_DEFINITONS"

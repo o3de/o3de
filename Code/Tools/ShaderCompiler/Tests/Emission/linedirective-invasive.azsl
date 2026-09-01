@@ -1,0 +1,56 @@
+enum E
+{
+#line 4
+A,
+B
+#line 6  // with comment
+#line 6
+};
+
+struct S
+{
+ int a;
+#line 10
+};
+
+interface I
+{
+    void F();
+#line 17
+};
+
+class C
+{
+    float4 Get();
+#line 23
+};
+
+ShaderResourceGroupSemantic z
+{
+#line 28
+FrequencyId = 1;
+}
+
+ShaderResourceGroup G : z
+{
+#line 28
+};
+
+void func()
+{
+#line 38
+}
+
+static sampler grass
+{
+ComparisonFunc = Never;
+#line 44
+#line 44
+};
+
+static int array[] = { 0
+#line 48
+#line 48
+,1,
+#line 49
+2 };

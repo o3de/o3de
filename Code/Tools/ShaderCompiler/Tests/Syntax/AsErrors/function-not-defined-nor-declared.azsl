@@ -1,0 +1,2 @@
+void func()  // syntax error: excpected '{' or ';'
+//         ^

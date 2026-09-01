@@ -1,0 +1,9 @@
+static const int CorrectVarName = 1;
+
+ShaderResourceGroup MySRG : CorrectVarName
+{
+    Buffer<float4> data[1024];
+};
+
+// Semantic Error 24: line 3::0 'Declaration for CorrectVarName used in SRG MySRG is a Variable but expected a ShaderResourceGroupSemantic'
+// #EC 24

@@ -33,6 +33,10 @@ namespace UnitTest
 
     TEST_F(EditorFocusModeFixture, GetFocusedEntitiesRoot)
     {
+        m_focusModeInterface->SetFocusRoot(m_entityMap[CityEntityName]);
+        // if we focus on the city, itself, as well as all its children, should return.
+        // if we clear the focus, the world will be included in this list (the root)
+
         AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
         
         using ::testing::UnorderedElementsAre;
@@ -54,13 +58,16 @@ namespace UnitTest
     {
         m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
 
+        // if we clear the focus root, we are actually setting it to the root (the world).
+        // the list of entities should be the same as if we set the focus root to the world, which should return
+        // all entities in the world, including one for the world itself.
         AzToolsFramework::EntityIdList entities = m_focusModeInterface->GetFocusedEntities(m_editorEntityContextId);
-
         using ::testing::UnorderedElementsAre;
-        EXPECT_EQ(entities.size(), 6);
+        EXPECT_EQ(entities.size(), 7);
         EXPECT_THAT(
             entities,
             UnorderedElementsAre(
+                GetRootInstanceEntityId(),
                 m_entityMap[CityEntityName], m_entityMap[StreetEntityName], m_entityMap[CarEntityName], m_entityMap[Passenger1EntityName],
                 m_entityMap[SportsCarEntityName], m_entityMap[Passenger2EntityName]));
     }

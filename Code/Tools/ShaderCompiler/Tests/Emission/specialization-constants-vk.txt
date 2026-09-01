@@ -1,0 +1,10 @@
+/*
+    Cmdargs: ['--namespace', 'vk', '--sc-options']
+*/
+"[[ vk :: constant_id ( 0 ) ]]"
+"const int Quality_SC_OPTION = ( int ) 0 ;"
+"static const :: QualityT Quality = ( :: QualityT ) Quality_SC_OPTION ;"
+"[[ vk :: constant_id ( 1 ) ]]"
+"const bool UseGI = ( bool ) true ;"
+"[[ vk :: constant_id ( 2 ) ]]"
+"const int IntOption = ( int ) 42 ;"

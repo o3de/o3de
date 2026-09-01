@@ -1,0 +1,118 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+[[global::output_format("R16G16B16A16_FLOAT")]]
+[[global::output_format(0, "R32")]]
+[[global::output_format(1, "R32G32")]]
+[[global::output_format(2, "R32A32")]]
+[[global::output_format(3, "R16G16B16A16_UNORM")]]
+[[global::output_format(4, "R16G16B16A16_SNORM")]]
+[[global::output_format(5, "R16G16B16A16_UINT")]]
+[[global::output_format(6, "R16G16B16A16_SINT")]]
+[[global::output_format(7, "R32G32B32A32")]]
+
+struct VertexInput  { float3 m_position : POSITION; };
+
+struct VertexOutput { float4 m_position : SV_Position; };
+
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+
+rootconstant float3 varFloat3;
+rootconstant float4 varFloat4;
+rootconstant float3x3 mat3x3;
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{    
+    struct JustForPacking
+    {
+        row_major     float2x3 m_rowMatrix;
+        column_major  float2x3 m_columnMatrix;
+                      float    m_someScalar;
+                      float2   m_somePair;
+                      float4   m_someVector;
+    };
+
+    struct ModelStruct
+    {
+        row_major float4x4 m_modelToWorld;
+    };
+
+    ConstantBuffer<ModelStruct> m_modelConstants;
+
+    ConstantBuffer<JustForPacking> m_arrayOfFour[4];
+
+    ModelStruct m_myModel;
+    row_major     float2x3 m_rowMajorConst;
+    column_major  float2x3 m_colMajorConst;
+    float4 m_srgConstVectorArray[15];
+    float4 m_srgConstVector;
+    float  m_srgConstScalarArray[7];
+    float  m_srgConstScalar;
+
+    Texture2D m_diffuseMap;
+
+    struct UserStruct
+    {
+        int      partial_;
+        float    m_myFloat;
+        double   m_myDouble;
+        bool     m_myBool;
+    };
+
+    AppendStructuredBuffer<UserStruct>                 m_bufferView1;
+    ConsumeStructuredBuffer<UserStruct>                m_bufferView2;
+    ByteAddressBuffer                                  m_bufferView4;
+    StructuredBuffer<UserStruct>                       m_bufferView5;
+    RWBuffer<float4>                                   m_bufferView6;
+    RWByteAddressBuffer                                m_bufferView7;
+    RWStructuredBuffer<UserStruct>                     m_bufferView8a;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+        MinFilter = Point;
+        MagFilter = Linear;
+        MipFilter = Point;
+        ReductionType = Filter;
+    };
+    
+    Sampler m_dynamicSampler;
+};
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    output.m_position = mul(ExampleSRG::m_modelConstants.m_modelToWorld, float4(input.m_position, 1.0));
+    output.m_position = varFloat4 * output.m_position;
+    return output;
+}
+
+struct VertexInput2  {
+    float3 m_position  : POSITION;
+    float  m_color[4]  : COLOR;
+    float4 a1          : TEXCOORD0;
+    float4 a2[2]       : TEXCOORD1;
+    float4 a3[2][3]    : TEXCOORD2;
+};
+
+VertexOutput MainVS2(VertexInput2 input)
+{
+    VertexOutput output;
+    output.m_position = mul(ExampleSRG::m_modelConstants.m_modelToWorld, float4(input.m_position, 1.0));
+    return output;
+}
+
+float4 MainPS() : SV_Target0
+{
+    float4 baseColor = ExampleSRG::m_diffuseMap.Sample(ExampleSRG::m_sampler, float2(0.5, 0.5));
+    baseColor = float4(varFloat3, 1.0f);
+    return baseColor + ExampleSRG::m_arrayOfFour[2].m_someVector + ExampleSRG::m_srgConstVectorArray[3];
+}

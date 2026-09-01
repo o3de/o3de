@@ -1,0 +1,10 @@
+interface interf
+{
+    associatedtype T;
+};
+
+class s : interf
+{
+    typealias T = I_am_undeclared;
+};
+// error: I_am_undeclared not yet seen as declared !

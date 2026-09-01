@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/*
+* Julia Fractals
+* The Julia set is the set of points x in the complex plane such that f(x) = z^2 + c converges to zero.
+* We changes the value of c over time, which creates the animation.
+*/
+
+ShaderResourceGroupSemantic ConstantSemantic
+{
+    FrequencyId = 0;
+};
+ShaderResourceGroupSemantic BufferSemantic
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup DispatchConstantSRG : ConstantSemantic
+{
+    struct ConstantData
+    {
+        int2 dimension;
+        float2 seed;
+    };
+    ConstantBuffer<ConstantData> m_constantData;
+}
+ShaderResourceGroup DispatchBufferSRG : BufferSemantic
+{
+    struct BufferData
+    {
+        float4 m_data;
+    };
+    RWStructuredBuffer<BufferData> m_computeBuffer;
+}
+
+[numthreads(1,1,1)]
+void MainCS(uint2 thread_id: SV_DispatchThreadID)
+{
+    float u = 2 * float(thread_id.x)/float(DispatchConstantSRG::m_constantData.dimension.x) - 1;
+    float v = 2 * float(thread_id.y)/float(DispatchConstantSRG::m_constantData.dimension.y) - 1;
+    float2 z = float2(u, v);
+
+    int iter = 128;
+    int count = iter;
+    for(int i = 0; i < iter; ++i)
+    {
+        z = float2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + DispatchConstantSRG::m_constantData.seed;
+        if(dot(z,z) > 4.0)
+        {
+            count = i;
+            break;
+        }
+    }
+
+    float value = count/float(iter);
+    DispatchBufferSRG::m_computeBuffer[thread_id.y * DispatchConstantSRG::m_constantData.dimension.x + thread_id.x].m_data = float4(value, value, value, 1.0);
+}
