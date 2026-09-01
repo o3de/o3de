@@ -43,6 +43,19 @@
 
 namespace MaterialCanvas
 {
+    namespace
+    {
+        bool IsRerouteNode(GraphModel::ConstNodePtr node)
+        {
+            if (const auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(node.get()))
+            {
+                return AtomToolsFramework::FindSettingWithValue(dynamicNode->GetConfig().m_settings, "isReroute", "true");
+            }
+
+            return false;
+        }
+    }
+
     void MaterialGraphCompiler::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -984,6 +997,18 @@ namespace MaterialCanvas
 
     AZStd::any MaterialGraphCompiler::GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const
     {
+        // A reroute output has no model-level incoming connection of its own. Resolve it through the paired input so callers see the
+        // upstream value type instead of the reroute's serialized default type. This matters for the universal reroute, whose default is
+        // float even when its connected value is a vector, color, or matrix.
+        if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
+            slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+        {
+            if (const auto inputSlot = parentNode->GetSlot("inValue"))
+            {
+                return GetValueFromSlotOrConnection(inputSlot);
+            }
+        }
+
          for (const auto& connection : slot->GetConnections())
         {
              auto sourceSlot = connection->GetSourceSlot();
@@ -999,6 +1024,25 @@ namespace MaterialCanvas
 
     AZStd::string MaterialGraphCompiler::GetAzslTypeFromSlot(GraphModel::ConstSlotPtr slot) const
     {
+        if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
+            slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+        {
+            if (const auto inputSlot = parentNode->GetSlot("inValue"))
+            {
+                for (const auto& connection : inputSlot->GetConnections())
+                {
+                    if (connection->GetTargetSlot() == inputSlot)
+                    {
+                        return GetAzslTypeFromSlot(connection->GetSourceSlot());
+                    }
+                }
+
+                // A disconnected reroute has no upstream type to forward. Use its input value's type instead of the output's
+                // previously inferred value, which can remain stale until the graph's slot-value table is rebuilt.
+                return GetAzslTypeFromSlot(inputSlot);
+            }
+        }
+
         const auto& slotValue = GetValueFromSlot(slot);
         const auto& slotDataType = slot->GetGraphContext()->GetDataTypeForValue(slotValue);
         const auto& slotDataTypeName = slotDataType ? slotDataType->GetDisplayName() : AZStd::string{};
@@ -1013,7 +1057,26 @@ namespace MaterialCanvas
 
     AZStd::string MaterialGraphCompiler::GetAzslValueFromSlot(GraphModel::ConstSlotPtr slot) const
     {
-        const auto& slotValue = GetValueFromSlot(slot);
+        if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
+            slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+        {
+            if (const auto inputSlot = parentNode->GetSlot("inValue"))
+            {
+                // Resolve both connected and disconnected reroutes through the input. When disconnected this emits the input's
+                // embedded default instead of retaining an expression derived from the former upstream connection.
+                return GetAzslValueFromSlot(inputSlot);
+            }
+        }
+
+        AZStd::any slotValue = GetValueFromSlot(slot);
+        if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
+            slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
+        {
+            // Universal reroutes store a float default, but a connected input must make conversion decisions using the actual upstream
+            // type. Otherwise a float4 passing through the reroute is treated as a scalar target and becomes "source.x", which then
+            // splats one channel across downstream vectors and destroys color information.
+            slotValue = GetValueFromSlotOrConnection(slot);
+        }
 
         // This code and some of these rules will be refactored and generalized after splitting this class into a document and builder or
         // compiler class. Once that is done, it will be easier to register types, conversions, substitutions with the system.
@@ -1026,8 +1089,9 @@ namespace MaterialCanvas
                 // If there is an incoming connection to this slot, the name of the source slot from the incoming connection will be used as
                 // part of the value for the slot. It must be cast to the correct vector type for generated code. These conversions will be
                 // extended once the code generator is separated from the document class.
-                const auto& sourceSlotValue = GetValueFromSlot(sourceSlot);
-                const auto& sourceSlotSymbolName = GetSymbolNameFromSlot(sourceSlot);
+                const AZStd::any sourceSlotValue = GetValueFromSlotOrConnection(sourceSlot);
+                const AZStd::string sourceSlotSymbolName =
+                    IsRerouteNode(sourceSlot->GetParentNode()) ? GetAzslValueFromSlot(sourceSlot) : GetSymbolNameFromSlot(sourceSlot);
                 if (slotValue.is<AZ::Vector2>())
                 {
                     if (sourceSlotValue.is<AZ::Vector3>() ||
@@ -1328,6 +1392,10 @@ namespace MaterialCanvas
             if (dynamicNode)
             {
                 const auto& nodeConfig = dynamicNode->GetConfig();
+                if (IsRerouteNode(inputNode))
+                {
+                    continue;
+                }
                 const auto& substitutionSymbols = GetSubstitutionSymbolsFromNode(inputNode);
 
                 // Instructions are gathered separately for all of the slot categories because they need to be added in a specific order.
@@ -1779,6 +1847,18 @@ namespace MaterialCanvas
                 // The property definition requires an explicit type enum that's converted from the actual data type.
                 property->m_dataType = GetMaterialPropertyDataTypeFromValue(property->m_value, !property->m_enumValues.empty());
 
+                // Captured before the conversion below, because the conversion is per file and this value is not.
+                //
+                // ConvertToExportFormat resolves an image reference into a path relative to the file being written, and the value
+                // recorded further down is written into every generated material. The preview set is written two folders below the
+                // graph, so an image sitting beside the graph converted to "../../<folder>/<image>.png", and that string, written into
+                // the material beside the graph, walks out of the project entirely. The material builder cannot resolve it, falls back
+                // to the invalid-asset UUID, and takes the Asset Processor down with it.
+                //
+                // The unconverted value is recorded instead and BuildMaterialFromTemplate converts it again for the path it is actually
+                // writing. The conversion below still runs on the property itself, which belongs to this material type and this path.
+                const AZ::RPI::MaterialPropertyValue materialPropertyValueBeforeConversion = property->m_value;
+
                 // Images and enums need additional conversion prior to being saved.
                 ConvertToExportFormat(templateOutputPath, materialPropertyId, *property, property->m_value);
 
@@ -1811,12 +1891,11 @@ namespace MaterialCanvas
                 // The value moves out of every set that is built, but it is recorded once. Recording it per set would send the viewport
                 // each value as many times as there are sets, and the sets agree on the values by construction. The viewport's own set is
                 // the one that records, and it is built first, so the material written for either set has the full list to draw on.
-                const AZ::RPI::MaterialPropertyValue materialPropertyValueBeforeReset = property->m_value;
                 if (property->m_enumValues.empty() && ResetMaterialPropertyValueToTypeDefault(property->m_value))
                 {
                     if (IsViewportOutputSet())
                     {
-                        m_materialPropertyValues.emplace_back(materialPropertyId, materialPropertyValueBeforeReset);
+                        m_materialPropertyValues.emplace_back(materialPropertyId, materialPropertyValueBeforeConversion);
                     }
                 }
 
@@ -2082,7 +2161,23 @@ namespace MaterialCanvas
 
         for (const auto& [propertyId, propertyValue] : m_materialPropertyValues)
         {
-            materialSourceData.SetPropertyValue(propertyId, propertyValue);
+            // The recorded values are unconverted. An image reference converts to a path relative to the file being written, and the same
+            // recorded set is written into every generated material, so the conversion has to happen here, against the path this call is
+            // writing, rather than once against whichever file happened to be built first.
+            //
+            // Only images need it. Enums are never recorded, because an enum is never reset out of the material type, and every other
+            // recorded type converts to itself. The two image alternatives are tested directly rather than asking
+            // GetMaterialPropertyDataTypeFromValue, which reports a plain string as an image and would send a genuine string property
+            // through the image branch.
+            AZ::RPI::MaterialPropertyValue convertedValue = propertyValue;
+            if (convertedValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>() || convertedValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+            {
+                AZ::RPI::MaterialPropertySourceData propertyDefinition;
+                propertyDefinition.m_dataType = AZ::RPI::MaterialPropertyDataType::Image;
+                AtomToolsFramework::ConvertToExportFormat(templateOutputPath, propertyId, propertyDefinition, convertedValue);
+            }
+
+            materialSourceData.SetPropertyValue(propertyId, convertedValue);
         }
 
         AZStd::string templateOutputText;

@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportScene.h>
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphView.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -248,6 +249,17 @@ namespace MaterialCanvas
     void MaterialCanvasPaneWindow::SaveCurrentDocument()
     {
         SaveDocument(GetCurrentDocumentId());
+    }
+
+    void MaterialCanvasPaneWindow::AddRerouteToSelectedConnection()
+    {
+        if (m_tabWidget)
+        {
+            if (auto graphView = qobject_cast<AtomToolsFramework::GraphView*>(m_tabWidget->currentWidget()))
+            {
+                graphView->CreateSplicingNodeOnSelectedConnection();
+            }
+        }
     }
 
     void MaterialCanvasPaneWindow::SaveLayout() const
@@ -896,6 +908,9 @@ namespace MaterialCanvas
             this,
             [this]()
             {
+                const AZ::Uuid documentId = GetCurrentDocumentId();
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
                 if (m_documentInspector)
                 {
                     m_documentInspector->SetDocumentId(GetCurrentDocumentId());

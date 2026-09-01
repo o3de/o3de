@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/Document/AtomToolsAnyDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
 #include <AtomToolsFramework/Graph/GraphDocumentView.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -57,6 +58,7 @@ namespace MaterialCanvas
     static constexpr const char* MaterialCanvasPaneName = "Material Canvas (Pane)";
     static constexpr AZStd::string_view MaterialCanvasActionContextIdentifier = "o3de.context.editor.materialcanvas";
     static constexpr AZStd::string_view MaterialCanvasSaveActionIdentifier = "o3de.action.materialcanvas.save";
+    static constexpr AZStd::string_view MaterialCanvasAddRerouteActionIdentifier = "o3de.action.materialcanvas.addReroute";
 
     MaterialCanvasEditorSystemComponent* MaterialCanvasEditorSystemComponent::GetInstance()
     {
@@ -136,9 +138,25 @@ namespace MaterialCanvas
                     }
                 });
 
+            actionProperties.m_name = "Add Reroute to Selected Connection";
+            actionProperties.m_description = "Insert a universal reroute at the midpoint of the selected Material Canvas connection.";
+            actionProperties.m_category = "Material Canvas";
+            actionManagerInterface->RegisterAction(
+                MaterialCanvasActionContextIdentifier,
+                MaterialCanvasAddRerouteActionIdentifier,
+                actionProperties,
+                [this]()
+                {
+                    if (m_paneWindow)
+                    {
+                        m_paneWindow->AddRerouteToSelectedConnection();
+                    }
+                });
+
             if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
             {
                 hotKeyManagerInterface->SetActionHotKey(MaterialCanvasSaveActionIdentifier, "Ctrl+S");
+                hotKeyManagerInterface->SetActionHotKey(MaterialCanvasAddRerouteActionIdentifier, "R");
             }
         }
     }
@@ -502,6 +520,12 @@ namespace MaterialCanvas
             AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
                 rootTreeItem, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::CreateNodePaletteTree);
             return rootTreeItem;
+        };
+        m_graphViewSettingsPtr->m_createSplicingNodeActionName = "Reroute";
+        m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn = []()
+        {
+            return aznew AtomToolsFramework::CreateDynamicNodeMimeEvent(
+                ToolId, AZ::Uuid::CreateString("{A4D0A1B1-0E1C-4E3B-9E5A-000000000013}"));
         };
 
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(

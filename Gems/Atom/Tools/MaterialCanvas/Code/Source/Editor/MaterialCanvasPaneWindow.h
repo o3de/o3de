@@ -77,6 +77,8 @@ namespace MaterialCanvas
 
         //! Invoked by the Editor Action Manager Save action while this pane has focus.
         void SaveCurrentDocument();
+        //! Invoked by the Editor Action Manager reroute action while this pane has focus.
+        void AddRerouteToSelectedConnection();
 
     protected:
         // QWidget overrides...
