@@ -15,8 +15,6 @@ Configure a build directory, then build the command-line target:
 cmake --build <build-directory> --target Azslc --config Profile
 ```
 
-The executable is written to `<build-directory>/bin/profile/azslc`. Building Atom Shader Builder also builds and stages the executable under `Builders/AZSLc`.
-
 ## Grammar
 
 The generated ANTLR C++ sources are checked in. With Java and PowerShell available, regenerate them from the engine root:
