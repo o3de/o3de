@@ -30,8 +30,7 @@ ly_add_target(
     FILES_CMAKE files.cmake
 )
 
-ly_target_include_system_directories(
-    TARGET xxhash
+target_include_directories(xxhash SYSTEM
     PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Include"
 )
 
