@@ -111,15 +111,6 @@ ly_add_target(
         AZ::Azslc
 )
 
-ly_add_target_files(
-    TARGETS
-        ${gem_name}.Builders
-    FILES
-        $<TARGET_FILE:Azslc>
-    OUTPUT_SUBDIRECTORY
-        Builders/AZSLc
-)
-
 # Inject the gem name into the Module source file
 ly_add_source_properties(
     SOURCES
