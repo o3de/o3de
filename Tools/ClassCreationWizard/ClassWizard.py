@@ -460,6 +460,11 @@ WINDOW_STYLESHEET = """
         padding: 8px 20px;
         font-weight: bold;
     }
+    /* The browse button is a fixed 40px square, which the 20px horizontal
+       padding above would consume entirely -- leaving no room for its label. */
+    QPushButton[compactButton="true"] {
+        padding: 8px 0px;
+    }
     QPushButton:hover {
         background-color: $ClassWizardAccentHoverColor;
     }
@@ -1909,6 +1914,14 @@ class ClassWizardWindow(QMainWindow):
     DEFAULT_WIDTH = 650
     DEFAULT_HEIGHT = 900
 
+    # Height the wizard's own stylesheet produces for a push button (its 8px
+    # vertical padding plus the label). Re-asserted after show by
+    # _assert_button_heights, which explains why.
+    BUTTON_HEIGHT = 32
+
+    # Width of the square browse button beside the path field.
+    BROWSE_BUTTON_WIDTH = 40
+
     def __init__(self, engine_path: Path, project_path: Optional[Path] = None):
         super().__init__()
 
@@ -1983,7 +1996,10 @@ class ClassWizardWindow(QMainWindow):
         path_layout = QHBoxLayout()
         self.target_path_edit = QLineEdit()
         self.browse_btn = QPushButton("...")
-        self.browse_btn.setMaximumWidth(40)
+        self.browse_btn.setProperty("compactButton", True)
+        # Fixed, not just capped: with the compact rule's zero horizontal padding
+        # the button would otherwise shrink to the width of its own label.
+        self.browse_btn.setFixedWidth(self.BROWSE_BUTTON_WIDTH)
         self.browse_btn.clicked.connect(self._browse_destination)
         path_layout.addWidget(self.target_path_edit)
         path_layout.addWidget(self.browse_btn)
@@ -2618,10 +2634,36 @@ class ClassWizardWindow(QMainWindow):
         window.moveCenter(screen.center())
         self.move(window.topLeft())
 
+        # Take the buttons back from the host style, which has polished them by now.
+        self._assert_button_heights()
+
         # Embedded in the editor the window can open unpainted (black) until it
         # receives a resize event. Generate one programmatically -- the same
         # redraw the user otherwise triggers by dragging the window edge.
         QTimer.singleShot(0, self._force_initial_paint)
+
+    def _assert_button_heights(self):
+        """Restore the wizard's own button height after the host style has run.
+
+        The O3DE editor's style claims every QPushButton in the process: its
+        polish() calls setMaximumHeight(defaultFrame.height) and its
+        sizeFromContents() forces that same height, with the value coming from
+        the editor's theme (AzQtComponents::PushButton, whose .qss states
+        outright that button geometry and painting are done in code). That runs
+        after the buttons are built, so the wizard's stylesheet loses and the
+        buttons come out shorter than they do standalone -- squeezed inside a
+        row still sized for the taller button.
+
+        Applies to every button in the window, not just Create/Cancel: the host
+        style claims all of them, and the browse button sits beside a line edit
+        that is NOT capped, so it would misalign too.
+
+        Standalone this is a no-op: BUTTON_HEIGHT is the height the stylesheet
+        produces there anyway.
+        """
+        for button in self.findChildren(QPushButton):
+            button.setMinimumHeight(self.BUTTON_HEIGHT)
+            button.setMaximumHeight(self.BUTTON_HEIGHT)
 
     def _force_initial_paint(self):
         """Nudge the window size by 1px and back to emit a resize event.
