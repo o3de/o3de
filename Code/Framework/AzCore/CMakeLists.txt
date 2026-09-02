@@ -24,9 +24,7 @@ endif()
 
 set(O3DE_SYSTEM_ALLOCATOR_USE_MALLOC OFF CACHE BOOL "Use ANSI malloc instead of mimalloc as the SystemAllocator schema.")
 
-if(NOT O3DE_SYSTEM_ALLOCATOR_USE_MALLOC)
-    set(AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES 3rdParty::mimalloc)
-endif()
+set(AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES 3rdParty::mimalloc)
 
 # By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
 # and will ignore all overrides in release builds.

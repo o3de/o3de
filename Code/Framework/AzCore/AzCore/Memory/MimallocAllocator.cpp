@@ -8,7 +8,6 @@
 
 #include <AzCore/Memory/MimallocAllocator.h>
 #include <AzCore/PlatformIncl.h>
-#include <mimalloc-stats.h>
 #include <mimalloc.h>
 
 namespace AZ
