@@ -22,7 +22,23 @@
                     "details": {
                         "name": "Set Vibration",
                         "tooltip": "Sets the vibration motor speeds for a specific input device"
-                    }
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left Motor Speed",
+                                "tooltip": "Normalized speed of the left (large, low-frequency) vibration motor, from 0.0 to 1.0"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right Motor Speed",
+                                "tooltip": "Normalized speed of the right (small, high-frequency) vibration motor, from 0.0 to 1.0"
+                            }
+                        }
+                    ]
                 }
             ]
         }
