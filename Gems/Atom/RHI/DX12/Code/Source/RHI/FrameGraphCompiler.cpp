@@ -330,6 +330,10 @@ namespace AZ
                 {
                     return D3D12_RESOURCE_STATE_DEPTH_WRITE;
                 }
+                else if (bindflags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+                {
+                    return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+                }
                 break;
             }
             case RHI::HardwareQueueClass::Compute:

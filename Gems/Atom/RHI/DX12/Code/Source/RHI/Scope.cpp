@@ -379,6 +379,11 @@ namespace AZ
                     PIXBeginEvent(commandList.GetCommandList(), PIX_MARKER_CMDLIST_COL, GetMarkerLabel().data());
                 }
 
+                for (const auto& barrier : m_aliasingBarriers)
+                {
+                    commandList.QueueAliasingBarrier(barrier);
+                }
+
                 for (const auto& barrier : m_preDiscardTransitionBarrierRequests)
                 {
                     commandList.QueueTransitionBarrier(barrier);
@@ -394,11 +399,6 @@ namespace AZ
                 for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
                 {
                     static_cast<ResourcePoolResolver*>(resolvePolicyBase)->QueuePrologueTransitionBarriers(commandList);
-                }
-
-                for (const auto& barrier : m_aliasingBarriers)
-                {
-                    commandList.QueueAliasingBarrier(barrier);
                 }
 
                 for (const auto& barrier : m_prologueTransitionBarrierRequests)
