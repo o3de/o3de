@@ -8,6 +8,7 @@
 import argparse
 import contextlib
 import ctypes
+import fnmatch
 import io
 import json
 import os
@@ -86,15 +87,75 @@ def _pyside6_packages_folder(engine_root: Path) -> Path:
             sys.path.pop(0)
 
 
-def _pyside6_newest_package(packages: Path, prefix: str, subpath: str) -> Optional[Path]:
-    """Newest downloaded package matching '<prefix>*' whose <subpath> exists.
-    'Newest' == highest folder name, which orders revisions correctly
-    (e.g. pyside6-6.10.2-py3.10-rev4 sorts above ...-rev1)."""
-    matches = sorted((p for p in packages.glob(prefix + "*") if p.is_dir()), reverse=True)
-    for pkg in matches:
-        target = pkg / subpath
-        if target.exists():
-            return target
+def _pal_platform_name() -> str:
+    """O3DE's name for this platform, as used in the cmake/ directory layout."""
+    if sys.platform.startswith("win"):
+        return "Windows"
+    if sys.platform == "darwin":
+        return "Mac"
+    return "Linux"
+
+
+def _natural_key(name: str) -> List[Any]:
+    """Sort key that compares embedded numbers numerically, so 'rev10' orders
+    above 'rev9' and '6.10' above '6.9'. A plain string sort gets both backwards."""
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+# ly_associate_package(PACKAGE_NAME <name> TARGETS <target> PACKAGE_HASH <hash>)
+_PACKAGE_PIN_RE = re.compile(
+    r"ly_associate_package\s*\(\s*PACKAGE_NAME\s+(?P<name>\S+)\s+TARGETS\s+(?P<target>\S+)",
+    re.IGNORECASE)
+
+
+def _pinned_package_names(engine_root: Path, target: str) -> List[str]:
+    """Exact 3rdParty package names this engine is built against for a target.
+
+    Two locations are searched because an installed SDK does not ship the source
+    tree's BuiltInPackages files: the install EXCLUDES them and writes a
+    generated per-permutation copy under Platform/<PAL>/<permutation>/ instead
+    (see cmake/Platform/Common/Install_common.cmake). Only this platform's
+    directory is read, so another platform's pins can never be selected."""
+    platform_dir = engine_root / "cmake" / "3rdParty" / "Platform" / _pal_platform_name()
+    if not platform_dir.is_dir():
+        return []
+
+    names = []
+    for cmake_file in sorted(platform_dir.glob("**/BuiltInPackages_*.cmake")):
+        try:
+            text = cmake_file.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for match in _PACKAGE_PIN_RE.finditer(text):
+            if match.group("target").lower() == target.lower():
+                names.append(match.group("name"))
+    return names
+
+
+def _pyside6_resolve_package(packages: Path, engine_root: Path, target: str,
+                             prefix: str, subpath: str) -> Optional[Path]:
+    """<subpath> inside the 3rdParty package this engine should be using.
+
+    The engine pins an EXACT package per platform, and that pin is honoured
+    first. Picking the newest package on disk instead is not a safe default: a
+    machine can hold several revisions (and the same engine pins different qt
+    revisions on different platforms), so the newest is not necessarily the one
+    this engine was built against -- and pointing a running editor at a
+    different Qt's plugins is a real mismatch, not a cosmetic one.
+
+    Falling back to the newest on disk only happens when no pin is readable or
+    none of the pinned packages has been downloaded."""
+    pattern = prefix + "*"
+    pinned = [packages / name for name in _pinned_package_names(engine_root, target)]
+    newest = sorted((p for p in packages.glob(pattern) if p.is_dir()),
+                    key=lambda p: _natural_key(p.name), reverse=True)
+
+    for pkg in pinned + newest:
+        if not fnmatch.fnmatch(pkg.name, pattern):
+            continue
+        candidate = pkg / subpath
+        if candidate.exists():
+            return candidate
     return None
 
 
@@ -188,7 +249,8 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     #    shiboken6.Shiboken .pyd absent -> "No module named 'shiboken6.Shiboken'"),
     #    and the engine's complete 3rdParty copy must win over that.
     py_tag = f"py{sys.version_info.major}.{sys.version_info.minor}"
-    site_packages = _pyside6_newest_package(packages, f"pyside6-*-{py_tag}-", _pyside6_site_packages_subpath())
+    site_packages = _pyside6_resolve_package(packages, engine_root, "pyside6",
+                                             f"pyside6-*-{py_tag}-", _pyside6_site_packages_subpath())
     if site_packages is None or not (site_packages / "PySide6").is_dir():
         return  # No interpreter-matched engine package; leave any existing PySide6 alone.
     sys.path.insert(0, str(site_packages))
@@ -204,7 +266,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
         # Search paths are enough on Windows; the engine's built bin/<config> is
         # added too when it is an exact match for the loaded Qt.
         _pyside6_add_dll_dir(pyside_root / "bin")
-        qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
+        qt_bin = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/bin")
         if qt_bin is not None:
             _pyside6_add_dll_dir(qt_bin)
         for built_bin in engine_root.glob("build/*/bin/*"):
@@ -217,7 +279,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
         # process with two Qt instances -- so only shiboken6/pyside6, the pieces
         # that are genuinely missing there, are preloaded.
         if not embedded_editor:
-            qt_lib = _pyside6_newest_package(packages, "qt-", "qt/lib")
+            qt_lib = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/lib")
             if qt_lib is not None:
                 _pyside6_preload_libraries([qt_lib], _PYSIDE6_QT_PRELOAD)
         # Prefer the copy sitting next to the running executable: in the editor
@@ -235,7 +297,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     #    editor's Gems/QtForPython/Editor/Scripts/bootstrap.py. Do not clobber a
     #    value the caller already set (e.g. when embedded in the Editor).
     if not os.environ.get("QT_PLUGIN_PATH"):
-        qt_plugins = _pyside6_newest_package(packages, "qt-", "qt/plugins")
+        qt_plugins = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/plugins")
         if qt_plugins is not None:
             os.environ["QT_PLUGIN_PATH"] = str(qt_plugins)
 
