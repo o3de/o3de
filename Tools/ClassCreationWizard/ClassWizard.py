@@ -243,27 +243,34 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
 # Try the NATURAL import first -- exactly as any O3DE-tied Python app would, using
 # only whatever the engine's Python environment provides. If that works, we touch
 # nothing. If it fails, engage the wizard's own PySide6 bootstrap so the tool runs
-# anywhere (terminal, VS, Rider, an extension, ...).
+# anywhere (terminal, VS, Rider, an extension, the editor, ...).
 #
-# The bootstrap is EXPECTED for a standalone launcher: a .pyd's dependent DLLs are
-# not resolved from PATH since Python 3.8, so a bare interpreter genuinely cannot
-# load Qt without an in-process os.add_dll_directory -- which only code inside the
-# process (this bootstrap) can do. So that case stays silent. Only the O3DE editor's
-# EMBEDDED interpreter is expected to hand us a fully working PySide6; a failure
-# there is unexpected and worth flagging, since it points at a broken engine Python.
-# The probe is expected to fail (and print its own diagnostic) on a bare launcher,
-# so capture its stderr; we only re-surface it in the unexpected (editor) case.
+# Falling back is NORMAL, not a fault, and is reported that way. The o3de pyside6
+# 3rdParty package keeps its native libraries in pyside6/lib and pyside6/bin, away
+# from the extension modules in site-packages that link against them, so those
+# modules cannot resolve their own dependencies: a standalone interpreter has no
+# Qt6 on its DLL search path, and on Linux nothing can be added to that path after
+# the process starts. Recovering from that in-process is this bootstrap's whole
+# job, so a recovery earns one plain line, not an error.
+#
+# The probe's own stderr is captured rather than printed: it names the library
+# that failed to load, which is the single most useful thing to show if the retry
+# ALSO fails -- and pure noise if it succeeds.
+_pyside_fallback_reason = ""     # non-empty once the natural import has failed
+_pyside_probe_diag = ""
+
 _pyside_probe_stderr = io.StringIO()
 try:
     with contextlib.redirect_stderr(_pyside_probe_stderr):
         import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
 except BaseException as _natural_pyside_err:
     if isinstance(_natural_pyside_err, ModuleNotFoundError):
-        _pyside_reason = "PySide6/shiboken6 native module missing from the venv"
+        _pyside_fallback_reason = "PySide6/shiboken6 not present in this interpreter"
     elif isinstance(_natural_pyside_err, ImportError):
-        _pyside_reason = "Qt6 DLLs not on the interpreter's search path"
+        _pyside_fallback_reason = "native Qt6/shiboken6 libraries not on the interpreter's search path"
     else:
-        _pyside_reason = type(_natural_pyside_err).__name__
+        _pyside_fallback_reason = type(_natural_pyside_err).__name__
+    _pyside_probe_diag = _pyside_probe_stderr.getvalue().strip()
 
     # Drop any partially-initialized modules so the retry resolves from our path.
     for _m in [m for m in list(sys.modules)
@@ -273,20 +280,7 @@ except BaseException as _natural_pyside_err:
     try:
         _bootstrap_pyside6(IN_EDITOR)
     except Exception:
-        pass  # Fall through: the import below raises a clear, actionable error.
-
-    if IN_EDITOR:
-        # Unexpected: the editor's embedded interpreter should already provide
-        # PySide6. Falling back here suggests a broken engine Python environment.
-        wizard_error(
-            f"Unexpected: PySide6 was not importable from the O3DE editor's "
-            f"Python environment ({_pyside_reason}); fell back to the wizard's "
-            f"own bootstrap. This usually means the engine's Python setup is "
-            f"broken."
-        )
-        _probe_diag = _pyside_probe_stderr.getvalue().strip()
-        if _probe_diag:
-            wizard_error(_probe_diag)
+        pass  # Fall through: the import below reports and raises.
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
@@ -298,14 +292,25 @@ try:
     )
     from PySide6.QtGui import QIcon
 except ImportError as pyside_import_error:
+    # The bootstrap could not recover either. THIS is the failure worth raising
+    # loudly: the wizard cannot open. Lead with the probe's diagnostic, which
+    # names the library that would not load.
+    if _pyside_probe_diag:
+        wizard_error(_pyside_probe_diag)
     raise ImportError(
         "PySide6 could not be imported. O3DE ships PySide6 as a runtime "
-        "dependency of the QtForPython gem (copied next to Editor.exe), not in "
-        "the Python venv, so the standalone ClassWizard bootstraps it from the "
+        "dependency of the QtForPython gem (copied next to the editor binary), "
+        "not in the Python venv, so the ClassWizard bootstraps it from the "
         "engine's 3rdParty packages. Ensure --engine-path points at an engine "
         "whose 'pyside6' and 'qt' 3rdParty packages have been downloaded (they "
         "are fetched during the engine's CMake configure)."
     ) from pyside_import_error
+
+if _pyside_fallback_reason:
+    # Recovered. One plain line so the log says where PySide6 came from, with
+    # nothing implying the user needs to do anything about it.
+    wizard_log(f"Loaded PySide6 from the engine's 3rdParty packages "
+               f"({_pyside_fallback_reason}).")
 
 
 # ============================================================================
@@ -1529,6 +1534,14 @@ class ComponentCreator:
             except Exception:
                 pass
 
+    def _log_child_output(self, label: str, *streams: Optional[str]) -> None:
+        """Echo a child process's output, tagged with the tool that produced it
+        so it is never mistaken for the wizard's own reporting."""
+        for stream in streams:
+            for line in (stream or "").splitlines():
+                if line.strip():
+                    self.log(f"{label}: {line}")
+
     def _create_staged_component(self, stage_dir: Path, namespace: str,
                                 component_name: str, component_template: str,
                                 keep_license: bool,
@@ -1576,20 +1589,16 @@ class ComponentCreator:
                 check=True
             )
             
-            if result.stdout:
-                for line in result.stdout.splitlines():
-                    if line.strip():
-                        self.log(line)
-            
+            # The child's own chatter (its version banner, progress notes) says
+            # nothing the lines below do not, and echoing it unlabelled made the
+            # o3de CLI's output read as the wizard's. Keep it for the failure
+            # path, where it is the diagnostic.
             self.log(f"Successfully created staged component: {component_name}")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             self.log(f"Failed to create component (exit code {e.returncode})")
-            if e.stdout:
-                self.log(e.stdout)
-            if e.stderr:
-                self.log(e.stderr)
+            self._log_child_output("o3de", e.stdout, e.stderr)
             return False
         except Exception as e:
             self.log(f"Error: {e}")
