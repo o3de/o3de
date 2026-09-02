@@ -29,7 +29,7 @@ namespace AZ
         return AllocateAddress(ptr, byteSize);
     }
 
-    auto MimallocSchema::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment) -> size_type
+    MimallocSchema::size_type MimallocSchema::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment)
     {
         if (!ptr)
         {
@@ -47,19 +47,38 @@ namespace AZ
         {
             return allocate(newSize, newAlignment);
         }
+
+        if (newAlignment == 0)
+        {
+            newAlignment = 1;
+        }
+
         size_type oldSize = mi_usable_size(ptr);
         void* newPtr = mi_realloc_aligned(ptr, newSize, newAlignment);
-        newSize = mi_usable_size(newPtr);
-        m_allocatedBytes += (newSize - oldSize);
-        return AllocateAddress(newPtr, newSize);
+        if (!newPtr)
+        {
+            return {};
+        }
+
+        const size_type allocatedSize = mi_usable_size(newPtr);
+        if (allocatedSize >= oldSize)
+        {
+            m_allocatedBytes += allocatedSize - oldSize;
+        }
+        else
+        {
+            m_allocatedBytes -= oldSize - allocatedSize;
+        }
+
+        return AllocateAddress(newPtr, allocatedSize);
     }
 
-    auto MimallocSchema::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const -> size_type
+    MimallocSchema::size_type MimallocSchema::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const
     {
         return mi_usable_size(ptr);
     }
 
-    auto MimallocSchema::NumAllocatedBytes() const -> size_type
+    MimallocSchema::size_type MimallocSchema::NumAllocatedBytes() const
     {
         return m_allocatedBytes;
     }
@@ -68,5 +87,4 @@ namespace AZ
     {
         mi_collect(false);
     }
-
 } // namespace AZ

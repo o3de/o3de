@@ -9,6 +9,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/MimallocAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
 
 namespace UnitTest
 {
@@ -56,6 +57,43 @@ namespace UnitTest
         , public ::testing::WithParamInterface<MimallocSchemaTestParameters>
     {
     };
+
+    TEST(MimallocSchemaTest, ReallocateUpdatesAllocatedByteCountWhenGrowingAndShrinking)
+    {
+        AZ::MimallocSchema allocator;
+
+        AllocateAddress allocation = allocator.allocate(64, 16);
+        ASSERT_TRUE(allocation);
+        EXPECT_EQ(allocation.GetAllocatedBytes(), allocator.NumAllocatedBytes());
+
+        allocation = allocator.reallocate(allocation, s_megaByte, 16);
+        ASSERT_TRUE(allocation);
+        EXPECT_EQ(allocation.GetAllocatedBytes(), allocator.NumAllocatedBytes());
+
+        allocation = allocator.reallocate(allocation, 16, 16);
+        ASSERT_TRUE(allocation);
+        EXPECT_EQ(allocation.GetAllocatedBytes(), allocator.NumAllocatedBytes());
+
+        allocator.deallocate(allocation);
+        EXPECT_EQ(0, allocator.NumAllocatedBytes());
+    }
+
+    TEST(MimallocSchemaTest, FailedReallocatePreservesAllocatedByteCountAndOriginalAllocation)
+    {
+        AZ::MimallocSchema allocator;
+
+        AllocateAddress allocation = allocator.allocate(64, 16);
+        ASSERT_TRUE(allocation);
+        const size_t originalAllocatedBytes = allocation.GetAllocatedBytes();
+
+        AllocateAddress failedAllocation = allocator.reallocate(allocation, AZStd::numeric_limits<size_t>::max(), 16);
+        EXPECT_FALSE(failedAllocation);
+        EXPECT_EQ(originalAllocatedBytes, allocator.NumAllocatedBytes());
+        EXPECT_EQ(originalAllocatedBytes, allocator.get_allocated_size(allocation));
+
+        allocator.deallocate(allocation);
+        EXPECT_EQ(0, allocator.NumAllocatedBytes());
+    }
 
     TEST_P(MimallocSchemaTestFixture, Allocate)
     {

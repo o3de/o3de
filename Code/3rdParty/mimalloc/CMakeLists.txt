@@ -28,6 +28,9 @@ ly_add_target(
     NAMESPACE 3rdParty
     NO_UNITY
     FILES_CMAKE files.cmake
+    COMPILE_DEFINITIONS
+        PRIVATE
+            MI_OPT_SIMD=1
 )
 
 target_include_directories(mimalloc SYSTEM
