@@ -7,6 +7,7 @@
 
 import argparse
 import contextlib
+import ctypes
 import io
 import json
 import os
@@ -26,6 +27,7 @@ from command_plugin import (
     CMakeTarget, CMakeAnalyzer
 )
 from commands.exclude_conditional_files import ConditionalFileExcluder
+from wizard_logging import IN_EDITOR, wizard_log, wizard_error
 
 
 # ============================================================================
@@ -39,11 +41,17 @@ from commands.exclude_conditional_files import ConditionalFileExcluder
 # standalone tool launched through python/python.cmd cannot.
 #
 # To run standalone we locate the exact Qt-matched pyside6 and qt 3rdParty
-# packages the engine downloaded and place the PySide6 Python package plus the
-# native DLL folders on the path BEFORE importing PySide6. This reuses the
+# packages the engine downloaded, put the PySide6 Python package on sys.path and
+# make its native libraries loadable BEFORE importing PySide6. This reuses the
 # shipped, ABI-correct build: no PyPI wheel, no venv mutation, no dependence on
 # the host machine's Python. The whole step is skipped when PySide6 already
 # imports (e.g. a developer running under a system Python that provides it).
+#
+# "Make the native libraries loadable" is platform-split, because the loaders are:
+# Windows resolves a .pyd's dependencies from an in-process DLL search list that
+# os.add_dll_directory() can extend, while the ELF/Mach-O loaders have no such
+# list (LD_LIBRARY_PATH is captured at process start), so there the libraries are
+# dlopen'd by absolute path with RTLD_GLOBAL instead.
 
 
 def _pyside6_engine_root() -> Optional[Path]:
@@ -90,8 +98,23 @@ def _pyside6_newest_package(packages: Path, prefix: str, subpath: str) -> Option
     return None
 
 
+def _pyside6_site_packages_subpath() -> str:
+    """Where the pyside6 3rdParty package keeps its Python package. The layout is
+    platform-dependent -- see the package's own Findpyside6.cmake, which pip
+    -installs 'pyside6/lib/site-packages' on Windows but
+    'pyside6/lib/python<X.Y>/site-packages' on Linux and Mac."""
+    if sys.platform.startswith("win"):
+        return "pyside6/lib/site-packages"
+    return f"pyside6/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
+
+
 def _pyside6_add_dll_dir(path: Path) -> None:
-    """Make a native DLL folder discoverable to the dynamic loader."""
+    """Windows: make a native DLL folder discoverable to the loader. Since Python
+    3.8 a .pyd's dependent DLLs are resolved from the add_dll_directory list
+    rather than from PATH, so both are updated. The ELF and Mach-O loaders expose
+    no equivalent in-process hook -- LD_LIBRARY_PATH is read once at process
+    start and PATH means nothing to them -- so Linux and Mac use
+    _pyside6_preload_libraries() instead."""
     if not path.is_dir():
         return
     if hasattr(os, "add_dll_directory"):        # Windows, Python 3.8+
@@ -102,7 +125,53 @@ def _pyside6_add_dll_dir(path: Path) -> None:
     os.environ["PATH"] = str(path) + os.pathsep + os.environ.get("PATH", "")
 
 
-def _bootstrap_pyside6() -> None:
+# Qt libraries the o3de PySide6 build binds against, ordered so each one is
+# preloaded before anything that depends on it (Core is needed by all of them).
+_PYSIDE6_QT_PRELOAD = [
+    "libQt6Core", "libQt6DBus", "libQt6Network", "libQt6Gui", "libQt6Widgets",
+    "libQt6OpenGL", "libQt6PrintSupport", "libQt6Svg", "libQt6Xml", "libQt6Test",
+]
+
+
+def _running_executable_dir() -> Optional[Path]:
+    """Directory of the host executable. Inside the editor this is where the
+    build copied PySide6's native runtime dependencies, and that copy is the one
+    the running Qt was built against. sys.executable is unreliable under an
+    embedded interpreter -- the editor starts Python from an isolated PyConfig
+    that never sets program_name -- so Linux reads /proc/self/exe first."""
+    proc_exe = Path("/proc/self/exe")
+    try:
+        if proc_exe.exists():
+            return proc_exe.resolve().parent
+    except OSError:
+        pass
+    return Path(sys.executable).resolve().parent if sys.executable else None
+
+
+def _pyside6_preload_libraries(lib_dirs: List[Path], stems: List[str]) -> None:
+    """Linux/Mac stand-in for a DLL search directory: dlopen each library by
+    ABSOLUTE path with RTLD_GLOBAL so that a later DT_NEEDED on its SONAME
+    resolves to the copy we just loaded. This is the only in-process fix those
+    loaders allow, and it is the same mechanism the QtForPython gem uses to give
+    the editor a working PySide6 (see
+    Gems/QtForPython/Code/Source/Platform/Linux/InitializeEmbeddedPyside.h).
+    'stems' must be ordered dependencies-first; 'lib_dirs' is searched in
+    preference order and the first copy that loads wins."""
+    for stem in stems:
+        # 'libshiboken6.abi3' -> libshiboken6.abi3.so / .so.6.10 / .dylib, plus
+        # non-library siblings such as .prl. Loading by absolute path registers
+        # the object under its own SONAME whichever spelling we pick, so the
+        # first candidate that actually loads is enough.
+        candidates = [lib for d in lib_dirs if d.is_dir() for lib in sorted(d.glob(stem + ".*"))]
+        for lib in candidates:
+            try:
+                ctypes.CDLL(str(lib), mode=ctypes.RTLD_GLOBAL)
+                break
+            except OSError:
+                continue
+
+
+def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     """Put O3DE's shipped PySide6 on the path so a standalone launch can import
     it. Safe to call when PySide6 is partially available."""
     engine_root = _pyside6_engine_root()
@@ -119,24 +188,44 @@ def _bootstrap_pyside6() -> None:
     #    shiboken6.Shiboken .pyd absent -> "No module named 'shiboken6.Shiboken'"),
     #    and the engine's complete 3rdParty copy must win over that.
     py_tag = f"py{sys.version_info.major}.{sys.version_info.minor}"
-    site_packages = _pyside6_newest_package(packages, f"pyside6-*-{py_tag}-", "pyside6/lib/site-packages")
+    site_packages = _pyside6_newest_package(packages, f"pyside6-*-{py_tag}-", _pyside6_site_packages_subpath())
     if site_packages is None or not (site_packages / "PySide6").is_dir():
         return  # No interpreter-matched engine package; leave any existing PySide6 alone.
     sys.path.insert(0, str(site_packages))
+    pyside_root = next(p for p in site_packages.parents if p.name == "pyside6")
 
-    # 2. Make PySide6's native Qt6 dependencies discoverable. This is required
-    #    even when the PySide6 package itself is already importable: the Qt6 DLLs
-    #    it links against are not on a standalone interpreter's DLL search path,
-    #    so 'import PySide6.QtCore' fails with "DLL load failed" without it. The
-    #    pyside6 and qt 3rdParty package bin folders are build-independent; the
-    #    engine's built bin/<config> is added too when present as an exact match.
-    _pyside6_add_dll_dir(site_packages.parent.parent / "bin")           # <pyside6-pkg>/pyside6/bin
-    qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
-    if qt_bin is not None:
-        _pyside6_add_dll_dir(qt_bin)
-    for built_bin in engine_root.glob("build/*/bin/*"):
-        if (built_bin / "Qt6Core.dll").exists() or (built_bin / "libQt6Core.so.6").exists():
-            _pyside6_add_dll_dir(built_bin)
+    # 2. Make PySide6's native dependencies loadable. This is required even when
+    #    the PySide6 Python package is already importable: the shiboken6/pyside6
+    #    and Qt6 shared libraries it links against are not on the interpreter's
+    #    library search path, so 'import PySide6.QtCore' fails with "DLL load
+    #    failed" (Windows) or "libshiboken6.abi3.so.6.10: cannot open shared
+    #    object file" (Linux) without it.
+    if sys.platform.startswith("win"):
+        # Search paths are enough on Windows; the engine's built bin/<config> is
+        # added too when it is an exact match for the loaded Qt.
+        _pyside6_add_dll_dir(pyside_root / "bin")
+        qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
+        if qt_bin is not None:
+            _pyside6_add_dll_dir(qt_bin)
+        for built_bin in engine_root.glob("build/*/bin/*"):
+            if (built_bin / "Qt6Core.dll").exists():
+                _pyside6_add_dll_dir(built_bin)
+    else:
+        # Linux/Mac have no search path to extend, so the libraries are preloaded
+        # instead. Inside the editor Qt6 is already mapped into the process, and
+        # dlopening the 3rdParty package's copy on top of it would leave the
+        # process with two Qt instances -- so only shiboken6/pyside6, the pieces
+        # that are genuinely missing there, are preloaded.
+        if not embedded_editor:
+            qt_lib = _pyside6_newest_package(packages, "qt-", "qt/lib")
+            if qt_lib is not None:
+                _pyside6_preload_libraries([qt_lib], _PYSIDE6_QT_PRELOAD)
+        # Prefer the copy sitting next to the running executable: in the editor
+        # that is the build's own runtime-dependency copy, already ABI-paired
+        # with the Qt in the process. The 3rdParty package it was copied from is
+        # the fallback, and the only source a standalone launch has.
+        pyside_lib_dirs = [d for d in (_running_executable_dir(), pyside_root / "lib") if d is not None]
+        _pyside6_preload_libraries(pyside_lib_dirs, ["libshiboken6.abi3", "libpyside6.abi3"])
 
     # 3. Point Qt at its platform plugins. The o3de pyside6 package does not
     #    bundle a 'platforms/' folder -- it links against the engine's Qt, whose
@@ -169,12 +258,6 @@ try:
     with contextlib.redirect_stderr(_pyside_probe_stderr):
         import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
 except BaseException as _natural_pyside_err:
-    try:
-        import azlmbr  # noqa: F401  -- importable only in the editor's embedded interpreter
-        _in_embedded_editor = True
-    except Exception:
-        _in_embedded_editor = False
-
     if isinstance(_natural_pyside_err, ModuleNotFoundError):
         _pyside_reason = "PySide6/shiboken6 native module missing from the venv"
     elif isinstance(_natural_pyside_err, ImportError):
@@ -188,23 +271,22 @@ except BaseException as _natural_pyside_err:
         del sys.modules[_m]
 
     try:
-        _bootstrap_pyside6()
+        _bootstrap_pyside6(IN_EDITOR)
     except Exception:
         pass  # Fall through: the import below raises a clear, actionable error.
 
-    if _in_embedded_editor:
+    if IN_EDITOR:
         # Unexpected: the editor's embedded interpreter should already provide
         # PySide6. Falling back here suggests a broken engine Python environment.
-        print(
-            f"[ClassWizard] Unexpected: PySide6 was not importable from the O3DE "
-            f"editor's Python environment ({_pyside_reason}); fell back to the "
-            f"wizard's own bootstrap. This usually means the engine's Python setup "
-            f"is broken.",
-            file=sys.stderr,
+        wizard_error(
+            f"Unexpected: PySide6 was not importable from the O3DE editor's "
+            f"Python environment ({_pyside_reason}); fell back to the wizard's "
+            f"own bootstrap. This usually means the engine's Python setup is "
+            f"broken."
         )
         _probe_diag = _pyside_probe_stderr.getvalue().strip()
         if _probe_diag:
-            print(_probe_diag, file=sys.stderr)
+            wizard_error(_probe_diag)
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
@@ -794,7 +876,7 @@ class WizardTemplateScanner:
     """Discovers templates with class_wizard definitions"""
 
     def __init__(self, logger: Optional[Callable[[str], None]] = None):
-        self.logger = logger or print
+        self.logger = logger or wizard_log
 
     def log(self, message: str):
         self.logger(message)
@@ -852,8 +934,12 @@ class WizardTemplateScanner:
         if engine_path:
             try:
                 with o3de_manifest_api(engine_path) as manifest:
+                    # The manifest seeds every gem name with a None path and only
+                    # fills in the ones it can resolve, so a single unregistered
+                    # gem in project.json leaves a None behind. Drop those rather
+                    # than letting Path(None) throw away the whole resolution.
                     mapping = manifest.get_project_enabled_gems(project_path) or {}
-                    return [Path(p) for p in mapping.values() if Path(p).is_dir()]
+                    return [Path(p) for p in mapping.values() if p and Path(p).is_dir()]
             except Exception as e:
                 self.log(f"Warning: manifest API unavailable ({e}), falling back to manual resolution")
 
@@ -1275,7 +1361,7 @@ class ComponentCreator:
 
     def __init__(self, engine_path: Path, logger=None):
         self.engine_path = engine_path
-        self.logger = logger or print
+        self.logger = logger or wizard_log
         self.template_scanner = WizardTemplateScanner(logger=self.log)
 
     def log(self, message: str):
@@ -2820,7 +2906,7 @@ def create_component_cli(args, template: WizardTemplate, engine_path: Path, proj
         }
 
         # Create component
-        creator = ComponentCreator(engine_path, logger=print)
+        creator = ComponentCreator(engine_path, logger=wizard_log)
         return creator.create_component(config)
 
     except Exception as e:
@@ -2870,7 +2956,7 @@ def main():
         gem_paths = []
         if project_path:
             scanner = WizardTemplateScanner()
-            gem_paths = scanner._resolve_project_gem_paths(project_path)
+            gem_paths = scanner._resolve_project_gem_paths(project_path, engine_path)
         loader.discover_and_load(tool_dir, project_path, gem_paths)
 
     # Discover templates if engine path is valid
@@ -2941,42 +3027,43 @@ def main():
         success = create_component_cli(args, template, engine_path, project_path)
         return 0 if success else 1
     else:
-        # GUI mode - check if QApplication already exists
+        # GUI mode. Standalone owns its QApplication; inside the O3DE Editor we
+        # borrow the one already running and must leave its global state alone.
         app = QApplication.instance()
-        if app is None:
-            # Create new QApplication (standalone mode)
+        standalone = app is None
+        if standalone:
             app = QApplication(sys.argv)
             app.setStyle('Fusion')
 
-            # Set application icon if available
-            icon_path = engine_path / "Assets" / "Editor" / "UI" / "Icons" / "Editor Settings Manager.png"
-            if icon_path.exists():
-                app.setWindowIcon(QIcon(str(icon_path)))
+        window = ClassWizardWindow(engine_path, project_path)
 
-            window = ClassWizardWindow(engine_path, project_path)
+        # Set the icon on the WINDOW, not the application: embedded, the
+        # application icon belongs to the editor and replacing it would rebrand
+        # the editor itself.
+        icon_path = engine_path / "Assets" / "Editor" / "UI" / "Icons" / "Editor Settings Manager.png"
+        if icon_path.exists():
+            window.setWindowIcon(QIcon(str(icon_path)))
+
+        if standalone:
             window.show()
-
             return app.exec()
-        else:
-            # Use existing QApplication (inside O3DE Editor)
-            # Use setAttribute to ensure window is deleted when closed
-            window = ClassWizardWindow(engine_path, project_path)
-            window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
-            window.show()
 
-            # Keep window alive - store reference
-            if not hasattr(app, '_o3de_wizard_windows'):
-                app._o3de_wizard_windows = []
-            app._o3de_wizard_windows.append(window)
+        # Embedded: the editor owns the event loop and this call returns
+        # immediately, so the window needs an owner to outlive it.
+        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        window.show()
 
-            # Clean up reference when window closes
-            def cleanup():
-                if window in app._o3de_wizard_windows:
-                    app._o3de_wizard_windows.remove(window)
+        if not hasattr(app, '_o3de_wizard_windows'):
+            app._o3de_wizard_windows = []
+        app._o3de_wizard_windows.append(window)
 
-            window.destroyed.connect(cleanup)
+        def cleanup():
+            if window in app._o3de_wizard_windows:
+                app._o3de_wizard_windows.remove(window)
 
-            return 0
+        window.destroyed.connect(cleanup)
+
+        return 0
 
 if __name__ == "__main__":
     try:
