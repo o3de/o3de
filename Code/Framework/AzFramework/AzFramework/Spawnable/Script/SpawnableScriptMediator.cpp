@@ -64,11 +64,15 @@ namespace AzFramework::Scripts
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    EntitySpawnTicket SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
+    AZ::Outcome<EntitySpawnTicket, AZStd::string> SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
-        EntitySpawnTicket ticket = EntitySpawnTicket(spawnableAsset.GetAsset());
-        m_cachedSpawnTickets.insert(ticket);
-        return ticket;
+        if (spawnableAsset.GetAsset())
+        {
+            AZ::Outcome<EntitySpawnTicket, AZStd::string> result(EntitySpawnTicket(spawnableAsset.GetAsset()));
+            m_activeSpawnTickets.insert(result.GetValue());
+            return result;
+        }
+        return AZ::Failure(AZStd::string::format("CreateSpawnTicket failed to spawn: %s", spawnableAsset.GetAssetId().ToFixedString().c_str()));
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)
@@ -163,6 +167,8 @@ namespace AzFramework::Scripts
             return false;
         }
 
+        m_activeSpawnTickets.erase(spawnTicket);
+
         AZStd::weak_ptr<CallbackSentinel> weakPtr = m_sentinel;
         auto despawnCompleteCB = [this, weakPtr, spawnTicket]
             ([[maybe_unused]] EntitySpawnTicket::Id ticketId)
@@ -187,7 +193,7 @@ namespace AzFramework::Scripts
 
     void SpawnableScriptMediator::Clear()
     {
-        m_cachedSpawnTickets.clear();
+        m_activeSpawnTickets.clear();
         m_resultCommands.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }
