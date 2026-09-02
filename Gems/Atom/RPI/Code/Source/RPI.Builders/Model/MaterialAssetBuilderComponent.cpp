@@ -25,6 +25,7 @@
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
@@ -33,7 +34,6 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-
 
 namespace AZ
 {
@@ -111,7 +111,9 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(26);  // Add productSubId dependency for materialtype
+                    ->Version(27);
+                // 26 = Add productSubId dependency for materialtype
+                // 27 = Add the extension of the source scene to the exported material to avoid conflicts.
             }
         }
         
@@ -163,6 +165,19 @@ namespace AZ
 
             BindToCall(&MaterialAssetBuilderComponent::BuildMaterials);
         }
+
+        bool MaterialAssetBuilderComponent::SceneHasMeshesToExport(const MaterialAssetBuilderContext& context)
+        {
+            // we don't want to convert any material assets if the manifest does not tell use to actually
+            // export any meshes.
+            // whether or not meshes are exported is dependent on whether there are mesh groups in the scene manifest:
+            SceneAPI::Containers::SceneManifest::ValueStorageConstData manifestData = context.m_scene.GetManifest().GetValueStorage();
+
+            auto meshGroup = AZStd::find_if(manifestData.begin(), manifestData.end(),
+                SceneAPI::Containers::DerivedTypeFilter<SceneAPI::DataTypes::IMeshGroup>());
+
+            return meshGroup != manifestData.end();
+        }
         
         SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::ConvertMaterials(MaterialAssetBuilderContext& context) const
         {
@@ -184,6 +199,12 @@ namespace AZ
                 AZStd::string m_name;
             };
             AZStd::unordered_map<uint64_t, NamedMaterialSourceData> materialSourceDataByUid;
+
+            if (!SceneHasMeshesToExport(context))
+            {
+                AZ_Printf("Material Exporter", "No render materials will be exported, because no render meshes are selected for export.\n");
+                return SceneAPI::Events::ProcessingResult::Success;
+            }
 
             for (const auto& viewIt : view)
             {
@@ -251,6 +272,12 @@ namespace AZ
 
             const auto& scene = context.m_scene;
             const auto& sceneGraph = scene.GetGraph();
+
+            if (!SceneHasMeshesToExport(context))
+            {
+                AZ_Printf("Material Exporter", "No render materials will be exported, because no render meshes are selected for export.\n");
+                return SceneAPI::Events::ProcessingResult::Success;
+            }
 
             auto names = sceneGraph.GetNameStorage();
             auto content = sceneGraph.GetContentStorage();
