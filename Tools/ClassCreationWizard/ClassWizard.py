@@ -1296,6 +1296,12 @@ class GemDiscovery:
                 include_dependencies=include_dependencies
             ) or {}
 
+            # O3DE registers a project as a gem of its own: <project>/Gem/gem.json
+            # carries gem_name == project_name. The caller already offers that as
+            # the "Project" target, so it is filtered out below.
+            project_name = (manifest.get_project_json_data(project_path=project_path)
+                            or {}).get("project_name", "")
+
             # Build an allowlist of user-registered gem roots using the manifest API.
             # Covers: ~/.o3de/o3de_manifest.json external_subdirectories and
             #         project.json external_subdirectories.
@@ -1350,6 +1356,14 @@ class GemDiscovery:
                     name = data.get("gem_name") or data.get("display_name") or namespec
                 except Exception:
                     pass
+
+            # Filter 3: skip the project's own gem. It is already the "Project"
+            # target, and listing it again as an external gem resolved its CMake
+            # directory as <gem>/Code -- the layout every OTHER gem uses, but not
+            # this one, whose CMakeLists.txt sits at the gem root. That second
+            # entry could only ever report "no CMake targets found".
+            if project_name and name == project_name:
+                continue
 
             gems.append(GemInfo(name, gem_path))
 
@@ -2129,7 +2143,12 @@ class ClassWizardWindow(QMainWindow):
             if not CommandRegistry.list_commands():
                 tool_dir = Path(__file__).resolve().parent
                 plugin_loader = CommandPluginLoader(logger=self.log)
+                # self.gems holds EXTERNAL gems only, so the project's own gem
+                # directory is added back here: it is not a target of its own,
+                # but it can still carry command plugins.
                 gem_paths = [gem.path for gem in self.gems if hasattr(gem, 'path') and gem.path]
+                if self.project_path:
+                    gem_paths.append(self.project_path / "Gem")
                 plugin_loader.discover_and_load(tool_dir, self.project_path, gem_paths)
             else:
                 self.log(f"Command plugins already loaded ({len(CommandRegistry.list_commands())} commands)")
