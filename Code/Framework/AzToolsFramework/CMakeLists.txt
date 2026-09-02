@@ -51,7 +51,7 @@ ly_add_target(
             O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::SQLite
+            3rdParty::sqlite
             AZ::AzCore
         PUBLIC
             3rdParty::Qt::Core
