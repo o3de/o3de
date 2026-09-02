@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
+o3de_disable_warnings()
+
 ly_add_target(
     NAME cityhash STATIC
     NAMESPACE 3rdParty
