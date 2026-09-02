@@ -48,6 +48,7 @@ namespace LandscapeCanvas
                     QT_TRANSLATE_NOOP("LandscapeCanvas", "Landscape Canvas"),
                     QT_TRANSLATE_NOOP("LandscapeCanvas", "The Landscape Canvas component provides a node-based Editor for authoring Dynamic Vegetation"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/gems/reference/environment/landscape-canvas/")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
