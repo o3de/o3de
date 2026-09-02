@@ -119,7 +119,7 @@ namespace JsonSerializationTests
 
             TestResolveImports(importerObj);
 
-            Expect_DocStrEq(m_jsonDocument->GetObject(), expectedOutcome.GetObject());
+            Expect_DocStrEq(*m_jsonDocument, expectedOutcome);
 
             rapidjson::Document originalInput;
             originalInput.Parse(input);
@@ -127,7 +127,7 @@ namespace JsonSerializationTests
 
             TestRestoreImports(importerObj);
 
-            Expect_DocStrEq(m_jsonDocument->GetObject(), originalInput.GetObject());
+            Expect_DocStrEq(*m_jsonDocument, originalInput);
             
             m_jsonDocument->SetObject();
             delete importerObj;
@@ -165,7 +165,7 @@ namespace JsonSerializationTests
 
             TestRestoreImports(importerObj);
 
-            Expect_DocStrEq(m_jsonDocument->GetObject(), expectedOutput.GetObject());
+            Expect_DocStrEq(*m_jsonDocument, expectedOutput);
             
             m_jsonDocument->SetObject();
             delete importerObj;
@@ -176,7 +176,7 @@ namespace JsonSerializationTests
             AZ::JsonImportSettings settings;
             settings.m_importer = importerObj;
 
-            return AZ::JsonSerialization::ResolveImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), settings);
+            return AZ::JsonSerialization::ResolveImports(*m_jsonDocument, m_jsonDocument->GetAllocator(), settings);
         }
 
         AZ::JsonSerializationResult::ResultCode TestRestoreImports(JsonImporterCustom* importerObj)
@@ -184,7 +184,7 @@ namespace JsonSerializationTests
             AZ::JsonImportSettings settings;
             settings.m_importer = importerObj;
 
-            return AZ::JsonSerialization::RestoreImports(m_jsonDocument->GetObject(), m_jsonDocument->GetAllocator(), settings);
+            return AZ::JsonSerialization::RestoreImports(*m_jsonDocument, m_jsonDocument->GetAllocator(), settings);
         }
     };
 

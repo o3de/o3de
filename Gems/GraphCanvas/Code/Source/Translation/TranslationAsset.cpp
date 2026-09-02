@@ -169,7 +169,6 @@ namespace GraphCanvas
             }
             else
             {
-                const rapidjson::Value& rootValue = document.GetObject();
                 if (!document.IsObject())
                 {
                     failure = true;
@@ -182,7 +181,7 @@ namespace GraphCanvas
                     TranslationFormat translationFormat;
 
                     ResultCode serializerResult = m_serializer->Load(
-                        &translationFormat, azrtti_typeid<TranslationFormat>(), rootValue, *m_jsonDeserializationContext);
+                        &translationFormat, azrtti_typeid<TranslationFormat>(), document, *m_jsonDeserializationContext);
                     if (serializerResult.GetOutcome() == Outcomes::Success)
                     {
                         // Add the newly loaded translation data into the global database
