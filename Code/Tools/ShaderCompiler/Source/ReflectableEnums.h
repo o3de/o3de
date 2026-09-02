@@ -184,9 +184,9 @@ namespace AZ::Tests
         assert(!e.IsOneOf(MyEnum::Enumerand1, MyEnum::Enumerand3));
 
         i = 0;
-        for (auto e : MyEnumFlaggable::Enumerate{})
+        for (auto flag : MyEnumFlaggable::Enumerate{})
         {
-            assert(e == 1 << i);
+            assert(flag == 1 << i);
             ++i;
         }
 
