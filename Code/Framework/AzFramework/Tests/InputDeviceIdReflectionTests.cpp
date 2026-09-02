@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace InputDeviceIdReflectionTests
@@ -83,5 +84,29 @@ namespace InputDeviceIdReflectionTests
 
         EXPECT_TRUE(executed);
         EXPECT_TRUE(g_constructorArgumentsPreserved);
+    }
+
+    TEST_F(InputDeviceIdReflectionTest, CreateMethod_PreservesNameAndIndexInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local deviceId = InputDeviceId.Create('gamepad', 2)\n"
+            "constructorArgumentsPreserved = "
+            "deviceId.name == 'gamepad' and deviceId.index == 2\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorArgumentsPreserved);
+    }
+
+    TEST_F(InputDeviceIdReflectionTest, Reflection_AllowsTransientScriptCanvasSlotsButNotVariables)
+    {
+        const auto behaviorClassIterator = m_behaviorContext->m_typeToClassMap.find(azrtti_typeid<AzFramework::InputDeviceId>());
+        ASSERT_NE(behaviorClassIterator, m_behaviorContext->m_typeToClassMap.end());
+
+        const AZ::BehaviorClass* behaviorClass = behaviorClassIterator->second;
+        ASSERT_NE(behaviorClass, nullptr);
+        EXPECT_EQ(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes), nullptr);
+        EXPECT_NE(AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes), nullptr);
+        EXPECT_NE(AZ::FindAttribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, behaviorClass->m_attributes), nullptr);
+        EXPECT_NE(behaviorClass->m_methods.find("Create"), behaviorClass->m_methods.end());
     }
 } // namespace InputDeviceIdReflectionTests
