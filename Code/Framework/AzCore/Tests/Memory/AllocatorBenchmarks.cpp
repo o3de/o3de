@@ -11,7 +11,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Memory/HphaAllocator.h>
+#include <AzCore/Memory/MimallocAllocator.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -39,12 +39,12 @@ namespace Benchmark
         void GarbageCollect() {}
         size_t NumAllocatedBytes() { return 0; }
     };
-    // We use both this HphaSchemaAllocator and the SystemAllocator configured with Hpha because the SystemAllocator
+    // We use both this MimallocSchemaAllocator and the SystemAllocator configured with Mimalloc because the SystemAllocator
     // has extra things
-    class HphaSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
+    class MimallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MimallocSchema>
     {
     public:
-        AZ_TYPE_INFO(HphaSchemaAllocator, "{6563AB4B-A68E-4499-8C98-D61D640D1F7F}");
+        AZ_TYPE_INFO(MimallocSchemaAllocator, "{6563AB4B-A68E-4499-8C98-D61D640D1F7F}");
     };
 
     // For the SystemAllocator we inherit so we have a different stack. The SystemAllocator is used globally so we dont want
@@ -476,7 +476,7 @@ namespace Benchmark
     BM_REGISTER_ALLOCATOR(WarmUpAllocator, RawMallocAllocator);
 
     BM_REGISTER_ALLOCATOR(RawMallocAllocator, RawMallocAllocator);
-    BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
+    BM_REGISTER_ALLOCATOR(MimallocSchemaAllocator, MimallocSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
 
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating

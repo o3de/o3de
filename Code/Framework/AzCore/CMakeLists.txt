@@ -6,6 +6,8 @@
 #
 #
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+
 # TODO: would like to be able to build from this path, however, the whole setup is done at the workspace's root
 #       we also dont want to drop cmake output files everywhere.
 
@@ -20,7 +22,9 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     endif()
 endif()
 
-set(O3DE_SYSTEM_ALLOCATOR_USE_MALLOC OFF CACHE BOOL "Use OS allocator as the SystemAllocator schema.")
+set(O3DE_SYSTEM_ALLOCATOR_USE_MALLOC OFF CACHE BOOL "Use ANSI malloc instead of mimalloc as the SystemAllocator schema.")
+
+set(AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES 3rdParty::mimalloc)
 
 # By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
 # and will ignore all overrides in release builds.
@@ -80,6 +84,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
+            ${AZ_CORE_MIMALLOC_BUILD_DEPENDENCIES}
         PUBLIC
             3rdParty::Lua
             3rdParty::RapidJSON
