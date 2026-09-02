@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "InputDeviceId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Input Device Id",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "Create",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will create an Input Device Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the Input Device Id is created"
+                    },
+                    "details": {
+                        "name": "Create Input Device Id",
+                        "tooltip": "Creates an input device identifier from a device name and index"
+                    }
+                }
+            ]
+        }
+    ]
+}

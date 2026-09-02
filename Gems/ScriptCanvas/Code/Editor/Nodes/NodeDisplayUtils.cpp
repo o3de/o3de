@@ -433,9 +433,24 @@ namespace ScriptCanvasEditor::Nodes
 
                 if (isBusIdSlot)
                 {
-                    key = ::ScriptCanvasEditor::TranslationHelper::GlobalKeys::EBusSenderIDKey;
+                    GraphCanvas::TranslationKey busIdKey;
+                    busIdKey << context << className << "methods" << updatedMethodName << "busId" << "details";
+
+                    GraphCanvas::TranslationRequests::Details busIdDetails;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(
-                        details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+                        busIdDetails, &GraphCanvas::TranslationRequests::GetDetails, busIdKey, busIdDetails);
+
+                    if (busIdDetails.m_name.empty() && busIdDetails.m_tooltip.empty())
+                    {
+                        key = ::ScriptCanvasEditor::TranslationHelper::GlobalKeys::EBusSenderIDKey;
+                        GraphCanvas::TranslationRequestBus::BroadcastResult(
+                            details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+                    }
+                    else
+                    {
+                        details.m_name = busIdDetails.m_name.empty() ? details.m_name : busIdDetails.m_name;
+                        details.m_tooltip = busIdDetails.m_tooltip.empty() ? details.m_tooltip : busIdDetails.m_tooltip;
+                    }
                 }
                 else if (slot.IsData())
                 {

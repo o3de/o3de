@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "InputHapticFeedbackRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Input Haptic Feedback",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "SetVibration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will set vibration for the selected input device"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after vibration is set"
+                    },
+                    "details": {
+                        "name": "Set Vibration",
+                        "tooltip": "Sets the vibration motor speeds for a specific input device"
+                    },
+                    "busId": {
+                        "details": {
+                            "name": "Input Device Id",
+                            "tooltip": "Identifies the input device that will receive the vibration request"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
