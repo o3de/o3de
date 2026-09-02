@@ -155,6 +155,12 @@ set(FILES
     EBus/Internal/Debug.h
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
+    Instance/Instance.h
+    Instance/InstanceData.cpp
+    Instance/InstanceData.h
+    Instance/InstanceDatabase.h
+    Instance/InstanceId.cpp
+    Instance/InstanceId.h
     Instance/InstancePool.h
     Interface/Interface.h
     IO/AnsiTerminalUtils.cpp
@@ -740,6 +746,7 @@ set(FILES
     UserSettings/UserSettingsComponent.h
     UserSettings/UserSettingsProvider.cpp
     UserSettings/UserSettingsProvider.h
+    Utils/ScopedValue.h
     Utils/TypeHash.cpp
     Utils/TypeHash.h
     Utils/Utils.cpp

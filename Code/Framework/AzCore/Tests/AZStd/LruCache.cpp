@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomCore/std/containers/lru_cache.h>
+#include <AzCore/std/containers/lru_cache.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -16,9 +16,9 @@ using namespace AZStd;
 
 namespace UnitTest
 {
-    using HashedContainers = LeakDetectionFixture;
+    using LruCacheFixture = LeakDetectionFixture;
 
-    TEST_F(HashedContainers, LRUCacheBasic)
+    TEST_F(LruCacheFixture, LRUCacheBasic)
     {
         lru_cache<int, int> intint_cache;
         EXPECT_EQ(intint_cache.capacity(), 0);
@@ -111,7 +111,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(HashedContainers, LRUCacheMoveConstruct)
+    TEST_F(LruCacheFixture, LRUCacheMoveConstruct)
     {
         using PtrType = AZStd::unique_ptr<int>;
         lru_cache<int, PtrType> intintptr_cache(10);
@@ -131,7 +131,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(HashedContainers, LRUCacheRefCount)
+    TEST_F(LruCacheFixture, LRUCacheRefCount)
     {
         class X : public AZStd::intrusive_base
         {

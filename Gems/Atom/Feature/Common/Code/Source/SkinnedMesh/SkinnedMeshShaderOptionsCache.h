@@ -11,8 +11,8 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {

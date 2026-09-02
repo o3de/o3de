@@ -17,7 +17,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ImagePool.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

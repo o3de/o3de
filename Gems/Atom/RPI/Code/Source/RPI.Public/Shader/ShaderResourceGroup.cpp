@@ -10,7 +10,7 @@
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

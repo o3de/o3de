@@ -5,10 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -17,8 +19,6 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/Windowing/WindowBus.h>
-
-#include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -129,7 +129,7 @@ namespace AZ
 
                 // The id of the render pipeline created by this component
                 RPI::RenderPipelineId m_renderPipelineId;
-                
+
                 // Save a reference to the image created by the BRDF pipeline so it doesn't get auto deleted if it's ref count goes to zero
                 // For example, if we delete all the passes, we won't have to recreate the BRDF pipeline to recreate the BRDF texture
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;

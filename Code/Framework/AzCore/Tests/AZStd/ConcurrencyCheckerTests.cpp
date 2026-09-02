@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomCore/std/parallel/concurrency_checker.h>
+#include <AzCore/std/parallel/concurrency_checker.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 

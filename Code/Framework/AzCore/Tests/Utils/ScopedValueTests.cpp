@@ -6,8 +6,8 @@
  *
  */
 
-#include <AtomCore/Utils/ScopedValue.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Utils/ScopedValue.h>
 
 namespace UnitTest
 {

@@ -15,10 +15,10 @@
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RHI.Reflect/Base.h>
-#include <AtomCore/Instance/InstanceData.h>
 
-#include <AzCore/Math/Aabb.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/InstanceData.h>
+#include <AzCore/Math/Aabb.h>
 
 namespace AZ
 {

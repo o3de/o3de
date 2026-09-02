@@ -12,9 +12,8 @@
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Base.h>
-#include <AtomCore/std/containers/vector_set.h>
 #include <AzCore/std/chrono/chrono.h>
-
+#include <AzCore/std/containers/vector_set.h>
 
 namespace AZ
 {

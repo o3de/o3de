@@ -70,7 +70,6 @@ ly_add_target(
         PUBLIC
             3rdParty::mcpp
             AZ::AssetBuilderSDK
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
             AZ::AzFramework
@@ -140,7 +139,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzToolsFramework

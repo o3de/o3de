@@ -15,10 +15,9 @@
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-#include <AtomCore/Instance/InstanceData.h>
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Instance/InstanceData.h>
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <EMotionFX/Source/ActorInstance.h>

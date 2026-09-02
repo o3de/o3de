@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Reflect/Base.h>
@@ -19,9 +20,9 @@
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RHI/ShaderResourceGroup.h>
 
+#include <AzCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceId.h>
 #include <AzCore/std/containers/span.h>
-#include <AtomCore/Instance/InstanceId.h>
-#include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -142,7 +143,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Image types.
-                                    
+
             /// Sets one image view for the given shader input index.
             bool SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::ImageView *imageView, uint32_t arrayIndex = 0);
             bool SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::ImageView* imageView, uint32_t arrayIndex = 0);

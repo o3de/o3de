@@ -14,8 +14,8 @@
 #include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Sphere.h>
 #include <Decals/DecalTextureArray.h>
 #include <Decals/AsyncLoadTracker.h>

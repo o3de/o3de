@@ -18,11 +18,10 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 
-#include <AtomCore/Instance/InstanceData.h>
-
-#include <AzCore/base.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Instance/InstanceData.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/base.h>
 
 namespace AZ
 {
@@ -148,4 +147,3 @@ namespace AZ
 } // namespace AZ
 
 #define AZ_FEATURE_PROCESSOR(TypeName)
-

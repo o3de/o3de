@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>

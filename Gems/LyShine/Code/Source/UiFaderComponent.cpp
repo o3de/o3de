@@ -5,10 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "UiFaderComponent.h"
 #include "RenderGraph.h"
 #include <LyShine/IDraw2d.h>
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -16,7 +18,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <AtomCore/Instance/Instance.h>
 
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiRenderBus.h>
@@ -287,7 +288,7 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFaderComponent::OnFadeValueChanged);
- 
+
             editInfo->DataElement(nullptr, &UiFaderComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use render to texture"),
                 QT_TRANSLATE_NOOP("LyShine", "If true, this element and all children are rendered to a separate render target\n"
                 "and then that target is rendered to the screen. This avoids child elements\n"

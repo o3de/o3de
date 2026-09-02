@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <RHI/Device_Platform.h>
@@ -21,8 +22,8 @@
 #include <RHI/Image.h>
 #include <RHI/Sampler.h>
 #include <Atom/RHI/ThreadLocalContext.h>
-#include <AtomCore/std/containers/lru_cache.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/lru_cache.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
@@ -233,7 +234,7 @@ namespace AZ
 
             bool m_isAftermathInitialized = false;
 
-            // device remover fence            
+            // device remover fence
             RHI::Ptr<ID3D12Fence> m_deviceFence;
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;

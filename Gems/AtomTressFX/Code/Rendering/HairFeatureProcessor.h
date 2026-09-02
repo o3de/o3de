@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <AzCore/base.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/list.h>
 #include <AzCore/Component/TickBus.h>
-
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/base.h>
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/map.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>

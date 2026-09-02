@@ -6,8 +6,8 @@
  *
  */
 
-#include <AtomCore/std/containers/vector_set.h>
-#include <AtomCore/std/containers/fixed_vector_set.h>
+#include <AzCore/std/containers/fixed_vector_set.h>
+#include <AzCore/std/containers/vector_set.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 

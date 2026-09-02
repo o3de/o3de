@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/Memory.h>
@@ -26,7 +27,6 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ

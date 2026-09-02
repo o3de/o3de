@@ -5,32 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
 
-#include <AzCore/std/functional.h>
-
-namespace AZ
-{
-    //! Sets a variable upon construction and again when the object goes out of scope.
-    template<typename T>
-    class ScopedValue
-    {
-    private:
-        T* m_ptr;
-        T m_finalValue;
-
-    public:
-        ScopedValue(T* ptr, T initialValue, T finalValue) :
-            m_ptr(ptr), m_finalValue(finalValue)
-        {
-            AZ_Assert(m_ptr, "ScopedValue::m_ptr is null");
-            *m_ptr = initialValue;
-        }
-
-        ~ScopedValue()
-        {
-            *m_ptr = m_finalValue;
-        }
-    };
-
-} // namespace AZ
+#pragma message("DEPRECATED: Include <AzCore/Utils/ScopedValue.h> instead.")
+#include <AzCore/Utils/ScopedValue.h>

@@ -22,10 +22,9 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#include <AzCore/std/containers/span.h>
-#include <AtomCore/std/containers/vector_set.h>
-
 #include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/containers/vector_set.h>
 
 namespace AZ
 {

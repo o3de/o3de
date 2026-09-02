@@ -14,7 +14,7 @@
 
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {
