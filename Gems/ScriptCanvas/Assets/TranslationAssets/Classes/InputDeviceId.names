@@ -23,6 +23,79 @@
                         "name": "Create Input Device Id",
                         "tooltip": "Creates an input device identifier from a device name and index"
                     }
+                },
+                {
+                    "base": "Getname",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Name",
+                        "tooltip": "Returns the input device name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E58630A4-D380-4289-AA29-83300636A954}",
+                            "details": {
+                                "name": "Input Device Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "Name of the input device"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getindex",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Index",
+                        "tooltip": "Returns the input device index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E58630A4-D380-4289-AA29-83300636A954}",
+                            "details": {
+                                "name": "Input Device Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Index",
+                                "tooltip": "Zero-based index of the input device"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setindex",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Index",
+                        "tooltip": "Sets the input device index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E58630A4-D380-4289-AA29-83300636A954}",
+                            "details": {
+                                "name": "Input Device Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Index",
+                                "tooltip": "Zero-based index to assign to the input device"
+                            }
+                        }
+                    ]
                 }
             ]
         }
