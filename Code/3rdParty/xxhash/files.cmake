@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-add_subdirectory(antlr4)
-add_subdirectory(cli11)
-add_subdirectory(jsoncpp)
-add_subdirectory(xxhash)
+set(FILES
+    "${xxhash_SOURCE_DIR}/xxhash.c"
+)

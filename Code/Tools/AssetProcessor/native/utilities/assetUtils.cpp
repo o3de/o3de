@@ -40,8 +40,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
-#include <xxhash/xxhash.h>
 #include <native/utilities/UuidManager.h>
+#include <xxhash.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
