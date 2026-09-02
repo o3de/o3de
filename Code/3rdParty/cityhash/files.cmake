@@ -6,5 +6,6 @@
 #
 
 set(FILES
-    "${cityhash_SOURCE_DIR}/src/city.cc"
+    Include/city.h
+    Source/city.cpp
 )
