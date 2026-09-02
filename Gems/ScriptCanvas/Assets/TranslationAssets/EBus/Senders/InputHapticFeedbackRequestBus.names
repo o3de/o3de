@@ -22,12 +22,6 @@
                     "details": {
                         "name": "Set Vibration",
                         "tooltip": "Sets the vibration motor speeds for a specific input device"
-                    },
-                    "busId": {
-                        "details": {
-                            "name": "Input Device Id",
-                            "tooltip": "Identifies the input device that will receive the vibration request"
-                        }
                     }
                 }
             ]

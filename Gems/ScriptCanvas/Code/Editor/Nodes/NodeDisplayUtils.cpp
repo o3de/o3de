@@ -436,13 +436,6 @@ namespace ScriptCanvasEditor::Nodes
                     key = ::ScriptCanvasEditor::TranslationHelper::GlobalKeys::EBusSenderIDKey;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(
                         details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
-
-                    // Allow an individual EBus event to provide a more descriptive BusId label while preserving
-                    // the global sender BusId translation as the fallback for unspecified fields.
-                    GraphCanvas::TranslationKey busIdKey;
-                    busIdKey << context << className << "methods" << updatedMethodName << "busId" << "details";
-                    GraphCanvas::TranslationRequestBus::BroadcastResult(
-                        details, &GraphCanvas::TranslationRequests::GetDetails, busIdKey, details);
                 }
                 else if (slot.IsData())
                 {
