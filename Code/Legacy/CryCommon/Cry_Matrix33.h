@@ -144,7 +144,7 @@ struct Matrix33_tpl
 
     //CONSTRUCTOR for identical float-types
     //Matrix33 m=m33;
-    ILINE Matrix33_tpl<F>(const Matrix33_tpl<F>&m)
+    ILINE Matrix33_tpl(const Matrix33_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -160,7 +160,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for different float-types which converts between double/float
     //Matrix33 m=m33r;
     template<class F1>
-    ILINE Matrix33_tpl<F>(const Matrix33_tpl<F1>&m)
+    ILINE Matrix33_tpl(const Matrix33_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -177,7 +177,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for identical float-types. It converts a Matrix34 into a Matrix33.
     //Needs to be 'explicit' because we loose the translation vector in the conversion process
     //Matrix33(m34);
-    explicit ILINE Matrix33_tpl<F>(const Matrix34_tpl<F>&m)
+    explicit ILINE Matrix33_tpl(const Matrix34_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -194,7 +194,7 @@ struct Matrix33_tpl
     //Needs to be 'explicit' because we loose the translation vector in the conversion process
     //Matrix33(m34r);
     template<class F1>
-    explicit ILINE Matrix33_tpl<F>(const Matrix34_tpl<F1>&m)
+    explicit ILINE Matrix33_tpl(const Matrix34_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -211,7 +211,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for identical float-types. It converts a Matrix44 into a Matrix33.
     //Needs to be 'explicit' because we loose the translation vector and the 3rd row in the conversion process
     //Matrix33(m44);
-    explicit ILINE Matrix33_tpl<F>(const Matrix44_tpl<F>&m)
+    explicit ILINE Matrix33_tpl(const Matrix44_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -228,7 +228,7 @@ struct Matrix33_tpl
     //Needs to be 'explicit' because we loose the translation vector and the 3rd row in the conversion process
     //Matrix33(m44r);
     template<class F1>
-    explicit ILINE Matrix33_tpl<F>(const Matrix44_tpl<F1>&m)
+    explicit ILINE Matrix33_tpl(const Matrix44_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -245,7 +245,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for identical float-types. It converts a Quat into a Matrix33.
     //Needs to be 'explicit' because we loose fp-precision in the conversion process
     //Matrix33(quat);
-    explicit ILINE Matrix33_tpl<F>(const Quat_tpl<F>&q)
+    explicit ILINE Matrix33_tpl(const Quat_tpl<F>&q)
     {
         assert(q.IsValid(0.05f));
         Vec3_tpl<F> v2 = q.v + q.v;
@@ -273,7 +273,7 @@ struct Matrix33_tpl
     //Needs to be 'explicit' because we loose fp-precision in the conversion process
     //Matrix33(quatr);
     template<class F1>
-    explicit ILINE Matrix33_tpl<F>(const Quat_tpl<F1>&q)
+    explicit ILINE Matrix33_tpl(const Quat_tpl<F1>&q)
     {
         assert(q.IsValid(0.05f));
         Vec3_tpl<F1> v2 = q.v + q.v;
@@ -301,7 +301,7 @@ struct Matrix33_tpl
     //CONSTRUCTOR for identical float-types. It converts a Euler Angle into a Matrix33.
     //Needs to be 'explicit' because we loose fp-precision in the conversion process
     //Matrix33(Ang3(1,2,3));
-    explicit ILINE Matrix33_tpl<F>(const Ang3_tpl<F>&ang)
+    explicit ILINE Matrix33_tpl(const Ang3_tpl<F>&ang)
     {
         assert(ang.IsValid());
         SetRotationXYZ(ang);
@@ -310,7 +310,7 @@ struct Matrix33_tpl
     //Needs to be 'explicit' because we loose fp-precision in the conversion process
     //Matrix33(Ang3r(1,2,3));
     template<class F1>
-    explicit ILINE Matrix33_tpl<F>(const Ang3_tpl<F1>&ang)
+    explicit ILINE Matrix33_tpl(const Ang3_tpl<F1>&ang)
     {
         assert(ang.IsValid());
         SetRotationXYZ(Ang3_tpl<F>(F(ang.x), F(ang.y), F(ang.z)));
