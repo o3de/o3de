@@ -13,8 +13,24 @@
                 "Path": "Passes/MeshletsCompute.pass"
             },
             {
+                "Name": "MeshletsDepthPassTemplate",
+                "Path": "Passes/MeshletsDepthPass.pass"
+            },
+            {
                 "Name": "MeshletsRenderPassTemplate",
                 "Path": "Passes/MeshletsRender.pass"
+            },
+            {
+                "Name": "MeshletsGpuCullParentPassTemplate",
+                "Path": "Passes/MeshletsGpuCull.pass"
+            },
+            {
+                "Name": "MeshletsCullComputePassTemplate",
+                "Path": "Passes/MeshletsCullCompute.pass"
+            },
+            {
+                "Name": "MeshletsLateDepthPassTemplate",
+                "Path": "Passes/MeshletsLateDepth.pass"
             }
         ]
     }

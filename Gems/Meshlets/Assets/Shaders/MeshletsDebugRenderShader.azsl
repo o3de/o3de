@@ -20,11 +20,15 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
 //------------------------------------------------------------------------------
-//ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-ShaderResourceGroup PassSrg : SRG_PerPass
-{   // No need for StructuredBuffer - change to buffer across all
-    StructuredBuffer<int>     m_meshletsSharedBuffer;
-}
+// SP1 fix: no PassSrg in this shader at all. Indices moved to
+// MeshletsObjectRenderSrg::m_indices as a dedicated per-object buffer; the
+// vertex shader reads from there directly. Declaring a placeholder PassSrg
+// with SRG_PerPass_WithFallback collides with another SRG already designated
+// as the default ShaderVariantFallback (AZSLc IR error #128). The C++ side
+// (MeshletsRenderPass::LoadShader) is patched to check
+// FindShaderResourceGroupLayout("PassSrg") first and skip SRG creation when
+// the layout is absent -- so omitting the declaration here is the cleanest
+// fix and avoids any cross-pass shared-resource state tracking entirely.
 
 // Vertex Assembly streams will NOT be used - it is shown below as reference
 // Instead we use the buffers directly with index offset into the data.
@@ -79,38 +83,60 @@ void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float3 vertexBitang
 }
 
 //! @param skipShadowCoords can be useful for example when PixelDepthOffset is enable, because the pixel shader will have to run before the final world position is known
-void VertexHelper(uint vertexIndex, inout VSOutput OUT, float3 worldPosition)
+void VertexHelper(uint meshVertexIndex, inout VSOutput OUT, float3 worldPosition)
 {
     OUT.m_worldPosition = worldPosition;
 
-    // This paragraph is temporary to force the shader to include the Srg.
-    float dummyVariableToForceSrg = 0.000001 * (float)PassSrg::m_meshletsSharedBuffer[vertexIndex];
-    OUT.m_worldPosition.z += (abs(dummyVariableToForceSrg) < 0.001) ? dummyVariableToForceSrg : 0;
-
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
 
-    float4x4 objectToWorld = MeshletsObjectRenderSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = MeshletsObjectRenderSrg::GetWorldMatrixInverseTranspose();
+    // After the Epic D SRG split, the per-instance world matrix lives in
+    // MeshletsInstanceRenderSrg (PerDraw frequency, holds m_objectId), and the
+    // per-object SRG holds only the shared vertex buffers.
+    float4x4 objectToWorld = MeshletsInstanceRenderSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = MeshletsInstanceRenderSrg::GetWorldMatrixInverseTranspose();
 
-    ConstructTBN( 
-        MeshletsObjectRenderSrg::GetNormal(vertexIndex),  
-        MeshletsObjectRenderSrg::GetTangent(vertexIndex), 
-        MeshletsObjectRenderSrg::GetBiTangent(vertexIndex), 
-        objectToWorld, objectToWorldIT, 
+    ConstructTBN(
+        MeshletsObjectRenderSrg::GetNormal(meshVertexIndex),
+        MeshletsObjectRenderSrg::GetTangent(meshVertexIndex),
+        MeshletsObjectRenderSrg::GetBiTangent(meshVertexIndex),
+        objectToWorld, objectToWorldIT,
         OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 }
+
+// Vertex-pull rendering: the C++ side issues a non-indexed Draw with vertex count
+// equal to the total number of triangle vertices. SV_VertexID is the linear
+// position within the per-object dedicated index buffer that the compute pass
+// populated.
 
 VSOutput MeshletsDebugRender_MainPassVS(VSInput IN)
 {
     VSOutput OUT;
- 
-    // Idea - test vertexIndex by sending to render as a position.
-    float3 localPosition = MeshletsObjectRenderSrg::GetPosition(IN.m_vertexIndex);
-    float3 worldPosition = mul(MeshletsObjectRenderSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
- 
-    VertexHelper(IN.m_vertexIndex, OUT, worldPosition);
 
-    OUT.m_uv = MeshletsObjectRenderSrg::GetUV(IN.m_vertexIndex);
+    // Zero-init all interpolants so no field is left uninitialized.
+    OUT.m_position      = float4(0, 0, 0, 1);
+    OUT.m_normal        = float3(0, 0, 1);
+    OUT.m_tangent       = float3(1, 0, 0);
+    OUT.m_bitangent     = float3(0, 1, 0);
+    OUT.m_worldPosition = float3(0, 0, 0);
+    OUT.m_uv            = float2(0, 0);
+
+    // Clamp SV_VertexID to the indices buffer size to prevent out-of-bounds
+    // reads that hang the GPU (DXGI_ERROR_DEVICE_HUNG).
+    // When m_indicesCount is 0, pass through unclamped (avoids degenerate mesh).
+    const uint linearIndex = (MeshletsObjectRenderSrg::m_indicesCount > 0u)
+        ? min(IN.m_vertexIndex, MeshletsObjectRenderSrg::m_indicesCount - 1u)
+        : IN.m_vertexIndex;
+
+    // Vertex-pull: read the mesh vertex index (per-object static, or per-instance
+    // compacted stream when GPU cull's single-draw path is active).
+    const uint meshVertexIndex = GetMeshVertexIndex(linearIndex);
+
+    float3 localPosition = MeshletsObjectRenderSrg::GetPosition(meshVertexIndex);
+    float3 worldPosition = mul(MeshletsInstanceRenderSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
+
+    VertexHelper(meshVertexIndex, OUT, worldPosition);
+
+    OUT.m_uv = MeshletsObjectRenderSrg::GetUV(meshVertexIndex);
 
     return OUT;
 }

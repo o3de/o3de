@@ -27,9 +27,37 @@ namespace AZ
 
     namespace Meshlets
     {
+        //! Enum class for compute shader buffer stream semantics.
+        enum class ComputeStreamsSemantics : uint8_t
+        {
+            MeshletsData = 0,
+            MeshletsTriangles,
+            MeshletsIndicesIndirection,
+
+            // for debug coloring purposes
+            UVs,
+            Indices,
+
+            NumBufferStreams
+        };
+
+        //! Enum class for render shader buffer stream semantics.
+        enum class RenderStreamsSemantics : uint8_t
+        {
+            Positions = 0,
+            Normals,
+            Tangents,
+            BiTangents,
+
+            UVs,
+            Indices,
+
+            NumBufferStreams
+        };
+
         //!=====================================================================
         //! This structure contains information regarding the naming of the buffer on both
-        //!  the CPU and the GPU 
+        //!  the CPU and the GPU
         //! This structure is also used to determine the maximum alignment required for
         //!  the buffer when allocating sub-buffers
         //!=====================================================================
@@ -63,7 +91,7 @@ namespace AZ
             SrgBufferDescriptor(
                 RPI::CommonBufferPoolType poolType,
                 RHI::Format elementFormat,
-                RHI::BufferBindFlags m_bindFlags,
+                RHI::BufferBindFlags bindFlags,
                 uint32_t elementSize,
                 uint32_t elementCount,
                 Name bufferName,
@@ -72,7 +100,7 @@ namespace AZ
                 uint32_t viewOffsetInBytes,
                 uint8_t* bufferData = nullptr
             ) : m_poolType(poolType),
-                m_elementFormat(elementFormat), m_bindFlags(m_bindFlags),
+                m_elementFormat(elementFormat), m_bindFlags(bindFlags),
                 m_elementSize(elementSize), m_elementCount(elementCount),
                 m_bufferName(bufferName), m_paramNameInSrg(paramNameInSrg),
                 m_resourceShaderIndex(resourceShaderIndex), m_viewOffsetInBytes(viewOffsetInBytes),
@@ -111,6 +139,15 @@ namespace AZ
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
 
+            //! Pure function exposed for unit testing. Computes the alignment that
+            //! satisfies all descriptors' element sizes (via lcm) and is at least
+            //! \p minAllowedAlignment, rounded up to a multiple of minAllowedAlignment.
+            static uint32_t ComputeAlignment(
+                const AZStd::vector<SrgBufferDescriptor>& buffersDescriptors,
+                uint32_t minAllowedAlignment);
+
+            static constexpr uint32_t MinAllowedAlignment = 16;
+
             Data::Instance<RPI::Buffer> GetBuffer() override;
 
             //! Update the content of an area within the shared buffer
@@ -130,8 +167,7 @@ namespace AZ
 
             RHI::FreeListAllocator m_freeListAllocator;
             AZStd::mutex m_allocatorMutex;
-            const uint32_t MinAllowedAlignment = 16;    // Due to Vulkan / DX12 various restrictions.
-            uint32_t m_alignment = 16;     // This will be overridden by the size of the largest allocated element
+            uint32_t m_alignment = MinAllowedAlignment;     // overridden by the size of the largest allocated element
 
             //! Currently the shared buffer size is fixed. Going towards dynamic size can be a better
             //! solution but requires using re-allocations and proper synchronizing between all existing buffers.

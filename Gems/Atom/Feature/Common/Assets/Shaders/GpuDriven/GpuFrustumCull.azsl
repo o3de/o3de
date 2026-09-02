@@ -1,0 +1,346 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/GpuDriven/GpuInstanceData.azsli>
+#include <Atom/Features/GpuDriven/GpuDrivenConstants.azsli>
+#include <Atom/Features/IndirectRendering.azsli>
+
+#define GPU_CULL_THREAD_GROUP_SIZE 64
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Input: Hi-Z pyramid for occlusion culling (optional -- no occlusion test if unbound)
+    Texture2D<float> m_hiZTexture;
+
+    // Output: compact survivor list of (instanceIndex, batchId) pairs. Scatter consumes it.
+    RWStructuredBuffer<uint2> m_survivors;
+
+    // Output: atomic length of the survivor list.
+    RWByteAddressBuffer m_survivorCount;
+
+    // Output: per-batch visible-instance count (atomic increment). Build prefix-sums these.
+    RWStructuredBuffer<uint> m_batchCount;
+};
+
+// Extract frustum planes from the view-projection matrix.
+// Each plane is stored as float4 (normal.xyz, distance).
+// The planes face inward -- a point is inside the frustum if dot(plane, point) >= 0.
+void ExtractFrustumPlanes(row_major float4x4 viewProj, out float4 planes[6])
+{
+    // Left
+    planes[0] = float4(
+        viewProj[0][3] + viewProj[0][0],
+        viewProj[1][3] + viewProj[1][0],
+        viewProj[2][3] + viewProj[2][0],
+        viewProj[3][3] + viewProj[3][0]);
+
+    // Right
+    planes[1] = float4(
+        viewProj[0][3] - viewProj[0][0],
+        viewProj[1][3] - viewProj[1][0],
+        viewProj[2][3] - viewProj[2][0],
+        viewProj[3][3] - viewProj[3][0]);
+
+    // Bottom
+    planes[2] = float4(
+        viewProj[0][3] + viewProj[0][1],
+        viewProj[1][3] + viewProj[1][1],
+        viewProj[2][3] + viewProj[2][1],
+        viewProj[3][3] + viewProj[3][1]);
+
+    // Top
+    planes[3] = float4(
+        viewProj[0][3] - viewProj[0][1],
+        viewProj[1][3] - viewProj[1][1],
+        viewProj[2][3] - viewProj[2][1],
+        viewProj[3][3] - viewProj[3][1]);
+
+    // Near
+    planes[4] = float4(
+        viewProj[0][2],
+        viewProj[1][2],
+        viewProj[2][2],
+        viewProj[3][2]);
+
+    // Far
+    planes[5] = float4(
+        viewProj[0][3] - viewProj[0][2],
+        viewProj[1][3] - viewProj[1][2],
+        viewProj[2][3] - viewProj[2][2],
+        viewProj[3][3] - viewProj[3][2]);
+
+    // Normalize planes
+    [unroll]
+    for (int i = 0; i < 6; ++i)
+    {
+        float len = length(planes[i].xyz);
+        planes[i] /= len;
+    }
+}
+
+// Test a bounding sphere against 6 frustum planes.
+// Returns true if the sphere is at least partially inside the frustum.
+bool FrustumTestSphere(float4 planes[6], float3 center, float radius)
+{
+    [unroll]
+    for (int i = 0; i < 6; ++i)
+    {
+        float dist = dot(planes[i].xyz, center) + planes[i].w;
+        if (dist < -radius)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Project a bounding sphere to a screen-space AABB in [0,1] UV coordinates.
+// Returns float4(minU, minV, maxU, maxV). Clamps to [0,1].
+float4 ProjectSphereToScreenAABB(float3 center, float radius, row_major float4x4 viewProj)
+{
+    // Project sphere center
+    float4 clipCenter = mul(viewProj, float4(center, 1.0));
+
+    if (clipCenter.w <= 0.0)
+    {
+        // Behind camera -- return full-screen AABB to force visibility
+        return float4(0, 0, 1, 1);
+    }
+
+    float3 ndc = clipCenter.xyz / clipCenter.w;
+
+    float dist = clipCenter.w;
+    float2 screenRadiusUV = float2(
+        (radius / dist) * abs(viewProj[0][0]) * 0.5,
+        (radius / dist) * abs(viewProj[1][1]) * 0.5);
+
+    float2 uvCenter = ndc.xy * float2(0.5, -0.5) + 0.5;
+
+    float2 uvMin = saturate(uvCenter - screenRadiusUV);
+    float2 uvMax = saturate(uvCenter + screenRadiusUV);
+
+    return float4(uvMin, uvMax);
+}
+
+// Sample the Hi-Z pyramid at the appropriate mip level for the projected NDC/screen-space AABB.
+// Returns the CONSERVATIVE depth over the covered footprint (reverse-Z: min = farthest surface,
+// i.e. the hardest occluder in the region to be behind -- see MainCS for the comparison).
+float SampleHiZ(float4 screenAABB, Texture2D<float> hiZTexture)
+{
+    uint hiZWidth, hiZHeight, hiZMipCount;
+    hiZTexture.GetDimensions(0, hiZWidth, hiZHeight, hiZMipCount);
+
+    // Choose the COARSEST mip whose texel footprint still fully covers the AABB, i.e. the
+    // smallest mip such that 2^mip >= maxExtent (in mip-0 texels). That guarantees the AABB
+    // maps to at most a 2x2 texel neighborhood at this mip, so the 4 corner taps below sample
+    // every texel the AABB can touch.
+    //
+    // This MUST round up (ceil), not down (floor): floor picks a finer mip whose texels are
+    // smaller than the AABB, so the AABB can span MORE than 2x2 texels there -- the 4 corner
+    // taps would then miss interior texels, and a farther (smaller, reverse-Z) depth hiding in
+    // one of those un-sampled texels would silently be excluded from the min, making the test
+    // wrongly conclude "occluded" for geometry that is actually visible through the middle of
+    // the footprint. Rounding up keeps the test conservative (never falsely occluded).
+    float2 aabbSize = (screenAABB.zw - screenAABB.xy) * float2(hiZWidth, hiZHeight);
+    float maxExtent = max(aabbSize.x, aabbSize.y);
+    float mipLevel = ceil(log2(max(maxExtent, 1.0)));
+    mipLevel = clamp(mipLevel, 0.0, float(hiZMipCount - 1));
+
+    uint mip = uint(mipLevel);
+
+    // Sample the 4 corners of the AABB at this mip level (point sampling)
+    uint mipWidth = max(1u, hiZWidth >> mip);
+    uint mipHeight = max(1u, hiZHeight >> mip);
+
+    uint2 minTexel = uint2(screenAABB.xy * float2(mipWidth, mipHeight));
+    uint2 maxTexel = uint2(screenAABB.zw * float2(mipWidth, mipHeight));
+    minTexel = min(minTexel, uint2(mipWidth - 1, mipHeight - 1));
+    maxTexel = min(maxTexel, uint2(mipWidth - 1, mipHeight - 1));
+
+    float d0 = hiZTexture.Load(int3(minTexel.x, minTexel.y, mip));
+    float d1 = hiZTexture.Load(int3(maxTexel.x, minTexel.y, mip));
+    float d2 = hiZTexture.Load(int3(minTexel.x, maxTexel.y, mip));
+    float d3 = hiZTexture.Load(int3(maxTexel.x, maxTexel.y, mip));
+
+    return min(min(d0, d1), min(d2, d3));
+}
+
+// Compute the closest depth of a bounding sphere (reverse-Z: closest = largest depth value).
+float ComputeClosestDepth(float3 center, float radius, row_major float4x4 viewProj, float3 viewForward)
+{
+    // The closest point on the sphere to the camera is center offset toward the camera by radius
+    float3 closestPoint = center - viewForward * radius;
+    float4 clipPos = mul(viewProj, float4(closestPoint, 1.0));
+
+    if (clipPos.w <= 0.0)
+    {
+        return 1.0; // In front of near plane in reverse-Z
+    }
+
+    return saturate(clipPos.z / clipPos.w);
+}
+
+// Compute screen-space coverage for LOD selection.
+// Matches the CPU-side logic in Culling.cpp.
+float ComputeScreenCoverage(float3 sphereCenter, float sphereRadius, float3 cameraPos, float4x4 projMatrix)
+{
+    float dist = length(sphereCenter - cameraPos);
+    if (dist <= sphereRadius)
+    {
+        return 1.0;
+    }
+
+    // Project the sphere's angular diameter using the projection matrix Y scale.
+    // projMatrix[1][1] is the cotangent of half the vertical FOV.
+    float angularSize = sphereRadius / dist;
+    float screenCoverage = angularSize * projMatrix[1][1] * 0.5;
+    return saturate(screenCoverage);
+}
+
+[numthreads(GPU_CULL_THREAD_GROUP_SIZE, 1, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint instanceIndex = dispatchThreadID.x;
+    if (instanceIndex >= SceneSrg::m_gpuInstanceCount)
+    {
+        return;
+    }
+
+    GpuInstanceData instance = SceneSrg::m_gpuInstanceData[instanceIndex];
+
+    // Skip released/inactive slots and skinned meshes (handled by CPU path)
+    if (instance.m_flags & (GpuInstanceFlag_Released | GpuInstanceFlag_Skinned))
+    {
+        return;
+    }
+
+    // Extract frustum planes from view-projection matrix
+    float4 frustumPlanes[6];
+    ExtractFrustumPlanes(ViewSrg::m_viewProjectionMatrix, frustumPlanes);
+
+    // Frustum cull: test bounding sphere
+    if (!FrustumTestSphere(frustumPlanes, instance.m_boundingSphereCenter, instance.m_boundingSphereRadius))
+    {
+        return;
+    }
+
+    // Hi-Z occlusion test: project the bounding sphere to an NDC/screen-space AABB, multi-tap
+    // the Hi-Z pyramid mip whose texel footprint covers that AABB, and compare against the
+    // instance's closest depth (reverse-Z: occluded only if closest depth < Hi-Z min depth,
+    // since min depth in reverse-Z is the farthest -- hardest to be behind -- surface in the
+    // footprint). CONSERVATIVE by construction: SampleHiZ always rounds its mip selection UP
+    // (never misses part of the footprint) and this branch is skipped entirely (no culling)
+    // when no Hi-Z texture is bound. When in doubt this test says "visible", never "occluded".
+    {
+        uint hiZW, hiZH;
+        PassSrg::m_hiZTexture.GetDimensions(hiZW, hiZH);
+
+        if (hiZW > 0 && hiZH > 0)
+        {
+            float4 screenAABB = ProjectSphereToScreenAABB(
+                instance.m_boundingSphereCenter,
+                instance.m_boundingSphereRadius,
+                ViewSrg::m_viewProjectionMatrix);
+
+            float hiZDepth = SampleHiZ(screenAABB, PassSrg::m_hiZTexture);
+
+            // View forward direction from the view matrix (third row, negated for RH convention)
+            float3 viewForward = -float3(ViewSrg::m_viewMatrix[2][0], ViewSrg::m_viewMatrix[2][1], ViewSrg::m_viewMatrix[2][2]);
+
+            float closestDepth = ComputeClosestDepth(
+                instance.m_boundingSphereCenter,
+                instance.m_boundingSphereRadius,
+                ViewSrg::m_viewProjectionMatrix,
+                viewForward);
+
+            if (closestDepth < hiZDepth)
+            {
+                return;
+            }
+        }
+    }
+
+    // LOD selection: compute screen coverage and check if this LOD level is active.
+    // For LOD cross-fade transitions, objects near a LOD boundary emit TWO draw calls:
+    // one for the outgoing LOD (alpha fading out) and one for the incoming LOD (alpha fading in).
+    // The alpha is stored in m_lodCrossFadeAlpha for the raster shader to apply dithered blending.
+    float screenCoverage = ComputeScreenCoverage(
+        instance.m_boundingSphereCenter,
+        instance.m_boundingSphereRadius,
+        ViewSrg::m_worldPosition,
+        ViewSrg::m_projectionMatrix);
+
+    // LOD cross-fade blend range: fraction of coverage range where two LODs overlap.
+    // When screen coverage is within this margin of a LOD boundary, both LODs are drawn.
+    static const float LOD_CROSSFADE_MARGIN = 0.05;
+
+    if (instance.m_lodCount > 1)
+    {
+        // Check if this LOD is completely out of range (with cross-fade margin)
+        float expandedMin = instance.m_lodScreenCoverageMin - LOD_CROSSFADE_MARGIN;
+        float expandedMax = instance.m_lodScreenCoverageMax + LOD_CROSSFADE_MARGIN;
+
+        if (screenCoverage < expandedMin || screenCoverage > expandedMax)
+        {
+            return;
+        }
+
+        // Compute cross-fade alpha for this LOD level.
+        // At the lower boundary (transitioning to coarser LOD): alpha fades from 1 -> 0
+        // At the upper boundary (transitioning to finer LOD):   alpha fades from 0 -> 1
+        float crossFadeAlpha = 1.0;
+
+        if (screenCoverage < instance.m_lodScreenCoverageMin)
+        {
+            // Below min -- fading out (this is the outgoing finer LOD)
+            crossFadeAlpha = saturate((screenCoverage - expandedMin) / LOD_CROSSFADE_MARGIN);
+        }
+        else if (screenCoverage > instance.m_lodScreenCoverageMax)
+        {
+            // Above max -- fading in (this is the outgoing coarser LOD)
+            crossFadeAlpha = saturate((expandedMax - screenCoverage) / LOD_CROSSFADE_MARGIN);
+        }
+
+        // Skip if alpha is essentially zero (fully faded out)
+        if (crossFadeAlpha < 0.01)
+        {
+            return;
+        }
+
+        // TODO (Phase 3): write crossFadeAlpha to a per-visible-instance RW output
+        // buffer so the raster shader can apply dithered blending.  The instance
+        // buffer (StructuredBuffer) is read-only from the compute shader, so a
+        // separate RWStructuredBuffer<float> output is needed.  For now the CPU-set
+        // value in GpuInstanceData.m_lodCrossFadeAlpha is used (always 1.0 until the
+        // CPU LOD selector populates it).
+        // SceneSrg::m_gpuInstanceData is SRV -- cannot write here.
+    }
+
+    // Instance survived culling -- record it for batch collection.
+    // batchId groups instances that share mesh+LOD into one instanced draw.
+    uint batchId = instance.m_batchId;
+
+    // Per-batch count (Build prefix-sums these into base offsets).
+    InterlockedAdd(PassSrg::m_batchCount[batchId], 1);
+
+    // Append (instanceIndex, batchId) to the global survivor list.
+    uint survivorSlot;
+    PassSrg::m_survivorCount.InterlockedAdd(0, 1, survivorSlot);
+
+    uint maxSurvivors;
+    uint survivorStride;
+    PassSrg::m_survivors.GetDimensions(maxSurvivors, survivorStride);
+    if (survivorSlot >= maxSurvivors)
+    {
+        return;
+    }
+    PassSrg::m_survivors[survivorSlot] = uint2(instanceIndex, batchId);
+}

@@ -5,6 +5,10 @@
     "ClassData": {
         "AssetPaths": [
             {
+                "Name": "UpscalerParentTemplate",
+                "Path": "Passes/Upscaler.pass"
+            },
+            {
                 "Name": "MSAAResolveColorTemplate",
                 "Path": "Passes/MSAAResolveColor.pass"
             },
@@ -15,6 +19,14 @@
             {
                 "Name": "MSAAResolveDepthTemplate",
                 "Path": "Passes/MSAAResolveDepth.pass"
+            },
+            {
+                "Name": "CheckerboardResolveColorTemplate",
+                "Path": "Passes/CheckerboardResolveColor.pass"
+            },
+            {
+                "Name": "CheckerboardResolveDepthTemplate",
+                "Path": "Passes/CheckerboardResolveDepth.pass"
             },
             {
                 "Name": "DepthPassTemplate",
@@ -29,12 +41,20 @@
                 "Path": "Passes/DepthMax.pass"
             },
             {
+                "Name": "DepthCheckerboardPassTemplate",
+                "Path": "Passes/DepthCheckerboard.pass"
+            },
+            {
                 "Name": "ForwardPassTemplate",
                 "Path": "Passes/Forward.pass"
             },
             {
                 "Name": "ForwardSubsurfacePassTemplate",
                 "Path": "Passes/ForwardSubsurface.pass"
+            },
+            {
+                "Name": "ForwardCheckerboardPassTemplate",
+                "Path": "Passes/ForwardCheckerboard.pass"
             },
             {
                 "Name": "MainPipeline",
@@ -245,6 +265,10 @@
                 "Path": "Passes/ProjectedShadowmaps.pass"
             },
             {
+                "Name": "SparseVirtualShadowmapsTemplate",
+                "Path": "Passes/Shadow/SparseVirtualShadowmaps.pass"
+            },
+            {
                 "Name": "LightCullingRemapTemplate",
                 "Path": "Passes/LightCullingRemap.pass"
             },
@@ -297,10 +321,6 @@
                 "Path": "Passes/ContrastAdaptiveSharpening.pass"
             },
             {
-                "Name": "AoParentTemplate",
-                "Path": "Passes/AoParent.pass"
-            },
-            {
                 "Name": "SsaoParentTemplate",
                 "Path": "Passes/SsaoParent.pass"
             },
@@ -314,7 +334,7 @@
             },
             {
                 "Name": "GtaoComputeTemplate",
-                "Path": "Passes/GtaoCompute.pass"
+                "Path": "Passes/Gtao.pass"
             },
             {
                 "Name": "ReflectionsParentPassTemplate",
@@ -387,6 +407,14 @@
             {
                 "Name": "ReflectionScreenSpaceCompositePassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceComposite.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceMobilePassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceMobile.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceBlurMobilePassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceBlurMobile.pass"
             },
             {
                 "Name": "ReflectionCompositePassTemplate",
@@ -503,6 +531,10 @@
             {
                 "Name": "DebugRayTracingPassTemplate",
                 "Path": "Passes/DebugRayTracingPass.pass"
+            },
+            {
+                "Name": "PathTracingPassTemplate",
+                "Path": "Passes/PathTracingPass.pass"
             },
             {
                 "Name": "UIParentTemplate",
@@ -631,7 +663,7 @@
             {
                 "Name": "PaniniProjectionTemplate",
                 "Path": "Passes/PaniniProjection.pass"
-            }, 
+            },
             {
                 "Name": "FilmGrainTemplate",
                 "Path": "Passes/FilmGrain.pass"
@@ -651,6 +683,70 @@
             {
                 "Name": "TaaParentTemplate",
                 "Path": "Passes/TaaParent.pass"
+            },
+            {
+                "Name": "GpuFrustumCullTemplate",
+                "Path": "Passes/GpuDriven/GpuFrustumCull.pass"
+            },
+            {
+                "Name": "GpuOcclusionCullPass1Template",
+                "Path": "Passes/GpuDriven/GpuOcclusionCullPass1.pass"
+            },
+            {
+                "Name": "GpuOcclusionCullPass2Template",
+                "Path": "Passes/GpuDriven/GpuOcclusionCullPass2.pass"
+            },
+            {
+                "Name": "HiZGeneratePersistentTemplate",
+                "Path": "Passes/GpuDriven/HiZGeneratePersistent.pass"
+            },
+            {
+                "Name": "GpuTwoPassOcclusionCullTemplate",
+                "Path": "Passes/GpuDriven/GpuTwoPassOcclusionCull.pass"
+            },
+            {
+                "Name": "IndirectRasterTemplate",
+                "Path": "Passes/GpuDriven/IndirectRaster.pass"
+            },
+            {
+                "Name": "HiZGenerateTemplate",
+                "Path": "Passes/GpuDriven/HiZGenerate.pass"
+            },
+            {
+                "Name": "GpuBatchBlockScanTemplate",
+                "Path": "Passes/GpuDriven/GpuBatchBlockScan.pass"
+            },
+            {
+                "Name": "GpuBatchBlockSumScanTemplate",
+                "Path": "Passes/GpuDriven/GpuBatchBlockSumScan.pass"
+            },
+            {
+                "Name": "GpuBatchFinalizeTemplate",
+                "Path": "Passes/GpuDriven/GpuBatchFinalize.pass"
+            },
+            {
+                "Name": "GpuBatchScatterTemplate",
+                "Path": "Passes/GpuDriven/GpuBatchScatter.pass"
+            },
+            {
+                "Name": "GpuCullStatsReadbackTemplate",
+                "Path": "Passes/GpuDriven/GpuCullStatsReadback.pass"
+            },
+            {
+                "Name": "GpuCullAndDrawTemplate",
+                "Path": "Passes/GpuDriven/GpuCullAndDraw.pass"
+            },
+            {
+                "Name": "GpuCullDebugTemplate",
+                "Path": "Passes/GpuDriven/GpuCullDebug.pass"
+            },
+            {
+                "Name": "GpuDrivenForwardTemplate",
+                "Path": "Passes/GpuDriven/GpuDrivenForward.pass"
+            },
+            {
+                "Name": "ImGuiOnlyPipelineTemplate",
+                "Path": "Passes/ImGuiOnlyPipeline.pass"
             }
         ]
     }

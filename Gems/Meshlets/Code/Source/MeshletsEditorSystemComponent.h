@@ -13,6 +13,10 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
+#ifdef IMGUI_ENABLED
+#include <ImGuiBus.h>
+#endif
+
 namespace AZ
 {
     namespace Meshlets
@@ -21,6 +25,9 @@ namespace AZ
         class MeshletsEditorSystemComponent
             : public MeshletsSystemComponent
             , private AzToolsFramework::EditorEvents::Bus::Handler
+#ifdef IMGUI_ENABLED
+            , public ImGui::ImGuiUpdateListenerBus::Handler
+#endif
         {
             using BaseSystemComponent = MeshletsSystemComponent;
         public:
@@ -39,6 +46,14 @@ namespace AZ
             // AZ::Component
             void Activate() override;
             void Deactivate() override;
+
+#ifdef IMGUI_ENABLED
+            // ImGui::ImGuiUpdateListenerBus::Handler -- the meshlet debug tab.
+            void OnImGuiUpdate() override;
+            void OnImGuiMainMenuUpdate() override;
+
+            bool m_showDebugWindow = false;
+#endif
         };
     } // namespace Meshlets
 } // namespace AZ

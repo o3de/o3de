@@ -1,0 +1,210 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// GPU per-cluster cull -> compacted DrawIndexedIndirect commands + count.
+// One thread-group per instance; survivors compact via wave ballot.
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// Per-cluster cull math (frustum/cone/HiZ) + the ClusterBoundsRecord struct are
+// shared with the amplification-shader cull path -- see MeshletsClusterCullMath.azsli.
+#include <MeshletsClusterCullMath.azsli>
+
+// MUST equal MeshletsDispatchItem's MESHLETS_THREAD_GROUP_SIZE (one group per instance).
+#define MESHLETS_CULL_GROUP 64
+
+//! Mirrors AZ::Meshlets::ClusterDescriptor (16 bytes = uint4).
+struct ClusterDescriptor
+{
+    uint4 m_data;            // x=vertexOffset, y=triangleOffset, z=vertexCount, w=triangleCount
+};
+
+//! Mirrors the gem's DrawIndexedIndirectCommand (20 bytes = 5x u32).
+struct DrawIndexedIndirectCommand
+{
+    uint m_indexCount;
+    uint m_instanceCount;
+    uint m_startIndex;
+    uint m_baseVertex;
+    uint m_startInstance;
+};
+
+ShaderResourceGroup MeshletsCullSrg : SRG_PerObject
+{
+    // Per-mesh inputs (read only).
+    StructuredBuffer<ClusterBoundsRecord> m_clusterBounds;
+    StructuredBuffer<ClusterDescriptor>   m_clusterDescriptors;
+
+    // Per-cluster HiZ occlusion (shares the reverse-Z pyramid the RPI HiZGeneratePass
+    // already produces for the standard-mesh GPU-driven path -- no second pyramid).
+    // Left unbound (default/null resource) until a pipeline wires it; GetDimensions
+    // then reads 0x0 and ClusterVisible's dimension check safely skips occlusion, same
+    // "optional -- no occlusion test if unbound" contract as Atom's own GpuFrustumCull.azsl.
+    Texture2D<float> m_hiZTexture;
+
+    // Per-instance outputs (written as UAV here; consumed as indirect args later).
+    //! Compacted per-cluster DrawIndexedIndirect commands (visible clusters only).
+    RWStructuredBuffer<DrawIndexedIndirectCommand> m_outCommands;
+    //! m_outCount[0] = number of visible commands == the indirect draw's count.
+    RWStructuredBuffer<uint> m_outCount;
+
+    // Per-instance cull parameters (object->world as 3 explicit rows -- major-ness safe).
+    float4 m_worldRow0;
+    float4 m_worldRow1;
+    float4 m_worldRow2;
+    float4 m_frustumPlanes[6];   // world-space, xyz=inward normal, w=d; inside => dot(n,p)+d >= 0
+    float4 m_cameraPosition;     // xyz = camera world position
+    // World->clip of the cull camera (live or frozen; same one m_frustumPlanes was
+    // derived from on the CPU), used only to project cluster bounds for the HiZ test.
+    row_major float4x4 m_worldToClip;
+    uint   m_clusterCount;
+    uint   m_doFrustumCull;      // 0/1
+    uint   m_doConeCull;         // 0/1
+    uint   m_doHiZCull;          // 0/1 -- opt-in; also gated by m_hiZTexture actually being bound
+
+    // ---- Phase 6 cluster-DAG cut (opt-in r_meshletsDagLod) ----
+    // C++ invariant (UpdateGpuCullInstance): m_clusterCount spans the FULL
+    // leaf+interior DAG range ONLY while m_doDagCut == 1; otherwise it is clamped
+    // to the leaf count, so interiors can never draw with the cut off.
+    uint   m_doDagCut;           // 0/1
+    float  m_dagProjScale;       // cot(FovY/2) * viewportHeight * 0.5
+    float  m_dagErrorPx;         // cut threshold in pixels
+
+    //! Per-cluster DAG cut records, parallel to m_clusterDescriptors (leaf-first).
+    //! Unbound for v2 packs -- m_doDagCut is then always 0.
+    StructuredBuffer<MeshletDagNodeRecord> m_dagNodes;
+};
+
+//! True if cluster \p clusterId survives frustum + cone + HiZ-occlusion culling
+//! (matches the CPU path for frustum/cone; HiZ occlusion is GPU-only). Thin SRG-bound
+//! wrapper over the pure functions in MeshletsClusterCullMath.azsli -- behavior is
+//! unchanged from before the refactor, just de-duplicated (the amplification-shader
+//! cull path, MeshletsForwardMeshShader.azsl, composes the SAME functions against its
+//! own bound resources).
+bool ClusterVisible(uint clusterId)
+{
+    // Phase 6 cluster-DAG cut -- before the passthrough early-out, same ordering
+    // (and same shared math) as the AS path's MeshletClusterVisible so the two
+    // stay correctness oracles for each other.
+    if (MeshletsCullSrg::m_doDagCut != 0u)
+    {
+        if (!MeshletsDagCutAccepts(
+                MeshletsCullSrg::m_dagNodes[clusterId],
+                MeshletsCullSrg::m_worldRow0, MeshletsCullSrg::m_worldRow1, MeshletsCullSrg::m_worldRow2,
+                MeshletsCullSrg::m_cameraPosition.xyz,
+                MeshletsCullSrg::m_dagProjScale, MeshletsCullSrg::m_dagErrorPx))
+        {
+            return false;
+        }
+    }
+
+    if (MeshletsCullSrg::m_doFrustumCull == 0u && MeshletsCullSrg::m_doConeCull == 0u &&
+        MeshletsCullSrg::m_doHiZCull == 0u)
+    {
+        return true;   // passthrough
+    }
+
+    const ClusterBoundsRecord b = MeshletsCullSrg::m_clusterBounds[clusterId];
+    const float maxScale = MeshletsMaxAxisScale(
+        MeshletsCullSrg::m_worldRow0, MeshletsCullSrg::m_worldRow1, MeshletsCullSrg::m_worldRow2);
+    const float3 centerW = MeshletsTransformPoint(
+        MeshletsCullSrg::m_worldRow0, MeshletsCullSrg::m_worldRow1, MeshletsCullSrg::m_worldRow2,
+        b.m_centerRadius.xyz);
+    const float  radiusW = b.m_centerRadius.w * maxScale;
+    bool visible = true;
+
+    if (MeshletsCullSrg::m_doFrustumCull != 0u &&
+        !MeshletsFrustumTestSphere(centerW, radiusW, MeshletsCullSrg::m_frustumPlanes))
+    {
+        visible = false;
+    }
+
+    // --- Per-cluster HiZ occlusion (shared pyramid; conservative when uncertain) ---
+    // Gated on the texture actually being bound (GetDimensions returns 0x0 for the
+    // default/null resource when no pipeline has wired m_hiZTexture yet) so this is a
+    // safe no-op until a HiZ pyramid Connection exists -- never culls on a guess.
+    if (visible && MeshletsCullSrg::m_doHiZCull != 0u)
+    {
+        uint hiZW, hiZH;
+        MeshletsCullSrg::m_hiZTexture.GetDimensions(hiZW, hiZH);
+        if (hiZW > 0 && hiZH > 0)
+        {
+            float4 ndcAabb = MeshletsProjectSphereToNdcAabb(centerW, radiusW, MeshletsCullSrg::m_worldToClip);
+            float hiZDepth = MeshletsSampleHiZMin(ndcAabb, MeshletsCullSrg::m_hiZTexture);
+            float closestDepth = MeshletsComputeClosestClusterDepth(
+                centerW, radiusW, MeshletsCullSrg::m_cameraPosition.xyz, MeshletsCullSrg::m_worldToClip);
+            if (closestDepth < hiZDepth)
+            {
+                visible = false;
+            }
+        }
+    }
+
+    const float coneCutoff = b.m_apexCutoff.w;
+    if (visible && MeshletsCullSrg::m_doConeCull != 0u && coneCutoff < 1.0)
+    {
+        const float3 apexW = MeshletsTransformPoint(
+            MeshletsCullSrg::m_worldRow0, MeshletsCullSrg::m_worldRow1, MeshletsCullSrg::m_worldRow2,
+            b.m_apexCutoff.xyz);
+        const float3 axisW = MeshletsTransformDir(
+            MeshletsCullSrg::m_worldRow0, MeshletsCullSrg::m_worldRow1, MeshletsCullSrg::m_worldRow2,
+            b.m_axisPad.xyz);
+        if (MeshletsConeCulled(apexW, axisW, coneCutoff, MeshletsCullSrg::m_cameraPosition.xyz))
+        {
+            visible = false;
+        }
+    }
+    return visible;
+}
+
+//! Group-wide visible-command counter (the append slot + the final draw count).
+groupshared uint g_commandCount;
+
+[numthreads(MESHLETS_CULL_GROUP, 1, 1)]
+void CullClusters(uint3 groupThreadId : SV_GroupThreadID)
+{
+    const uint lane = groupThreadId.x;
+
+    if (lane == 0)
+    {
+        g_commandCount = 0;
+    }
+    GroupMemoryBarrierWithGroupSync();
+
+    // Each lane strides over clusters; visible clusters append one DrawIndexedIndirect
+    // command at an atomically-reserved slot.
+    for (uint c = lane; c < MeshletsCullSrg::m_clusterCount; c += MESHLETS_CULL_GROUP)
+    {
+        if (!ClusterVisible(c))
+        {
+            continue;
+        }
+        const ClusterDescriptor cd = MeshletsCullSrg::m_clusterDescriptors[c];
+
+        uint slot;
+        InterlockedAdd(g_commandCount, 1u, slot);
+
+        DrawIndexedIndirectCommand cmd;
+        cmd.m_indexCount    = cd.m_data.w * 3u;   // triangleCount * 3
+        cmd.m_instanceCount = 1u;
+        cmd.m_startIndex    = cd.m_data.y * 3u;   // triangleOffset * 3 (slice of the static index buffer)
+        cmd.m_baseVertex    = 0u;
+        cmd.m_startInstance = 0u;
+        MeshletsCullSrg::m_outCommands[slot] = cmd;
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+
+    // Thread 0 publishes the visible-command count for DrawIndexedIndirectCount.
+    if (lane == 0)
+    {
+        MeshletsCullSrg::m_outCount[0] = g_commandCount;
+    }
+}

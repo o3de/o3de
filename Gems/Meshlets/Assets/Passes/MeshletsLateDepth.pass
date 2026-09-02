@@ -1,0 +1,31 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsLateDepthPassTemplate",
+            "PassClass": "MeshletsRenderPass",
+            // Two-pass PASS 2: draws disoccluded "meshletslatedepth" items after the
+            // HiZ reduce. The declared HiZInput read is what makes the CURRENT
+            // pyramid legal to sample from this pass onward.
+            "Slots": [
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "HiZInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "meshletslatedepth",
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

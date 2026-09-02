@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuBatchBlockSumScanTemplate",
+            "PassClass": "GpuCullPass",
+            "Slots": [
+                {
+                    "Name": "BatchScanBlockSums",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchScanBlockSums"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": { "FilePath": "Shaders/GpuDriven/GpuBatchBlockSumScan.shader" },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

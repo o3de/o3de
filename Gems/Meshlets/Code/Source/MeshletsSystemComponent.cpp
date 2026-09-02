@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -20,6 +19,8 @@
 #include <MeshletsSystemComponent.h>
 #include <MeshletsFeatureProcessor.h>
 #include <MultiDispatchComputePass.h>
+#include <Meshlets/Reflect/MeshletPackAsset.h>
+#include <Meshlets/Reflect/MeshletPackAssetHandler.h>
 
 namespace AZ
 {
@@ -35,9 +36,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<MeshletsSystemComponent>(
-                        QT_TRANSLATE_NOOP("Meshlets", "Meshlets"),
-                        QT_TRANSLATE_NOOP("Meshlets", "[Description of functionality provided by this System Component]"))
+                    ec->Class<MeshletsSystemComponent>("Meshlets", "[Description of functionality provided by this System Component]")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
@@ -45,6 +44,7 @@ namespace AZ
             }
 
             Meshlets::MeshletsFeatureProcessor::Reflect(context);
+            Meshlets::MeshletPackAsset::Reflect(context);
         }
 
         void MeshletsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -112,6 +112,8 @@ namespace AZ
             passSystem->AddPassCreator(AZ::Name("MultiDispatchComputePass"), &MultiDispatchComputePass::Create);
             passSystem->AddPassCreator(AZ::Name("MeshletsRenderPass"), &MeshletsRenderPass::Create);
 
+            m_packAssetHandler.Register();
+
             MeshletsRequestBus::Handler::BusConnect();
             AZ::TickBus::Handler::BusConnect();
         }
@@ -120,6 +122,8 @@ namespace AZ
         {
             AZ::TickBus::Handler::BusDisconnect();
             MeshletsRequestBus::Handler::BusDisconnect();
+
+            m_packAssetHandler.Unregister();
 
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Meshlets::MeshletsFeatureProcessor>();
         }

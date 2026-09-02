@@ -94,7 +94,17 @@ namespace AZ
             desc.m_elementSize = bufferDesc.m_elementSize;
             desc.m_bufferName = bufferDesc.m_bufferName.GetCStr();
             desc.m_byteCount = (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize;
-            desc.m_bufferData = nullptr;    // set during asset load - use Update
+            // SP1 fix: honor bufferDesc.m_bufferData if the caller passed initial
+            // data. The original code hard-coded nullptr here, forcing every
+            // caller to do a post-creation UpdateData. That works for ReadOnly
+            // pool buffers (compute reads them fine) but on AMD with ReadWrite
+            // pool buffers the post-creation UpdateData appears to silently not
+            // commit before the next frame's GPU read -- every read returns
+            // zeros. Using the BufferAsset initial-data path here routes the
+            // upload through the engine's StreamBuffer fenced-upload mechanism
+            // (see Buffer::Init in RPI.Public/Buffer/Buffer.cpp) which is
+            // synchronised properly for all pool types.
+            desc.m_bufferData = bufferDesc.m_bufferData;
 
             // Buffer creation
             return RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
@@ -159,7 +169,17 @@ namespace AZ
 
             // Create the buffer view into the shared buffer - it will be used as a separate buffer
             // by the PerObject Srg.
-            bufferDesc.m_viewOffsetInBytes = uint32_t(outputBufferAllocator->GetVirtualAddress().m_ptr);
+            const uintptr_t fullVirtualAddress = outputBufferAllocator->GetVirtualAddress().m_ptr;
+            bufferDesc.m_viewOffsetInBytes = uint32_t(fullVirtualAddress);
+            AZ_TracePrintf("Meshlets",
+                "CreateSharedBufferView [%s]: requiredSize=%zu, "
+                "allocator->GetVirtualAddress().m_ptr=0x%016llX, "
+                "stored m_viewOffsetInBytes=%u (0x%08X), "
+                "high32 bits (lost if non-zero)=%u\n",
+                bufferDesc.m_bufferName.GetCStr(), requiredSize,
+                (unsigned long long)fullVirtualAddress,
+                bufferDesc.m_viewOffsetInBytes, bufferDesc.m_viewOffsetInBytes,
+                uint32_t(fullVirtualAddress >> 32));
             AZ_Assert(bufferDesc.m_viewOffsetInBytes % bufferDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
 
             // And here we create resource view from the shared buffer 

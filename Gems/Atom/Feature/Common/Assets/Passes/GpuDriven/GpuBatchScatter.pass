@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuBatchScatterTemplate",
+            "PassClass": "GpuCullPass",
+            "Slots": [
+                {
+                    "Name": "Survivors",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_survivors"
+                },
+                {
+                    "Name": "SurvivorCount",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_survivorCount"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "BatchWriteCursor",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchWriteCursor"
+                },
+                {
+                    "Name": "VisibleInstanceIds",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_visibleInstanceIds"
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "VisibleInstanceIdsBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 2097152 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 524288 }
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "VisibleInstanceIds", "AttachmentRef": { "Pass": "This", "Attachment": "VisibleInstanceIdsBuffer" } }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": { "FilePath": "Shaders/GpuDriven/GpuBatchScatter.shader" },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

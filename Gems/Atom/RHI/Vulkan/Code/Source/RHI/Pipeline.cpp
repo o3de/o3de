@@ -117,6 +117,12 @@ namespace AZ
             case RHI::ShaderStage::Compute:
                 stageBits = VK_SHADER_STAGE_COMPUTE_BIT;
                 break;
+            case RHI::ShaderStage::Mesh:
+                stageBits = VK_SHADER_STAGE_MESH_BIT_EXT;
+                break;
+            case RHI::ShaderStage::Amplification:
+                stageBits = VK_SHADER_STAGE_TASK_BIT_EXT;
+                break;
             default:
                 AZ_Assert(false, "Shader Stage is not correct.");
             }

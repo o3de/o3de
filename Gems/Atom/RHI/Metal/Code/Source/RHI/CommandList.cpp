@@ -661,6 +661,14 @@ namespace AZ
                                      baseInstance: drawItem.m_drawInstanceArgs.m_instanceOffset];
                     break;
                 }
+
+                case RHI::DrawType::DispatchMesh:
+                {
+                    // Mesh/amplification-shader draws are not yet implemented on the Metal backend (Phase 2M).
+                    // drawMeshThreadgroups: requires a Metal 3 mesh-shader pipeline that is not authored here yet.
+                    AZ_Assert(false, "DispatchMesh not yet implemented on Metal (Phase 2M)");
+                    break;
+                }
             }
 
             // Restore the scissors if needed.

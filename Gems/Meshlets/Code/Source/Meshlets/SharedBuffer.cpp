@@ -45,8 +45,6 @@ namespace AZ
         SharedBuffer::SharedBuffer()
         {
             AZ_Warning("SharedBuffer", false, "Missing information to properly create SharedBuffer.");
-
-            Interface<SharedBufferInterface>::Register(this);
         }
 
         SharedBuffer::SharedBuffer(
@@ -62,19 +60,32 @@ namespace AZ
         {
         }
 
+        uint32_t SharedBuffer::ComputeAlignment(
+            const AZStd::vector<SrgBufferDescriptor>& buffersDescriptors,
+            uint32_t minAllowedAlignment)
+        {
+            uint32_t alignment = minAllowedAlignment;
+            for (size_t i = 0; i < buffersDescriptors.size(); ++i)
+            {
+                // The least common multiple ensures every view's element size divides
+                // the alignment evenly, so byte offsets within the shared buffer are
+                // always element-multiples for any descriptor in the set.
+                alignment = std::lcm(alignment, buffersDescriptors[i].m_elementSize);
+            }
+            alignment = AZStd::max(alignment, minAllowedAlignment);
+            uint32_t remainder = alignment % minAllowedAlignment;
+            if (remainder != 0)
+            {
+                alignment += minAllowedAlignment - remainder;
+            }
+            return alignment;
+        }
+
         //! This method that ensures that the alignment over the various BufferViews is
         //! always kept, given the various possible buffer descriptors using the buffer.
         void SharedBuffer::CalculateAlignment(AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
         {
-            m_alignment = MinAllowedAlignment;
-            for (uint8_t bufferIndex = 0; bufferIndex < buffersDescriptors.size(); ++bufferIndex)
-            {
-                // Using the least common multiple enables resource views to be typed and ensures they can get
-                // an offset in bytes that is a multiple of an element count
-                m_alignment = std::lcm(m_alignment, buffersDescriptors[bufferIndex].m_elementSize);
-            }
-            m_alignment = AZStd::max(m_alignment, MinAllowedAlignment) +
-                (MinAllowedAlignment - m_alignment % MinAllowedAlignment);
+            m_alignment = ComputeAlignment(buffersDescriptors, MinAllowedAlignment);
         }
 
         void SharedBuffer::InitAllocator()
@@ -103,15 +114,25 @@ namespace AZ
             // support greedy memory allocation when memory has reached its end.  This must not invalidate the buffer during
             // the current frame, hence allocation of second buffer, fence and a copy must take place.
 
-            // Create the global buffer that holds all buffer views
-            // Remark: in order to enable indirect usage, the file BufferSystem.cpp must
-            // be changed to support a pool that supports this type or else a buffer view
-            // validation test will fail.
-            // The change should be done in 'BufferSystem::CreateCommonBufferPool'.
+            // Create the global buffer that holds all buffer views.
+            //
+            // After the vertex-pull migration the shared buffer is only ever read as a
+            // shader resource (compute writes via UAV, render reads via SRV). The legacy
+            // InputAssembly / Indirect bind flags were inherited from the POC's
+            // index-buffer-via-attachment design and are no longer needed. Keeping IA
+            // here was suspected of forcing the D3D12 backend into a heap/state
+            // configuration that conflicted with the SRV usage, contributing to
+            // DXGI_ERROR_DEVICE_HUNG. ShaderReadWrite alone covers everything we
+            // actually do with the buffer.
+            //
+            // Remark: in order to enable indirect usage in the future, the file
+            // BufferSystem.cpp must be changed to support a pool that supports this
+            // type or else a buffer view validation test will fail. The change should
+            // be done in 'BufferSystem::CreateCommonBufferPool'.
             SrgBufferDescriptor  sharedBufferDesc = SrgBufferDescriptor(
-                RPI::CommonBufferPoolType::ReadWrite, 
+                RPI::CommonBufferPoolType::ReadWrite,
                 RHI::Format::Unknown,
-                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
+                RHI::BufferBindFlags::ShaderReadWrite,
                 sizeof(uint32_t), uint32_t(m_sizeInBytes / sizeof(uint32_t)),
                 Name{ bufferName }, Name{ sufferNameInShader }, 0, 0, nullptr
             );

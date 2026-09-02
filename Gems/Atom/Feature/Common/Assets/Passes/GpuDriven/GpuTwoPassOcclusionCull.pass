@@ -1,0 +1,172 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuTwoPassOcclusionCullTemplate",
+
+            "Slots": [
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "Pass1VisibleInstanceIds",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Pass1BatchBaseOffset",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Pass1IndirectDrawArgs",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Pass2VisibleInstanceIds",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Pass2BatchBaseOffset",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Pass2IndirectDrawArgs",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "DepthStencilInputOutput", "AttachmentRef": { "Pass": "IndirectRasterPass2", "Attachment": "DepthStencilInputOutput" } },
+                { "LocalSlot": "Pass1VisibleInstanceIds", "AttachmentRef": { "Pass": "GpuBatchScatterPass1", "Attachment": "VisibleInstanceIds" } },
+                { "LocalSlot": "Pass1BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "BatchBaseOffset" } },
+                { "LocalSlot": "Pass1IndirectDrawArgs",   "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "IndirectDrawArgs" } },
+                { "LocalSlot": "Pass2VisibleInstanceIds", "AttachmentRef": { "Pass": "GpuBatchScatterPass2", "Attachment": "VisibleInstanceIds" } },
+                { "LocalSlot": "Pass2BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "BatchBaseOffset" } },
+                { "LocalSlot": "Pass2IndirectDrawArgs",   "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "IndirectDrawArgs" } }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "GpuOcclusionCullPass1",
+                    "TemplateName": "GpuOcclusionCullPass1Template",
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockScanPass1",
+                    "TemplateName": "GpuBatchBlockScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount", "AttachmentRef": { "Pass": "GpuOcclusionCullPass1", "Attachment": "BatchCount" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockSumScanPass1",
+                    "TemplateName": "GpuBatchBlockSumScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockScanPass1", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchFinalizePass1",
+                    "TemplateName": "GpuBatchFinalizeTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount",         "AttachmentRef": { "Pass": "GpuOcclusionCullPass1", "Attachment": "BatchCount" } },
+                        { "LocalSlot": "BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuBatchBlockScanPass1", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockSumScanPass1", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchScatterPass1",
+                    "TemplateName": "GpuBatchScatterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "Survivors",        "AttachmentRef": { "Pass": "GpuOcclusionCullPass1", "Attachment": "Survivors" } },
+                        { "LocalSlot": "SurvivorCount",    "AttachmentRef": { "Pass": "GpuOcclusionCullPass1", "Attachment": "SurvivorCount" } },
+                        { "LocalSlot": "BatchBaseOffset",  "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchWriteCursor", "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "BatchWriteCursor" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "IndirectRasterPass1",
+                    "TemplateName": "IndirectRasterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "IndirectDrawArgs",         "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "IndirectDrawArgs" } },
+                        { "LocalSlot": "VisibleInstanceIds",       "AttachmentRef": { "Pass": "GpuBatchScatterPass1", "Attachment": "VisibleInstanceIds" } },
+                        { "LocalSlot": "BatchBaseOffset",          "AttachmentRef": { "Pass": "GpuBatchFinalizePass1", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "DepthStencilInputOutput",  "AttachmentRef": { "Pass": "Parent", "Attachment": "DepthStencilInputOutput" } }
+                    ],
+                    "Enabled": true
+                },
+
+                {
+                    "Name": "HiZGeneratePass2",
+                    "TemplateName": "HiZGeneratePersistentTemplate",
+                    "Connections": [
+                        { "LocalSlot": "DepthInput", "AttachmentRef": { "Pass": "IndirectRasterPass1", "Attachment": "DepthStencilInputOutput" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuOcclusionCullPass2",
+                    "TemplateName": "GpuOcclusionCullPass2Template",
+                    "Connections": [
+                        { "LocalSlot": "HiZInput",           "AttachmentRef": { "Pass": "HiZGeneratePass2", "Attachment": "HiZOutput" } },
+                        { "LocalSlot": "VisibilityBitfield", "AttachmentRef": { "Pass": "GpuOcclusionCullPass1", "Attachment": "VisibilityBitfield" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockScanPass2",
+                    "TemplateName": "GpuBatchBlockScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount", "AttachmentRef": { "Pass": "GpuOcclusionCullPass2", "Attachment": "BatchCount" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockSumScanPass2",
+                    "TemplateName": "GpuBatchBlockSumScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockScanPass2", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchFinalizePass2",
+                    "TemplateName": "GpuBatchFinalizeTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount",         "AttachmentRef": { "Pass": "GpuOcclusionCullPass2", "Attachment": "BatchCount" } },
+                        { "LocalSlot": "BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuBatchBlockScanPass2", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockSumScanPass2", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchScatterPass2",
+                    "TemplateName": "GpuBatchScatterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "Survivors",        "AttachmentRef": { "Pass": "GpuOcclusionCullPass2", "Attachment": "Survivors" } },
+                        { "LocalSlot": "SurvivorCount",    "AttachmentRef": { "Pass": "GpuOcclusionCullPass2", "Attachment": "SurvivorCount" } },
+                        { "LocalSlot": "BatchBaseOffset",  "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchWriteCursor", "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "BatchWriteCursor" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "IndirectRasterPass2",
+                    "TemplateName": "IndirectRasterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "IndirectDrawArgs",         "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "IndirectDrawArgs" } },
+                        { "LocalSlot": "VisibleInstanceIds",       "AttachmentRef": { "Pass": "GpuBatchScatterPass2", "Attachment": "VisibleInstanceIds" } },
+                        { "LocalSlot": "BatchBaseOffset",          "AttachmentRef": { "Pass": "GpuBatchFinalizePass2", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "DepthStencilInputOutput",  "AttachmentRef": { "Pass": "IndirectRasterPass1", "Attachment": "DepthStencilInputOutput" } }
+                    ],
+                    "Enabled": true
+                }
+            ]
+        }
+    }
+}

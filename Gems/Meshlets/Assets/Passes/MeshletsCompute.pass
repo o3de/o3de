@@ -6,26 +6,22 @@
         "PassTemplate": {
             "Name": "MeshletsComputePassTemplate",
             "PassClass": "MultiDispatchComputePass",
-            "Slots": [
-                {
-                    "Name": "MeshletsSharedBuffer",
-                    "ShaderInputName": "m_meshletsSharedBuffer",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader",
-                    "LoadStoreAction": {
-                        "LoadAction": "Load",
-                        "StoreAction": "Store"
-                    }
-                }
-            ],
+            // SP1 fix: removed the MeshletsSharedBuffer slot. Compute now writes
+            // to dedicated per-object m_indices and m_uvs buffers (bound via
+            // MeshletsDataSrg), not into a sub-view of a shared buffer attached
+            // at the pass level. This eliminates the cross-pass shared-resource
+            // state tracking that was page-faulting on AMD. The compute shader's
+            // PassSrg uses SRG_PerPass_WithFallback so the now-unused
+            // m_meshletsSharedBuffer field gets a zero fallback and the dead
+            // helper functions (SetTriangleIndices etc.) still compile.
+            "Slots": [],
             "PassData": {
                 "$type": "ComputePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/MeshletsCompute.shader"
                 }
             },
-            "Connections": [
-            ]
+            "Connections": []
         }
     }
 }

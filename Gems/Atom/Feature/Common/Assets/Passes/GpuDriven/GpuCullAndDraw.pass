@@ -1,0 +1,127 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuCullAndDrawTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": { "AspectFlags": ["Depth"] }
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "VisibleInstanceIds",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "IndirectDrawArgs",
+                    "SlotType": "Output"
+                },
+                {
+                    // Expose this frame's pyramid as a slot: a second import of the
+                    // same RHI image would split hazard tracking.
+                    "Name": "HiZOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "VisibleInstanceIds", "AttachmentRef": { "Pass": "GpuBatchScatterPass", "Attachment": "VisibleInstanceIds" } },
+                { "LocalSlot": "BatchBaseOffset", "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "BatchBaseOffset" } },
+                { "LocalSlot": "IndirectDrawArgs", "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "IndirectDrawArgs" } },
+                { "LocalSlot": "HiZOutput", "AttachmentRef": { "Pass": "HiZGeneratePass", "Attachment": "HiZOutput" } }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "HiZGeneratePass",
+                    // Persistent (double-buffered) variant: produces the same HiZOutput for
+                    // GpuFrustumCullPass below, but backs it with two imported ping-pong
+                    // images so an EARLIER-in-the-frame consumer (the Meshlets AS/compute
+                    // cluster cull) can safely sample the LAST completed pyramid via
+                    // HiZGeneratePass::GetLastCompletedPyramid().
+                    "TemplateName": "HiZGeneratePersistentTemplate",
+                    "Connections": [
+                        { "LocalSlot": "DepthInput", "AttachmentRef": { "Pass": "Parent", "Attachment": "DepthInput" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuFrustumCullPass",
+                    "TemplateName": "GpuFrustumCullTemplate",
+                    "Connections": [
+                        { "LocalSlot": "HiZInput", "AttachmentRef": { "Pass": "HiZGeneratePass", "Attachment": "HiZOutput" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuCullStatsReadbackPass",
+                    "TemplateName": "GpuCullStatsReadbackTemplate",
+                    "Connections": [
+                        { "LocalSlot": "SurvivorCount", "AttachmentRef": { "Pass": "GpuFrustumCullPass", "Attachment": "SurvivorCount" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockScanPass",
+                    "TemplateName": "GpuBatchBlockScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount", "AttachmentRef": { "Pass": "GpuFrustumCullPass", "Attachment": "BatchCount" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchBlockSumScanPass",
+                    "TemplateName": "GpuBatchBlockSumScanTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockScanPass", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchFinalizePass",
+                    "TemplateName": "GpuBatchFinalizeTemplate",
+                    "Connections": [
+                        { "LocalSlot": "BatchCount",         "AttachmentRef": { "Pass": "GpuFrustumCullPass", "Attachment": "BatchCount" } },
+                        { "LocalSlot": "BatchBaseOffset",    "AttachmentRef": { "Pass": "GpuBatchBlockScanPass", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "GpuBatchBlockSumScanPass", "Attachment": "BatchScanBlockSums" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "GpuBatchScatterPass",
+                    "TemplateName": "GpuBatchScatterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "Survivors",        "AttachmentRef": { "Pass": "GpuFrustumCullPass", "Attachment": "Survivors" } },
+                        { "LocalSlot": "SurvivorCount",    "AttachmentRef": { "Pass": "GpuFrustumCullPass", "Attachment": "SurvivorCount" } },
+                        { "LocalSlot": "BatchBaseOffset",  "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "BatchWriteCursor", "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "BatchWriteCursor" } }
+                    ],
+                    "Enabled": true
+                },
+                {
+                    "Name": "IndirectRasterPass",
+                    "TemplateName": "IndirectRasterTemplate",
+                    "Connections": [
+                        { "LocalSlot": "IndirectDrawArgs",         "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "IndirectDrawArgs" } },
+                        { "LocalSlot": "VisibleInstanceIds",       "AttachmentRef": { "Pass": "GpuBatchScatterPass", "Attachment": "VisibleInstanceIds" } },
+                        { "LocalSlot": "BatchBaseOffset",          "AttachmentRef": { "Pass": "GpuBatchFinalizePass", "Attachment": "BatchBaseOffset" } },
+                        { "LocalSlot": "DepthStencilInputOutput",  "AttachmentRef": { "Pass": "Parent", "Attachment": "DepthStencilInputOutput" } }
+                    ],
+                    "Enabled": true
+                }
+            ]
+        }
+    }
+}

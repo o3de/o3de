@@ -6,16 +6,13 @@
         "PassTemplate": {
             "Name": "MeshletsRenderPassTemplate",
             "PassClass": "MeshletsRenderPass",
+            // SP1 fix: removed the MeshletsSharedBuffer slot. Indices are now
+            // bound to MeshletsObjectRenderSrg::m_indices as a per-object
+            // dedicated buffer, so the render pass no longer needs the
+            // SharedBuffer attachment. This eliminates the cross-pass
+            // UAV-to-SRV state transition on a single shared resource that
+            // was page-faulting on AMD.
             "Slots": [
-                // OUtput shared buffer for dynamic meshlets data
-                {
-                    "Name": "MeshletsSharedBuffer",
-                    "ShaderInputName": "m_meshletsSharedBuffer",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-
-                // Input/Outputs...
                 {
                     "Name": "DepthStencilInputOutput",
                     "SlotType": "InputOutput",
@@ -27,15 +24,7 @@
                     "ScopeAttachmentUsage": "RenderTarget"
                 }
             ],
-            "Connections": [
-                {
-                    "LocalSlot": "MeshletsSharedBuffer",
-                    "AttachmentRef": {
-                        "Pass": "MeshletsComputePass",
-                        "Attachment": "MeshletsSharedBuffer"
-                    }
-                }
-            ]
+            "Connections": []
         }
     }
 }

@@ -1,0 +1,64 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuBatchFinalizeTemplate",
+            "PassClass": "GpuCullPass",
+            "Slots": [
+                {
+                    "Name": "BatchCount",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchCount"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "BatchScanBlockSums",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchScanBlockSums"
+                },
+                {
+                    "Name": "BatchWriteCursor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchWriteCursor"
+                },
+                {
+                    "Name": "IndirectDrawArgs",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_indirectDrawArgs"
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "BatchWriteCursorBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 262144 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 65536 }
+                },
+                {
+                    "Name": "IndirectDrawArgsBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 1310720 },
+                    "BufferViewDescriptor": { "m_elementSize": 20, "m_elementCount": 65536 }
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "BatchWriteCursor", "AttachmentRef": { "Pass": "This", "Attachment": "BatchWriteCursorBuffer" } },
+                { "LocalSlot": "IndirectDrawArgs", "AttachmentRef": { "Pass": "This", "Attachment": "IndirectDrawArgsBuffer" } }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": { "FilePath": "Shaders/GpuDriven/GpuBatchFinalize.shader" },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

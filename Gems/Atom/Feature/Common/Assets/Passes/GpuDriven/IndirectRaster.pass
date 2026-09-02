@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "IndirectRasterTemplate",
+            "PassClass": "IndirectRasterPass",
+            "Slots": [
+                {
+                    "Name": "IndirectDrawArgs",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Indirect",
+                    "ShaderInputName": "NoBind"
+                },
+                {
+                    "Name": "VisibleInstanceIds",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_visibleInstanceIds"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "RenderTargetOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": { "Value": [0.0, 0.0, 0.0, 0.0] },
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "IndirectRasterPassData",
+                "DrawListTag": "depth",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/GpuDriven/IndirectDepthPass.shader"
+                },
+                "IndirectDrawBufferSlotName": "IndirectDrawArgs",
+                "CountBufferSlotName": "",
+                "MaxDrawCount": 65536,
+                "IndexedDraw": false,
+                "BindViewSrg": true
+            }
+        }
+    }
+}

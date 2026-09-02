@@ -1,0 +1,52 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuBatchBlockScanTemplate",
+            "PassClass": "GpuCullPass",
+            "Slots": [
+                {
+                    "Name": "BatchCount",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchCount"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "BatchScanBlockSums",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchScanBlockSums"
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "BatchBaseOffsetBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 262144 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 65536 }
+                },
+                {
+                    "Name": "BatchScanBlockSumsBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 1024 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 256 }
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "BatchBaseOffset",    "AttachmentRef": { "Pass": "This", "Attachment": "BatchBaseOffsetBuffer" } },
+                { "LocalSlot": "BatchScanBlockSums", "AttachmentRef": { "Pass": "This", "Attachment": "BatchScanBlockSumsBuffer" } }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": { "FilePath": "Shaders/GpuDriven/GpuBatchBlockScan.shader" },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

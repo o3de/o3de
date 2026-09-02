@@ -60,13 +60,37 @@ namespace AZ::RHI
         uint32_t m_indexOffset = 0;
     };
 
+    //! Arguments for a hardware mesh-shader draw (DrawType::DispatchMesh). Carries only the
+    //! thread-group grid dimensions -- the mesh/amplification pipeline pulls its own geometry,
+    //! so there is no vertex/index/instance data. API-neutral: DX12 DispatchMesh, Vulkan
+    //! vkCmdDrawMeshTasksEXT, Metal drawMeshThreadgroups (per-threadgroup thread counts come
+    //! from PSO reflection, not from here).
+    struct DispatchMeshDirect
+    {
+        DispatchMeshDirect() = default;
+
+        DispatchMeshDirect(
+            uint32_t groupCountX,
+            uint32_t groupCountY,
+            uint32_t groupCountZ)
+            : m_groupCountX(groupCountX)
+            , m_groupCountY(groupCountY)
+            , m_groupCountZ(groupCountZ)
+        {}
+
+        uint32_t m_groupCountX = 1;
+        uint32_t m_groupCountY = 1;
+        uint32_t m_groupCountZ = 1;
+    };
+
     using DeviceDrawIndirect = DeviceIndirectArguments;
 
     enum class DrawType : uint8_t
     {
         Indexed = 0,
         Linear,
-        Indirect
+        Indirect,
+        DispatchMesh
     };
 
     struct DeviceDrawArguments
@@ -91,12 +115,18 @@ namespace AZ::RHI
             , m_indirect{ indirect }
         {}
 
+        DeviceDrawArguments(const DispatchMeshDirect& dispatchMesh)
+            : m_type{ DrawType::DispatchMesh }
+            , m_dispatchMesh{ dispatchMesh }
+        {}
+
         DrawType m_type;
         union
         {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
             DeviceDrawIndirect m_indirect;
+            DispatchMeshDirect m_dispatchMesh;
         };
     };
 }

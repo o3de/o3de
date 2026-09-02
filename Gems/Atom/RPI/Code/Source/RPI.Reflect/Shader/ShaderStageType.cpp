@@ -24,6 +24,8 @@ namespace AZ
             case ShaderStageType::Fragment: return "Fragment";
             case ShaderStageType::Compute: return "Compute";
             case ShaderStageType::RayTracing: return "RayTracing";
+            case ShaderStageType::Mesh: return "Mesh";
+            case ShaderStageType::Amplification: return "Amplification";
             default:
                 AZ_Assert(false, "Unhandled type");
                 return "<Unknown>";
@@ -42,6 +44,8 @@ namespace AZ
                     ->Value(ToString(ShaderStageType::Fragment), ShaderStageType::Fragment)
                     ->Value(ToString(ShaderStageType::Compute), ShaderStageType::Compute)
                     ->Value(ToString(ShaderStageType::RayTracing), ShaderStageType::RayTracing)
+                    ->Value(ToString(ShaderStageType::Mesh), ShaderStageType::Mesh)
+                    ->Value(ToString(ShaderStageType::Amplification), ShaderStageType::Amplification)
                     ;
             }
         }

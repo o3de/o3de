@@ -598,6 +598,13 @@ namespace AZ
             CommitViewportState();
             CommitShadingRateState();
 
+            const bool useDrawMarker = RHI::RHISystemInterface::Get()->GpuMarkersEnabled() &&
+                r_gpuMarkersPerDraw && drawItem.m_debugLabel != nullptr;
+            if (useDrawMarker)
+            {
+                PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, drawItem.m_debugLabel);
+            }
+
             switch (drawItem.m_geometryView->GetDrawArguments().m_type)
             {
             case RHI::DrawType::Indexed:
@@ -639,9 +646,33 @@ namespace AZ
                 ExecuteIndirect(indirect);
                 break;
             }
+
+            case RHI::DrawType::DispatchMesh:
+            {
+#if defined(O3DE_DX12_MESH_SHADER_SUPPORT)
+                // The mesh/amplification pipeline pulls its own geometry, so no stream/index buffers
+                // are bound; SRGs were already committed above via CommitShaderResources<Draw>. Reach
+                // DispatchMesh through a per-call cast to List6 (the base list type is List4).
+                const RHI::DispatchMeshDirect& dispatchMesh = drawItem.m_geometryView->GetDrawArguments().m_dispatchMesh;
+                auto commandList6 = DX12ResourceCast<ID3D12GraphicsCommandList6>(GetCommandList());
+                AZ_Assert(commandList6, "Failed to cast command list to ID3D12GraphicsCommandList6 for DispatchMesh");
+                if (commandList6)
+                {
+                    commandList6->DispatchMesh(dispatchMesh.m_groupCountX, dispatchMesh.m_groupCountY, dispatchMesh.m_groupCountZ);
+                }
+#else
+                AZ_Assert(false, "DispatchMesh requires a mesh-shader-capable SDK (O3DE_DX12_MESH_SHADER_SUPPORT not defined).");
+#endif
+                break;
+            }
             default:
                 AZ_Assert(false, "Invalid draw type %d", drawItem.m_geometryView->GetDrawArguments().m_type);
                 break;
+            }
+
+            if (useDrawMarker)
+            {
+                PIXEndEvent(GetCommandList());
             }
 
             // Restore the scissors if needed.
@@ -687,7 +718,9 @@ namespace AZ
 #endif
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
+        // rayTracingBlas is [[maybe_unused]] -- the whole body is inside
+        // #ifdef AZ_DX12_DXR_SUPPORT, so it is unreferenced in a DX12 build without DXR.
+        void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
@@ -717,8 +750,11 @@ namespace AZ
             AZ_UNUSED(clusterBlasList);
         }
 
+        // blasToQuery is [[maybe_unused]] for the same reason as the other DXR entry points in
+        // this file (see lines 327, 693, 711): the body is entirely inside
+        // #ifdef AZ_DX12_DXR_SUPPORT and is unreferenced in a DX12 build without DXR.
         void CommandList::QueryBlasCompactionSizes(
-            const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
+            [[maybe_unused]] const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
@@ -777,8 +813,9 @@ namespace AZ
 #endif
         }
 
+        // DXR-only body; both parameters are unreferenced without AZ_DX12_DXR_SUPPORT.
         void CommandList::CompactBottomLevelAccelerationStructure(
-            const RHI::DeviceRayTracingBlas& sourceBlas, const RHI::DeviceRayTracingBlas& compactBlas)
+            [[maybe_unused]] const RHI::DeviceRayTracingBlas& sourceBlas, [[maybe_unused]] const RHI::DeviceRayTracingBlas& compactBlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
@@ -805,10 +842,11 @@ namespace AZ
             m_state.m_shadingRateState.Set(rate, combinators);
         }
 
+        // DXR-only body; all three parameters are unreferenced without AZ_DX12_DXR_SUPPORT.
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::DeviceRayTracingTlas& rayTracingTlas,
-            const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
-            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList)
+            [[maybe_unused]] const RHI::DeviceRayTracingTlas& rayTracingTlas,
+            [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+            [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());

@@ -1,0 +1,48 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Meshlet shadow pass shader.
+// PERF: hardware input-assembly. The VS reads a POSITION channel fetched by the
+// GPU through the hardware index buffer (post-transform vertex-cache reuse),
+// replacing vertex-pull. The matching POSITION-only PSO input layout is built in
+// MeshletsFeatureProcessor (InitShadowShader); the per-mesh POSITION stream is
+// bound via the geometry view's StreamBufferView. The shadow system provides
+// ViewSrg::m_viewProjectionMatrix with the light's VP matrix per cascade.
+// No pixel shader -- depth-only write into the shadowmap.
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg_all.srgi>
+#include <MeshletsPerObjectRenderSrg.azsli>
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    // Step B (hardware instancing): SV_InstanceID indexes m_instanceObjectIds on
+    // the cull-off path. 0 (and unused) on the non-instanced path.
+    uint m_instanceId : SV_InstanceID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VSOutput MeshletsShadowPassVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    // Step B: hardware-instanced draws select objectId via SV_InstanceID (when
+    // m_useInstancing != 0); the non-instanced path keeps the per-draw m_objectId.
+    uint objectId = MeshletsInstanceRenderSrg::ResolveObjectId(IN.m_instanceId);
+    float4x4 world = SceneSrg::GetObjectToWorldMatrix(objectId);
+
+    float3 worldPosition = mul(world, float4(IN.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    return OUT;
+}

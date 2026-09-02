@@ -108,6 +108,15 @@ namespace AZ::RHI
         /// [Optional] The geometry function to compile.
         ConstPtr<ShaderStageFunction> m_geometryFunction;
 
+        /// [Optional] The mesh-shader function to compile. When set, this is a hardware mesh-shader
+        /// draw: m_vertexFunction and m_inputStreamLayout are unused (no input assembly), the pipeline
+        /// emits primitives in-pipeline, and the draw is submitted via DrawType::DispatchMesh.
+        ConstPtr<ShaderStageFunction> m_meshFunction;
+
+        /// [Optional] The amplification (a.k.a. task/object) function that optionally precedes the
+        /// mesh function and dispatches mesh thread-groups (e.g. per-cluster culling).
+        ConstPtr<ShaderStageFunction> m_amplificationFunction;
+
         /// [Required] The fragment function used to compile.
         ConstPtr<ShaderStageFunction> m_fragmentFunction;
 

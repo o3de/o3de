@@ -8,4 +8,12 @@
 
 set(FILES
     Tests/MeshletsTest.cpp
+    Tests/MeshletsPageResidencyTest.cpp
+    Tests/MeshletsStreamingSoakTest.cpp
+    Tests/Reflect/MeshletPackFormatTest.cpp
+    Tests/Reflect/MeshletPackWriterTest.cpp
+    Tests/Reflect/MeshletPackReaderTest.cpp
+    Tests/Reflect/MeshletPackAssetTest.cpp
+    Tests/PackResolverTest.cpp
+    Tests/RuntimeLoadFixtureTest.cpp
 )

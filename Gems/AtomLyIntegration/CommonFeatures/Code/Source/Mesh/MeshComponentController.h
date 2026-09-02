@@ -11,6 +11,7 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+#include <Meshlets/MeshletsFeatureProcessorInterface.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
@@ -60,6 +61,28 @@ namespace AZ
             float m_qualityDecayRate = 0.5f;
 
             AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
+
+            //! When true and the Meshlets gem is enabled in the project, this mesh is
+            //! rendered through the meshlets (virtual geometry) feature processor
+            //! instead of the standard mesh path. Falls back to the standard path with
+            //! a single trace when the Meshlets gem is not available.
+            bool m_useMeshlets = false;
+
+            //! Meshlet cluster budgets written into the auto-authored .meshletpack
+            //! sidecar when meshlets are enabled (and re-written when these change in
+            //! the editor). Larger clusters => fewer clusters => fewer per-cluster draw
+            //! commands and better post-transform vertex-cache reuse -- the dominant cost
+            //! when many meshlet instances are on screen. The builder clamps to the
+            //! meshopt hard limits (vertices<=255, triangles<=512 & multiple-of-4).
+            //! These are AUTHORING values: changing them re-writes the sidecar so
+            //! AssetProcessor re-bakes the pack; the value baked into the .azmeshletpack
+            //! is what the runtime uses.
+            AZ::u16 m_meshletMaxVerticesPerCluster  = 128;
+            AZ::u16 m_meshletMaxTrianglesPerCluster = 256;
+
+            //! Read-only diagnostic populated by MeshComponentController each tick.
+            //! See MeshComponentController::RefreshMeshletPackStatus.
+            AZStd::string m_meshletPackStatus;
         };
 
         class MeshComponentController final
@@ -189,6 +212,14 @@ namespace AZ
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
+
+            //! When the "Use Virtual Geometry (Meshlets)" toggle is on, this holds the
+            //! per-instance handle owned by the Meshlets gem's feature processor. The
+            //! standard mesh handle above is kept (and made invisible) so the existing
+            //! material/LOD bookkeeping continues to work.
+            Meshlets::MeshletsFeatureProcessorInterface* m_meshletsFeatureProcessor = nullptr;
+            Meshlets::MeshletsFeatureProcessorInterface::InstanceHandle m_meshletInstance =
+                Meshlets::MeshletsFeatureProcessorInterface::InvalidInstanceHandle;
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityComponentIdPair m_entityComponentIdPair;
             bool m_isVisible = true;
@@ -196,6 +227,12 @@ namespace AZ
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
             AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
+
+            //! Helper to fetch the Meshlets feature processor from the entity's scene
+            Meshlets::MeshletsFeatureProcessorInterface* GetMeshletsFeatureProcessor() const;
+
+            //! Refreshes the pack-resolution status diagnostic field
+            void RefreshMeshletPackStatus();
 
             MeshHandleDescriptor::ModelChangedEvent::Handler m_modelChangedEventHandler
             {

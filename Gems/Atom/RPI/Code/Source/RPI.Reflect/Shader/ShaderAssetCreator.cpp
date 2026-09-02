@@ -256,7 +256,9 @@ namespace AZ
         {
             if (shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
                 shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
-                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
+                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Fragment) ||
+                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Mesh) ||
+                shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Amplification))
             {
                 return RHI::PipelineStateType::Draw;
             }

@@ -10,12 +10,49 @@
 
 #include <scenesrg_all.srgi>
 
-/*
-// Utilize the following PerDraw srg for instancing - currently not used yet.
+// ----------------------------------------------------------------------------
+// Per-instance SRG (PerDraw frequency).
+//
+// Holds the object id used to look up per-instance state (transform) in the
+// scene-wide arrays. Bound by the per-instance DrawPacket.
+//
+// This intentionally has no vertex data: many instances of the same mesh share
+// the same vertex buffers (which live in the per-object SRG below) and the
+// same compute output (the index buffer in the shared buffer).
+//
+// Step B (hardware instancing): the cull-OFF default path collapses the N
+// per-instance draw packets of a shared model into ONE hardware-instanced
+// DrawIndexedInstanced per pass. Each invocation reads its objectId from
+// m_instanceObjectIds[SV_InstanceID] instead of the per-draw m_objectId scalar.
+// The branch is driven by the m_useInstancing SRG CONSTANT (a runtime branch the
+// root variant compiles both sides of) -- NOT a shader option / variant key. A
+// constant is used deliberately: it is robust across all four pass shaders (no
+// per-shader variant-key bit-position concern) and needs no baked PSO variants.
+// The non-instanced (cull-on / single-instance) path leaves m_useInstancing = 0
+// and reads m_objectId, so its behaviour is byte-identical to before.
+// ----------------------------------------------------------------------------
 ShaderResourceGroup MeshletsInstanceRenderSrg : SRG_PerDraw
 {
-    //! used object Id for instancing and matrix retrieval
     uint m_objectId;
+
+    //! Step B: 1 on the hardware-instanced (cull-off default) path, 0 otherwise.
+    //! Selects m_instanceObjectIds[SV_InstanceID] vs m_objectId in the VS.
+    uint m_useInstancing;
+
+    //! Step B: per-group objectId indirection. One uint per group member, in
+    //! member order, so SV_InstanceID i -> members[i]'s objectId. Bound ONLY on
+    //! the hardware-instanced (cull-off default) path; null/unused on the
+    //! non-instanced path (which reads m_objectId above).
+    StructuredBuffer<uint> m_instanceObjectIds;
+
+    //! Step B: resolve this invocation's objectId. On the instanced path uses
+    //! SV_InstanceID into m_instanceObjectIds (instanceOffset is ALWAYS 0 in the
+    //! draw, so SV_InstanceID indexes the buffer directly, 0-based); otherwise the
+    //! per-draw m_objectId. Centralises the branch so all four VS share it.
+    uint ResolveObjectId(uint svInstanceId)
+    {
+        return (m_useInstancing != 0u) ? m_instanceObjectIds[svInstanceId] : m_objectId;
+    }
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
@@ -30,73 +67,145 @@ ShaderResourceGroup MeshletsInstanceRenderSrg : SRG_PerDraw
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 }
-*/
 
+// ----------------------------------------------------------------------------
+// Per-object SRG (PerObject frequency).
+//
+// Holds the vertex streams shared by every instance of this mesh. Bound once
+// per object by the DrawPackets.
+//
+// SP1 fix: ALL vertex-stream buffers are StructuredBuffer<T> instead of
+// Buffer<T>. The Atom DX12 backend's typed-buffer SRV descriptor creation
+// has a bug where the NumElements field is set to 1 for certain pool-
+// allocated buffers, causing every element read to clamp to element 0
+// (AMD GCN/RDNA OOB clamping). StructuredBuffer SRVs use a different
+// DX12 code path that sets NumElements correctly.
+//
+// Note: vertex streams use StructuredBuffer<float> (not float3) because
+// the Atom common-pool buffer system has alignment restrictions on
+// float3-typed buffers.
+// ----------------------------------------------------------------------------
 ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
 {
-    //--------------------------------------------------
-    // This part should be moved outside the PerObject srg and used in the PerDraw 
-    // srg that represents the instance frequency.
-    // object Id is used as an index for instancing and matrix retrieval in the 
-    // SceneSrg matrices arrays.
-    uint m_objectId;
+    //! Legacy: byte-offset into the old SharedBuffer. Now always 0 since
+    //! m_indices is a dedicated per-object buffer. Kept for compatibility.
+    uint m_indicesOffset;
 
-    //! Returns the matrix for transforming points from Object Space to World Space.
-    float4x4 GetWorldMatrix()
-    {
-        return SceneSrg::GetObjectToWorldMatrix(m_objectId);
-    }
+    //! Total number of elements in the m_indices buffer.
+    //! Used for GPU-side bounds clamping to prevent out-of-bounds reads
+    //! that would hang the GPU (DXGI_ERROR_DEVICE_HUNG).
+    uint m_indicesCount;
 
-    //! Returns the inverse-transpose of the world matrix.
-    //! Commonly used to transform normals while supporting non-uniform scale.
-    float3x3 GetWorldMatrixInverseTranspose()
-    {
-        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
-    }
+    //! Total number of vertices in this mesh.
+    //! Used to clamp the value READ from m_indices before it is used to
+    //! index into m_positions / m_normals / etc.
+    uint m_vertexCount;
 
-    //---------------------------------------------------
-    // Vertex streams - currently we use Buffer<float> instead of the exact required
-    // data type (float3 for example) because of alignment problem in Atom buffer 
-    // creation from a common pool.
-    // [To Do] - change when supported to prevent offset calculation overhead.
-//    Buffer<float3> m_positions;
-//    Buffer<float3> m_normals;
-//    Buffer<float4> m_tangents; 
-//    Buffer<float3> m_bitangents; 
+    //! Debug: per-cluster (meshlet) coloring. Number of entries in
+    //! m_triangleCluster (== total triangles), and a runtime toggle written by
+    //! the feature processor (0 = normal PBR, nonzero = flat per-cluster color).
+    //! Cull-independent: keyed off the global linear index, so it works for the
+    //! whole-mesh draw and the per-cluster culled draws alike.
+    uint m_triangleClusterCount;
+    uint m_meshletDebugColor;
 
-    Buffer<float> m_positions;
-    Buffer<float> m_normals;
-    Buffer<float4> m_tangents; 
-    Buffer<float> m_bitangents; 
+    StructuredBuffer<uint>   m_indices;
+    StructuredBuffer<float>  m_positions;
+    StructuredBuffer<float>  m_normals;
+    StructuredBuffer<float4> m_tangents;
+    StructuredBuffer<float>  m_bitangents;
+    StructuredBuffer<float2> m_uvs;
 
-    Buffer<float2> m_uvs;
+    //! One cluster id per triangle (size m_triangleClusterCount). Indexed by the
+    //! global triangle index = linearIndex / 3 (the identity index buffer makes
+    //! SV_VertexID the global linear index, so this holds for culled slices too).
+    StructuredBuffer<uint>   m_triangleCluster;
 
+    //! Bounds-safe position fetch. Clamps vertexIndex to [0, m_vertexCount-1]
+    //! so a corrupt or out-of-range index in m_indices cannot cause a GPU hang.
+    //!
+    //! When m_vertexCount is 0 (CPU hasn't bound the constant, or the SRG
+    //! layout doesn't include it yet) the clamp is skipped -- the index is
+    //! passed through unclamped. This avoids the invisible-mesh bug where
+    //! min(vertexIndex, max(0,1)-1) == 0 collapsed every vertex to index 0,
+    //! producing degenerate zero-area triangles.
     float3 GetPosition(uint vertexIndex)
     {
-        uint index = vertexIndex * 3;
+        uint safeIndex = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        uint index = safeIndex * 3;
         return float3(m_positions[index], m_positions[index+1], m_positions[index+2]);
     }
 
     float3 GetNormal(uint vertexIndex)
     {
-        uint index = vertexIndex * 3;
+        uint safeIndex = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        uint index = safeIndex * 3;
         return float3(m_normals[index], m_normals[index+1], m_normals[index+2]);
     }
 
     float3 GetBiTangent(uint vertexIndex)
     {
-        uint index = vertexIndex * 3;
+        uint safeIndex = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        uint index = safeIndex * 3;
         return float3(m_bitangents[index], m_bitangents[index+1], m_bitangents[index+2]);
     }
 
     // The last element of the tangents indicates face direction / winding
     float4 GetTangent(uint vertexIndex)
     {
-        return m_tangents[vertexIndex];
+        uint safeIndex = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        return m_tangents[safeIndex];
     }
 
     float2 GetUV(uint vertexIndex)
     {
-        return m_uvs[vertexIndex];
+        uint safeIndex = (m_vertexCount > 0u) ? min(vertexIndex, m_vertexCount - 1u) : vertexIndex;
+        return m_uvs[safeIndex];
     }
+
+    //! Debug: resolve the cluster (meshlet) id for the triangle that owns this
+    //! linear index. linearIndex is the global vertex-pull index (SV_VertexID),
+    //! so linearIndex/3 is the global triangle index. Clamped for safety; returns
+    //! 0 when the buffer isn't populated.
+    uint GetClusterId(uint linearIndex)
+    {
+        if (m_triangleClusterCount == 0u)
+        {
+            return 0u;
+        }
+        uint tri = min(linearIndex / 3u, m_triangleClusterCount - 1u);
+        return m_triangleCluster[tri];
+    }
+
+    //! Debug: hash a cluster id to a stable, vivid color so adjacent meshlets are
+    //! easy to tell apart. Bias toward bright values so clusters read clearly
+    //! against the lit scene.
+    float3 MeshletDebugColor(uint clusterId)
+    {
+        uint h = clusterId;
+        h ^= h >> 16; h *= 0x7feb352du; h ^= h >> 15; h *= 0x846ca68bu; h ^= h >> 16;
+        float3 c = float3(
+            ( h        & 0x3FFu) / 1023.0,
+            ((h >> 10) & 0x3FFu) / 1023.0,
+            ((h >> 20) & 0x3FFu) / 1023.0);
+        return 0.25 + 0.75 * c;
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Vertex-pull index fetch shared by every render shader's VS. Normally reads the
+// per-object static m_indices; when GPU cull's single-compacted-draw path is
+// active (m_useCompactedIndices != 0), reads the per-instance compacted stream
+// the cull compute produced. Centralised here so all 5 render shaders share one
+// gated read -- the default (non-cull) path is byte-identical to before.
+// ----------------------------------------------------------------------------
+uint GetMeshVertexIndex(uint linearIndex)
+{
+    // ALL meshlet draws (whole-mesh, CPU cull, AND GPU per-cluster cull) are INDEXED over
+    // the mesh's expanded vertex-index stream -- the IA already resolved corner -> mesh
+    // vertex, so SV_VertexID IS the mesh vertex index. Use it directly (no m_indices[]
+    // load); repeated indices hit the post-transform vertex cache (the whole point). GPU
+    // cull simply restricts WHICH index-buffer slices are drawn (visible clusters), via
+    // compacted DrawIndexedIndirect commands over this same buffer.
+    return linearIndex;
 }

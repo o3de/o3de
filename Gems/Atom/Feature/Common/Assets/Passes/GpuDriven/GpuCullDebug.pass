@@ -1,0 +1,62 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuCullDebugTemplate",
+            "PassClass": "IndirectRasterPass",
+            // Plumbing-first GPU-driven debug overlay: draws culled survivors in a per-instance hue over the
+            // lit scene (depth-tested, no depth write). Input contract matches the working IndirectRaster.pass
+            // (depth): VisibleInstanceIds + BatchBaseOffset + IndirectDrawArgs from GpuCullAndDraw; no count
+            // buffer (MaxDrawCount upper-bounds; empty batches are no-ops).
+            "Slots": [
+                {
+                    "Name": "IndirectDrawArgs",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Indirect",
+                    "ShaderInputName": "NoBind"
+                },
+                {
+                    "Name": "VisibleInstanceIds",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_visibleInstanceIds"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "DepthStencilInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "IndirectRasterPassData",
+                // Dedicated tag (NOT 'forward'): IndirectRasterPass does pure ExecuteIndirect and ignores the
+                // draw list. Sharing 'forward' made it a 2nd owner with an incompatible 1-target layout vs the
+                // 5-target ForwardPass, breaking all forward-tagged (incl. meshlet) draws.
+                "DrawListTag": "gpuculldebug",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/GpuDriven/GpuCullDebug.shader"
+                },
+                "IndirectDrawBufferSlotName": "IndirectDrawArgs",
+                "CountBufferSlotName": "",
+                "MaxDrawCount": 65536,
+                "IndexedDraw": false,
+                "BindViewSrg": true
+            }
+        }
+    }
+}

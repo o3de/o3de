@@ -35,7 +35,6 @@
                     "Name": "MeshletsRenderPass",
                     "TemplateName": "MeshletsRenderPassTemplate",
                     "Connections": [
-                        // Input/Outputs...
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {

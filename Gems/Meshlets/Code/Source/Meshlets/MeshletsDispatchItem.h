@@ -51,7 +51,7 @@ namespace AZ
         private:
             RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
             Data::Instance<RPI::ShaderResourceGroup> m_meshletsDataSrg;
-            RPI::Shader* m_shader;
+            RPI::Shader* m_shader = nullptr;
         };
     } // namespace Meshlets
 } // namespace AZ

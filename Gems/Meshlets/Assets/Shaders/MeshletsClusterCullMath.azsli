@@ -1,0 +1,206 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// Pure, SRG-independent per-cluster cull math (frustum + cone + HiZ-occlusion).
+// Shared between the compute GPU-cull path (MeshletsCull.azsl, per-instance
+// indirect-draw compaction) and the amplification-shader cull path
+// (MeshletsForwardMeshShader.azsl's MeshletsCullClustersAS, Phase 5). Every
+// function takes its inputs explicitly (no SRG reads) so each caller composes
+// them against its own bound resources. Compute/mesh/amplification-safe: no
+// ddx/ddy, no implicit-LOD Sample (Texture2D::Load + explicit mip only).
+
+//! Mirrors AZ::Meshlets::ClusterBoundsRecord (48 bytes = 3x float4).
+struct ClusterBoundsRecord
+{
+    float4 m_centerRadius;   // xyz = center, w = radius
+    float4 m_apexCutoff;     // xyz = coneApex, w = coneCutoff (>=1 => no cone)
+    float4 m_axisPad;        // xyz = coneAxis
+};
+
+float3 MeshletsTransformPoint(float4 worldRow0, float4 worldRow1, float4 worldRow2, float3 p)
+{
+    return float3(
+        dot(worldRow0.xyz, p) + worldRow0.w,
+        dot(worldRow1.xyz, p) + worldRow1.w,
+        dot(worldRow2.xyz, p) + worldRow2.w);
+}
+
+float3 MeshletsTransformDir(float4 worldRow0, float4 worldRow1, float4 worldRow2, float3 d)
+{
+    return float3(
+        dot(worldRow0.xyz, d),
+        dot(worldRow1.xyz, d),
+        dot(worldRow2.xyz, d));
+}
+
+float MeshletsMaxAxisScale(float4 worldRow0, float4 worldRow1, float4 worldRow2)
+{
+    const float sx = length(float3(worldRow0.x, worldRow1.x, worldRow2.x));
+    const float sy = length(float3(worldRow0.y, worldRow1.y, worldRow2.y));
+    const float sz = length(float3(worldRow0.z, worldRow1.z, worldRow2.z));
+    return max(sx, max(sy, sz));
+}
+
+//! True if the world-space bounding sphere (centerW,radiusW) is NOT rejected by any
+//! of the 6 world-space frustum planes (xyz=inward normal, w=d; inside => dot(n,p)+d >= 0).
+bool MeshletsFrustumTestSphere(float3 centerW, float radiusW, float4 frustumPlanes[6])
+{
+    [unroll] for (uint p = 0; p < 6; ++p)
+    {
+        const float4 plane = frustumPlanes[p];
+        if (dot(plane.xyz, centerW) + plane.w < -radiusW)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+//! True if the cluster's backface cone entirely faces away from the camera (i.e. it
+//! should be CULLED). coneCutoff >= 1.0 disables the test (never culls).
+bool MeshletsConeCulled(float3 apexW, float3 axisW, float coneCutoff, float3 cameraPosW)
+{
+    if (coneCutoff >= 1.0)
+    {
+        return false;
+    }
+    float3 toApex = apexW - cameraPosW;
+    const float axisLen = length(axisW);
+    const float toApexLen = length(toApex);
+    if (axisLen <= 1e-6 || toApexLen <= 1e-6)
+    {
+        return false;
+    }
+    axisW /= axisLen;
+    toApex /= toApexLen;
+    return dot(toApex, axisW) >= coneCutoff;
+}
+
+// Project a world-space bounding sphere to an NDC-derived screen-space AABB in
+// [0,1] UV coordinates.
+float4 MeshletsProjectSphereToNdcAabb(float3 centerW, float radiusW, row_major float4x4 worldToClip)
+{
+    float4 clipCenter = mul(worldToClip, float4(centerW, 1.0));
+    if (clipCenter.w <= 0.0)
+    {
+        // Behind the camera -- return a full-screen AABB (conservative: never occludes).
+        return float4(0, 0, 1, 1);
+    }
+    float3 ndc = clipCenter.xyz / clipCenter.w;
+    float dist = clipCenter.w;
+    float2 screenRadiusUV = float2(
+        (radiusW / dist) * abs(worldToClip[0][0]) * 0.5,
+        (radiusW / dist) * abs(worldToClip[1][1]) * 0.5);
+    float2 uvCenter = ndc.xy * float2(0.5, -0.5) + 0.5;
+    float2 uvMin = saturate(uvCenter - screenRadiusUV);
+    float2 uvMax = saturate(uvCenter + screenRadiusUV);
+    return float4(uvMin, uvMax);
+}
+
+// Minimum (farthest, reverse-Z) depth under an NDC AABB, sampled at the mip whose
+// texel size roughly matches the AABB's screen extent. Load-based (no ddx/ddy /
+// implicit-LOD Sample) -- required outside pixel shaders.
+float MeshletsSampleHiZMin(float4 ndcAabb, Texture2D<float> hiZTexture)
+{
+    uint hiZWidth, hiZHeight, hiZMipCount;
+    hiZTexture.GetDimensions(0, hiZWidth, hiZHeight, hiZMipCount);
+
+    float2 aabbSize = (ndcAabb.zw - ndcAabb.xy) * float2(hiZWidth, hiZHeight);
+    float maxExtent = max(max(aabbSize.x, aabbSize.y), 1.0);
+    // MUST round UP (ceil): pick the coarsest mip whose texel footprint still fully
+    // contains the AABB (2^mip >= maxExtent), or the 4 corner taps below can miss an
+    // interior texel and wrongly report "occluded" for visible geometry.
+    float mipLevel = clamp(ceil(log2(maxExtent)), 0.0, float(hiZMipCount - 1));
+    uint mip = uint(mipLevel);
+
+    uint mipWidth  = max(1u, hiZWidth  >> mip);
+    uint mipHeight = max(1u, hiZHeight >> mip);
+
+    uint2 minTexel = min(uint2(ndcAabb.xy * float2(mipWidth, mipHeight)), uint2(mipWidth - 1, mipHeight - 1));
+    uint2 maxTexel = min(uint2(ndcAabb.zw * float2(mipWidth, mipHeight)), uint2(mipWidth - 1, mipHeight - 1));
+
+    float d0 = hiZTexture.Load(int3(minTexel.x, minTexel.y, mip));
+    float d1 = hiZTexture.Load(int3(maxTexel.x, minTexel.y, mip));
+    float d2 = hiZTexture.Load(int3(minTexel.x, maxTexel.y, mip));
+    float d3 = hiZTexture.Load(int3(maxTexel.x, maxTexel.y, mip));
+    return min(min(d0, d1), min(d2, d3));
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6 cluster-DAG continuous LOD (pure math; both cull paths compose it).
+// ---------------------------------------------------------------------------
+
+//! Mirrors AZ::Meshlets::DagNodeRecord (48 bytes = 3x float4).
+struct MeshletDagNodeRecord
+{
+    float4 m_selfSphere;     //!< xyz = center (object space), w = radius
+    float4 m_parentSphere;
+    float4 m_errors;         //!< x = selfError, y = parentError (object units), zw = pad
+};
+
+//! Projected screen-space error, in pixels, of an object-space (sphere, error)
+//! pair already transformed to world space. projScale = cot(FovY/2) *
+//! viewportHeight * 0.5 (pure projection -- rotation-independent, the same
+//! yScale lesson as the coverage LOD ladder). Camera inside the sphere returns
+//! +inf: forces refinement toward children -- conservative and stable.
+float MeshletsDagProjectedErrorPx(float3 centerW, float radiusW, float errW, float3 cameraPosW, float projScale)
+{
+    const float dist = length(centerW - cameraPosW) - radiusW;
+    if (dist <= 1e-4)
+    {
+        return 3.402823e38;   // effectively +inf
+    }
+    return (errW * projScale) / dist;
+}
+
+//! x = the node's own (group) projected error in pixels, y = its parent group's.
+float2 MeshletsDagNodeErrorsPx(
+    MeshletDagNodeRecord node,
+    float4 worldRow0, float4 worldRow1, float4 worldRow2,
+    float3 cameraPosW, float projScale)
+{
+    const float maxScale = MeshletsMaxAxisScale(worldRow0, worldRow1, worldRow2);
+    const float selfErrPx = MeshletsDagProjectedErrorPx(
+        MeshletsTransformPoint(worldRow0, worldRow1, worldRow2, node.m_selfSphere.xyz),
+        node.m_selfSphere.w * maxScale, node.m_errors.x * maxScale, cameraPosW, projScale);
+    const float parentErrPx = MeshletsDagProjectedErrorPx(
+        MeshletsTransformPoint(worldRow0, worldRow1, worldRow2, node.m_parentSphere.xyz),
+        node.m_parentSphere.w * maxScale, node.m_errors.y * maxScale, cameraPosW, projScale);
+    return float2(selfErrPx, parentErrPx);
+}
+
+//! True if the DAG cut selects this cluster: its own (group) error is acceptable
+//! on screen AND its parent group's is not. The builder's invariants (monotonic
+//! max()-propagated errors, group-shared records, parent spheres enclosing self
+//! spheres) guarantee exactly one level per DAG path passes -- a complete,
+//! crack-free cut with no traversal. Leaves have selfError 0 (always eligible);
+//! roots have parentError FLT_MAX (never rejected as "parent good enough").
+bool MeshletsDagCutAccepts(
+    MeshletDagNodeRecord node,
+    float4 worldRow0, float4 worldRow1, float4 worldRow2,
+    float3 cameraPosW, float projScale, float tauPx)
+{
+    const float2 errs = MeshletsDagNodeErrorsPx(node, worldRow0, worldRow1, worldRow2, cameraPosW, projScale);
+    return errs.x <= tauPx && errs.y > tauPx;
+}
+
+// Reverse-Z depth (near=1, far=0) of the point on the sphere closest to the camera.
+float MeshletsComputeClosestClusterDepth(float3 centerW, float radiusW, float3 cameraPosW, row_major float4x4 worldToClip)
+{
+    float3 toCam = cameraPosW - centerW;
+    float distToCam = length(toCam);
+    float3 closestPoint = (distToCam > 1e-6) ? (centerW + (toCam / distToCam) * radiusW) : centerW;
+    float4 clipPos = mul(worldToClip, float4(closestPoint, 1.0));
+    if (clipPos.w <= 0.0)
+    {
+        return 1.0;   // in front of the near plane (reverse-Z near=1) -- definitely not occluded
+    }
+    return saturate(clipPos.z / clipPos.w);
+}

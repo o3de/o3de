@@ -13,8 +13,6 @@
 
 #include <limits>
 
-#include "MeshletsAssets.h"
-
 namespace AZ
 {
     namespace Meshlets

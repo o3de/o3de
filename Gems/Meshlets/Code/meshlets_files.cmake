@@ -28,7 +28,6 @@ set(FILES
     Source/Meshlets/MeshletsRenderPass.cpp
     Source/Meshlets/MultiDispatchComputePass.h
     Source/Meshlets/MultiDispatchComputePass.cpp
-    Source/Meshlets/MeshletsData.h
     Source/Meshlets/MeshletsDispatchItem.h
     Source/Meshlets/MeshletsDispatchItem.cpp
     Source/Meshlets/SharedBufferInterface.h
@@ -37,11 +36,14 @@ set(FILES
     Source/Meshlets/SharedBuffer.h
     Source/Meshlets/SharedBuffer.cpp
     Source/Meshlets/MeshletsRenderObject.h
+    Source/Meshlets/MeshletsPageResidency.h
+    Source/Meshlets/MeshletsPageResidency.cpp
     Source/Meshlets/MeshletsRenderObject.cpp
-    
+    Source/Meshlets/MeshletsRenderObjectPackInit.cpp
+
+    Source/Meshlets/PackResolver.h
+    Source/Meshlets/PackResolver.cpp
+
     Source/Meshlets/MeshletsFeatureProcessor.h
     Source/Meshlets/MeshletsFeatureProcessor.cpp
-    
-    Source/Meshlets/MeshletsAssets.h
-    Source/Meshlets/MeshletsAssets.cpp
 )

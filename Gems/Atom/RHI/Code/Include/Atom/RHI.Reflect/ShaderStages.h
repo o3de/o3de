@@ -47,6 +47,15 @@ namespace AZ::RHI
         // This virtual stage represents ray tracing shaders.  On DXIL platforms this is implemented with a DXIL Library.
         RayTracing,
 
+        //! Hardware mesh-shader pipeline stages. 'Mesh' emits vertices + primitives in-pipeline with
+        //! no input assembly; 'Amplification' (a.k.a. task on Vulkan, object on Metal) is the optional
+        //! stage that precedes it and dispatches mesh thread-groups. These are APPENDED after RayTracing
+        //! (and are NOT inside [0, GraphicsCount)) so every existing ordinal -- and every array sized by
+        //! ShaderStageCount / ShaderStageGraphicsCount -- keeps its current layout. Treat them explicitly
+        //! where raster handling is needed; do not assume they fall within the GraphicsCount fence.
+        Mesh,
+        Amplification,
+
         Count,
         GraphicsCount = Compute,
     };
@@ -55,6 +64,8 @@ namespace AZ::RHI
     const uint32_t ShaderStageVertex = static_cast<uint32_t>(ShaderStage::Vertex);
     const uint32_t ShaderStageFragment = static_cast<uint32_t>(ShaderStage::Fragment);
     const uint32_t ShaderStageGraphicsCount = static_cast<uint32_t>(ShaderStage::GraphicsCount);
+    const uint32_t ShaderStageMesh = static_cast<uint32_t>(ShaderStage::Mesh);
+    const uint32_t ShaderStageAmplification = static_cast<uint32_t>(ShaderStage::Amplification);
 
     using ShaderStageAttributeArguments = AZStd::vector<AZStd::any>;
     using ShaderStageAttributeMap       = AZStd::unordered_map<Name /*attributeName*/, ShaderStageAttributeArguments>;
@@ -69,7 +80,9 @@ namespace AZ::RHI
         Fragment = AZ_BIT(static_cast<uint32_t>(ShaderStage::Fragment)),
         Compute = AZ_BIT(static_cast<uint32_t>(ShaderStage::Compute)),
         RayTracing = AZ_BIT(static_cast<uint32_t>(ShaderStage::RayTracing)),
-        All = Vertex | Geometry | Fragment | Compute | RayTracing
+        Mesh = AZ_BIT(static_cast<uint32_t>(ShaderStage::Mesh)),
+        Amplification = AZ_BIT(static_cast<uint32_t>(ShaderStage::Amplification)),
+        All = Vertex | Geometry | Fragment | Compute | RayTracing | Mesh | Amplification
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ShaderStageMask)

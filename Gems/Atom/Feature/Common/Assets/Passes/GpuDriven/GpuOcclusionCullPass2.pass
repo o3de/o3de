@@ -1,0 +1,73 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuOcclusionCullPass2Template",
+            "PassClass": "GpuCullPass",
+            "Slots": [
+                {
+                    "Name": "HiZInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_hiZTexture"
+                },
+                {
+                    "Name": "VisibilityBitfield",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_visibilityBitfield",
+                    "LoadStoreAction": { "LoadAction": "Load" }
+                },
+                {
+                    "Name": "BatchCount",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_batchCount",
+                    "LoadStoreAction": { "LoadAction": "Clear" }
+                },
+                {
+                    "Name": "Survivors",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_survivors"
+                },
+                {
+                    "Name": "SurvivorCount",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_survivorCount",
+                    "LoadStoreAction": { "LoadAction": "Clear" }
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "BatchCountBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 262144 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 65536 }
+                },
+                {
+                    "Name": "SurvivorsBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 4194304 },
+                    "BufferViewDescriptor": { "m_elementSize": 8, "m_elementCount": 524288 }
+                },
+                {
+                    "Name": "SurvivorCountBuffer",
+                    "BufferDescriptor": { "m_bindFlags": "ShaderReadWrite", "m_byteCount": 4 },
+                    "BufferViewDescriptor": { "m_elementSize": 4, "m_elementCount": 1 }
+                }
+            ],
+            "Connections": [
+                { "LocalSlot": "BatchCount",    "AttachmentRef": { "Pass": "This", "Attachment": "BatchCountBuffer" } },
+                { "LocalSlot": "Survivors",     "AttachmentRef": { "Pass": "This", "Attachment": "SurvivorsBuffer" } },
+                { "LocalSlot": "SurvivorCount", "AttachmentRef": { "Pass": "This", "Attachment": "SurvivorCountBuffer" } }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": { "FilePath": "Shaders/GpuDriven/GpuOcclusionCullPass2.shader" },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

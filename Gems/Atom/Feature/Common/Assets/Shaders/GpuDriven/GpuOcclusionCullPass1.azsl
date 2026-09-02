@@ -1,0 +1,140 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Phase 7: two-pass occlusion culling -- pass 1.
+//
+// Redraws whatever was visible LAST frame (per the persistent per-batch visibility bitfield), doing
+// only a frustum test -- there is no valid depth for this frame yet, so no occlusion test is possible
+// here (that is what pass 2, run after this pass's own draw, is for). Every instance whose batch is
+// NOT marked visible is skipped entirely and left for pass 2 to decide.
+//
+// Wired but OFF by default: see GpuCullPass::CompileResources / r_gpuTwoPassOcclusionCulling.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/GpuDriven/GpuInstanceData.azsli>
+#include <Atom/Features/GpuDriven/GpuDrivenConstants.azsli>
+#include <Atom/Features/GpuDriven/OcclusionVisibility.azsli>
+#include <Atom/Features/GpuDriven/GpuOcclusionCullCommon.azsli>
+#include <Atom/Features/IndirectRendering.azsli>
+
+#define GPU_CULL_THREAD_GROUP_SIZE 64
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Persistent, cross-frame: which batches were visible as of pass 2's last update. Pass 1 only
+    // reads it (pass 2 is the only writer -- see GpuOcclusionCullPass2.azsl), hence the read-only
+    // StructuredBuffer here rather than RWStructuredBuffer.
+    StructuredBuffer<uint> m_visibilityBitfield;
+
+    // Output: compact survivor list of (instanceIndex, batchId) pairs. Scatter consumes it.
+    RWStructuredBuffer<uint2> m_survivors;
+
+    // Output: atomic length of the survivor list.
+    RWByteAddressBuffer m_survivorCount;
+
+    // Output: per-batch visible-instance count (atomic increment). Build prefix-sums these.
+    RWStructuredBuffer<uint> m_batchCount;
+};
+
+[numthreads(GPU_CULL_THREAD_GROUP_SIZE, 1, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint instanceIndex = dispatchThreadID.x;
+    if (instanceIndex >= SceneSrg::m_gpuInstanceCount)
+    {
+        return;
+    }
+
+    GpuInstanceData instance = SceneSrg::m_gpuInstanceData[instanceIndex];
+
+    // Skip released/inactive slots and skinned meshes (handled by CPU path)
+    if (instance.m_flags & (GpuInstanceFlag_Released | GpuInstanceFlag_Skinned))
+    {
+        return;
+    }
+
+    // Pass 1 only ever redraws batches pass 2 already proved visible -- everything else is left
+    // for pass 2 below to frustum+occlusion-test against this pass's own depth.
+    if (!IsBatchMarkedVisible(PassSrg::m_visibilityBitfield, instance.m_batchId))
+    {
+        return;
+    }
+
+    float4 frustumPlanes[6];
+    ExtractFrustumPlanes(ViewSrg::m_viewProjectionMatrix, frustumPlanes);
+
+    if (!FrustumTestSphere(frustumPlanes, instance.m_boundingSphereCenter, instance.m_boundingSphereRadius))
+    {
+        return;
+    }
+
+    // No occlusion test here by design -- see file header. Conservative: trusting last frame's
+    // result can only draw a few extra (still frustum-visible) instances, never wrongly cull one.
+
+    // LOD selection: compute screen coverage and check if this LOD level is active.
+    // For LOD cross-fade transitions, objects near a LOD boundary emit TWO draw calls:
+    // one for the outgoing LOD (alpha fading out) and one for the incoming LOD (alpha fading in).
+    // The alpha is stored in m_lodCrossFadeAlpha for the raster shader to apply dithered blending.
+    float screenCoverage = ComputeScreenCoverage(
+        instance.m_boundingSphereCenter,
+        instance.m_boundingSphereRadius,
+        ViewSrg::m_worldPosition,
+        ViewSrg::m_projectionMatrix);
+
+    // LOD cross-fade blend range: fraction of coverage range where two LODs overlap.
+    // When screen coverage is within this margin of a LOD boundary, both LODs are drawn.
+    static const float LOD_CROSSFADE_MARGIN = 0.05;
+
+    if (instance.m_lodCount > 1)
+    {
+        // Check if this LOD is completely out of range (with cross-fade margin)
+        float expandedMin = instance.m_lodScreenCoverageMin - LOD_CROSSFADE_MARGIN;
+        float expandedMax = instance.m_lodScreenCoverageMax + LOD_CROSSFADE_MARGIN;
+
+        if (screenCoverage < expandedMin || screenCoverage > expandedMax)
+        {
+            return;
+        }
+
+        // Compute cross-fade alpha for this LOD level.
+        float crossFadeAlpha = 1.0;
+
+        if (screenCoverage < instance.m_lodScreenCoverageMin)
+        {
+            crossFadeAlpha = saturate((screenCoverage - expandedMin) / LOD_CROSSFADE_MARGIN);
+        }
+        else if (screenCoverage > instance.m_lodScreenCoverageMax)
+        {
+            crossFadeAlpha = saturate((expandedMax - screenCoverage) / LOD_CROSSFADE_MARGIN);
+        }
+
+        if (crossFadeAlpha < 0.01)
+        {
+            return;
+        }
+    }
+
+    // Instance survived culling -- record it for batch collection.
+    uint batchId = instance.m_batchId;
+
+    InterlockedAdd(PassSrg::m_batchCount[batchId], 1);
+
+    uint survivorSlot;
+    PassSrg::m_survivorCount.InterlockedAdd(0, 1, survivorSlot);
+
+    uint maxSurvivors;
+    uint survivorStride;
+    PassSrg::m_survivors.GetDimensions(maxSurvivors, survivorStride);
+    if (survivorSlot >= maxSurvivors)
+    {
+        return;
+    }
+    PassSrg::m_survivors[survivorSlot] = uint2(instanceIndex, batchId);
+}

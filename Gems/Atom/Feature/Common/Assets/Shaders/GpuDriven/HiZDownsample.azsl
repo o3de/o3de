@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float>   m_input;
+    RWTexture2D<float> m_output;
+};
+
+// 2x2 min-depth reduction for Hi-Z pyramid generation.
+// With reverse-Z, min depth = farthest surface (most conservative for occlusion).
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint2 outCoord = dispatchThreadID.xy;
+
+    uint outWidth, outHeight;
+    PassSrg::m_output.GetDimensions(outWidth, outHeight);
+    if (outCoord.x >= outWidth || outCoord.y >= outHeight)
+    {
+        return;
+    }
+
+    uint2 srcBase = outCoord * 2;
+
+    float d00 = PassSrg::m_input[srcBase + uint2(0, 0)];
+    float d10 = PassSrg::m_input[srcBase + uint2(1, 0)];
+    float d01 = PassSrg::m_input[srcBase + uint2(0, 1)];
+    float d11 = PassSrg::m_input[srcBase + uint2(1, 1)];
+
+    PassSrg::m_output[outCoord] = min(min(d00, d10), min(d01, d11));
+}

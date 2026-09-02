@@ -1,0 +1,345 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Meshlet forward PBR pass shader.
+//
+// This shader is rendered by the STANDARD Atom ForwardPass (DrawListTag
+// "forward"). The pass binds the ForwardPassSrg (directional/projected
+// shadowmaps, tile light data, BRDF map, samplers) before submitting every
+// DrawItem in the pass, so the meshlet DrawItem automatically has access to all
+// lighting resources -- exactly like a standard mesh. We only declare the
+// matching SRG and pull in the standard lighting headers.
+//
+// Output is the full 5-target MainPipeline ForwardPassOutput (diffuse,
+// specular, albedo, specularF0, normal). Direct lighting (directional +
+// punctual/tile-culled + area lights + shadows) is evaluated here; global IBL,
+// SSR, diffuse GI and multiscatter are applied later by fullscreen passes that
+// consume the albedo/specularF0/normal G-buffer outputs.
+//
+// Phase 3a: hardcoded gray dielectric material parameters. Phase 4 binds the
+// source model's actual material textures.
+//
+// PERF: the vertex shader uses hardware input-assembly like the depth/shadow/
+// motion shaders -- a 5-channel layout (POSITION,NORMAL,TANGENT,BITANGENT,UV)
+// fetched through the hardware index buffer (post-transform vertex-cache reuse),
+// replacing the prior SV_VertexID -> StructuredBuffer vertex-pull. The matching
+// PSO input layout + dedicated per-attribute IA buffers are set up in
+// MeshletsFeatureProcessor (InitForwardShader / EnsureIndirectArgs).
+
+// Enable tile-based light culling (the forward pass provides m_tileLightData +
+// m_lightListRemapped). Must be set before the lighting headers are included.
+#define ENABLE_LIGHT_CULLING    1
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// ---- Shader Resource Groups ----
+// scenesrg_all.srgi is included transitively by MeshletsPerObjectRenderSrg.azsli.
+#include <viewsrg_all.srgi>
+#include <MeshletsPerObjectRenderSrg.azsli>
+
+// Standard forward pass SRG (SRG_PerPass). #pragma once-guarded, so a second
+// transitive include from the lighting headers is harmless. The PerPass SRG
+// carries no ShaderVariantFallback, so it does not collide with the PerDraw
+// fallback SRG (MeshletsInstanceRenderSrg) that stores the shader-option key.
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+
+// Per-material SRG (SRG_PerMaterial) -- the source model's PBR textures + factors,
+// extracted at runtime. Bound on the forward DrawItem by the feature processor.
+#include <MeshletsMaterialSrg.azsli>
+
+// Color-space conversion (LinearSrgb -> AcesCg). Atom's PBR pipeline does its
+// lighting math in AcesCg working space; a baseColor texture sampled raw is in
+// linear-sRGB and would feed the wrong color space into the BRDF. The standard
+// Atom material path applies this conversion in GetBaseColorInput -- see
+// BaseColorInput.azsli line 55. We mirror that exactly.
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// Declares the OpacityMode enum + o_opacity_mode shader option (defaults to
+// Opaque). The shadow headers pulled in below reference these to decide whether
+// to sample the fullscreen shadow buffer. Normally provided by the material
+// system; a non-material shader must include it explicitly.
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Standard PBR lighting. Pulls in Surface, LightingData, the directional /
+// punctual / area light loops, the BRDF, GetPbrLightingOutput(), and the
+// ApplyDirectLighting() / ApplyDecals() wrappers.
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+
+// 5-target MainPipeline forward output. Do NOT define UNIFIED_FORWARD_OUTPUT
+// (that single-target layout is only used by the Mobile / LowEnd / MultiView
+// pipelines).
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+
+struct VSInput
+{
+    float3 m_position  : POSITION;
+    float3 m_normal    : NORMAL;
+    float4 m_tangent   : TANGENT;
+    float3 m_bitangent : BITANGENT;
+    float2 m_uv        : UV;
+    // Step B (hardware instancing): SV_InstanceID indexes m_instanceObjectIds on
+    // the cull-off path. 0 (and unused) on the non-instanced path.
+    uint   m_instanceId : SV_InstanceID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal : NORMAL;
+    float3 m_tangent : TANGENT;
+    float3 m_bitangent : BITANGENT;
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+    //! Debug: cluster (meshlet) id resolved in the VS from the linear index.
+    //! nointerpolation -- it's a per-primitive integer, not something to lerp.
+    nointerpolation uint m_clusterId : UV2;
+};
+
+//! Transform vertex normal/tangent/bitangent into world space.
+void ConstructMeshletTBN(
+    float3 vertexNormal, float4 vertexTangent, float3 vertexBitangent,
+    float4x4 localToWorld, float3x3 localToWorldInverseTranspose,
+    out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+{
+    normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
+    tangentWS = normalize(mul(localToWorld, float4(vertexTangent.xyz, 0)).xyz);
+    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0)).xyz);
+}
+
+VSOutput MeshletsForwardPassVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    // Zero-init all interpolants so no field is left uninitialized.
+    OUT.m_position      = float4(0, 0, 0, 1);
+    OUT.m_normal        = float3(0, 0, 1);
+    OUT.m_tangent       = float3(1, 0, 0);
+    OUT.m_bitangent     = float3(0, 1, 0);
+    OUT.m_worldPosition = float3(0, 0, 0);
+    OUT.m_uv            = float2(0, 0);
+    // Debug cluster id: the old SV_VertexID-based GetClusterId was already only an
+    // approximation, and there is no SV_VertexID under hardware IA. Keep it a benign
+    // constant (the meshlet-debug-color PS path stays functional, just uniform color).
+    OUT.m_clusterId     = 0u;
+
+    // Hardware input-assembly: attributes come straight from the bound vertex streams
+    // (POSITION,NORMAL,TANGENT,BITANGENT,UV) -- no SV_VertexID / StructuredBuffer pulls.
+    float3 localPosition = IN.m_position;
+
+    // Step B: hardware-instanced draws select objectId via SV_InstanceID (when
+    // m_useInstancing != 0); the non-instanced path keeps the per-draw m_objectId.
+    // Both the world matrix and its inverse-transpose (for normals under non-uniform
+    // scale) use this objectId.
+    uint objectId = MeshletsInstanceRenderSrg::ResolveObjectId(IN.m_instanceId);
+    float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(objectId);
+    float3x3 objectToWorldIT = SceneSrg::GetObjectToWorldInverseTransposeMatrix(objectId);
+
+    OUT.m_worldPosition = mul(objectToWorld, float4(localPosition, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+
+    ConstructMeshletTBN(
+        IN.m_normal,
+        IN.m_tangent,
+        IN.m_bitangent,
+        objectToWorld, objectToWorldIT,
+        OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+
+    OUT.m_uv = IN.m_uv;
+
+    return OUT;
+}
+
+ForwardPassOutput MeshletsForwardPassPS(VSOutput IN)
+{
+    // ---------------- Debug: flat per-cluster (meshlet) color ----------------
+    // When enabled, bypass PBR entirely and emit a flat unlit color keyed off the
+    // cluster id so the meshlet decomposition is directly visible. Output as
+    // emissive (specular target) with zero albedo/diffuse/F0 so IBL/SSR passes add
+    // nothing -- the composited result is the flat color.
+    if (MeshletsObjectRenderSrg::m_meshletDebugColor != 0u)
+    {
+        const float3 clusterColor = MeshletsObjectRenderSrg::MeshletDebugColor(IN.m_clusterId);
+        ForwardPassOutput dbg = (ForwardPassOutput)0;
+        dbg.m_diffuseColor  = float4(0.0, 0.0, 0.0, -1.0);   // a=-1 disables SSS
+        dbg.m_specularColor = float4(clusterColor, 0.0);     // emissive-add path
+        dbg.m_albedo        = float4(0.0, 0.0, 0.0, 1.0);
+        dbg.m_specularF0    = float4(0.0, 0.0, 0.0, 0.0);
+        dbg.m_normal        = float4(normalize(IN.m_normal) * 0.5 + 0.5, 0.0);
+        return dbg;
+    }
+
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;   // Single view for the forward pass.
+
+    // ---------------- Sample the material (Phase 4) ----------------
+    // Combine rules below mirror StandardPBR's *Input.azsli convention exactly,
+    // so a meshlet material looks identical to a standard mesh using the same
+    // MaterialAsset:
+    //   baseColor : color*factor (CPU) THEN * texture.rgb (Multiply blend)
+    //   metallic  : texture.r           when bound, else factor
+    //   roughness : lerp(lower, upper, texture.r) when bound, else factor
+    //   normal    : XY swizzled to YX, Z reconstructed (BC5 normal map convention),
+    //               XY scaled by normalFactor; falls back to vertex normal otherwise.
+    const uint matFlags = MeshletsMaterialSrg::m_flags;
+    const float2 uv = IN.m_uv;
+
+    // Base color: m_baseColor.rgb already holds color.rgb * baseColor.factor from
+    // the CPU. When the texture is bound, sample it and convert into Atom's AcesCg
+    // working color space before applying the Multiply blend (this matches
+    // GetBaseColorInput + BlendBaseColor in StandardPBR exactly -- see
+    // BaseColorInput.azsli line 55).
+    real3 baseColor = (real3)MeshletsMaterialSrg::m_baseColor.rgb;
+    if (matFlags & MESHLETS_MAT_FLAG_BASECOLOR_MAP)
+    {
+        real3 sampledAlbedo = (real3)MeshletsMaterialSrg::m_baseColorMap.Sample(MeshletsMaterialSrg::m_sampler, uv).rgb;
+        sampledAlbedo = LinearSrgb_To_AcesCg(sampledAlbedo);
+        baseColor *= sampledAlbedo;
+    }
+
+    // Metallic: texture takes precedence over factor when the map is bound -- they
+    // are NOT multiplied. (Multiplying made everything dielectric whenever
+    // metallic.factor=0, even on areas the texture marks as metal.)
+    real metallic;
+    if (matFlags & MESHLETS_MAT_FLAG_METALLIC_MAP)
+    {
+        metallic = (real)MeshletsMaterialSrg::m_metallicMap.Sample(MeshletsMaterialSrg::m_sampler, uv).r;
+    }
+    else
+    {
+        metallic = (real)MeshletsMaterialSrg::m_metallicFactor;
+    }
+
+    // Roughness: with a texture, remap by lerp(lower, upper, tex.r) per StandardPBR.
+    // (Multiplying factor*tex.r capped roughness too low and made everything mirror-
+    // smooth -- that was the "chrome" look.)
+    real roughness;
+    if (matFlags & MESHLETS_MAT_FLAG_ROUGHNESS_MAP)
+    {
+        const real roughR = (real)MeshletsMaterialSrg::m_roughnessMap.Sample(MeshletsMaterialSrg::m_sampler, uv).r;
+        roughness = lerp(
+            (real)MeshletsMaterialSrg::m_roughnessLowerBound,
+            (real)MeshletsMaterialSrg::m_roughnessUpperBound,
+            roughR);
+    }
+    else
+    {
+        roughness = (real)MeshletsMaterialSrg::m_roughnessFactor;
+    }
+
+    // Normal: BC5/RG normal map convention used by Atom. Sample .rg, decode to
+    // [-1,1], swap to (Y,X) so it matches the engine-wide encoding, scale XY by
+    // normalFactor, reconstruct Z = sqrt(1 - x^2 - y^2). Transform tangent-space
+    // -> world via the TBN built in the vertex shader.
+    real3 normalWS = normalize((real3)IN.m_normal);
+    if (matFlags & MESHLETS_MAT_FLAG_NORMAL_MAP)
+    {
+        real2 sampleRG = (real2)MeshletsMaterialSrg::m_normalMap.Sample(MeshletsMaterialSrg::m_sampler, uv).rg * 2.0 - 1.0;
+        real2 tangentXY = sampleRG.yx;
+        tangentXY *= (real)MeshletsMaterialSrg::m_normalFactor;
+        const real tangentZ = max(sqrt(saturate(1.0 - dot(tangentXY, tangentXY))), 0.01);
+        const real3 T = normalize((real3)IN.m_tangent);
+        const real3 B = normalize((real3)IN.m_bitangent);
+        const real3 N = normalize((real3)IN.m_normal);
+        normalWS = normalize(tangentXY.x * T + tangentXY.y * B + tangentZ * N);
+    }
+
+    // Ambient occlusion: GetOcclusionInput in OcclusionInput.azsli uses
+    //   occlusion = pow(tex.r, factor) when the texture is bound, else 1.0.
+    // Without AO, ambient + specular lighting fills crevices and the surface
+    // looks brighter / more reflective than the standard mesh -- exactly the
+    // "still reflective" symptom.
+    real diffuseAO = 1.0;
+    if (matFlags & MESHLETS_MAT_FLAG_DIFFUSE_AO_MAP)
+    {
+        const real aoR = (real)MeshletsMaterialSrg::m_diffuseOcclusionMap.Sample(MeshletsMaterialSrg::m_sampler, uv).r;
+        diffuseAO = pow(aoR, (real)MeshletsMaterialSrg::m_diffuseOcclusionFactor);
+    }
+    real specularAO = 1.0;
+    if (matFlags & MESHLETS_MAT_FLAG_SPECULAR_AO_MAP)
+    {
+        const real aoR = (real)MeshletsMaterialSrg::m_specularOcclusionMap.Sample(MeshletsMaterialSrg::m_sampler, uv).r;
+        specularAO = pow(aoR, (real)MeshletsMaterialSrg::m_specularOcclusionFactor);
+    }
+
+    // Emissive: pre-multiplied color * intensity is in m_emissiveColor (zero
+    // when the material's emissive.enable is false). Modulated by the map if bound.
+    real3 emissive = (real3)MeshletsMaterialSrg::m_emissiveColor * (real)MeshletsMaterialSrg::m_emissiveIntensity;
+    if (matFlags & MESHLETS_MAT_FLAG_EMISSIVE_MAP)
+    {
+        emissive *= (real3)MeshletsMaterialSrg::m_emissiveMap.Sample(MeshletsMaterialSrg::m_sampler, uv).rgb;
+    }
+
+    // ---------------- Build the surface ----------------
+    Surface surface = (Surface)0;
+    surface.position = IN.m_worldPosition;
+    surface.vertexNormal = normalize((real3)IN.m_normal);
+    surface.normal = normalWS;
+
+    // Lit by all lighting channels until per-object channels are wired up.
+    surface.lightingChannels = 0xFFFFFFFF;
+
+    // specularF0Factor 0.5 maps to the standard ~0.04 dielectric F0.
+    surface.SetAlbedoAndSpecularF0(baseColor, 0.5, metallic);
+    surface.roughnessLinear = roughness;
+    surface.CalculateRoughnessA();
+
+    surface.emissiveLighting = emissive;
+    surface.diffuseAmbientOcclusion = diffuseAO;
+    surface.specularOcclusion = specularAO;
+
+    // ---------------- Initialize lighting data ----------------
+    // Mirrors InitializeLightingData_StandardPBR exactly:
+    //   1) BasePBR Init  (zeros, Fresnel response, BRDF map sample, multiscatter)
+    //   2) Copy surface.emissiveLighting + AO into lightingData
+    //
+    // The AO copies are essential. LightingData::Init() initializes both AO
+    // fields to 1.0, and FinalizeLighting() multiplies the accumulated direct
+    // lighting by them. Without the copy, our texture-sampled AO never reaches
+    // the lighting math and the surface looks brighter / more reflective than
+    // the standard mesh -- that was the "still shiny" symptom.
+    LightingData lightingData;
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
+    lightingData.specularResponse =
+        FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+    lightingData.CalculateMultiscatterCompensation(surface.GetSpecularF0(), o_specularF0_enableMultiScatterCompensation);
+    lightingData.emissiveLighting = surface.emissiveLighting;
+    lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
+    lightingData.specularOcclusion = surface.specularOcclusion;
+
+    // ---------------- Tile light-culling iterator ----------------
+    LightCullingTileIterator tileIterator;
+#if ENABLE_LIGHT_CULLING
+    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+#else
+    tileIterator.InitNoCulling();
+#endif
+
+    // ---------------- Direct lighting ----------------
+    // Directional + punctual (tile-culled) + area lights + shadows.
+    // Global IBL / multiscatter is applied later by fullscreen passes that read
+    // the albedo / specularF0 / normal G-buffer outputs below.
+    ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
+
+    lightingData.FinalizeLighting();
+
+    // ---------------- Pack into the 5-target forward output ----------------
+    PbrLightingOutput pbr = GetPbrLightingOutput(surface, lightingData, 1.0);
+
+    ForwardPassOutput OUT;
+    OUT.m_diffuseColor = pbr.m_diffuseColor;
+    OUT.m_diffuseColor.a = -1;   // Disable subsurface scattering.
+    OUT.m_specularColor = pbr.m_specularColor;
+    OUT.m_specularColor.rgb += lightingData.emissiveLighting;
+    OUT.m_albedo = pbr.m_albedo;
+    OUT.m_specularF0 = pbr.m_specularF0;
+    OUT.m_normal = pbr.m_normal;
+
+    return OUT;
+}

@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 #include <Meshlets/MeshletsBus.h>
+#include <Meshlets/Reflect/MeshletPackAssetHandler.h>
 
 namespace AZ
 {
@@ -56,11 +57,14 @@ namespace AZ
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             ////////////////////////////////////////////////////////////////////////
 
-            //! Loads the pass templates mapping file 
+            //! Loads the pass templates mapping file
             void LoadPassTemplateMappings();
 
             //! Used for loading the pass templates of the hair gem.
             AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+
+            //! Handler for MeshletPackAsset files
+            Meshlets::MeshletPackAssetHandler m_packAssetHandler;
         };
 
     } // namespace Meshlets

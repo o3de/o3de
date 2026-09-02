@@ -1,0 +1,166 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GpuDrivenForwardTemplate",
+            "PassClass": "IndirectRasterPass",
+            // Shaded GPU-driven forward pass: same indirect-draw plumbing as IndirectRaster.pass
+            // (depth pre-pass) plus the real forward-lighting PassSrg resources GpuDrivenForward.azsl
+            // declares (shadow maps, BRDF LUT, fullscreen contact shadow, tiled light-culling
+            // buffers) -- see IndirectRasterPass::CompileResources()/RenderPass::InitializeInternal,
+            // which now resolve every non-"NoBind" slot BY NAME against the shader's PassSrg.
+            //
+            // Wired into MainPipeline.pass as "GpuDrivenForwardPass", running after OpaquePass and
+            // before GpuCullDebugPass -- see MainPipeline.pass for the live PassRequest. A dedicated
+            // "gpudrivenforward" DrawListTag is used (not "forward") because this pass has a single
+            // render target, not ForwardPassTemplate's 5-target GBuffer-ish layout; sharing "forward"
+            // would make it a second, layout-incompatible owner of that tag (same reasoning
+            // GpuCullDebug.pass gives for its own dedicated "gpuculldebug" tag).
+            "Slots": [
+                {
+                    "Name": "IndirectDrawArgs",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Indirect",
+                    "ShaderInputName": "NoBind"
+                },
+                {
+                    "Name": "VisibleInstanceIds",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_visibleInstanceIds"
+                },
+                {
+                    "Name": "BatchBaseOffset",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "VertexShader",
+                    "ShaderInputName": "m_batchBaseOffset"
+                },
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DirectionalLightShadowmap",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ExponentialShadowmapDirectional",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ProjectedShadowmap",
+                    "ShaderInputName": "m_projectedShadowmaps",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ExponentialShadowmapProjected",
+                    "ShaderInputName": "m_projectedExponentialShadowmap",
+                    "ScopeAttachmentStage": "FragmentShader",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lightListRemapped",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    // InputOutput (not Output+Clear): this pass draws GPU-driven-eligible instances
+                    // ON TOP of OpaquePass's already-lit color (OpaquePass:Output), same non-destructive
+                    // composite pattern GpuCullDebugTemplate's RenderTargetInputOutput already uses one
+                    // pass later in MainPipeline. An Output+Clear slot here would erase every CPU-drawn
+                    // opaque pixel each frame -- see GpuDrivenForward.pass file header / the plan that
+                    // introduced this slot for the full reasoning.
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "IndirectRasterPassData",
+                "DrawListTag": "gpudrivenforward",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/GpuDriven/GpuDrivenForward.shader"
+                },
+                "IndirectDrawBufferSlotName": "IndirectDrawArgs",
+                "CountBufferSlotName": "",
+                "MaxDrawCount": 65536,
+                "IndexedDraw": false,
+                "BindViewSrg": true
+            }
+        }
+    }
+}

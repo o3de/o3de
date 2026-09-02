@@ -11,6 +11,9 @@
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/CopyPass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
+#include <Atom/RPI.Public/Pass/GpuDriven/GpuCullPass.h>
+#include <Atom/RPI.Public/Pass/GpuDriven/HiZGeneratePass.h>
+#include <Atom/RPI.Public/Pass/GpuDriven/IndirectRasterPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h>
@@ -73,6 +76,11 @@ namespace AZ
             AddPassCreator(Name("EnvironmentCubeMapPass"), &EnvironmentCubeMapPass::Create);
             AddPassCreator(Name("RenderToTexturePass"), &RenderToTexturePass::Create);
             AddPassCreator(Name("SelectorPass"), &SelectorPass::Create);
+
+            // GPU-driven rendering passes
+            AddPassCreator(Name("GpuCullPass"), &GpuCullPass::Create);
+            AddPassCreator(Name("HiZGeneratePass"), &HiZGeneratePass::Create);
+            AddPassCreator(Name("IndirectRasterPass"), &IndirectRasterPass::Create);
         }
 
         PassFactory::CreatorIndex PassFactory::FindCreatorIndex(Name passClassName)

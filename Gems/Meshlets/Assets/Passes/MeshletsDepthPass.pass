@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsDepthPassTemplate",
+            "PassClass": "MeshletsRenderPass",
+            "Slots": [
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "Connections": []
+        }
+    }
+}

@@ -19,7 +19,10 @@
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
+#include <AzCore/std/parallel/mutex.h>
+
 #include <MeshletsRenderObject.h>
+#include <MultiDispatchComputePass.h>  // for AZ::Meshlets::MeshletsImportedAttachment
 
 namespace AZ
 {
@@ -48,7 +51,23 @@ namespace AZ
 
             // Adds the lod array of render data
             bool FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
-            bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
+            bool AddDrawPackets(const AZStd::vector<const RHI::DrawPacket*>& drawPackets);
+
+            //! SP1: replaces the per-frame list of attachments that this render
+            //! pass will Read (SRV) in this frame. The matching compute pass
+            //! imports the same buffers and declares ReadWrite scope usage.
+            //! See MeshletsImportedAttachment in MultiDispatchComputePass.h.
+            void SetImportedAttachments(const AZStd::vector<MeshletsImportedAttachment>& attachments);
+
+            //! PERF: in the shipping (forward-PBR-healthy) path this gem-private pass
+            //! has ZERO draw items -- meshlets render through the STANDARD ForwardPass via
+            //! the "forward" tag. It only draws when the forward shader failed and the
+            //! per-instance packet emitted the "MeshletsDrawList" debug-fallback item.
+            //! Yet a RasterPass still opens a full-res color+depth scope every frame
+            //! (~one whole geometry pass of cost). The feature processor sets this each
+            //! frame to whether ANY instance produced a debug item; FrameBeginInternal
+            //! skips building the scope entirely when false.
+            void SetHasDrawWork(bool hasDrawWork) { m_hasDrawWork = hasDrawWork; }
 
             Data::Instance<RPI::Shader> GetShader();
 
@@ -77,6 +96,11 @@ namespace AZ
 
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            //! SP1: declare Read (SRV) scope usage for the imported attachments
+            //! pushed by the feature processor. Together with the compute
+            //! pass's ReadWrite declaration this triggers the frame graph's
+            //! UAV->SRV barrier between scopes.
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
         protected:
             MeshletsFeatureProcessor* m_featureProcessor = nullptr;
@@ -92,6 +116,21 @@ namespace AZ
 
             const RHI::PipelineState* m_pipelineState = nullptr;
             RPI::ViewPtr m_currentView = nullptr;
+
+            // SP1 diagnostic: log when the queued-draw-packet count changes from
+            // one frame to the next so we can confirm the render pass is actually
+            // receiving DrawPackets after the dedicated-buffer refactor.
+            int32_t m_lastReportedDrawPacketCount = -1;
+
+            //! Whether this pass has any "MeshletsDrawList" debug-fallback items this
+            //! frame (false in the normal forward-healthy path). Set per-frame by the
+            //! feature processor; gates the RasterPass scope in FrameBeginInternal.
+            bool m_hasDrawWork = false;
+
+            // SP1: per-frame imported attachments (compute output -> render input).
+            AZStd::vector<MeshletsImportedAttachment> m_importedAttachments;
+            AZStd::mutex m_importedAttachmentsMutex;
+            int32_t m_lastReportedImportCount = -1;
         };
 
     } // namespace Meshlets

@@ -43,6 +43,8 @@ namespace AZ::RHI
         Fragment,
         Compute,
         RayTracing,
+        Mesh,
+        Amplification,
     };
 
     //! This class provides a platform agnostic interface for the creation

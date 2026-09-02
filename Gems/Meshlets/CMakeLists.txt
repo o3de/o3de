@@ -13,3 +13,7 @@ list(APPEND CMAKE_MODULE_PATH ${atom_rpi_gem_root}/3rdParty)
 
 add_subdirectory(Code)
 
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/IntegrationTest/CMakeLists.txt)
+    add_subdirectory(IntegrationTest)
+endif()
+

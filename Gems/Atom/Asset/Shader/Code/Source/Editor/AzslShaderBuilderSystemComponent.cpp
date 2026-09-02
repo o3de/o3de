@@ -83,7 +83,7 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 126; // ShaderStageFunction allocator
+            shaderAssetBuilderDescriptor.m_version = 127; // RHI::ShaderStageCount 5->7 (added Mesh/Amplification) resized Supervariant::m_attributeMaps + ShaderVariantAsset::m_functionsByStage -> reprocess all shaders
             shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
             shaderAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderAssetBuilder::CreateJobs, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -108,7 +108,7 @@ namespace AZ
                 shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
                 // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
                 // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
-                shaderVariantAssetBuilderDescriptor.m_version = 43; // ShaderStageFunction allocator
+                shaderVariantAssetBuilderDescriptor.m_version = 44; // RHI::ShaderStageCount 5->7 (added Mesh/Amplification) resized ShaderVariantAsset::m_functionsByStage -> reprocess all shaders
                 shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", HashedVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", HashedVariantInfoSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
@@ -135,7 +135,7 @@ namespace AZ
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 15; // ShaderStageFunction allocator
+            precompiledShaderBuilderDescriptor.m_version = 16; // RHI::ShaderStageCount 5->7 (added Mesh/Amplification) -> reprocess (also emits ShaderVariantAsset products)
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
