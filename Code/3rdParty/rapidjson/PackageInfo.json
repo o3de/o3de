@@ -1,0 +1,12 @@
+{
+    "PackageName": "RapidJSON",
+    "Version": "1.1.0",
+    "URL": "https://rapidjson.org",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/Tencent/rapidjson/archive/a895ce150fa2d73f4ee55f8657761a6b3e96236f.tar.gz",
+        "Revision": "a895ce150fa2d73f4ee55f8657761a6b3e96236f",
+        "SHA256": "91dfec64e5b3e63bec373d61af839430a403c74945a6dea7dce63def4434ffba"
+    }
+}
