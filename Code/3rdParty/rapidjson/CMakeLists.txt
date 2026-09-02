@@ -8,10 +8,10 @@
 o3de_fetch_content(rapidjson
     VERSION "1.1.0"
     LICENSE "MIT"
-    URL "https://github.com/Tencent/rapidjson/archive/a895ce150fa2d73f4ee55f8657761a6b3e96236f.tar.gz" # 2020-02-13
-    URL_HASH "91dfec64e5b3e63bec373d61af839430a403c74945a6dea7dce63def4434ffba"
+    URL "https://github.com/Tencent/rapidjson/archive/ebcbd04484fcdaddbb9fd7798e76bbfb4ae8f840.tar.gz" # 2020-03-30
+    URL_HASH "9af16b73313b4b635c13c2fd51cb432ac5573012f933ae53e5aa9125e15ac59b"
     GIT "https://github.com/Tencent/rapidjson.git"
-    GIT_HASH "a895ce150fa2d73f4ee55f8657761a6b3e96236f"
+    GIT_HASH "ebcbd04484fcdaddbb9fd7798e76bbfb4ae8f840"
     SOURCE_SUBDIR "no-add-subdir"
 )
 FetchContent_MakeAvailable(rapidjson)

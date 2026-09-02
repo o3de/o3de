@@ -5,8 +5,8 @@
     "License": "MIT",
     "LicenseFile": "LICENSE.txt",
     "Source": {
-        "URL": "https://github.com/Tencent/rapidjson/archive/a895ce150fa2d73f4ee55f8657761a6b3e96236f.tar.gz",
-        "Revision": "a895ce150fa2d73f4ee55f8657761a6b3e96236f",
-        "SHA256": "91dfec64e5b3e63bec373d61af839430a403c74945a6dea7dce63def4434ffba"
+        "URL": "https://github.com/Tencent/rapidjson/archive/ebcbd04484fcdaddbb9fd7798e76bbfb4ae8f840.tar.gz",
+        "Revision": "ebcbd04484fcdaddbb9fd7798e76bbfb4ae8f840",
+        "SHA256": "9af16b73313b4b635c13c2fd51cb432ac5573012f933ae53e5aa9125e15ac59b"
     }
 }
