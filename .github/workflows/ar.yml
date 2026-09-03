@@ -206,7 +206,7 @@ jobs:
       cmake_version: *cmake_version
 
   Mac-Test:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mac_build }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.mac_build }}
     needs: Mac-Asset
     uses: ./.github/workflows/mac-build.yml
     with:

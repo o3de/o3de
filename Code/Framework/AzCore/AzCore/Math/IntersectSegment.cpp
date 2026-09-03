@@ -94,12 +94,19 @@ namespace AZ
 
         // Shear and scale the triangle vertices so that they're fully in the coordinate space in which our segment
         // is a unit segment of (0, 0, 1).
-        const float Ax = A.GetElement(m_kx) - m_sx * A.GetElement(m_kz);
-        const float Ay = A.GetElement(m_ky) - m_sy * A.GetElement(m_kz);
-        const float Bx = B.GetElement(m_kx) - m_sx * B.GetElement(m_kz);
-        const float By = B.GetElement(m_ky) - m_sy * B.GetElement(m_kz);
-        const float Cx = C.GetElement(m_kx) - m_sx * C.GetElement(m_kz);
-        const float Cy = C.GetElement(m_ky) - m_sy * C.GetElement(m_kz);
+        // Keep the multiplication separate from the subtraction so that contraction doesn't change edge classification near zero.
+        const float sxAz = m_sx * A.GetElement(m_kz);
+        const float syAz = m_sy * A.GetElement(m_kz);
+        const float sxBz = m_sx * B.GetElement(m_kz);
+        const float syBz = m_sy * B.GetElement(m_kz);
+        const float sxCz = m_sx * C.GetElement(m_kz);
+        const float syCz = m_sy * C.GetElement(m_kz);
+        const float Ax = A.GetElement(m_kx) - sxAz;
+        const float Ay = A.GetElement(m_ky) - syAz;
+        const float Bx = B.GetElement(m_kx) - sxBz;
+        const float By = B.GetElement(m_ky) - syBz;
+        const float Cx = C.GetElement(m_kx) - sxCz;
+        const float Cy = C.GetElement(m_ky) - syCz;
 
         // Calculate the scaled barycentric coordinates. These would normally be calculated by using expressions like
         // ray.dot(c.cross(b)), but since we've transformed our ray into a unit Z ray, the expressions simplify down

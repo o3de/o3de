@@ -143,7 +143,8 @@ namespace EMotionFX
                         "in exceptions when the observers are removed") ||
                     msg.contains(
                         "QApplication::regClass: Registering window class 'Qt6102ThemeChangeObserverWindow' failed. (Class already "
-                        "exists.)"))
+                        "exists.)") ||
+                    msg.contains("Replace uses of missing font family \"Open Sans\" with one that exists"))
                 {
                     break;
                 }

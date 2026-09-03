@@ -3222,7 +3222,7 @@ namespace AzToolsFramework
 
             bool GetProductResultSimple(const char* name, Statement* statement, AssetDatabaseConnection::productHandler handler)
             {
-                return GetProductResult(name, statement, handler);
+                return GetResult(name, statement, handler);
             }
 
             bool GetProductResult(const char* callName, Statement* statement, AssetDatabaseConnection::productHandler handler, AZ::Uuid builderGuid, const char* jobKey, AssetSystem::JobStatus status)

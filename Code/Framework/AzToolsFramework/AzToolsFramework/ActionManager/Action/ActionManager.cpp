@@ -94,9 +94,9 @@ namespace AzToolsFramework
         {
         case QEvent::ShortcutOverride:
         {
-            // QActions default "autoRepeat" to true, which is not an ideal user experience.
-            // We globally disable that behavior here - in the unlikely event a shortcut needs to
-            // replicate it, its owner can instead implement a keyEvent handler
+            // EditorAction QActions disable auto-repeat when they are constructed. Do not manually
+            // trigger actions for repeated ShortcutOverride events; widget-owned QActions retain
+            // the auto-repeat policy chosen by their owner.
             if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
             {
                 return false;
@@ -118,15 +118,6 @@ namespace AzToolsFramework
         }
         case QEvent::Shortcut:
         {
-            // QActions default "autoRepeat" to true, which is not an ideal user experience.
-            // We globally disable that behavior here - in the unlikely event a shortcut needs to
-            // replicate it, its owner can instead implement a keyEvent handler
-            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
-            {
-                event->accept();
-                return true;
-            }
-
             if (auto shortcutEvent = static_cast<QShortcutEvent*>(event))
             {
                 QWidget* watchedWidget = qobject_cast<QWidget*>(watched);

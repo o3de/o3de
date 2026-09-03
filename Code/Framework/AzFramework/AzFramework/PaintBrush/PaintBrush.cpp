@@ -383,6 +383,10 @@ namespace AzFramework
                     // as a squared cosine: 2x^3 - 3x^2 + 1 . This produces a nice backwards S curve that starts at 1, ends at 0,
                     // and has a midpoint at (0.5, 0.5).
                     float perPixelOpacity = ((hardnessDistance * hardnessDistance) * (2.0f * hardnessDistance - 3.0f)) + 1.0f;
+                    if (perPixelOpacity < AZ::Constants::FloatEpsilon)
+                    {
+                        perPixelOpacity = 0.0f;
+                    }
 
                     // For the opacity at this point, combine any opacity from previous stamps with the
                     // currently-computed perPixelOpacity and flow.

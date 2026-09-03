@@ -60,7 +60,7 @@ bool FileWatcher::PlatformStart()
 
     AZ_Error("FileWatcher", (m_platformImpl->m_stream != nullptr), "FSEventStreamCreate returned a nullptr. No file events will be reported.");
 
-    m_platformImpl->m_dispatchQueue = dispatch_queue_create("EventStreamQueue", DISPATCH_QUEUE_CONCURRENT);
+    m_platformImpl->m_dispatchQueue = dispatch_queue_create("EventStreamQueue", DISPATCH_QUEUE_SERIAL);
     
     const CFIndex pathCount = CFArrayGetCount(pathsToWatch);
     for(CFIndex i = 0; i < pathCount; ++i)
@@ -85,27 +85,19 @@ void FileWatcher::PlatformStop()
     FSEventStreamStop(m_platformImpl->m_stream);
     FSEventStreamInvalidate(m_platformImpl->m_stream);
     FSEventStreamRelease(m_platformImpl->m_stream);
+    m_platformImpl->m_stream = nullptr;
+
+    dispatch_release(m_platformImpl->m_dispatchQueue);
+    m_platformImpl->m_dispatchQueue = nullptr;
 }
 
 void FileWatcher::WatchFolderLoop()
 {
     DEBUG_FILEWATCHER("Watch loop entry\n");
-    // Use a half second timeout interval so that we can check if
-    // m_shutdownThreadSignal has been changed while we were running the RunLoop
-    static const CFTimeInterval secondsToProcess = 0.5;
-
-    m_platformImpl->m_runLoop = CFRunLoopGetCurrent();
     FSEventStreamSetDispatchQueue(m_platformImpl->m_stream, m_platformImpl->m_dispatchQueue);
     FSEventStreamStart(m_platformImpl->m_stream);
 
-    const bool returnAfterFirstEventHandled = false;
-
-    DEBUG_FILEWATCHER("Watch loop begins\n");
     m_startedSignal = true; // signal that we are no longer going to drop any events.``
-    while (!m_shutdownThreadSignal)
-    {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, secondsToProcess, returnAfterFirstEventHandled);
-    }
 }
 
 void FileWatcher::PlatformImplementation::FileEventStreamCallback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[])

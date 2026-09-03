@@ -78,6 +78,43 @@ using namespace ImageProcessingAtom;
 
 namespace UnitTest
 {
+    namespace
+    {
+        float DecodeBc4Signed(const AZ::u8* block, size_t pixelIndex)
+        {
+            AZ::s8 endpoint0 = 0;
+            AZ::s8 endpoint1 = 0;
+            memcpy(&endpoint0, block, sizeof(endpoint0));
+            memcpy(&endpoint1, block + 1, sizeof(endpoint1));
+
+            AZ::s32 palette[8] = { endpoint0, endpoint1 };
+            if (endpoint0 > endpoint1)
+            {
+                for (AZ::s32 index = 1; index <= 6; ++index)
+                {
+                    palette[index + 1] = ((7 - index) * endpoint0 + index * endpoint1) / 7;
+                }
+            }
+            else
+            {
+                for (AZ::s32 index = 1; index <= 4; ++index)
+                {
+                    palette[index + 1] = ((5 - index) * endpoint0 + index * endpoint1) / 5;
+                }
+                palette[6] = -127;
+                palette[7] = 127;
+            }
+
+            AZ::u64 packedIndices = 0;
+            for (size_t byteIndex = 0; byteIndex < 6; ++byteIndex)
+            {
+                packedIndices |= static_cast<AZ::u64>(block[byteIndex + 2]) << (byteIndex * 8);
+            }
+            const size_t paletteIndex = (packedIndices >> (pixelIndex * 3)) & 0x7;
+            return static_cast<float>(palette[paletteIndex]) / 127.0f;
+        }
+    } // namespace
+
     // Expose AZ::AssetManagerComponent::Reflect function for testing
     class MyAssetManagerComponent
         : public AZ::AssetManagerComponent
@@ -766,7 +803,9 @@ namespace UnitTest
         {
             EPixelFormat pixelFormat = (EPixelFormat)i;
             auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
-            if (formatInfo->bCompressed)
+            // The generic color fixtures are not suitable for exercising signed compressor behavior.
+            // BC4s and BC5s are covered separately below with inputs chosen for their signed encodings.
+            if (formatInfo->bCompressed && !CPixelFormats::GetInstance().IsFormatSigned(pixelFormat))
             {
                 // skip ASTC formats which are tested in TestConvertASTCCompressor
                 if (!IsASTCFormat(pixelFormat))
@@ -1099,8 +1138,79 @@ namespace UnitTest
         AZ::IO::FileIOBase::GetInstance()->Remove(filepath.c_str());
     }
 
+    TEST_F(ImageProcessingTest, SignedBc4ProductionCompressionEncodesSignedValues)
+    {
+        constexpr AZ::u32 ImageDimension = 4;
+        constexpr float CompressionTolerance = 0.02f;
+        constexpr float SourceValue = 0.2f;
+        constexpr float Pixel[] = { SourceValue, 0.0f, 0.0f, 1.0f };
+
+        IImageObjectPtr sourceImage(IImageObject::CreateImage(ImageDimension, ImageDimension, 1, ePixelFormat_R32G32B32A32F));
+        ASSERT_NE(sourceImage, nullptr);
+
+        AZ::u8* sourceData = nullptr;
+        AZ::u32 sourcePitch = 0;
+        sourceImage->GetImagePointer(0, sourceData, sourcePitch);
+        for (AZ::u32 y = 0; y < ImageDimension; ++y)
+        {
+            for (AZ::u32 x = 0; x < ImageDimension; ++x)
+            {
+                float* pixel = reinterpret_cast<float*>(sourceData + (y * sourcePitch)) + (x * 4);
+                memcpy(pixel, Pixel, sizeof(Pixel));
+            }
+        }
+
+        ImageToProcess imageToProcess(sourceImage);
+        imageToProcess.ConvertFormat(ePixelFormat_BC4s);
+        ASSERT_NE(imageToProcess.Get(), nullptr);
+        ASSERT_EQ(imageToProcess.Get()->GetPixelFormat(), ePixelFormat_BC4s);
+
+        AZ::u8* compressedData = nullptr;
+        AZ::u32 compressedPitch = 0;
+        imageToProcess.Get()->GetImagePointer(0, compressedData, compressedPitch);
+
+        const float decodedValue = DecodeBc4Signed(compressedData, 0);
+        EXPECT_NEAR(decodedValue, SourceValue, CompressionTolerance);
+    }
+
+    TEST_F(ImageProcessingTest, SignedBc5ProductionCompressionEncodesSignedNormals)
+    {
+        constexpr AZ::u32 ImageDimension = 4;
+        constexpr float CompressionTolerance = 0.02f;
+        // Unit normal (-0.6, 0.6, sqrt(0.28)) encoded into the [0, 1] image range.
+        constexpr float EncodedNormal[] = { 0.2f, 0.8f, 0.764575f, 1.0f };
+
+        IImageObjectPtr sourceImage(IImageObject::CreateImage(ImageDimension, ImageDimension, 1, ePixelFormat_R32G32B32A32F));
+        ASSERT_NE(sourceImage, nullptr);
+
+        AZ::u8* sourceData = nullptr;
+        AZ::u32 sourcePitch = 0;
+        sourceImage->GetImagePointer(0, sourceData, sourcePitch);
+        for (AZ::u32 y = 0; y < ImageDimension; ++y)
+        {
+            for (AZ::u32 x = 0; x < ImageDimension; ++x)
+            {
+                float* pixel = reinterpret_cast<float*>(sourceData + (y * sourcePitch)) + (x * 4);
+                memcpy(pixel, EncodedNormal, sizeof(EncodedNormal));
+            }
+        }
+
+        ImageToProcess imageToProcess(sourceImage);
+        imageToProcess.ConvertFormat(ePixelFormat_BC5s);
+        ASSERT_NE(imageToProcess.Get(), nullptr);
+        ASSERT_EQ(imageToProcess.Get()->GetPixelFormat(), ePixelFormat_BC5s);
+
+        AZ::u8* compressedData = nullptr;
+        AZ::u32 compressedPitch = 0;
+        imageToProcess.Get()->GetImagePointer(0, compressedData, compressedPitch);
+
+        // The BC5 normal preset stores Y in the first BC4 block and X in the second.
+        const float decodedX = (DecodeBc4Signed(compressedData + 8, 0) + 1.0f) * 0.5f;
+        const float decodedY = (DecodeBc4Signed(compressedData, 0) + 1.0f) * 0.5f;
+        EXPECT_NEAR(decodedX, EncodedNormal[0], CompressionTolerance);
+        EXPECT_NEAR(decodedY, EncodedNormal[1], CompressionTolerance);
+    }
+
 } // UnitTest
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-
-

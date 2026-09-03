@@ -115,16 +115,13 @@ namespace AZ::IO::Platform
 
     SystemFile::SizeType Length(const char* fileName)
     {
-        SizeType len = 0;
-
-        SystemFile f;
-        if (f.Open(fileName, SystemFile::SF_OPEN_READ_ONLY))
+        struct stat statResult;
+        if (stat(fileName, &statResult) != 0)
         {
-            len = f.Length();
-            f.Close();
+            return 0;
         }
 
-        return len;
+        return aznumeric_cast<SystemFile::SizeType>(statResult.st_size);
     }
 
     bool Delete(const char* fileName)
