@@ -35,5 +35,6 @@ ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-linux                   
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-linux                              TARGETS lz4                         PACKAGE_HASH 5d7e5d087c224dd26edb19deaa73673eefa2dc73f40d0709739e60f2ad35060b)
 ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev5-linux                  TARGETS pyside6                     PACKAGE_HASH ae7778e7260da9170e4414deb7df02402f958c061ac408e3664d7ea16c95f025)
+ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux              TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 83fc1711404d3e5b2faabb1134e97cc92b748d8b87ff4ea99599d8c750b8eff0)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux        TARGETS vulkan-validationlayers     PACKAGE_HASH 9195c7959695bcbcd1bc1dc5c425c14639a759733b3abe2ffa87eb3915b12c71)
