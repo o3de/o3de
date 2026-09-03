@@ -128,6 +128,9 @@ namespace EMStudio
 
         void SetVirtualFinalNode(const QModelIndex& nodeModelIndex);
 
+        bool CanInsertRerouteOnSelectedConnections();
+        void InsertRerouteOnSelectedConnections();
+
     protected:
         void dropEvent(QDropEvent* event) override;
         void dragEnterEvent(QDragEnterEvent* event) override;
@@ -167,6 +170,11 @@ namespace EMStudio
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
+        void InsertRerouteOnConnection(NodeConnection* connection);
+        bool CanInsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections) const;
+        void InsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections, const QPoint& position);
+        bool CanDissolveRerouteNode(EMotionFX::AnimGraphNode* node) const;
+        void DissolveRerouteNode(EMotionFX::AnimGraphNode* node);
 
         void AssignNodesToGroup(
             EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& nodes, EMotionFX::AnimGraphNodeGroup* group);

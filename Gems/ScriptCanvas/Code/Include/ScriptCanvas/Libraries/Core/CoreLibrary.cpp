@@ -10,6 +10,7 @@
 #include "EBusEventHandler.h"
 #include "Method.h"
 #include "MethodOverloaded.h"
+#include "Reroute.h"
 #include "ScriptEventBase.h"
 
 #include <Data/DataMacros.h>
@@ -82,6 +83,7 @@ namespace ScriptCanvas::CoreLibrary
         using namespace ScriptCanvas::Nodes::Core;
         nodeRegistry->m_nodes.push_back(AZ::AzTypeInfo<Method>::Uuid());
         nodeRegistry->m_nodes.push_back(AZ::AzTypeInfo<MethodOverloaded>::Uuid());
+        nodeRegistry->m_nodes.push_back(AZ::AzTypeInfo<Reroute>::Uuid());
     }
 
     AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors()
@@ -89,6 +91,7 @@ namespace ScriptCanvas::CoreLibrary
         return AZStd::vector<AZ::ComponentDescriptor*>({
             ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
             ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
+            ScriptCanvas::Nodes::Core::Reroute::CreateDescriptor(),
         });
     }
 }

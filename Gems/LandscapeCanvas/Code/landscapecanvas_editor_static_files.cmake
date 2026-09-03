@@ -24,6 +24,8 @@ set(FILES
     Source/Editor/Menus/SceneContextMenuActions.h
     Source/Editor/Nodes/BaseNode.cpp
     Source/Editor/Nodes/BaseNode.h
+    Source/Editor/Nodes/RerouteNode.cpp
+    Source/Editor/Nodes/RerouteNode.h
     Source/Editor/Nodes/Areas/AreaBlenderNode.cpp
     Source/Editor/Nodes/Areas/AreaBlenderNode.h
     Source/Editor/Nodes/Areas/BaseAreaNode.cpp
