@@ -11,6 +11,7 @@
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
+ly_associate_package(PACKAGE_NAME cityhash-1.1-rev1-mac-arm64                       TARGETS cityhash                    PACKAGE_HASH c5844582b4fe819e74ca923dbb58405dd687a4b9acb82d7de04e3e766addb4ed)
 ly_associate_package(PACKAGE_NAME zstd-1.35-rev1-mac-arm64                          TARGETS zstd                        PACKAGE_HASH bb401d198d9fd2be2669acb6fe8dbe59fd7d33a66b5f2fd7d3e0221e5b72d1f4)
 
 # platform-specific:
