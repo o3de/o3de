@@ -14,6 +14,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -29,6 +30,16 @@ namespace AzToolsFramework
     namespace Prefab
     {
         static constexpr const char s_saveAllPrefabsKey[] = "/O3DE/Preferences/Prefabs/SaveAllPrefabs";
+
+        static constexpr AZStd::string_view s_prefabFileExtension = ".prefab";
+
+        // Lower-cases an extension; extensions are matched case-insensitively.
+        static AZStd::string NormalizeTemplateFileExtension(AZStd::string_view extension)
+        {
+            AZStd::string normalizedExtension(extension);
+            AZStd::to_lower(normalizedExtension);
+            return normalizedExtension;
+        }
 
         void PrefabLoader::Reflect(AZ::ReflectContext* context)
         {
@@ -66,6 +77,80 @@ namespace AzToolsFramework
         {
             m_scriptingPrefabLoader.Disconnect();
             AZ::Interface<PrefabLoaderInterface>::Unregister(this);
+        }
+
+        bool PrefabLoader::RegisterTemplateFileHandler(
+            AZStd::string_view extension, PrefabTemplateLoadFileHandler loadHandler, PrefabTemplateSaveFileHandler saveHandler)
+        {
+            if (!loadHandler || !saveHandler)
+            {
+                AZ_Error(
+                    "Prefab",
+                    false,
+                    "PrefabLoader::RegisterTemplateFileHandler - "
+                    "File format '%.*s' needs both a load and a save handler to be registered.",
+                    AZ_STRING_ARG(extension));
+                return false;
+            }
+
+            // Formats are looked up through PathView::Extension(), which returns a single leading dot
+            // followed by the last extension. Anything else would never match, so reject it up front.
+            AZStd::string normalizedExtension = NormalizeTemplateFileExtension(extension);
+            if (normalizedExtension.size() < 2 || normalizedExtension.front() != '.' ||
+                normalizedExtension.find_first_of("./\\", 1) != AZStd::string::npos)
+            {
+                AZ_Error(
+                    "Prefab",
+                    false,
+                    "PrefabLoader::RegisterTemplateFileHandler - "
+                    "File format '%.*s' is not a valid extension. It has to be a single leading '.' followed "
+                    "by at least one character, with no further dots or path separators.",
+                    AZ_STRING_ARG(extension));
+                return false;
+            }
+
+            if (normalizedExtension == s_prefabFileExtension)
+            {
+                AZ_Error(
+                    "Prefab",
+                    false,
+                    "PrefabLoader::RegisterTemplateFileHandler - "
+                    "The built-in '%.*s' JSON format is handled by the Prefab Loader itself and cannot be replaced.",
+                    AZ_STRING_ARG(s_prefabFileExtension));
+                return false;
+            }
+
+            auto [handlerIt, inserted] = m_templateFileHandlers.insert_or_assign(
+                AZStd::move(normalizedExtension), TemplateFileHandlers{ AZStd::move(loadHandler), AZStd::move(saveHandler) });
+            AZ_Warning(
+                "Prefab",
+                inserted,
+                "PrefabLoader::RegisterTemplateFileHandler - "
+                "File format '%s' was already registered and has been replaced.",
+                handlerIt->first.c_str());
+            return true;
+        }
+
+        bool PrefabLoader::UnregisterTemplateFileHandler(AZStd::string_view extension)
+        {
+            return m_templateFileHandlers.erase(NormalizeTemplateFileExtension(extension)) > 0;
+        }
+
+        AZStd::vector<AZStd::string> PrefabLoader::GetRegisteredTemplateFileExtensions() const
+        {
+            AZStd::vector<AZStd::string> extensions;
+            extensions.reserve(m_templateFileHandlers.size());
+            for (const auto& handlerPair : m_templateFileHandlers)
+            {
+                extensions.push_back(handlerPair.first);
+            }
+            return extensions;
+        }
+
+        auto PrefabLoader::FindTemplateFileHandlers(AZ::IO::PathView path) const -> const TemplateFileHandlers*
+        {
+            auto foundIt = m_templateFileHandlers.find(NormalizeTemplateFileExtension(path.Extension().Native()));
+            return foundIt != m_templateFileHandlers.end() ? &foundIt->second : nullptr;
         }
 
         TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath)
@@ -112,7 +197,10 @@ namespace AzToolsFramework
             }
 
             // Read Template's prefab file from disk and parse Prefab DOM from file.
-            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
+            const TemplateFileHandlers* reloadFileHandlers = FindTemplateFileHandlers(relativePath);
+            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = reloadFileHandlers
+                ? reloadFileHandlers->m_loadHandler(readResult.GetValue(), relativePath)
+                : AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
             if (!readPrefabFileResult.IsSuccess())
             {
                 AZ_Error(
@@ -429,7 +517,10 @@ namespace AzToolsFramework
             }
 
             // Read Template's prefab file from disk and parse Prefab DOM from file.
-            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(fileContent);
+            const TemplateFileHandlers* fileHandlers = FindTemplateFileHandlers(originPath);
+            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = fileHandlers
+                ? fileHandlers->m_loadHandler(fileContent, originPath)
+                : AZ::JsonSerializationUtils::ReadJsonString(fileContent);
             if (!readPrefabFileResult.IsSuccess())
             {
                 AZ_Error(
@@ -671,7 +762,10 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, GetFullPath(domAndFilepath->second).Native());
+            AZ::IO::Path fullPath = GetFullPath(domAndFilepath->second);
+            const TemplateFileHandlers* fileHandlers = FindTemplateFileHandlers(domAndFilepath->second);
+            auto outcome = fileHandlers ? fileHandlers->m_saveHandler(domAndFilepath->first, fullPath)
+                                        : AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, fullPath.Native());
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
@@ -713,7 +807,9 @@ namespace AzToolsFramework
                 return false;
             }
 
-            auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, absolutePath.Native());
+            const TemplateFileHandlers* fileHandlers = FindTemplateFileHandlers(absolutePath);
+            auto outcome = fileHandlers ? fileHandlers->m_saveHandler(domAndFilepath->first, absolutePath)
+                                        : AZ::JsonSerializationUtils::WriteJsonFile(domAndFilepath->first, absolutePath.Native());
             if (!outcome.IsSuccess())
             {
                 AZ_Error(
