@@ -31,6 +31,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             MI_OPT_SIMD=1
+            MI_SKIP_COLLECT_ON_EXIT=1
 )
 
 target_include_directories(mimalloc SYSTEM
