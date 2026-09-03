@@ -97,7 +97,7 @@ namespace InputDeviceIdReflectionTests
         EXPECT_TRUE(g_constructorArgumentsPreserved);
     }
 
-    TEST_F(InputDeviceIdReflectionTest, Reflection_AllowsTransientScriptCanvasSlotsButNotVariables)
+    TEST_F(InputDeviceIdReflectionTest, Reflection_DeclaresScriptCanvasCreationAttributes)
     {
         const auto behaviorClassIterator = m_behaviorContext->m_typeToClassMap.find(azrtti_typeid<AzFramework::InputDeviceId>());
         ASSERT_NE(behaviorClassIterator, m_behaviorContext->m_typeToClassMap.end());

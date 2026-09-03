@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Input Device Id",
-                "category": "Gameplay"
+                "category": "Input"
             },
             "methods": [
                 {
