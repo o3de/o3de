@@ -108,7 +108,7 @@ bool CFileChangeMonitor::MonitorItem(const QString& sItem)
     if (finfo.isDir())
     {
         QDir dir(sItem);
-        m_entries.insert(sItem, std::move(dir.entryInfoList(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot)));
+        m_entries.insert(sItem, dir.entryInfoList(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot));
     }
 
     return m_watcher->addPath(sItem);
