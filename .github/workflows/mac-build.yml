@@ -121,16 +121,16 @@ jobs:
       - name: Extract artifact
         # Extract the tar file from the artifact
         id: extract-artifact
-        continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         run: |
-          if [ -f "${{ github.workspace }}/cache.tar" ]; then
-            trap 'rm -f "${{ github.workspace }}/cache.tar"' EXIT
-            gtar -xpf "${{ github.workspace }}/cache.tar" --ignore-failed-read
-            rm -f "${{ github.workspace }}/cache.tar"
-            trap - EXIT
-            ccache --zero-stats --cleanup
+          trap 'rm -f "${{ github.workspace }}/cache.tar"' EXIT
+          if ! gtar -xpf "${{ github.workspace }}/cache.tar"; then
+            echo "::warning::Ignoring invalid cache archive"
+            rm -rf .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
           fi
+          rm -f "${{ github.workspace }}/cache.tar"
+          trap - EXIT
+          ccache --zero-stats --cleanup
 
       - name: Setup cmake
         # Pin the version of cmake
@@ -168,7 +168,8 @@ jobs:
         continue-on-error: true
         run: |
           ccache --cleanup
-          gtar --format=posix -cpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
+          mkdir -p .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
+          gtar --format=posix -cpf ${{ github.workspace }}/cache.tar \
             .ccache \
             .o3de/python/downloaded_packages \
             3rdParty/downloaded_packages \
@@ -176,7 +177,7 @@ jobs:
 
       - name: Save artifacts
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        if: ${{ steps.compress-artifacts.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         with:
           name: O3DE-Mac-${{ inputs.config }}-build

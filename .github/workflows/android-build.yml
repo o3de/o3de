@@ -164,14 +164,14 @@ jobs:
       - name: Extract artifact
         # Extract the tar file from the artifact
         id: extract-artifact
-        continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         run: |
-          if [ -f ${{ github.workspace }}/cache.tar ]; then
-            tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
-            rm ${{ github.workspace }}/cache.tar
-            ccache --zero-stats --cleanup
+          if ! tar -xvpf "${{ github.workspace }}/cache.tar"; then
+            echo "::warning::Ignoring invalid cache archive"
+            rm -rf .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
           fi
+          rm -f "${{ github.workspace }}/cache.tar"
+          ccache --zero-stats --cleanup
 
       - name: Setup cmake
         # Pin the version of cmake
@@ -260,7 +260,8 @@ jobs:
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         run: |
-          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
+          mkdir -p .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
+          tar --format=posix -cvpf ${{ github.workspace }}/cache.tar \
             .ccache \
             .o3de/python/downloaded_packages \
             3rdParty/downloaded_packages \
@@ -268,7 +269,7 @@ jobs:
 
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        if: ${{ steps.compress-artifacts.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
