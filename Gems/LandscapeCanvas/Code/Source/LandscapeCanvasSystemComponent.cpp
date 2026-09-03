@@ -63,6 +63,7 @@
 #include <Editor/Nodes/Gradients/ShapeAreaFalloffGradientNode.h>
 #include <Editor/Nodes/Gradients/SlopeGradientNode.h>
 #include <Editor/Nodes/Gradients/SurfaceMaskGradientNode.h>
+#include <Editor/Nodes/RerouteNode.h>
 #include <Editor/Nodes/GradientModifiers/DitherGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/GradientMixerNode.h>
 #include <Editor/Nodes/GradientModifiers/InvertGradientModifierNode.h>
@@ -257,6 +258,9 @@ namespace LandscapeCanvas
 
         // Reflect and create the node mime events for all our supported nodes
         LANDSCAPE_CANVAS_NODE_TABLE(RegisterNode, context);
+
+        // Reroute is visual-only, so it is reflected independently from the component-backed node table.
+        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<RerouteNode>(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
