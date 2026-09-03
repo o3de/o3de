@@ -208,6 +208,26 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
+    AZ::Vector3 ArticulationLink::GetLinearVelocity() const
+    {
+        if (m_pxLink)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxLink->getScene());
+            return PxMathConvert(m_pxLink->getLinearVelocity());
+        }
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector3 ArticulationLink::GetAngularVelocity() const
+    {
+        if (m_pxLink)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxLink->getScene());
+            return PxMathConvert(m_pxLink->getAngularVelocity());
+        }
+        return AZ::Vector3::CreateZero();
+    }
+
     ArticulationLink* CreateArticulationLink([[maybe_unused]] const ArticulationLinkConfiguration* articulationConfig)
     {
         ArticulationLink* articulationLink = aznew ArticulationLink;
