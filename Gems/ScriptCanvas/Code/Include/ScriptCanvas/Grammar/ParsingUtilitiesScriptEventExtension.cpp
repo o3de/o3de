@@ -49,7 +49,7 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
 
         if (!slots.empty())
         {
-            auto resultNodes = node.GetConnectedNodes(*slots.front());
+            auto resultNodes = node.GetConnectedNodesForTranslation(*slots.front());
             if (!resultNodes.empty())
             {
                 if (resultNodes.size() > 1)

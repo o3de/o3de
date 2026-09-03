@@ -70,7 +70,7 @@ namespace AbstractCodeModelCpp
             {
                 if (slot)
                 {
-                    auto nodesInSlot = node->GetConnectedNodes(*slot);
+                    auto nodesInSlot = node->GetConnectedNodesForTranslation(*slot);
                     resolved.insert(resolved.end(), nodesInSlot.begin(), nodesInSlot.end());
                 }
             }
@@ -962,7 +962,7 @@ namespace ScriptCanvas
                 return false;
             }
 
-            const EndpointsResolved connectedEndpoints = node.GetConnectedNodes(*connectSlot);
+            const EndpointsResolved connectedEndpoints = node.GetConnectedNodesForTranslation(*connectSlot);
             if (connectedEndpoints.empty())
             {
                 return false;
@@ -1427,7 +1427,7 @@ namespace ScriptCanvas
                 connections.m_returnValuesOrReferences.push_back(variable);
             }
 
-            auto connectedNodes = execution->GetId().m_node->GetConnectedNodes(output);
+            auto connectedNodes = execution->GetId().m_node->GetConnectedNodesForTranslation(output);
             bool isAtLeastOneReturnValueFound = false;
 
             for (const auto& nodeAndSlot : connectedNodes)
@@ -2536,7 +2536,7 @@ namespace ScriptCanvas
                     return;
                 }
 
-                auto executionOutNodes = node.GetConnectedNodes(*outSlot);
+                auto executionOutNodes = node.GetConnectedNodesForTranslation(*outSlot);
                 if (!executionOutNodes.empty())
                 {
                     outNodes.insert(outNodes.end(), executionOutNodes.begin(), executionOutNodes.end());
@@ -3316,7 +3316,7 @@ namespace ScriptCanvas
             ParseOperatorArithmetic(execution);
 
             // \todo Infinite loop handling both in code and in the graph will have to occur here.
-            auto executionOutNodes = execution->GetId().m_node->GetConnectedNodes(outSlot);
+            auto executionOutNodes = execution->GetId().m_node->GetConnectedNodesForTranslation(outSlot);
 
             // Sort the out node connections to ensure that implicit execution connections are always parsed first
             EndpointsResolved sortedExecutionOutNodes;
@@ -3741,7 +3741,7 @@ namespace ScriptCanvas
                 {
                     if (outSlot)
                     {
-                        auto executionOutNodes = execution->GetId().m_node->GetConnectedNodes(*outSlot);
+                        auto executionOutNodes = execution->GetId().m_node->GetConnectedNodesForTranslation(*outSlot);
                         outNodes.insert(outNodes.end(), executionOutNodes.begin(), executionOutNodes.end());
                         outSlots.insert(outSlots.end(), executionOutNodes.size(), outSlot);
                     }
@@ -3814,7 +3814,7 @@ namespace ScriptCanvas
                 EndpointsResolved connectedNodes;
                 if (const Node* inNode = inSlot->GetNode())
                 {
-                    connectedNodes = inNode->GetConnectedNodes(*inSlot);
+                    connectedNodes = inNode->GetConnectedNodesForTranslation(*inSlot);
                 }
                 for (const EndpointResolved& connectedNode : connectedNodes)
                 {
@@ -4419,7 +4419,7 @@ namespace ScriptCanvas
                 return;
             }
 
-            auto nodes = execution->GetId().m_node->GetConnectedNodes(input);
+            auto nodes = execution->GetId().m_node->GetConnectedNodesForTranslation(input);
             if (nodes.empty())
             {
                 if (auto variable = FindReferencedVariableChecked(execution, input))
@@ -5009,7 +5009,7 @@ namespace ScriptCanvas
                 const auto slot = execution->GetId().m_node->GetSlot(propertyField.second);
                 AZ_Assert(slot, "not slot by name %s", propertyField.first.data());
 
-                if (slot->IsVariableReference() || !execution->GetId().m_node->GetConnectedNodes(*slot).empty())
+                if (slot->IsVariableReference() || !execution->GetId().m_node->GetConnectedNodesForTranslation(*slot).empty())
                 {
                     PropertyExtractionPtr extraction = AZStd::make_shared<PropertyExtraction>();
                     extraction->m_slot = slot;
@@ -5034,7 +5034,7 @@ namespace ScriptCanvas
                 auto returnValueOutput = CreateOutput(execution, returnValueSlot, {}, "return");
                 ReturnValuePtr returnValue = AZStd::make_shared<ReturnValue>(AZStd::move(*returnValueOutput.get()));
 
-                auto nodes = execution->GetId().m_node->GetConnectedNodes(returnValueSlot);
+                auto nodes = execution->GetId().m_node->GetConnectedNodesForTranslation(returnValueSlot);
                 if (!nodes.empty())
                 {
                     if (auto sourceVariable = ParseConnectedInputData(returnValueSlot, execution, nodes, FirstNode::Self))
