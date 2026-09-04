@@ -166,13 +166,14 @@ namespace PhysX
 
     void PhysXSystem::Shutdown()
     {
-        if (IsSimulationThreadRunning())
-        {
-            StopSimulationThread();
-        }
         if (m_state != State::Initialized)
         {
             return;
+        }
+
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
         }
 
         RemoveAllScenes();
@@ -440,16 +441,15 @@ namespace PhysX
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)
     {
-        if (IsSimulationThreadRunning())
-        {
-            StopSimulationThread();
-        }
         if (config.m_sceneName.empty())
         {
             AZ_Error("PhysXSystem", false, "AddScene: Trying to Add a scene without a name. SceneConfiguration::m_sceneName must have a value");
             return AzPhysics::InvalidSceneHandle;
         }
-
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
+        }
         if (!m_freeSceneSlots.empty()) //fill any free slots first before increasing the size of the scene list vector.
         {
             AzPhysics::SceneIndex freeIndex = m_freeSceneSlots.front();
