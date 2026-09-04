@@ -35,7 +35,6 @@ ly_add_target(
         PRIVATE
             Include
             Source
-            Source/Maestro
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
@@ -49,7 +48,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-            Source/Maestro
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -164,8 +162,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# ${gem_name} is still used by the CrySystem Level System, CSystem::SystemInit and TrackView
-
 ################################################################################
 # Tests
 ################################################################################
@@ -175,9 +171,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             maestro_api_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
@@ -213,13 +206,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 MAESTRO_TESTS
         INCLUDE_DIRECTORIES
             PRIVATE
-                Tests
+                Include
                 Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Legacy::CryCommon
-                Gem::${gem_name}.Static
+                Gem::${gem_name}.API
+                Gem::${gem_name}.Private.Object
     )
     ly_add_googletest(
         NAME Gem::${gem_name}.Tests
