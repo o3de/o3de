@@ -11,13 +11,12 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 
-// Maestro
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 #include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 bool CScreenFaderKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& keys)
 {

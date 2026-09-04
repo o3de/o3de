@@ -5,19 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorDefs.h"
-#include <AzTest/AzTest.h>
-#include <Util/EditorUtils.h>
 #include <AzCore/base.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzTest/AzTest.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include "EditorDefs.h"
+#include <Util/EditorUtils.h>
+
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <TrackView/TrackViewPythonFuncs.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+
+#include <Maestro/Editor/TrackView/TrackViewPythonFuncs.h>
 
 namespace TrackViewPythonBindingsUnitTests
 {

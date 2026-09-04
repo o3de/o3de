@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <Maestro/Editor/TrackView/TrackViewAnimNode.h>
 #include <Maestro/IMovieSystem.h>
-#include "TrackViewAnimNode.h"
 
 //////////////////////////////////////////////////////////////////////////
 // This class represents an IAnimNode dedicated to firing Track Events

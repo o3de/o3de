@@ -6,10 +6,9 @@
  *
  */
 
+#include <Maestro/Editor/SelectSequenceDialog.h>
 
 #include "EditorDefs.h"
-
-#include "SelectSequenceDialog.h"
 
 // CSelectSequence dialog
 

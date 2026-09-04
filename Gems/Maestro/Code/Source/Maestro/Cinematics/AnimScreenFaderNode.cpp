@@ -6,13 +6,14 @@
  *
  */
 
+#include <Maestro/Cinematics/AnimScreenFaderNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "AnimScreenFaderNode.h"
-#include "ScreenFaderTrack.h"
+#include <Maestro/Cinematics/ScreenFaderTrack.h>
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

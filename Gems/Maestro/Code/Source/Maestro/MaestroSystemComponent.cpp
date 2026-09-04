@@ -6,17 +6,18 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Maestro/MaestroSystemComponent.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Translation/TranslationDef.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <IConsole.h>
 #include <ISystem.h>
 
-#include "Cinematics/Movie.h"
-
-#include "MaestroSystemComponent.h"
+#include <Maestro/Cinematics/Movie.h>
 
 namespace Maestro
 {

@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/string/string.h>
 
 namespace Maestro

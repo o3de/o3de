@@ -6,9 +6,9 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Maestro/Cinematics/CaptureTrack.h>
 
-#include "CaptureTrack.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace Maestro
 {

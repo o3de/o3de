@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/ConsoleTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "ConsoleTrack.h"
 
 namespace Maestro
 {

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "AnimTrack.h"
+#include <Maestro/Cinematics/AnimTrack.h>
 
 namespace Maestro
 {

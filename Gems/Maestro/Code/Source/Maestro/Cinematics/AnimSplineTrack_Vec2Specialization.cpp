@@ -11,10 +11,10 @@
 //               TAnimSplineTrack
 // Notice      : Should be included in AnimSplineTrack h only
 
-#include "AnimSplineTrack.h"
-#include "2DSpline.h"
 #include <AzCore/Serialization/EditContext.h>
 
+#include <Maestro/Cinematics/2DSpline.h>
+#include <Maestro/Cinematics/AnimSplineTrack.h>
 
 namespace spline
 {

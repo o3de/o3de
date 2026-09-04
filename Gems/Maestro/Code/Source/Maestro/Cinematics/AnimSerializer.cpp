@@ -6,15 +6,15 @@
  *
  */
 
-#include <Maestro/IMovieSystem.h>
-#include <Range.h>
-#include <AnimKey.h>
-#include <Maestro/Types/AssetBlendKey.h>
-
-#include "AnimSerializer.h"
+#include <Maestro/Cinematics/AnimSerializer.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AnimKey.h>
+#include <Range.h>
+
+#include <Maestro/IMovieSystem.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
 void AnimSerializer::ReflectAnimTypes(AZ::ReflectContext* context)
 {

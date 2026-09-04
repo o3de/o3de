@@ -9,10 +9,9 @@
 
 // Description : TrackView's tree control.
 
+#include <Maestro/Editor/TrackView/TrackViewNodes.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewNodes.h"
 
 // Qt
 #include <QAction>
@@ -26,30 +25,27 @@
 #include <QScrollBar>
 #include <QStyledItemDelegate>
 
-// AzToolsFramework
-#include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
-#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
-
 #include <AzCore/std/containers/map.h>
 
-// AzQtComponents
 #include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
-// Maestro
+#include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
+
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
-#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewDialog.h>
+#include <Maestro/Editor/TrackView/TVEventsDialog.h>
+#include <Maestro/Editor/TrackViewFBXImportPreviewDialog.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/SequenceType.h>
 
 // Editor
-#include "TrackView/TVEventsDialog.h"
-#include "TrackView/TrackViewDialog.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
-#include "TrackViewFBXImportPreviewDialog.h"
-#include "AnimationContext.h"
 
 CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
@@ -344,7 +340,7 @@ enum EMenuItem
 
 // The 'MI' represents a Menu Item.
 
-#include <TrackView/ui_TrackViewNodes.h>
+#include <Maestro/Editor/TrackView/ui_TrackViewNodes.h>
 
 CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent /* = 0 */)
     : QWidget(hParentWnd)

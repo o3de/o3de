@@ -6,14 +6,16 @@
  *
  */
 
+#include <Maestro/Cinematics/ScriptVarNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "ScriptVarNode.h"
-#include "AnimTrack.h"
-#include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
-#include <Maestro/Types/AnimParamType.h>
 
 #include <ISystem.h>
+
+#include <Maestro/Cinematics/AnimTrack.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

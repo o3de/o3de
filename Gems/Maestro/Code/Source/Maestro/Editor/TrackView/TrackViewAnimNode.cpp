@@ -6,15 +6,16 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewAnimNode.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewAnimNode.h"
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/set.h>
 
-// AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
-// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -22,30 +23,22 @@
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
-// CryCommon
 #include <CryCommon/MathConversion.h>
 
-// Maestro
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/CommentNodeAnimator.h>
+#include <Maestro/Editor/TrackView/DirectorNodeAnimator.h>
+#include <Maestro/Editor/TrackView/TrackViewDialog.h>
+#include <Maestro/Editor/TrackView/TrackViewNodeFactories.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 // Editor
-#include "AnimationContext.h"
 #include "Clipboard.h"
-#include "CommentNodeAnimator.h"
-#include "DirectorNodeAnimator.h"
 #include "ViewManager.h"
-#include "TrackView/TrackViewDialog.h"
-#include "TrackView/TrackViewSequence.h"
-#include "TrackView/TrackViewNodeFactories.h"
-
-// AzCore
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/std/algorithm.h>
-#include <AzCore/std/containers/set.h>
-
 
 // static class data
 const AZ::Uuid CTrackViewAnimNode::s_nullUuid = AZ::Uuid::CreateNull();

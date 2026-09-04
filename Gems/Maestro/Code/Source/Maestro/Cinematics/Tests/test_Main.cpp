@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzTest/AzTest.h>
-#include <Mocks/ITimerMock.h>
-#include <Mocks/ICryPakMock.h>
-#include <Mocks/IConsoleMock.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzTest/AzTest.h>
+#include <Mocks/IConsoleMock.h>
+#include <Mocks/ICryPakMock.h>
+#include <Mocks/ITimerMock.h>
 
 using ::testing::NiceMock;
 

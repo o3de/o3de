@@ -16,9 +16,10 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 
-#include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
+#include <Range.h>
+
 #include <Maestro/Types/AnimValueType.h>
 
 #define DEFAULT_NEAR 0.2f

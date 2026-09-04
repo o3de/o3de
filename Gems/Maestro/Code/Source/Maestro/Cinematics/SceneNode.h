@@ -12,9 +12,9 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Time/ITime.h>
 
-#include "AnimNode.h"
-#include "SoundTrack.h"
-#include "SelectTrack.h"
+#include <Maestro/Cinematics/AnimNode.h>
+#include <Maestro/Cinematics/SelectTrack.h>
+#include <Maestro/Cinematics/SoundTrack.h>
 
 namespace Maestro
 {

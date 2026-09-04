@@ -9,15 +9,13 @@
 
 #include "EditorDefs.h"
 
-// Maestro
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>  // for CTrackViewKeyUIControls
 #include <Maestro/Types/AnimNodeType.h>   // for AnimNodeType
-#include <Maestro/Types/AnimValueType.h>  // for AnimValueType
 #include <Maestro/Types/AnimParamType.h>  // for AnimParamType
+#include <Maestro/Types/AnimValueType.h>  // for AnimValueType
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"    // for ReflectedPropertyItem
-#include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
-
 
 class CCharacterKeyUIControls
     : public CTrackViewKeyUIControls

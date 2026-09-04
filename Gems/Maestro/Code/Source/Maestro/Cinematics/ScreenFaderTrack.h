@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
-
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/containers/vector.h>
 
-#include "AnimTrack.h"
+#include <Maestro/Cinematics/AnimTrack.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

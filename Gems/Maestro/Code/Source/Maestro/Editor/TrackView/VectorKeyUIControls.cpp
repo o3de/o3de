@@ -8,10 +8,10 @@
 
 #include "EditorDefs.h"
 
-#include "KeyUIControls.h"
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 ///////////////////////////////////////////////////////
 template<class V>

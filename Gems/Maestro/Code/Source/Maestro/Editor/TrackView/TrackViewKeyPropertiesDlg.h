@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include "TrackViewDopeSheetBase.h"
-#include "TrackViewNode.h"
-#include "TrackViewSequence.h"
-
 #include <QDockWidget>
 #include <QScopedPointer>
 #include "Util/Variable.h"
 
 #include <AzCore/std/containers/vector.h>
+
+#include <Maestro/Editor/TrackView/TrackViewDopeSheetBase.h>
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
 
 namespace Ui {
     class CTrackViewTrackPropsDlg;

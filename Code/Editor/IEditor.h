@@ -11,7 +11,7 @@
 #include <AzCore/PlatformDef.h>
 
 #include <ISystem.h>
-#include "Include/SandboxAPI.h"
+#include <SandboxAPI.h>
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 

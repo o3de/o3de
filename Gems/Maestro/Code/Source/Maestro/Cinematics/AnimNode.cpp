@@ -6,40 +6,41 @@
  *
  */
 
+#include <Maestro/Cinematics/AnimNode.h>
+
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/sort.h>
+#include <ctime>
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include "AnimNode.h"
-#include "AnimTrack.h"
-#include "AnimSequence.h"
-#include <Maestro/Types/AssetBlendKey.h>
-#include "AssetBlendTrack.h"
-#include "CharacterTrack.h"
-#include "AnimSplineTrack.h"
-#include "BoolTrack.h"
-#include "MathConversion.h"
-#include "SelectTrack.h"
-#include "EventTrack.h"
-#include "SoundTrack.h"
-#include "ConsoleTrack.h"
-#include "LookAtTrack.h"
-#include "TrackEventTrack.h"
-#include "SequenceTrack.h"
-#include "CompoundSplineTrack.h"
-#include "GotoTrack.h"
-#include "CaptureTrack.h"
-#include "CommentTrack.h"
-#include "ScreenFaderTrack.h"
-#include "StringTrack.h"
-#include "TimeRangesTrack.h"
 
-#include <AzCore/std/sort.h>
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Component/TickBus.h>
-#include <ctime>
-#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Cinematics/AnimSequence.h>
+#include <Maestro/Cinematics/AnimSplineTrack.h>
+#include <Maestro/Cinematics/AnimTrack.h>
+#include <Maestro/Cinematics/AssetBlendTrack.h>
+#include <Maestro/Cinematics/BoolTrack.h>
+#include <Maestro/Cinematics/CaptureTrack.h>
+#include <Maestro/Cinematics/CharacterTrack.h>
+#include <Maestro/Cinematics/CommentTrack.h>
+#include <Maestro/Cinematics/CompoundSplineTrack.h>
+#include <Maestro/Cinematics/ConsoleTrack.h>
+#include <Maestro/Cinematics/EventTrack.h>
+#include <Maestro/Cinematics/GotoTrack.h>
+#include <Maestro/Cinematics/LookAtTrack.h>
+#include <Maestro/Cinematics/ScreenFaderTrack.h>
+#include <Maestro/Cinematics/SelectTrack.h>
+#include <Maestro/Cinematics/SequenceTrack.h>
+#include <Maestro/Cinematics/SoundTrack.h>
+#include <Maestro/Cinematics/StringTrack.h>
+#include <Maestro/Cinematics/TimeRangesTrack.h>
+#include <Maestro/Cinematics/TrackEventTrack.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
+#include "MathConversion.h"
 
 namespace Maestro
 {

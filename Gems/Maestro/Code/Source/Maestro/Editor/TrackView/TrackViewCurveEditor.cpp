@@ -6,15 +6,13 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewCurveEditor.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewCurveEditor.h"
-
 #include <AzCore/std/containers/set.h>
 
-#include "TrackView/ui_TrackViewCurveEditor.h"
-
+#include <Maestro/Editor/TrackView/ui_TrackViewCurveEditor.h>
 
 TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)
     : QWidget(parent)

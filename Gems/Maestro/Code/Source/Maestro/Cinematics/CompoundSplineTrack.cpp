@@ -6,11 +6,13 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Maestro/Cinematics/CompoundSplineTrack.h>
+
 #include <AzCore/Math/Transform.h>
 
-#include "CompoundSplineTrack.h"
-#include "AnimSplineTrack.h"
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <Maestro/Cinematics/AnimSplineTrack.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/AnimValueType.h>
 

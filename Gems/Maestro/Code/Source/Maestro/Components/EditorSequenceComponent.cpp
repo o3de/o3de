@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorSequenceComponent.h"
 
-#include "EditorSequenceAgentComponent.h"
-#include "TrackView/TrackViewSequenceManager.h"
+#include <Maestro/Components/EditorSequenceComponent.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -19,8 +18,11 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <Cinematics/AnimSequence.h>
+
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
+#include <Maestro/Cinematics/AnimSequence.h>
+#include <Maestro/Components/EditorSequenceAgentComponent.h>
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/SequenceType.h>

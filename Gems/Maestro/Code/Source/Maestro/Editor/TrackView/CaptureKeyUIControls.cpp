@@ -9,12 +9,9 @@
 
 #include "EditorDefs.h"
 
-
-// Maestro
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 #include <Maestro/Types/AnimParamType.h>
-// Editor
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 bool CCaptureKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

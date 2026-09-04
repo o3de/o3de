@@ -8,9 +8,8 @@
 
 #include "EditorDefs.h"
 
-#include "KeyUIControls.h"
-
-#include "TrackViewKeyPropertiesDlg.h"
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 #include <Maestro/Types/AnimValueType.h>
 
 bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)

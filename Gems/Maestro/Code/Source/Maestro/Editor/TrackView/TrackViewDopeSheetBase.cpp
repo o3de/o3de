@@ -6,10 +6,9 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewDopeSheetBase.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewDopeSheetBase.h"
 
 // Qt
 #include <QColor>
@@ -20,30 +19,26 @@
 #include <QTimer>
 #include <QToolTip>
 
-// AzCore
 #include <AzCore/std/containers/set.h>
 
 #include <AzCore/std/sort.h>
 
-
-// AzQtComponents
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 
-// Maestro
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
+#include <Maestro/Editor/TrackView/TrackViewNodes.h>
+#include <Maestro/Editor/TrackView/TVCustomizeTrackColorsDlg.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AssetBlendKey.h>
 
 // Editor
-#include "Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h"
 #include "Clipboard.h"
+#include "Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h"
 #include "Util/fastlib.h"
-#include "TrackView/TrackViewNodes.h"
-#include "TVCustomizeTrackColorsDlg.h"
-#include "TrackView/TrackViewKeyPropertiesDlg.h"
 
 namespace
 {

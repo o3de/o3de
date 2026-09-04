@@ -6,14 +6,13 @@
  *
  */
 
+#include <Maestro/Editor/FBXExporterDialog.h>
 
 #include "EditorDefs.h"
 
-#include "FBXExporterDialog.h"
-
 #include <QMessageBox>
 
-#include <ui_FBXExporterDialog.h>
+#include <Maestro/Editor/ui_FBXExporterDialog.h>
 
 CFBXExporterDialog::CFBXExporterDialog(bool bDisplayOnlyFPSSetting, QWidget* pParent)
     : QDialog(pParent)
@@ -101,4 +100,3 @@ int CFBXExporterDialog::exec()
 
     return QDialog::exec();
 }
-

@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <AnimKey.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
 {

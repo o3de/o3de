@@ -9,10 +9,9 @@
 #pragma once
 
 // Qt
-#include <QScopedPointer>
 #include <QDialog>
+#include <QScopedPointer>
 
-// Maestro
 #include <Maestro/Types/SequenceType.h>
 
 namespace Ui {

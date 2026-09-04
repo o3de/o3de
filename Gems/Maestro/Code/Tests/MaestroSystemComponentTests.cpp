@@ -9,12 +9,12 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
 
-#include <Maestro/MaestroSystemComponent.h>
-#include <Maestro/Types/SequenceType.h>
-
 #include <ISystem.h>
 #include <Mocks/IConsoleMock.h>
 #include <Mocks/ISystemMock.h>
+
+#include <Maestro/MaestroSystemComponent.h>
+#include <Maestro/Types/SequenceType.h>
 
 namespace Maestro
 {

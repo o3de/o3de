@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/any.h>
+#include <BaseTypes.h>
 #include <Range.h>
 
 namespace AzToolsFramework

@@ -79,7 +79,7 @@
 
 #include "QtViewPaneManager.h"
 #include "ViewPane.h"
-#include "Include/Command.h"
+#include <Command.h>
 #include "Commands/CommandManager.h"
 #include "SettingsManagerDialog.h"
 

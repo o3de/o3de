@@ -22,7 +22,7 @@
 #include <QGuiApplication>
 #include <QSet>
 
-#include <Include/SandboxAPI.h>
+#include <SandboxAPI.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Math/Color.h>
 

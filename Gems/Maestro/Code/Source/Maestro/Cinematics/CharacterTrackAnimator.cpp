@@ -6,9 +6,10 @@
  *
  */
 
-#include "CharacterTrackAnimator.h"
-#include "AnimNode.h"
-#include "CharacterTrack.h"
+#include <Maestro/Cinematics/CharacterTrackAnimator.h>
+
+#include <Maestro/Cinematics/AnimNode.h>
+#include <Maestro/Cinematics/CharacterTrack.h>
 
 namespace Maestro
 {

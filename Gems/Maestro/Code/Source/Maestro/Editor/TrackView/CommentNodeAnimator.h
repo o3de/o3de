@@ -6,6 +6,7 @@
  *
  */
 
+#pragma once
 
 // Description : Comment node animator class
 
@@ -14,10 +15,7 @@
     The Comment Track is activated only in the editor.
 */
 
-
-#pragma once
-
-#include "TrackViewAnimNode.h"
+#include <Maestro/Editor/TrackView/TrackViewAnimNode.h>
 
 class CTrackViewTrack;
 

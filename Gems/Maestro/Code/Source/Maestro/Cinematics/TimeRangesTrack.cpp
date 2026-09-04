@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/TimeRangesTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "TimeRangesTrack.h"
 
 namespace Maestro
 {

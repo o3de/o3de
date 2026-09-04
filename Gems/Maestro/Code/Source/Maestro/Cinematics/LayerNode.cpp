@@ -6,11 +6,13 @@
  *
  */
 
+#include <Maestro/Cinematics/LayerNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "LayerNode.h"
+
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

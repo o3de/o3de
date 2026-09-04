@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #include <AzCore/Component/EntityBus.h>
@@ -17,8 +16,8 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
-#include "TrackViewNode.h"
-#include "TrackViewTrack.h"
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
+#include <Maestro/Editor/TrackView/TrackViewTrack.h>
 
 class CTrackViewAnimNode;
 class QWidget;

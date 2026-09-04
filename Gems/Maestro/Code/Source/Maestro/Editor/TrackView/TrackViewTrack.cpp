@@ -6,19 +6,15 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewTrack.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewTrack.h"
-
-// Maestro
-#include <Maestro/Types/AnimParamType.h>
-
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 
-// Editor
-#include "TrackViewSequence.h"
-#include "TrackViewNodeFactories.h"
+#include <Maestro/Editor/TrackView/TrackViewNodeFactories.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/Types/AnimParamType.h>
 
 
 void CTrackViewTrackBundle::AppendTrack(CTrackViewTrack* pTrack)

@@ -9,13 +9,15 @@
 
 // Description : CryMovie animation node for shadow settings
 
+#include <Maestro/Cinematics/ShadowsSetupNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include <AzCore/std/containers/vector.h>
 
-#include "ShadowsSetupNode.h"
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

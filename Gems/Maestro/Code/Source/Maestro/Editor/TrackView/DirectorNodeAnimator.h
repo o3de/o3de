@@ -6,12 +6,11 @@
  *
  */
 
-
 #pragma once
 
-#include "TrackViewAnimNode.h"
-
 #include <AzCore/std/functional.h>
+
+#include <Maestro/Editor/TrackView/TrackViewAnimNode.h>
 
 // This is used to bind/unbind sub sequences in director nodes
 // when the sequence time changes. A sequence only gets bound if it was already

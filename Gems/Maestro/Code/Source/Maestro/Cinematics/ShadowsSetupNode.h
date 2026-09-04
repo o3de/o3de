@@ -6,12 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : CryMovie animation node for shadow settings
 
-#pragma once
-
-#include "AnimNode.h"
+#include <Maestro/Cinematics/AnimNode.h>
 
 namespace Maestro
 {

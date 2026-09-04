@@ -11,6 +11,7 @@
 class CTrackViewAnimNode;
 class CTrackViewSequence;
 class CTrackViewTrack;
+class XmlNodeRef;
 struct IKey;
 
 #include <AzCore/std/containers/vector.h>

@@ -9,34 +9,32 @@
 
 // Description : A dialog for batch-rendering sequences
 
+#include <Maestro/Editor/TrackView/SequenceBatchRenderDialog.h>
 
 #include "EditorDefs.h"
 
-#include "SequenceBatchRenderDialog.h"
-#include "TrackViewMessageBox.h"
+// Qt
+#include <QAction>
+#include <QFileDialog>
+#include <QStringListModel>
 
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-// Qt
-#include <QStringListModel>
-#include <QFileDialog>
-#include <QAction>
 
-// Maestro
+#include <Maestro/Editor/TrackView/TrackViewMessageBox.h>
+#include <Maestro/Editor/TrackView/ui_SequenceBatchRenderDialog.h>
 #include <Maestro/Types/AnimNodeType.h>
 
 // Editor
 #include "CryEdit.h"
 #include "CustomResolutionDlg.h"
 #include "GameEngine.h"
-#include "Include/ICommandManager.h"
+#include <ICommandManager.h>
 #include "MainWindow.h"
 #include "ViewPane.h"
 #include "Viewport.h"
-
-#include <TrackView/ui_SequenceBatchRenderDialog.h>
 
 namespace
 {

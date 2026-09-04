@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
-#include "AnimationContext.h"
-#include "TrackViewNode.h"
-#include "TrackViewSequence.h"
-
 #include <QWidget>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
+
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/IMovieSystem.h>
 
 class CTVTrackPropsDialog;
 class CTrackViewTrack;

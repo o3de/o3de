@@ -6,22 +6,17 @@
  *
  */
 
+#include <Maestro/Editor/TrackViewNewSequenceDialog.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewNewSequenceDialog.h"
-
 // Qt
-#include <QValidator>
 #include <QPushButton>
+#include <QValidator>
 
-// Maestro
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
+#include <Maestro/Editor/ui_TrackViewNewSequenceDialog.h>
 #include <Maestro/Types/SequenceType.h>
-
-// Editor
-#include "TrackView/TrackViewSequenceManager.h"
-
-#include <ui_TrackViewNewSequenceDialog.h>
 
 namespace
 {

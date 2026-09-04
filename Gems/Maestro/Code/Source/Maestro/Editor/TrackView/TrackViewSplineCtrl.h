@@ -6,14 +6,14 @@
  *
  */
 
-
 #pragma once
-
-#include <Maestro/IMovieSystem.h>
-#include "Controls/SplineCtrlEx.h"
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
+
+#include <Maestro/IMovieSystem.h>
+
+#include "Controls/SplineCtrlEx.h"
 
 class CTrackViewTrack;
 

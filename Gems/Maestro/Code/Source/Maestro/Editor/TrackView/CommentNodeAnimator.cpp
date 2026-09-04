@@ -6,21 +6,17 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/CommentNodeAnimator.h>
 
 #include "EditorDefs.h"
 
-#include "CommentNodeAnimator.h"
-
-// CryCommon
 #include <CryCommon/IFont.h>
 
-// Maestro
 #include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "MathConversion.h"
 #include "Settings.h"
-
 
 CCommentNodeAnimator::CCommentNodeAnimator(CTrackViewAnimNode* pCommentNode)
 {

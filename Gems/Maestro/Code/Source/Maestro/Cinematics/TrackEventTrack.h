@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
-
 #include "AnimKey.h"
-#include "AnimTrack.h"
 #include <AzCore/std/containers/unordered_map.h>
 #include <CryCommon/StlUtils.h>
+
+#include <Maestro/Cinematics/AnimTrack.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

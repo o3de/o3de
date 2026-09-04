@@ -6,15 +6,19 @@
  *
  */
 
+#include <Maestro/Cinematics/AnimPostFXNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include "AnimPostFXNode.h"
-#include "AnimSplineTrack.h"
-#include "CompoundSplineTrack.h"
-#include "BoolTrack.h"
+
+#include <Maestro/Cinematics/AnimSplineTrack.h>
+#include <Maestro/Cinematics/BoolTrack.h>
+#include <Maestro/Cinematics/CompoundSplineTrack.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/AnimValueType.h>
+
 #include "MathConversion.h"
 
 namespace Maestro

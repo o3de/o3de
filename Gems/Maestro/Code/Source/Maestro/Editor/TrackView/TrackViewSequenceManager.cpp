@@ -6,27 +6,21 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewSequenceManager.h"
+#include <AzCore/std/sort.h>
 
-// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
-// Maestro
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Editor/AnimationContext.h>
 #include <Maestro/Types/SequenceType.h>
 
-// AzCore
-#include <AzCore/std/sort.h>
-
-
 // Editor
-#include "AnimationContext.h"
 #include "GameEngine.h"
-
 
 CTrackViewSequenceManager::CTrackViewSequenceManager()
 {

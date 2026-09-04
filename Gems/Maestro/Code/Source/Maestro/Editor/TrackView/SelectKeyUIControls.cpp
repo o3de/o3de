@@ -9,11 +9,11 @@
 
 #include "EditorDefs.h"
 
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"                          // for CTrackViewKeyUIControls
-
 #include <AzCore/Component/EntityBus.h>                         // for AZ::EntitySystemBus
 #include <AzFramework/Components/CameraBus.h>                   // for Camera::CameraNotificationBus
+
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>                          // for CTrackViewKeyUIControls
 #include <Maestro/Types/AnimValueType.h>              // for AnimValueType
 
 CSelectKeyUIControls::~CSelectKeyUIControls()

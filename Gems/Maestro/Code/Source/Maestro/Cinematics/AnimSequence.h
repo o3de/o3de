@@ -6,16 +6,16 @@
  *
  */
 
-
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
-#include "TrackEventTrack.h"
+#include <limits>
+
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
-#include <limits>
+#include <Maestro/Cinematics/TrackEventTrack.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

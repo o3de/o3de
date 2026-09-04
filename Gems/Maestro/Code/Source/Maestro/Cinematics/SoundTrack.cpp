@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/SoundTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "SoundTrack.h"
 
 namespace Maestro
 {

@@ -6,11 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Classes for 2D Bezier Spline curves
 // Notice      : some extra helpful information
-
-#pragma once
 
 #include <ISplines.h>
 

@@ -6,9 +6,10 @@
  *
  */
 
+#include <Maestro/Cinematics/BoolTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "BoolTrack.h"
 #include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro

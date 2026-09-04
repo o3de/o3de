@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Resource.h"
-
 #include <QDialog>
+
+#include "Resource.h"
 
 namespace Ui
 {
