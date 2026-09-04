@@ -127,8 +127,8 @@ namespace AZ
             // Build viewport and scissor from target binding if specified
             if (viewportTarget)
             {
-                u32 targetWidth = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_width;
-                u32 targetHeight = viewportTarget->GetAttachment()->m_descriptor.m_image.m_size.m_height;
+                u32 targetWidth = viewportTarget->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
+                u32 targetHeight = viewportTarget->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
                 m_scissorState = RHI::Scissor(0, 0, targetWidth, targetHeight);
                 m_viewportState = RHI::Viewport(0, static_cast<float>(targetWidth), 0, static_cast<float>(targetHeight));
             }
