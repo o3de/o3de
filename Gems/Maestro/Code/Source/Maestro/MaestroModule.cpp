@@ -6,15 +6,11 @@
  *
  */
 
-#include "Components/SequenceComponent.h"
-#include "Components/SequenceAgentComponent.h"
-#if defined(MAESTRO_EDITOR)
-#include "Components/EditorSequenceComponent.h"
-#include "Components/EditorSequenceAgentComponent.h"
-#endif
-#include "MaestroSystemComponent.h"
-
 #include <IGem.h>
+
+#include <Maestro/Components/SequenceAgentComponent.h>
+#include <Maestro/Components/SequenceComponent.h>
+#include <Maestro/MaestroSystemComponent.h>
 
 namespace Maestro
 {
@@ -33,10 +29,6 @@ namespace Maestro
                 MaestroSystemComponent::CreateDescriptor(),
                 SequenceComponent::CreateDescriptor(),
                 SequenceAgentComponent::CreateDescriptor(),
-#if defined(MAESTRO_EDITOR)
-                EditorSequenceComponent::CreateDescriptor(),
-                EditorSequenceAgentComponent::CreateDescriptor(),
-#endif
             });
         }
 

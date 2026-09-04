@@ -97,39 +97,63 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ${gem_name}.Editor GEM_MODULE
-
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
+        AUTOMOC
+        AUTOUIC
         FILES_CMAKE
-            maestro_files.cmake
             maestro_editor_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source
-            PUBLIC
                 Include
-        COMPILE_DEFINITIONS
-            PRIVATE
-                MAESTRO_EDITOR
+                Source
         BUILD_DEPENDENCIES
             PRIVATE
                 3rdParty::Qt::Widgets
-                Legacy::CryCommon
                 Legacy::Editor.Headers
+                Legacy::EditorLib
+                Gem::Atom_Feature_Common.Public
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                Gem::${gem_name}.Static
+                Gem::${gem_name}.API
+                Gem::${gem_name}.Editor.API
+                Gem::${gem_name}.Private.Object
+    )
+
+    ly_add_target(
+        NAME ${gem_name}.Editor GEM_MODULE
+        NAMESPACE Gem
+        AUTORCC
+        FILES_CMAKE
+            maestro_editor_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Include
+                Source
+        BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${gem_name}.Editor.API
-                Gem::Atom_Bootstrap.Headers
-                Gem::Atom_RHI.Public
-                Gem::Atom_RHI.Reflect
-                Gem::Atom_RPI.Public
-
+            PRIVATE
+                Gem::${gem_name}.Private.Object
+                Gem::${gem_name}.Editor.Private.Object
+                Legacy::Editor.Headers
+                Legacy::EditorLib
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    ly_add_source_properties(
+        SOURCES
+            Source/Maestro/Editor/MaestroEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version}
+    )
+
     # the .Editor variant is used in dev tools:
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
