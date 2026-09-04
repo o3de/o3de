@@ -22,8 +22,8 @@
 // AzCore
 #include <AzCore/std/algorithm.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "TrackViewDialog.h"

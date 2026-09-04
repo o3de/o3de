@@ -11,8 +11,8 @@
 
 #include "TrackViewEventNode.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 
 
 CTrackViewEventNode::CTrackViewEventNode(IAnimSequence* pSequence, IAnimNode* pAnimNode, CTrackViewNode* pParentNode)

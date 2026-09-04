@@ -24,10 +24,12 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 
 // CryCommon
-#include <CryCommon/Maestro/Types/AnimValueType.h>
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
 #include <CryCommon/MathConversion.h>
+
+// Maestro
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
 
 // Editor
 #include "AnimationContext.h"

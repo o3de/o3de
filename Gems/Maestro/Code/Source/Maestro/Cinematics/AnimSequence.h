@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include "TrackEventTrack.h"
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>

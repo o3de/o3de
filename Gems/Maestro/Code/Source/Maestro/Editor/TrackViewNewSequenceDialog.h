@@ -12,8 +12,8 @@
 #include <QScopedPointer>
 #include <QDialog>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/SequenceType.h>
+// Maestro
+#include <Maestro/Types/SequenceType.h>
 
 namespace Ui {
     class CTVNewSequenceDialog;

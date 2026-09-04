@@ -9,8 +9,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include "AnimNodeGroup.h"
-#include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Types/AnimParamType.h"
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
 
 namespace Maestro
 {

@@ -7,8 +7,8 @@
 #
 
 set(FILES
-    Source/Cinematics/Tests/AssetBlendTrackTest.cpp
-    Source/Cinematics/Tests/EntityNodeTest.cpp
+    Source/Maestro/Cinematics/Tests/AssetBlendTrackTest.cpp
+    Source/Maestro/Cinematics/Tests/EntityNodeTest.cpp
     Tests/MaestroTest.cpp
     Tests/Tracks/BoolTrackTest.cpp
     Tests/Tracks/AnimTrackTest.cpp

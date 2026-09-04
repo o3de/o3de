@@ -18,8 +18,8 @@
 // AzCore
 #include <AzCore/std/sort.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimValueType.h>
+// Maestro
+#include <Maestro/Types/AnimValueType.h>
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h"

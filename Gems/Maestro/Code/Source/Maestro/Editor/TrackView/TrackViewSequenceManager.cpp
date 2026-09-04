@@ -15,9 +15,9 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Types/SequenceType.h>
+// Maestro
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/SequenceType.h>
 
 // AzCore
 #include <AzCore/std/sort.h>

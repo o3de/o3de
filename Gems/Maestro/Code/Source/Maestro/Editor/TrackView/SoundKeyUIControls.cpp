@@ -9,8 +9,8 @@
 
 #include "EditorDefs.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
+// Maestro
+#include <Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
 #include "KeyUIControls.h"

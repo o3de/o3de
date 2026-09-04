@@ -12,7 +12,7 @@
 #include <AzCore/std/string/string.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include "SequenceAgentComponentBus.h"
 

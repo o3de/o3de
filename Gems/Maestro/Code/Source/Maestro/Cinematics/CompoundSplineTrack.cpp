@@ -11,8 +11,8 @@
 
 #include "CompoundSplineTrack.h"
 #include "AnimSplineTrack.h"
-#include "Maestro/Types/AnimParamType.h"
-#include "Maestro/Types/AnimValueType.h"
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

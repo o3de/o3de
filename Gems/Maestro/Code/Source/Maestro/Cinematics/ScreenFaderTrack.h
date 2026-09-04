@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AzCore/Instance/InstanceData.h>

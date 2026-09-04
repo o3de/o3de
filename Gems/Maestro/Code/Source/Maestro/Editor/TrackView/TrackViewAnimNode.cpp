@@ -23,11 +23,13 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 // CryCommon
-#include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Types/AnimValueType.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/MathConversion.h>
+
+// Maestro
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "AnimationContext.h"

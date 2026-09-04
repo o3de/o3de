@@ -8,7 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include "GotoTrack.h"
-#include "Maestro/Types/AnimValueType.h"
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

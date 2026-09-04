@@ -11,10 +11,10 @@
 
 #include "TrackViewPythonFuncs.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
-#include <CryCommon/Maestro/Types/AnimValueType.h>
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 // Editor
 #include "AnimationContext.h"

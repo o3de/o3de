@@ -6,7 +6,7 @@
  *
  */
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include <Range.h>
 #include <AnimKey.h>
 #include <Maestro/Types/AssetBlendKey.h>

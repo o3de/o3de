@@ -15,8 +15,8 @@
 #include <QValidator>
 #include <QPushButton>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/SequenceType.h>
+// Maestro
+#include <Maestro/Types/SequenceType.h>
 
 // Editor
 #include "TrackView/TrackViewSequenceManager.h"

@@ -121,4 +121,7 @@
         <file>spline_edit_bar_15.png</file>
        <file>spline_edit_bar_16.png</file>
      </qresource>
+    <qresource prefix="/Menu">
+        <file alias="trackview_editor.svg">trackview_editor.svg</file>
+    </qresource>
 </RCC>

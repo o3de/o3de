@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include "AnimationContext.h"
 #include "TrackViewCurveEditor.h"

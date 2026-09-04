@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>

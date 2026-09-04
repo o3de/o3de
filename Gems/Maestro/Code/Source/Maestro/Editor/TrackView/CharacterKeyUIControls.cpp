@@ -9,10 +9,10 @@
 
 #include "EditorDefs.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>   // for AnimNodeType
-#include <CryCommon/Maestro/Types/AnimValueType.h>  // for AnimValueType
-#include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>   // for AnimNodeType
+#include <Maestro/Types/AnimValueType.h>  // for AnimValueType
+#include <Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"    // for ReflectedPropertyItem

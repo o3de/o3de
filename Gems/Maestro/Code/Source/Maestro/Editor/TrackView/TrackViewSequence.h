@@ -9,7 +9,7 @@
 #pragma once
 
 #include <IEditor.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 

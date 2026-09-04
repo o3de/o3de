@@ -14,9 +14,9 @@
 #include "ConsoleTrack.h"
 #include "EventTrack.h"
 #include "GotoTrack.h"
-#include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Types/AnimParamType.h"
-#include "Maestro/Types/AnimValueType.h"
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 #include "Movie.h"
 #include "SceneNode.h"
 #include "SequenceTrack.h"

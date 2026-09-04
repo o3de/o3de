@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include "2DSpline.h"
 

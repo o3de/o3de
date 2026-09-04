@@ -13,7 +13,9 @@
 
 // CryCommon
 #include <CryCommon/IFont.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "MathConversion.h"

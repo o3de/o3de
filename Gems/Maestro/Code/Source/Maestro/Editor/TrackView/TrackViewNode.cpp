@@ -11,8 +11,8 @@
 
 #include "TrackViewNode.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>
 
 // AzCore
 #include <AzCore/std/sort.h>

@@ -11,8 +11,8 @@
 
 #include "TrackViewTrack.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 

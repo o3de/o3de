@@ -11,8 +11,8 @@
 
 #include "DirectorNodeAnimator.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
+// Maestro
+#include <Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
 #include "TrackView/TrackViewSequenceManager.h"     // for CTrackViewSequence
