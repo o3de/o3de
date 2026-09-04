@@ -1085,7 +1085,19 @@ namespace AzToolsFramework
 
         bool TransformComponent::IsAddNonUniformScaleButtonReadOnly()
         {
-            return FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr;
+            if (FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr)
+            {
+                return true; // its read only becuase you cannot add a second one and one already exists on it.
+            }
+
+            // You also cannot add any other kind of component to a container entity.
+            if (auto* containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get(); containerEntityInterface)
+            {
+                // if we are a container entity, the button should be read only.
+                return (containerEntityInterface->IsContainer(GetEntityId()));
+            }
+
+            return false; // nothing is preventing you from adding a non uniform scale component
         }
 
         bool TransformComponent::AddNonUniformScaleComponent(const AZ::Vector3& nonUniformScale)
