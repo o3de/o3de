@@ -5,14 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Component/Component.h>
-#include <CrySystemBus.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
+#include <AzFramework/API/SequenceSystemLifecycle.h>
+
+#include <Maestro/MaestroBus.h>
 
 #include "Cinematics/Movie.h"
-#include "Maestro/MaestroBus.h"
 
 namespace Maestro
 {
@@ -35,12 +38,12 @@ namespace Maestro
     class MaestroSystemComponent
         : public AZ::Component
         , protected MaestroRequestBus::Handler
-        , protected CrySystemEventBus::Handler
+        , protected AzFramework::ISequenceSystemLifecycle
     {
     public:
         AZ_COMPONENT(MaestroSystemComponent, "{47991994-4417-4CD7-AE0B-FEF1C8720766}");
 
-        MaestroSystemComponent() = default;
+        MaestroSystemComponent();
         // The MaestroSystemComponent is a singleton, so should never by copied.
         MaestroSystemComponent(const MaestroSystemComponent&) = delete;
 
@@ -57,10 +60,14 @@ namespace Maestro
 
         ////////////////////////////////////////////////////////////////////////
 
-        // CrySystemEventBus ///////////////////////////////////////////////////////
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
-        ////////////////////////////////////////////////////////////////////////////
+        // AzFramework::ISequenceSystemLifecycle
+        void OnSystemCVarRegistry() override;
+        void OnSystemInitialized(bool skipSequenceSystem) override;
+        void OnSystemShutdown() override;
+        void OnPreUpdate(bool isEditorUpdate) override;
+        void OnPostUpdate(bool isEditorUpdate) override;
+        void OnLevelEntitiesReady() override;
+        void OnLevelUnload() override;
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -70,7 +77,15 @@ namespace Maestro
         ////////////////////////////////////////////////////////////////////////
 
     private:
+        void UpdateMovieSystem(bool preUpdate, bool isEditorUpdate);
+        void ResetMovieSystem(bool playOnReset, bool removeSequences);
+        void ShutdownMovieSystem();
+
         // singletons representing the movie system
         AZStd::unique_ptr<CMovieSystem> m_movieSystem;
+        IConsole* m_console = nullptr;
+        int m_trackViewEnabled = 1;
+        float m_maxTimeStepForMovieSystem = 0.1f;
+        bool m_sequenceSystemLifecycleRegistered = false;
     };
 }
