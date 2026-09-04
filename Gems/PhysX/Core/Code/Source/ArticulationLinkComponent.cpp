@@ -124,7 +124,7 @@ namespace PhysX
             AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
             if (m_attachedSceneHandle != AzPhysics::InvalidSceneHandle)
             {
-                sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
+                sceneInterface->RegisterSceneSimulationSynchronizedWithTickHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
 
                 // Create a handler that in the case that the scene was removed before the deactivation of the component,
                 // ensures that all articulations are destroyed.

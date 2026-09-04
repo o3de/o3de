@@ -283,6 +283,15 @@ namespace PhysX
                 }
             }
         }
+
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr != nullptr && scenePtr->IsEnabled())
+            {
+                static_cast<PhysXScene*>(scenePtr.get())->SignalSimulationSynchronizedWithTick();
+            }
+        }
+
         m_postSimulateEvent.Signal(tickTime);
     }
 
@@ -328,7 +337,6 @@ namespace PhysX
         return false;
     }
 
-
     void PhysXSystem::StartSimulationThread()
     {
         if (m_simulationThread)
@@ -360,22 +368,21 @@ namespace PhysX
         m_simulationThread->m_thread.join();
         m_simulationThread.reset();
 
-        //! Drain what the last steps deferred, so nothing is lost handing stepping back. Reset
+        //! Publish what the last steps produced, so nothing is lost handing stepping back. Reset
         //! first: the scene is no longer threaded, so these take their own locks as usual.
         for (auto& scenePtr : m_sceneList)
         {
             if (scenePtr != nullptr && scenePtr->IsEnabled())
             {
                 auto* physxScene = static_cast<PhysXScene*>(scenePtr.get());
-                physxScene->FlushDeferredFinishEvents();
                 physxScene->FlushTransformSync();
+                physxScene->SignalSimulationSynchronizedWithTick();
             }
         }
     }
 
     void PhysXSystem::FreeRunningSimulationLoop()
     {
-
         auto nextStepTime = AZStd::chrono::steady_clock::now();
 
         while (!m_simulationThread->m_exit)
@@ -385,11 +392,7 @@ namespace PhysX
                 ? m_systemConfig.m_fixedTimestep
                 : AzPhysics::SystemConfiguration::DefaultFixedTimestep;
 
-            {
-                SimulateScenes(fixedTimestep, 1);
-            }
-
-            m_simulationThread->m_simulatedTime.fetch_add(fixedTimestep, AZStd::memory_order_release);
+            SimulateScenes(fixedTimestep, 1);
             m_performanceCollector->FrameTick();
 
             constexpr float realTimeFactor = 1.0f;
@@ -406,7 +409,6 @@ namespace PhysX
                     AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(nextStepTime - now));
             }
         }
-
     }
 
     void PhysXSystem::PublishSimulationResults()
@@ -417,26 +419,23 @@ namespace PhysX
         }
         AZ_PROFILE_FUNCTION(Physics);
 
-        const double simulatedTime = m_simulationThread->m_simulatedTime.load(AZStd::memory_order_acquire);
-        const float tickTime = aznumeric_cast<float>(simulatedTime - m_simulationThread->m_lastPublishedSimTime);
-        m_simulationThread->m_lastPublishedSimTime = simulatedTime;
-
-        m_preSimulateEvent.Signal(tickTime);
-
-        //! Drain what the simulation thread queued, on the main thread. The write lock waits out an
-        //! in-flight step and lets the handlers below take scene locks of their own.
+        //! Publish what the simulation thread produced, on the main thread. The write lock waits
+        //! out an in-flight step and lets the handlers below take scene locks of their own.
         for (auto& scenePtr : m_sceneList)
         {
             if (scenePtr != nullptr && scenePtr->IsEnabled())
             {
                 auto* physxScene = static_cast<PhysXScene*>(scenePtr.get());
-                PHYSX_SCENE_WRITE_LOCK(static_cast<physx::PxScene*>(physxScene->GetNativePointer()));
-                physxScene->FlushDeferredFinishEvents();
-                physxScene->FlushTransformSync();
+                {
+                    PHYSX_SCENE_WRITE_LOCK(static_cast<physx::PxScene*>(physxScene->GetNativePointer()));
+                    physxScene->FlushTransformSync();
+                }
+
+                //! Signaled outside the scene lock: its handlers are main-thread systems whose work
+                //! must not stall the simulation thread.
+                physxScene->SignalSimulationSynchronizedWithTick();
             }
         }
-
-        m_postSimulateEvent.Signal(tickTime);
     }
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)
@@ -446,10 +445,12 @@ namespace PhysX
             AZ_Error("PhysXSystem", false, "AddScene: Trying to Add a scene without a name. SceneConfiguration::m_sceneName must have a value");
             return AzPhysics::InvalidSceneHandle;
         }
+
         if (IsSimulationThreadRunning())
         {
             StopSimulationThread();
         }
+
         if (!m_freeSceneSlots.empty()) //fill any free slots first before increasing the size of the scene list vector.
         {
             AzPhysics::SceneIndex freeIndex = m_freeSceneSlots.front();

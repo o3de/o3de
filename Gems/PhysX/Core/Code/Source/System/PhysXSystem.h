@@ -44,10 +44,6 @@ namespace PhysX
     {
         AZStd::thread m_thread;
         AZStd::atomic_bool m_exit{ false };
-
-        //! Total sim time advanced by the thread, in seconds.
-        AZStd::atomic<double> m_simulatedTime{ 0.0 };
-        double m_lastPublishedSimTime = 0.0; //!< Main-thread cursor into m_simulatedTime.
     };
 
     class PhysXSystem
@@ -119,15 +115,19 @@ namespace PhysX
         //! enabled and the viewport mutates bodies constantly, so stepping stays on the main thread.
         bool ShouldRunFreeThreaded() const;
 
-
         void StartSimulationThread();
         void StopSimulationThread();
 
         //! Free-running loop: owns its own clock and steps the scenes between publication windows.
+        //! Scene start, trigger and collision events fire from here at simulation rate, so
+        //! consumers can act on every step; those handlers - and the body add/remove events they
+        //! cause - must be thread-safe and touch physics only. The finish event is recorded and
+        //! signaled by PublishSimulationResults, whose scene write lock also serializes handler
+        //! state against this loop.
         void FreeRunningSimulationLoop();
 
-        //! Main-tick half of the free-running mode - pushes results to entities and signals the
-        //! pre/post simulate events with the sim time the physics thread advanced since last tick.
+        //! Main-tick half of the free-running mode - signals the scene simulation finish events the
+        //! simulation thread deferred and pushes the transforms it produced to the entities.
         void PublishSimulationResults();
 
         PhysXSystemConfiguration m_systemConfig;
