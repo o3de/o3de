@@ -15,9 +15,9 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "AnimationContext.h"

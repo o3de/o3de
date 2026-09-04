@@ -11,12 +11,14 @@
 
 #include "TrackViewFindDlg.h"
 
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>
+
 // Editor
 #include "TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 
 #include <TrackView/ui_TrackViewFindDlg.h>
-#include "Maestro/Types/AnimNodeType.h"
 
 // CTrackViewFindDlg dialog
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include "TrackViewNode.h"

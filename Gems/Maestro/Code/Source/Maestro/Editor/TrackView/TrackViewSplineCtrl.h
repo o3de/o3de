@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include "Controls/SplineCtrlEx.h"
 
 #include <AzCore/std/containers/vector.h>

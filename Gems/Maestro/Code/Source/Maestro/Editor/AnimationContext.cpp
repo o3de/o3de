@@ -11,8 +11,10 @@
 
 #include "AnimationContext.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Bus/EditorSequenceBus.h>
+// Maestro
+#include <Maestro/Bus/EditorSequenceBus.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
 
 // Editor
 #include "TrackView/TrackViewDialog.h"
@@ -22,8 +24,6 @@
 #include <AzCore/Time/ITime.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
-#include <Maestro/Bus/EditorSequenceComponentBus.h>
-#include <Maestro/Types/AnimNodeType.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.

@@ -14,7 +14,7 @@
 
 #include <AzCore/Component/EntityBus.h>                         // for AZ::EntitySystemBus
 #include <AzFramework/Components/CameraBus.h>                   // for Camera::CameraNotificationBus
-#include <CryCommon/Maestro/Types/AnimValueType.h>              // for AnimValueType
+#include <Maestro/Types/AnimValueType.h>              // for AnimValueType
 
 CSelectKeyUIControls::~CSelectKeyUIControls()
 {

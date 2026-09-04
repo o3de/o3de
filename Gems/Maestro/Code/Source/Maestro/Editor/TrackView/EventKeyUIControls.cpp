@@ -12,7 +12,7 @@
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
 
-#include <CryCommon/Maestro/Types/AnimParamType.h>  // AnimParamType
+#include <Maestro/Types/AnimParamType.h>  // AnimParamType
 
 bool CEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

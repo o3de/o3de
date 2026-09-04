@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include "AnimNode.h"
 
 namespace Maestro

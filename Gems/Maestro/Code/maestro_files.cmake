@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Source/MaestroModule.cpp
+    Source/Maestro/MaestroModule.cpp
 )

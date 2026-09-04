@@ -11,8 +11,8 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"

@@ -13,7 +13,7 @@
 #include <Range.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
-#include <CryCommon/Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Bus/SequenceComponentBus.h>
 
 struct IMovieSystem;
 class CTrackViewSequence;

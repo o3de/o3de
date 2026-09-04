@@ -13,7 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 
 namespace Maestro

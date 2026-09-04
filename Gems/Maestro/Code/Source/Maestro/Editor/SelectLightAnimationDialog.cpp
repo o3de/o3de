@@ -14,8 +14,8 @@
 
 #include "SelectLightAnimationDialog.h"
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>   // for AnimNodeType
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>   // for AnimNodeType
 
 //////////////////////////////////////////////////////////////////////////
 CSelectLightAnimationDialog::CSelectLightAnimationDialog(QWidget* pParent)

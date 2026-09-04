@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include "AnimationContext.h"
 #include "TrackViewNode.h"
 #include "TrackViewSequence.h"

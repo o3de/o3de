@@ -37,12 +37,12 @@
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
-#include <CryCommon/Maestro/Types/AnimValueType.h>
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Types/AnimParamType.h>
-#include <CryCommon/Maestro/Types/SequenceType.h>
+// Maestro
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/SequenceType.h>
 
 // Editor
 #include "TrackView/TVEventsDialog.h"

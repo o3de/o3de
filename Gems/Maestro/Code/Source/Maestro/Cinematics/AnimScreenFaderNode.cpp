@@ -10,9 +10,9 @@
 
 #include "AnimScreenFaderNode.h"
 #include "ScreenFaderTrack.h"
-#include "Maestro/Types/AnimNodeType.h"
-#include "Maestro/Types/AnimValueType.h"
-#include "Maestro/Types/AnimParamType.h"
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AnimParamType.h>
 
 namespace Maestro
 {

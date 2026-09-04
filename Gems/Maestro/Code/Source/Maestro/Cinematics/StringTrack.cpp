@@ -10,7 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <CryCommon/Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

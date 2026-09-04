@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <Include/SandboxAPI.h>
-#include "EditorTrackViewEventsBus.h"
+#include <Maestro/Editor/EditorTrackViewEventsBus.h>
 
 namespace AzToolsFramework
 {

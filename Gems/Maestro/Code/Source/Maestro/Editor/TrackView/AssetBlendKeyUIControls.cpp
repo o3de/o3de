@@ -12,11 +12,11 @@
 // AzCore
 #include <AzCore/Asset/AssetManagerBus.h>
 
-// CryCommon
-#include <CryCommon/Maestro/Bus/SequenceComponentBus.h>
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
-#include <CryCommon/Maestro/Types/AnimValueType.h>
-#include <CryCommon/Maestro/Types/AssetBlendKey.h>
+// Maestro
+#include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
 // Editor
 #include "KeyUIControls.h"

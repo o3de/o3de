@@ -20,7 +20,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
 #include <IXml.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Ui
 {

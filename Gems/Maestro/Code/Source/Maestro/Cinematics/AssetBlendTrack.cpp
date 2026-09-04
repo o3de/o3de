@@ -12,7 +12,7 @@
 #include <Maestro/Types/AssetBlends.h>
 #include <Maestro/Types/AssetBlendKey.h>
 #include "AssetBlendTrack.h"
-#include "Maestro/Types/AnimValueType.h"
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

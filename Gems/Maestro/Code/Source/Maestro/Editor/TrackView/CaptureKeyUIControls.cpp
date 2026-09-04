@@ -10,8 +10,8 @@
 #include "EditorDefs.h"
 
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimParamType.h>
+// Maestro
+#include <Maestro/Types/AnimParamType.h>
 // Editor
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"

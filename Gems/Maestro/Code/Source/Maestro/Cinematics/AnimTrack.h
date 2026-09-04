@@ -10,7 +10,7 @@
 #pragma once
 
 #include <AzCore/std/sort.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 
 namespace Maestro

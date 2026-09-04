@@ -20,7 +20,7 @@
 #include "TrackViewSequence.h"
 #include "Undo/Undo.h"
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 #include <QMap>
 #include <QTreeWidgetItem>
 

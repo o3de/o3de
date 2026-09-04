@@ -24,8 +24,8 @@
 #include <QFileDialog>
 #include <QAction>
 
-// CryCommon
-#include <CryCommon/Maestro/Types/AnimNodeType.h>
+// Maestro
+#include <Maestro/Types/AnimNodeType.h>
 
 // Editor
 #include "CryEdit.h"

@@ -7,7 +7,7 @@
  */
 #include "SequenceComponent.h"
 
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>

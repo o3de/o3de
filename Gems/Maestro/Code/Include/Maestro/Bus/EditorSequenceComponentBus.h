@@ -9,7 +9,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/string/string.h>
-#include <IMovieSystem.h>
+#include <Maestro/IMovieSystem.h>
 
 #include "SequenceComponentBus.h"
 enum class AnimValueType;
