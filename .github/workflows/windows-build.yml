@@ -163,15 +163,17 @@ jobs:
       - name: Extract artifact
         # Extract the tar file from the artifact
         id: extract-artifact
-        continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
-          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {
-            tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
-            rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
-            ccache --zero-stats --cleanup
+          $PSNativeCommandUseErrorActionPreference = $false
+          tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Ignoring invalid cache archive"
+            Remove-Item -Recurse -Force .ccache, .o3de\python\downloaded_packages, 3rdParty\downloaded_packages, AutomatedTesting\Cache -ErrorAction SilentlyContinue
           }
+          Remove-Item ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar -Force -ErrorAction SilentlyContinue
+          ccache --zero-stats --cleanup
 
       - name: Setup cmake
         # Pin the version of cmake
@@ -255,19 +257,16 @@ jobs:
         continue-on-error: true
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
-          try {
-            tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
-              .ccache `
-              .o3de\python\downloaded_packages `
-              3rdParty\downloaded_packages `
-              AutomatedTesting\Cache
-          } catch {
-            echo "Warning: Error during tar compression"
-          }
+          New-Item -ItemType Directory -Force .ccache, .o3de\python\downloaded_packages, 3rdParty\downloaded_packages, AutomatedTesting\Cache | Out-Null
+          tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
+            .ccache `
+            .o3de\python\downloaded_packages `
+            3rdParty\downloaded_packages `
+            AutomatedTesting\Cache
 
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        if: ${{ steps.compress-artifacts.outcome == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
         continue-on-error: true
         with:
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
