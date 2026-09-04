@@ -8,11 +8,10 @@
 
 #include "CrySystem_precompiled.h"
 #include "SpawnableLevelSystem.h"
-#include "IMovieSystem.h"
-
 #include <CryCommon/LoadScreenBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/API/SequenceSystemLifecycle.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
@@ -332,16 +331,9 @@ namespace LegacyLevelSystem
             // This is a workaround until the replacement for GameEntityContext is done
             AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesStarted);
 
-            //////////////////////////////////////////////////////////////////////////
-            // Movie system must be reset after entities.
-            //////////////////////////////////////////////////////////////////////////
-            IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-            if (movieSystem)
+            if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
             {
-                // bSeekAllToStart needs to be false here as it's only of interest in the editor
-                constexpr bool playOnReset = true;
-                constexpr bool seekToStart = false;
-                movieSystem->Reset(playOnReset, seekToStart);
+                sequenceSystem->OnLevelEntitiesReady();
             }
 
             gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -581,13 +573,9 @@ namespace LegacyLevelSystem
 
         const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
-        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-        if (movieSystem)
+        if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
         {
-            constexpr bool playOnReset = false;
-            constexpr bool seekToStart = false;
-            movieSystem->Reset(playOnReset, seekToStart);
-            movieSystem->RemoveAllSequences();
+            sequenceSystem->OnLevelUnload();
         }
 
         OnUnloadComplete(m_lastLevelName.c_str());

@@ -72,7 +72,6 @@
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
 #include <ILog.h>
-#include <IMovieSystem.h>
 #include <IRenderer.h>
 
 #include "LevelSystem/LevelSystem.h"
@@ -84,6 +83,7 @@
 #include "XML/xml.h"
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
+#include <AzFramework/API/SequenceSystemLifecycle.h>
 #include <AzFramework/Archive/Archive.h>
 #include <CrySystemBus.h>
 
@@ -932,6 +932,11 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
             // Register system console variables.
             CreateSystemVars();
 
+            if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
+            {
+                sequenceSystem->OnSystemCVarRegistry();
+            }
+
             // Register any AZ CVar commands created above with the AZ Console system.
             AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();
             AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);
@@ -1107,6 +1112,10 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         AzFramework::QualityLevel::LevelFromDeviceRules);
 
     // Send out EBus event
+    if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
+    {
+        sequenceSystem->OnSystemInitialized(startupParams.bSkipMovie);
+    }
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
     // Execute any deferred commands that uses the CVar commands that were just registered
@@ -1352,13 +1361,6 @@ void CSystem::CreateSystemVars()
         " 0 = on PC if vsync is off auto throttles fps while in menu or game is paused (default)\n"
         "-1 = off");
 
-    REGISTER_CVAR2(
-        "sys_maxTimeStepForMovieSystem",
-        &g_cvars.sys_maxTimeStepForMovieSystem,
-        0.1f,
-        VF_NULL,
-        "Caps the time step for the movie system so that a cut-scene won't be jumped in the case of an extreme stall.");
-
     REGISTER_COMMAND(
         "sys_crashtest",
         CmdCrashTest,
@@ -1394,8 +1396,6 @@ void CSystem::CreateSystemVars()
     assert(m_env.pConsole);
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F12", "Screenshot");
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F11", "RecordClip");
-
-    REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
     // Defines selected language.
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);

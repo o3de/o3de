@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #include <ISystem.h>
@@ -95,10 +94,8 @@ struct SSystemCVars
     int sys_dump_aux_threads;
     int sys_WER;
     int sys_dump_type;
-    int sys_trackview;
     float sys_update_profile_time;
     int sys_MaxFPS;
-    float sys_maxTimeStepForMovieSystem;
     
     int sys_asserts;
     int sys_error_debugbreak;
@@ -178,7 +175,6 @@ public:
     AZ::IO::IArchive* GetIPak() override { return m_env.pCryPak; };
     IConsole* GetIConsole() override { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole() override;
-    IMovieSystem* GetIMovieSystem() override { return m_movieSystem; };
     ICryFont* GetICryFont() override{ return m_env.pCryFont; }
     ILog* GetILog() override{ return m_env.pLog; }
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
@@ -385,8 +381,6 @@ private: // ------------------------------------------------------
 
     AZStd::unique_ptr<AzFramework::MissingAssetLogger> m_missingAssetLogger;
 
-    IMovieSystem* m_movieSystem;
-
 public:
 
     //////////////////////////////////////////////////////////////////////////
@@ -403,8 +397,6 @@ public:
     void GetLocalizedAudioPath(const char* sLanguage, AZStd::string& sLocalizedPath);
     void CloseLanguagePak(const char* sLanguage);
     void CloseLanguageAudioPak(const char* sLanguage);
-    void UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate);
-
     //////////////////////////////////////////////////////////////////////////
     // CryAssert and error related.
     bool RegisterErrorObserver(IErrorObserver* errorObserver) override;
