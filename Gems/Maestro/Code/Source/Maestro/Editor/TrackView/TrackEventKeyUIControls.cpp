@@ -52,7 +52,7 @@ bool CTrackEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& s
 // Called when UI variable changes.
 void CTrackEventKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
@@ -121,7 +121,7 @@ void CTrackEventKeyUIControls::OnEventEdit()
 
 void CTrackEventKeyUIControls::BuildEventDropDown(QString& curEvent, const QString& addedEvent)
 {
-    if (CAnimationContext* context = GetIEditor()->GetAnimation())
+    if (CAnimationContext* context = Maestro::Editor::GetAnimation())
     {
         CTrackViewSequence* sequence = context->GetSequence();
 

@@ -26,8 +26,6 @@ class QMainWindow;
 struct QMetaObject;
 
 class CCryEditDoc;
-class CAnimationContext;
-class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
 class CMusicManager;
@@ -111,7 +109,6 @@ enum EEditorNotifyEvent
 
     // UI events.
     eNotify_OnUpdateViewports,         // Sent when editor needs to update data in the viewports.
-    eNotify_OnReloadTrackView,         // Sent when editor needs to update the track view.
     eNotify_OnSplashScreenCreated,     // Sent when the editor splash screen was created.
     eNotify_OnSplashScreenDestroyed,   // Sent when the editor splash screen was destroyed.
 
@@ -296,8 +293,6 @@ struct IMainStatusBar
     virtual QWidget* GetItem(QString indicatorName) = 0;
 };
 
-struct ITrackViewSequenceManager;
-
 //! Interface to permit usage of editor functionality inside the plugin
 struct IEditor
 {
@@ -407,9 +402,6 @@ struct IEditor
     //! Notify all views that data is changed.
     virtual void UpdateViews(int flags = 0xFFFFFFFF, const AZ::Aabb* updateRegion = nullptr) = 0;
     virtual void ResetViews() = 0;
-    //! Update information in track view dialog.
-    virtual void ReloadTrackView() = 0;
-
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
@@ -465,12 +457,6 @@ struct IEditor
     virtual bool ClearLastUndoSteps(int steps) = 0;
     //! Clear all current Redo steps in the undo stack
     virtual bool ClearRedoStack() = 0;
-    //! Retrieve current animation context.
-    virtual CAnimationContext* GetAnimation() = 0;
-    //! Retrieve sequence manager
-    virtual CTrackViewSequenceManager* GetSequenceManager() = 0;
-    virtual ITrackViewSequenceManager* GetSequenceManagerInterface() = 0;
-
     //! Returns external tools manager.
     virtual CToolBoxManager* GetToolBoxManager() = 0;
     //! Get global Error Report instance.
@@ -506,4 +492,3 @@ struct IInitializeUIInfo
 };
 
 AZ_DECLARE_BUDGET(Editor);
-

@@ -23,7 +23,7 @@ namespace AzToolsFramework
     public:
         AZ_COMPONENT(TrackViewFuncsHandler, "{5315678D-2951-4CF6-A9DC-CE21CD23C9C9}")
 
-        SANDBOX_API static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
         // AZ::Component ...
         void Activate() override {}
@@ -31,7 +31,7 @@ namespace AzToolsFramework
     };
 
     //! Component to access the TrackView
-    class SANDBOX_API TrackViewComponent final
+    class TrackViewComponent final
         : public AZ::Component
         , public EditorLayerTrackViewRequestBus::Handler
     {

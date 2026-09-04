@@ -84,7 +84,7 @@ namespace Maestro
             AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
             if (editor)
             {
-                ITrackViewSequenceManager* pSequenceManager = editor->GetSequenceManager();
+                ITrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
                 if (pSequenceManager && pSequenceManager->GetSequenceByEntityId(m_sequence->GetSequenceEntityId()))
                 {
                     pSequenceManager->OnDeleteSequenceEntity(m_sequence->GetSequenceEntityId());
@@ -148,12 +148,12 @@ namespace Maestro
             {
                 // m_sequence is already filled if the component it was deserialized - register it with Track View
                 sequenceWasDeserialized = true;
-                editor->GetSequenceManager()->OnCreateSequenceComponent(m_sequence);
+                Maestro::Editor::GetSequenceManager()->OnCreateSequenceComponent(m_sequence);
             }
             else
             {
                 // if m_sequence is NULL, we're creating a new sequence - request the creation from the Track view
-                m_sequence = static_cast<CAnimSequence*>(editor->GetSequenceManager()->OnCreateSequenceObject(m_entity->GetName().c_str(), false, GetEntityId()));
+                m_sequence = static_cast<CAnimSequence*>(Maestro::Editor::GetSequenceManager()->OnCreateSequenceObject(m_entity->GetName().c_str(), false, GetEntityId()));
             }
 
             if (m_sequence)
@@ -164,7 +164,7 @@ namespace Maestro
             if (sequenceWasDeserialized)
             {
                 // Notify Trackview of the load
-                ITrackViewSequence* trackViewSequence = editor->GetSequenceManager()->GetSequenceByEntityId(GetEntityId());
+                ITrackViewSequence* trackViewSequence = Maestro::Editor::GetSequenceManager()->GetSequenceByEntityId(GetEntityId());
                 if (trackViewSequence)
                 {
                     trackViewSequence->Load();
@@ -186,7 +186,7 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
-            editor->GetSequenceManager()->OnSequenceActivated(GetEntityId());
+            Maestro::Editor::GetSequenceManager()->OnSequenceActivated(GetEntityId());
         }
 
         IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
@@ -209,7 +209,7 @@ namespace Maestro
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor && m_sequence)
         {
-            ITrackViewSequenceManager* sequenceManager = editor->GetSequenceManager();
+            ITrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
             const AZ::EntityId& sequenceEntityId = m_sequence->GetSequenceEntityId();
             if (sequenceManager->GetSequenceByEntityId(sequenceEntityId))
             {

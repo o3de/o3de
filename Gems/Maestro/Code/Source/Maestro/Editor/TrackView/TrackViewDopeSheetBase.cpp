@@ -139,7 +139,7 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
 CTrackViewDopeSheetBase::~CTrackViewDopeSheetBase()
 {
     HideKeyPropertyCtrlOnSpot();
-    GetIEditor()->GetAnimation()->RemoveListener(this);
+    Maestro::Editor::GetAnimation()->RemoveListener(this);
 }
 
 int CTrackViewDopeSheetBase::TimeToClient(float time) const
@@ -265,7 +265,7 @@ void CTrackViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 void CTrackViewDopeSheetBase::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
-    GetIEditor()->GetAnimation()->AddListener(this);
+    Maestro::Editor::GetAnimation()->AddListener(this);
 }
 
 void CTrackViewDopeSheetBase::resizeEvent(QResizeEvent* event)
@@ -292,7 +292,7 @@ void CTrackViewDopeSheetBase::resizeEvent(QResizeEvent* event)
 
 void CTrackViewDopeSheetBase::wheelEvent(QWheelEvent* event)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         event->ignore();
@@ -407,7 +407,7 @@ void CTrackViewDopeSheetBase::mouseDoubleClickEvent(QMouseEvent* event)
 
 void CTrackViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -425,8 +425,8 @@ void CTrackViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, con
         // If mouse over selected key, change cursor to left-right arrows.
         SetMouseCursor(m_crsLeftRight);
 
-        m_stashedRecordModeWhileTimeDragging = GetIEditor()->GetAnimation()->IsRecordMode();
-        GetIEditor()->GetAnimation()->SetRecording(false);  // disable recording while dragging time
+        m_stashedRecordModeWhileTimeDragging = Maestro::Editor::GetAnimation()->IsRecordMode();
+        Maestro::Editor::GetAnimation()->SetRecording(false);  // disable recording while dragging time
 
         SetCurrTime(TimeFromPoint(point));
         return;
@@ -513,7 +513,7 @@ void CTrackViewDopeSheetBase::OnLButtonDown(Qt::KeyboardModifiers modifiers, con
 
 void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence)
     {
@@ -543,10 +543,10 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
     {
         SetMouseCursor(Qt::ArrowCursor);
         // Notify that time was explicitly set
-        GetIEditor()->GetAnimation()->TimeChanged(TimeFromPoint(point));
+        Maestro::Editor::GetAnimation()->TimeChanged(TimeFromPoint(point));
         if (m_stashedRecordModeWhileTimeDragging)
         {
-            GetIEditor()->GetAnimation()->SetRecording(true);   // re-enable recording that was disabled while dragging time
+            Maestro::Editor::GetAnimation()->SetRecording(true);   // re-enable recording that was disabled while dragging time
             m_stashedRecordModeWhileTimeDragging = false;       // reset stashed value
         }
     }
@@ -582,7 +582,7 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
 
 void CTrackViewDopeSheetBase::OnLButtonDblClk(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence || m_rcTimeline.contains(point) || m_bEditLock)
     {
         return;
@@ -661,7 +661,7 @@ void CTrackViewDopeSheetBase::OnMButtonUp(Qt::KeyboardModifiers modifiers, const
 
 void CTrackViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         return;
@@ -767,7 +767,7 @@ void CTrackViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, con
 
 void CTrackViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         return;
@@ -807,7 +807,7 @@ void CTrackViewDopeSheetBase::CancelDrag()
 
 void CTrackViewDopeSheetBase::mouseMoveEvent(QMouseEvent* event)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         return;
@@ -955,7 +955,7 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
             gradient.setColorAt(1, QColor(220, 220, 220));
             painter.fillRect(rect(), gradient);
 
-            if (GetIEditor()->GetAnimation()->GetSequence())
+            if (Maestro::Editor::GetAnimation()->GetSequence())
             {
                 if (m_bEditLock)
                 {
@@ -967,7 +967,7 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
         }
     }
 
-    if (GetIEditor()->GetAnimation()->GetSequence())
+    if (Maestro::Editor::GetAnimation()->GetSequence())
     {
         // Drawing the timeline is handled separately. In other words, it's not saved to the 'm_offscreenBitmap'.
         // This is for the fast-redraw mode mentioned above.
@@ -993,7 +993,7 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
 
 void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, const bool bMultiSelection)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -1059,7 +1059,7 @@ void CTrackViewDopeSheetBase::SetCurrTime(float time)
         time = m_timeRange.end;
     }
 
-    GetIEditor()->GetAnimation()->SetTime(time);
+    Maestro::Editor::GetAnimation()->SetTime(time);
 }
 
 void CTrackViewDopeSheetBase::OnTimeChanged(float newTime)
@@ -1094,7 +1094,7 @@ void CTrackViewDopeSheetBase::SetStartMarker(float fTime)
         m_timeMarked.end = m_timeMarked.start;
     }
 
-    GetIEditor()->GetAnimation()->SetMarkers(m_timeMarked);
+    Maestro::Editor::GetAnimation()->SetMarkers(m_timeMarked);
     update();
 }
 
@@ -1113,7 +1113,7 @@ void CTrackViewDopeSheetBase::SetEndMarker(float fTime)
     {
         m_timeMarked.start = m_timeMarked.end;
     }
-    GetIEditor()->GetAnimation()->SetMarkers(m_timeMarked);
+    Maestro::Editor::GetAnimation()->SetMarkers(m_timeMarked);
     update();
 }
 
@@ -1158,7 +1158,7 @@ CTrackViewNode* CTrackViewDopeSheetBase::GetNodeFromPointRec(CTrackViewNode* pCu
 
 CTrackViewNode* CTrackViewDopeSheetBase::GetNodeFromPoint(const QPoint& point)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     return GetNodeFromPointRec(pSequence, point);
 }
 
@@ -1245,7 +1245,7 @@ void CTrackViewDopeSheetBase::StartPasteKeys()
 
 void CTrackViewDopeSheetBase::keyPressEvent(QKeyEvent* event)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -1438,7 +1438,7 @@ void CTrackViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
 
 void CTrackViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool bStart)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -1510,7 +1510,7 @@ void CTrackViewDopeSheetBase::MouseMoveStartEndTimeAdjust(const QPoint& p, bool 
 
 void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt::KeyboardModifiers modifiers)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     CTrackViewSequenceNotificationContext context(pSequence);
 
     SetMouseCursor(m_crsLeftRight);
@@ -1614,7 +1614,7 @@ void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt
 
             if (selectedKey.IsValid())
             {
-                GetIEditor()->GetAnimation()->SetTime(selectedKey.GetTime());
+                Maestro::Editor::GetAnimation()->SetTime(selectedKey.GetTime());
             }
         }
         m_keyTimeOffset = timeOffset;
@@ -1717,7 +1717,7 @@ void CTrackViewDopeSheetBase::MouseMoveOver(const QPoint& point)
 
 float CTrackViewDopeSheetBase::MagnetSnap(float newTime, const CTrackViewAnimNode* pNode) const
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         return newTime;
@@ -1849,7 +1849,7 @@ void CTrackViewDopeSheetBase::LButtonDownOnTimeAdjustBar([[maybe_unused]] const 
 
 void CTrackViewDopeSheetBase::LButtonDownOnKey([[maybe_unused]] const QPoint& point, CTrackViewKeyHandle& keyHandle, Qt::KeyboardModifiers modifiers)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     const auto pTrack = keyHandle.GetTrack();
     AZ_Assert(sequence, "Expected a valid sequence.");
     AZ_Assert(pTrack, "Expected a valid track.");
@@ -2064,7 +2064,7 @@ void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo
         // We want this to take affect now
         if (!addToUndo)
         {
-            GetIEditor()->GetAnimation()->ForceAnimation();
+            Maestro::Editor::GetAnimation()->ForceAnimation();
         }
     }
 }
@@ -2211,7 +2211,7 @@ void CTrackViewDopeSheetBase::AcceptUndo()
 {
     if (CUndo::IsRecording())
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
         if (m_mouseMode == eTVMouseMode_Paste)
         {
@@ -2290,7 +2290,7 @@ float CTrackViewDopeSheetBase::ComputeSnappedMoveOffset()
 
 void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKeysInGroup)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -2403,7 +2403,7 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
 
 void CTrackViewDopeSheetBase::DrawControl(QPainter* painter, const QRect& rcUpdate)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     DrawNodesRecursive(pSequence, painter, rcUpdate);
 
     DrawSummary(painter, rcUpdate);
@@ -2516,7 +2516,7 @@ void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Rang
 
 void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* painter, const QRect& trackRect)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     const QPen prevPen = painter->pen();
     painter->setPen(QColor(120, 120, 120));
@@ -2996,7 +2996,7 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
 
 void CTrackViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unused]] const QRect& rc)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     const float timeOffset = ComputeSnappedMoveOffset();
 
@@ -3216,7 +3216,7 @@ int CTrackViewDopeSheetBase::NumKeysFromPoint(const QPoint& point)
 
 void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelection)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     AZ_Assert(sequence != nullptr, "sequence should never be nullptr here");
 
     if (!sequence)
@@ -3315,7 +3315,7 @@ ESnappingMode CTrackViewDopeSheetBase::GetKeyModifiedSnappingMode()
 
 void CTrackViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     const QPen prevPen = painter->pen();
     painter->setPen(Qt::green);
@@ -3468,7 +3468,7 @@ void CTrackViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QRe
 
 void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpdate)
 {
-    bool recording = GetIEditor()->GetAnimation()->IsRecording();
+    bool recording = Maestro::Editor::GetAnimation()->IsRecording();
 
     QColor lineCol(255, 0, 255);
     const QColor textCol(Qt::black);
@@ -3546,7 +3546,7 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
 
 void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpdate)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     const QColor lineCol = Qt::black;
     const QColor fillCol(150, 100, 220);
@@ -3761,7 +3761,7 @@ QRect CTrackViewDopeSheetBase::GetNodeRect(const CTrackViewNode* pNode) const
 
 void CTrackViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     CTrackViewKeyBundle selectedKeys = pSequence->GetSelectedKeys();
 
     m_trackMementos.clear();

@@ -52,7 +52,7 @@ bool CEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& select
 // Called when UI variable changes.
 void CEventKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!sequence || !selectedKeys.AreAllKeysOfSameType())
     {

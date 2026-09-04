@@ -397,16 +397,16 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
 
 
-    GetIEditor()->GetSequenceManager()->AddListener(this);
-    GetIEditor()->GetAnimation()->AddListener(this);
+    Maestro::Editor::GetSequenceManager()->AddListener(this);
+    Maestro::Editor::GetAnimation()->AddListener(this);
     GetIEditor()->GetUndoManager()->AddListener(this);
 };
 
 CTrackViewNodesCtrl::~CTrackViewNodesCtrl()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
-    GetIEditor()->GetAnimation()->RemoveListener(this);
-    GetIEditor()->GetSequenceManager()->RemoveListener(this);
+    Maestro::Editor::GetAnimation()->RemoveListener(this);
+    Maestro::Editor::GetSequenceManager()->RemoveListener(this);
 }
 
 bool CTrackViewNodesCtrl::eventFilter(QObject* o, QEvent* e)
@@ -677,7 +677,7 @@ void CTrackViewNodesCtrl::Reload()
 
 void CTrackViewNodesCtrl::OnFillItems()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewSequenceNotificationContext context(sequence);
@@ -747,7 +747,7 @@ void CTrackViewNodesCtrl::OnSelectionChanged()
     }
     m_bSelectionChanging = true;
 
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewSequenceNotificationContext context(sequence);
@@ -778,7 +778,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 {
     CRecord* record = nullptr;
     bool isOnAzEntity = false;
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -1141,7 +1141,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (!newName.isEmpty())
             {
-                const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+                const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
                 sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
                 UpdateNodeRecord(record);
             }
@@ -1732,8 +1732,8 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
 
         // Importing FBX is currently only supported on legacy entities. Legacy
         // sequences contain only legacy Cry entities and no AZ component entities.
-        CAnimationContext* context = GetIEditor()->GetAnimation();
-        AZ_Assert(context, "Expected valid GetIEditor()->GetAnimation()");
+        CAnimationContext* context = Maestro::Editor::GetAnimation();
+        AZ_Assert(context, "Expected valid Maestro::Editor::GetAnimation()");
         if (context)
         {
             CTrackViewSequence* sequence = context->GetSequence();
@@ -1750,7 +1750,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
 
 int CTrackViewNodesCtrl::ShowPopupMenu([[maybe_unused]] QPoint point, const CRecord* record)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return 0;
@@ -1945,7 +1945,7 @@ void CTrackViewNodesCtrl::RestoreVerticalScrollPos(float fScrollPos)
 void CTrackViewNodesCtrl::FillAutoCompletionListForFilter()
 {
     QStringList strings;
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         ui->noitems->hide();
@@ -1976,7 +1976,7 @@ void CTrackViewNodesCtrl::FillAutoCompletionListForFilter()
 
 void CTrackViewNodesCtrl::OnFilterChange(const QString& text)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (sequence)
     {
@@ -2029,7 +2029,7 @@ void CTrackViewNodesCtrl::ShowNextResult()
 {
     if (m_matchCount > 1)
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
         if (sequence && !ui->searchField->text().isEmpty())
         {
@@ -2174,7 +2174,7 @@ void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, 
 
 void CTrackViewNodesCtrl::CustomizeTrackColor(CTrackViewTrack* pTrack)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -2199,7 +2199,7 @@ void CTrackViewNodesCtrl::CustomizeTrackColor(CTrackViewTrack* pTrack)
 
 void CTrackViewNodesCtrl::ClearCustomTrackColor(CTrackViewTrack* pTrack)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!sequence)
     {
         return;
@@ -2254,7 +2254,7 @@ void CTrackViewNodesCtrl::UpdateRecordVisibility()
 
 void CTrackViewNodesCtrl::OnNodeChanged(CTrackViewNode* pNode, ITrackViewSequenceListener::ENodeChangeType type)
 {
-    if (pNode->GetSequence() != GetIEditor()->GetAnimation()->GetSequence())
+    if (pNode->GetSequence() != Maestro::Editor::GetAnimation()->GetSequence())
     {
         return;
     }
@@ -2471,7 +2471,7 @@ QIcon CTrackViewNodesCtrl::GetIconForTrack(const CTrackViewTrack* pTrack)
 
 void CTrackViewNodesCtrl::OnKeysChanged(CTrackViewSequence* sequence)
 {
-    if (!m_bIgnoreNotifications && sequence && sequence == GetIEditor()->GetAnimation()->GetSequence())
+    if (!m_bIgnoreNotifications && sequence && sequence == Maestro::Editor::GetAnimation()->GetSequence())
     {
         UpdateDopeSheet();
     }
@@ -2489,7 +2489,7 @@ void CTrackViewNodesCtrl::OnNodeSelectionChanged(CTrackViewSequence* sequence)
         return;
     }
 
-    if (!m_bIgnoreNotifications && sequence && sequence == GetIEditor()->GetAnimation()->GetSequence())
+    if (!m_bIgnoreNotifications && sequence && sequence == Maestro::Editor::GetAnimation()->GetSequence())
     {
         UpdateDopeSheet();
 

@@ -93,7 +93,7 @@ bool CVectorKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
 
 void CVectorKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    auto pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    auto pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (m_skipOnUIChange || !pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
         return;
@@ -267,7 +267,7 @@ bool CVector4KeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sele
 
 void CVector4KeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    auto pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    auto pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (m_skipOnUIChange || !pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
         return;

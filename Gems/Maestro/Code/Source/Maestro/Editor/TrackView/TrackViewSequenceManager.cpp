@@ -203,7 +203,7 @@ void CTrackViewSequenceManager::OnSequenceActivated(const AZ::EntityId& entityId
         return;
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     if (pAnimationContext != nullptr)
     {
         pAnimationContext->OnSequenceActivated(entityId);
@@ -218,7 +218,7 @@ void CTrackViewSequenceManager::OnSequenceDeactivated(const AZ::EntityId& entity
         return;
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     if (pAnimationContext != nullptr)
     {
         pAnimationContext->OnSequenceDeactivated(entityId);
@@ -578,7 +578,7 @@ void CTrackViewSequenceManager::OnEntityNameChanged(const AZ::EntityId& entityId
 
     if (numAffectedNodes > 0)
     {
-        GetIEditor()->Notify(eNotify_OnReloadTrackView);
+        Maestro::Editor::ReloadTrackView();
     }
 }
 
@@ -605,6 +605,6 @@ void CTrackViewSequenceManager::OnEntityDestruction(const AZ::EntityId& entityId
     if (numAffectedAnimNodes > 0)
     {
         // Only reload track view if the object being deleted has related anim nodes.
-        GetIEditor()->Notify(eNotify_OnReloadTrackView);
+        Maestro::Editor::ReloadTrackView();
     }
 }

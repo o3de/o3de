@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include "Undo/Undo.h"
-#include "TrackView/TrackViewSequenceManager.h"
-#include <Range.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
+#include <Range.h>
+#include "Undo/Undo.h"
 
 #include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Editor/MaestroEditorServices.h>
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
 
 struct IMovieSystem;
 class CTrackViewSequence;
@@ -321,6 +322,7 @@ private:
 
     bool m_bPostRenderRegistered;
     bool m_bForcingAnimation;
+    bool m_commandRegistered = false;
 
     IMovieSystem* m_movieSystem;
 

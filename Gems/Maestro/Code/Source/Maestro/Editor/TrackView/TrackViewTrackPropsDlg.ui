@@ -89,7 +89,7 @@
   <customwidget>
    <class>CTrackViewDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
-   <header location="global">TrackView/TrackViewDoubleSpinBox.h</header>
+   <header location="global">Maestro/Editor/TrackView/TrackViewDoubleSpinBox.h</header>
   </customwidget>
  </customwidgets> 
  <resources/>

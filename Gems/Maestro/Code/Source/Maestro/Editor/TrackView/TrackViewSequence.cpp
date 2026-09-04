@@ -48,7 +48,7 @@ CTrackViewSequence::CTrackViewSequence(AZStd::intrusive_ptr<IAnimSequence>& sequ
 
 CTrackViewSequence::~CTrackViewSequence()
 {
-    GetIEditor()->GetSequenceManager()->RemoveListener(this);
+    Maestro::Editor::GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);       // For safety. Should be done by OnRemoveSequence callback
 
     // For safety, disconnect to any buses we may have been listening on for record mode
@@ -113,7 +113,7 @@ bool CTrackViewSequence::IsBoundToEditorObjects() const
 
 CTrackViewKeyHandle CTrackViewSequence::FindSingleSelectedKey() const
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         AZ_Assert(false, "No sequence exists.")
@@ -218,7 +218,7 @@ int CTrackViewSequence::RecordTrackChangesForNode(CTrackViewAnimNode* componentN
 
     if (componentNode)
     {
-        retNumKeysSet = componentNode->SetKeysForChangedTrackValues(GetIEditor()->GetAnimation()->GetTime());
+        retNumKeysSet = componentNode->SetKeysForChangedTrackValues(Maestro::Editor::GetAnimation()->GetTime());
         if (retNumKeysSet)
         {
             OnKeysChanged();    // change notification for updating TrackView UI
@@ -373,7 +373,7 @@ void CTrackViewSequence::ForceAnimation()
     {
         if (IsActive())
         {
-            GetIEditor()->GetAnimation()->ForceAnimation();
+            Maestro::Editor::GetAnimation()->ForceAnimation();
         }
     }
 }
@@ -420,7 +420,7 @@ void CTrackViewSequence::OnKeysChanged()
 
         if (IsActive())
         {
-            GetIEditor()->GetAnimation()->ForceAnimation();
+            Maestro::Editor::GetAnimation()->ForceAnimation();
         }
     }
 }
@@ -488,7 +488,7 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
                 {
                     ForceAnimation();
                     // if we're in record mode and this is an AzEntity node, add the node to the buses we listen to for notification of changes
-                    if (pAnimNode->GetType() == AnimNodeType::AzEntity && GetIEditor()->GetAnimation()->IsRecordMode())
+                    if (pAnimNode->GetType() == AnimNodeType::AzEntity && Maestro::Editor::GetAnimation()->IsRecordMode())
                     {
                         ConnectToBusesForRecording(pAnimNode->GetAzEntityId(), true);
                     }
@@ -498,7 +498,7 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
                 {
                     ForceAnimation();
                     // if we're in record mode and this is an AzEntity node, remove the node to the buses we listen to for notification of changes
-                    if (pAnimNode->GetType() == AnimNodeType::AzEntity && GetIEditor()->GetAnimation()->IsRecordMode())
+                    if (pAnimNode->GetType() == AnimNodeType::AzEntity && Maestro::Editor::GetAnimation()->IsRecordMode())
                     {
                         ConnectToBusesForRecording(pAnimNode->GetAzEntityId(), false);
                     }
@@ -684,7 +684,7 @@ void CTrackViewSequence::DeleteSelectedNodes()
 {
     if (IsSelected())
     {
-        GetIEditor()->GetSequenceManager()->DeleteSequence(this);
+        Maestro::Editor::GetSequenceManager()->DeleteSequence(this);
         return;
     }
 
@@ -826,7 +826,7 @@ bool CTrackViewSequence::SetName(const char* name)
     }
 
     // Check if there is already a sequence with that name
-    const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+    const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
     if (!pSequenceManager)
     {
         AZ_Assert(false, "Invalid sequence manager.");
@@ -1520,7 +1520,7 @@ void CTrackViewSequence::EndRestoreTransaction()
 
 bool CTrackViewSequence::IsActiveSequence() const
 {
-    return GetIEditor()->GetAnimation()->GetSequence() == this;
+    return Maestro::Editor::GetAnimation()->GetSequence() == this;
 }
 
 const float CTrackViewSequence::GetTime() const
@@ -1536,7 +1536,7 @@ CTrackViewSequence* CTrackViewSequence::LookUpSequenceByEntityId(const AZ::Entit
     AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
     if (editor)
     {
-        ITrackViewSequenceManager* sequenceManager = editor->GetSequenceManager();
+        ITrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
         if (sequenceManager)
         {
             sequence = sequenceManager->GetSequenceByEntityId(sequenceId);

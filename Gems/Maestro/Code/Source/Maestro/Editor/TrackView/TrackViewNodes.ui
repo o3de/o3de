@@ -83,7 +83,7 @@
   <customwidget>
    <class>CTrackViewNodesTreeWidget</class>
    <extends>QTreeWidget</extends>
-   <header location="global">TrackView/TrackViewNodes.h</header>
+   <header location="global">Maestro/Editor/TrackView/TrackViewNodes.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -6,27 +6,24 @@
  *
  */
 
+#pragma once
 
 // Description : CTrackViewDialog Implementation file.
 
-
-#pragma once
-
-#include <Maestro/IMovieSystem.h>
-
-#include "AnimationContext.h"
-#include "TrackViewCurveEditor.h"
-#include "TrackViewDopeSheetBase.h"
-#include "TrackViewKeyPropertiesDlg.h"
-#include "TrackViewNodes.h"
-#include "TrackViewSequence.h"
-#include "TrackViewSequenceManager.h"
+#include <QMainWindow>
 
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <QMainWindow>
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewCurveEditor.h>
+#include <Maestro/Editor/TrackView/TrackViewDopeSheetBase.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
+#include <Maestro/Editor/TrackView/TrackViewNodes.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
+#include <Maestro/IMovieSystem.h>
 
 class QComboBox;
 class QLabel;
@@ -61,6 +58,7 @@ public:
     void Update();
 
     void ReloadSequences();
+    void Reload();
     void InvalidateSequence();
 
     void UpdateSequenceLockStatus();

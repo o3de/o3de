@@ -225,4 +225,30 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
+
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        ly_add_target(
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                maestro_editor_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Include
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    3rdParty::Qt::Widgets
+                    Legacy::CryCommon
+                    Legacy::Editor.Headers
+                    Legacy::EditorLib
+                    Gem::${gem_name}.Editor.API
+                    Gem::${gem_name}.Editor.Private.Object
+        )
+        ly_add_googletest(
+            NAME Gem::${gem_name}.Editor.Tests
+            LABELS REQUIRES_tiaf
+        )
+    endif()
 endif()

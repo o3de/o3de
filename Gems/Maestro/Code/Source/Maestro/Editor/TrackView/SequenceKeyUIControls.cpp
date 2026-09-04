@@ -28,7 +28,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
         CAnimParamType paramType = keyHandle.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::Sequence)
         {
-            CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+            CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
             // fill sequence comboBox with available sequences
             mv_sequence.SetEnumList(nullptr);
@@ -36,7 +36,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
             // Insert '<None>' empty enum
             mv_sequence->AddEnumItem(QObject::tr("<None>"), CTrackViewDialog::GetEntityIdAsString(AZ::EntityId(AZ::EntityId::InvalidEntityId)));
 
-            const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+            const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
             for (unsigned int i = 0; i < pSequenceManager->GetCount(); ++i)
             {
                 CTrackViewSequence* pCurrentSequence = pSequenceManager->GetSequenceByIndex(i);
@@ -95,7 +95,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
 // Called when UI variable changes.
 void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!sequence || !selectedKeys.AreAllKeysOfSameType() || m_skipOnUIChange)
     {

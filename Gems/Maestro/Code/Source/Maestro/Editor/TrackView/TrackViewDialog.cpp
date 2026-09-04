@@ -29,30 +29,28 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-// AzFramework
-#include <AzToolsFramework/API/EditorCameraBus.h>
-#include <AzToolsFramework/API/ViewPaneOptions.h>
-
-// AzQtComponents
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
-// Maestro
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
+
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Editor/FBXExporterDialog.h>
+#include <Maestro/Editor/TrackView/SequenceBatchRenderDialog.h>
+#include <Maestro/Editor/TrackView/TrackViewFindDlg.h>
+#include <Maestro/Editor/TrackView/TrackViewResource.h>
+#include <Maestro/Editor/TrackView/TVCustomizeTrackColorsDlg.h>
+#include <Maestro/Editor/TrackView/TVSequenceProps.h>
+#include <Maestro/Editor/TrackViewNewSequenceDialog.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
 
 // Editor
-#include "Settings.h"
-#include "Util/fastlib.h"
-#include "TVSequenceProps.h"
-#include "TrackViewFindDlg.h"
-#include "SequenceBatchRenderDialog.h"
-#include "TVCustomizeTrackColorsDlg.h"
-#include "TrackViewNewSequenceDialog.h"
-#include "FBXExporterDialog.h"
 #include "CryEditDoc.h"
 #include "LyViewPaneNames.h"
+#include "Settings.h"
+#include "Util/fastlib.h"
 
 inline namespace TrackViewInternal
 {
@@ -112,8 +110,16 @@ void CTrackViewDialog::RegisterViewClass()
     IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (movieSystem)
     {
-        AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
-        GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
+        AzToolsFramework::RegisterViewPane<CTrackViewDialog>(Maestro::Editor::TrackViewPaneName, LyViewPane::CategoryTools, opts);
+        GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, Maestro::Editor::TrackViewPaneName);
+    }
+}
+
+void CTrackViewDialog::Reload()
+{
+    if (!m_bIgnoreUpdates)
+    {
+        ReloadSequences();
     }
 }
 
@@ -179,7 +185,7 @@ CTrackViewDialog::~CTrackViewDialog()
     }
     s_pTrackViewDialog = nullptr;
 
-    const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+    const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
     CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
     RemoveSequenceListeners(sequence);
     RemoveDialogListeners();
@@ -663,7 +669,7 @@ void CTrackViewDialog::UpdateActions()
         return;
     }
 
-    if (GetIEditor()->GetAnimation()->IsRecordMode())
+    if (Maestro::Editor::GetAnimation()->IsRecordMode())
     {
         m_actions[ID_TV_RECORD]->setChecked(true);
     }
@@ -671,7 +677,7 @@ void CTrackViewDialog::UpdateActions()
     {
         m_actions[ID_TV_RECORD]->setChecked(false);
     }
-    if (GetIEditor()->GetAnimation()->IsAutoRecording())
+    if (Maestro::Editor::GetAnimation()->IsAutoRecording())
     {
         m_actions[ID_TV_RECORD_AUTO]->setChecked(true);
     }
@@ -679,7 +685,7 @@ void CTrackViewDialog::UpdateActions()
     {
         m_actions[ID_TV_RECORD_AUTO]->setChecked(false);
     }
-    if (GetIEditor()->GetAnimation()->IsPlayMode())
+    if (Maestro::Editor::GetAnimation()->IsPlayMode())
     {
         m_actions[ID_TV_PLAY]->setChecked(true);
     }
@@ -687,7 +693,7 @@ void CTrackViewDialog::UpdateActions()
     {
         m_actions[ID_TV_PLAY]->setChecked(false);
     }
-    if (GetIEditor()->GetAnimation()->IsPaused())
+    if (Maestro::Editor::GetAnimation()->IsPaused())
     {
         m_actions[ID_TV_PAUSE]->setChecked(true);
     }
@@ -695,7 +701,7 @@ void CTrackViewDialog::UpdateActions()
     {
         m_actions[ID_TV_PAUSE]->setChecked(false);
     }
-    if (GetIEditor()->GetAnimation()->IsLoopMode())
+    if (Maestro::Editor::GetAnimation()->IsLoopMode())
     {
         m_actions[ID_PLAY_LOOP]->setChecked(true);
     }
@@ -722,7 +728,7 @@ void CTrackViewDialog::UpdateActions()
 
     m_actions[ID_TV_DEL_SEQUENCE]->setEnabled(m_bEditLock ? false : true);
 
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         if (m_bEditLock)
@@ -842,12 +848,12 @@ void CTrackViewDialog::InvalidateDopeSheet()
 
 void CTrackViewDialog::Update()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     bool wasReloading = m_bNeedReloadSequence;
 
     if (m_bNeedReloadSequence || m_needReAddListeners)
     {
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
 
         if (m_bNeedReloadSequence)
@@ -928,7 +934,7 @@ void CTrackViewDialog::Update()
 
 void CTrackViewDialog::OnGoToPrevKey()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     CTrackViewSequence* sequence = pAnimationContext->GetSequence();
 
     if (sequence)
@@ -947,7 +953,7 @@ void CTrackViewDialog::OnGoToPrevKey()
 
 void CTrackViewDialog::OnGoToNextKey()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     CTrackViewSequence* sequence = pAnimationContext->GetSequence();
 
     if (sequence)
@@ -971,7 +977,7 @@ void CTrackViewDialog::OnAddKey()
 
 void CTrackViewDialog::OnDelKey()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     CTrackViewSequence* sequence = pAnimationContext->GetSequence();
 
     if (sequence)
@@ -1007,7 +1013,7 @@ void CTrackViewDialog::OnAddSequence()
         {
             SequenceType sequenceType = dlg.GetSequenceType();
 
-            CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+            CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
             AZ_Assert(sequenceManager, "Expected valid sequenceManager.");
 
             CTrackViewSequence* pSequence = sequenceManager->GetSequenceByName(sequenceName);
@@ -1028,7 +1034,7 @@ void CTrackViewDialog::OnAddSequence()
             undoBatch.MarkEntityDirty(newSequence->GetSequenceComponentEntityId());
 
             // make it the currently selected sequence
-            CAnimationContext* animationContext = GetIEditor()->GetAnimation();
+            CAnimationContext* animationContext = Maestro::Editor::GetAnimation();
             animationContext->SetSequence(newSequence, true, false);
         }
     }
@@ -1042,7 +1048,7 @@ void CTrackViewDialog::ReloadSequences()
         return;
     }
 
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     CTrackViewSequence* sequence = pAnimationContext->GetSequence();
     CTrackViewSequenceNoNotificationContext context(sequence);
 
@@ -1093,7 +1099,7 @@ void CTrackViewDialog::ReloadSequencesComboBox()
     AZ::EntityId lastSequenceComponentEntityId;
     int lastIndex = -1;
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
         for (unsigned int k = 0; k < numSequences; ++k)
@@ -1138,7 +1144,7 @@ void CTrackViewDialog::UpdateSequenceLockStatus()
         return;
     }
 
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!sequence)
     {
@@ -1166,7 +1172,7 @@ void CTrackViewDialog::OnGameOrSimModeLock(bool lock)
 {
     if (lock)
     {
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
 
         // Remove sequence listeners when switching modes to ensure they get removed
@@ -1192,7 +1198,7 @@ void CTrackViewDialog::OnDelSequence()
         return;
     }
 
-    if (QMessageBox::question(this, LyViewPane::TrackView, tr("Delete current sequence?")) == QMessageBox::Yes)
+    if (QMessageBox::question(this, Maestro::Editor::TrackViewPaneName, tr("Delete current sequence?")) == QMessageBox::Yes)
     {
         int sel = m_sequencesComboBox->currentIndex();
         if (sel != -1)
@@ -1208,7 +1214,7 @@ void CTrackViewDialog::OnDelSequence()
                 AZ::EntityId entityId = AZ::EntityId(entityIdString.toULongLong());
                 if (entityId.IsValid())
                 {
-                    CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+                    CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
                     CTrackViewSequence* pSequence = GetSequenceByEntityIdOrName(pSequenceManager, entityIdString.toUtf8().constData());
                     if (pSequence)
                     {
@@ -1224,7 +1230,7 @@ void CTrackViewDialog::OnDelSequence()
 
 void CTrackViewDialog::OnEditSequence()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (sequence)
     {
@@ -1245,20 +1251,20 @@ void CTrackViewDialog::OnSequenceComboBox()
     int sel = m_sequencesComboBox->currentIndex();
     if (sel == -1)
     {
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        Maestro::Editor::GetAnimation()->SetSequence(nullptr, false, false);
         return;
     }
     if (sel == 0)
     {
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false, true);
+        Maestro::Editor::GetAnimation()->SetSequence(nullptr, false, false, true);
         return;
     }
 
     // Display current sequence.
     QString entityIdString = m_sequencesComboBox->currentData().toString();
-    const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+    const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
     CTrackViewSequence* sequence = GetSequenceByEntityIdOrName(sequenceManager, entityIdString.toUtf8().constData());
-    CAnimationContext* animationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* animationContext = Maestro::Editor::GetAnimation();
     if (sequence && animationContext)
     {
         const bool force = false;
@@ -1277,7 +1283,7 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
     }
 
     // Remove listeners from previous sequence
-    CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+    CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
     CTrackViewSequence* prevSequence = sequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
     RemoveSequenceListeners(prevSequence);
 
@@ -1305,7 +1311,7 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
         {
             m_actions[ID_PLAY_LOOP]->setChecked(isLooped);
         }
-        GetIEditor()->GetAnimation()->SetLoopMode(isLooped);
+        Maestro::Editor::GetAnimation()->SetLoopMode(isLooped);
     }
     else
     {
@@ -1319,7 +1325,7 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
 
     ClearTracksToolBar();
 
-    GetIEditor()->GetAnimation()->ForceAnimation();
+    Maestro::Editor::GetAnimation()->ForceAnimation();
 
     m_wndNodesCtrl->update();
     m_wndDopeSheet->update();
@@ -1331,7 +1337,7 @@ void CTrackViewDialog::OnSequenceChanged(CTrackViewSequence* sequence)
 
 void CTrackViewDialog::OnRecord()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     pAnimationContext->SetRecording(!pAnimationContext->IsRecording());
     m_wndDopeSheet->update();
     UpdateActions();
@@ -1339,7 +1345,7 @@ void CTrackViewDialog::OnRecord()
 
 void CTrackViewDialog::OnAutoRecord()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     pAnimationContext->SetAutoRecording(!pAnimationContext->IsRecording(), m_fAutoRecordStep);
     m_wndDopeSheet->update();
     UpdateActions();
@@ -1354,7 +1360,7 @@ void CTrackViewDialog::OnAutoRecordStep()
 
 void CTrackViewDialog::OnGoToStart()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     const float startTime = pAnimationContext->GetMarkers().start;
 
     pAnimationContext->SetTime(startTime);
@@ -1375,7 +1381,7 @@ void CTrackViewDialog::OnGoToStart()
 
 void CTrackViewDialog::OnGoToEnd()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     pAnimationContext->SetTime(pAnimationContext->GetMarkers().end);
     pAnimationContext->SetPlaying(false);
     pAnimationContext->SetRecording(false);
@@ -1384,7 +1390,7 @@ void CTrackViewDialog::OnGoToEnd()
 
 void CTrackViewDialog::OnPlay()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     bool wasRecordMode = pAnimationContext->IsRecordMode();
     if (!pAnimationContext->IsPlaying())
     {
@@ -1414,13 +1420,13 @@ void CTrackViewDialog::OnPlaySetScale()
     float v = action->data().toFloat();
     if (v > 0.f)
     {
-        GetIEditor()->GetAnimation()->SetTimeScale(1.f / v);
+        Maestro::Editor::GetAnimation()->SetTimeScale(1.f / v);
     }
 }
 
 void CTrackViewDialog::OnStop()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
 
     if (pAnimationContext->IsPlaying())
     {
@@ -1436,12 +1442,12 @@ void CTrackViewDialog::OnStop()
 
 void CTrackViewDialog::OnStopHardReset()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     pAnimationContext->SetTime(pAnimationContext->GetMarkers().start);
     pAnimationContext->SetPlaying(false);
     pAnimationContext->SetRecording(false);
 
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         sequence->ResetHard();
@@ -1451,7 +1457,7 @@ void CTrackViewDialog::OnStopHardReset()
 
 void CTrackViewDialog::OnPause()
 {
-    CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+    CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
     if (pAnimationContext->IsPaused())
     {
         pAnimationContext->Resume();
@@ -1466,7 +1472,7 @@ void CTrackViewDialog::OnPause()
 void CTrackViewDialog::OnLoop()
 {
     // Sync the looping state in the dialog with the looping state of the editing animation context.
-    if (auto pAnimationContext = GetIEditor()->GetAnimation())
+    if (auto pAnimationContext = Maestro::Editor::GetAnimation())
     {
         const bool isLooped = m_actions[ID_PLAY_LOOP] && m_actions[ID_PLAY_LOOP]->isChecked();
         pAnimationContext->SetLoopMode(isLooped);
@@ -1498,12 +1504,6 @@ void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_bIgnoreUpdates = false;
         OnGameOrSimModeLock(false);
         break;
-    case eNotify_OnReloadTrackView:
-        if (!m_bIgnoreUpdates)
-        {
-            ReloadSequences();
-        }
-        break;
     case eNotify_OnIdleUpdate:
         if (!m_bIgnoreUpdates)
         {
@@ -1529,7 +1529,7 @@ void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CTrackViewDialog::OnAddSelectedNode()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (sequence)
     {
@@ -1572,7 +1572,7 @@ void CTrackViewDialog::OnAddSelectedNode()
 
 void CTrackViewDialog::OnAddDirectorNode()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (sequence)
     {
@@ -1604,7 +1604,7 @@ void CTrackViewDialog::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Space && event->modifiers() == Qt::NoModifier)
     {
         event->accept();
-        GetIEditor()->GetAnimation()->TogglePlay();
+        Maestro::Editor::GetAnimation()->TogglePlay();
     }
     return QMainWindow::keyPressEvent(event);
 }
@@ -1645,7 +1645,7 @@ void CTrackViewDialog::OnModeDopeSheet()
     m_wndSplitter->setSizes(sizes);
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(true);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(false);
-    m_wndCurveEditor->OnSequenceChanged(GetIEditor()->GetAnimation()->GetSequence());
+    m_wndCurveEditor->OnSequenceChanged(Maestro::Editor::GetAnimation()->GetSequence());
     m_lastMode = ViewMode::TrackView;
 }
 
@@ -1662,7 +1662,7 @@ void CTrackViewDialog::OnModeCurveEditor()
     m_wndSplitter->setSizes(sizes);
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(false);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(true);
-    m_wndCurveEditor->OnSequenceChanged(GetIEditor()->GetAnimation()->GetSequence());
+    m_wndCurveEditor->OnSequenceChanged(Maestro::Editor::GetAnimation()->GetSequence());
     m_lastMode = ViewMode::CurveEditor;
 }
 
@@ -1673,7 +1673,7 @@ void CTrackViewDialog::OnOpenCurveEditor()
     m_wndCurveEditorDock->toggleViewAction()->setEnabled(true);
     m_actions[ID_TV_MODE_DOPESHEET]->setChecked(true);
     m_actions[ID_TV_MODE_CURVEEDITOR]->setChecked(true);
-    m_wndCurveEditor->OnSequenceChanged(GetIEditor()->GetAnimation()->GetSequence());
+    m_wndCurveEditor->OnSequenceChanged(Maestro::Editor::GetAnimation()->GetSequence());
     m_lastMode = ViewMode::Both;
 }
 
@@ -1707,7 +1707,7 @@ void CTrackViewDialog::OnSnapFPS()
         m_wndDopeSheet->SetSnapFPS(fps);
         m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
-        SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
+        SetCursorPosText(Maestro::Editor::GetAnimation()->GetTime());
     }
 }
 
@@ -1715,7 +1715,7 @@ void CTrackViewDialog::OnViewTickInSeconds()
 {
     m_wndDopeSheet->SetTickDisplayMode(eTVTickMode_InSeconds);
     m_wndCurveEditor->SetTickDisplayMode(eTVTickMode_InSeconds);
-    SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
+    SetCursorPosText(Maestro::Editor::GetAnimation()->GetTime());
     UpdateActions();
 }
 
@@ -1723,7 +1723,7 @@ void CTrackViewDialog::OnViewTickInFrames()
 {
     m_wndDopeSheet->SetTickDisplayMode(eTVTickMode_InFrames);
     m_wndCurveEditor->SetTickDisplayMode(eTVTickMode_InFrames);
-    SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
+    SetCursorPosText(Maestro::Editor::GetAnimation()->GetTime());
     UpdateActions();
 }
 
@@ -1888,7 +1888,7 @@ void CTrackViewDialog::OnBatchRender()
 
 void CTrackViewDialog::UpdateTracksToolBar()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         ClearTracksToolBar();
@@ -2024,7 +2024,7 @@ void CTrackViewDialog::OnTracksToolBar()
 
 void CTrackViewDialog::OnToggleDisable()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewAnimNodeBundle selectedNodes = sequence->GetSelectedAnimNodes();
@@ -2048,7 +2048,7 @@ void CTrackViewDialog::OnToggleDisable()
 
 void CTrackViewDialog::OnToggleMute()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewTrackBundle selectedTracks = sequence->GetSelectedTracks();
@@ -2064,7 +2064,7 @@ void CTrackViewDialog::OnToggleMute()
 
 void CTrackViewDialog::OnMuteAll()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewTrackBundle selectedTracks = sequence->GetSelectedTracks();
@@ -2080,7 +2080,7 @@ void CTrackViewDialog::OnMuteAll()
 
 void CTrackViewDialog::OnUnmuteAll()
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         CTrackViewTrackBundle selectedTracks = sequence->GetSelectedTracks();
@@ -2096,7 +2096,7 @@ void CTrackViewDialog::OnUnmuteAll()
 
 void CTrackViewDialog::OnNodeSelectionChanged(CTrackViewSequence* sequence)
 {
-    CTrackViewSequence* pCurrentSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pCurrentSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (pCurrentSequence && pCurrentSequence == sequence)
     {
@@ -2128,7 +2128,7 @@ void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
     if (m_currentSequenceEntityId == entityId)
     {
         // The currently selected sequence is about to be deleted, make sure to clear the selection right now.
-        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        Maestro::Editor::GetAnimation()->SetSequence(nullptr, false, false);
 
         // Refresh the records in m_wndNodesCtrl, the sequence will not be selected in Track View
         // so the current sequence will be nullptr and the records will be cleared preventing
@@ -2139,7 +2139,7 @@ void CTrackViewDialog::OnEntityDestruction(const AZ::EntityId& entityId)
 
 void CTrackViewDialog::OnSequenceSettingsChanged(CTrackViewSequence* sequence)
 {
-    CTrackViewSequence* pCurrentSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pCurrentSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (pCurrentSequence && pCurrentSequence == sequence)
     {
@@ -2187,16 +2187,16 @@ void CTrackViewDialog::RemoveSequenceListeners(CTrackViewSequence* sequence)
 void CTrackViewDialog::AddDialogListeners()
 {
     GetIEditor()->RegisterNotifyListener(this);
-    GetIEditor()->GetAnimation()->AddListener(this);
-    GetIEditor()->GetSequenceManager()->AddListener(this);
+    Maestro::Editor::GetAnimation()->AddListener(this);
+    Maestro::Editor::GetSequenceManager()->AddListener(this);
     GetIEditor()->GetUndoManager()->AddListener(this);
 }
 
 void CTrackViewDialog::RemoveDialogListeners()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
-    GetIEditor()->GetSequenceManager()->RemoveListener(this);
-    GetIEditor()->GetAnimation()->RemoveListener(this);
+    Maestro::Editor::GetSequenceManager()->RemoveListener(this);
+    Maestro::Editor::GetAnimation()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
 

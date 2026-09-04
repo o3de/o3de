@@ -6,20 +6,17 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewSplineCtrl.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewSplineCtrl.h"
 
 // Qt
 #include <QRubberBand>
 
-// Editor
-#include "AnimationContext.h"
-
-// AzCore
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/list.h>
+
+#include <Maestro/Editor/AnimationContext.h>
 
 class CUndoTrackViewSplineCtrl
     : public ISplineCtrlUndo
@@ -27,9 +24,9 @@ class CUndoTrackViewSplineCtrl
 public:
     CUndoTrackViewSplineCtrl(CTrackViewSplineCtrl* pCtrl, std::vector<ISplineInterpolator*>& splineContainer)
     {
-        if (GetIEditor()->GetAnimation()->GetSequence())
+        if (Maestro::Editor::GetAnimation()->GetSequence())
         {
-            m_sequenceEntityId = GetIEditor()->GetAnimation()->GetSequence()->GetSequenceComponentEntityId();
+            m_sequenceEntityId = Maestro::Editor::GetAnimation()->GetSequence()->GetSequenceComponentEntityId();
         }
 
         m_pCtrl = pCtrl;
@@ -69,7 +66,7 @@ protected:
             pCtrl->SendNotifyEvent(SPLN_BEFORE_CHANGE);
         }
 
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
 
         AZ_Assert(sequence, "Expected valid sequence.");
@@ -107,7 +104,7 @@ protected:
 
     void Redo() override
     {
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
         AZ_Assert(sequence, "Expected valid sequence.");
         if (!sequence)
@@ -140,7 +137,7 @@ protected:
 
     bool IsSelectionChanged() const override
     {
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
         AZ_Assert(sequence, "Expected valid sequence.");
         if (!sequence)
@@ -200,7 +197,7 @@ private:
 
     void SerializeSplines(_smart_ptr<ISplineBackup> CSplineEntry::* backup, bool bLoading)
     {
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
         AZ_Assert(sequence, "Expected valid sequence");
         if (!sequence)
@@ -606,7 +603,7 @@ void CTrackViewSplineCtrl::MoveSelectedTangentHandleTo(const QPoint& point)
 void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 {
     const QPoint point = event->pos();
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSequence)
     {
         return;
@@ -932,7 +929,7 @@ void CTrackViewSplineCtrl::ClearSelection()
 {
     // In this case, we should deselect all keys, even ones in other tracks.
     // So this overriding is necessary.
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (pSequence)
     {
         pSequence->DeselectAllKeys();
@@ -946,21 +943,21 @@ ISplineCtrlUndo* CTrackViewSplineCtrl::CreateSplineCtrlUndoObject(std::vector<IS
 
 void CTrackViewSplineCtrl::mousePressEvent(QMouseEvent* event)
 {
-    if (GetIEditor()->GetAnimation()->GetSequence())
+    if (Maestro::Editor::GetAnimation()->GetSequence())
     {
         SplineWidget::mousePressEvent(event);
         if (m_editMode == TimeMarkerMode)
         {
             // turn off recording when dragging time
-            m_stashedRecordModeWhenDraggingTime = GetIEditor()->GetAnimation()->IsRecordMode();
-            GetIEditor()->GetAnimation()->SetRecording(false);
+            m_stashedRecordModeWhenDraggingTime = Maestro::Editor::GetAnimation()->IsRecordMode();
+            Maestro::Editor::GetAnimation()->SetRecording(false);
         }
     }
 }
 
 void CTrackViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (GetIEditor()->GetAnimation()->GetSequence())
+    if (Maestro::Editor::GetAnimation()->GetSequence())
     {
         bool restoreRecordModeToTrue = (m_editMode == TimeMarkerMode && m_stashedRecordModeWhenDraggingTime);
 
@@ -969,7 +966,7 @@ void CTrackViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
         if (restoreRecordModeToTrue)
         {
             // restore recording when dragging time
-            GetIEditor()->GetAnimation()->SetRecording(true);
+            Maestro::Editor::GetAnimation()->SetRecording(true);
             m_stashedRecordModeWhenDraggingTime = false;    // reset stashed value
         }
     }
@@ -977,7 +974,7 @@ void CTrackViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
 
 void CTrackViewSplineCtrl::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         SplineWidget::mouseDoubleClickEvent(event);
@@ -998,7 +995,7 @@ void CTrackViewSplineCtrl::mouseDoubleClickEvent(QMouseEvent* event)
 
 void CTrackViewSplineCtrl::keyPressEvent(QKeyEvent* event)
 {
-    auto sequence = GetIEditor()->GetAnimation()->GetSequence();
+    auto sequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (sequence)
     {
         // HAVE TO INCLUDE CASES FOR THESE IN THE ShortcutOverride handler in ::event() below
@@ -1061,7 +1058,7 @@ bool CTrackViewSplineCtrl::event(QEvent* e)
 
 void CTrackViewSplineCtrl::wheelEvent(QWheelEvent* event)
 {
-    if (GetIEditor()->GetAnimation()->GetSequence())
+    if (Maestro::Editor::GetAnimation()->GetSequence())
     {
         SplineWidget::wheelEvent(event);
     }
@@ -1070,13 +1067,13 @@ void CTrackViewSplineCtrl::wheelEvent(QWheelEvent* event)
 void CTrackViewSplineCtrl::SelectKey(ISplineInterpolator* pSpline, int nKey, int nDimension, bool bSelect)
 {
     SplineWidget::SelectKey(pSpline, nKey, nDimension, bSelect);
-    GetIEditor()->GetAnimation()->GetSequence()->OnKeySelectionChanged();
+    Maestro::Editor::GetAnimation()->GetSequence()->OnKeySelectionChanged();
 }
 
 void CTrackViewSplineCtrl::SelectRectangle(const QRect& rc, bool bSelect)
 {
     SplineWidget::SelectRectangle(rc, bSelect);
-    GetIEditor()->GetAnimation()->GetSequence()->OnKeySelectionChanged();
+    Maestro::Editor::GetAnimation()->GetSequence()->OnKeySelectionChanged();
 }
 
 void CTrackViewSplineCtrl::SetPlayCallback(const std::function<void()>& callback)

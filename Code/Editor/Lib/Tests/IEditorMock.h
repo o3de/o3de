@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzTest/AzTest.h>
@@ -75,7 +76,6 @@ public:
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());
     MOCK_METHOD1(GetColorByName, const QColor& (const QString&));
-    MOCK_METHOD0(GetMovieSystem, struct IMovieSystem* ());
     MOCK_METHOD0(GetViewManager, class CViewManager* ());
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
@@ -83,8 +83,6 @@ public:
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());
     MOCK_METHOD2(UpdateViews, void(int , const AZ::Aabb* ));
     MOCK_METHOD0(ResetViews, void());
-    MOCK_METHOD0(ReloadTrackView, void());
-
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
     MOCK_METHOD0(GetAxisConstrains, AxisConstrains());
     MOCK_METHOD1(SetTerrainAxisIgnoreObjects, void(bool));
@@ -112,9 +110,6 @@ public:
     MOCK_METHOD1(FlushUndo, bool(bool isShowMessage));
     MOCK_METHOD1(ClearLastUndoSteps, bool(int ));
     MOCK_METHOD0(ClearRedoStack, bool());
-    MOCK_METHOD0(GetAnimation, CAnimationContext* ());
-    MOCK_METHOD0(GetSequenceManager, CTrackViewSequenceManager* ());
-    MOCK_METHOD0(GetSequenceManagerInterface, ITrackViewSequenceManager* ());
     MOCK_METHOD0(GetToolBoxManager, CToolBoxManager* ());
     MOCK_METHOD0(GetErrorReport, IErrorReport* ());
     MOCK_METHOD0(GetLastLoadedLevelErrorReport, IErrorReport* ());

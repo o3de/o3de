@@ -6,9 +6,9 @@
  *
  */
 
-// Description : Message boxes
-
 #pragma once
+
+// Description : Message boxes
 
 #include <QMessageBox>
 

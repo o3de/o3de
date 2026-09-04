@@ -114,7 +114,7 @@ CAnimationContext::CAnimationContext()
     m_bPostRenderRegistered = false;
     m_bForcingAnimation = false;
     GetIEditor()->GetUndoManager()->AddListener(this);
-    GetIEditor()->GetSequenceManager()->AddListener(this);
+    Maestro::Editor::GetSequenceManager()->AddListener(this);
     GetIEditor()->RegisterNotifyListener(this);
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 }
@@ -122,12 +122,17 @@ CAnimationContext::CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 CAnimationContext::~CAnimationContext()
 {
+    if (m_commandRegistered && gEnv && gEnv->pConsole)
+    {
+        UNREGISTER_COMMAND("mov_goToFrameEditor");
+    }
+
     if (Maestro::SequenceComponentNotificationBus::Handler::BusIsConnected())
     {
         Maestro::SequenceComponentNotificationBus::Handler::BusDisconnect();
     }
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-    GetIEditor()->GetSequenceManager()->RemoveListener(this);
+    Maestro::Editor::GetSequenceManager()->RemoveListener(this);
     GetIEditor()->GetUndoManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
@@ -135,12 +140,16 @@ CAnimationContext::~CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Init()
 {
+    // The Editor exposes IEditor before CrySystem finishes creating the movie system.
+    // Refresh the service here so extracting this context does not make startup ordering observable.
+    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
     if (m_movieSystem)
     {
         m_movieSystem->SetCallback(&s_movieCallback);
     }
 
     REGISTER_COMMAND("mov_goToFrameEditor", (ConsoleCommandFunc)GoToFrameCmd, 0, "Make a specified sequence go to a given frame time in the editor.");
+    m_commandRegistered = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -406,7 +415,7 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
         AZ_Assert(false, "No Editor.");
         return;
     }
-    const auto manager = editor->GetSequenceManager();
+    const auto manager = Maestro::Editor::GetSequenceManager();
     if (!manager)
     {
         AZ_Assert(false, "No SequenceManager.");
@@ -469,7 +478,7 @@ void CAnimationContext::OnSequenceDeactivated(AZ::EntityId entityId)
     auto editor = GetIEditor();
     if (editor != nullptr)
     {
-        auto manager = editor->GetSequenceManager();
+        auto manager = Maestro::Editor::GetSequenceManager();
         if (manager != nullptr)
         {
             auto sequence = manager->GetSequenceByEntityId(entityId);
@@ -754,8 +763,8 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         return;
     }
 
-    assert(GetIEditor()->GetAnimation());
-    CTrackViewSequence* pSeq = GetIEditor()->GetAnimation()->GetSequence();
+    assert(Maestro::Editor::GetAnimation());
+    CTrackViewSequence* pSeq = Maestro::Editor::GetAnimation()->GetSequence();
     if (!pSeq)
     {
         gEnv->pLog->LogError("GoToFrame: No active animation sequence");
@@ -772,10 +781,10 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
         gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
         return;
     }
-    GetIEditor()->GetAnimation()->m_currTime = targetFrame;
-    GetIEditor()->GetAnimation()->m_bSingleFrame = true;
+    Maestro::Editor::GetAnimation()->m_currTime = targetFrame;
+    Maestro::Editor::GetAnimation()->m_bSingleFrame = true;
 
-    GetIEditor()->GetAnimation()->ForceAnimation();
+    Maestro::Editor::GetAnimation()->ForceAnimation();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -875,7 +884,7 @@ void CAnimationContext::StoreSequenceOnExitingEditMode(bool isSwitchingToGameMod
 void CAnimationContext::RestoreSequenceOnEnteringEditMode()
 {
     m_currTime = m_sequenceRestoreTime;
-    SetSequence(GetIEditor()->GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
+    SetSequence(Maestro::Editor::GetSequenceManager()->GetSequenceByEntityId(m_sequenceToRestore), true, true);
     SetTime(m_sequenceRestoreTime);
 
     SetRecordingInternal(m_bSavedRecordingState);

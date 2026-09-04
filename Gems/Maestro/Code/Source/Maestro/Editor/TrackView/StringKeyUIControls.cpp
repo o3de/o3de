@@ -37,7 +37,7 @@ bool CStringKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selec
 
 void CStringKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!sequence || !selectedKeys.AreAllKeysOfSameType())
     {

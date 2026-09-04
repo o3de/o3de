@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #define ID_FILE_NEW       0xE100
@@ -20,7 +19,6 @@
 #define ID_APP_ABOUT      0xE140
 #define ID_APP_EXIT       0xE141
 #define ID_APP_SHOW_WELCOME    0xE142
-#define IDD_TRACKVIEWDIALOG                        19
 #define IDD_DATABASE                               140
 #define IDR_DB_LIBRARY_ITEM_BAR                    141
 #define IDR_DB_MATERIAL_BAR                        142
@@ -109,20 +107,6 @@
 #define ID_REDO                                    33550
 #define ID_SWITCH_PHYSICS                          33555
 #define ID_REF_COORDS_SYS                          33556
-#define ID_TV_ADDKEY                               33557
-#define ID_TV_DELKEY                               33558
-#define ID_TV_MOVEKEY                              33559
-#define ID_TV_SLIDEKEY                             33560
-#define ID_TV_SCALEKEY                             33561
-#define ID_TV_ADD_SEQUENCE                         33563
-#define ID_TV_DEL_SEQUENCE                         33564
-#define ID_TV_EDIT_SEQUENCE                        33565
-#define ID_TV_RECORD                               33566
-#define ID_TV_PLAY                                 33567
-#define ID_TV_STOP                                 33568
-#define ID_TV_PAUSE                                33569
-#define ID_ADDNODE                                 33570
-#define ID_ADDSCENETRACK                           33573
 #define ID_FIND                                    33574
 #define ID_TAG_LOC1                                33576
 #define ID_TAG_LOC2                                33577
@@ -148,11 +132,6 @@
 #define ID_GOTO_LOC10                              33597
 #define ID_GOTO_LOC11                              33598
 #define ID_GOTO_LOC12                              33599
-#define ID_TV_JUMPEND                              33600
-#define ID_TV_JUMPSTART                            33601
-#define ID_TV_PREVKEY                              33602
-#define ID_TV_NEXTKEY                              33603
-#define ID_PLAY_LOOP                               33607
 #define ID_PANEL_VEG_EXPORT                        33672
 #define ID_PANEL_VEG_IMPORT                        33673
 #define ID_PANEL_VEG_DISTRIBUTE                    33674
@@ -169,8 +148,6 @@
 #define ID_SWITCHCAMERA_DEFAULTCAMERA              33700
 #define ID_SWITCHCAMERA_SEQUENCECAMERA             33701
 #define ID_SWITCHCAMERA_SELECTEDCAMERA             33702
-#define ID_TV_RECORD_AUTO                          33703
-#define ID_TV_STOP_HARD_RESET                      33704
 #define ID_VIEW_OPENVIEWPANE                       33709
 #define ID_VIEW_OPENPANE_FIRST          33712
 #define ID_VIEW_OPENPANE_LAST           33811
@@ -201,39 +178,19 @@
 #define ID_TOOLS_UPDATEPROCEDURALVEGETATION        33999
 #define ID_DISPLAY_GOTOPOSITION                    34004
 #define ID_PHYSICS_SIMULATEOBJECTS                 34007
-#define ID_TV_SEQUENCE_NEW                         34049
-#define ID_TV_MODE_DOPESHEET                       34052
 #define ID_VIEW_LAYOUTS                            34053
-#define ID_TV_MODE_CURVEEDITOR                     34054
-#define ID_OPEN_TRACKVIEW                          34063
 #define ID_SWITCHCAMERA_NEXT                       34065
-#define ID_TV_SNAP_NONE                            34068
-#define ID_TV_SNAP_MAGNET                          34069
-#define ID_TV_SNAP_FRAME                           34070
-#define ID_TV_SNAP_TICK                            34071
-#define ID_TV_SNAP_FPS                             34072
-#define ID_VIEW_TICKINSECONDS                      34075
-#define ID_VIEW_TICKINFRAMES                       34076
 #define ID_OPEN_ASSET_BROWSER                      34077
 #define ID_SNAP_TO_GRID_RANGE_BEGIN     34087
 #define ID_SNAP_TO_GRID_RANGE_END       34106
 #define ID_TOOLS_EXPORT_SHORTCUTS       34138
 #define ID_TOOLS_IMPORT_SHORTCUTS       34139
-#define ID_TOOLS_BATCH_RENDER           34151
 #define ID_TOOLS_SCRIPTHELP             34152
-#define ID_TV_MODE_OPENCURVEEDITOR      34153
 #define ID_TOOLS_LUA_EDITOR             34154
 #define ID_OPEN_QUICK_ACCESS_BAR                   34177
-#define ID_TRACKVIEW_TOGGLE_DISABLE                34178
-#define ID_TRACKVIEW_TOGGLE_MUTE                   34179
-#define ID_TRACKVIEW_MUTE_ALL                      34180
-#define ID_TRACKVIEW_UNMUTE_ALL                    34181
-#define ID_TV_TOOLS_CUSTOMIZETRACKCOLORS           34182
 #define ID_TOOLS_ENABLEFILECHANGEMONITORING        34185
 #define ID_FILE_OPEN_LEVEL                         34196
 #define ID_FILE_SAVE_LEVEL                         34197
-#define ID_TV_SYNC_TO_BASE                         34199
-#define ID_TV_SYNC_FROM_BASE                       34200
 #define ID_FILE_SAVESETTINGS                       34204
 #define ID_SET_TIME_TO_KEY                         34206
 #define ID_TOGGLE_SCRUB_UNITS                      34207
@@ -260,8 +217,6 @@
 #define ID_FILE_PROJECT_MANAGER_NEW                                 35080
 #define ID_FILE_PROJECT_MANAGER_OPEN                                35081
 #define ID_FILE_PROJECT_MANAGER_SETTINGS                            35082
-#define ID_TV_TRACKS_TOOLBAR_BASE                                   35083               // range between ID_TV_TRACKS_TOOLBAR_BASE to ID_TV_TRACKS_TOOLBAR_LAST reserved
-#define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_UICANVASEDITOR          36010
 #define ID_SKINS_REFRESH                36014
 #define ID_DOCUMENTATION_GETTINGSTARTEDGUIDE    36023

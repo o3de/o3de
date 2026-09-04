@@ -12,6 +12,8 @@
 #include <Maestro/Components/EditorSequenceComponent.h>
 #include <Maestro/Components/SequenceAgentComponent.h>
 #include <Maestro/Components/SequenceComponent.h>
+#include <Maestro/Editor/MaestroEditorSystemComponent.h>
+#include <Maestro/Editor/TrackView/TrackViewPythonFuncs.h>
 #include <Maestro/MaestroSystemComponent.h>
 
 namespace Maestro
@@ -32,6 +34,9 @@ namespace Maestro
                 SequenceAgentComponent::CreateDescriptor(),
                 EditorSequenceComponent::CreateDescriptor(),
                 EditorSequenceAgentComponent::CreateDescriptor(),
+                MaestroEditorSystemComponent::CreateDescriptor(),
+                AzToolsFramework::TrackViewComponent::CreateDescriptor(),
+                AzToolsFramework::TrackViewFuncsHandler::CreateDescriptor(),
             });
         }
 
@@ -40,6 +45,8 @@ namespace Maestro
             return AZ::ComponentTypeList{
                 azrtti_typeid<MaestroAllocatorComponent>(),
                 azrtti_typeid<MaestroSystemComponent>(),
+                azrtti_typeid<MaestroEditorSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::TrackViewComponent>(),
             };
         }
     };
