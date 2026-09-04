@@ -8,16 +8,18 @@
 
 #pragma once
 
-#include <IEditor.h>
-#include <Maestro/IMovieSystem.h>
+#include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-#include "TrackViewAnimNode.h"
-#include "Undo/Undo.h"
+#include <IEditor.h>
 
-#include <AzCore/std/containers/deque.h>
-#include <AzCore/std/containers/vector.h>
+#include <Maestro/Editor/ITrackViewSequenceManager.h>
+#include <Maestro/Editor/TrackView/TrackViewAnimNode.h>
+#include <Maestro/IMovieSystem.h>
+
+#include "Undo/Undo.h"
 
 struct ITrackViewSequenceListener
 {
