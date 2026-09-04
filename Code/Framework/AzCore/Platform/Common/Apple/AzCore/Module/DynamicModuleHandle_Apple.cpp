@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils/SystemUtilsApple_Platform.h>
 #include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
@@ -15,10 +16,6 @@ namespace AZ::Platform
     AZ::IO::FixedMaxPath GetModulePath()
     {
         return AZ::Utils::GetExecutableDirectory();
-    }
-
-    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
-    {
     }
 
     AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName)
@@ -37,5 +34,17 @@ namespace AZ::Platform
         }
 
         return frameworksPath;
+    }
+
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath)
+    {
+        if (!fullPath.IsAbsolute() && !fullPath.HasParentPath())
+        {
+            AZ::IO::FixedMaxPath frameworkPath = CreateFrameworkModulePath(fullPath);
+            if (AZ::IO::SystemFile::Exists(frameworkPath.c_str()))
+            {
+                fullPath = frameworkPath;
+            }
+        }
     }
 } // namespace AZ::Platform
