@@ -6,5 +6,5 @@
 #
 
 set(FILES
-    Tests/API/test_Main.cpp
+    Tests/API/MaestroApiTests.cpp
 )
