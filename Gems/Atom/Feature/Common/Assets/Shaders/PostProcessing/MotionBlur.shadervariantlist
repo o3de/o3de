@@ -5,5 +5,5 @@
         {   "StableId": 2, "Options" : { "o_sampleQuality": 1 } },
         {   "StableId": 3, "Options" : { "o_sampleQuality": 2 } },
         {   "StableId": 4, "Options" : { "o_sampleQuality": 3 } }
-    ]
+    ]    
 }
