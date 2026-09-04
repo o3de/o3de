@@ -6,13 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : Header of layer node to control entities properties in the
 //               specific layer.
 
-#pragma once
-
-#include "AnimNode.h"
+#include <Maestro/Cinematics/AnimNode.h>
 
 namespace Maestro
 {

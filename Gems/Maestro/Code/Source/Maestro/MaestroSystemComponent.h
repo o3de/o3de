@@ -13,9 +13,8 @@
 
 #include <AzFramework/API/SequenceSystemLifecycle.h>
 
+#include <Maestro/Cinematics/Movie.h>
 #include <Maestro/MaestroBus.h>
-
-#include "Cinematics/Movie.h"
 
 namespace Maestro
 {

@@ -6,9 +6,11 @@
  *
  */
 
+#include <Maestro/Cinematics/SelectTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "SceneNode.h"
-#include "SelectTrack.h"
+
+#include <Maestro/Cinematics/SceneNode.h>
 #include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro

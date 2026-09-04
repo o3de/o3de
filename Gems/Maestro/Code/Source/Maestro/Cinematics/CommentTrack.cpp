@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/CommentTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "CommentTrack.h"
 
 namespace Maestro
 {

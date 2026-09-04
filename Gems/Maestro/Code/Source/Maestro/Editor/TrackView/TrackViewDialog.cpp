@@ -9,10 +9,9 @@
 
 // Description : CTrackViewDialog Implementation file.
 
+#include <Maestro/Editor/TrackView/TrackViewDialog.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewDialog.h"
 
 // Qt
 #include <QAction>

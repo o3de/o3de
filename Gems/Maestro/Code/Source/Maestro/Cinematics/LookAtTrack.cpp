@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/LookAtTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "LookAtTrack.h"
 
 namespace Maestro
 {

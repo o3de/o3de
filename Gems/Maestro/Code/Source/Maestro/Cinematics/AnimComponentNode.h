@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "AnimNode.h"
-#include "CharacterTrackAnimator.h"
 #include <Maestro/Bus/EditorSequenceAgentComponentBus.h>
+#include <Maestro/Cinematics/AnimNode.h>
+#include <Maestro/Cinematics/CharacterTrackAnimator.h>
 
 /**
  * CAnimComponentNode

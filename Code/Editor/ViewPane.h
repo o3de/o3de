@@ -13,10 +13,11 @@
 
 #include "ViewportTitleDlg.h"
 
+#include <SandboxAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzQtComponents/Components/ToolBarArea.h>
-#include <Include/SandboxAPI.h>
 
 class CViewport;
 class QScrollArea;

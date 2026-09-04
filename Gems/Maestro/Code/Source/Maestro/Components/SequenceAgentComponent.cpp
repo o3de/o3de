@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SequenceAgentComponent.h"
+
+#include <Maestro/Components/SequenceAgentComponent.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 

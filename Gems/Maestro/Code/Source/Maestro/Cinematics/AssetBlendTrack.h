@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
+#include <Maestro/Cinematics/AnimTrack.h>
 #include <Maestro/IMovieSystem.h>
-#include "AnimTrack.h"
 #include <Maestro/Types/AssetBlendKey.h>
 #include <Maestro/Types/AssetBlends.h>
 

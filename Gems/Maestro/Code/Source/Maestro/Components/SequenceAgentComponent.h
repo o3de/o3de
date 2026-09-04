@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
-#include "SequenceAgent.h"
+#include <Maestro/Components/SequenceAgent.h>
 
 namespace AzFramework
 {

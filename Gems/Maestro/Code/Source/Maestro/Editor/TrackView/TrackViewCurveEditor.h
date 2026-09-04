@@ -8,14 +8,15 @@
 
 #pragma once
 
-#include "Controls/TimelineCtrl.h"
-#include "TrackViewDopeSheetBase.h"
-#include "TrackViewSplineCtrl.h"
-#include "TrackViewTimeline.h"
-
 #include <QWidget>
 
 #include <AzCore/std/functional.h>
+
+#include <Maestro/Editor/TrackView/TrackViewDopeSheetBase.h>
+#include <Maestro/Editor/TrackView/TrackViewSplineCtrl.h>
+#include <Maestro/Editor/TrackView/TrackViewTimeline.h>
+
+#include "Controls/TimelineCtrl.h"
 
 namespace Ui
 {

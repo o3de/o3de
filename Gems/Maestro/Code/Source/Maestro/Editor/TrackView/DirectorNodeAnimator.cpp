@@ -6,20 +6,15 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/DirectorNodeAnimator.h>
 
 #include "EditorDefs.h"
 
-#include "DirectorNodeAnimator.h"
-
-// Maestro
-#include <Maestro/Types/AnimParamType.h>  // for AnimParamType
-
-// Editor
-#include "TrackView/TrackViewSequenceManager.h"     // for CTrackViewSequence
-
-// AzCore
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
+
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>     // for CTrackViewSequence
+#include <Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 CDirectorNodeAnimator::CDirectorNodeAnimator([[maybe_unused]] CTrackViewAnimNode* pDirectorNode)
 {

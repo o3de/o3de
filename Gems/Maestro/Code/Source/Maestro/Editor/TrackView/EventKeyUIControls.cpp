@@ -9,9 +9,8 @@
 
 #include "EditorDefs.h"
 
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
-
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>  // for CTrackViewKeyUIControls
 #include <Maestro/Types/AnimParamType.h>  // AnimParamType
 
 bool CEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)

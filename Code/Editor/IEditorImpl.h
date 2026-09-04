@@ -6,15 +6,14 @@
  *
  */
 
+#pragma once
 
 // Description : IEditor interface implementation.
-
-#pragma once
 
 #include "Commands/CommandManager.h"
 #include "ErrorReport.h"
 #include "IEditor.h"
-#include "Include/IErrorReport.h"
+#include <IErrorReport.h>
 #include "MainWindow.h"
 #include "Util/XmlTemplate.h"
 

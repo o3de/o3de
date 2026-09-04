@@ -9,7 +9,9 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Include/SandboxAPI.h>
+
+#include <SandboxAPI.h>
+
 #include <Maestro/Editor/EditorTrackViewEventsBus.h>
 
 namespace AzToolsFramework

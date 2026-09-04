@@ -6,12 +6,11 @@
  *
  */
 
-
 #pragma once
 
 #include <AzCore/std/sort.h>
-#include <Maestro/IMovieSystem.h>
 
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

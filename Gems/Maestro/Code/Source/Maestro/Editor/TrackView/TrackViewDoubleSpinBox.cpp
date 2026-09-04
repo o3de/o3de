@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorDefs.h"
 
-#include "TrackViewDoubleSpinBox.h"
+#include <Maestro/Editor/TrackView/TrackViewDoubleSpinBox.h>
+
+#include "EditorDefs.h"
 
 CTrackViewDoubleSpinBox::CTrackViewDoubleSpinBox(QWidget* parent) 
     : AzQtComponents::DoubleSpinBox(parent)

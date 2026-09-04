@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 
-#include "AnimNode.h"
+#include <Maestro/Cinematics/AnimNode.h>
 
 namespace Maestro
 {

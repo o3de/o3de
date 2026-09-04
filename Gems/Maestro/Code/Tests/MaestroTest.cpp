@@ -6,11 +6,11 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/UnitTest.h>
-#include <Mocks/ICryPakMock.h>
-#include <Mocks/IConsoleMock.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/AzTest.h>
+#include <Mocks/IConsoleMock.h>
+#include <Mocks/ICryPakMock.h>
 
 #include <ISystem.h>
 

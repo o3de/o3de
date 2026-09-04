@@ -6,10 +6,11 @@
  *
  */
 
-#include "StringTrack.h"
+#include <Maestro/Cinematics/StringTrack.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 #include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro

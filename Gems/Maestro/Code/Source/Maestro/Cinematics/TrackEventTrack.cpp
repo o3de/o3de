@@ -6,7 +6,7 @@
  *
  */
 
-#include "TrackEventTrack.h"
+#include <Maestro/Cinematics/TrackEventTrack.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 

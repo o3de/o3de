@@ -6,10 +6,11 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include "EventTrack.h"
+#include <Maestro/Cinematics/EventTrack.h>
 
-#include "TrackEventTrack.h"
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <Maestro/Cinematics/TrackEventTrack.h>
 
 namespace Maestro
 {

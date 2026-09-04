@@ -8,26 +8,25 @@
 
 // Description : Implementation of IAnimSequence interface.
 
+#include <Maestro/Cinematics/AnimSequence.h>
 
-
-
-#include "AnimAZEntityNode.h"
-#include "AnimComponentNode.h"
-#include "AnimNodeGroup.h"
-#include "AnimPostFXNode.h"
-#include "AnimScreenFaderNode.h"
-#include "AnimSequence.h"
-#include "CommentNode.h"
-#include "CVarNode.h"
-#include "EventNode.h"
-#include "LayerNode.h"
-#include "SceneNode.h"
-#include "ScriptVarNode.h"
-#include "SequenceTrack.h"
-#include "ShadowsSetupNode.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <CryCommon/StlUtils.h>
+
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Cinematics/AnimAZEntityNode.h>
+#include <Maestro/Cinematics/AnimComponentNode.h>
+#include <Maestro/Cinematics/AnimNodeGroup.h>
+#include <Maestro/Cinematics/AnimPostFXNode.h>
+#include <Maestro/Cinematics/AnimScreenFaderNode.h>
+#include <Maestro/Cinematics/CommentNode.h>
+#include <Maestro/Cinematics/CVarNode.h>
+#include <Maestro/Cinematics/EventNode.h>
+#include <Maestro/Cinematics/LayerNode.h>
+#include <Maestro/Cinematics/SceneNode.h>
+#include <Maestro/Cinematics/ScriptVarNode.h>
+#include <Maestro/Cinematics/SequenceTrack.h>
+#include <Maestro/Cinematics/ShadowsSetupNode.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/SequenceType.h>

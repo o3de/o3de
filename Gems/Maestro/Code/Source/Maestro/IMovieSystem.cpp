@@ -7,6 +7,7 @@
  */
 
 #include <Maestro/IMovieSystem.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 
 AZ_TYPE_INFO_WITH_NAME_IMPL(CAnimParamType, "CAnimParamType", "{E2F34955-3B07-4241-8D34-EA3BEF3B33D2}");

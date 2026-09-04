@@ -9,27 +9,23 @@
 
 // Description : A dialog for customizing track colors
 
+#include <Maestro/Editor/TrackView/TVCustomizeTrackColorsDlg.h>
 
 #include "EditorDefs.h"
-
-#include "TVCustomizeTrackColorsDlg.h"
 
 // Qt
 #include <QLabel>
 #include <QMessageBox>
 #include <QSettings>
 
-// AzCore
-#include <AzCore/std/algorithm.h>
-
-// Maestro
-#include <Maestro/Types/AnimParamType.h>
-
 // Editor
-#include "TrackViewDialog.h"
 #include "QtUI/ColorButton.h"
 
-#include <TrackView/ui_TVCustomizeTrackColorsDialog.h>
+#include <AzCore/std/algorithm.h>
+
+#include <Maestro/Editor/TrackView/TrackViewDialog.h>
+#include <Maestro/Editor/TrackView/ui_TVCustomizeTrackColorsDialog.h>
+#include <Maestro/Types/AnimParamType.h>
 
 #define TRACKCOLOR_ENTRY_PREFIX ("TrackColor")
 #define TRACKCOLOR_FOR_OTHERS_ENTRY ("TrackColorForOthers")

@@ -28,8 +28,8 @@
 #include "Resource.h"
 
 
-#include <Include/SandboxAPI.h>
-#include <Include/EditorCoreAPI.h>
+#include <EditorCoreAPI.h>
+#include <SandboxAPI.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Simple type definitions.

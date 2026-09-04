@@ -6,15 +6,15 @@
  *
  */
 
-#include "AtomOutputFrameCapture.h"
+#include <Maestro/Editor/TrackView/AtomOutputFrameCapture.h>
 
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/Name.h>

@@ -7,17 +7,18 @@
  */
 
 
-#include "AnimAZEntityNode.h"
-#include "AnimComponentNode.h"
+#include <Maestro/Cinematics/AnimAZEntityNode.h>
 
-#include <AzFramework/Components/CameraBus.h>   // for definition of EditorCameraComponentTypeId
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Components/CameraBus.h>   // for definition of EditorCameraComponentTypeId
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <Maestro/Bus/SequenceComponentBus.h>
-#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Cinematics/AnimComponentNode.h>
 #include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
 
 namespace Maestro
 {

@@ -6,11 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : A dialog for customizing track colors
-
-
-#pragma once
 
 #include <QColor>
 #include <QDialog>
@@ -20,6 +18,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/limits.h>
 #include <IXml.h>
+
 #include <Maestro/IMovieSystem.h>
 
 namespace Ui

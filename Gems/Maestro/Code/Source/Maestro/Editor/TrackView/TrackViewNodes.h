@@ -6,25 +6,25 @@
  *
  */
 
+#pragma once
 
 // Description : TrackView's tree control.
 
-
-#pragma once
-
-#include <AzCore/Component/Entity.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/unordered_map.h>
-#include "AnimationContext.h"
-#include "TrackViewNode.h"
-#include "TrackViewSequence.h"
-#include "Undo/Undo.h"
-
-#include <Maestro/IMovieSystem.h>
 #include <QMap>
 #include <QTreeWidgetItem>
 
 #include <QWidget>
+
+#include <AzCore/Component/Entity.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/IMovieSystem.h>
+
+#include "Undo/Undo.h"
 
 // forward declarations.
 class CTrackViewAnimNode;

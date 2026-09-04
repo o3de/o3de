@@ -6,13 +6,15 @@
  *
  */
 
+#include <Maestro/Cinematics/AssetBlendTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <Maestro/Types/AssetBlends.h>
-#include <Maestro/Types/AssetBlendKey.h>
-#include "AssetBlendTrack.h"
 #include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AssetBlendKey.h>
+#include <Maestro/Types/AssetBlends.h>
 
 namespace Maestro
 {

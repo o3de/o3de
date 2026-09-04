@@ -9,15 +9,11 @@
 
 #include "EditorDefs.h"
 
-// AzCore
 #include <AzCore/std/algorithm.h>
 
-// Maestro
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>              // for CTrackViewKeyUIControls// Editor
 #include <Maestro/Types/AnimParamType.h>  // for AnimParamType
-
-// Editor
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"              // for CTrackViewKeyUIControls// Editor
 
 bool CTimeRangeKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

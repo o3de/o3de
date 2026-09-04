@@ -5,16 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 
-#include "SequenceComponent.h"
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <Maestro/IMovieSystem.h>
+
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Components/SequenceComponent.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

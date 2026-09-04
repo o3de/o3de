@@ -5,10 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SequenceAgent.h"
-#include <AzCore/Math/Color.h>
+
+#include <Maestro/Components/SequenceAgent.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/Color.h>
 
 namespace Maestro
 {

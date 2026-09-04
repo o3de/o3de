@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
-#include "TrackViewNode.h"
-
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/map.h>
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
+#include <Maestro/IMovieSystem.h>
 
 class CTrackViewAnimNode;
 enum class AnimValueType;

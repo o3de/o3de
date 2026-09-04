@@ -6,13 +6,12 @@
  *
  */
 
-
 #pragma once
 
 
-#include <Maestro/IMovieSystem.h>
-
 #include <QDialog>
+
+#include <Maestro/IMovieSystem.h>
 
 namespace Ui
 {

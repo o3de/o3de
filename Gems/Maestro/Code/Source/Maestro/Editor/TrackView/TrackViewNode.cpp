@@ -6,21 +6,15 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewNode.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewNode.h"
-
-// Maestro
-#include <Maestro/Types/AnimNodeType.h>
-
-// AzCore
 #include <AzCore/std/sort.h>
 
-// Editor
-#include "TrackView/TrackViewSequence.h"
-#include "TrackView/TrackViewTrack.h"
-
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/Editor/TrackView/TrackViewTrack.h>
+#include <Maestro/Types/AnimNodeType.h>
 
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {

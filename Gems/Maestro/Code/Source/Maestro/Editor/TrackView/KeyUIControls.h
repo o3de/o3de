@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include "EditorDefs.h"
+
 #include <AzFramework/Components/CameraBus.h>
+
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/AnimValueType.h>
-#include "EditorDefs.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 //////////////////////////////////////////////////////////////////////////
 class C2DBezierKeyUIControls

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "AnimNode.h"
+#include <Maestro/Cinematics/AnimNode.h>
 
 namespace Maestro
 {

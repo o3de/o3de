@@ -5,13 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
-#include <Maestro/Bus/SequenceAgentComponentBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <Maestro/Bus/SequenceAgentComponentBus.h>
 
 namespace Maestro
 {

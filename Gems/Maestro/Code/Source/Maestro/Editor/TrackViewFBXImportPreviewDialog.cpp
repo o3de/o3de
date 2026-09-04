@@ -6,15 +6,14 @@
  *
  */
 
+#include <Maestro/Editor/TrackViewFBXImportPreviewDialog.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewFBXImportPreviewDialog.h"
 
 // Qt
 #include <QAbstractListModel>
 
-#include <ui_TrackViewFBXImportPreviewDialog.h>
+#include <Maestro/Editor/ui_TrackViewFBXImportPreviewDialog.h>
 
 class FBXImportModel
     : public QAbstractListModel
@@ -139,4 +138,3 @@ void CTrackViewFBXImportPreviewDialog::OnBnUnselectAllClicked()
 {
     static_cast<FBXImportModel*>(m_ui->m_tree->model())->setAllItemsChecked(false);
 }
-

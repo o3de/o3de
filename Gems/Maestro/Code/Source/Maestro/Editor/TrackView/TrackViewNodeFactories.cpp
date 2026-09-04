@@ -6,17 +6,13 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewNodeFactories.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewNodeFactories.h"
-
-// Maestro
+#include <Maestro/Editor/TrackView/TrackViewEventNode.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
-
-// Editor
-#include "TrackViewEventNode.h"
 
 
 CTrackViewAnimNode* CTrackViewAnimNodeFactory::BuildAnimNode(IAnimSequence* pSequence, IAnimNode* pAnimNode, CTrackViewNode* pParentNode)

@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
 #include <Maestro/Bus/EditorSequenceAgentComponentBus.h>
-#include "SequenceAgent.h"
+#include <Maestro/Components/SequenceAgent.h>
 
 namespace AzToolsFramework
 {

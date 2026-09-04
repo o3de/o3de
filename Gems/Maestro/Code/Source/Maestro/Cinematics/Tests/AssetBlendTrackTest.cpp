@@ -9,11 +9,11 @@
 #if !defined(_RELEASE)
 
 #include <AnimKey.h>
-#include <Maestro/Types/AssetBlendKey.h>
-
-#include <Cinematics/AssetBlendTrack.h>
 
 #include <AzTest/AzTest.h>
+
+#include <Maestro/Cinematics/AssetBlendTrack.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
 namespace Maestro
 {

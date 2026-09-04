@@ -6,37 +6,32 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
 
 #include "EditorDefs.h"
-
-#include "Entity/EditorEntityHelpers.h"
-#include "TrackViewSequence.h"
 
 // Qt
 #include <QMessageBox>
 
-// AzCore
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/sort.h>
 
-// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 
-// CryCommon
 #include <CryCommon/MathConversion.h>
 
-// Maestro
-#include <Maestro/Types/AnimValueType.h>
-#include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewNodeFactories.h>
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 // Editor
-#include "AnimationContext.h"
 #include "Clipboard.h"
-#include "TrackViewSequenceManager.h"
-#include "TrackViewNodeFactories.h"
 
+#include "Entity/EditorEntityHelpers.h"
 
 CTrackViewSequence::CTrackViewSequence(IAnimSequence* pSequence)
     : CTrackViewAnimNode(pSequence, nullptr, nullptr)

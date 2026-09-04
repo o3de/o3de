@@ -6,10 +6,10 @@
  *
  */
 
-
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+
 #include <Maestro/Types/AssetBlendKey.h>
 
 namespace Maestro

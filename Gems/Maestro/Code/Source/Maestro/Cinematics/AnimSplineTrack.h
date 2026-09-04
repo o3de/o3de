@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include "2DSpline.h"
+
+#include <Maestro/Cinematics/2DSpline.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

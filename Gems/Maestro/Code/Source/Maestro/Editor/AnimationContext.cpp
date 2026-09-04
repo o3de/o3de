@@ -6,24 +6,22 @@
  *
  */
 
+#include <Maestro/Editor/AnimationContext.h>
 
 #include "EditorDefs.h"
-
-#include "AnimationContext.h"
-
-// Maestro
-#include <Maestro/Bus/EditorSequenceBus.h>
-#include <Maestro/Bus/EditorSequenceComponentBus.h>
-#include <Maestro/Types/AnimNodeType.h>
-
-// Editor
-#include "TrackView/TrackViewDialog.h"
-#include "ViewManager.h"
 
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
+
+#include <Maestro/Bus/EditorSequenceBus.h>
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Editor/TrackView/TrackViewDialog.h>
+#include <Maestro/Types/AnimNodeType.h>
+
+// Editor
+#include "ViewManager.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.

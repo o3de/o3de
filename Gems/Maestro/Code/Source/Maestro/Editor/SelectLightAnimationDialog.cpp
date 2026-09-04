@@ -9,12 +9,10 @@
 
 // Description : Used in a property item to select a light animation
 
+#include <Maestro/Editor/SelectLightAnimationDialog.h>
 
 #include "EditorDefs.h"
 
-#include "SelectLightAnimationDialog.h"
-
-// Maestro
 #include <Maestro/Types/AnimNodeType.h>   // for AnimNodeType
 
 //////////////////////////////////////////////////////////////////////////

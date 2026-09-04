@@ -9,13 +9,10 @@
 
 #include "EditorDefs.h"
 
-// Maestro
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
+#include <Maestro/Editor/TrackView/TVEventsDialog.h>
 #include <Maestro/Types/AnimParamType.h>
-
-// Editor
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
-#include "TVEventsDialog.h"
 
 bool CTrackEventKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

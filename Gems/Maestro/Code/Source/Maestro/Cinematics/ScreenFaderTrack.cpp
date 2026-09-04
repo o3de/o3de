@@ -6,13 +6,13 @@
  *
  */
 
-#include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Maestro/Cinematics/ScreenFaderTrack.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "ScreenFaderTrack.h"
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace Maestro
 {

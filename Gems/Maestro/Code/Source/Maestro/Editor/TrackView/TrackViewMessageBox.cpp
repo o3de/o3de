@@ -6,7 +6,7 @@
  *
  */
 
-#include "TrackViewMessageBox.h"
+#include <Maestro/Editor/TrackView/TrackViewMessageBox.h>
 
 #include <CryEdit.h>
 #include <IConsole.h>

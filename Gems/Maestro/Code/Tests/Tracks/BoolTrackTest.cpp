@@ -8,11 +8,11 @@
 
 #if !defined(_RELEASE)
 
-#include <AzTest/AzTest.h>
 #include <AnimKey.h>
-#include <Maestro/Types/AssetBlendKey.h>
-#include <Cinematics/BoolTrack.h>
+#include <AzTest/AzTest.h>
 
+#include <Maestro/Cinematics/BoolTrack.h>
+#include <Maestro/Types/AssetBlendKey.h>
 
 namespace Maestro
 {

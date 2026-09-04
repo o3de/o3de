@@ -9,10 +9,11 @@
 
 #include "EditorDefs.h"
 
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
+
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 bool C2DBezierKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {

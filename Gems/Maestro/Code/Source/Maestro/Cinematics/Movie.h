@@ -6,12 +6,9 @@
  *
  */
 
-
-// TODO - Determine if this code is deprecated. A CVar closely tied to its use was removed
-
 #pragma once
 
-#include <Maestro/IMovieSystem.h>
+// TODO - Determine if this code is deprecated. A CVar closely tied to its use was removed
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
@@ -19,6 +16,8 @@
 #include <AzCore/Time/ITime.h>
 #include <CryCommon/StlUtils.h>
 #include <CryCommon/TimeValue.h>
+
+#include <Maestro/IMovieSystem.h>
 
 struct IConsoleCmdArgs;
 

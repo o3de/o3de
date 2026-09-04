@@ -6,8 +6,10 @@
  *
  */
 
+#include <Maestro/Cinematics/GotoTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "GotoTrack.h"
+
 #include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro

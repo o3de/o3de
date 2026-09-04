@@ -6,23 +6,18 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TVEventsDialog.h>
 
 #include "EditorDefs.h"
-
-#include "TVEventsDialog.h"
 
 // Qt
 #include <QInputDialog>
 #include <QMessageBox>
 
-// Maestro
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/ui_TVEventsDialog.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
-
-// Editor
-#include "AnimationContext.h"
-
-#include <TrackView/ui_TVEventsDialog.h>
 
 // CTVEventsDialog dialog
 

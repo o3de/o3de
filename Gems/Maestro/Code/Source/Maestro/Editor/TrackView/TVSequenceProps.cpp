@@ -9,20 +9,17 @@
 
 // Description : implementation file
 
+#include <Maestro/Editor/TrackView/TVSequenceProps.h>
 
 #include "EditorDefs.h"
-
-#include "TVSequenceProps.h"
 
 // Qt
 #include <QMessageBox>
 
-// Editor
-#include "TrackViewSequence.h"
-#include "TrackViewSequenceManager.h"
-#include "AnimationContext.h"
-
-#include <TrackView/ui_TVSequenceProps.h>
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
+#include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
+#include <Maestro/Editor/TrackView/ui_TVSequenceProps.h>
 
 CTVSequenceProps::CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWidget* pParent)
     : QDialog(pParent)

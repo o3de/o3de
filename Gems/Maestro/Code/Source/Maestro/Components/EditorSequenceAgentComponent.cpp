@@ -5,24 +5,25 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorSequenceAgentComponent.h"
-#include "SequenceAgentComponent.h"
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/std/containers/set.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <Maestro/Components/EditorSequenceAgentComponent.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzFramework/Translation/TranslationDef.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/set.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <Maestro/Types/AnimParamType.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
+
+#include <Maestro/Components/SequenceAgentComponent.h>
+#include <Maestro/Types/AnimParamType.h>
 
 namespace Maestro
 {

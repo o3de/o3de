@@ -16,7 +16,6 @@
 #include <Maestro/Types/SequenceType.h>
 
 // Maestro compatibility headers
-#include <IMovieSystem.h>
 #include <CryCommon/Maestro/Bus/EditorSequenceAgentComponentBus.h>
 #include <CryCommon/Maestro/Bus/EditorSequenceBus.h>
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
@@ -28,6 +27,7 @@
 #include <CryCommon/Maestro/Types/AssetBlendKey.h>
 #include <CryCommon/Maestro/Types/AssetBlends.h>
 #include <CryCommon/Maestro/Types/SequenceType.h>
+#include <IMovieSystem.h>
 
 TEST(MaestroApiCompatibilityTests, OutOfLineAnimParamTypeSymbolsLinkFromApiTarget)
 {

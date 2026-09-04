@@ -6,13 +6,15 @@
  *
  */
 
+#include <Maestro/Cinematics/CommentNode.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "CommentNode.h"
-#include "AnimSplineTrack.h"
-#include "CommentTrack.h"
+
+#include <Maestro/Cinematics/AnimSplineTrack.h>
+#include <Maestro/Cinematics/CommentTrack.h>
 #include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

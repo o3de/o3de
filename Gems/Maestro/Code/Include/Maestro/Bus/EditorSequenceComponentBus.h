@@ -5,13 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/std/string/string.h>
+
+#include <Maestro/Bus/SequenceComponentBus.h>
 #include <Maestro/IMovieSystem.h>
 
-#include "SequenceComponentBus.h"
 enum class AnimValueType;
 
 namespace Maestro

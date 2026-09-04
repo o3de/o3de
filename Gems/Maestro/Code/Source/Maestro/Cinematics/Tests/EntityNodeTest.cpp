@@ -8,10 +8,10 @@
 
 #if !defined(_RELEASE)
 
-#include "Cinematics/CharacterTrack.h"
-#include "Cinematics/CharacterTrackAnimator.h"
-
 #include <AzTest/AzTest.h>
+
+#include <Maestro/Cinematics/CharacterTrack.h>
+#include <Maestro/Cinematics/CharacterTrackAnimator.h>
 
 namespace Maestro
 {

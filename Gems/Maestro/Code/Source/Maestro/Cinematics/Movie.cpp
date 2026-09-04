@@ -7,20 +7,8 @@
  */
 
 
-#include "Movie.h"
+#include <Maestro/Cinematics/Movie.h>
 
-#include "AnimPostFXNode.h"
-#include "AnimScreenFaderNode.h"
-#include "AnimSequence.h"
-#include "AnimSerializer.h"
-#include "AnimSplineTrack.h"
-#include "CommentNode.h"
-#include "CVarNode.h"
-#include "EventNode.h"
-#include "LayerNode.h"
-#include "SceneNode.h"
-#include "ScriptVarNode.h"
-#include "ShadowsSetupNode.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -33,12 +21,24 @@
 #include <IConsole.h>
 #include <ILog.h>
 #include <ISystem.h>
+#include <MathConversion.h>
+
 #include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Cinematics/AnimPostFXNode.h>
+#include <Maestro/Cinematics/AnimScreenFaderNode.h>
+#include <Maestro/Cinematics/AnimSequence.h>
+#include <Maestro/Cinematics/AnimSerializer.h>
+#include <Maestro/Cinematics/AnimSplineTrack.h>
+#include <Maestro/Cinematics/CommentNode.h>
+#include <Maestro/Cinematics/CVarNode.h>
+#include <Maestro/Cinematics/EventNode.h>
+#include <Maestro/Cinematics/LayerNode.h>
+#include <Maestro/Cinematics/SceneNode.h>
+#include <Maestro/Cinematics/ScriptVarNode.h>
+#include <Maestro/Cinematics/ShadowsSetupNode.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/SequenceType.h>
-#include <MathConversion.h>
-
 
 int CMovieSystem::m_mov_NoCutscenes = 0;
 #if !defined(_RELEASE)

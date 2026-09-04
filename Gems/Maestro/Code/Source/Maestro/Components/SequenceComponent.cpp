@@ -5,50 +5,49 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "SequenceComponent.h"
 
-#include <Maestro/IMovieSystem.h>
+#include <Maestro/Components/SequenceComponent.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <Maestro/Bus/SequenceAgentComponentBus.h>
-
-#include <Cinematics/Movie.h>
-#include <Cinematics/AnimSplineTrack.h>
-#include <Maestro/Types/AssetBlends.h>
+#include <Maestro/Cinematics/AnimAZEntityNode.h>
+#include <Maestro/Cinematics/AnimComponentNode.h>
+#include <Maestro/Cinematics/AnimNode.h>
+#include <Maestro/Cinematics/AnimNodeGroup.h>
+#include <Maestro/Cinematics/AnimPostFXNode.h>
+#include <Maestro/Cinematics/AnimScreenFaderNode.h>
+#include <Maestro/Cinematics/AnimSequence.h>
+#include <Maestro/Cinematics/AnimSplineTrack.h>
+#include <Maestro/Cinematics/AssetBlendTrack.h>
+#include <Maestro/Cinematics/BoolTrack.h>
+#include <Maestro/Cinematics/CaptureTrack.h>
+#include <Maestro/Cinematics/CharacterTrack.h>
+#include <Maestro/Cinematics/CommentNode.h>
+#include <Maestro/Cinematics/CommentTrack.h>
+#include <Maestro/Cinematics/CompoundSplineTrack.h>
+#include <Maestro/Cinematics/ConsoleTrack.h>
+#include <Maestro/Cinematics/CVarNode.h>
+#include <Maestro/Cinematics/EventNode.h>
+#include <Maestro/Cinematics/EventTrack.h>
+#include <Maestro/Cinematics/GotoTrack.h>
+#include <Maestro/Cinematics/LayerNode.h>
+#include <Maestro/Cinematics/LookAtTrack.h>
+#include <Maestro/Cinematics/Movie.h>
+#include <Maestro/Cinematics/SceneNode.h>
+#include <Maestro/Cinematics/ScreenFaderTrack.h>
+#include <Maestro/Cinematics/ScriptVarNode.h>
+#include <Maestro/Cinematics/SelectTrack.h>
+#include <Maestro/Cinematics/SequenceTrack.h>
+#include <Maestro/Cinematics/ShadowsSetupNode.h>
+#include <Maestro/Cinematics/SoundTrack.h>
+#include <Maestro/Cinematics/StringTrack.h>
+#include <Maestro/Cinematics/TimeRangesTrack.h>
+#include <Maestro/Cinematics/TrackEventTrack.h>
+#include <Maestro/IMovieSystem.h>
 #include <Maestro/Types/AssetBlendKey.h>
-#include <Cinematics/AssetBlendTrack.h>
-#include <Cinematics/CompoundSplineTrack.h>
-#include <Cinematics/BoolTrack.h>
-#include <Cinematics/CharacterTrack.h>
-#include <Cinematics/CaptureTrack.h>
-#include <Cinematics/CommentTrack.h>
-#include <Cinematics/ConsoleTrack.h>
-#include <Cinematics/EventTrack.h>
-#include <Cinematics/GotoTrack.h>
-#include <Cinematics/LookAtTrack.h>
-#include <Cinematics/ScreenFaderTrack.h>
-#include <Cinematics/SelectTrack.h>
-#include <Cinematics/SequenceTrack.h>
-#include <Cinematics/SoundTrack.h>
-#include <Cinematics/StringTrack.h>
-#include <Cinematics/TimeRangesTrack.h>
-#include <Cinematics/TrackEventTrack.h>
-
-#include <Cinematics/AnimSequence.h>
-#include <Cinematics/AnimNode.h>
-#include <Cinematics/AnimNodeGroup.h>
-#include <Cinematics/SceneNode.h>
-#include <Cinematics/AnimAZEntityNode.h>
-#include <Cinematics/AnimComponentNode.h>
-#include <Cinematics/AnimScreenFaderNode.h>
-#include <Cinematics/CommentNode.h>
-#include <Cinematics/CVarNode.h>
-#include <Cinematics/ScriptVarNode.h>
-#include <Cinematics/AnimPostFXNode.h>
-#include <Cinematics/EventNode.h>
-#include <Cinematics/LayerNode.h>
-#include <Cinematics/ShadowsSetupNode.h>
+#include <Maestro/Types/AssetBlends.h>
 
 namespace Maestro
 {

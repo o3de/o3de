@@ -6,20 +6,8 @@
  *
  */
 
-#include "AnimAZEntityNode.h"
-#include "AnimComponentNode.h"
-#include "AnimSequence.h"
-#include "AnimTrack.h"
-#include "CaptureTrack.h"
-#include "ConsoleTrack.h"
-#include "EventTrack.h"
-#include "GotoTrack.h"
-#include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimParamType.h>
-#include <Maestro/Types/AnimValueType.h>
-#include "Movie.h"
-#include "SceneNode.h"
-#include "SequenceTrack.h"
+#include <Maestro/Cinematics/SceneNode.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MathUtils.h>
@@ -32,6 +20,20 @@
 #include <IConsole.h>
 #include <ISystem.h>
 #include <MathConversion.h>
+
+#include <Maestro/Cinematics/AnimAZEntityNode.h>
+#include <Maestro/Cinematics/AnimComponentNode.h>
+#include <Maestro/Cinematics/AnimSequence.h>
+#include <Maestro/Cinematics/AnimTrack.h>
+#include <Maestro/Cinematics/CaptureTrack.h>
+#include <Maestro/Cinematics/ConsoleTrack.h>
+#include <Maestro/Cinematics/EventTrack.h>
+#include <Maestro/Cinematics/GotoTrack.h>
+#include <Maestro/Cinematics/Movie.h>
+#include <Maestro/Cinematics/SequenceTrack.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
 
 namespace Maestro
 {

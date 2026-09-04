@@ -8,19 +8,16 @@
 
 #include "EditorDefs.h"
 
-
-// AzCore
 #include <AzCore/Asset/AssetManagerBus.h>
 
-// Maestro
 #include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/AnimValueType.h>
 #include <Maestro/Types/AssetBlendKey.h>
 
 // Editor
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
 
 void CAssetBlendKeyUIControls::ResetStartEndLimits(float assetBlendKeyDuration)

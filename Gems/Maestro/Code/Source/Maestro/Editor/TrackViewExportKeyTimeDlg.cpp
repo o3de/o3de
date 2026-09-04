@@ -6,12 +6,11 @@
  *
  */
 
+#include <Maestro/Editor/TrackViewExportKeyTimeDlg.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewExportKeyTimeDlg.h"
-
-#include <ui_TrackViewExportKeyTimeDlg.h>
+#include <Maestro/Editor/ui_TrackViewExportKeyTimeDlg.h>
 
 //////////////////////////////////////////////////////////////////////////
 CTrackViewExportKeyTimeDlg::CTrackViewExportKeyTimeDlg(QWidget* parent)
@@ -36,4 +35,3 @@ bool CTrackViewExportKeyTimeDlg::IsSoundExportChecked() const
 {
     return m_ui->m_soundTimeExport->isChecked();
 }
-

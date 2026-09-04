@@ -6,8 +6,9 @@
  *
  */
 
+#include <Maestro/Cinematics/SequenceTrack.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
-#include "SequenceTrack.h"
 
 namespace Maestro
 {

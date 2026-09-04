@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+
 #include <Maestro/Bus/SequenceComponentBus.h>
 
 namespace Maestro

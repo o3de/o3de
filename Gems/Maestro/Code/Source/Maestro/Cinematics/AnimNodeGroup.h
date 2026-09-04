@@ -6,13 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : Anim Node Group
 
-#pragma once
-
+#include <Maestro/Cinematics/AnimNode.h>
 #include <Maestro/IMovieSystem.h>
-#include "AnimNode.h"
 
 namespace Maestro
 {

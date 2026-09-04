@@ -6,14 +6,11 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewEventNode.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewEventNode.h"
-
-// Maestro
 #include <Maestro/Types/AnimParamType.h>
-
 
 CTrackViewEventNode::CTrackViewEventNode(IAnimSequence* pSequence, IAnimNode* pAnimNode, CTrackViewNode* pParentNode)
     : CTrackViewAnimNode(pSequence, pAnimNode, pParentNode)

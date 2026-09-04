@@ -7,23 +7,23 @@
  */
 
 
-#include "AnimComponentNode.h"
+#include <Maestro/Cinematics/AnimComponentNode.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 
-#include <Maestro/Bus/EditorSequenceComponentBus.h>
-#include <Maestro/Bus/SequenceComponentBus.h>
-
-#include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimValueType.h>
-#include <Maestro/Types/AnimParamType.h>
-#include <Maestro/Types/AssetBlends.h>
 #include <MathConversion.h>
 
-#include "CharacterTrack.h"
+#include <Maestro/Bus/EditorSequenceComponentBus.h>
+#include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Cinematics/CharacterTrack.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
+#include <Maestro/Types/AssetBlends.h>
 
 namespace Maestro
 {
