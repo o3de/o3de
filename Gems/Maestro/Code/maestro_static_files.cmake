@@ -9,7 +9,6 @@
 set(FILES
     Source/Maestro/Cinematics/ShadowsSetupNode.h
     Source/Maestro/Cinematics/ShadowsSetupNode.cpp
-    Include/Maestro/MaestroBus.h
     Source/Maestro/MaestroSystemComponent.cpp
     Source/Maestro/MaestroSystemComponent.h
     Source/Maestro/Cinematics/AnimSerializer.cpp
