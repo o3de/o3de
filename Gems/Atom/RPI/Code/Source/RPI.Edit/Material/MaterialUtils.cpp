@@ -121,7 +121,7 @@ namespace AZ
                 AZ::JsonImportSettings importSettings;
                 importSettings.m_importer = &jsonImporter;
                 importSettings.m_loadedJsonPath = filePath;
-                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ResolveImports(*document, document->GetAllocator(), importSettings);
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ResolveImports(document->GetObject(), document->GetAllocator(), importSettings);
                 if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
                 {
                     AZ_Error("MaterialUtils", false, "%s", result.ToString(filePath).c_str());

@@ -99,7 +99,7 @@ namespace AzToolsFramework
             }
             else
             {
-                patchesIter->value = linkPatch.Move();
+                patchesIter->value = AZStd::move(linkPatch.GetArray());
             }
         }
 
