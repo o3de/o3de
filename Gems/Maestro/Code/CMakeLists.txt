@@ -82,6 +82,21 @@ o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
+        NAME ${gem_name}.Editor.API INTERFACE
+        NAMESPACE Gem
+        FILES_CMAKE
+            maestro_editor_api_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Include
+        BUILD_DEPENDENCIES
+            INTERFACE
+                3rdParty::Qt::Core
+                AZ::AzToolsFramework
+                Gem::${gem_name}.API
+    )
+
+    ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
@@ -106,6 +121,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::${gem_name}.Static
             PUBLIC
+                Gem::${gem_name}.Editor.API
                 Gem::Atom_Bootstrap.Headers
                 Gem::Atom_RHI.Public
                 Gem::Atom_RHI.Reflect
@@ -117,6 +133,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     # the .Editor variant is used in dev tools:
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+    ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
+
+    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 
 endif()
 
