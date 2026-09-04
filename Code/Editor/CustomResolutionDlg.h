@@ -6,13 +6,13 @@
  *
  */
 
+#pragma once
 
 // Description : A dialog for getting a resolution info from users
 
 //  Notice     : Refer to ViewportTitleDlg.cpp for a use case.
 
-
-#pragma once
+#include <SandboxAPI.h>
 
 #include <QDialog>
 
@@ -21,7 +21,7 @@ namespace Ui
     class CustomResolutionDlg;
 }
 
-class CCustomResolutionDlg
+class SANDBOX_API CCustomResolutionDlg
     : public QDialog
 {
     Q_OBJECT

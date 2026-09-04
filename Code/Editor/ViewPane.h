@@ -34,7 +34,7 @@ namespace AzToolsFramework
 /////////////////////////////////////////////////////////////////////////////
 // CViewPane view
 
-class CLayoutViewPane
+class SANDBOX_API CLayoutViewPane
     : public AzQtComponents::ToolBarArea
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
