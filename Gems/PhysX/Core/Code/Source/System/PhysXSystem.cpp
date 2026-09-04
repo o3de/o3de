@@ -305,8 +305,6 @@ namespace PhysX
             {
                 if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
-                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecPhysXSimulationTime);
-
                     //! One write lock for the whole step, so the main tick's publication lock waits
                     //! it out. The locks inside recurse on this thread, which PhysX allows.
                     PHYSX_SCENE_WRITE_LOCK(static_cast<physx::PxScene*>(scenePtr->GetNativePointer()));
@@ -393,7 +391,6 @@ namespace PhysX
                 : AzPhysics::SystemConfiguration::DefaultFixedTimestep;
 
             SimulateScenes(fixedTimestep, 1);
-            m_performanceCollector->FrameTick();
 
             constexpr float realTimeFactor = 1.0f;
 
