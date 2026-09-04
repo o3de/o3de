@@ -6,20 +6,18 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewTimeline.h>
 
 #include "EditorDefs.h"
 
-#include "TrackViewTimeline.h"
-
-// Editor
-#include "AnimationContext.h"
+#include <Maestro/Editor/AnimationContext.h>
 
 namespace TrackView
 {
     void CTrackViewTimelineWidget::mousePressEvent(QMouseEvent* event)
     {
-        m_stashedRecordModeWhileTimeDragging = GetIEditor()->GetAnimation()->IsRecordMode();
-        GetIEditor()->GetAnimation()->SetRecording(false);  // disable recording while dragging time
+        m_stashedRecordModeWhileTimeDragging = Maestro::Editor::GetAnimation()->IsRecordMode();
+        Maestro::Editor::GetAnimation()->SetRecording(false);  // disable recording while dragging time
 
         TimelineWidget::mousePressEvent(event);
     }
@@ -30,7 +28,7 @@ namespace TrackView
     
         if (m_stashedRecordModeWhileTimeDragging)
         {
-            GetIEditor()->GetAnimation()->SetRecording(true);   // restore recording
+            Maestro::Editor::GetAnimation()->SetRecording(true);   // restore recording
             m_stashedRecordModeWhileTimeDragging = false;       // reset stash
         }
     }

@@ -1266,7 +1266,7 @@ CTrackViewAnimNodeBundle CTrackViewAnimNode::AddSelectedEntities(const AZStd::ve
         }
 
         // Check if object already assigned to some AnimNode.
-        if (CTrackViewAnimNode* existingNode = GetIEditor()->GetSequenceManager()->GetActiveAnimNode(entityId))
+        if (CTrackViewAnimNode* existingNode = Maestro::Editor::GetSequenceManager()->GetActiveAnimNode(entityId))
         {
             // If it has the same director than the current node, reject it
             if (existingNode->GetDirector() == GetDirector())
@@ -2244,7 +2244,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::AddComponent(const AZ::Component* compon
 
 bool CTrackViewAnimNode::IsTransformAnimParamTypeDelegated(const AnimParamType animParamType) const
 {
-    const bool delegated = (GetIEditor()->GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) &&
+    const bool delegated = (Maestro::Editor::GetAnimation()->IsRecording() && AzToolsFramework::IsSelected(m_nodeEntityId) &&
                              GetTrackForParameter(animParamType)) ||
         CheckTrackAnimated(animParamType);
     return delegated;

@@ -6,16 +6,15 @@
  *
  */
 
+#pragma once
 
 // Description : Base of all Animation Nodes
 
-#pragma once
-
-#include <Maestro/IMovieSystem.h>
-
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include "Movie.h"
+
+#include <Maestro/Cinematics/Movie.h>
+#include <Maestro/IMovieSystem.h>
 
 namespace Maestro
 {

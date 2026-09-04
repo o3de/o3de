@@ -34,7 +34,6 @@ class AzAssetWindow;
 class CEditorFileMonitor;
 class CErrorsDlg;
 class CGameEngine;
-class CTrackViewSequenceManager;
 class CUndoManager;
 class CVegetationMap;
 class QMenu;
@@ -146,7 +145,6 @@ public:
 
     void UpdateViews(int flags, const AZ::Aabb* updateRegion) override;
     void ResetViews() override;
-    void ReloadTrackView() override;
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified() override;
 
@@ -189,11 +187,6 @@ public:
     bool FlushUndo(bool isShowMessage = false) override;
     bool ClearLastUndoSteps(int steps) override;
     bool ClearRedoStack() override;
-    //! Retrieve current animation context.
-    CAnimationContext* GetAnimation() override;
-    CTrackViewSequenceManager* GetSequenceManager() override;
-    ITrackViewSequenceManager* GetSequenceManagerInterface() override;
-
     CToolBoxManager* GetToolBoxManager() override { return m_pToolBoxManager; };
     IErrorReport* GetErrorReport() override { return m_pErrorReport; }
     IErrorReport* GetLastLoadedLevelErrorReport() override { return m_pLasLoadedLevelErrorReport; }
@@ -240,8 +233,6 @@ protected:
     QString m_userFolder;
     bool m_bSelectionLocked;
     CGameEngine* m_pGameEngine;
-    CAnimationContext* m_pAnimationContext;
-    CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
     CMusicManager* m_pMusicManager;
     CErrorReport* m_pErrorReport;
@@ -275,4 +266,3 @@ protected:
 
     static const char* m_crashLogFileName;
 };
-

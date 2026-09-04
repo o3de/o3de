@@ -92,7 +92,7 @@ bool CAssetBlendKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& s
 
 void CAssetBlendKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || !selectedKeys.AreAllKeysOfSameType() || m_skipOnUIChange || selectedKeys.GetKeyCount() < 1)
     {

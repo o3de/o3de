@@ -69,7 +69,7 @@ bool C2DBezierKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& sel
 // Called when UI variable changes.
 void C2DBezierKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!sequence || !selectedKeys.AreAllKeysOfSameType() || m_skipOnUIChange)
     {

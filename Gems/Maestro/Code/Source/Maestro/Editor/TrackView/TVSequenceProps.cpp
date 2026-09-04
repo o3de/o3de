@@ -138,7 +138,7 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
 
     m_pSequence->SetTimeRange(timeRange);
 
-    CAnimationContext* ac = GetIEditor()->GetAnimation();
+    CAnimationContext* ac = Maestro::Editor::GetAnimation();
     if (ac)
     {
         ac->UpdateTimeRange();
@@ -148,7 +148,7 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
     if (name != seqName)
     {
         // Rename sequence.
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
 
         sequenceManager->RenameNode(m_pSequence, name.toUtf8().data());
     }

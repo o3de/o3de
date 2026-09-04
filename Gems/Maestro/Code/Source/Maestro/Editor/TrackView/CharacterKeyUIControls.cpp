@@ -126,7 +126,7 @@ bool CCharacterKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selected
 // Called when UI variable changes.
 void CCharacterKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || !selectedKeys.AreAllKeysOfSameType())
     {

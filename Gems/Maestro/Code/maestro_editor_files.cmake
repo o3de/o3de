@@ -7,6 +7,9 @@
 #
 
 set(FILES
+    Source/Maestro/Editor/MaestroEditorServices.h
+    Source/Maestro/Editor/MaestroEditorSystemComponent.h
+    Source/Maestro/Editor/MaestroEditorSystemComponent.cpp
     Source/Maestro/Components/EditorSequenceAgentComponent.h
     Source/Maestro/Components/EditorSequenceAgentComponent.cpp
     Source/Maestro/Components/EditorSequenceComponent.h
@@ -34,6 +37,7 @@ set(FILES
     Source/Maestro/Editor/TrackView/Legacy/trackview_view.bmp
     Source/Maestro/Editor/TrackView/TrackViewDialog.cpp
     Source/Maestro/Editor/TrackView/TrackViewDialog.h
+    Source/Maestro/Editor/TrackView/TrackViewResource.h
     Source/Maestro/Editor/TrackView/TrackViewDopeSheetBase.cpp
     Source/Maestro/Editor/TrackView/TrackViewDopeSheetBase.h
     Source/Maestro/Editor/TrackView/TrackViewDoubleSpinBox.cpp

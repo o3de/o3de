@@ -6,26 +6,22 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewPythonFuncs.h>
 
 #include "EditorDefs.h"
-
-#include "TrackViewPythonFuncs.h"
-
-// Maestro
-#include <Maestro/Types/AnimNodeType.h>
-#include <Maestro/Types/AnimParamType.h>
-#include <Maestro/Types/AnimValueType.h>
-
-// Editor
-#include "AnimationContext.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/iterator.h>
 
+#include <Maestro/Editor/AnimationContext.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
+#include <Maestro/Types/AnimValueType.h>
+
 namespace
 {
-    CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
+    CTrackViewSequence* GetPythonSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
         // the "name" string will be an AZ::EntityId in string form if this was called from
         // TrackView code. But for backward compatibility we also support a sequence name.
@@ -57,7 +53,7 @@ namespace
     // Misc
     void PyTrackViewSetRecording(bool bRecording)
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         if (pAnimationContext)
         {
             pAnimationContext->SetRecording(bRecording);
@@ -67,7 +63,7 @@ namespace
     // Sequences
     void PyTrackViewNewSequence(const char* name, int sequenceType)
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
 
         CTrackViewSequence* pSequence = pSequenceManager->GetSequenceByName(name);
         if (pSequence)
@@ -81,8 +77,8 @@ namespace
 
     void PyTrackViewDeleteSequence(const char* name)
     {
-        CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        CTrackViewSequence* pSequence = GetSequenceByEntityIdOrName(pSequenceManager, name);
+        CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
+        CTrackViewSequence* pSequence = GetPythonSequenceByEntityIdOrName(pSequenceManager, name);
         if (pSequence)
         {
             pSequenceManager->DeleteSequence(pSequence);
@@ -94,9 +90,9 @@ namespace
 
     void PyTrackViewSetCurrentSequence(const char* name)
     {
-        const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
-        CTrackViewSequence* sequence = GetSequenceByEntityIdOrName(sequenceManager, name);
-        CAnimationContext* animationContext = GetIEditor()->GetAnimation();
+        const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
+        CTrackViewSequence* sequence = GetPythonSequenceByEntityIdOrName(sequenceManager, name);
+        CAnimationContext* animationContext = Maestro::Editor::GetAnimation();
         bool force = false;
         bool noNotify = false;
         bool user = true;
@@ -105,7 +101,7 @@ namespace
 
     int PyTrackViewGetNumSequences()
     {
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
         AZ_TracePrintf("", "PyTrackViewGetNumSequences called")
         return pSequenceManager->GetCount();
     }
@@ -114,7 +110,7 @@ namespace
     {
         if (static_cast<int>(index) < PyTrackViewGetNumSequences())
         {
-            const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+            const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
             return pSequenceManager->GetSequenceByIndex(index)->GetName();
         }
 
@@ -123,8 +119,8 @@ namespace
 
     Range PyTrackViewGetSequenceTimeRange(const char* name)
     {
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        CTrackViewSequence* pSequence = GetSequenceByEntityIdOrName(pSequenceManager, name);
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
+        CTrackViewSequence* pSequence = GetPythonSequenceByEntityIdOrName(pSequenceManager, name);
         if (!pSequence)
         {
             throw std::runtime_error("A sequence with this name doesn't exists");
@@ -135,8 +131,8 @@ namespace
 
     void PyTrackViewSetSequenceTimeRange(const char* name, float start, float end)
     {
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
-        CTrackViewSequence* pSequence = GetSequenceByEntityIdOrName(pSequenceManager, name);
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
+        CTrackViewSequence* pSequence = GetPythonSequenceByEntityIdOrName(pSequenceManager, name);
         if (!pSequence)
         {
             throw std::runtime_error("A sequence with this name doesn't exists");
@@ -149,7 +145,7 @@ namespace
 
     void PyTrackViewPlaySequence()
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         if (pAnimationContext->IsPlaying())
         {
             throw std::runtime_error("A sequence is already playing");
@@ -160,7 +156,7 @@ namespace
 
     void PyTrackViewStopSequence()
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         if (!pAnimationContext->IsPlaying())
         {
             throw std::runtime_error("No sequence is playing");
@@ -171,14 +167,14 @@ namespace
 
     void PyTrackViewSetSequenceTime(float time)
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         pAnimationContext->SetTime(time);
     }
 
     // Nodes
     void PyTrackViewAddNode(const char* nodeTypeString, const char* nodeName)
     {
-        CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
         if (!pSequence)
         {
             throw std::runtime_error("No sequence is active");
@@ -201,7 +197,7 @@ namespace
 
     void PyTrackViewAddSelectedEntities()
     {
-        CAnimationContext* animationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* animationContext = Maestro::Editor::GetAnimation();
         CTrackViewSequence* sequence = animationContext->GetSequence();
         if (!sequence)
         {
@@ -221,7 +217,7 @@ namespace
 
     void PyTrackViewAddLayerNode()
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         CTrackViewSequence* pSequence = pAnimationContext->GetSequence();
         if (!pSequence)
         {
@@ -234,7 +230,7 @@ namespace
 
     CTrackViewAnimNode* GetNodeFromName(const char* nodeName, const char* parentDirectorName)
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         CTrackViewSequence* pSequence = pAnimationContext->GetSequence();
         if (!pSequence)
         {
@@ -339,7 +335,7 @@ namespace
 
     int PyTrackViewGetNumNodes(AZStd::string_view parentDirectorName)
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         CTrackViewSequence* pSequence = pAnimationContext->GetSequence();
         if (!pSequence)
         {
@@ -364,7 +360,7 @@ namespace
 
     AZStd::string PyTrackViewGetNodeName(int index, AZStd::string_view parentDirectorName)
     {
-        CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+        CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
         CTrackViewSequence* pSequence = pAnimationContext->GetSequence();
         if (!pSequence)
         {

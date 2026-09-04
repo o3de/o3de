@@ -135,12 +135,12 @@ void CTrackViewFindDlg::ProcessSel()
         int sourceIndex = m_objsSourceIndex[index];
         ObjName object = m_objs[sourceIndex];
 
-        const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+        const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
         CTrackViewSequence* pSequence = pSequenceManager->GetSequenceByName(object.m_seqName);
 
         if (pSequence)
         {
-            CAnimationContext* pAnimationContext = GetIEditor()->GetAnimation();
+            CAnimationContext* pAnimationContext = Maestro::Editor::GetAnimation();
             pAnimationContext->SetSequence(pSequence, false, false);
 
             CTrackViewAnimNode* pParentDirector = pSequence;

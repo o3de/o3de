@@ -30,19 +30,18 @@
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Archive/IArchive.h>
 
-// Editor
-#include "IEditorImpl.h"
-#include "CryEditDoc.h"
-#include "Settings.h"
+// AzToolsFramework
+#include <AzToolsFramework/API/EditorSequenceSystemLifecycle.h>
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
+#include "IEditorImpl.h"
+#include "CryEditDoc.h"
+#include "Settings.h"
 #include "CryEdit.h"
-
 #include "ViewManager.h"
-#include "AnimationContext.h"
 #include "MainWindow.h"
 
 // Implementation of System Callback structure.
@@ -243,10 +242,9 @@ CGameEngine::~CGameEngine()
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
 
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        movieSystem->SetCallback(nullptr);
+        sequenceSystem->OnEditorGameEngineShutdown();
     }
 
     delete m_pISystem;
@@ -412,10 +410,9 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     SetEditorCoreEnvironment(gEnv);
 
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
+        sequenceSystem->OnEditorGameEngineInitialized(m_bSimulationMode);
     }
 
     CLogFile::AboutSystem();
@@ -503,19 +500,16 @@ void CGameEngine::SwitchToInGame()
 
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        movieSystem->EnablePhysicsEvents(true);
+        sequenceSystem->OnBeginGameMode();
     }
 
     m_bInGameMode = true;
 
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        constexpr bool playOnReset = true;
-        constexpr bool seekToStart = false;
-        movieSystem->Reset(playOnReset, seekToStart);
+        sequenceSystem->OnGameModeStarted();
     }
 
     // Transition to runtime entity context.
@@ -537,24 +531,16 @@ void CGameEngine::SwitchToInEditor()
     // Transition to editor entity context.
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StopPlayInEditor);
 
-    // Reset movie system
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        for (int i = movieSystem->GetNumPlayingSequences(); --i >= 0;)
-        {
-            movieSystem->GetPlayingSequence(i)->Deactivate();
-        }
-        constexpr bool playOnReset = false;
-        constexpr bool seekToStart = false;
-        movieSystem->Reset(playOnReset, seekToStart);
+        sequenceSystem->OnGameModeStopped();
     }
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        movieSystem->EnablePhysicsEvents(m_bSimulationMode);
+        sequenceSystem->OnEndGameMode(m_bSimulationMode);
     }
 
     m_bInGameMode = false;
@@ -659,10 +645,9 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
         return;
     }
 
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        movieSystem->EnablePhysicsEvents(enabled);
+        sequenceSystem->OnSimulationModeChanged(enabled);
     }
 
     if (enabled)
@@ -792,7 +777,10 @@ void CGameEngine::Update()
         // [marco] check current sound and vis areas for music etc.
         // but if in game mode, 'cos is already done in the above call to game->update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
-        GetIEditor()->GetAnimation()->Update();
+        if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
+        {
+            sequenceSystem->OnEditorUpdate();
+        }
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
         componentApplication->Tick();
         GetIEditor()->GetSystem()->UpdatePostTickBus(updateFlags);

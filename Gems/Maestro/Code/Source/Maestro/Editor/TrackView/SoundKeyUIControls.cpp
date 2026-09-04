@@ -45,7 +45,7 @@ bool CSoundKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& select
 // Called when UI variable changes.
 void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || !selectedKeys.AreAllKeysOfSameType())
     {

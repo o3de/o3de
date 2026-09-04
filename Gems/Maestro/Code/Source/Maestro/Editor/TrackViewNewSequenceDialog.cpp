@@ -68,9 +68,9 @@ class CTVNewSequenceDialogValidator : public QValidator
             }
             else
             {
-                for (unsigned int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
+                for (unsigned int k = 0; k < Maestro::Editor::GetSequenceManager()->GetCount(); ++k)
                 {
-                    CTrackViewSequence* pSequence = GetIEditor()->GetSequenceManager()->GetSequenceByIndex(k);
+                    CTrackViewSequence* pSequence = Maestro::Editor::GetSequenceManager()->GetSequenceByIndex(k);
                     const QString fullname = QString::fromUtf8(pSequence->GetName().c_str());
 
                     if (fullname.compare(input, Qt::CaseInsensitive) == 0)
@@ -143,4 +143,3 @@ void CTVNewSequenceDialog::showEvent(QShowEvent* event)
 
     QDialog::showEvent(event);
 }
-

@@ -36,7 +36,7 @@ public:
         {
             return 0;
         }
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
         return sequence->GetTrackEventsCount();
     }
@@ -55,7 +55,7 @@ public:
 
         bool result = true;
 
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
 
         AzToolsFramework::ScopedUndoBatch undo("Remove Track Event");
@@ -89,7 +89,7 @@ public:
 
     bool AddRow(const QString& name)
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
         const int index = rowCount();
         beginInsertRows(QModelIndex(), index, index);
@@ -110,7 +110,7 @@ public:
 
     bool MoveRow(const QModelIndex& index, bool up)
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
         if (!index.isValid() || (up && index.row() == 0) || (!up && index.row() == rowCount() - 1))
         {
@@ -139,7 +139,7 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
         if (role != Qt::DisplayRole)
         {
@@ -164,7 +164,7 @@ public:
 
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override
     {
-        CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+        CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
         AZ_Assert(sequence, "Sequence is null");
         if (role != Qt::DisplayRole && role != Qt::EditRole)
         {
@@ -293,7 +293,7 @@ void CTVEventsDialog::OnInitDialog()
     m_ui->m_List->setModel(new TVEventsModel(this));
     m_ui->m_List->header()->resizeSections(QHeaderView::ResizeToContents);
 
-    AZ_Assert(GetIEditor()->GetAnimation()->GetSequence(), "Current sequence is null");
+    AZ_Assert(Maestro::Editor::GetAnimation()->GetSequence(), "Current sequence is null");
 
     UpdateButtons();
 }
@@ -341,7 +341,7 @@ const QString& CTVEventsDialog::GetLastAddedEvent()
 
 int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float& timeFirstUsed) const
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     int usageCount = 0;
     float firstTime = std::numeric_limits<float>::max();

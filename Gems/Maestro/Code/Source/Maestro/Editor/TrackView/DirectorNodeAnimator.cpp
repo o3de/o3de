@@ -198,7 +198,7 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
 
 void CDirectorNodeAnimator::UnBind([[maybe_unused]] CTrackViewAnimNode* pNode)
 {
-    const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
+    const CTrackViewSequenceManager* pSequenceManager = Maestro::Editor::GetSequenceManager();
 
     const unsigned int numSequences = pSequenceManager->GetCount();
     for (unsigned int sequenceIndex = 0; sequenceIndex < numSequences; ++sequenceIndex)
@@ -221,7 +221,7 @@ void CDirectorNodeAnimator::UnBind([[maybe_unused]] CTrackViewAnimNode* pNode)
 /*static*/ CTrackViewSequence* CDirectorNodeAnimator::GetSequenceFromSequenceKey(const ISequenceKey& sequenceKey)
 {
     CTrackViewSequence* retSequence = nullptr;
-    const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
+    const CTrackViewSequenceManager* sequenceManager = Maestro::Editor::GetSequenceManager();
 
     if (sequenceManager)
     {

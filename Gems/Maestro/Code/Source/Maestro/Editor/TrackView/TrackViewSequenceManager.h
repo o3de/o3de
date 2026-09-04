@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include "TrackViewSequence.h"
-
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <Maestro/Editor/ITrackViewSequenceManager.h>
+#include <Maestro/Editor/MaestroEditorServices.h>
+#include <Maestro/Editor/TrackView/TrackViewSequence.h>
 
 class CTrackViewSequenceManager
     : public IEditorNotifyListener

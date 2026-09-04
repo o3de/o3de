@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #include <AzCore/PlatformDef.h>
@@ -90,8 +89,6 @@
 #include <ISystem.h>
 #include <IIndexedMesh.h>
 #include <IXml.h>
-#include <IMovieSystem.h>
-
 //////////////////////////////////////////////////////////////////////////
 // Commonly used Editor includes.
 //////////////////////////////////////////////////////////////////////////

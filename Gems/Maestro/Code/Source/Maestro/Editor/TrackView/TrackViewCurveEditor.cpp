@@ -32,7 +32,7 @@ CTrackViewCurveEditor::CTrackViewCurveEditor(QWidget* parent)
     m_bLevelClosing = false;
     m_bIgnoreSelfEvents = false;
     GetIEditor()->RegisterNotifyListener(this);
-    GetIEditor()->GetAnimation()->AddListener(this);
+    Maestro::Editor::GetAnimation()->AddListener(this);
 
     m_timelineCtrl.SetTimeRange(Range(0, 1));
     m_timelineCtrl.SetTicksTextScale(1.0f);
@@ -61,7 +61,7 @@ CTrackViewCurveEditor::CTrackViewCurveEditor(QWidget* parent)
 
 CTrackViewCurveEditor::~CTrackViewCurveEditor()
 {
-    GetIEditor()->GetAnimation()->RemoveListener(this);
+    Maestro::Editor::GetAnimation()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
 
@@ -96,7 +96,7 @@ void CTrackViewCurveEditor::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CTrackViewCurveEditor::UpdateSplines()
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || m_bLevelClosing)
     {
@@ -223,7 +223,7 @@ void CTrackViewCurveEditor::showEvent(QShowEvent* event)
 
 void CTrackViewCurveEditor::OnSplineChange()
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
     if (pSequence)
     {
         pSequence->OnKeysChanged();
@@ -241,7 +241,7 @@ void CTrackViewCurveEditor::OnSplineCmd(unsigned int cmd)
 
 void CTrackViewCurveEditor::OnSplineCmdUpdateUI()
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (m_bLevelClosing || !pSequence)
     {
@@ -269,13 +269,13 @@ void CTrackViewCurveEditor::SetEditLock(bool bLock)
 void CTrackViewCurveEditor::OnTimelineChange()
 {
     float fTime = m_timelineCtrl.GetTimeMarker();
-    GetIEditor()->GetAnimation()->SetTime(fTime);
+    Maestro::Editor::GetAnimation()->SetTime(fTime);
 }
 
 void CTrackViewCurveEditor::OnSplineTimeMarkerChange()
 {
     float fTime = m_ui->m_wndSpline->GetTimeMarker();
-    GetIEditor()->GetAnimation()->SetTime(fTime);
+    Maestro::Editor::GetAnimation()->SetTime(fTime);
 }
 
 void CTrackViewCurveEditor::SetFPS(float fps)

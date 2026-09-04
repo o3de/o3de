@@ -6,29 +6,25 @@
  *
  */
 
+#include <Maestro/Editor/TrackView/TrackViewKeyPropertiesDlg.h>
 
 #include "EditorDefs.h"
-
-#include "KeyUIControls.h"
-#include "TrackViewKeyPropertiesDlg.h"
 
 // Qt
 #include <QMessageBox>
 
-// AzCore
 #include <AzCore/std/sort.h>
 
-// Maestro
+#include <Maestro/Editor/TrackView/KeyUIControls.h>
+#include <Maestro/Editor/TrackView/ui_TrackViewTrackPropsDlg.h>
 #include <Maestro/Types/AnimValueType.h>
 
 // Editor
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h"
 
-#include <TrackView/ui_TrackViewTrackPropsDlg.h>
-
 void CTrackViewKeyUIControls::OnInternalVariableChange(IVariable* var)
 {
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* sequence = Maestro::Editor::GetAnimation()->GetSequence();
     AZ_Assert(sequence, "Expected valid sequence.");
     if (sequence)
     {
@@ -320,7 +316,7 @@ CTrackViewTrackPropsDlg::~CTrackViewTrackPropsDlg()
 
 void CTrackViewTrackPropsDlg::OnSequenceChanged()
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (pSequence)
     {

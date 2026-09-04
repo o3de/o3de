@@ -6,20 +6,20 @@
  *
  */
 
-
-// Description : A dialog for batch-rendering sequences
-
 #pragma once
 
-#include "AtomOutputFrameCapture.h"
-
-#include <AzFramework/StringFunc/StringFunc.h>
+// Description : A dialog for batch-rendering sequences
 
 #include <QDialog>
 #include <QTimer>
 #include <QValidator>
 
 #include <AzCore/std/containers/vector.h>
+
+#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <Maestro/Editor/TrackView/AtomOutputFrameCapture.h>
+#include <Maestro/IMovieSystem.h>
 
 class QStringListModel;
 

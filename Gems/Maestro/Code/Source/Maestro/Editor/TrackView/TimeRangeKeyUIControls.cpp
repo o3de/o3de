@@ -47,7 +47,7 @@ bool CTimeRangeKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& se
 // Called when UI variable changes.
 void CTimeRangeKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys)
 {
-    CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
+    CTrackViewSequence* pSequence = Maestro::Editor::GetAnimation()->GetSequence();
 
     if (!pSequence || !selectedKeys.AreAllKeysOfSameType())
     {
