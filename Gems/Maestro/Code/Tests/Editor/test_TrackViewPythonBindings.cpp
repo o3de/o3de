@@ -16,6 +16,7 @@
 #include <Util/EditorUtils.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
 
@@ -48,6 +49,11 @@ namespace TrackViewPythonBindingsUnitTests
             m_app.Stop();
         }
     };
+
+    TEST_F(TrackViewPythonBindingsFixture, TrackViewEditorCommands_HaveModuleComponentReflection)
+    {
+        EXPECT_NE(m_app.GetSerializeContext()->FindClassData(azrtti_typeid<AzToolsFramework::TrackViewFuncsHandler>()), nullptr);
+    }
 
     TEST_F(TrackViewPythonBindingsFixture, TrackViewEditorCommands_ApiExists)
     {
@@ -108,13 +114,18 @@ namespace TrackViewPythonBindingsUnitTests
         }
     };
 
+    TEST_F(TrackViewComponentFixture, TrackViewComponent_HasModuleComponentReflection)
+    {
+        EXPECT_NE(m_app.GetSerializeContext()->FindClassData(azrtti_typeid<AzToolsFramework::TrackViewComponent>()), nullptr);
+    }
+
     TEST_F(TrackViewComponentFixture, TrackViewComponent_ApiExists)
     {
         AZ::BehaviorContext* behaviorContext = m_app.GetBehaviorContext();
         ASSERT_TRUE(behaviorContext);
 
-        auto itTrackViewBus = behaviorContext->m_ebuses.find("TrackViewBus");
-        if (itTrackViewBus != behaviorContext->m_ebuses.end())
+        auto itTrackViewBus = behaviorContext->m_ebuses.find("EditorLayerTrackViewRequestBus");
+        ASSERT_NE(itTrackViewBus, behaviorContext->m_ebuses.end());
         {
             AZ::BehaviorEBus* behaviorBus = itTrackViewBus->second;
             EXPECT_TRUE(behaviorBus->m_events.find("AddNode") != behaviorBus->m_events.end());
