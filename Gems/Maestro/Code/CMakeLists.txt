@@ -68,7 +68,15 @@ ly_add_source_properties(
             O3DE_GEM_NAME=${gem_name}
             O3DE_GEM_VERSION=${gem_version})
 
-ly_create_alias(NAME ${gem_name}.Static NAMESPACE Gem TARGETS Gem::${gem_name}.Private.Object)
+# Keep the legacy Static target as a regular interface target. ly_create_alias creates an imported
+# target, which cannot safely copy generated include directories that may not exist during configure.
+ly_add_target(
+    NAME ${gem_name}.Static INTERFACE
+    NAMESPACE Gem
+    BUILD_DEPENDENCIES
+        INTERFACE
+            Gem::${gem_name}.Private.Object
+)
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
