@@ -129,6 +129,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Private.Object
     )
 
+    target_compile_options(${gem_name}.Editor.Private.Object ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})
+
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
