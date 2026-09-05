@@ -139,9 +139,10 @@ namespace
             throw std::runtime_error("A sequence with this name doesn't exists");
         }
 
-        CUndo undo("Set sequence time range");
+        AzToolsFramework::ScopedUndoBatch undoBatch("Set sequence time range");
         pSequence->SetTimeRange(Range(start, end));
         pSequence->MarkAsModified();
+        undoBatch.MarkEntityDirty(pSequence->GetSequenceComponentEntityId());
     }
 
     void PyTrackViewPlaySequence()
@@ -190,8 +191,9 @@ namespace
                 throw std::runtime_error("Invalid node type");
             }
 
-            CUndo undo("Create anim node");
+            AzToolsFramework::ScopedUndoBatch undoBatch("Create anim node");
             pSequence->CreateSubNode(nodeName, nodeType);
+            undoBatch.MarkEntityDirty(pSequence->GetSequenceComponentEntityId());
         }
 
     }
@@ -264,8 +266,9 @@ namespace
 
         CTrackViewAnimNode* pParentNode = static_cast<CTrackViewAnimNode*>(pNode->GetParentNode());
 
-        CUndo undo("Delete TrackView Node");
+        AzToolsFramework::ScopedUndoBatch undoBatch("Delete TrackView Node");
         pParentNode->RemoveSubNode(pNode);
+        undoBatch.MarkEntityDirty(pParentNode->GetSequence()->GetSequenceComponentEntityId());
     }
 
     void PyTrackViewAddTrack(const char* paramName, const char* nodeName, const char* parentDirectorName)
@@ -295,14 +298,14 @@ namespace
                 AZStd::string name = pNode->GetParamName(paramType);
                 if (name == paramName)
                 {
-                    CUndo undo("Create track");
+                    AzToolsFramework::ScopedUndoBatch undoBatch("Create track");
                     if (!pNode->CreateTrack(paramType))
                     {
-                        undo.Cancel();
                         throw std::runtime_error("Could not create track");
                     }
 
                     pNode->SetSelected(true);
+                    undoBatch.MarkEntityDirty(pNode->GetSequence()->GetSequenceComponentEntityId());
                     return;
                 }
             }
@@ -329,8 +332,9 @@ namespace
                 throw std::runtime_error("Could not find track");
             }
 
-            CUndo undo("Delete TrackView track");
+            AzToolsFramework::ScopedUndoBatch undoBatch("Delete TrackView track");
             pNode->RemoveTrack(pTrack);
+            undoBatch.MarkEntityDirty(pNode->GetSequence()->GetSequenceComponentEntityId());
         }
     }
 
