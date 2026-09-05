@@ -8,11 +8,19 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetInternal/WeakAsset.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace UnitTest
 {
     using namespace AZ;
     using namespace AZ::Data;
+
+    namespace
+    {
+        bool g_constructorResultMatches = false;
+    }
 
     using AssetIdTest = LeakDetectionFixture;
 
@@ -95,6 +103,68 @@ namespace UnitTest
         AZStd::string asString = assetId.ToString<AZStd::string>(AZ::Data::AssetId::SubIdDisplayType::Decimal);
         auto subId = asString.substr(asString.find_first_of(':') + 1);
         EXPECT_STRCASEEQ(subId.c_str(), "4294967295");
+    }
+
+    class AssetIdScriptConstructorTest
+        : public LeakDetectionFixture
+    {
+    protected:
+        void SetUp() override
+        {
+            LeakDetectionFixture::SetUp();
+
+            g_constructorResultMatches = false;
+            m_behaviorContext = AZStd::make_unique<BehaviorContext>();
+            AssetId::Reflect(m_behaviorContext.get());
+            m_behaviorContext->Property(
+                "constructorResultMatches", BehaviorValueProperty(&g_constructorResultMatches));
+
+            m_scriptContext = AZStd::make_unique<ScriptContext>();
+            m_scriptContext->BindTo(m_behaviorContext.get());
+        }
+
+        void TearDown() override
+        {
+            m_scriptContext.reset();
+            m_behaviorContext.reset();
+
+            LeakDetectionFixture::TearDown();
+        }
+
+        AZStd::unique_ptr<BehaviorContext> m_behaviorContext;
+        AZStd::unique_ptr<ScriptContext> m_scriptContext;
+    };
+
+    TEST_F(AssetIdScriptConstructorTest, ConstructorWithNoArguments_CreatesInvalidAssetIdInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local assetId = AssetId()\n"
+            "constructorResultMatches = not assetId:IsValid()\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorResultMatches);
+    }
+
+    TEST_F(AssetIdScriptConstructorTest, ConstructorWithGuid_UsesDefaultSubIdInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local assetId = AssetId('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}')\n"
+            "local expected = AssetId.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}:0')\n"
+            "constructorResultMatches = assetId == expected\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorResultMatches);
+    }
+
+    TEST_F(AssetIdScriptConstructorTest, ConstructorWithGuidAndSubId_PreservesBothArgumentsInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local assetId = AssetId('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}', 42)\n"
+            "local expected = AssetId.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}:2a')\n"
+            "constructorResultMatches = assetId == expected\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorResultMatches);
     }
 
     using AssetTest = LeakDetectionFixture;
