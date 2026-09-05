@@ -12,7 +12,7 @@ o3de_fetch_content(xxhash
     URL_HASH "aae608dfe8213dfd05d909a57718ef82f30722c392344583d3f39050c7f29a80"
     GIT "https://github.com/Cyan4973/xxHash.git"
     GIT_HASH "e626a72bc2321cd320e953a0ccf1584cad60f363"
-    SOURCE_SUBDIR "no-add-subdir"
+    NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(xxhash)
 

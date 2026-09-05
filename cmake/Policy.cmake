@@ -6,6 +6,11 @@
 #
 #
 
+# Keep the existing compiler/debug flags and Xcode library-search behavior.
+# Raising the supported CMake floor must not also migrate these toolchains.
+cmake_policy(SET CMP0141 OLD)
+cmake_policy(SET CMP0142 OLD)
+
 # https://cmake.org/cmake/help/latest/policy/CMP0135.html
 if(POLICY CMP0135)
     # Ensure extracted archive files use the extraction time as their timestamp.

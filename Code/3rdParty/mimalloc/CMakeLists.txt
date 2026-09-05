@@ -12,7 +12,7 @@ o3de_fetch_content(mimalloc
     URL_HASH "2602daad9b64b213a8835dee6fadda96d2081c0171bfcd3fb2db39bdc669d6b3"
     GIT "https://github.com/microsoft/mimalloc.git"
     GIT_HASH "34fbd7e7cd4627424490afe19b20f8066bfc537d"
-    SOURCE_SUBDIR "no-add-subdir"
+    NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(mimalloc)
 

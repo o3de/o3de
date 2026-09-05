@@ -4,11 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
-
-if (TARGET 3rdParty::v-hacd)
-  return()
-endif()
 
 o3de_fetch_content(v-hacd
     VERSION "v4.1.0"
@@ -17,13 +12,26 @@ o3de_fetch_content(v-hacd
     URL_HASH "9fe895cd10ec995d2171b11bde97aaaa221b418a3aaed0f5d9a068ae057d626b"
     GIT "https://github.com/kmammou/v-hacd.git"
     GIT_HASH "22ec20a7f8ea221ab600df869369b9c6a258cb10"
+    NO_ADD_SUBDIR
 )
-
 FetchContent_MakeAvailable(v-hacd)
 
-FetchContent_GetProperties(v-hacd SOURCE_DIR V_HACD_SOURCE_DIR)
-add_library(3rdParty::v-hacd IMPORTED INTERFACE GLOBAL ${V_HACD_SOURCE_DIR}/include/VHACD.h)
-ly_target_include_system_directories(TARGET 3rdParty::v-hacd INTERFACE ${V_HACD_SOURCE_DIR}/include)
+file(
+    COPY "${v-hacd_SOURCE_DIR}/include/VHACD.h"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
+)
 
-ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findv-hacd.cmake DESTINATION cmake/3rdParty)
-set(v-hacd_FOUND TRUE)
+ly_add_target(
+    NAME v-hacd HEADERONLY
+    NAMESPACE 3rdParty
+    FILES_CMAKE files.cmake
+)
+
+target_include_directories(v-hacd SYSTEM INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/Include")
+
+ly_install_files(
+    FILES
+        LICENSE.txt
+        PackageInfo.json
+    DESTINATION Gems/PhysX/Core/PhysX5/3rdParty/v-hacd
+)
