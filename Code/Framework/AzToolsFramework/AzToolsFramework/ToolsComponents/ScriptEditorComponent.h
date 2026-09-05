@@ -85,6 +85,12 @@ namespace AzToolsFramework
             void SortProperties(AzFramework::ScriptPropertyGroup& group);
 
             bool LoadAttribute(AZ::ScriptDataContext& sdc, int valueIndex, const char* name, AZ::Edit::ElementData& ed, AZ::ScriptProperty* prop);
+            bool LoadAssetTypeAttribute(
+                AZ::ScriptDataContext& sdc,
+                int valueIndex,
+                const char* name,
+                AZ::Edit::ElementData& editData,
+                AZ::ScriptProperty* property);
             bool LoadDefaultAsset(AZ::ScriptDataContext& sdc, int valueIndex, const char* name, AzFramework::ScriptPropertyGroup& group, ElementInfo& elementInfo);
             bool LoadDefaultEntityRef(AZ::ScriptDataContext& sdc, int valueIndex, const char* name, AzFramework::ScriptPropertyGroup& group, ElementInfo& elementInfo);
 
