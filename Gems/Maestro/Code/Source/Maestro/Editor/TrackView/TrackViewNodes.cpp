@@ -710,6 +710,14 @@ void CTrackViewNodesCtrl::OnItemExpanded(QTreeWidgetItem* item)
 
     if (record && record->GetNode())
     {
+        // Qt can report expansion for leaf items during expandAll/model restoration.
+        // Only compound tracks have a persistent sub-track expansion state.
+        if (record->GetNode()->GetNodeType() == eTVNT_Track
+            && !static_cast<CTrackViewTrack*>(record->GetNode())->IsCompoundTrack())
+        {
+            return;
+        }
+
         bool currentlyExpanded = record->GetNode()->GetExpanded();
         bool expanded = item->isExpanded();
 
