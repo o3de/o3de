@@ -32,9 +32,10 @@ void ApplyDecals_ForwardPass(inout LightCullingTileIterator tileIterator, inout 
         // Only apply visible decals
     if (o_enableDecals)
     {
-        for(uint decalIndex = 0; (decalIndex < ENABLE_DECALS_CAP && decalIndex < ViewSrg::m_visibleDecalCount); decalIndex++)
+        for(uint visibleIndex = 0; (visibleIndex < ENABLE_DECALS_CAP && visibleIndex < ViewSrg::m_visibleDecalCount); visibleIndex++)
         {
-            ApplyDecal(decalIndex, surface);
+            // The visible decals' indices are not contiguous from 0, so index through the buffer.
+            ApplyDecal(ViewSrg::m_visibleDecalIndices[visibleIndex], surface);
         }
     }
 #endif
