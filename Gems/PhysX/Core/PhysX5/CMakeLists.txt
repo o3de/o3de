@@ -9,9 +9,6 @@
 o3de_gem_setup("PhysX5")
 set(legacy_gem_name_alias "PhysX")
 
-get_property(v_hacd_gem_root GLOBAL PROPERTY "@GEMROOT:PhysXCommon@")
-list(APPEND CMAKE_MODULE_PATH ${v_hacd_gem_root}/3rdParty)
-
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED

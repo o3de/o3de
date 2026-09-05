@@ -115,6 +115,12 @@ function(o3de_get_dependencies_for_target)
         endif()
 
         if(TARGET ${link_dependency})
+            # Links retain their declared aliases, but runtime-copy lists need
+            # canonical identities so aliases do not duplicate the same output.
+            get_target_property(aliased_dependency ${link_dependency} ALIASED_TARGET)
+            if(aliased_dependency)
+                set(link_dependency "${aliased_dependency}")
+            endif()
             get_target_property(is_imported ${link_dependency} IMPORTED)
             get_target_property(is_system_library ${link_dependency} LY_SYSTEM_LIBRARY)
             if(is_imported AND is_system_library)

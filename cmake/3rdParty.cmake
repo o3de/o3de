@@ -6,6 +6,164 @@
 #
 #
 
+#! Register a directory containing <package>/CMakeLists.txt, Find<Package>.cmake, or package configs.
+# With no argument, register the current source 3rdParty folder.
+# Search paths are inherited by the caller descendants.
+# Targets, once created, are shared by the whole build.
+function(o3de_register_3rdparty_root)
+    if(ARGC EQUAL 0)
+        set(directory "${CMAKE_CURRENT_SOURCE_DIR}/3rdParty")
+    elseif(ARGC EQUAL 1 AND NOT "${ARGV0}" STREQUAL "")
+        set(directory "${ARGV0}")
+    else()
+        message(FATAL_ERROR "o3de_register_3rdparty_root accepts zero arguments or one non-empty directory")
+    endif()
+    cmake_path(ABSOLUTE_PATH directory NORMALIZE)
+    if(NOT IS_DIRECTORY "${directory}")
+        return()
+    endif()
+    file(REAL_PATH "${directory}" directory)
+    if(NOT directory IN_LIST O3DE_3RDPARTY_ROOTS)
+        list(APPEND O3DE_3RDPARTY_ROOTS "${directory}")
+    endif()
+    foreach(search_path CMAKE_MODULE_PATH CMAKE_PREFIX_PATH)
+        if(NOT directory IN_LIST ${search_path})
+            list(APPEND ${search_path} "${directory}")
+        endif()
+    endforeach()
+
+    get_property(registered GLOBAL PROPERTY "O3DE_3RDPARTY_ROOT_${directory}" SET)
+    if(NOT registered)
+        # Record logical ownership before add_subdirectory changes the parent chain.
+        # External Gem roots need not be descendants of their consumer.
+        cmake_path(IS_PREFIX LY_ROOT_FOLDER "${directory}" NORMALIZE in_engine)
+        if(in_engine)
+            set(owner "${LY_ROOT_FOLDER}")
+        else()
+            cmake_path(GET directory PARENT_PATH owner)
+            if(COMMAND o3de_find_ancestor_gem_root)
+                o3de_find_ancestor_gem_root(owner_gem owner_name "${directory}")
+                if(owner_gem)
+                    set(owner "${owner_gem}")
+                endif()
+            endif()
+        endif()
+        set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_ROOT_${directory}" "${owner}")
+        set_property(GLOBAL APPEND PROPERTY O3DE_REGISTERED_3RDPARTY_ROOTS "${directory}")
+        # Installer setup replays these roots even when a generated Gem CMakeLists.txt no longer calls o3de_gem_setup
+    endif()
+    return(PROPAGATE O3DE_3RDPARTY_ROOTS CMAKE_MODULE_PATH CMAKE_PREFIX_PATH)
+endfunction()
+
+#! Map a compatibility target name to the package folder that exports it.
+# The target name omits the implicit 3rdParty:: prefix. Components are preserved.
+# This only registers the lookup. The recipe creates the actual target alias.
+function(o3de_register_3rdparty_alias target package)
+    set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_PACKAGE_3rdParty::${target}" "${package}")
+endfunction()
+
+# A local Find module owns its acquisition strategy.
+# Associations are the fallback for modules outside the registered source roots.
+function(o3de_find_3rdparty_package package)
+    foreach(root IN LISTS O3DE_3RDPARTY_ROOTS)
+        if(EXISTS "${root}/Find${package}.cmake")
+            list(PREPEND CMAKE_MODULE_PATH "${root}")
+            find_package(${package} REQUIRED MODULE GLOBAL COMPONENTS ${ARGN})
+            return()
+        endif()
+    endforeach()
+    # The compatibility API also exposes paths to dependencies declared from sibling directories.
+    # Preserve that fallback for existing integrations.
+    get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
+    list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
+    ly_download_associated_package("${package}")
+    find_package(${package} REQUIRED MODULE GLOBAL COMPONENTS ${ARGN})
+endfunction()
+
+# Shared by lazy activation and the generated installed-engine directory list.
+function(o3de_add_3rdparty_subdirectory directory)
+    # Installed script-only builds use baked mappings, not provider recipes.
+    # The generated directory list must not recreate their target aliases.
+    if(O3DE_SCRIPT_ONLY)
+        return()
+    endif()
+    cmake_path(ABSOLUTE_PATH directory NORMALIZE)
+    file(REAL_PATH "${directory}" directory)
+    get_property(state GLOBAL PROPERTY "O3DE_3RDPARTY_STATE_${directory}")
+    if(state STREQUAL "LOADING")
+        message(FATAL_ERROR "Recursive third-party activation: ${directory}")
+    elseif(state STREQUAL "LOADED")
+        return()
+    endif()
+
+    cmake_path(GET directory PARENT_PATH root)
+    get_property(owner GLOBAL PROPERTY "O3DE_3RDPARTY_ROOT_${root}")
+    if(NOT owner)
+        message(FATAL_ERROR "Third-party directory has no registered root: ${directory}")
+    endif()
+    set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_DIRECTORY_OWNER_${directory}" "${owner}")
+    cmake_path(RELATIVE_PATH directory BASE_DIRECTORY "${owner}" OUTPUT_VARIABLE relative_directory)
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER "${directory}" NORMALIZE in_engine)
+    if(NOT in_engine)
+        cmake_path(GET owner FILENAME owner_name)
+        set(relative_directory "External/${owner_name}/${relative_directory}")
+    endif()
+    get_property(engine_binary DIRECTORY "${LY_ROOT_FOLDER}" PROPERTY BINARY_DIR)
+    set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_STATE_${directory}" LOADING)
+    add_subdirectory("${directory}" "${engine_binary}/${relative_directory}")
+    set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_STATE_${directory}" LOADED)
+
+    ly_get_vs_folder_directory("${directory}" ide_folder)
+    o3de_set_3rdparty_folder("${directory}" "${ide_folder}")
+endfunction()
+
+# Visit only a providers activated subtree, including upstream FetchContent directories.
+# A fixup helpers explicit IDE_FOLDER takes precedence.
+function(o3de_set_3rdparty_folder directory folder)
+    get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(target IN LISTS targets)
+        get_property(explicit_folder TARGET "${target}" PROPERTY O3DE_EXPLICIT_IDE_FOLDER)
+        if(NOT explicit_folder)
+            set_property(TARGET "${target}" PROPERTY FOLDER "${folder}")
+        endif()
+    endforeach()
+    get_property(children DIRECTORY "${directory}" PROPERTY SUBDIRECTORIES)
+    foreach(child IN LISTS children)
+        get_property(provider_owner GLOBAL PROPERTY "O3DE_3RDPARTY_DIRECTORY_OWNER_${child}")
+        if(NOT provider_owner)
+            o3de_set_3rdparty_folder("${child}" "${folder}")
+        endif()
+    endforeach()
+endfunction()
+
+# Returns FALSE for legacy Find-module resolution.
+# Do not cache misses! A Gem can register another root later in the same configure invocation.
+function(o3de_resolve_3rdparty_target target resolved)
+    if(TARGET "${target}")
+        set(${resolved} TRUE PARENT_SCOPE)
+        return()
+    endif()
+    # Compatibility names select a provider. Recipes own their actual aliases.
+    # Never rewrite the requested target or change case-sensitive names.
+    get_property(package_directory GLOBAL PROPERTY "O3DE_3RDPARTY_PACKAGE_${target}")
+    if(NOT package_directory)
+        string(REPLACE "::" ";" target_parts "${target}")
+        list(GET target_parts 1 package)
+        string(TOLOWER "${package}" package_directory)
+    endif()
+    foreach(root IN LISTS O3DE_3RDPARTY_ROOTS)
+        if(EXISTS "${root}/${package_directory}/CMakeLists.txt")
+            o3de_add_3rdparty_subdirectory("${root}/${package_directory}")
+            if(NOT TARGET "${target}")
+                message(FATAL_ERROR "Third-party provider ${root}/${package_directory} did not create ${target}")
+            endif()
+            set(${resolved} TRUE PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+    set(${resolved} FALSE PARENT_SCOPE)
+endfunction()
+
 set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
 set(O3DE_FETCHCONTENT_MESSAGE_LEVEL "ERROR" CACHE STRING "Message level when fetching 3rd party libraries.  Set to DEBUG or VERBOSE to debug")
 set(O3DE_FETCHCONTENT_FORCE_GIT OFF CACHE BOOL "Force FetchContent to use git to acquire packages instead of downloading archives")
@@ -368,7 +526,7 @@ endfunction()
 # 4. Specify that the target be installed
 #
 # Parameters:
-#    IDE_FOLDER string - optional, default is "3rdParty Dependencies" - The folder to use in the IDE.
+#    IDE_FOLDER string - optional, defaults to the gem External folder.
 #    TARGETS list      - required - The targets to fix up (can be a list or a single)
 function(o3de_fixup_fetchcontent_targets)
     set(options)
@@ -376,10 +534,6 @@ function(o3de_fixup_fetchcontent_targets)
     set(multiValueArgs TARGETS)
 
     cmake_parse_arguments(o3de_fixup_fetchcontent_targets "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    if(NOT o3de_fixup_fetchcontent_targets_IDE_FOLDER)
-        set(o3de_fixup_fetchcontent_targets_IDE_FOLDER "3rdParty Dependencies")
-    endif()
 
     if(NOT o3de_fixup_fetchcontent_targets_TARGETS)
         message(FATAL_ERROR "o3de_fixup_fetchcontent_targets requires TARGETS to be specified")
@@ -396,11 +550,20 @@ function(o3de_fixup_fetchcontent_targets)
             message(FATAL_ERROR "o3de_fixup_fetchcontent_targets invoked on non-existent target ${TARGET_TO_FIXUP}")
             continue()
         endif()
-        get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-        ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
-
-        # Set the location that the library shows up in the IDE:
-        set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY FOLDER "${relative_this_gem_root}/External")
+        # A lazy source provider supplies the default folder after activation.
+        if(o3de_fixup_fetchcontent_targets_IDE_FOLDER)
+            set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY FOLDER "${o3de_fixup_fetchcontent_targets_IDE_FOLDER}")
+            set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY O3DE_EXPLICIT_IDE_FOLDER TRUE)
+        else()
+            get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+            if(this_gem_root)
+                ly_get_engine_relative_source_dir("${this_gem_root}" relative_this_gem_root)
+                set(folder "${relative_this_gem_root}/External")
+            else()
+                ly_get_vs_folder_directory("${CMAKE_CURRENT_SOURCE_DIR}" folder)
+            endif()
+            set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY FOLDER "${folder}")
+        endif()
         
         # alias it with 3rdParty::targetname
         add_library(3rdParty::${TARGET_TO_FIXUP} ALIAS ${TARGET_TO_FIXUP})
@@ -440,6 +603,10 @@ endfunction() # o3de_fixup_fetchcontent_targets
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
+
+# Keep source-provider discovery with third-party search-path initialization.
+include(${CMAKE_CURRENT_LIST_DIR}/3rdParty/LegacyAliases.cmake)
+o3de_register_3rdparty_root("${LY_ROOT_FOLDER}/Code/3rdParty")
 
 if(NOT INSTALLED_ENGINE)
     # Add the 3rdParty cmake files to the IDE

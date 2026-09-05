@@ -12,7 +12,7 @@ o3de_fetch_content(jsoncpp
     URL_HASH "c40e5a2583df633b904525305bda40b622d9971fee1ece7ce48ca723a4907d36"
     GIT "https://github.com/open-source-parsers/jsoncpp.git"
     GIT_HASH "24682e37bf1425455b45e7db69dbdbcd30aec7dd"
-    SOURCE_SUBDIR "no-add-subdir"
+    NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(jsoncpp)
 
