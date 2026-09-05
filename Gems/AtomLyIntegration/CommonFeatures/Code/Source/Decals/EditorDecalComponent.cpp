@@ -93,6 +93,12 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset,
                             QT_TRANSLATE_NOOP("AtomLyIntegration", "Material"),
                             QT_TRANSLATE_NOOP("AtomLyIntegration", "The material of the decal."))
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_maxDrawDistance,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Max Draw Distance"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Distance from the camera beyond which the decal stops rendering. 0 means unlimited."))
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ;
                 }
             }

@@ -39,6 +39,13 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
 {
     Decal decal = ViewSrg::m_decals[currDecalIndex];
 
+    // Backstop for paths that skipped the CPU and LightCulling.azsl culls. Measured from the decal
+    // position so all three agree; the surface position would make the cutoff per-pixel.
+    if (decal.m_maxDrawDistance > 0.0 && distance(ViewSrg::m_worldPosition, decal.m_position) > decal.m_maxDrawDistance)
+    {
+        return;
+    }
+
     real3x3 decalRot = MatrixFromQuaternion(real4(decal.m_quaternion));
     decalRot = transpose(decalRot);
     
@@ -86,7 +93,51 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             case 4:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse4.Sample(PassSrg::LinearSampler, decalUV);
                 normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV).rg;
-            break;            
+            break;
+            case 5:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse5.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps5.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 6:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse6.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps6.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 7:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse7.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps7.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 8:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse8.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps8.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 9:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse9.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps9.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 10:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse10.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps10.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 11:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse11.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps11.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 12:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse12.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps12.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 13:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse13.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps13.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 14:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse14.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps14.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
+            case 15:
+                baseMap = ViewSrg::m_decalTextureArrayDiffuse15.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps15.Sample(PassSrg::LinearSampler, decalUV).rg;
+            break;
         }
         
         const real decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], real(decal.m_angleAttenuation));
@@ -95,6 +146,11 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         bool useTexture = true;
         real3 blendedBaseColor = BlendBaseColor(real3(baseMap.rgb), real3(decal.m_decalColor), real(decal.m_decalColorFactor), TextureBlendMode::Multiply, useTexture);
         surface.albedo = lerp(surface.albedo, real3(blendedBaseColor.rgb), albedoOpacity);
+
+        // A fully metallic surface has albedo lerped to black, so it only shows decal color through
+        // specularF0. Blend that too, scaled by how metallic the surface is. Read through
+        // GetMetallic() -- not every Surface type has a metallic member (hair is dielectric).
+        surface.specularF0 = lerp(surface.specularF0, real3(blendedBaseColor.rgb), albedoOpacity * surface.GetMetallic());
 
         const real normalOpacity = real(baseMap.a) * real(decal.m_normalMapOpacity) * decalAttenuation;
         const real3 normalMapWS = GetWorldSpaceNormal(real2(normalMap), decalRot[2], decalRot[0], decalRot[1], 1.0);
