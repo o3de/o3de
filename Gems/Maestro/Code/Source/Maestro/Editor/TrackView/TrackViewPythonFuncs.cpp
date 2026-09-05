@@ -11,6 +11,7 @@
 #include "EditorDefs.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/iterator.h>
 
@@ -517,6 +518,12 @@ namespace AzToolsFramework
 {
     void TrackViewComponent::Reflect(AZ::ReflectContext* context)
     {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TrackViewComponent, AZ::Component>()
+                ->Version(0);
+        }
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<EditorLayerTrackViewRequestBus>("EditorLayerTrackViewRequestBus")
@@ -673,6 +680,12 @@ namespace AzToolsFramework
 {
     void TrackViewFuncsHandler::Reflect(AZ::ReflectContext* context)
     {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TrackViewFuncsHandler, AZ::Component>()
+                ->Version(0);
+        }
+
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<Range>("CryRange")
