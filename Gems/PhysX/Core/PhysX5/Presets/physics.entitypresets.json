@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Static Rigid Body",
+                "description": "Immovable collision geometry - floors, walls, props that never move. The collider is drawn in the viewport, which also needs Draw Helpers switched on to show.",
+                "category": "Physics",
+                "components": [
+                    {
+                        "component": "PhysX Static Rigid Body",
+                        "properties": []
+                    },
+                    {
+                        "component": "PhysX Primitive Collider",
+                        "properties": [
+                            {
+                                "path": "Debug draw settings|Draw collider",
+                                "type": "bool",
+                                "value": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Rigid Body",
+                "description": "Collision geometry that falls and responds to forces. The collider is drawn in the viewport, which also needs Draw Helpers switched on to show.",
+                "category": "Physics",
+                "components": [
+                    {
+                        "component": "PhysX Dynamic Rigid Body",
+                        "properties": []
+                    },
+                    {
+                        "component": "PhysX Primitive Collider",
+                        "properties": [
+                            {
+                                "path": "Debug draw settings|Draw collider",
+                                "type": "bool",
+                                "value": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Character Controller",
+                "category": "Physics",
+                "components": [
+                    {
+                        "component": "PhysX Character Controller",
+                        "properties": []
+                    },
+                    {
+                        "component": "PhysX Character Gameplay",
+                        "properties": []
+                    }
+                ],
+                "description": "A character capsule with gravity and ground handling. Character Gameplay is PhysX's example implementation - replace it once you have your own movement."
+            }
+        ]
+    }
+}

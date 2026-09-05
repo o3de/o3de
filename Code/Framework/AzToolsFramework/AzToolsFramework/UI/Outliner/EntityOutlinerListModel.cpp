@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QLineEdit>
 #include <QPainter>
 #include <QPainterPath>
 #include <QStyle>
@@ -2200,6 +2201,20 @@ namespace AzToolsFramework
         painter->drawEllipse(readOnlyRect.center(), s_readOnlyRadius, s_readOnlyRadius);
         s_readOnlyIcon.paint(painter, readOnlyRect);
         painter->restore();
+    }
+
+    void EntityOutlinerItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+    {
+        QStyledItemDelegate::setEditorData(editor, index);
+
+        // Renaming an entity nearly always means replacing the name outright rather than amending
+        // it - most of all one just built from a preset, whose name describes the preset and not
+        // this particular entity. Qt leaves the caret at the end with nothing selected, so without
+        // this every rename starts with a Ctrl+A.
+        if (auto* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            lineEdit->selectAll();
+        }
     }
 
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
