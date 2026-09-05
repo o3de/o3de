@@ -18,6 +18,7 @@ set(FILES
     allocator_traits.h
     any.h
     base.h
+    bit.h
     config.h
     concepts/concepts.h
     concepts/concepts_assignable.h
