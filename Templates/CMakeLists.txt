@@ -25,5 +25,12 @@ ly_install_directory(
         GraphicsGem
         ScriptOnlyProject
         EngineFinder
+        Attimage
+        DataAsset
+        FullscreenPostProcess
+        LevelComponent
+        LyShineComponent
+        ScreenSpaceRenderPass
+        SystemComponent
     VERBATIM
 )
