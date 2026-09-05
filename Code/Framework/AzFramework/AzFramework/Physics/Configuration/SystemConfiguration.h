@@ -46,6 +46,13 @@ namespace AzPhysics
         //! Disable this to manually control Physics Scene simulation logic.
         bool m_autoManageSimulationUpdate = true;
 
+        //! Executes the physics simulation on a dedicated thread, free-running at m_fixedTimestep
+        //! independently of the main tick. Scene simulation start, trigger and collision events are
+        //! then signaled on that thread at simulation rate, so consumers can act on every step -
+        //! their handlers must be thread-safe and touch physics only. The scene simulation finish
+        //! event stays on the main tick.
+        bool m_runSimulationInThread = false;
+
         bool operator==(const SystemConfiguration& other) const;
         bool operator!=(const SystemConfiguration& other) const;
 

@@ -85,6 +85,10 @@ namespace PhysX
         //! This will clear the batched data for the next simulation pass.
         void FlushTransformSync();
         
+        //! Signal the tick-synchronized event for every step taken since the last time it was signaled.
+        //! Called on the main thread; a no-op when no step has run since.
+        void SignalSimulationSynchronizedWithTick();
+
     private:
 
         //! Data structure for efficient unique vector functionality.
@@ -126,6 +130,10 @@ namespace PhysX
         // When we run the batched transform sync, the accumulated simulation time is provided
         // to tell how much time was simulated in this full pass.
         float m_accumulatedDeltaTime = 0.0f;
+
+        // Sim time stepped since the main thread last signaled the tick-synchronized event. Written
+        // by the stepping thread, drained by the main thread - both under the scene write lock.
+        AZStd::optional<float> m_tickSynchronizedDeltaTime;
 
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;
