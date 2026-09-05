@@ -1,0 +1,38 @@
+{
+    // Preview-only copy of Atom_Feature_Common's DepthPass.shader.template. Identical apart from DisabledRHIBackends. See README.md.
+    // ShaderAssetBuilder runs its whole compile -- MCPP, azslc, DXC -- once per enabled RHI backend, and the pc platform
+    // enables both dx12 and vulkan. Disabling vulkan here halves every preview shader job, for a second set of bytecode the
+    // Material Canvas viewport never binds. Remove "vulkan" if you run the editor on Vulkan, or the shaderball will have no
+    // shaders to draw with. See README.md.
+    "DisabledRHIBackends": ["null", "vulkan"],
+
+    // Preview shaders are only ever drawn on the Material Canvas shaderball, so optimised bytecode buys nothing and costs a great
+    // deal: on a Standard PBR forward shader the pixel stage DXC invocation is the single largest item in the whole job. Nothing in
+    // O3DE's shader build config sets an optimisation level, so DXC runs at its -O3 default. Lowering it only for the preview
+    // pipeline leaves production shaders untouched.
+    //
+    // -O1 rather than -O0: DXC's -O0 can defeat resource index resolution and produce DXIL that fails validation on shaders like
+    // these. If -O1 is not enough, -O0 is the next thing to try, but verify the preview still renders before keeping it.
+    "AddBuildArguments": {
+        "dxc": ["-O1"]
+    },
+
+    "Source" : "",
+
+    "DepthStencilState" : {
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "ProgramSettings" :
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type" : "Vertex"
+            }
+        ]
+    },
+
+    "DrawList" : "depth"
+}

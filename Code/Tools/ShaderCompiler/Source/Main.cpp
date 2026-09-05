@@ -172,10 +172,11 @@ namespace AZ::ShaderCompiler
     }
 
     //! iterates on tokens and build the line number mapping (from preprocessor line directives)
-    void ConstructLineMap(vector<std::unique_ptr<Token>>* allTokens, PreprocessorLineDirectiveFinder* lineFinder)
+    // Takes the parser's own token buffer (non-owning views) rather than a second, separately lexed vector.
+    void ConstructLineMap(const vector<Token*>& allTokens, PreprocessorLineDirectiveFinder* lineFinder)
     {
         string lastNonEmptyFileName = lineFinder->m_physicalSourceFileName;
-        for (auto& token : *allTokens) // auto& because each element is a unique_ptr we can't copy
+        for (const Token* token : allTokens)
         {
             if (token->getType() == azslLexer::LineDirective)
             {
@@ -187,7 +188,7 @@ namespace AZ::ShaderCompiler
                 //                        | |     |       decimal
                 // custom raw string      | |     |          |  optional filename between quotes
                 //         delimiter --+  | |     |          |        |
-                std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
+                static const std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
                 auto matchBegin = std::sregex_iterator(lineText.begin(), lineText.end(), lineRegex);
                 // there can be only 1 match, and it HAS to match since AntlR lexer already matched.
                 auto& groups = *matchBegin; // 4 groups: [0] is the whole line. [1] is the first parenthesized group, [2] the 2nd etc
@@ -328,7 +329,6 @@ int main(int argc, const char* argv[])
 
     bool uniqueIdx = false;
     cli.add_flag("--unique-idx", uniqueIdx, "Use unique indices for all registers. e.g. b0, t0, u0, s0 becomes b0, t1, u2, s3. Use on platforms that don't differentiate registers by resource type.");
-
     bool cbBody = false;
     cli.add_flag("--cb-body", cbBody, "Emit ConstantBuffer body rather than using <T>.");
 
@@ -451,7 +451,6 @@ int main(int argc, const char* argv[])
     auto minDescriptorsOpt = cli.add_option("--min-descriptors", minDescriptors, "Comma-separated list of limits corresponding to "
         "<set,space,sampler,texture,buffer> descriptors. Emits a warning if a count overshoots a limit. Use -1 to specify \"no limit\".");
     minDescriptorsOpt->delimiter(',')->expected(5);
-
     bool verbose = false;
     cli.add_flag("--verbose", verbose);
 
@@ -514,13 +513,16 @@ int main(int argc, const char* argv[])
         azslLexer lexer(&input);
         CommonTokenStream tokens(&lexer);
         IntermediateRepresentation ir(&lexer);
-        auto allTokens = lexer.getAllTokens();
+        // Lex once. getAllTokens() ran the lexer over the whole input, then lexer.reset() threw that state away and
+        // CommonTokenStream lexed the same input a second time during the parse. fill() populates the stream the
+        // parser is about to read, and getTokens() hands back every buffered token -- off-channel ones included, so
+        // the PREPROCESSOR-channel LineDirective tokens the line map needs are all still there.
+        tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
             throw std::runtime_error("syntax errors present");
         }
-        ConstructLineMap(&allTokens, &lineFinder);
-        lexer.reset();
+        ConstructLineMap(tokens.getTokens(), &lineFinder);
         AzslParserEventListener azslParserEventListener;
         azslParser parser(&tokens);
         parser.removeErrorListeners();
