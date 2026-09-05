@@ -4,12 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
 
-o3de_gem_setup("PhysXCommon")
-
-add_subdirectory(Code)
-
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
-endif()
+set(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/Include/VHACD.h"
+)
