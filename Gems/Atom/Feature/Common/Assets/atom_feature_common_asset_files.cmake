@@ -6,6 +6,7 @@
 # 
 
 set(FILES
+    Materials/Pipelines/Common/AlphaToCoverage.lua
     Materials/Pipelines/Common/DepthPass.azsli
     Materials/Pipelines/Common/DepthPass_CustomZ.azsli
     Materials/Pipelines/Common/DoubleSided.lua

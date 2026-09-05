@@ -8,7 +8,10 @@
 
 #pragma once
 
+#define MATERIAL_HAS_ALPHA_TO_COVERAGE 1
+
 option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
+option bool o_alphaToCoverage;
 
 void CheckClipping(real alpha, real opacityFactor)
 {
