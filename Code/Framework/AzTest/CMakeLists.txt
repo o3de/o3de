@@ -11,8 +11,7 @@
 # we don't include the tests in the installer.
 
 # when compiling from source, use the 3rdParty/Find***.cmake files
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+o3de_register_3rdparty_root()
 
 o3de_pal_dir(pal_aztest_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 

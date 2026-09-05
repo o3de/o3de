@@ -6,8 +6,8 @@
 #
 #
 
-# CMake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.24)
+# CMake version 3.25 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.25)
 
 include(cmake/Policy.cmake NO_POLICY_SCOPE)
 include(cmake/LySet.cmake)

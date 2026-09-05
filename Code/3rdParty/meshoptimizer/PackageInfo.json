@@ -1,0 +1,12 @@
+{
+    "PackageName": "meshoptimizer",
+    "Version": "1.2",
+    "URL": "https://github.com/zeux/meshoptimizer",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/zeux/meshoptimizer/archive/refs/tags/v1.2.tar.gz",
+        "Revision": "9d9890c73011d75920af614485296d1e03e95448",
+        "SHA256": "e40f71b809cdf3361b9a4def85fd44534e8733ce29d4b943c145b76859e4c2b4"
+    }
+}
