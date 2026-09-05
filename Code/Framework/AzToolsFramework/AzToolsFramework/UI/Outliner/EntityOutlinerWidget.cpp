@@ -375,7 +375,8 @@ namespace AzToolsFramework
         // but we still want to update our own internal state.
         AZStd::unique_ptr<ScopedUndoBatch> undo;
         AZStd::unique_ptr<SelectionCommand> selectionCommand;
-        if (!m_isDuringUndoRedo)
+        // Selection can change before this widget receives the undo/redo notification.
+        if (!m_isDuringUndoRedo && !UndoRedoOperationInProgress())
         {
             // initialize the selection command here to store the current selection before
             // new entities are selected or deselected below
