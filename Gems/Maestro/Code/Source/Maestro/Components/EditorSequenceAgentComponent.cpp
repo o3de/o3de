@@ -17,6 +17,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
@@ -167,6 +168,16 @@ namespace Maestro
         }
 
         AZ::EntityId curEntityId = GetEntityId();
+
+        // Prefab reset detaches entities before destroying them.
+        // Do not remove/re-activate components on an entity whose prefab ownership has already been torn down.
+        if (auto* instanceEntityMapper = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get())
+        {
+            if (!instanceEntityMapper->FindOwningInstance(curEntityId).has_value())
+            {
+                return;
+            }
+        }
 
         AZ_Trace("EditorSequenceAgentComponent","DisconnectSequence(): removing self from entity %s, %s.", curEntityId.ToString().c_str(), entity->GetName().c_str());
         // This component was created indirectly via user actions in EditorSequenceComponent,
