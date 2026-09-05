@@ -7,6 +7,7 @@
  */
 
 #include <EMotionFX/Source/AnimGraphNode.h>
+#include <EMotionFX/Source/BlendTreeRerouteNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendTreeVisualNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeConnection.h>
@@ -19,6 +20,7 @@ namespace EMStudio
     BlendTreeVisualNode::BlendTreeVisualNode(const QModelIndex& modelIndex, AnimGraphPlugin* plugin, EMotionFX::AnimGraphNode* node)
         : AnimGraphVisualNode(modelIndex, plugin, node)
     {
+        m_isReroute = azrtti_istypeof<EMotionFX::BlendTreeRerouteNode>(node);
         SetSubTitle(node->GetPaletteName(), false);
     }
 
@@ -118,6 +120,12 @@ namespace EMStudio
     // render the node
     void BlendTreeVisualNode::Render(QPainter& painter, QPen* pen, bool renderShadow)
     {
+        if (m_isReroute)
+        {
+            RenderReroute(painter, pen, renderShadow);
+            return;
+        }
+
         // only render if the given node is visible
         if (m_isVisible == false)
         {
@@ -481,6 +489,95 @@ namespace EMStudio
     // return the required height
     int32 BlendTreeVisualNode::CalcRequiredHeight() const
     {
+        if (m_isReroute)
+        {
+            return 22;
+        }
+
         return GraphNode::CalcRequiredHeight() + 12;
+    }
+
+    int32 BlendTreeVisualNode::CalcRequiredWidth()
+    {
+        return m_isReroute ? 30 : GraphNode::CalcRequiredWidth();
+    }
+
+    QRect BlendTreeVisualNode::CalcInputPortRect(AZ::u16 portNr)
+    {
+        if (!m_isReroute)
+        {
+            return GraphNode::CalcInputPortRect(portNr);
+        }
+
+        return QRect(m_rect.left() - 4, m_rect.center().y() - 4, 9, 9);
+    }
+
+    QRect BlendTreeVisualNode::CalcOutputPortRect(AZ::u16 portNr)
+    {
+        if (!m_isReroute)
+        {
+            return GraphNode::CalcOutputPortRect(portNr);
+        }
+
+        return QRect(m_rect.right() - 4, m_rect.center().y() - 4, 9, 9);
+    }
+
+    void BlendTreeVisualNode::Update(const QRect& visibleRect, const QPoint& mousePos)
+    {
+        AnimGraphVisualNode::Update(visibleRect, mousePos);
+        if (m_isReroute)
+        {
+            // A reroute has no collapse control. Clearing this hit area also leaves the whole
+            // compact body available for selection and dragging.
+            m_arrowRect = QRect();
+            m_visualizeRect = QRect();
+        }
+    }
+
+    void BlendTreeVisualNode::RenderReroute(QPainter& painter, QPen* pen, bool renderShadow)
+    {
+        if (!m_isVisible)
+        {
+            return;
+        }
+
+        if (renderShadow)
+        {
+            RenderShadow(painter);
+        }
+
+        const bool isSelected = GetIsSelected();
+        QColor bodyColor = m_isHighlighted ? QColor(75, 75, 75) : QColor(55, 55, 55);
+        QColor borderColor = isSelected ? QColor(255, 128, 0) : QColor(20, 20, 20);
+
+        pen->setWidth(isSelected && m_parentGraph->GetScale() > 0.75f ? 2 : 1);
+        pen->setColor(borderColor);
+        painter.setPen(*pen);
+        painter.setBrush(bodyColor);
+        painter.setOpacity(AZStd::max(m_opacity, 0.065f));
+        painter.drawRoundedRect(m_rect, 11.0, 11.0);
+
+        auto drawPort = [&painter, &borderColor](NodePort& port)
+        {
+            QColor portColor = port.GetColor();
+            if (port.GetIsHighlighted())
+            {
+                portColor = portColor.lighter(140);
+            }
+            painter.setPen(borderColor);
+            painter.setBrush(portColor);
+            painter.drawEllipse(port.GetRect());
+        };
+
+        if (!m_inputPorts.empty())
+        {
+            drawPort(m_inputPorts[0]);
+        }
+        if (!m_outputPorts.empty())
+        {
+            drawPort(m_outputPorts[0]);
+        }
+
+        painter.setOpacity(1.0f);
     }
 }   // namespace EMStudio
