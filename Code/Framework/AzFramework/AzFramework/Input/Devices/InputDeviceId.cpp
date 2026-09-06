@@ -10,6 +10,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/ScriptCanvas/ScriptCanvasAttributes.h>
+#include <AzCore/std/string/string.h>
 
 namespace
 {
@@ -55,13 +57,28 @@ namespace AzFramework
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            const AZ::BehaviorParameterOverrides nameParameter(
+                "Name", "Name of the input device, such as gamepad, keyboard, or mouse");
+            const AZ::BehaviorParameterOverrides indexParameter(
+                "Index", "Zero-based index used to address a specific device of the same type");
+
             behaviorContext->Class<InputDeviceId>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Input")
+                ->Attribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, true)
+                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, true)
                 ->Constructor<const char*>()
                 ->Constructor<const char*, AZ::u32>()
                 ->Attribute(AZ::Script::Attributes::ConstructorOverride, &InputDeviceIdScriptConstructor)
+                ->Method(
+                    "Create",
+                    [](const AZStd::string& name, AZ::u32 index)
+                    {
+                        return InputDeviceId(name, index);
+                    },
+                    { nameParameter, indexParameter },
+                    "Creates an input device id for use as the source of addressed input requests")
                 ->Property("name", [](InputDeviceId* thisPtr) { return thisPtr->GetName(); }, nullptr)
                 ->Property("index", BehaviorValueProperty(&InputDeviceId::m_index))
             ;
