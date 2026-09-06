@@ -55,6 +55,7 @@ ViewportCameraSpeedScalePropertyWidget::ViewportCameraSpeedScalePropertyWidget()
     m_label->setText(tr("Camera Speed Scale"));
 
     // Set starting value.
+    m_spinBox->setMaximum(AZStd::numeric_limits<float>::max());
     m_spinBox->setValue(SandboxEditor::CameraSpeedScale());
 
     const int DefaultViewportId = 0;
