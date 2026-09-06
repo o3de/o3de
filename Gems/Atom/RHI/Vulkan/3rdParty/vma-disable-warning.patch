@@ -1,0 +1,42 @@
+diff --git a/include/vk_mem_alloc.h b/include/vk_mem_alloc.h
+index f2b58bf..1ece3fe 100644
+--- a/include/vk_mem_alloc.h
++++ b/include/vk_mem_alloc.h
+@@ -3053,6 +3053,21 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
+ #include <utility>
+ #include <type_traits>
+ 
++#if defined(_MSC_VER)
++    #pragma warning(push)
++    #pragma warning(disable : 4100) // unreferenced formal parameter
++    #pragma warning(disable : 4101) // unreferenced local variable
++    #pragma warning(disable : 4189) // local variable is initialized but not referenced
++#elif defined(__clang__)
++    #pragma clang diagnostic push
++    #pragma clang diagnostic ignored "-Wnullability-completeness"
++    #pragma clang diagnostic ignored "-Wunused-variable"
++    #pragma clang diagnostic ignored "-Wunused-private-field"
++#elif defined(__GNUC__)
++    #pragma GCC diagnostic push
++    #pragma GCC diagnostic ignored "-Wunused-variable"
++#endif
++
+ #if !defined(VMA_CPP20)
+     #if __cplusplus >= 202002L || _MSVC_LANG >= 202002L // C++20
+         #define VMA_CPP20 1
+@@ -17259,6 +17274,15 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaGetMemoryWin32Handle2(VmaAllocator VMA_NO
+ #endif // VMA_EXTERNAL_MEMORY_WIN32 
+ #endif // VMA_STATS_STRING_ENABLED
+ #endif // _VMA_PUBLIC_INTERFACE
++
++#if defined(_MSC_VER)
++    #pragma warning(pop)
++#elif defined(__clang__)
++    #pragma clang diagnostic pop
++#elif defined(__GNUC__)
++    #pragma GCC diagnostic pop
++#endif
++
+ #endif // VMA_IMPLEMENTATION
+ 
+ /**
