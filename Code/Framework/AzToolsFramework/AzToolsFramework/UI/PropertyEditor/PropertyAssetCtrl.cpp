@@ -42,6 +42,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -67,6 +68,12 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    namespace
+    {
+        static constexpr auto SupportedAssetTypesDpeAttribute =
+            AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::vector<AZ::Data::AssetType>>("SupportedAssetTypes");
+    }
+
     /* ----- PropertyAssetCtrl ----- */
 
     PropertyAssetCtrl::PropertyAssetCtrl(QWidget* pParent, QString optionalValidDragDropExtensions)
@@ -350,8 +357,9 @@ namespace AzToolsFramework
     bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
     {
         const auto selectableAssetTypes = GetSelectableAssetTypes();
-        const auto isSelectableAssetType =
-            AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
+        // An empty list means no type filter is configured, matching the asset browser display filter behavior.
+        const auto isSelectableAssetType = selectableAssetTypes.empty()
+            || AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
         return (assetId.IsValid() && !assetType.IsNull() && isSelectableAssetType);
     }
 
@@ -1743,6 +1751,12 @@ namespace AzToolsFramework
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
         return newCtrl;
+    }
+
+    void AssetIdPropertyHandlerDefault::RegisterWithPropertySystem(
+        AZ::DocumentPropertyEditor::PropertyEditorSystemInterface* system)
+    {
+        system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(SupportedAssetTypesDpeAttribute);
     }
 
     void AssetIdPropertyHandlerDefault::ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)

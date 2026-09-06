@@ -13,6 +13,7 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -21,6 +22,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 
@@ -81,6 +83,57 @@ namespace AzToolsFramework
         const char* UiFieldName = "ui";
         const char* UiOrderValue = "order";
         const char* DescriptionFieldName = "description";
+        const char* AssetTypeFieldName = "assetType";
+        constexpr size_t MaxAssetTypeCount = 8;
+
+        namespace
+        {
+            constexpr AZ::Crc32 SupportedAssetTypesAttribute = AZ_CRC_CE("SupportedAssetTypes");
+
+            bool ResolveAssetType(const char* displayName, AZ::Data::AssetType& assetType)
+            {
+                size_t matchCount = 0;
+                AZ::AssetTypeInfoBus::EnumerateHandlers(
+                    [displayName, &assetType, &matchCount](AZ::AssetTypeInfo* assetTypeInfo)
+                    {
+                        const char* registeredDisplayName = assetTypeInfo->GetAssetTypeDisplayName();
+                        if (registeredDisplayName && strcmp(displayName, registeredDisplayName) == 0)
+                        {
+                            assetType = assetTypeInfo->GetAssetType();
+                            ++matchCount;
+                        }
+                        return true;
+                    });
+
+                AZ_Warning(
+                    "Script",
+                    matchCount == 1,
+                    "Lua property asset type '%s' must match exactly one registered asset type; found %zu matches",
+                    displayName,
+                    matchCount);
+                return matchCount == 1;
+            }
+
+            void ReplaceAssetTypeFilter(AZ::Edit::ElementData& editData, AZStd::vector<AZ::Data::AssetType> assetTypes)
+            {
+                for (auto attribute = editData.m_attributes.begin(); attribute != editData.m_attributes.end();)
+                {
+                    if (attribute->first == SupportedAssetTypesAttribute)
+                    {
+                        delete attribute->second;
+                        attribute = editData.m_attributes.erase(attribute);
+                    }
+                    else
+                    {
+                        ++attribute;
+                    }
+                }
+
+                auto* supportedAssetTypes =
+                    aznew AZ::Edit::AttributeData<AZStd::vector<AZ::Data::AssetType>>(AZStd::move(assetTypes));
+                editData.m_attributes.emplace_back(SupportedAssetTypesAttribute, supportedAssetTypes);
+            }
+        } // namespace
 
         bool ScriptEditorComponent::DoComponentsMatch(const ScriptEditorComponent* thisComponent, const ScriptEditorComponent* otherComponent)
         {
@@ -259,6 +312,11 @@ namespace AzToolsFramework
         {
             LSV_BEGIN(sdc.GetNativeContext(), 0);
 
+            if (azstricmp(name, AssetTypeFieldName) == 0)
+            {
+                return LoadAssetTypeAttribute(sdc, valueIndex, name, ed, prop);
+            }
+
             /////////////////////////////////////////////////////////////////////////////////
             // This is an example that you can do you the custom OnUnhandledAttribute message 
             // check for data element properties, not real attributes.
@@ -321,6 +379,110 @@ namespace AzToolsFramework
             }
 
             return true;
+        }
+
+        //=========================================================================
+        // LoadAssetTypeAttribute
+        //=========================================================================
+        bool ScriptEditorComponent::LoadAssetTypeAttribute(
+            AZ::ScriptDataContext& sdc,
+            int valueIndex,
+            const char* name,
+            AZ::Edit::ElementData& editData,
+            AZ::ScriptProperty* property)
+        {
+            LSV_BEGIN(sdc.GetNativeContext(), 0);
+
+            if (!property || property->GetDataTypeUuid() != azrtti_typeid<AZ::Data::AssetId>())
+            {
+                AZ_Warning("Script", false, "Attribute '%s' can only be used with an AssetId property", name);
+                return false;
+            }
+
+            AZStd::vector<AZStd::string> displayNames;
+            bool isValid = true;
+            if (sdc.IsString(valueIndex))
+            {
+                const char* displayName = nullptr;
+                isValid = sdc.ReadValue(valueIndex, displayName) && displayName && displayName[0] != '\0';
+                if (isValid)
+                {
+                    displayNames.emplace_back(displayName);
+                }
+            }
+            else if (sdc.IsTable(valueIndex))
+            {
+                AZ::ScriptDataContext assetTypesTable;
+                isValid = sdc.InspectTable(valueIndex, assetTypesTable);
+                if (isValid)
+                {
+                    AZStd::array<AZStd::string, MaxAssetTypeCount> indexedDisplayNames;
+                    AZStd::array<bool, MaxAssetTypeCount> populatedIndices{};
+                    size_t entryCount = 0;
+                    const char* fieldName = nullptr;
+                    int fieldIndex = 0;
+                    int elementIndex = 0;
+                    while (assetTypesTable.InspectNextElement(elementIndex, fieldName, fieldIndex))
+                    {
+                        const char* displayName = nullptr;
+                        const bool isValidEntry = fieldName == nullptr && fieldIndex >= 1
+                            && fieldIndex <= aznumeric_cast<int>(MaxAssetTypeCount) && !populatedIndices[fieldIndex - 1]
+                            && assetTypesTable.IsString(elementIndex) && assetTypesTable.ReadValue(elementIndex, displayName)
+                            && displayName && displayName[0] != '\0';
+                        if (!isValidEntry)
+                        {
+                            isValid = false;
+                            break;
+                        }
+
+                        populatedIndices[fieldIndex - 1] = true;
+                        indexedDisplayNames[fieldIndex - 1] = displayName;
+                        ++entryCount;
+                    }
+
+                    isValid = isValid && entryCount >= 1 && entryCount <= MaxAssetTypeCount;
+                    for (size_t index = 0; isValid && index < entryCount; ++index)
+                    {
+                        isValid = populatedIndices[index];
+                        if (isValid)
+                        {
+                            displayNames.push_back(AZStd::move(indexedDisplayNames[index]));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                isValid = false;
+            }
+
+            AZ_Warning(
+                "Script",
+                isValid,
+                "Attribute '%s' must be a non-empty asset type display name or a contiguous Lua array containing between 1 and %zu names",
+                AssetTypeFieldName,
+                MaxAssetTypeCount);
+
+            AZStd::vector<AZ::Data::AssetType> assetTypes;
+            for (const AZStd::string& displayName : displayNames)
+            {
+                AZ::Data::AssetType assetType;
+                if (!ResolveAssetType(displayName.c_str(), assetType)
+                    || AZStd::find(assetTypes.begin(), assetTypes.end(), assetType) != assetTypes.end())
+                {
+                    AZ_Warning("Script", false, "Lua property asset types must resolve to distinct registered types");
+                    isValid = false;
+                    break;
+                }
+                assetTypes.push_back(assetType);
+            }
+
+            if (!isValid)
+            {
+                assetTypes = { AZ::Data::s_invalidAssetType };
+            }
+            ReplaceAssetTypeFilter(editData, AZStd::move(assetTypes));
+            return isValid;
         }
 
         //=========================================================================
