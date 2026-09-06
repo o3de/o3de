@@ -263,7 +263,18 @@ namespace AZ::RHI
 
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
-        processLaunchInfo.m_showWindow = true;
+
+        // No window for a non-interactive compiler whose output is already being piped back here.
+        //
+        // This matters far more than it looks. A console process launched from a parent that has no console of its own gets a
+        // brand new one, and on current Windows that means spawning a conhost.exe alongside it. An AssetBuilder is itself a
+        // console application, so its children attach to the console already there and pay none of that. A tool with a GUI has no
+        // console to attach to, so every child pays for one.
+        //
+        // Measured from Material Canvas driving the same azslc command line the Asset Processor runs: 619-673 ms against 226 ms
+        // standalone and ~234 ms from the AssetBuilder, with three consoles visibly opening and closing per compile. The wait loop
+        // below was suspected first and is not the cause -- making it sleep instead of spin changed nothing.
+        processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         {
