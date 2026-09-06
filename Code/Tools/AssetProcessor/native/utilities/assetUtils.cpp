@@ -64,6 +64,24 @@
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
+
+    // Retry pacing for replacing a file in the cache, which starts short and backs off to g_RetryWaitInterval.
+    //
+    // The first failure to remove a product is usually not contention that needs waiting out. Immediately before removing one, the Asset
+    // Processor broadcasts JobFileClaimed to every connected client, and AzFramework's handler answers by *queuing* a streamer FlushCache:
+    // the handle is dropped a few milliseconds later on the streamer thread, and nothing acknowledges it back. So the remove races that
+    // flush and loses, and a flat quarter second sleep then charges full price for a wait that was over almost at once. With an editor
+    // open on the assets being built this is the normal path, not an exceptional one, and it costs 250 ms per product.
+    //
+    // Backing off keeps the same ceiling for a file that really is held open by something else, and reaches it within a few hundred
+    // milliseconds, while making the common case cost about as little as the platform's sleep granularity allows.
+    static const unsigned int g_RetryWaitIntervalMin = 5;
+
+    static unsigned int NextRetryWaitInterval(unsigned int currentInterval)
+    {
+        const unsigned int nextInterval = currentInterval * 2;
+        return (nextInterval < g_RetryWaitInterval) ? nextInterval : g_RetryWaitInterval;
+    }
     // This is because Qt has to init random number gen on each thread.
     AZ_THREAD_LOCAL bool g_hasInitializedRandomNumberGenerator = false;
 
@@ -79,6 +97,7 @@ namespace AssetUtilsInternal
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
+        unsigned int retryWaitInterval = AssetUtilsInternal::g_RetryWaitIntervalMin;
         QElapsedTimer timer;
         timer.start();
         do
@@ -102,7 +121,8 @@ namespace AssetUtilsInternal
                     if (waitTimeInSeconds != 0)
                     {
                         //Sleep only for non zero waitTime
-                        QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                        QThread::msleep(retryWaitInterval);
+                        retryWaitInterval = AssetUtilsInternal::NextRetryWaitInterval(retryWaitInterval);
                     }
                     continue;
                 }
@@ -134,7 +154,8 @@ namespace AssetUtilsInternal
                 if (waitTimeInSeconds != 0)
                 {
                     //Sleep only for non zero waitTime
-                    QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                    QThread::msleep(retryWaitInterval);
+                    retryWaitInterval = AssetUtilsInternal::NextRetryWaitInterval(retryWaitInterval);
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
