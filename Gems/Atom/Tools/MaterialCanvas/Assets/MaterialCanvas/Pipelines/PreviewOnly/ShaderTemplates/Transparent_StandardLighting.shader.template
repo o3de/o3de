@@ -1,0 +1,112 @@
+{
+    // Preview-only copy of Atom_Feature_Common's Transparent_StandardLighting.shader.template. Identical apart from DisabledRHIBackends.
+    // See README.md.
+    // ShaderAssetBuilder runs its whole compile -- MCPP, azslc, DXC -- once per enabled RHI backend, and the pc platform
+    // enables both dx12 and vulkan. Disabling vulkan here halves every preview shader job, for a second set of bytecode the
+    // Material Canvas viewport never binds. Remove "vulkan" if you run the editor on Vulkan, or the shaderball will have no
+    // shaders to draw with. See README.md.
+    "DisabledRHIBackends": ["null", "vulkan"],
+
+    // The Material Canvas viewport compiles this shader itself, in process, from the same generated .azsli files the graph
+    // rewrites on every edit. Registering those as source dependencies has the Asset Processor rebuild the identical shader at
+    // the same moment, and the two compiles then contend: 526 ms alone against 726-861 ms racing each other.
+    //
+    // The viewport is responsible for rebuilding while this is set, and calls ClearFingerprintForAsset whenever it cannot --
+    // when the in-memory path is switched off, or when the shader's interface has moved and its cached asset is no longer safe
+    // to clone from. See MaterialCanvasViewportContent.
+    "SkipIncludeFileDependencies": true,
+
+    // Preview shaders are only ever drawn on the Material Canvas shaderball, so optimised bytecode buys nothing and costs a great
+    // deal: on a Standard PBR forward shader the pixel stage DXC invocation is the single largest item in the whole job. Nothing in
+    // O3DE's shader build config sets an optimisation level, so DXC runs at its -O3 default. Lowering it only for the preview
+    // pipeline leaves production shaders untouched.
+    //
+    // -O1 rather than -O0, and -O0 is not the next thing to try: it is slower. Measured on the preview transparent pixel shader,
+    // -O0 costs 240 ms against -O1's 209 ms, because it emits 65 KB of DXIL where -O1 emits 37 KB and the extra module costs more
+    // to write, validate and sign than the optimiser passes saved. See "Investigated and rejected" in README.md.
+    "AddBuildArguments": {
+        "dxc": ["-O1"]
+    },
+
+    // Preview fidelity cuts: area lights, decals, received shadows, the shader debug views and light culling are compiled out.
+    // These are existing Atom material-type options declared in LightingOptions.azsli, all of them #ifndef guarded, so defining
+    // them here on the preprocessor command line wins over the defaults. They gate #include lines rather than only function
+    // bodies -- QuadLight.azsli opens with "#if ENABLE_QUAD_LIGHTS" above its own "#include <Ltc.azsli>" -- so the code is gone
+    // before azslc reads the file instead of being parsed and then discarded.
+    //
+    // Worth roughly 4,240 of the 13,399 preprocessed lines a Standard PBR forward shader would otherwise hand azslc, about 90% of
+    // which is engine ShaderLib that is byte identical on every graph edit. ShaderQualityOptions.azsli sets this same combination
+    // for QUALITY_LOW_END_TIER2, so it is a supported configuration rather than a novel one. Production shaders are untouched:
+    // this template is only reachable through the preview-only material pipeline. See README.md for the measured breakdown.
+    "Definitions": [
+        "ENABLE_AREA_LIGHTS=0",
+        "ENABLE_DECALS=0",
+        "ENABLE_SHADOWS=0",
+        "ENABLE_SHADER_DEBUGGING=0",
+        "ENABLE_LIGHT_CULLING=0",
+
+        // sample_texture_2d.materialgraphnode asks for TransformColor.azsli so it can convert the sampled colour between spaces, and
+        // TransformColor pulls in Aces.azsli through its ACEScc conversion: 808 preprocessed lines of ACES reference transforms, the
+        // largest single item in any material shader that samples a texture. Turning ACEScc off in the preview leaves the other five
+        // colour spaces working and makes an ACEScc conversion render magenta, the same as any other unsupported pair. Production
+        // material types keep all six.
+        "ENABLE_ACESCC_COLOR_SPACE=0"
+    ],
+
+    "Source" : "",
+
+    "DepthStencilState" :
+    {
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual",
+            "writeMask": "Zero"
+        },
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x00",
+            "WriteMask" : "0xFF",
+            "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            }
+        }
+    },
+
+    "GlobalTargetBlendState" :
+    {
+        "Enable" : true,
+        "BlendSource" : "One",
+        "BlendDest" : "AlphaSourceInverse",
+        "BlendOp" : "Add"
+    },
+
+    "ProgramSettings":
+    {
+      "EntryPoints":
+      [
+        {
+          "name": "VertexShader",
+          "type": "Vertex"
+        },
+        {
+          "name": "PixelShader",
+          "type": "Fragment"
+        }
+      ]
+    },
+
+    "DrawList" : "transparent"
+}

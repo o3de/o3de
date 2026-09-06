@@ -55,6 +55,12 @@ option bool o_clearCoat_normal_override_enabled = false;
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
+// Carry the object-space vertex position into the pixel stage so the triplanar
+// node can project in object space (rotates with the entity).
+#ifndef MATERIAL_USES_VERTEX_LOCALPOSITION
+#define MATERIAL_USES_VERTEX_LOCALPOSITION 1
+#endif
+
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>

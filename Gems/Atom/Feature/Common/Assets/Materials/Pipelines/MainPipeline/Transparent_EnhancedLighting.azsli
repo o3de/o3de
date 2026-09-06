@@ -16,7 +16,12 @@
 #define FORCE_OPAQUE 0
 #define OUTPUT_SUBSURFACE 1
 #define ENABLE_TRANSMISSION 1
+// Guarded, unlike its neighbours below, so a pipeline can compile the shader debug views out with a -D. Every other
+// ENABLE_ option is written this way in LightingOptions.azsli; the debug views are a developer feature rather than a
+// correctness flag, and an unconditional define here silently beat the command line and warned about redefinition.
+#ifndef ENABLE_SHADER_DEBUGGING
 #define ENABLE_SHADER_DEBUGGING 1
+#endif
 #define ENABLE_CLEAR_COAT 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

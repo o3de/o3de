@@ -28,6 +28,7 @@ ly_add_target(
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -40,6 +41,10 @@ ly_add_target(
             Gem::CommonFeaturesAtom.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
+            # AzslCompiler and ShaderBuilderUtility, for the in-memory preview shader path. They live in a static library rather
+            # than only in the builder gem module, so a tool can call the same reflection code the Shader Asset Builder calls
+            # instead of reimplementing it and drifting from it.
+            Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
 )
@@ -78,3 +83,78 @@ else()
     message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to MaterialCanvas as the target doesn't exist anymore."
         " Perhaps it has been renamed")
 endif()
+
+################################################################################
+# Editor-hosted Material Canvas pane
+################################################################################
+#
+# A second target in this same gem, so that Material Canvas can also run as a view pane inside the O3DE Editor instead of
+# only as the standalone application declared above. The application target is untouched and continues to build and run
+# exactly as before -- the two are alternative front ends over the same window, graph compiler and node library.
+#
+# This lives in the MaterialCanvas gem rather than a gem of its own because the gem already owns the node configurations,
+# graph templates, style sheet and registry files, and every @gemroot:MaterialCanvas@ path in that data resolves here. A
+# separate gem would have to duplicate the node library or reach across gems for it.
+#
+# The shape follows Gems/LandscapeCanvas: a STATIC target with the real code, and a thin GEM_MODULE the Editor loads.
+
+ly_add_target(
+    NAME MaterialCanvas.Editor.Static STATIC
+    NAMESPACE Gem
+    AUTOMOC
+    AUTORCC
+    FILES_CMAKE
+        materialcanvas_editor_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzToolsFramework
+            # Provides LyViewPaneNames.h, which defines LyViewPane::CategoryTools. Landscape Canvas takes the same
+            # dependency for the same reason.
+            Legacy::Editor.Headers
+        PUBLIC
+            Gem::CommonFeaturesAtom.Static
+            Gem::AtomToolsFramework.Static
+            # See the note on the MaterialCanvas application target above.
+            Gem::AtomShader.Static
+)
+
+ly_add_target(
+    NAME MaterialCanvas.Editor GEM_MODULE
+    NAMESPACE Gem
+    AUTOMOC
+    FILES_CMAKE
+        materialcanvas_editor_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::MaterialCanvas.Editor.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AtomToolsFramework.Editor
+)
+
+# Inject the gem name into the module source file so AZ_DECLARE_MODULE_CLASS resolves to Gem_MaterialCanvas.
+ly_add_source_properties(
+    SOURCES
+        Source/Editor/MaterialCanvasEditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# The Tools variant is what the Editor loads for an enabled gem, so this alias is what actually makes the pane appear.
+#
+# Note that the standalone MaterialCanvas application also loads Tools-variant gems (see ly_set_gem_variant_to_load
+# above), which means it will load this module too. That is harmless by construction: MaterialCanvasEditorSystemComponent
+# does no work in Activate and builds nothing until NotifyRegisterViews, which only the Editor broadcasts.
+ly_create_alias(NAME MaterialCanvas.Tools NAMESPACE Gem TARGETS Gem::MaterialCanvas.Editor)

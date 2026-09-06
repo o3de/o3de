@@ -258,8 +258,16 @@ namespace AtomToolsFramework
             AZStd::string::format("%s/user/Registry/%s", AZ::Utils::GetProjectPath().c_str(), settingsFileName.c_str()));
 
         // This will only save modified registry settings that match the following filters
-        const AZStd::vector<AZStd::string> filters = {
-            "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+        AZStd::vector<AZStd::string> filters = {
+            "/O3DE/AtomToolsFramework",
+            "/O3DE/Atom/Tools",
+            AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str())
+        };
+
+        if (m_targetName == "MaterialCanvas")
+        {
+            filters.push_back("/O3DE/Atom/GraphView");
+        }
 
         SaveSettingsToFile(settingsFilePath, filters);
 

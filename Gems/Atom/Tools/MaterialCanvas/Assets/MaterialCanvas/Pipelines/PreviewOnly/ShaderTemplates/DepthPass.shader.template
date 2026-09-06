@@ -1,0 +1,48 @@
+{
+    // Preview-only copy of Atom_Feature_Common's DepthPass.shader.template. Identical apart from DisabledRHIBackends. See README.md.
+    // ShaderAssetBuilder runs its whole compile -- MCPP, azslc, DXC -- once per enabled RHI backend, and the pc platform
+    // enables both dx12 and vulkan. Disabling vulkan here halves every preview shader job, for a second set of bytecode the
+    // Material Canvas viewport never binds. Remove "vulkan" if you run the editor on Vulkan, or the shaderball will have no
+    // shaders to draw with. See README.md.
+    "DisabledRHIBackends": ["null", "vulkan"],
+
+    // The Material Canvas viewport compiles this shader itself, in process, from the same generated .azsli files the graph
+    // rewrites on every edit. Registering those as source dependencies has the Asset Processor rebuild the identical shader at
+    // the same moment, and the two compiles then contend: 526 ms alone against 726-861 ms racing each other.
+    //
+    // The viewport is responsible for rebuilding while this is set, and calls ClearFingerprintForAsset whenever it cannot --
+    // when the in-memory path is switched off, or when the shader's interface has moved and its cached asset is no longer safe
+    // to clone from. See MaterialCanvasViewportContent.
+    "SkipIncludeFileDependencies": true,
+
+    // Preview shaders are only ever drawn on the Material Canvas shaderball, so optimised bytecode buys nothing and costs a great
+    // deal: on a Standard PBR forward shader the pixel stage DXC invocation is the single largest item in the whole job. Nothing in
+    // O3DE's shader build config sets an optimisation level, so DXC runs at its -O3 default. Lowering it only for the preview
+    // pipeline leaves production shaders untouched.
+    //
+    // -O1 rather than -O0, and -O0 is not the next thing to try: it is slower. Measured on the preview transparent pixel shader,
+    // -O0 costs 240 ms against -O1's 209 ms, because it emits 65 KB of DXIL where -O1 emits 37 KB and the extra module costs more
+    // to write, validate and sign than the optimiser passes saved. See "Investigated and rejected" in README.md.
+    "AddBuildArguments": {
+        "dxc": ["-O1"]
+    },
+
+    "Source" : "",
+
+    "DepthStencilState" : {
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "ProgramSettings" :
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type" : "Vertex"
+            }
+        ]
+    },
+
+    "DrawList" : "depth"
+}

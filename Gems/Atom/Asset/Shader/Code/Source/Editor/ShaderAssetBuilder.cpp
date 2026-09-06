@@ -38,6 +38,8 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
@@ -194,12 +196,57 @@ namespace AZ
             auto projectIncludePaths = BuildListOfIncludeDirectories(ShaderAssetBuilderName);
 
             AZStd::unordered_set<AZStd::string> includedFiles;
-            GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            // Skipped when the shader says something else is responsible for rebuilding it; see
+            // ShaderSourceData::m_skipIncludeFileDependencies. The dependency on the .azsl itself is kept either way, so a change
+            // to the shader's own source still reprocesses it -- only the library it includes stops doing so.
+            if (!shaderSourceData.m_skipIncludeFileDependencies)
+            {
+                GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            }
             for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
+            }
+
+            // GetListOfIncludedFiles resolves #include lines textually, so it cannot follow an include whose path is a macro. Material
+            // pipeline generated shaders reach their parameter struct exactly that way: MaterialTypeBuilder emits
+            //     #define MATERIAL_PARAMETERS_AZSLI_FILE_PATH "<name>_parameters.azsli"
+            // into the generated AZSL, and the shared material azsli then does #include MATERIAL_PARAMETERS_AZSLI_FILE_PATH.
+            //
+            // Without a dependency on that file the Asset Processor does not know the two belong together. The generated surface
+            // evaluation azsli next to the graph IS a plain include and therefore IS a registered dependency, so editing a graph
+            // retriggers this shader job immediately, racing the Material Type Builder pipeline stage job that regenerates the parameter
+            // struct. The shader then compiles new graph code against an old struct and fails with "no member named ... in
+            // 'MaterialParameters'". Registering the dependency ties them together so the shader rebuilds when the struct changes.
+            //
+            // Scoped to shaders that actually contain the define, so hand written shaders are unaffected.
+            if (const auto azslContents = AZ::Utils::ReadFile(azslFullPath); azslContents.IsSuccess())
+            {
+                static constexpr const char DefineToken[] = "#define MATERIAL_PARAMETERS_AZSLI_FILE_PATH";
+                if (const size_t definePos = azslContents.GetValue().find(DefineToken); definePos != AZStd::string::npos)
+                {
+                    const size_t nameBegin = azslContents.GetValue().find('"', definePos + AZ_ARRAY_SIZE(DefineToken) - 1);
+                    const size_t nameEnd =
+                        (nameBegin != AZStd::string::npos) ? azslContents.GetValue().find('"', nameBegin + 1) : AZStd::string::npos;
+
+                    if (nameEnd != AZStd::string::npos)
+                    {
+                        const AZStd::string parametersFileName =
+                            azslContents.GetValue().substr(nameBegin + 1, nameEnd - nameBegin - 1);
+
+                        // The define holds a bare file name, resolved against the folder holding the generated AZSL. ParentPath
+                        // returns a PathView that borrows the temporary, so it is materialised into an owning Path on its own line
+                        // before being joined.
+                        const AZ::IO::Path azslDirectory = AZ::IO::Path(azslFullPath).ParentPath();
+                        const AZ::IO::Path parametersFilePath = azslDirectory / AZStd::string_view(parametersFileName);
+
+                        AssetBuilderSDK::SourceFileDependency parametersFileDependency;
+                        parametersFileDependency.m_sourceFileDependencyPath = parametersFilePath.LexicallyNormal().String();
+                        response.m_sourceFileDependencyList.emplace_back(AZStd::move(parametersFileDependency));
+                    }
+                }
             }
 
             // Add the shader_build_option files as source dependencies

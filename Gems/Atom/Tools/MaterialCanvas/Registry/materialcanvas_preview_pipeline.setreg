@@ -1,0 +1,11 @@
+{
+    "O3DE": {
+        "Atom": {
+            "RPI": {
+                "OptInMaterialPipelineFiles": [
+                    "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/Pipelines/PreviewOnly/MaterialCanvasPreview.materialpipeline"
+                ]
+            }
+        }
+    }
+}

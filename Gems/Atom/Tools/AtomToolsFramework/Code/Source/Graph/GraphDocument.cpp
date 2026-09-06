@@ -55,6 +55,8 @@ namespace AtomToolsFramework
                 ->Event("CompileGraph", &GraphDocumentRequests::CompileGraph)
                 ->Event("QueueCompileGraph", &GraphDocumentRequests::QueueCompileGraph)
                 ->Event("IsCompileGraphQueued", &GraphDocumentRequests::IsCompileGraphQueued)
+                ->Event("QueueApplyGraph", &GraphDocumentRequests::QueueApplyGraph)
+                ->Event("IsApplyGraphNeeded", &GraphDocumentRequests::IsApplyGraphNeeded)
                 ;
         }
     }
@@ -106,6 +108,13 @@ namespace AtomToolsFramework
                                 toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
                             break;
                         case GraphCompiler::State::Processing:
+                            // The generated files are written by this point, so publish them now rather than only on completion.
+                            // What follows is the wait for the Asset Processor to build them, and a listener that only needs the
+                            // files can get on with its own work during it instead of after it.
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphProcessing, documentId);
                             break;
                         case GraphCompiler::State::Complete:
                             GraphDocumentRequestBus::Event(
@@ -221,7 +230,10 @@ namespace AtomToolsFramework
 
         m_modified = false;
         CreateGraph(graph);
-        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen", true);
+        if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen", true))
+        {
+            QueueCompileGraph();
+        }
         return OpenSucceeded();
     }
 
@@ -242,7 +254,11 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
+        if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true))
+        {
+            m_compileProductionOutputQueued = true;
+            QueueCompileGraph();
+        }
         return SaveSucceeded();
     }
 
@@ -263,7 +279,11 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
+        if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true))
+        {
+            m_compileProductionOutputQueued = true;
+            QueueCompileGraph();
+        }
         return SaveSucceeded();
     }
 
@@ -284,7 +304,11 @@ namespace AtomToolsFramework
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true);
+        if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", true))
+        {
+            m_compileProductionOutputQueued = true;
+            QueueCompileGraph();
+        }
         return SaveSucceeded();
     }
 
@@ -314,7 +338,10 @@ namespace AtomToolsFramework
             m_modified = true;
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             GraphCanvas::ViewRequestBus::Event(m_graphId, &GraphCanvas::ViewRequests::RefreshView);
-            m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
+            if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true))
+            {
+                QueueCompileGraph();
+            }
         }
         return true;
     }
@@ -372,6 +399,10 @@ namespace AtomToolsFramework
 
         m_compileGraphQueued = false;
 
+        // Hand the save/edit distinction to the compiler before the job starts, so the worker reads a value that cannot change under it.
+        m_graphCompiler->SetProductionOutputRequested(m_compileProductionOutputQueued);
+        m_compileProductionOutputQueued = false;
+
         // Serialize the graph data into a buffer that's copied and deserialized in the compilation job. This will allow
         // editing to continue while the last serialized version of the graph is compiled in the background.
         AZStd::vector<AZ::u8> graphBuffer;
@@ -400,11 +431,32 @@ namespace AtomToolsFramework
     void GraphDocument::QueueCompileGraph()
     {
         m_compileGraphQueued = true;
+        if (m_graphCompiler)
+        {
+            // Signal the worker as soon as the edit is committed instead of waiting for the next system tick. The queued replacement
+            // remains a single boolean, so any number of rapid edits still coalesce into one compile of the newest graph snapshot.
+            m_graphCompiler->Cancel();
+        }
     }
 
     bool GraphDocument::IsCompileGraphQueued() const
     {
         return m_compileGraphQueued;
+    }
+
+    void GraphDocument::QueueApplyGraph()
+    {
+        // Deliberately does not save. Apply publishes what the graph currently describes; whether that state is also worth writing back
+        // to the source file is a separate decision, and one the user makes with Save.
+        m_compileProductionOutputQueued = true;
+        QueueCompileGraph();
+    }
+
+    bool GraphDocument::IsApplyGraphNeeded() const
+    {
+        // A queued production compile counts as needed until it has actually run, so the answer does not flicker to "nothing to do"
+        // between the request and the compile that satisfies it.
+        return m_compileProductionOutputQueued || (m_graphCompiler && m_graphCompiler->IsProductionOutputStale());
     }
 
     void GraphDocument::OnSystemTick()
@@ -453,7 +505,10 @@ namespace AtomToolsFramework
             m_modified = true;
             m_buildPropertiesQueued = true;
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
-            m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
+            if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true))
+            {
+                QueueCompileGraph();
+            }
         }
     }
 
@@ -494,7 +549,10 @@ namespace AtomToolsFramework
         m_modified = true;
         CreateGraph(graph);
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
-        m_compileGraphQueued |= GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true);
+        if (GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", true))
+        {
+            QueueCompileGraph();
+        }
     }
 
     void GraphDocument::CreateGraph(GraphModel::GraphPtr graph)
