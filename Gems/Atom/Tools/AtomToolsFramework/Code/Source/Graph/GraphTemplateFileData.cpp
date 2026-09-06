@@ -38,18 +38,40 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool GraphTemplateFileData::Save(const AZStd::string& path) const
+    bool GraphTemplateFileData::Save(const AZStd::string& path, bool* wroteFile) const
     {
         AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file: %s\n", path.c_str());
+
+        if (wroteFile)
+        {
+            *wroteFile = false;
+        }
 
         AZStd::string templateOutputText;
         AZ::StringFunc::Join(templateOutputText, m_lines, '\n');
         templateOutputText += '\n';
 
+        // If the file already on disk is byte for byte identical to what is about to be written then skip the write entirely. Rewriting
+        // the file would update its modification time and content hash, which causes the Asset Processor to re-run every job that lists it
+        // as a source dependency, including every shader generated for the material. Many graph edits (moving a node, changing the
+        // selection, editing a branch that does not feed the output) regenerate identical text for most or all of the template files, so
+        // skipping those writes removes the entire asset pipeline round trip for that class of edit.
+        if (const auto existingText = AZ::Utils::ReadFile(path);
+            existingText.IsSuccess() && existingText.GetValue() == templateOutputText)
+        {
+            AZ_TracePrintf_IfTrue(
+                "GraphTemplateFileData", IsLoggingEnabled(), "Generated file is unchanged, skipping write: %s\n", path.c_str());
+            return true;
+        }
+
         // Save the file generated from the template to the same folder as the graph.
         if (AZ::Utils::WriteFile(templateOutputText, path).IsSuccess())
         {
             AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file succeeded: %s\n", path.c_str());
+            if (wroteFile)
+            {
+                *wroteFile = true;
+            }
             return true;
         }
 
