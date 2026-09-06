@@ -30,14 +30,23 @@ namespace AtomToolsFramework
     {
         using NodeValueTypeRef = typename NodeContainer::const_reference;
 
-        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
+        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort.
+        //
+        // The node ID is the last component so that the ordering is total. Everything before it ties readily: two nodes with the same
+        // slot shape at the same depth score identically, which is the ordinary case for sibling branches of a graph. The sort below is
+        // stable, so a tie leaves them in whatever order the caller supplied, and callers build their containers by iterating
+        // GraphModel::Graph::GetNodes(), which is an unordered_map. Inserting any node rehashes it, siblings come back the other way
+        // round, and the generated shader source changes line order without the graph meaning anything different. The Asset Processor
+        // sees a changed file and rebuilds every shader, so dropping an unconnected node on the canvas triggered a full recompile.
         AZStd::mutex nodeScoreMapMutex;
-        AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t>> nodeScoreMap;
+        AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t, GraphModel::NodeId>> nodeScoreMap;
         nodeScoreMap.reserve(nodes.size());
 
         AZ::parallel_for_each(nodes.begin(), nodes.end(), [&](NodeValueTypeRef node) {
             AZStd::scoped_lock lock(nodeScoreMapMutex);
-            nodeScoreMap.emplace(node->GetId(), AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth()));
+            nodeScoreMap.emplace(
+                node->GetId(),
+                AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth(), node->GetId()));
         });
 
         AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {
