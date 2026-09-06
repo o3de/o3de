@@ -74,6 +74,17 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.uvs[1] = uv1;
     output.normal = normal;
     output.tangent = tangent;
+
+#ifdef MATERIAL_USES_VERTEX_LOCALPOSITION
+    // Object-space position, pre-multiplied by the entity's world scale.
+    // - Object space  -> the projection rotates WITH the entity (consistent across rotated instances).
+    // - World scale   -> texel density stays constant when the entity is scaled (no stretch).
+    // Scale is recovered from the lengths of the object-to-world matrix columns
+    // (transpose turns columns into rows so length() can read them).
+    float3x3 o2wScale = transpose((float3x3)objectToWorld);
+    float3 objectScale = float3(length(o2wScale[0]), length(o2wScale[1]), length(o2wScale[2]));
+    output.localPosition = position * objectScale;
+#endif
 #if ENABLE_VERTEX_COLOR
     if(useVertexColor0)
     {

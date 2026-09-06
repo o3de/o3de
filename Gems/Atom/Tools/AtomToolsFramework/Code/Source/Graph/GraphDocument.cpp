@@ -108,6 +108,13 @@ namespace AtomToolsFramework
                                 toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
                             break;
                         case GraphCompiler::State::Processing:
+                            // The generated files are written by this point, so publish them now rather than only on completion.
+                            // What follows is the wait for the Asset Processor to build them, and a listener that only needs the
+                            // files can get on with its own work during it instead of after it.
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphProcessing, documentId);
                             break;
                         case GraphCompiler::State::Complete:
                             GraphDocumentRequestBus::Event(
