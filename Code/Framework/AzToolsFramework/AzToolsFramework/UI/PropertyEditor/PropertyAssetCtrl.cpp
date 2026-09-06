@@ -350,8 +350,9 @@ namespace AzToolsFramework
     bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
     {
         const auto selectableAssetTypes = GetSelectableAssetTypes();
-        const auto isSelectableAssetType =
-            AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
+        // An empty list means no type filter is configured, matching the asset browser display filter behavior.
+        const auto isSelectableAssetType = selectableAssetTypes.empty()
+            || AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
         return (assetId.IsValid() && !assetType.IsNull() && isSelectableAssetType);
     }
 
