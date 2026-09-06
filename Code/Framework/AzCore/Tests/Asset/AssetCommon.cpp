@@ -8,6 +8,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetInternal/WeakAsset.h>
+#include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -115,6 +116,7 @@ namespace UnitTest
 
             g_constructorResultMatches = false;
             m_behaviorContext = AZStd::make_unique<BehaviorContext>();
+            MathReflect(m_behaviorContext.get());
             AssetId::Reflect(m_behaviorContext.get());
             m_behaviorContext->Property(
                 "constructorResultMatches", BehaviorValueProperty(&g_constructorResultMatches));
@@ -160,6 +162,30 @@ namespace UnitTest
     {
         const bool executed = m_scriptContext->Execute(
             "local assetId = AssetId('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}', 42)\n"
+            "local expected = AssetId.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}:2a')\n"
+            "constructorResultMatches = assetId == expected\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorResultMatches);
+    }
+
+    TEST_F(AssetIdScriptConstructorTest, ConstructorWithUuidObject_UsesDefaultSubIdInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local uuid = Uuid.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}')\n"
+            "local assetId = AssetId(uuid)\n"
+            "local expected = AssetId.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}:0')\n"
+            "constructorResultMatches = assetId == expected\n");
+
+        EXPECT_TRUE(executed);
+        EXPECT_TRUE(g_constructorResultMatches);
+    }
+
+    TEST_F(AssetIdScriptConstructorTest, ConstructorWithUuidObjectAndSubId_PreservesBothArgumentsInLua)
+    {
+        const bool executed = m_scriptContext->Execute(
+            "local uuid = Uuid.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}')\n"
+            "local assetId = AssetId(uuid, 42)\n"
             "local expected = AssetId.CreateString('{A9F596D7-9913-4BA4-AD4E-7E477FB9B542}:2a')\n"
             "constructorResultMatches = assetId == expected\n");
 
