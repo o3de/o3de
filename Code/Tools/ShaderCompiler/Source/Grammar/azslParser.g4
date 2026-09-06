@@ -29,9 +29,22 @@ topLevelDeclaration:
 ;
 
 // Amazon: AZSL has scopes, and identifiers can be qualified
+// qualifiedId is deliberately first. Both alternatives are viable on an input that starts with an
+// Identifier, so this decision conflicts, and a conflict is resolved by taking the lowest-numbered
+// alternative. With unqualifiedId first that answer is wrong for every qualified name: the parser
+// takes `Bindless` and then wants the statement to end, giving "missing ';' at '::'".
+//
+// Full-context LL prediction resolves it correctly from the caller, which is why the order never
+// mattered before -- and why it cost a full-context prediction to discover. Ordering the alternatives
+// so the greedier one wins makes the decision correct under SLL as well, which lets the parser run in
+// SLL mode and skip the ALL(*) closure entirely. See the two-stage parse in Main.cpp.
+//
+// Preferring qualifiedId is only wrong if '::' can legitimately follow a complete idExpression, which
+// would make the bare-Identifier reading the intended one. It cannot: the only '::' in this grammar
+// outside nestedNameSpecifier is typeofExpression's, and that one follows ')'.
 idExpression:
-        unqualifiedId   // stricly unqualified (no nested specifiers at all)
-    |   qualifiedId     // could be relatively qualified OR fully qualified.
+        qualifiedId     // could be relatively qualified OR fully qualified.
+    |   unqualifiedId   // stricly unqualified (no nested specifiers at all)
 ;
 
 unqualifiedId:
@@ -42,8 +55,24 @@ qualifiedId:
     nestedNameSpecifier unqualifiedId
 ;
 
+// Left-factored so this cannot derive the empty string.
+//
+// It used to read  GlobalSROToken='::'? (Identifier '::')*  , where both parts are optional, so the whole rule
+// could match nothing. That made qualifiedId (nestedNameSpecifier unqualifiedId) derive a bare Identifier --
+// exactly what unqualifiedId derives -- so every identifier in the file hit a genuinely ambiguous decision in
+// idExpression. ANTLR resolves that by preferring the first alternative, but only after running full-context
+// ALL(*) prediction to discover the conflict, once per identifier. Measured at ~11,900 full-context predictions
+// for one shader, in a parse phase that is 71% of AZSLc's run.
+//
+// Requiring at least one token means qualifiedId now announces itself within two tokens ('::' or Identifier
+// '::'), which SLL can decide without falling back.
+//
+// The generated context class is unchanged: both alternatives are unlabelled, so NestedNameSpecifierContext
+// still exposes GlobalSROToken (null in the second alternative, as it already was when '::' was absent) and
+// the same Identifier() list. The only derivation lost is the empty one, which ANTLR never chose anyway.
 nestedNameSpecifier:
-    GlobalSROToken='::'? (Identifier '::')*
+        GlobalSROToken='::' (Identifier '::')*   // ::a::b::   or just ::
+    |   (Identifier '::')+                       // a::b::
 ;
 
 classDefinitionStatement:
