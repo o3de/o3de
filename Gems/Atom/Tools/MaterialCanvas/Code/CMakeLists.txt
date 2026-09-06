@@ -28,6 +28,7 @@ ly_add_target(
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -104,6 +105,8 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         materialcanvas_editor_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .

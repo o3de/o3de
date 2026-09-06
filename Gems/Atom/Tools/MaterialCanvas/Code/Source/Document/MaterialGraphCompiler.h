@@ -269,6 +269,16 @@ namespace MaterialCanvas
         // Processor no reason to run, so waiting on it for status would block on jobs that will never be queued.
         bool m_wroteAnyGeneratedFile = false;
 
+        // The generated files whose contents actually changed during this compile, which is a much smaller set than the files this compile
+        // is responsible for. A typical edit rewrites only the azsli instruction files: the material type and the shaders are byte for byte
+        // what they already were, and every product the Asset Processor derives from them comes out identical.
+        //
+        // Only these are worth waiting on. The Asset Processor still reruns the material type jobs, because the azsli files are source
+        // dependencies of them, but it rebuilds them into the same intermediate, and blocking the compile until it has done so was measured
+        // at 500-690 ms per edit -- the largest remaining cost in the preview, and all of it spent waiting for work whose result was already
+        // on disk before it started.
+        AZStd::set<AZStd::string> m_writtenGeneratedFiles;
+
         // True while every change made during this compile is confined to material property values in a generated material type. Those are
         // delivered straight to the viewport as property overrides, so the preview does not have to wait for the Asset Processor to rebuild
         // the material type and every shader behind it.

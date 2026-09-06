@@ -527,8 +527,39 @@ int main(int argc, const char* argv[])
         azslParser parser(&tokens);
         parser.removeErrorListeners();
         azslParserEventListener.m_isKeywordPredicate = IsKeyword;
+
+        // Two-stage parse. ANTLR's default prediction mode is LL: it runs SLL first and, on every
+        // SLL conflict, redoes that decision with full outer context (ALL(*)). That full-context
+        // closure is the expensive path, and it is most of the parse -- which is in turn about two
+        // thirds of an AZSLc run on a Material Canvas preview shader.
+        //
+        // Stage one runs pure SLL, which never escalates. SLL accepts every input LL accepts except
+        // that it can report a syntax error on some inputs LL would have parsed, so a stage that
+        // reports any error is thrown away and re-parsed under the original LL mode. Whatever
+        // survives is a tree LL would have produced too; the fast path only decides which mode did
+        // the work. Reordering idExpression's alternatives (see azslParser.g4) is what makes stage
+        // one succeed on real AZSL rather than always falling through to stage two.
+        //
+        // Parser::reset() clears the syntax error count, rewinds the token stream and releases stage
+        // one's nodes, so stage two starts from exactly the state the parse used to start from.
+        auto* simulator = parser.getInterpreter<atn::ParserATNSimulator>();
+
+        simulator->setPredictionMode(atn::PredictionMode::SLL);
+        tree::ParseTree* tree = parser.compilationUnit();
+
+        if (parser.getNumberOfSyntaxErrors() > 0)
+        {
+            parser.reset();
+            simulator->setPredictionMode(atn::PredictionMode::LL);
+            tree = parser.compilationUnit();
+        }
+
+        // Attached only now, so it reports on whichever stage produced the tree. This listener throws
+        // ParseCancellationException from syntaxError(), so attaching it to stage one would turn a
+        // recoverable SLL mispredict into a fatal error before stage two could run -- and this
+        // translation unit is built with _HAS_EXCEPTIONS=0, under which that throw does not unwind.
+        // getNumberOfSyntaxErrors() counts independently of listeners, so the check above needs none.
         parser.addErrorListener(&azslParserEventListener);
-        tree::ParseTree *tree = parser.compilationUnit();
 
         if (ast)
         {

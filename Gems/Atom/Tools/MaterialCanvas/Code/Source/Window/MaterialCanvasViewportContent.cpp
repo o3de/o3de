@@ -38,7 +38,9 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <Document/InMemoryShaderCompiler.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <Document/MaterialGraphCompiler.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
@@ -184,6 +186,13 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportContent::OnCompileGraphStarted(const AZ::Uuid& documentId)
     {
+        if (m_lastOpenedDocumentId == documentId)
+        {
+            // Anything compiled for the previous edit is now stale. Bumping the generation makes a job that is still running
+            // discard its own result rather than apply it to this edit.
+            ++m_compileGeneration;
+        }
+
         if (m_lastOpenedDocumentId == documentId &&
             AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", true))
         {
@@ -199,14 +208,52 @@ namespace MaterialCanvas
         return AZStd::chrono::duration<double, AZStd::milli>(AZStd::chrono::steady_clock::now() - m_compileCompletedAt).count();
     }
 
+    void MaterialCanvasViewportContent::OnCompileGraphProcessing(const AZ::Uuid& documentId)
+    {
+        if (m_lastOpenedDocumentId != documentId)
+        {
+            return;
+        }
+
+        // Start compiling now, while the graph compiler waits for the Asset Processor to build the files it just wrote.
+        //
+        // That wait is about 600 ms of a 900 ms compile and none of it is work this needs: the shader is compiled from the
+        // generated .azsli files directly, and MCPP resolves them from disk. Waiting for OnCompileGraphCompleted meant running a
+        // ~550 ms compile strictly after a ~600 ms wait that it could have run underneath.
+        //
+        // The material type is not available yet, so the shaders to rebuild are taken from the one already on screen -- which is
+        // the same set, because a graph edit that changes which shaders exist also changes the material type, and that case falls
+        // back to the Asset Processor anyway.
+        if (m_appliedMaterialTypeAsset)
+        {
+            QueueInMemoryShaderCompile(m_appliedMaterialTypeAsset, GetGeneratedFilePath(documentId, ".materialtype"));
+        }
+    }
+
     void MaterialCanvasViewportContent::OnCompileGraphCompleted(const AZ::Uuid& documentId)
     {
         m_compileCompletedAt = AZStd::chrono::steady_clock::now();
 
-        if (m_lastOpenedDocumentId == documentId)
+        if (m_lastOpenedDocumentId != documentId)
         {
-            ApplyMaterial(documentId);
+            return;
         }
+
+        // Nothing to apply yet if the shader for this edit is still compiling.
+        //
+        // Now that the compile no longer waits for the Asset Processor, this runs a few hundred milliseconds before the shader is
+        // ready, and applying here builds a whole material -- instance, property overrides, pipeline state -- around the previous
+        // edit's shader, only to rebuild it around the right one moments later. Worse, that throwaway build occupies the main thread
+        // at exactly the moment the real result lands: the shader was ready at 585 ms and did not reach the screen until 890 ms.
+        //
+        // The compile job queues an apply when it finishes, whether or not it produced anything, so this is a deferral rather than a
+        // decision not to apply.
+        if (m_shaderCompileInFlight)
+        {
+            return;
+        }
+
+        ApplyMaterial(documentId);
     }
 
     void MaterialCanvasViewportContent::OnCompileGraphFailed(const AZ::Uuid& documentId)
@@ -382,6 +429,85 @@ namespace MaterialCanvas
         ApplyMaterialPropertyValues();
     }
 
+    void MaterialCanvasViewportContent::QueueInMemoryShaderCompile(
+        const AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>& materialTypeAsset, const AZStd::string& materialTypePath)
+    {
+        if (m_shaderCompileInFlight.exchange(true))
+        {
+            return; // One already running. It will queue an apply when it finishes.
+        }
+
+        // Collected here, on the main thread, because it walks the material type's shader collection and reads asset handles.
+        // Only the compiling is handed to the job.
+        AZStd::vector<InMemoryShaderRequest> requests = CollectInMemoryShaderRequests(materialTypeAsset, materialTypePath);
+        if (requests.empty())
+        {
+            // The pipeline stage has not written this edit's .azsl and .shader yet. Normal early in a compile.
+            m_shaderCompileInFlight = false;
+            return;
+        }
+
+        const unsigned int generation = m_compileGeneration.load();
+
+        auto* compileJob = AZ::CreateJobFunction(
+            [this, requests, generation]()
+            {
+                auto compiled = CompileInMemoryShaders(requests);
+
+                // Anything that did not compile has to go back to the Asset Processor, and it will not notice on its own: the
+                // preview shaders set SkipIncludeFileDependencies, so editing the graph's .azsli files no longer reprocesses them.
+                // Clearing the fingerprint is what the graph compiler already uses to force a source to be rebuilt.
+                //
+                // This is the safety net for the case the interface guard exists to catch. A graph edit that adds a shader option
+                // or changes an SRG makes the cached asset unsafe to clone from, CreateInMemoryShaderAsset declines, and without
+                // this the preview would stay on the last shader that did compile, indefinitely.
+                if (compiled.size() != requests.size())
+                {
+                    for (const InMemoryShaderRequest& request : requests)
+                    {
+                        const bool wasCompiled = AZStd::any_of(
+                            compiled.begin(),
+                            compiled.end(),
+                            [&request](const auto& pair)
+                            {
+                                return pair.first == request.m_sourceShaderAsset.GetId();
+                            });
+
+                        if (!wasCompiled)
+                        {
+                            AZ_TracePrintf(
+                                "MaterialCanvas",
+                                "In-memory shader unavailable; asking the Asset Processor to rebuild %s\n",
+                                request.m_shaderPath.c_str());
+
+                            AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                                &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, request.m_shaderPath);
+                        }
+                    }
+                }
+                {
+                    AZStd::scoped_lock lock(m_compiledShadersMutex);
+                    // Discard silently if the graph moved on while this was compiling. Applying it would put the shader for an
+                    // edit that no longer exists on screen, which is worse than being a moment late.
+                    if (generation == m_compileGeneration.load())
+                    {
+                        m_compiledShaders = AZStd::move(compiled);
+                        m_compiledShadersGeneration = generation;
+                    }
+                }
+
+                m_shaderCompileInFlight = false;
+
+                // Rebuild on the next tick, bypassing the catalog debounce: this is one finished result rather than a burst, and
+                // deferring it by up to half a second would give back most of what compiling it here was meant to save.
+                m_applyMaterialImmediately = true;
+                m_applyMaterialQueued = true;
+            },
+            true);
+
+        compileJob->Start();
+    }
+
     AZStd::string MaterialCanvasViewportContent::GetGeneratedFilePath(
         const AZ::Uuid& documentId, AZStd::string_view extension) const
     {
@@ -462,6 +588,47 @@ namespace MaterialCanvas
                 "In-memory preview declined at %.0f ms: the intermediate material type or its shaders are not ready.\n",
                 MillisecondsSinceCompile());
             return false;
+        }
+
+        // Swap in any shader this viewport compiled for the current edit.
+        //
+        // TryReplaceShaderAsset only accepts an asset whose id matches the one it is replacing, which is exactly the guarantee
+        // CreateInMemoryShaderAsset provides by cloning: same id, new byte code. So this either replaces the Asset Processor's
+        // shader with an identical-but-fresher one, or does nothing at all.
+        //
+        // This is also what removes the one-edit-behind behaviour. The material used to be built from whatever shader the asset
+        // system had loaded, and the asset system never reloads shaders in this process, so a material built while the Asset
+        // Processor was still working showed the previous edit until unrelated catalog traffic happened to rebuild it late enough.
+        // A shader built here has nothing to wait for.
+        m_appliedMaterialTypeAsset = materialTypeAsset;
+
+        size_t replacedShaderCount = 0;
+        {
+            AZStd::scoped_lock lock(m_compiledShadersMutex);
+            if (m_compiledShadersGeneration == m_compileGeneration.load())
+            {
+                for (const auto& [replacedAssetId, compiledShaderAsset] : m_compiledShaders)
+                {
+                    // The same call the reload path makes. It replaces this shader wherever the material type refers to an asset
+                    // with that id, general collection and pipeline payloads alike, and ignores anything else -- which is safe
+                    // here precisely because the compiled asset was cloned from the one it is replacing and kept its id.
+                    materialTypeAsset->ReinitializeAsset(compiledShaderAsset);
+                    ++replacedShaderCount;
+                }
+            }
+        }
+
+        if (replacedShaderCount > 0)
+        {
+            AZ_TracePrintf(
+                "MaterialCanvas", "Preview using %zu shader(s) compiled in process, %.0f ms after the compile finished.\n",
+                replacedShaderCount, MillisecondsSinceCompile());
+        }
+        else
+        {
+            // Nothing compiled for this edit yet. Start that now; the material below is still built from the Asset Processor's
+            // shaders so the viewport shows something in the meantime, and the job queues another apply when it lands.
+            QueueInMemoryShaderCompile(materialTypeAsset, materialTypePath);
         }
 
         // The values the graph currently describes. These live in the material rather than the material type, which is why the
@@ -740,7 +907,10 @@ namespace MaterialCanvas
         const AZ::u64 maxDeferralMs = AtomToolsFramework::GetSettingsValue(
             "/O3DE/Atom/MaterialCanvas/Viewport/ApplyMaterialMaxDeferralMs", (AZ::u64)500);
 
-        const bool catalogWentQuiet = now >= m_applyMaterialQuietDeadline;
+        // A result this viewport produced itself skips the wait entirely.
+        const bool applyImmediately = m_applyMaterialImmediately.exchange(false);
+
+        const bool catalogWentQuiet = applyImmediately || now >= m_applyMaterialQuietDeadline;
         const bool deferredTooLong = (now - m_applyMaterialBurstStart) >= AZStd::chrono::milliseconds(maxDeferralMs);
         if (!catalogWentQuiet && !deferredTooLong)
         {

@@ -241,18 +241,6 @@ namespace AZ
             // Running DX12 on PC with DXIL shaders requires modern GPUs and at least Windows 10 Build 1803 or later for Shader Model 6.2
             // https://github.com/Microsoft/DirectXShaderCompiler/wiki/Running-Shaders
 
-            // -Fo "Output object file"
-            AZStd::string shaderOutputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderOutputFile, "dxil.bin");
-
-            // -Fh "Output header file containing object code", used for counting dynamic branches
-            AZStd::string objectCodeOutputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), objectCodeOutputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), objectCodeOutputFile.c_str(), objectCodeOutputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(objectCodeOutputFile, "dxil.txt");
-
             // Stage profile name parameter
             // Note: RayTracing shaders must be compiled with version 6_3, while the rest of the stages
             // are compiled with version 6_2, so RayTracing cannot share the version constant.
@@ -272,6 +260,36 @@ namespace AZ
                 return false;
             }
 
+            // Every intermediate below is named per entry point rather than per source file.
+            //
+            // The entry points of one shader are compiled from the same source into the same temp folder, so names derived from the
+            // source alone are the same name twice: VertexShader and PixelShader were both writing <stem>.dxil.bin, <stem>.dxil.txt,
+            // and the two dxsc products. That is harmless only because they run strictly one after the other -- and it is exactly what
+            // stopped them running at the same time. The .pdb above was already disambiguated by profile name, so the shape of the
+            // problem was known; this applies the same treatment to the rest.
+            //
+            // The entry point name is unique within a shader by construction, being the key of the entry point map. RayTracing passes
+            // no entry point to dxc, so it falls back to the profile, which is unique for that stage.
+            AZStd::string sourceFileStem;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), sourceFileStem);
+            const AZStd::string stageTag = entryPoint.empty() ? profileIt->second : entryPoint;
+
+            const auto makeStageTempPath = [&tempFolder, &sourceFileStem, &stageTag](const char* extension)
+            {
+                AZStd::string path;
+                AzFramework::StringFunc::Path::Join(
+                    tempFolder.c_str(),
+                    AZStd::string::format("%s.%s.%s", sourceFileStem.c_str(), stageTag.c_str(), extension).c_str(),
+                    path);
+                return path;
+            };
+
+            // -Fo "Output object file"
+            AZStd::string shaderOutputFile = makeStageTempPath("dxil.bin");
+
+            // -Fh "Output header file containing object code", used for counting dynamic branches
+            AZStd::string objectCodeOutputFile = makeStageTempPath("dxil.txt");
+
             const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
 
             // Compilation parameters
@@ -287,6 +305,9 @@ namespace AZ
             args.m_prependFile = PlatformShaderHeader;
             args.m_destinationFolder = tempFolder.c_str();
             args.m_digest = &sha1;
+            // Same reasoning as the outputs: this one is an input, but it is an input dxc has open while it runs, and both entry
+            // points would otherwise be writing it at the same address.
+            args.m_addSuffixToFileName = stageTag.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash
             // -Fd "Write debug information to the given file, or automatically named file in directory when ending in '\\'"
@@ -338,14 +359,8 @@ namespace AZ
                 // Need to patch the shader so it can be used with specialization constants.
                 const auto dxscRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxsc.exe");
 
-                AZStd::string shaderOutputCommon;
-                AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputCommon);
-                AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputCommon.c_str(), shaderOutputCommon);
-
-                AZStd::string patchedShaderOutput = shaderOutputCommon;
-                AzFramework::StringFunc::Path::ReplaceExtension(patchedShaderOutput, "dxil.patched.bin");
-                AZStd::string offsetsOutput = shaderOutputCommon;
-                AzFramework::StringFunc::Path::ReplaceExtension(offsetsOutput, "offsets.json");
+                AZStd::string patchedShaderOutput = makeStageTempPath("dxil.patched.bin");
+                AZStd::string offsetsOutput = makeStageTempPath("offsets.json");
 
                 const auto dxscCommandOptions = AZStd::string::format(
                     //   1.sentinel    3.offsets_output   

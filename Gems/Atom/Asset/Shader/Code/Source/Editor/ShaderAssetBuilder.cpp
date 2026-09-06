@@ -196,7 +196,13 @@ namespace AZ
             auto projectIncludePaths = BuildListOfIncludeDirectories(ShaderAssetBuilderName);
 
             AZStd::unordered_set<AZStd::string> includedFiles;
-            GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            // Skipped when the shader says something else is responsible for rebuilding it; see
+            // ShaderSourceData::m_skipIncludeFileDependencies. The dependency on the .azsl itself is kept either way, so a change
+            // to the shader's own source still reprocesses it -- only the library it includes stops doing so.
+            if (!shaderSourceData.m_skipIncludeFileDependencies)
+            {
+                GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            }
             for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
