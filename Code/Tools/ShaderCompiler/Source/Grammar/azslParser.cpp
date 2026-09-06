@@ -411,7 +411,7 @@ void azslparserParserInitialize() {
       3,204,102,0,295,299,3,228,114,0,296,299,3,234,117,0,297,299,5,337,0,0,
       298,288,1,0,0,0,298,289,1,0,0,0,298,290,1,0,0,0,298,291,1,0,0,0,298,292,
       1,0,0,0,298,293,1,0,0,0,298,294,1,0,0,0,298,295,1,0,0,0,298,296,1,0,0,
-      0,298,297,1,0,0,0,299,3,1,0,0,0,300,303,3,6,3,0,301,303,3,8,4,0,302,300,
+      0,298,297,1,0,0,0,299,3,1,0,0,0,300,303,3,8,4,0,301,303,3,6,3,0,302,300,
       1,0,0,0,302,301,1,0,0,0,303,5,1,0,0,0,304,305,5,371,0,0,305,7,1,0,0,0,
       306,307,3,10,5,0,307,308,3,6,3,0,308,9,1,0,0,0,309,314,5,336,0,0,310,
       311,5,371,0,0,311,313,5,336,0,0,312,310,1,0,0,0,313,316,1,0,0,0,314,312,
@@ -1004,12 +1004,12 @@ azslParser::IdExpressionContext::IdExpressionContext(ParserRuleContext *parent, 
   : ParserRuleContext(parent, invokingState) {
 }
 
-azslParser::UnqualifiedIdContext* azslParser::IdExpressionContext::unqualifiedId() {
-  return getRuleContext<azslParser::UnqualifiedIdContext>(0);
-}
-
 azslParser::QualifiedIdContext* azslParser::IdExpressionContext::qualifiedId() {
   return getRuleContext<azslParser::QualifiedIdContext>(0);
+}
+
+azslParser::UnqualifiedIdContext* azslParser::IdExpressionContext::unqualifiedId() {
+  return getRuleContext<azslParser::UnqualifiedIdContext>(0);
 }
 
 
@@ -1047,14 +1047,14 @@ azslParser::IdExpressionContext* azslParser::idExpression() {
     case 1: {
       enterOuterAlt(_localctx, 1);
       setState(300);
-      unqualifiedId();
+      qualifiedId();
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
       setState(301);
-      qualifiedId();
+      unqualifiedId();
       break;
     }
 

@@ -120,6 +120,18 @@ namespace AzFramework
         processData.startupInfo.wShowWindow = processLaunchInfo.m_showWindow ? SW_SHOW : SW_HIDE;
 
         DWORD createFlags = 0;
+
+        // SW_HIDE on its own hides the console window but does not stop it existing. A console process launched from a parent that
+        // has no console of its own is given a new one either way, and on current Windows that means spawning a conhost.exe next to
+        // it, which is not cheap. CREATE_NO_WINDOW is what actually says "this child needs no console at all", so a caller that
+        // asked for no window gets none rather than an invisible one it still paid for.
+        //
+        // Only affects console applications, and only when the caller already said it wanted no window, so this makes the existing
+        // flag mean what it reads as. Callers wanting a visible console are untouched.
+        if (!processLaunchInfo.m_showWindow)
+        {
+            createFlags |= CREATE_NO_WINDOW;
+        }
         switch (processLaunchInfo.m_processPriority)
         {
         case PROCESSPRIORITY_BELOWNORMAL:

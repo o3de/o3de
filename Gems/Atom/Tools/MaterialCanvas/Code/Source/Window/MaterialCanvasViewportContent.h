@@ -12,9 +12,11 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
 #include <AtomToolsFramework/Graph/GraphDocumentNotificationBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/string/string_view.h>
@@ -51,6 +53,7 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::GraphDocumentNotificationBus::Handler overrides...
         void OnCompileGraphStarted(const AZ::Uuid& documentId) override;
+        void OnCompileGraphProcessing(const AZ::Uuid& documentId) override;
         void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
         void OnCompileGraphFailed(const AZ::Uuid& documentId) override;
 
@@ -90,6 +93,13 @@ namespace MaterialCanvas
         //! caller can fall back to the asset system path that waits for them.
         bool ApplyInMemoryMaterial(const AZ::Uuid& documentId);
 
+        //! Starts a background compile of the shaders @materialTypeAsset is built from, if one is not already running.
+        //!
+        //! Deliberately a job: the compilers are child processes and ExecuteShaderCompiler waits on them by polling, so running
+        //! this on the main thread stalls the Qt event loop and starves the process it is waiting for.
+        void QueueInMemoryShaderCompile(
+            const AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>& materialTypeAsset, const AZStd::string& materialTypePath);
+
         //! Milliseconds since the last compile finished, for reporting how long the viewport waited to show a material.
         double MillisecondsSinceCompile() const;
 
@@ -118,8 +128,43 @@ namespace MaterialCanvas
         //! Asset IDs resolved by the most recent ApplyMaterial call. The material ID stays null until the Asset Processor has registered
         //! the generated source file, which is the condition the catalog handlers retry on. The material type ID is tracked separately
         //! because its products are built after the material itself resolves, and a change to any of them has to rebuild the preview.
+        //! The material type the viewport is currently showing, kept so a compile can be started before the next one exists.
+        //!
+        //! OnCompileGraphProcessing fires while the graph compiler is still waiting on the Asset Processor, so the material type
+        //! for the edit in progress has not been built yet. The shaders to rebuild are the same either way -- an edit that changes
+        //! which shaders exist changes the material type too, and CreateInMemoryShaderAsset's interface guard declines that case.
+        AZ::Data::Asset<AZ::RPI::MaterialTypeAsset> m_appliedMaterialTypeAsset;
+
         AZ::Data::AssetId m_appliedMaterialAssetId;
         AZ::Data::AssetId m_appliedMaterialTypeAssetId;
+
+        //! Shaders this viewport compiled itself, keyed by the AssetId each one replaces, and the lock guarding them.
+        //!
+        //! The Asset Processor still builds these shaders; this is a race with it rather than a replacement for it. Whichever
+        //! finishes first is what the viewport shows, and the other is harmless: the compiled asset keeps the AssetId it was cloned
+        //! from, so it is the same shader either way, and a later catalog notification simply rebuilds the material from an asset
+        //! that now matches what was already on screen.
+        //!
+        //! Written from the compile job, read on the main thread.
+        AZStd::vector<AZStd::pair<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::ShaderAsset>>> m_compiledShaders;
+        mutable AZStd::mutex m_compiledShadersMutex;
+
+        //! Which compile the shaders above belong to. Incremented when a graph compile starts, so a job that finishes after the
+        //! graph has moved on is discarded rather than applied to the wrong edit -- the mistake that made the viewport show the
+        //! previous edit's values three separate times while this was being built.
+        AZStd::atomic_uint m_compileGeneration{ 0 };
+        AZStd::atomic_uint m_compiledShadersGeneration{ 0 };
+
+        //! Set while a compile job is running, so a burst of catalog notifications starts one job rather than one per notification.
+        AZStd::atomic_bool m_shaderCompileInFlight{ false };
+
+        //! Rebuild on the next tick without waiting for the catalog debounce.
+        //!
+        //! The debounce exists to collapse the Asset Processor's burst of catalog notifications into one rebuild, and it defers by
+        //! up to half a second to do it. A shader this viewport compiled itself is not part of any burst -- it is one result, ready
+        //! now, and the whole point of having compiled it here was not to wait. Routing it through the debounce measured a shader
+        //! finishing at roughly 740 ms and not reaching the screen until 1,239 ms.
+        AZStd::atomic_bool m_applyMaterialImmediately{ false };
 
         //! Raised from the asset catalog thread, consumed on the next system tick.
         AZStd::atomic_bool m_applyMaterialQueued{ false };

@@ -29,9 +29,22 @@ topLevelDeclaration:
 ;
 
 // Amazon: AZSL has scopes, and identifiers can be qualified
+// qualifiedId is deliberately first. Both alternatives are viable on an input that starts with an
+// Identifier, so this decision conflicts, and a conflict is resolved by taking the lowest-numbered
+// alternative. With unqualifiedId first that answer is wrong for every qualified name: the parser
+// takes `Bindless` and then wants the statement to end, giving "missing ';' at '::'".
+//
+// Full-context LL prediction resolves it correctly from the caller, which is why the order never
+// mattered before -- and why it cost a full-context prediction to discover. Ordering the alternatives
+// so the greedier one wins makes the decision correct under SLL as well, which lets the parser run in
+// SLL mode and skip the ALL(*) closure entirely. See the two-stage parse in Main.cpp.
+//
+// Preferring qualifiedId is only wrong if '::' can legitimately follow a complete idExpression, which
+// would make the bare-Identifier reading the intended one. It cannot: the only '::' in this grammar
+// outside nestedNameSpecifier is typeofExpression's, and that one follows ')'.
 idExpression:
-        unqualifiedId   // stricly unqualified (no nested specifiers at all)
-    |   qualifiedId     // could be relatively qualified OR fully qualified.
+        qualifiedId     // could be relatively qualified OR fully qualified.
+    |   unqualifiedId   // stricly unqualified (no nested specifiers at all)
 ;
 
 unqualifiedId:

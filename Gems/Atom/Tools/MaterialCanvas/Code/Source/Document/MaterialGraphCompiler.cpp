@@ -90,8 +90,11 @@ namespace MaterialCanvas
         // The viewport watches the asset catalog and reapplies the generated material when its product is ready. Waiting synchronously on
         // the source .material job can strand the compiler in Processing when the Asset Processor supersedes or retriggers that job while
         // the material type and shader pipeline settle. Keep the file in m_generatedFiles for the viewport, but do not use it as a gate.
+        // A file this compile left untouched has nothing to wait for. Whatever the Asset Processor has for it is what the previous compile
+        // already waited for, and the jobs the Asset Processor is running now -- triggered by the azsli files this compile did rewrite --
+        // reproduce it exactly. Waiting on them is 500-690 ms of latency for a result that is already on disk.
         return AtomToolsFramework::GraphCompiler::ShouldReportGeneratedFileStatus(generatedFile) &&
-            !generatedFile.ends_with(".material");
+            !generatedFile.ends_with(".material") && m_writtenGeneratedFiles.contains(generatedFile);
     }
 
     bool MaterialGraphCompiler::CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath)
@@ -116,6 +119,7 @@ namespace MaterialCanvas
         m_templateFileDataVecForCurrentNode.clear();
         m_instructionNodesForCurrentNode.clear();
         m_wroteAnyGeneratedFile = false;
+        m_writtenGeneratedFiles.clear();
         m_onlyMaterialPropertyValuesChanged = true;
         m_productionOutputStale = false;
         m_materialPropertyValues.clear();
@@ -212,7 +216,17 @@ namespace MaterialCanvas
         // latency, and in the second it is also the thing that makes the preview hostage to the Asset Processor finishing at all.
         if (m_wroteAnyGeneratedFile && !m_onlyMaterialPropertyValuesChanged)
         {
-            if (!ReportGeneratedFileStatus())
+            const auto waitStart = AZStd::chrono::steady_clock::now();
+            const bool reported = ReportGeneratedFileStatus();
+
+            AZ_TracePrintf_IfTrue(
+                "MaterialGraphCompiler",
+                IsCompileLoggingEnabled(),
+                "Asset status wait: %.0f ms for %zu changed file(s).\n",
+                AZStd::chrono::duration<double, AZStd::milli>(AZStd::chrono::steady_clock::now() - waitStart).count(),
+                m_writtenGeneratedFiles.size());
+
+            if (!reported)
             {
                 return FinishCompile(State::Failed);
             }
@@ -640,6 +654,7 @@ namespace MaterialCanvas
                 {
                     m_wroteAnyGeneratedFile = true;
                     m_onlyMaterialPropertyValuesChanged = false;
+                    m_writtenGeneratedFiles.insert(templateOutputPath);
                 }
 
                 AzFramework::AssetSystemRequestBus::Broadcast(
@@ -1989,6 +2004,7 @@ namespace MaterialCanvas
         }
 
         m_wroteAnyGeneratedFile = true;
+        m_writtenGeneratedFiles.insert(templateOutputPath);
         return true;
     }
 
@@ -2211,6 +2227,7 @@ namespace MaterialCanvas
         // Deliberately does not clear m_onlyMaterialPropertyValuesChanged. Writing the material re-runs the material builder and nothing
         // else, and the viewport already has the values, so the compile still skips the asset status wait.
         m_wroteAnyGeneratedFile = true;
+        m_writtenGeneratedFiles.insert(templateOutputPath);
         return true;
     }
 

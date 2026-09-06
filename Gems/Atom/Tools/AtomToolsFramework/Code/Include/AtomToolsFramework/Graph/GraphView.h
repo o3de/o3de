@@ -74,9 +74,13 @@ namespace AtomToolsFramework
 
         //! Creates the node supplied by GraphViewSettings and splices it onto a connection at the requested scene position.
         bool CreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId, const AZ::Vector2& scenePosition);
-        //! Creates the configured splicing node at the midpoint of the single selected connection.
+        //! Creates one configured splicing node for connections that all share the same source endpoint.
+        bool CreateSplicingNodeOnConnections(
+            const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds, const AZ::Vector2& scenePosition);
+        //! Creates the configured splicing node at the average midpoint of the selected connections.
         bool CreateSplicingNodeOnSelectedConnection();
         bool CanCreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId) const;
+        bool CanCreateSplicingNodeOnConnections(const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds) const;
         bool CanCreateSplicingNodeOnSelectedConnection() const;
 
     protected:
@@ -131,7 +135,8 @@ namespace AtomToolsFramework
             GraphCanvas::EditorContextMenu& editorContextMenu,
             const AZ::EntityId& memberId,
             const QPoint& screenPoint,
-            const QPointF& scenePoint) const;
+            const QPointF& scenePoint,
+            bool spliceCreatedNodeOntoConnection = false) const;
 
         void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
         void OpenPresetsEditor();
@@ -145,6 +150,7 @@ namespace AtomToolsFramework
         GraphCanvas::GraphCanvasGraphicsView* m_graphicsView = {};
         GraphCanvas::AssetEditorToolbar* m_editorToolbar = {};
         GraphCanvas::SceneContextMenu* m_sceneContextMenu = {};
+        GraphCanvas::EditorContextMenu* m_connectionContextMenu = {};
         GraphCanvas::EditorContextMenu* m_createNodeProposalContextMenu = {};
 
         QAction* m_actionCut = {};
