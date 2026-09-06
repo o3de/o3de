@@ -218,12 +218,21 @@ namespace AZ
             const bool isFirstUsage = scopeAttachment.GetPrevious() == nullptr;
             const bool isTransient = scopeAttachment.GetFrameAttachment().GetLifetimeType() == RHI::AttachmentLifetimeType::Transient;
 
-            // We are required to discard transient resources on first use, but only if aren't
-            // clearing the *full* resource. Since it's possible that our first use is just a
-            // partial clear, we may still need to 
+            // Discard transient resources on first use when the command list supports it, unless a full clear
+            // initializes the whole resource. DiscardResource is only supported on graphics queues, or compute
+            // queues for resources that allow unordered access.
             if (isFirstUsage && isTransient && !isFullResourceClear)
             {
-                m_discardResourceRequests.push_back(resource);
+                const RHI::HardwareQueueClass hardwareQueueClass = GetHardwareQueueClass();
+                const bool canDiscardResource =
+                    hardwareQueueClass == RHI::HardwareQueueClass::Graphics
+                    || (hardwareQueueClass == RHI::HardwareQueueClass::Compute
+                        && (resource->GetDesc().Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS));
+
+                if (canDiscardResource)
+                {
+                    m_discardResourceRequests.push_back(resource);
+                }
             }
         }
 
