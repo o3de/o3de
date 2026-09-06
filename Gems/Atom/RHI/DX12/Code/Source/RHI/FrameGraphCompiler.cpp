@@ -7,6 +7,7 @@
  */
 
 #include <RHI/FrameGraphCompiler.h>
+
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -14,12 +15,14 @@
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/DX12.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <AzCore/std/optional.h>
 // #define AZ_DX12_FRAMESCHEDULER_LOG_TRANSITIONS
 
 namespace AZ
@@ -216,7 +219,7 @@ namespace AZ
             return AZ::Success();
         }
 
-        D3D12_RESOURCE_STATES FrameGraphCompiler::GetResourceState(const RHI::ScopeAttachment& scopeAttachment)
+        static D3D12_RESOURCE_STATES GetResourceState(const RHI::ScopeAttachment& scopeAttachment)
         {
             static const D3D12_RESOURCE_STATES ReadWriteState[RHI::HardwareQueueClassCount] =
             {
@@ -312,25 +315,39 @@ namespace AZ
             return resourceState;
         }
 
-        AZStd::optional<D3D12_RESOURCE_STATES> FrameGraphCompiler::GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags)
+        static AZStd::optional<D3D12_RESOURCE_STATES> GetBufferDiscardResourceState(
+            const RHI::BufferScopeAttachment& scopeAttachment,
+            D3D12_RESOURCE_FLAGS bindFlags)
         {
-            //Discard transitions described here https://docs.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12graphicscommandlist-discardresource
-            const RHI::Scope& parentScope = scopeAttachment.GetScope();
-            const RHI::HardwareQueueClass hardwareQueueClass = parentScope.GetHardwareQueueClass();
+            if (scopeAttachment.GetScope().GetHardwareQueueClass() == RHI::HardwareQueueClass::Compute)
+            {
+                if (bindFlags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+                {
+                    return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+                }
+            }
 
-            switch(hardwareQueueClass)
+            return {};
+        }
+
+        static AZStd::optional<D3D12_RESOURCE_STATES> GetImageDiscardResourceState(
+            const RHI::ImageScopeAttachment& scopeAttachment,
+            D3D12_RESOURCE_FLAGS bindFlags)
+        {
+            // Discard transitions described here: https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12graphicscommandlist-discardresource
+            switch (scopeAttachment.GetScope().GetHardwareQueueClass())
             {
             case RHI::HardwareQueueClass::Graphics:
             {
-                if (bindflags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)
+                if (bindFlags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)
                 {
                     return D3D12_RESOURCE_STATE_RENDER_TARGET;
                 }
-                else if (bindflags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)
+                else if (bindFlags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)
                 {
                     return D3D12_RESOURCE_STATE_DEPTH_WRITE;
                 }
-                else if (bindflags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+                else if (bindFlags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
                 {
                     return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
                 }
@@ -338,7 +355,7 @@ namespace AZ
             }
             case RHI::HardwareQueueClass::Compute:
             {
-                if (bindflags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+                if (bindFlags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
                 {
                     return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
                 }
@@ -348,7 +365,7 @@ namespace AZ
 
             return {};
         }
-    
+
         void FrameGraphCompiler::CompileResourceBarriers(Scope* rootScope, const RHI::FrameGraphAttachmentDatabase& attachmentDatabase)
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(DX12)");
@@ -396,8 +413,7 @@ namespace AZ
 
                 if (firstScope.IsResourceDiscarded(*scopeAttachment))
                 {
-                    auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags));
-                    if (afterState)
+                    if (auto afterState = GetBufferDiscardResourceState(*scopeAttachment, ConvertBufferBindFlags(buffer.GetDescriptor().m_bindFlags)))
                     {
                         transition.StateAfter = afterState.value();
                         if (firstScope.IsStateSupportedByQueue(transition.StateBefore) &&
@@ -477,8 +493,7 @@ namespace AZ
                 // Apply appropriate pre-discard transition
                 if (firstScope.IsResourceDiscarded(*scopeAttachment))
                 {
-                    auto afterState = GetDiscardResourceState(*scopeAttachment, ConvertImageBindFlags(image.GetDescriptor().m_bindFlags));
-                    if (afterState)
+                    if (auto afterState = GetImageDiscardResourceState(*scopeAttachment, ConvertImageBindFlags(image.GetDescriptor().m_bindFlags)))
                     {
                         transition.StateAfter = afterState.value();
                         for (const auto& subresourceState : image.GetAttachmentStateByIndex())
