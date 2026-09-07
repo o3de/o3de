@@ -47,7 +47,7 @@ namespace ImageProcessingAtom
                 if (!exrFile.isComplete())
                 {
                     AZ_Error("Image Processing", false, "ExrLoader: uncompleted exr file [%s]", filename.c_str());
-                    return NULL;
+                    return nullptr;
                 }
 
                 const Imf::Header& header = exrFile.header();
@@ -224,7 +224,7 @@ namespace ImageProcessingAtom
             if (!isExr)
             {
                 AZ_Error("Image Processing", false, "ExrLoader: file [%s] is not a valid exr file", filename.c_str());
-                return NULL;
+                return nullptr;
             }
 
             if (isDeep || isMultiPart || isTiled)
@@ -237,7 +237,7 @@ namespace ImageProcessingAtom
                 {
                     AZ_Error("Image Processing", false, "ExrLoader: file [%s] has unsupported deep or multi-part information", filename.c_str());
                 }
-                return NULL;
+                return nullptr;
             }
 
             return LoadImageFromScanlineFile(filename);
