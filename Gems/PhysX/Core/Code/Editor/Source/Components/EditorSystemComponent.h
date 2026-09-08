@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h>
 #include <EditorPhysXJointInterface.h>
@@ -35,6 +36,7 @@ namespace PhysX
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
+        , public Camera::EditorCameraCollisionInterface
     {
     public:
         AZ_COMPONENT(EditorSystemComponent, "{560F08DC-94F5-4D29-9AD4-CDFB3B57C654}");
@@ -61,6 +63,11 @@ namespace PhysX
         void OnActionContextModeBindingHook() override;
         void OnMenuBindingHook() override;
 
+        // Camera::EditorCameraCollisionInterface overrides ...
+        bool IsCameraCollisionEnabled() const override;
+        void SetCameraCollisionEnabled(bool enabled) override;
+        AZ::Vector3 ConstrainCameraMovement(const AZ::Vector3& previousPosition, const AZ::Vector3& desiredPosition) const override;
+
     private:
         // AzToolsFramework::EditorEntityContextNotificationBus overrides...
         void OnStartPlayInEditorBegin() override;
@@ -70,6 +77,7 @@ namespace PhysX
         void NotifyRegisterViews() override;
 
         AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+        bool m_cameraCollisionEnabled = false;
 
         // Assets related data
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
