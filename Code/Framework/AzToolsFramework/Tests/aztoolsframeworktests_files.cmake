@@ -186,6 +186,7 @@ set(FILES
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityPropertyEditorTests.cpp
+    UI/PropertyAssetCtrlTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp

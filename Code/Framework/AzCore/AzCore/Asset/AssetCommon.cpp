@@ -10,11 +10,56 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 
 AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);
+
+namespace
+{
+    void AssetIdScriptConstructor(AZ::Data::AssetId* thisPtr, AZ::ScriptDataContext& scriptDataContext)
+    {
+        new (thisPtr) AZ::Data::AssetId();
+
+        const int argumentCount = scriptDataContext.GetNumArguments();
+        if (argumentCount == 0)
+        {
+            return;
+        }
+
+        if ((argumentCount == 1 || argumentCount == 2)
+            && (scriptDataContext.IsString(0) || scriptDataContext.IsClass<AZ::Uuid>(0))
+            && (argumentCount == 1 || scriptDataContext.IsNumber(1)))
+        {
+            AZ::u32 subId = 0;
+            if (argumentCount == 2)
+            {
+                scriptDataContext.ReadArg(1, subId);
+            }
+
+            if (scriptDataContext.IsString(0))
+            {
+                const char* guidString = nullptr;
+                scriptDataContext.ReadArg(0, guidString);
+                *thisPtr = AZ::Data::AssetId(guidString, subId);
+            }
+            else
+            {
+                AZ::Uuid guid;
+                scriptDataContext.ReadArg(0, guid);
+                *thisPtr = AZ::Data::AssetId(guid, subId);
+            }
+            return;
+        }
+
+        scriptDataContext.GetScriptContext()->Error(
+            AZ::ScriptContext::ErrorType::Error,
+            true,
+            "AssetId expects zero arguments, or a UUID or UUID string and an optional numeric sub ID");
+    }
+} // namespace
 
 namespace AZ::Data
 {
@@ -73,6 +118,7 @@ namespace AZ::Data
                 ->Constructor()
                 ->Constructor<const Uuid&, u32>()
                 ->Constructor<AZStd::string_view, u32>()
+                ->Attribute(AZ::Script::Attributes::ConstructorOverride, &AssetIdScriptConstructor)
                 ->Method("CreateString", &Data::AssetId::CreateString)
                 ->Method("IsValid", &Data::AssetId::IsValid)
                     ->Attribute(AZ::Script::Attributes::Alias, "is_valid")
