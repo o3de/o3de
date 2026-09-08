@@ -22,12 +22,43 @@ namespace AzFramework
         {
             LINEAR = 0,
             STEP,
+            QUADRATIC_IN,
+            QUADRATIC_OUT,
+            QUADRATIC_IN_OUT,
             CUBIC_IN,
             CUBIC_OUT,
+            CUBIC_IN_OUT,
+            QUARTIC_IN,
+            QUARTIC_OUT,
+            QUARTIC_IN_OUT,
+            QUINTIC_IN,
+            QUINTIC_OUT,
+            QUINTIC_IN_OUT,
             SINE_IN,
             SINE_OUT,
+            SINE_IN_OUT,
+            EXPONENTIAL_IN,
+            EXPONENTIAL_OUT,
+            EXPONENTIAL_IN_OUT,
             CIRCLE_IN,
-            CIRCLE_OUT
+            CIRCLE_OUT,
+            CIRCLE_IN_OUT,
+            ELASTIC_IN,
+            ELASTIC_OUT,
+            ELASTIC_IN_OUT,
+            BACK_IN,
+            BACK_OUT,
+            BACK_IN_OUT,
+            BOUNCE_IN,
+            BOUNCE_OUT,
+            BOUNCE_IN_OUT,
+        };
+
+        enum class ExtrapolationMode: AZ::u8
+        {
+            CONSTANT = 0,
+            CYCLE,
+            CYCLE_WITH_OFFSET,
         };
 
         //! \brief A single point in the easing curve.
@@ -37,7 +68,6 @@ namespace AzFramework
             AZ_CLASS_ALLOCATOR(Point, AZ::SystemAllocator, 0);
             AZ_TYPE_INFO(Point, "{28F834C3-DA0C-4E0D-8D4E-BEDE1CE9D8FF}");
 
-            static void Reflect(AZ::ReflectContext* context);
             float m_time = 0.0f;
             float m_value = 0.0f;
             PointInterpolationMode m_interpMode = PointInterpolationMode::LINEAR;
@@ -109,6 +139,7 @@ namespace AzFramework
 
     private:
         AZStd::vector<Point> m_points;
+        ExtrapolationMode m_extrapMode;
     };
 }
 
