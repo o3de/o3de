@@ -512,7 +512,17 @@ namespace AzToolsFramework
             {
                 // Load the template from the file
                 templateId = m_prefabLoaderInterface->LoadTemplateFromFile(filePath);
-                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %.*s couldn't be loaded correctly.", AZ_STRING_ARG(filePath));
+            }
+
+            if (templateId == InvalidTemplateId)
+            {
+                // A missing or unreadable .prefab is a user error, not an internal one. Falling through here
+                // used to call FindTemplateDom(InvalidTemplateId), which dereferences an empty optional and
+                // crashes the Editor (see https://github.com/o3de/o3de/issues/7957).
+                return AZ::Failure(AZStd::string::format(
+                    "Could not instantiate prefab - the template with source path '%.*s' could not be loaded. "
+                    "Check that the file exists and is a valid .prefab.",
+                    AZ_STRING_ARG(filePath)));
             }
 
             const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
