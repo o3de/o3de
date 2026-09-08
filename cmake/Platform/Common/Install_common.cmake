@@ -979,8 +979,8 @@ function(ly_setup_assets)
                 set(gem_dir_paths ${filtered_asset_path} ${recurse_assets_paths})
 
                 # Gather directories to copy over
-                # Currently only the Assets, Registry and Config directories are copied over
-                list(FILTER gem_dir_paths INCLUDE REGEX "/(Assets|Registry|Config|Editor/Scripts)$")
+                # Currently only the Assets, Registry, Config and Presets directories are copied over
+                list(FILTER gem_dir_paths INCLUDE REGEX "/(Assets|Registry|Config|Presets|Editor/Scripts)$")
                 set_property(DIRECTORY ${gem_candidate_dir} APPEND PROPERTY gems_assets_paths ${gem_dir_paths})
             else()
                 set(gem_file_paths ${filtered_asset_path})

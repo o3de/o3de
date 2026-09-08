@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Camera Rig",
+                "description": "A camera driven by a rig. Needs the Camera gem for the Camera component, which this gem does not depend on; the rig's behaviours come from other gems, such as StartingPointCamera.",
+                "category": "Rendering",
+                "components": [
+                    {
+                        "component": "Camera",
+                        "properties": []
+                    },
+                    {
+                        "component": "Camera Rig",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

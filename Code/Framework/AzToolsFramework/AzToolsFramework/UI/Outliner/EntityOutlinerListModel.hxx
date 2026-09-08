@@ -316,6 +316,9 @@ namespace AzToolsFramework
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
+        //! Preselects the whole name so typing replaces it.
+        void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+
     protected:
         bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
