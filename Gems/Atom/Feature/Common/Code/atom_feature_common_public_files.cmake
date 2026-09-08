@@ -41,6 +41,8 @@ set(FILES
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
+    Include/Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h
+    Include/Atom/Feature/GradientGI/GradientGILogic.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
