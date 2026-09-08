@@ -290,6 +290,16 @@ namespace EMStudio
             m_parentPlugin->GetGraphWidget()->DeleteSelectedItems();
         });
 
+        m_actions[EDIT_REROUTE] = new QAction(tr("Reroute Selected Connection"), this);
+        m_actions[EDIT_REROUTE]->setShortcut(Qt::Key_R);
+        shortcutManager->RegisterKeyboardShortcut(
+            m_actions[EDIT_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(
+            m_actions[EDIT_REROUTE],
+            &QAction::triggered,
+            m_parentPlugin->GetGraphWidget(),
+            &BlendGraphWidget::InsertRerouteOnSelectedConnections);
+
         for (QAction* action : m_actions)
         {
             action->setShortcutContext(Qt::WidgetShortcut);
@@ -529,6 +539,10 @@ namespace EMStudio
         SetOptionEnabled(EDIT_COPY, actionFilter.m_copyAndPaste && anySelection);
         SetOptionEnabled(EDIT_PASTE, actionFilter.m_copyAndPaste && isEditable && m_parentPlugin->GetActionManager().GetIsReadyForPaste());
         SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
+        SetOptionEnabled(
+            EDIT_REROUTE,
+            actionFilter.m_createNodes && actionFilter.m_delete && isEditable &&
+                m_parentPlugin->GetGraphWidget()->CanInsertRerouteOnSelectedConnections());
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)

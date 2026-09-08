@@ -2939,6 +2939,61 @@ namespace ScriptCanvas
         return connectedNodes;
     }
 
+    EndpointsResolved Node::GetConnectedNodesForTranslation(const Slot& slot) const
+    {
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesForTranslation");
+
+        EndpointsResolved resolvedNodes;
+        AZStd::unordered_set<Endpoint> visitedEndpoints;
+        visitedEndpoints.insert(Endpoint(GetEntityId(), slot.GetId()));
+
+        AZStd::function<void(const Node*, const Slot*)> resolveEndpoint;
+        resolveEndpoint = [&resolvedNodes, &visitedEndpoints, &resolveEndpoint](const Node* node, const Slot* endpointSlot)
+        {
+            if (!node || !endpointSlot)
+            {
+                return;
+            }
+
+            const Endpoint endpoint(node->GetEntityId(), endpointSlot->GetId());
+            if (!visitedEndpoints.insert(endpoint).second)
+            {
+                return;
+            }
+
+            if (!node->IsConnectionTransparentForTranslation())
+            {
+                resolvedNodes.emplace_back(node, endpointSlot);
+                return;
+            }
+
+            CombinedSlotType oppositeSlotType = CombinedSlotType::None;
+            if (endpointSlot->IsData())
+            {
+                oppositeSlotType = endpointSlot->IsInput() ? CombinedSlotType::DataOut : CombinedSlotType::DataIn;
+            }
+            else if (endpointSlot->IsExecution())
+            {
+                oppositeSlotType = endpointSlot->IsInput() ? CombinedSlotType::ExecutionOut : CombinedSlotType::ExecutionIn;
+            }
+
+            for (const Slot* oppositeSlot : node->GetSlotsByType(oppositeSlotType))
+            {
+                for (const EndpointResolved& connectedEndpoint : node->GetConnectedNodes(*oppositeSlot))
+                {
+                    resolveEndpoint(connectedEndpoint.first, connectedEndpoint.second);
+                }
+            }
+        };
+
+        for (const EndpointResolved& connectedEndpoint : GetConnectedNodes(slot))
+        {
+            resolveEndpoint(connectedEndpoint.first, connectedEndpoint.second);
+        }
+
+        return resolvedNodes;
+    }
+
     AZStd::vector<AZStd::pair<Node*, const SlotId>> Node::ModConnectedNodes(const Slot& slot) const
     {
         AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::ModConnectedNodes");

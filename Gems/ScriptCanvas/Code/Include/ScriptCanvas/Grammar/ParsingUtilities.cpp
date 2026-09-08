@@ -1478,7 +1478,7 @@ namespace ScriptCanvas
 
             for (auto branch : outSlots)
             {
-                auto nextEndpoints = in.first->GetConnectedNodes(*branch);
+                auto nextEndpoints = in.first->GetConnectedNodesForTranslation(*branch);
                 AZStd::unordered_set<const Slot*> pathUpToBranchOrSyntaxSugar(previousPath);
 
                 const auto status = TraverseExecutionConnectionsRecurse(nextEndpoints, pathUpToBranchOrSyntaxSugar, listener);
