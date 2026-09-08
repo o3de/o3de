@@ -381,9 +381,17 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
+        // The profiling log is written next to this path, so a path inside the asset cache has to be redirected into the temp
+        // folder first. FileIO refuses writes under the cache ("You may not alter data inside the asset cache"), and the entry is
+        // simply lost.
+        //
+        // This used to call GetFileName and test that for "Cache", which is the file name, not the folder -- the local was even
+        // named shaderSourceFolder. A cache path only tripped it if the shader itself happened to be called something containing
+        // "Cache", so in practice the redirect never fired. It shows up as soon as a caller outside an AssetBuilder passes a path
+        // in the cache, which anything compiling a shader from an Asset Processor product does.
         AZStd::string shaderSourceArg = shaderSourcePathForDebug;
         AZStd::string shaderSourceFolder;
-        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
+        StringFunc::Path::GetFullPath(shaderSourceArg.c_str(), shaderSourceFolder);
         if (StringFunc::Contains(shaderSourceFolder, "Cache"))
         {
             AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");
