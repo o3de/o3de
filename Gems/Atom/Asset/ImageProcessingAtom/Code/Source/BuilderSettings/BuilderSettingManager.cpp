@@ -685,6 +685,15 @@ namespace ImageProcessingAtom
                 outPreset = m_defaultPresetAlpha;
             }
         }
+        else if (outPreset == m_defaultPreset)
+        {
+            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
+            if (image && image->GetAlphaContent() != EAlphaContent::eAlphaContent_Absent &&
+                image->GetAlphaContent() != EAlphaContent::eAlphaContent_OnlyWhite)
+            {
+                outPreset = m_defaultPresetAlpha;
+            }
+        }
 
         return outPreset;
     }

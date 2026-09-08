@@ -9,7 +9,7 @@
             "RGB_Weight": "CIEXYZ",
             "PixelFormat": "BC3",
             "MipMapSetting": {
-                "MipGenType": "Box"
+                "MipGenType": "AlphaWeighted"
             }
         },
         "PlatformsPresets": {
@@ -20,7 +20,7 @@
                 "PixelFormat": "ASTC_4x4",
                 "MaxTextureSize": 2048,
                 "MipMapSetting": {
-                    "MipGenType": "Box"
+                    "MipGenType": "AlphaWeighted"
                 }
             },
             "ios": {
@@ -30,7 +30,7 @@
                 "PixelFormat": "ASTC_6x6",
                 "MaxTextureSize": 2048,
                 "MipMapSetting": {
-                    "MipGenType": "Box"
+                    "MipGenType": "AlphaWeighted"
                 }
             },
             "mac": {
@@ -39,7 +39,7 @@
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "BC3",
                 "MipMapSetting": {
-                    "MipGenType": "Box"
+                    "MipGenType": "AlphaWeighted"
                 }
             },
             "provo": {
@@ -48,7 +48,7 @@
                 "RGB_Weight": "CIEXYZ",
                 "PixelFormat": "BC3",
                 "MipMapSetting": {
-                    "MipGenType": "Box"
+                    "MipGenType": "AlphaWeighted"
                 }
             }
         }

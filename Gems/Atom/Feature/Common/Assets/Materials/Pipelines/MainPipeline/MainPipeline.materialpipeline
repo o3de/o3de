@@ -132,6 +132,11 @@
                 "name": "hasPerPixelClip",
                 "type": "Bool",
                 "defaultValue": false
+            },
+            {
+                "name": "useAlphaToCoverage",
+                "type": "Bool",
+                "defaultValue": false
             }
         ],
         "functors": 
@@ -148,6 +153,12 @@
                 "args": {
                     //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
                     "file": "Materials/Pipelines/Common/DoubleSided.lua"
+                }
+            },
+            {
+                "type": "Lua",
+                "args": {
+                    "file": "Materials/Pipelines/Common/AlphaToCoverage.lua"
                 }
             }
         ]

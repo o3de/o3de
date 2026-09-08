@@ -44,6 +44,7 @@ namespace ImageProcessingAtom
                     ->EnumAttribute(MipGenType::gaussian, QT_TRANSLATE_NOOP("Atom::Asset", "Gaussian"))
                     ->EnumAttribute(MipGenType::blackmanHarris, QT_TRANSLATE_NOOP("Atom::Asset", "BlackmanHarris"))
                     ->EnumAttribute(MipGenType::kaiserSinc, QT_TRANSLATE_NOOP("Atom::Asset", "KaiserSinc"))
+                    ->EnumAttribute(MipGenType::alphaWeighted, QT_TRANSLATE_NOOP("Atom::Asset", "AlphaWeighted"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                 ;
             }

@@ -84,6 +84,7 @@ namespace ImageProcessingAtom
                         ->EnumAttribute(MipGenType::gaussian, QT_TRANSLATE_NOOP("Atom::Asset", "Gaussian"))
                         ->EnumAttribute(MipGenType::blackmanHarris, QT_TRANSLATE_NOOP("Atom::Asset", "BlackmanHarris"))
                         ->EnumAttribute(MipGenType::kaiserSinc, QT_TRANSLATE_NOOP("Atom::Asset", "KaiserSinc"))
+                        ->EnumAttribute(MipGenType::alphaWeighted, QT_TRANSLATE_NOOP("Atom::Asset", "AlphaWeighted"))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, QT_TRANSLATE_NOOP("Atom::Asset", "Pixel Sampler"), QT_TRANSLATE_NOOP("Atom::Asset", "The Pixel Sampler specifies how the final pixel value is calculated when mipmaps are generated."))
                         ->EnumAttribute(MipGenEvalType::max, QT_TRANSLATE_NOOP("Atom::Asset", "Max"))
                         ->EnumAttribute(MipGenEvalType::min, QT_TRANSLATE_NOOP("Atom::Asset", "Min"))

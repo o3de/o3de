@@ -74,6 +74,30 @@
                 "type": "ShaderInput",
                 "name": "m_opacityAffectsSpecularFactor"
             }
+        },
+        {
+            "name": "edgeSoftness",
+            "displayName": "Edge Softness",
+            "description": "Softens the cutout edge for Cutout opacity mode. 0.0 = hard cutout, >0.0 = smooth anti-aliased edge.",
+            "type": "Float",
+            "min": 0.0,
+            "max": 0.5,
+            "defaultValue": 0.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityEdgeSoftness"
+            }
+        },
+        {
+            "name": "alphaToCoverage",
+            "displayName": "Alpha to Coverage",
+            "description": "Enables Alpha-to-Coverage (A2C) for anti-aliased cutout edges using MSAA. Only applies to Cutout opacity mode.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_alphaToCoverage"
+            }
         }
     ],
     "functors": [
