@@ -115,9 +115,9 @@ float GetNormalizedDepth(const MaterialParameters params, Texture2D heightmap, s
     return GetNormalizedDepth(params, heightmap, mapSampler, startDepth, stopDepth, inverseDepthRange, uv, uv_ddx, uv_ddy);
 }
 
-void ApplyParallaxClippingHighlight(inout float3 baseColor)
+void ApplyParallaxClippingHighlight(inout real3 baseColor)
 {
-    baseColor = lerp(baseColor, float3(1.0, 0.0, 1.0), 0.5);
+    baseColor = lerp(baseColor, real3(1.0, 0.0, 1.0), real(0.5));
 }
 
 struct ParallaxOffset
