@@ -24,15 +24,21 @@ function MaterialTypeSetup(context)
 
     buildOpaqueShader = opacityMode == "Dynamic" or opacityMode == "Opaque"
     buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
-    buildBlendedShader = opacityMode == "Dynamic" or opacityMode == "Blended"
-    buildTintedTransparentShader = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
+    buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
+    buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
     buildVertexShaders = opacityMode == "Dynamic" or context:GetBuildSetting("positionOffset", "Disconnected") == "Connected"
 
     if(buildVertexShaders) then
         context:IncludeShader("ShadowmapPass")
     end
 
+    -- The Base lighting model has no transparent shader in this pipeline, so there is no opaque/transparent split to
+    -- make. A "Blended" declaration on it would leave the material type with nothing that draws, so it is reported and
+    -- ignored.
     if(lightingModel == "Base") then
+        if(buildBlendedShaders or buildTintedTransparentShaders) then
+            Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
+        end
         context:IncludeShader("ForwardPass_BaseLighting")
         return true
     end
@@ -49,10 +55,10 @@ function MaterialTypeSetup(context)
             context:IncludeShader("ShadowmapPass_CustomZ")
             context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
         end
-        if(buildBlendedShader) then
+        if(buildBlendedShaders) then
             context:IncludeShader("Transparent_StandardLighting")
         end
-        if(buildTintedTransparentShader) then
+        if(buildTintedTransparentShaders) then
             context:IncludeShader("TintedTransparent_StandardLighting")
         end
         return true

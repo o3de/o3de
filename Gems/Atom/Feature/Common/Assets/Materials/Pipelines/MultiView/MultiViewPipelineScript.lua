@@ -23,11 +23,20 @@ function MaterialTypeSetup(context)
     end
 
     buildOpaqueShader = opacityMode == "Dynamic" or opacityMode == "Opaque"
-    buildCutoutShader = opacityMode == "Dynamic" or opacityMode == "Cutout"
-    buildBlendedShader = opacityMode == "Dynamic" or opacityMode == "Blended"
-    buildTintedTransparentShader = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
+    buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
+    buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
+    buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
+
+    -- This pipeline declares no depth or shadow shader, so there is nothing for a "positionOffset" build setting to
+    -- gate here. The other pipelines read it to decide whether to build their vertex-only passes.
     
+    -- The Base lighting model has no transparent shader in this pipeline, so there is no opaque/transparent split to
+    -- make. A "Blended" declaration on it would leave the material type with nothing that draws, so it is reported and
+    -- ignored.
     if(lightingModel == "Base") then
+        if(buildBlendedShaders or buildTintedTransparentShaders) then
+            Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
+        end
         context:IncludeShader("ForwardPass_BaseLighting")
         return true
     end
@@ -40,13 +49,13 @@ function MaterialTypeSetup(context)
         if(buildOpaqueShader) then
             context:IncludeShader("ForwardPass_StandardLighting")
         end
-        if(buildCutoutShader) then
+        if(buildCutoutShaders) then
             context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
         end
-        if(buildBlendedShader) then
+        if(buildBlendedShaders) then
             context:IncludeShader("Transparent_StandardLighting")
         end
-        if(buildTintedTransparentShader) then
+        if(buildTintedTransparentShaders) then
             context:IncludeShader("TintedTransparent_StandardLighting")
         end
         return true
