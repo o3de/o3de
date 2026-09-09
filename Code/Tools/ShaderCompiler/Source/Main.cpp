@@ -172,7 +172,6 @@ namespace AZ::ShaderCompiler
     }
 
     //! iterates on tokens and build the line number mapping (from preprocessor line directives)
-    // Takes the parser's own token buffer (non-owning views) rather than a second, separately lexed vector.
     void ConstructLineMap(const vector<Token*>& allTokens, PreprocessorLineDirectiveFinder* lineFinder)
     {
         string lastNonEmptyFileName = lineFinder->m_physicalSourceFileName;
@@ -515,10 +514,8 @@ int main(int argc, const char* argv[])
         azslLexer lexer(&input);
         CommonTokenStream tokens(&lexer);
         IntermediateRepresentation ir(&lexer);
-        // Lex once. getAllTokens() ran the lexer over the whole input, then lexer.reset() threw that state away and
-        // CommonTokenStream lexed the same input a second time during the parse. fill() populates the stream the
-        // parser is about to read, and getTokens() hands back every buffered token -- off-channel ones included, so
-        // the PREPROCESSOR-channel LineDirective tokens the line map needs are all still there.
+        // Buffer all tokens, including off-channel line directives needed by the line map.
+        tokens.fill();
         tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
@@ -530,20 +527,7 @@ int main(int argc, const char* argv[])
         parser.removeErrorListeners();
         azslParserEventListener.m_isKeywordPredicate = IsKeyword;
 
-        // Two-stage parse. ANTLR's default prediction mode is LL: it runs SLL first and, on every
-        // SLL conflict, redoes that decision with full outer context (ALL(*)). That full-context
-        // closure is the expensive path, and it is most of the parse -- which is in turn about two
-        // thirds of an AZSLc run on a Material Canvas preview shader.
-        //
-        // Stage one runs pure SLL, which never escalates. SLL accepts every input LL accepts except
-        // that it can report a syntax error on some inputs LL would have parsed, so a stage that
-        // reports any error is thrown away and re-parsed under the original LL mode. Whatever
-        // survives is a tree LL would have produced too; the fast path only decides which mode did
-        // the work. Reordering idExpression's alternatives (see azslParser.g4) is what makes stage
-        // one succeed on real AZSL rather than always falling through to stage two.
-        //
-        // Parser::reset() clears the syntax error count, rewinds the token stream and releases stage
-        // one's nodes, so stage two starts from exactly the state the parse used to start from.
+        // Avoid full-context prediction on the common path, then retry in LL mode if SLL reports an error.
         auto* simulator = parser.getInterpreter<atn::ParserATNSimulator>();
 
         simulator->setPredictionMode(atn::PredictionMode::SLL);
@@ -556,11 +540,6 @@ int main(int argc, const char* argv[])
             tree = parser.compilationUnit();
         }
 
-        // Attached only now, so it reports on whichever stage produced the tree. This listener throws
-        // ParseCancellationException from syntaxError(), so attaching it to stage one would turn a
-        // recoverable SLL mispredict into a fatal error before stage two could run -- and this
-        // translation unit is built with _HAS_EXCEPTIONS=0, under which that throw does not unwind.
-        // getNumberOfSyntaxErrors() counts independently of listeners, so the check above needs none.
         parser.addErrorListener(&azslParserEventListener);
 
         if (ast)

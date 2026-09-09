@@ -88,9 +88,7 @@ namespace AZ::ShaderCompiler
         unordered_set<ID> m_permMarks;
         unordered_set<ID> m_tempMarks;
         vector<ID> m_result; // L
-        // How far SelectUnmarked has already scanned. Permanent marks are only ever added, never removed, so a node
-        // this cursor has passed can never become unmarked and never needs looking at again. Without it, each call
-        // rescanned m_order from the beginning and the sort was quadratic in the symbol count.
+        // Permanent marks are only added during Solve(), so scanned nodes do not need revisiting.
         size_t m_selectCursor = 0;
     };
 }
