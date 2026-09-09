@@ -51,11 +51,7 @@ namespace AtomToolsFramework
         AZ::StringFunc::Join(templateOutputText, m_lines, '\n');
         templateOutputText += '\n';
 
-        // If the file already on disk is byte for byte identical to what is about to be written then skip the write entirely. Rewriting
-        // the file would update its modification time and content hash, which causes the Asset Processor to re-run every job that lists it
-        // as a source dependency, including every shader generated for the material. Many graph edits (moving a node, changing the
-        // selection, editing a branch that does not feed the output) regenerate identical text for most or all of the template files, so
-        // skipping those writes removes the entire asset pipeline round trip for that class of edit.
+        // Preserve the timestamp of identical files so the Asset Processor does not rebuild their dependents.
         if (const auto existingText = AZ::Utils::ReadFile(path);
             existingText.IsSuccess() && existingText.GetValue() == templateOutputText)
         {
