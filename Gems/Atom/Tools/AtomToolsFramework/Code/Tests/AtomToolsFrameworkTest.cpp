@@ -7,11 +7,14 @@
  */
 
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporter.h>
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileData.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
+#include <AzTest/Utils.h>
 
 namespace UnitTest
 {
@@ -98,6 +101,64 @@ namespace UnitTest
         }
     };
 
+    class AssetSystemJobRequestStub : public AzToolsFramework::AssetSystemJobRequestBus::Handler
+    {
+    public:
+        AssetSystemJobRequestStub()
+        {
+            BusConnect();
+        }
+
+        ~AssetSystemJobRequestStub() override
+        {
+            BusDisconnect();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfo(
+            [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] bool escalateJobs) override
+        {
+            ++m_requestCount;
+            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfoByAssetID(
+            [[maybe_unused]] const AZ::Data::AssetId& assetId,
+            [[maybe_unused]] bool escalateJobs,
+            [[maybe_unused]] bool requireFencing) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfoByJobKey(
+            [[maybe_unused]] const AZStd::string& jobKey, [[maybe_unused]] bool escalateJobs) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobStatus> GetAssetJobsStatusByJobKey(
+            [[maybe_unused]] const AZStd::string& jobKey, [[maybe_unused]] bool escalateJobs) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AZStd::string> GetJobLog([[maybe_unused]] AZ::u64 jobRunKey) override
+        {
+            return AZ::Failure();
+        }
+
+        size_t m_requestCount = 0;
+    };
+
+    TEST(AssetStatusReporterTest, UpdateDrainsAllSettledPaths)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        const AZStd::vector<AZStd::string> sourcePaths = { "first.azsl", "second.shader", "third.material" };
+        AtomToolsFramework::AssetStatusReporter reporter(sourcePaths);
+
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Succeeded);
+        EXPECT_EQ(assetSystem.m_requestCount, sourcePaths.size());
+    }
+
     TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompile)
     {
         GraphCompilerLifecycleTestDouble compiler;
@@ -113,6 +174,25 @@ namespace UnitTest
         EXPECT_TRUE(compiler.Reset());
         EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
         EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Complete);
+    }
+
+    TEST_F(AtomToolsFrameworkTest, GraphTemplateFileDataSaveSkipsIdenticalFile)
+    {
+        const AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const AZ::IO::Path templatePath = tempDirectory.Resolve("template.txt");
+        const AZ::IO::Path outputPath = tempDirectory.Resolve("output.txt");
+        ASSERT_TRUE(AZ::Utils::WriteFile("generated content\n", templatePath.Native()).IsSuccess());
+
+        AtomToolsFramework::GraphTemplateFileData templateData;
+        ASSERT_TRUE(templateData.Load(templatePath.Native()));
+
+        bool wroteFile = false;
+        ASSERT_TRUE(templateData.Save(outputPath.Native(), &wroteFile));
+        EXPECT_TRUE(wroteFile);
+
+        wroteFile = true;
+        ASSERT_TRUE(templateData.Save(outputPath.Native(), &wroteFile));
+        EXPECT_FALSE(wroteFile);
     }
 
     TEST_F(AtomToolsFrameworkTest, GetPathToExteralReference_Succeeds)
