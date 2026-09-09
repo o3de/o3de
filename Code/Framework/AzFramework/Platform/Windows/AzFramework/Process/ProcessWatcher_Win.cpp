@@ -120,6 +120,12 @@ namespace AzFramework
         processData.startupInfo.wShowWindow = processLaunchInfo.m_showWindow ? SW_SHOW : SW_HIDE;
 
         DWORD createFlags = 0;
+
+        // SW_HIDE does not prevent console allocation for hidden console applications.
+        if (!processLaunchInfo.m_showWindow)
+        {
+            createFlags |= CREATE_NO_WINDOW;
+        }
         switch (processLaunchInfo.m_processPriority)
         {
         case PROCESSPRIORITY_BELOWNORMAL:
