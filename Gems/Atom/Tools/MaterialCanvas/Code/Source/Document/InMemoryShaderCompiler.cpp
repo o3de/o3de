@@ -31,10 +31,13 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 
-#if defined(AZ_PLATFORM_WINDOWS)
+#include <MaterialCanvas_Traits_Platform.h>
+
+#if AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED
 // The DX12 ShaderPlatformInterface, from Atom_RHI_DX12.Builders.Static. Its constructor is public and
 // CompilePlatformInternal ignores the PlatformInfo it is handed, so a tool can drive the same DXC invocation the Shader Asset
-// Builder drives without standing up any builder context. See shader_dependencies_windows.cmake for why this is Windows only.
+// Builder drives without standing up any builder context. See MaterialCanvas_Traits_Windows.h and
+// shader_dependencies_windows.cmake for why only one platform has this.
 #include <RHI.Builders/ShaderPlatformInterface.h>
 #endif
 
@@ -276,7 +279,7 @@ namespace MaterialCanvas
 
         const AZStd::string hlslPath = products[ShaderBuilderUtility::AzslSubProducts::hlsl];
 
-#if defined(AZ_PLATFORM_WINDOWS)
+#if AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED
         {
             const auto dxcStart = AZStd::chrono::steady_clock::now();
 
@@ -512,13 +515,13 @@ namespace MaterialCanvas
         [[maybe_unused]] const AZ::Data::Asset<AZ::RPI::ShaderAsset>& sourceShaderAsset,
         [[maybe_unused]] const AZStd::vector<InMemoryShaderEntryPoint>& entryPoints)
     {
-#if !defined(AZ_PLATFORM_WINDOWS)
-        // No ShaderPlatformInterface to drive off Windows; see shader_dependencies_windows.cmake.
+#if !AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED
+        // No ShaderPlatformInterface to drive here; see MaterialCanvas_Traits_Platform.h.
         return {};
 #else
         using namespace AZ::ShaderBuilder;
 
-        auto decline = [](const char* reason)
+        auto decline = []([[maybe_unused]] const char* reason)
         {
             // Not an error. Every way this can fail is a way of saying "let the Asset Processor do it", and the caller is expected
             // to have that path available.
