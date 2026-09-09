@@ -87,9 +87,9 @@ namespace UnitTest
     class GraphCompilerLifecycleTestDouble : public AtomToolsFramework::GraphCompiler
     {
     public:
-        bool Finish(State state, AZStd::function<void()> completionCallback = {})
+        bool Finish(State state)
         {
-            return FinishCompile(state, AZStd::move(completionCallback));
+            return FinishCompile(state);
         }
 
         void SetState(State state) override
@@ -98,27 +98,20 @@ namespace UnitTest
         }
     };
 
-    TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompileAndSuppressesCompletion)
+    TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompile)
     {
         GraphCompilerLifecycleTestDouble compiler;
-        bool completionPublished = false;
 
         EXPECT_TRUE(compiler.Reset());
         EXPECT_FALSE(compiler.CanCompileGraph());
 
-        // A second reservation attempt represents the next system tick seeing a queued edit while the first worker still owns the
-        // compiler. It requests cancellation and leaves the replacement queued.
+        // A second reservation requests cancellation and leaves the replacement queued.
         EXPECT_FALSE(compiler.Reset());
-        EXPECT_FALSE(compiler.Finish(
-            AtomToolsFramework::GraphCompiler::State::Complete, [&completionPublished]() { completionPublished = true; }));
-        EXPECT_FALSE(completionPublished);
+        EXPECT_FALSE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
         EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Canceled);
 
-        // Once the canceled worker releases the lifecycle reservation, the queued replacement can reserve and complete normally.
         EXPECT_TRUE(compiler.Reset());
-        EXPECT_TRUE(compiler.Finish(
-            AtomToolsFramework::GraphCompiler::State::Complete, [&completionPublished]() { completionPublished = true; }));
-        EXPECT_TRUE(completionPublished);
+        EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
         EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Complete);
     }
 
