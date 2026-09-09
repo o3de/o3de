@@ -106,8 +106,7 @@ namespace MaterialCanvas
             // saved before material file templates to not trigger asset processor dependency errors.
             if (!LoadTemplatesForCurrentNode())
             {
-                SetState(State::Failed);
-                return false;
+                return FinishCompile(State::Failed);
             }
 
             // Force delete prior versions of files to be generated if settings are configured to do so.
@@ -153,22 +152,19 @@ namespace MaterialCanvas
                 !ExportTemplatesMatchingRegex(".*\\.azsl\\b") ||
                 !ExportTemplatesMatchingRegex(".*\\.shader\\b"))
             {
-                SetState(State::Failed);
-                return false;
+                return FinishCompile(State::Failed);
             }
 
             // Process material type template files, injecting properties from material input nodes.
             if (!BuildMaterialTypeForCurrentNode(currentNode))
             {
-                SetState(State::Failed);
-                return false;
+                return FinishCompile(State::Failed);
             }
 
             // After the material types have been processed and saved, save the materials that reference them.
             if (!ExportTemplatesMatchingRegex(".*\\.material\\b"))
             {
-                SetState(State::Failed);
-                return false;
+                return FinishCompile(State::Failed);
             }
 
             // Increment the template node counter in case we encounter another template node and need to uniquely identify it.
@@ -177,12 +173,10 @@ namespace MaterialCanvas
 
         if (!ReportGeneratedFileStatus())
         {
-            SetState(State::Failed);
-            return false;
+            return FinishCompile(State::Failed);
         }
 
-        SetState(State::Complete);
-        return true;
+        return FinishCompile(State::Complete);
     }
 
     void MaterialGraphCompiler::BuildSlotValueTable()

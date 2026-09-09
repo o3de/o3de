@@ -11,6 +11,8 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <GraphModel/Model/Graph.h>
 
 namespace AtomToolsFramework
@@ -45,8 +47,8 @@ namespace AtomToolsFramework
             Failed
         };
 
-        //! Reset attempts to cancel the current compilation by setting the state to cancel. Compilation steps will look for the cancelled
-        //! state so that they can return early. This is necessary if the graph compilation is happening on a separate thread.
+        //! Reserves the compiler for a new job when idle. If a job is already active, requests cancellation and returns false so the
+        //! caller can leave the replacement queued until the active job acknowledges cancellation and releases the compiler.
         virtual bool Reset();
 
         //! Assign the current graph compiler state.
@@ -80,6 +82,17 @@ namespace AtomToolsFramework
         // Return true if generation and processing is complete. Otherwise, return falss
         bool ReportGeneratedFileStatus();
 
+        //! Returns whether a generated source file should block graph completion while its Asset Processor jobs settle.
+        //! Derived compilers can exclude files whose readiness is handled asynchronously by their consumers.
+        virtual bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const;
+
+        //! Returns true after another graph edit has requested that the active compilation stop.
+        bool IsCancelRequested() const;
+
+        //! Publishes one terminal state and releases the compiler reservation. A cancellation request always wins over the requested
+        //! state. The optional callback is invoked only for a successful completion while cancellation is excluded by the lifecycle lock.
+        bool FinishCompile(State finalState, AZStd::function<void()> completionCallback = {});
+
         const AZ::Crc32 m_toolId = {};
 
         // The source graph that is being compiled and transformed into generated files
@@ -100,6 +113,13 @@ namespace AtomToolsFramework
 
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
+
+        // Serializes compile reservation, cancellation, terminal publication, and release. The atomics are read by the compile worker at
+        // cancellation checkpoints without taking this lock.
+        mutable AZStd::mutex m_compileLifecycleMutex;
+        AZStd::atomic_bool m_compileInProgress = false;
+        AZStd::atomic_bool m_cancelRequested = false;
+        bool m_compileReserved = false;
 
         // Optional function for handling state changes
         StateChangeHandler m_stateChangeHandler;
