@@ -8,6 +8,7 @@
 
 #include <RHI/SwapChain_Windows.h>
 
+#include <Atom/RHI.Interface/DX12/SwapChainProxy.h>
 #include <RHI/Device.h>
 #include <RHI/Conversions.h>
 #include <RHI/Image.h>
@@ -63,6 +64,8 @@ namespace AZ
             RHI::ResultCode result = device.CreateSwapChain(reinterpret_cast<IUnknown*>(descriptor.m_window.GetIndex()), swapChainDesc, m_swapChain);
             if (result == RHI::ResultCode::Success)
             {
+                TryReplaceWithProxy(device);
+
                 ConfigureDisplayMode(*nativeDimensions);
 
                 // According to various docs (and the D3D12Fulscreen sample), when tearing is supported
@@ -93,24 +96,96 @@ namespace AZ
 
         void SwapChain::ShutdownInternal()
         {
+            // Let a registered proxy (frame-generation swapchain) flush outstanding presents and
+            // drop its handle before we release ours -- it may still own GPU work on this chain.
+            if (m_replacedByProxy)
+            {
+                if (auto* proxy = SwapChainProxyInterface::Get())
+                {
+                    proxy->OnSwapChainDestroyed(m_swapChain.get());
+                }
+                m_replacedByProxy = false;
+            }
+
             // We must exit exclusive full screen mode before shutting down.
             // Safe to call even if not in the exclusive full screen state.
             m_swapChain->SetFullscreenState(0, nullptr);
             m_swapChain = nullptr;
         }
 
+        void SwapChain::TryReplaceWithProxy(Device& device)
+        {
+            auto* proxy = SwapChainProxyInterface::Get();
+            if (!proxy || !m_swapChain)
+            {
+                return;
+            }
+
+            ID3D12CommandQueue* presentQueue =
+                device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetPlatformQueue();
+            if (!presentQueue)
+            {
+                return;
+            }
+
+            // Hand the proxy exactly one reference, per the ISwapChainProxy contract, and take one
+            // back. The local raw pointer holds that transferred reference across the call so the
+            // chain cannot be destroyed underneath us while m_swapChain is momentarily empty.
+            IDXGISwapChainX* transferred = m_swapChain.get();
+            transferred->AddRef();
+            m_swapChain = nullptr;
+
+            IDXGISwapChain4* replacement = transferred;
+            const bool replaced = proxy->ReplaceSwapChain(presentQueue, replacement);
+            if (!replaced || !replacement)
+            {
+                // Contract says a declining proxy leaves the pointer and its reference untouched.
+                replacement = transferred;
+            }
+
+            m_swapChain = replacement;  // intrusive_ptr adds its own reference...
+            replacement->Release();     // ...so give up the transferred one.
+
+            m_replacedByProxy = replaced && (replacement != transferred);
+            AZ_TracePrintf(
+                "DX12",
+                "SwapChain: proxy %s the DXGI swapchain.",
+                m_replacedByProxy ? "replaced" : "declined to replace");
+        }
+
         uint32_t SwapChain::PresentInternal()
         {
             if (m_swapChain)
             {
-                // It is recommended to always pass the DXGI_PRESENT_ALLOW_TEARING flag when it is supported, even when presenting in windowed mode.
-                // But it cannot be used in an application that is currently in full screen exclusive mode, set by calling SetFullscreenState(TRUE).
-                // To use this flag in full screen Win32 apps the application should present to a fullscreen borderless window and disable automatic
-                // ALT+ENTER fullscreen switching using IDXGIFactory::MakeWindowAssociation (please see implementation of SwapChain::InitInternal).
-                // UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-                HRESULT hresult = m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, 0);
+                // This is a flip model swapchain (DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL). Present(0, 0) on a
+                // flip model chain does NOT run unlocked - DXGI still waits to flip at vblank, it just
+                // discards the frames queued in between. The frame rate stays pinned to the display's
+                // refresh rate no matter what the vsync interval is set to. Passing
+                // DXGI_PRESENT_ALLOW_TEARING is the only way to actually present unlocked, and the
+                // swapchain is already created with DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING to permit it
+                // (see InitInternal).
+                //
+                // The flag is only legal with a sync interval of 0 - passing it alongside a non-zero
+                // interval fails the Present with DXGI_ERROR_INVALID_CALL. It also cannot be used while
+                // in full screen exclusive mode, entered via SetFullscreenState(TRUE); full screen Win32
+                // apps wanting tearing should use a borderless window with automatic ALT+ENTER switching
+                // disabled through IDXGIFactory::MakeWindowAssociation (see InitInternal).
+                const uint32_t verticalSyncInterval = GetDescriptor().m_verticalSyncInterval;
+                const UINT presentFlags =
+                    (verticalSyncInterval == 0 && m_isTearingSupported && !m_isInFullScreenExclusiveState)
+                    ? DXGI_PRESENT_ALLOW_TEARING
+                    : 0;
 
-                GetDevice().AssertSuccess(hresult);
+                HRESULT hresult = m_swapChain->Present(verticalSyncInterval, presentFlags);
+
+                if (!GetDevice().AssertSuccess(hresult))
+                {
+                    // A failed Present (e.g. DXGI_ERROR_DEVICE_REMOVED) may have already run
+                    // Device::OnDeviceRemoved()'s cleanup by this point, which can invalidate swapchain
+                    // image state. Don't touch GetImageCount()/advance the index on top of that -- matches
+                    // ResizeInternal()'s handling of the same AssertSuccess() failure case below.
+                    return GetCurrentImageIndex();
+                }
 
                 return (GetCurrentImageIndex() + 1) % GetImageCount();
             }

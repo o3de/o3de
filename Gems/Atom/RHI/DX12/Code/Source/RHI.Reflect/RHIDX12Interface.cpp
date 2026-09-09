@@ -10,6 +10,7 @@
 #include <RHI/DX12.h>
 
 #include <RHI/Buffer.h>
+#include <RHI/CommandList.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
@@ -28,7 +29,17 @@ namespace AZ
         IDXGIAdapter3* GetPhysicalDeviceNativeHandle(const RHI::PhysicalDevice& device)
         {
             AZ_Assert(azrtti_cast<const PhysicalDevice*>(&device), "%s can only be called with a DX12 RHI object", __FUNCTION__);
-            return static_cast<const PhysicalDevice*>(&device)->GetAdapter();
+
+            // reinterpret_cast because GetAdapter() returns IDXGIAdapterX, whose definition is
+            // per-platform. Where DXGI is real (Windows) IDXGIAdapterX IS IDXGIAdapter3, so this
+            // is a no-op cast between identical types. Where there is no DXGI at all, the alias is
+            // IUnknown and the pointer is ALWAYS null -- such platforms enumerate no adapters, so
+            // PhysicalDevice::GetAdapter has nothing to return. Casting a null pointer is
+            // well-defined and nothing can dereference the result.
+            //
+            // A static_cast cannot express this: the two types are unrelated on a platform without
+            // DXGI, so it fails to compile there while being redundant everywhere else.
+            return reinterpret_cast<IDXGIAdapter3*>(static_cast<const PhysicalDevice*>(&device)->GetAdapter());
         }
 
         ID3D12Fence* GetFenceNativeHandle(RHI::DeviceFence& fence)
@@ -111,6 +122,24 @@ namespace AZ
             AZ_Assert(azrtti_cast<Image*>(&image), "%s can only be called with a DX12 RHI object", __FUNCTION__);
             auto& dx12Image = static_cast<Image&>(image);
             return dx12Image.GetMemoryView().GetHeapOffset();
+        }
+
+        ID3D12GraphicsCommandList* GetCommandListNativeHandle(RHI::CommandList& commandList)
+        {
+            // No azrtti_cast assert here: AZ::DX12::CommandList does not declare AZ_TYPE_INFO/AZ_RTTI,
+            // so azrtti_cast<CommandList*> would fail the HasAzTypeInfo_v static-assert. Other helpers
+            // in this file can use the assert because their target types (Device, Buffer, Image,
+            // PhysicalDevice, FenceImpl) all have AZ_RTTI.
+            return static_cast<CommandList&>(commandList).GetCommandList();
+        }
+
+        ID3D12CommandQueue* GetPresentCommandQueueNativeHandle(RHI::Device& device)
+        {
+            AZ_Assert(azrtti_cast<Device*>(&device), "%s can only be called with a DX12 RHI object", __FUNCTION__);
+            return static_cast<Device&>(device)
+                .GetCommandQueueContext()
+                .GetCommandQueue(RHI::HardwareQueueClass::Graphics)
+                .GetPlatformQueue();
         }
     } // namespace DX12
 } // namespace AZ
