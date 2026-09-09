@@ -22,7 +22,13 @@
 #define OUTPUT_SUBSURFACE 0
 
 #define ENABLE_TRANSMISSION 0
+// Guarded, unlike its neighbours below, so a pipeline can compile the shader debug views back in with a -D.
+// Every other ENABLE_ option is written this way in LightingOptions.azsli, and both definitions in ShaderLib are
+// guarded too; an unconditional define here silently beat the command line and warned about redefinition. The
+// default stays 0, which is what this pipeline has always compiled.
+#ifndef ENABLE_SHADER_DEBUGGING
 #define ENABLE_SHADER_DEBUGGING 0
+#endif
 #define ENABLE_CLEAR_COAT 0
 #define ENABLE_SHADOWS 0
 #define ENABLE_LIGHT_CULLING 0
