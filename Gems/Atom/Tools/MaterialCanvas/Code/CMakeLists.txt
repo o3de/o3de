@@ -111,6 +111,8 @@ ly_add_target(
         PRIVATE
             .
             Source
+            # MaterialCanvas_Traits_Platform.h, which says whether the in-memory preview shader path exists on this platform.
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
