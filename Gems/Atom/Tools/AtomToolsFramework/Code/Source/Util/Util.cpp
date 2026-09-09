@@ -105,8 +105,6 @@ namespace AtomToolsFramework
 
     void ReplaceSymbolsInContainer(const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
     {
-        // Nothing to substitute into. Worth its own check rather than falling through the loop: most node slots carry no instructions
-        // at all, and each of them would otherwise pay to build an expression only to run it zero times.
         if (container.empty())
         {
             return;
@@ -135,11 +133,6 @@ namespace AtomToolsFramework
 
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
-        // The expressions are constant, so they are compiled once for the process rather than seven times per call. This runs for every
-        // node and twice for every slot while instructions are gathered, and gathering instructions is nearly the whole of a material
-        // graph compile, so those seven PCRE compiles were tens of thousands of them per edit.
-        //
-        // QRegularExpression is thread safe for const use, which matters because the graph compiler calls this from parallel_for_each.
         static const QRegularExpression leadingWhitespace("^\\s+");
         static const QRegularExpression trailingWhitespace("\\s+$");
         static const QRegularExpression nonAlphanumeric("[^a-zA-Z\\d]");
