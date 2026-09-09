@@ -72,6 +72,17 @@ namespace AtomToolsFramework
         // @param notify Send a notification that the active graph has changed.
         void SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId, bool notify);
 
+        //! Creates the node supplied by GraphViewSettings and splices it onto a connection at the requested scene position.
+        bool CreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId, const AZ::Vector2& scenePosition);
+        //! Creates one configured splicing node for connections that all share the same source endpoint.
+        bool CreateSplicingNodeOnConnections(
+            const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds, const AZ::Vector2& scenePosition);
+        //! Creates the configured splicing node at the average midpoint of the selected connections.
+        bool CreateSplicingNodeOnSelectedConnection();
+        bool CanCreateSplicingNodeOnConnection(const GraphCanvas::ConnectionId& connectionId) const;
+        bool CanCreateSplicingNodeOnConnections(const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds) const;
+        bool CanCreateSplicingNodeOnSelectedConnection() const;
+
     protected:
         void CreateActions();
 
@@ -124,7 +135,8 @@ namespace AtomToolsFramework
             GraphCanvas::EditorContextMenu& editorContextMenu,
             const AZ::EntityId& memberId,
             const QPoint& screenPoint,
-            const QPointF& scenePoint) const;
+            const QPointF& scenePoint,
+            bool spliceCreatedNodeOntoConnection = false) const;
 
         void AlignSelected(const GraphCanvas::AlignConfig& alignConfig);
         void OpenPresetsEditor();
@@ -138,6 +150,7 @@ namespace AtomToolsFramework
         GraphCanvas::GraphCanvasGraphicsView* m_graphicsView = {};
         GraphCanvas::AssetEditorToolbar* m_editorToolbar = {};
         GraphCanvas::SceneContextMenu* m_sceneContextMenu = {};
+        GraphCanvas::EditorContextMenu* m_connectionContextMenu = {};
         GraphCanvas::EditorContextMenu* m_createNodeProposalContextMenu = {};
 
         QAction* m_actionCut = {};
@@ -145,6 +158,7 @@ namespace AtomToolsFramework
         QAction* m_actionPaste = {};
         QAction* m_actionDelete = {};
         QAction* m_actionDuplicate = {};
+        QAction* m_actionCreateSplicingNode = {};
 
         QAction* m_actionRemoveUnusedNodes = {};
         QAction* m_actionRemoveUnusedElements = {};

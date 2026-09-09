@@ -105,6 +105,13 @@ namespace AtomToolsFramework
 
     void ReplaceSymbolsInContainer(const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
     {
+        // Nothing to substitute into. Worth its own check rather than falling through the loop: most node slots carry no instructions
+        // at all, and each of them would otherwise pay to build an expression only to run it zero times.
+        if (container.empty())
+        {
+            return;
+        }
+
         const AZStd::regex findRegex(findText);
         for (auto& sourceText : container)
         {
@@ -115,6 +122,11 @@ namespace AtomToolsFramework
     void ReplaceSymbolsInContainer(
         const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container)
     {
+        if (container.empty())
+        {
+            return;
+        }
+
         for (const auto& substitutionSymbolPair : substitutionSymbols)
         {
             ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
@@ -123,37 +135,56 @@ namespace AtomToolsFramework
 
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
+        // The expressions are constant, so they are compiled once for the process rather than seven times per call. This runs for every
+        // node and twice for every slot while instructions are gathered, and gathering instructions is nearly the whole of a material
+        // graph compile, so those seven PCRE compiles were tens of thousands of them per edit.
+        //
+        // QRegularExpression is thread safe for const use, which matters because the graph compiler calls this from parallel_for_each.
+        static const QRegularExpression leadingWhitespace("^\\s+");
+        static const QRegularExpression trailingWhitespace("\\s+$");
+        static const QRegularExpression nonAlphanumeric("[^a-zA-Z\\d]");
+        static const QRegularExpression caseBoundary("([a-z\\d])([A-Z])");
+        static const QRegularExpression leadingDigit("^(\\d)");
+        static const QRegularExpression whitespaceRun("\\s+");
+        static const QRegularExpression underscoreRun("_+");
+
         QString symbolName(text.c_str());
         // Remove all leading whitespace
-        symbolName.replace(QRegularExpression("^\\s+"), "");
+        symbolName.replace(leadingWhitespace, "");
         // Remove all trailing whitespace
-        symbolName.replace(QRegularExpression("\\s+$"), "");
+        symbolName.replace(trailingWhitespace, "");
         // Replace non alphanumeric characters with _
-        symbolName.replace(QRegularExpression("[^a-zA-Z\\d]"), "_");
+        symbolName.replace(nonAlphanumeric, "_");
         // Insert a _ between a lowercase or numeric character followed by an uppercase character
-        symbolName.replace(QRegularExpression("([a-z\\d])([A-Z])"), "\\1_\\2");
+        symbolName.replace(caseBoundary, "\\1_\\2");
         // Insert an underscore at the beginning of the string if it starts with a digit
-        symbolName.replace(QRegularExpression("^(\\d)"), "_\\1");
+        symbolName.replace(leadingDigit, "_\\1");
         // Replace every sequence of whitespace characters with underscores
-        symbolName.replace(QRegularExpression("\\s+"), "_");
+        symbolName.replace(whitespaceRun, "_");
         // Replace Sequences of _ with a single _
-        symbolName.replace(QRegularExpression("_+"), "_");
+        symbolName.replace(underscoreRun, "_");
         return symbolName.toLower().toUtf8().constData();
     }
 
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
+        static const QRegularExpression leadingWhitespace("^\\s+");
+        static const QRegularExpression trailingWhitespace("\\s+$");
+        static const QRegularExpression nonAlphanumeric("[^a-zA-Z\\d]");
+        static const QRegularExpression caseBoundary("([a-z\\d])([A-Z])");
+        static const QRegularExpression whitespace("\\s");
+
         QString displayName(text.c_str());
         // Remove all leading whitespace
-        displayName.replace(QRegularExpression("^\\s+"), "");
+        displayName.replace(leadingWhitespace, "");
         // Remove all trailing whitespace
-        displayName.replace(QRegularExpression("\\s+$"), "");
+        displayName.replace(trailingWhitespace, "");
         // Replace non alphanumeric characters with space
-        displayName.replace(QRegularExpression("[^a-zA-Z\\d]"), " ");
+        displayName.replace(nonAlphanumeric, " ");
         // Insert a space between a lowercase or numeric character followed by an uppercase character
-        displayName.replace(QRegularExpression("([a-z\\d])([A-Z])"), "\\1 \\2");
+        displayName.replace(caseBoundary, "\\1 \\2");
         // Tokenize the string where separated by whitespace
-        QStringList displayNameParts = displayName.split(QRegularExpression("\\s"), Qt::SkipEmptyParts);
+        QStringList displayNameParts = displayName.split(whitespace, Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
         {
             // Capitalize the first character of every token

@@ -40,6 +40,12 @@ namespace AtomToolsFramework
         // Get the name of the title palette for node UI
         AZStd::string GetTitlePaletteName() const;
 
+        // Get the optional GraphCanvas sub-style selector for node UI
+        AZStd::string GetNodeStyleName() const;
+
+        // Get the optional input|output slot pair whose data type passes through the node
+        AZStd::string GetDataTypePassthrough() const;
+
     protected:
         void RegisterSlots() override;
 

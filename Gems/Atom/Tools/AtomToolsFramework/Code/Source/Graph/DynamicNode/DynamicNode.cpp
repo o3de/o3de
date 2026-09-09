@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNode.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <GraphModel/Model/Graph.h>
@@ -36,7 +37,9 @@ namespace AtomToolsFramework
             {
                 editContext->Class<DynamicNode>("DynamicNode", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ_CRC_CE("TitlePaletteOverride"), &DynamicNode::GetTitlePaletteName);
+                    ->Attribute(AZ_CRC_CE("TitlePaletteOverride"), &DynamicNode::GetTitlePaletteName)
+                    ->Attribute(AZ_CRC_CE("NodeStyleOverride"), &DynamicNode::GetNodeStyleName)
+                    ->Attribute(AZ_CRC_CE("DataTypePassthrough"), &DynamicNode::GetDataTypePassthrough);
             }
         }
     }
@@ -73,6 +76,16 @@ namespace AtomToolsFramework
     AZStd::string DynamicNode::GetTitlePaletteName() const
     {
         return !m_config.m_titlePaletteName.empty() ? m_config.m_titlePaletteName : "DefaultNodeTitlePalette";
+    }
+
+    AZStd::string DynamicNode::GetNodeStyleName() const
+    {
+        return GetSettingValueByName(m_config.m_settings, "nodeStyle");
+    }
+
+    AZStd::string DynamicNode::GetDataTypePassthrough() const
+    {
+        return GetSettingValueByName(m_config.m_settings, "dataTypePassthrough");
     }
 
     void DynamicNode::RegisterSlots()

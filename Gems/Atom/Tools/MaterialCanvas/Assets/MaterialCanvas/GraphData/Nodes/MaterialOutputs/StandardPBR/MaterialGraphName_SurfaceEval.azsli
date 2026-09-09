@@ -78,8 +78,13 @@ Surface EvaluateSurface_MaterialGraphName(
     surface.vertexNormal = normalWS;
     surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
     surface.normal *= real(mad(isFrontFace, 2.0, -1.0));
-    surface.roughnessLinear = inRoughness;
-    surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
+    // The types of the in* symbols above are decided by the graph, not by this file. A slot with a colour wired into it comes out as a
+    // float4 where the fallback declaration says real3, and DXC then reports "implicit truncation of vector type" at every use. The casts
+    // below state the conversion the shader was already performing implicitly, so the surface is fed the right thing whatever the graph
+    // resolved those slots to. Do not remove them because they look redundant against the declarations above; those declarations are
+    // replaced wholesale by the generator.
+    surface.roughnessLinear = (real)inRoughness;
+    surface.SetAlbedoAndSpecularF0((real3)inBaseColor, (real)inSpecularF0Factor, (real)inMetallic);
     surface.CalculateRoughnessA();
 
     // ------- Parallax Clipping -------
@@ -92,9 +97,9 @@ Surface EvaluateSurface_MaterialGraphName(
 #endif
 
     surface.alpha = (real)inAlpha * (real)inOpacityFactor;
-    surface.emissiveLighting = inEmissive;
-    surface.diffuseAmbientOcclusion = inDiffuseAmbientOcclusion;
-    surface.specularOcclusion = inSpecularOcclusion;
+    surface.emissiveLighting = (real3)inEmissive;
+    surface.diffuseAmbientOcclusion = (real)inDiffuseAmbientOcclusion;
+    surface.specularOcclusion = (real)inSpecularOcclusion;
     surface.opacityAffectsSpecularFactor = o_opacity_affects_specular_factor;
 
     // ------- Clearcoat -------
@@ -102,8 +107,8 @@ Surface EvaluateSurface_MaterialGraphName(
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_enabled)
     {
-        surface.clearCoat.factor = inClearCoatFactor;
-        surface.clearCoat.roughness = max(inClearCoatRoughness, 1e-3);
+        surface.clearCoat.factor = (real)inClearCoatFactor;
+        surface.clearCoat.roughness = max((real)inClearCoatRoughness, 1e-3);
 
         // Flip normal if back face is rendered   
         surface.clearCoat.normal = normalize(o_clearCoat_normal_override_enabled ? GetWorldSpaceNormal((real2)inClearCoatNormal, normalWS, tangents[0], bitangents[0]) : normalWS);

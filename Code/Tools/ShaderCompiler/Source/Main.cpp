@@ -172,10 +172,11 @@ namespace AZ::ShaderCompiler
     }
 
     //! iterates on tokens and build the line number mapping (from preprocessor line directives)
-    void ConstructLineMap(vector<std::unique_ptr<Token>>* allTokens, PreprocessorLineDirectiveFinder* lineFinder)
+    // Takes the parser's own token buffer (non-owning views) rather than a second, separately lexed vector.
+    void ConstructLineMap(const vector<Token*>& allTokens, PreprocessorLineDirectiveFinder* lineFinder)
     {
         string lastNonEmptyFileName = lineFinder->m_physicalSourceFileName;
-        for (auto& token : *allTokens) // auto& because each element is a unique_ptr we can't copy
+        for (const Token* token : allTokens)
         {
             if (token->getType() == azslLexer::LineDirective)
             {
@@ -187,7 +188,7 @@ namespace AZ::ShaderCompiler
                 //                        | |     |       decimal
                 // custom raw string      | |     |          |  optional filename between quotes
                 //         delimiter --+  | |     |          |        |
-                std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
+                static const std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
                 auto matchBegin = std::sregex_iterator(lineText.begin(), lineText.end(), lineRegex);
                 // there can be only 1 match, and it HAS to match since AntlR lexer already matched.
                 auto& groups = *matchBegin; // 4 groups: [0] is the whole line. [1] is the first parenthesized group, [2] the 2nd etc
@@ -328,7 +329,6 @@ int main(int argc, const char* argv[])
 
     bool uniqueIdx = false;
     cli.add_flag("--unique-idx", uniqueIdx, "Use unique indices for all registers. e.g. b0, t0, u0, s0 becomes b0, t1, u2, s3. Use on platforms that don't differentiate registers by resource type.");
-
     bool cbBody = false;
     cli.add_flag("--cb-body", cbBody, "Emit ConstantBuffer body rather than using <T>.");
 
@@ -451,7 +451,6 @@ int main(int argc, const char* argv[])
     auto minDescriptorsOpt = cli.add_option("--min-descriptors", minDescriptors, "Comma-separated list of limits corresponding to "
         "<set,space,sampler,texture,buffer> descriptors. Emits a warning if a count overshoots a limit. Use -1 to specify \"no limit\".");
     minDescriptorsOpt->delimiter(',')->expected(5);
-
     bool verbose = false;
     cli.add_flag("--verbose", verbose);
 
@@ -514,19 +513,53 @@ int main(int argc, const char* argv[])
         azslLexer lexer(&input);
         CommonTokenStream tokens(&lexer);
         IntermediateRepresentation ir(&lexer);
-        auto allTokens = lexer.getAllTokens();
+        // Lex once. getAllTokens() ran the lexer over the whole input, then lexer.reset() threw that state away and
+        // CommonTokenStream lexed the same input a second time during the parse. fill() populates the stream the
+        // parser is about to read, and getTokens() hands back every buffered token -- off-channel ones included, so
+        // the PREPROCESSOR-channel LineDirective tokens the line map needs are all still there.
+        tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
             throw std::runtime_error("syntax errors present");
         }
-        ConstructLineMap(&allTokens, &lineFinder);
-        lexer.reset();
+        ConstructLineMap(tokens.getTokens(), &lineFinder);
         AzslParserEventListener azslParserEventListener;
         azslParser parser(&tokens);
         parser.removeErrorListeners();
         azslParserEventListener.m_isKeywordPredicate = IsKeyword;
+
+        // Two-stage parse. ANTLR's default prediction mode is LL: it runs SLL first and, on every
+        // SLL conflict, redoes that decision with full outer context (ALL(*)). That full-context
+        // closure is the expensive path, and it is most of the parse -- which is in turn about two
+        // thirds of an AZSLc run on a Material Canvas preview shader.
+        //
+        // Stage one runs pure SLL, which never escalates. SLL accepts every input LL accepts except
+        // that it can report a syntax error on some inputs LL would have parsed, so a stage that
+        // reports any error is thrown away and re-parsed under the original LL mode. Whatever
+        // survives is a tree LL would have produced too; the fast path only decides which mode did
+        // the work. Reordering idExpression's alternatives (see azslParser.g4) is what makes stage
+        // one succeed on real AZSL rather than always falling through to stage two.
+        //
+        // Parser::reset() clears the syntax error count, rewinds the token stream and releases stage
+        // one's nodes, so stage two starts from exactly the state the parse used to start from.
+        auto* simulator = parser.getInterpreter<atn::ParserATNSimulator>();
+
+        simulator->setPredictionMode(atn::PredictionMode::SLL);
+        tree::ParseTree* tree = parser.compilationUnit();
+
+        if (parser.getNumberOfSyntaxErrors() > 0)
+        {
+            parser.reset();
+            simulator->setPredictionMode(atn::PredictionMode::LL);
+            tree = parser.compilationUnit();
+        }
+
+        // Attached only now, so it reports on whichever stage produced the tree. This listener throws
+        // ParseCancellationException from syntaxError(), so attaching it to stage one would turn a
+        // recoverable SLL mispredict into a fatal error before stage two could run -- and this
+        // translation unit is built with _HAS_EXCEPTIONS=0, under which that throw does not unwind.
+        // getNumberOfSyntaxErrors() counts independently of listeners, so the check above needs none.
         parser.addErrorListener(&azslParserEventListener);
-        tree::ParseTree *tree = parser.compilationUnit();
 
         if (ast)
         {

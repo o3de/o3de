@@ -68,6 +68,20 @@ namespace AZ
             // as most of the time this all they customize in terms of shader compilation arguments.
             AZStd::vector<AZStd::string> m_definitions;
 
+            //! When true, the files this shader #includes are not registered as source dependencies of its build job.
+            //!
+            //! Editing an included .azsli normally reprocesses every shader that reaches it, which is what keeps a shader in step
+            //! with the library it is built from. A shader that something else is responsible for rebuilding does not want that.
+            //!
+            //! Material Canvas sets this on its preview shaders: the graph's generated .azsli files change on every edit, and the
+            //! viewport compiles the preview shader itself, in process, from those same files. Leaving the dependency in place has
+            //! the Asset Processor rebuild the identical shader at the same moment, and the two compiles then contend -- measured
+            //! at 526 ms alone against 726-861 ms racing each other.
+            //!
+            //! Whoever sets this takes on responsibility for rebuilding: nothing else will notice the includes changed. Material
+            //! Canvas does that with ClearFingerprintForAsset whenever it cannot produce the shader itself.
+            bool m_skipIncludeFileDependencies = false;
+
             // This can override the default shader option values specified in the shader code.
             ShaderOptionValuesSourceData m_shaderOptionValues;
 

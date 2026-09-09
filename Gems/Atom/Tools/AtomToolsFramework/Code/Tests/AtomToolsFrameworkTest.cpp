@@ -7,6 +7,7 @@
  */
 
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
+#include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -82,6 +83,44 @@ namespace UnitTest
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_localFileIO;
     };
+
+    class GraphCompilerLifecycleTestDouble : public AtomToolsFramework::GraphCompiler
+    {
+    public:
+        bool Finish(State state, AZStd::function<void()> completionCallback = {})
+        {
+            return FinishCompile(state, AZStd::move(completionCallback));
+        }
+
+        void SetState(State state) override
+        {
+            m_state = state;
+        }
+    };
+
+    TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompileAndSuppressesCompletion)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+        bool completionPublished = false;
+
+        EXPECT_TRUE(compiler.Reset());
+        EXPECT_FALSE(compiler.CanCompileGraph());
+
+        // A second reservation attempt represents the next system tick seeing a queued edit while the first worker still owns the
+        // compiler. It requests cancellation and leaves the replacement queued.
+        EXPECT_FALSE(compiler.Reset());
+        EXPECT_FALSE(compiler.Finish(
+            AtomToolsFramework::GraphCompiler::State::Complete, [&completionPublished]() { completionPublished = true; }));
+        EXPECT_FALSE(completionPublished);
+        EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Canceled);
+
+        // Once the canceled worker releases the lifecycle reservation, the queued replacement can reserve and complete normally.
+        EXPECT_TRUE(compiler.Reset());
+        EXPECT_TRUE(compiler.Finish(
+            AtomToolsFramework::GraphCompiler::State::Complete, [&completionPublished]() { completionPublished = true; }));
+        EXPECT_TRUE(completionPublished);
+        EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Complete);
+    }
 
     TEST_F(AtomToolsFrameworkTest, GetPathToExteralReference_Succeeds)
     {
