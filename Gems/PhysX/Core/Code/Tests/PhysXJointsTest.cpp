@@ -63,6 +63,7 @@ namespace PhysX
         if (jointConfig)
         {
             rigitBodyConfig.m_computeMass = false;
+            rigitBodyConfig.m_mass = 9900.0f;
             jointConfig->m_followerEntity = entity->GetId();
 
             JointGenericProperties defaultJointGenericProperties;
