@@ -10,9 +10,12 @@
 #include "EditorDefs.h"
 
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
+#include <AzQtComponents/Utilities/RandomNumberGenerator.h>
 
 // Qt
+#include <QDir>
 #include <QPainter>
+#include <QStringList>
 #include <QThread>
 
 #include <ui_StartupLogoDialog.h>
@@ -32,12 +35,19 @@ CStartupLogoDialog::CStartupLogoDialog(
     setAttribute(Qt::WA_TranslucentBackground, true);
 
     // Prepare background image
-    m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
-        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background.png")),
-        screen(),
-        QSize(EnforcedWidth, EnforcedHeight),
-        Qt::IgnoreAspectRatio,
-        Qt::SmoothTransformation);
+
+    const QDir backgroundDir = QStringLiteral(":/StartupLogoDialog");
+    const QStringList backgrounds = backgroundDir.entryList(QStringList() << QStringLiteral("splashscreen_background_*.png"), QDir::Files);
+    QString backgroundPath;
+
+    if (!backgrounds.isEmpty())
+    {
+        const int index = AzQtComponents::GetRandomGenerator()->bounded(aznumeric_cast<int>(backgrounds.size()));
+        backgroundPath = QStringLiteral(":/StartupLogoDialog/") + backgrounds.at(index);
+
+        m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
+            QPixmap(backgroundPath), screen(), QSize(EnforcedWidth, EnforcedHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }
 
     m_ui->m_transparentAgreement->setObjectName("link");
 
@@ -105,6 +115,9 @@ void CStartupLogoDialog::SetInfoText(const char* text)
 void CStartupLogoDialog::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
-    painter.drawPixmap(rect(), m_backgroundImage);
+    if (!m_backgroundImage.isNull())
+    {
+        painter.drawPixmap(rect(), m_backgroundImage);
+    }
 }
 
