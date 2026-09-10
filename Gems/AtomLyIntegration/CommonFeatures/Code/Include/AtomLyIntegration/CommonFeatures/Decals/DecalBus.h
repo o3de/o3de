@@ -55,6 +55,12 @@ namespace AZ
             //! Sets the decal normal map opacity
             virtual void SetNormalMapOpacity(float opacity) = 0;
 
+            //! Gets the distance from the camera beyond which the decal stops rendering.
+            virtual float GetMaxDrawDistance() const = 0;
+
+            //! Sets the distance from the camera beyond which the decal stops rendering.
+            virtual void SetMaxDrawDistance(float maxDrawDistance) = 0;
+
             //! Gets the decal sort key. Decals with a larger sort key appear over top of smaller sort keys.
             virtual uint8_t GetSortKey() const = 0;
 
@@ -98,6 +104,10 @@ namespace AZ
             //! Signals that the opacity has changed.
             //! @param opacity The opaqueness of the decal.
             virtual void OnNormalMapOpacityChanged([[maybe_unused]] float opacity){ }
+
+            //! Signals that the max draw distance has changed.
+            //! @param maxDrawDistance Distance from the camera beyond which the decal stops rendering.
+            virtual void OnMaxDrawDistanceChanged([[maybe_unused]] float maxDrawDistance){ }
 
             //! Signals that the sortkey has changed.
             //! @param sortKey Decals with a larger sort key appear over top of smaller sort keys.

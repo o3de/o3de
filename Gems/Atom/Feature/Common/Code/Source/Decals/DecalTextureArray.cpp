@@ -95,6 +95,50 @@ namespace AZ
             }
         }
 
+        bool DecalTextureArray::PackingLayout::MapLayout::operator==(const MapLayout& rhs) const
+        {
+            return m_size == rhs.m_size && m_format == rhs.m_format && m_mipLevels == rhs.m_mipLevels;
+        }
+
+        bool DecalTextureArray::PackingLayout::operator==(const PackingLayout& rhs) const
+        {
+            for (size_t i = 0; i < m_maps.size(); ++i)
+            {
+                if (!(m_maps[i] == rhs.m_maps[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool DecalTextureArray::PackingLayout::operator!=(const PackingLayout& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        DecalTextureArray::PackingLayout DecalTextureArray::GetPackingLayout(AZ::RPI::MaterialAsset& materialAsset)
+        {
+            PackingLayout layout;
+
+            for (int i = 0; i < DecalMapType_Num; ++i)
+            {
+                const auto mapType = aznumeric_cast<DecalMapType>(i);
+                const auto& imageAsset = GetStreamingImageAsset(materialAsset, GetMapName(mapType));
+                if (imageAsset.IsReady())
+                {
+                    const RHI::ImageDescriptor& descriptor = imageAsset->GetImageDescriptor();
+                    layout.m_maps[i].m_size = descriptor.m_size;
+                    layout.m_maps[i].m_format = descriptor.m_format;
+                    layout.m_maps[i].m_mipLevels = descriptor.m_mipLevels;
+                }
+                // An absent map keeps its default layout on purpose -- see PackingLayout.
+                // IsValidDecalMaterial() separately rejects materials with no diffuse map.
+            }
+
+            return layout;
+        }
+
         int DecalTextureArray::FindMaterial(const AZ::Data::AssetId materialAssetId) const
         {
             int iter = m_materials.begin();
