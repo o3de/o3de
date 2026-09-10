@@ -207,12 +207,28 @@ namespace AZ::IO::Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            ssize_t bytesRead = read(handle, buffer, byteSize);
-            if (bytesRead == -1)
+            auto* cursor = static_cast<AZStd::byte*>(buffer);
+            SystemFile::SizeType totalBytesRead = 0;
+            while (totalBytesRead < byteSize)
             {
-                return 0;
+                // Read is not guaranteed to read the entire amount specified.
+                ssize_t bytesRead = read(handle, cursor + totalBytesRead, byteSize - totalBytesRead);
+                if (bytesRead == -1)
+                {
+                    if (errno == EINTR)
+                    {
+                        continue;
+                    }
+                    break;
+                }
+                if (bytesRead == 0)
+                {
+                    // End of file reached before the requested size was satisfied.
+                    break;
+                }
+                totalBytesRead += bytesRead;
             }
-            return bytesRead;
+            return totalBytesRead;
         }
 
         return 0;
