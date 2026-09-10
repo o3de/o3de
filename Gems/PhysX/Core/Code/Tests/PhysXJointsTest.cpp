@@ -56,14 +56,13 @@ namespace PhysX
         // Make lead body very heavy
         if (!jointConfig)
         {
+            rigidBodyConfig.m_computeMass = false;
             rigidBodyConfig.m_mass = 9999.0f;
         }
         entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
         if (jointConfig)
         {
-            rigitBodyConfig.m_computeMass = false;
-            rigitBodyConfig.m_mass = 9900.0f;
             jointConfig->m_followerEntity = entity->GetId();
 
             JointGenericProperties defaultJointGenericProperties;
