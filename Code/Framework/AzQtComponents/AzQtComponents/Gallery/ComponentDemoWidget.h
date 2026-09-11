@@ -24,6 +24,22 @@ public:
     explicit ComponentDemoWidget(QWidget* parent = nullptr);
     ~ComponentDemoWidget() override;
 
+    //! Rasterizes every gallery page into outputDirPath as numbered PNGs
+    //! (whole window, including the custom title bar chrome), plus secondary
+    //! interaction states per page: expanded trees/cards, open combo popups,
+    //! modal dialogs (grabbed and closed via watchdog), floated dock widgets.
+    //! Used by the --screenshot-dir command line mode for parity evaluation.
+    void captureAllPages(const QString& outputDirPath);
+
+    //! Selects a page by (case-insensitive, partial) title match or numeric
+    //! index. Used by the --page command line option.
+    void selectPage(const QString& pageNameOrIndex);
+
+private:
+    void capturePageInteractions(const QString& outputDirPath, int pageIndex, const QString& pageName);
+
+public:
+
 Q_SIGNALS:
     void styleChanged(bool enableLegacyUI);
     void refreshStyle();
