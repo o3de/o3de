@@ -44,6 +44,7 @@ namespace EMotionFX
                         QT_TRANSLATE_NOOP("EMotionFX", "The Simple LOD distance component alters the actor skeleton LOD level based on camera distance."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/animation/simple-lod-distance/")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
