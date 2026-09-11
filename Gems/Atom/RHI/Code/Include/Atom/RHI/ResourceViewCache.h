@@ -62,6 +62,22 @@
         };
     } // namespace ResourceViewCacheHelper
 
+    // Forward declare helper trait for ResourceTypeHelper to avoid in-class explicit specialization
+    template<typename ResourceType>
+    struct ResourceTypeHelperTraits;
+
+    template<>
+    struct ResourceTypeHelperTraits<DeviceResource>
+    {
+        using ResourceViewType = DeviceResourceView;
+    };
+
+    template<>
+    struct ResourceTypeHelperTraits<Resource>
+    {
+        using ResourceViewType = ResourceView;
+    };
+
     //! ResourceViewCache is used by both Resource and DeviceResource to cache raw pointers to ResourceView and DeviceResourceView
     //! respectively. As ResourceViewType has a strong dependency (by holding a ConstrPtr) to ResourceType, this cache holds raw pointers to
     //! ensure no circular dependency arises.
@@ -70,23 +86,13 @@
     struct ResourceViewCache
     {
         //! Helper struct to select (Device)ResourceView based on (Device)Resource and the corresponding views for Buffers and Images
-        template <typename Type>
-        struct ResourceTypeHelper;
-
-        template <>
-        struct ResourceTypeHelper<DeviceResource>
+        // Uses external traits to avoid GCC error with in-class explicit specialization
+        template<typename Type>
+        struct ResourceTypeHelper
         {
-            using ResourceViewType = DeviceResourceView;
+            using ResourceViewType = typename ResourceTypeHelperTraits<Type>::ResourceViewType;
             template<typename DescriptorType>
-            using ViewType = typename ResourceViewCacheHelper::ResourceViewTypeHelper<DeviceResource, DescriptorType>::ViewType;
-        };
-
-        template <>
-        struct ResourceTypeHelper<Resource>
-        {
-            using ResourceViewType = ResourceView;
-            template<typename DescriptorType>
-            using ViewType = typename ResourceViewCacheHelper::ResourceViewTypeHelper<Resource, DescriptorType>::ViewType;
+            using ViewType = typename ResourceViewCacheHelper::ResourceViewTypeHelper<Type, DescriptorType>::ViewType;
         };
 
         //! Returns true if the ResourceViewType is in the cache
