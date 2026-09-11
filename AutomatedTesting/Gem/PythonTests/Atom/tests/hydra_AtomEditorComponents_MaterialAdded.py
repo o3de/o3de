@@ -247,7 +247,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         default_asset_path = default_asset.get_path()
         Report.result(
             Tests.model_material_asset_path,
-            default_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
+            default_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_fbx_lambert0_'))
 
         # 15. Enable the use of LOD materials
         material_component.set_component_property_value(AtomComponentProperties.material('Enable LOD Materials'), True)
@@ -268,7 +268,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         active_asset_path = active_asset.get_path()
         Report.result(
             Tests.lod_material_asset_path,
-            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
+            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_fbx_lambert0_'))
 
         # Setup a material for overrides in further testing
         material_path = os.path.join('materials', 'presets', 'pbr', 'metal_gold.azmaterial')
@@ -293,7 +293,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         active_asset_path = active_asset.get_path()
         Report.result(
             Tests.lod_material_asset_path,
-            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
+            active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_fbx_lambert0_'))
 
         # 20. Set the Default Material asset to an override using set component property by path
         material_component.set_component_property_value(
