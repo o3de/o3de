@@ -131,9 +131,9 @@ try
     Invoke-Antlr -Grammar (Split-Path $lexerGrammar -Leaf)
     Invoke-Antlr -Grammar (Split-Path $parserGrammar -Leaf) -lib $grammarDirectory
     $generatedSourceFiles | ForEach-Object { Format-GeneratedSource -SourceFile $_ }
-    Get-ChildItem -LiteralPath $grammarDirectory -File
-        | Where-Object Extension -In ".interp", ".tokens"
-        | Remove-Item -Force
+    Get-ChildItem -LiteralPath $grammarDirectory -File |
+        Where-Object Extension -In ".interp", ".tokens" |
+        Remove-Item -Force
 }
 finally
 {

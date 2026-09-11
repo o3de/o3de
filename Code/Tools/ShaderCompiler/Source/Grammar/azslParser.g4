@@ -29,9 +29,10 @@ topLevelDeclaration:
 ;
 
 // Amazon: AZSL has scopes, and identifiers can be qualified
+// Keep qualifiedId first to preserve the SLL fast path for qualified names.
 idExpression:
-        unqualifiedId   // stricly unqualified (no nested specifiers at all)
-    |   qualifiedId     // could be relatively qualified OR fully qualified.
+        qualifiedId     // could be relatively qualified OR fully qualified.
+    |   unqualifiedId   // stricly unqualified (no nested specifiers at all)
 ;
 
 unqualifiedId:
@@ -42,8 +43,10 @@ qualifiedId:
     nestedNameSpecifier unqualifiedId
 ;
 
+// Must consume at least one '::' so qualifiedId cannot also derive an unqualified Identifier.
 nestedNameSpecifier:
-    GlobalSROToken='::'? (Identifier '::')*
+        GlobalSROToken='::' (Identifier '::')*   // ::a::b::   or just ::
+    |   (Identifier '::')+                       // a::b::
 ;
 
 classDefinitionStatement:
