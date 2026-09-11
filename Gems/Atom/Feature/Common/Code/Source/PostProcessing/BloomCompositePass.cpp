@@ -81,11 +81,11 @@ namespace AZ
 
             if (inAttachment != nullptr && outAttachment != nullptr)
             {
-                m_inputWidth = inAttachment->m_descriptor.m_image.m_size.m_width;
-                m_inputHeight = inAttachment->m_descriptor.m_image.m_size.m_height;
+                m_inputWidth = inAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
+                m_inputHeight = inAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
 
-                m_outputWidth = outAttachment->m_descriptor.m_image.m_size.m_width;
-                m_outputHeight = outAttachment->m_descriptor.m_image.m_size.m_height;
+                m_outputWidth = outAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
+                m_outputHeight = outAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
             }
         }
 

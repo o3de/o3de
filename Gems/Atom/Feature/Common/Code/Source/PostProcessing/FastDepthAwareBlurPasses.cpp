@@ -66,7 +66,7 @@ namespace AZ
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurHorPass: Output binding has no attachment!");
-            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size size = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             m_passConstants.InitializeFromSize(size);
 
@@ -108,7 +108,7 @@ namespace AZ
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "FastDepthAwareBlurVerPass: Output binding has no attachment!");
-            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size size = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             m_passConstants.InitializeFromSize(size);
 
