@@ -9,8 +9,6 @@
 
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/optional.h>
-#include <RHI/DX12.h>
 
 namespace AZ
 {
@@ -18,7 +16,6 @@ namespace AZ
     {
         class BufferFrameAttachment;
         class ImageFrameAttachment;
-        class ScopeAttachment;
     }
 
     namespace DX12
@@ -45,11 +42,6 @@ namespace AZ
             RHI::MessageOutcome CompileInternal(const RHI::FrameGraphCompileRequest& request) override;
             //////////////////////////////////////////////////////////////////////////
 
-            static D3D12_RESOURCE_STATES GetResourceState(const RHI::ScopeAttachment& scopeAttachment);
-
-            //Returns pre-discard transition state.
-            static AZStd::optional<D3D12_RESOURCE_STATES> GetDiscardResourceState(const RHI::ScopeAttachment& scopeAttachment, D3D12_RESOURCE_FLAGS bindflags);
-            
             void CompileResourceBarriers(Scope* rootScope, const RHI::FrameGraphAttachmentDatabase& attachmentDatabase);
             void CompileBufferBarriers(Scope* rootScope, RHI::BufferFrameAttachment& frameGraphAttachment);
             void CompileImageBarriers(RHI::ImageFrameAttachment& frameGraphAttachment);
