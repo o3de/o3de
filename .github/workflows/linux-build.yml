@@ -235,12 +235,12 @@ jobs:
           LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
         run: |
           export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
-          export DISPLAY=:0
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          xvfb_command=()
           if [ "${{ inputs.desktop }}" == "true" ]; then
-            Xvfb :0 -screen 0 1400x1050x16 & # Start X virtual framebuffer for tests
+            xvfb_command=(xvfb-run --auto-servernum --server-args="-screen 0 1400x1050x16 -noreset")
           fi
-          python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
+          "${xvfb_command[@]}" python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
 
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
