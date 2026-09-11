@@ -56,7 +56,8 @@ namespace AZ::Render
         };
 
         TaaConstants cb;
-        RHI::Size inputSize = m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.m_image.m_size;
+        RHI::Size inputSize =
+            m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
         cb.m_rcpSize[0] = 1.0f / inputSize.m_width;

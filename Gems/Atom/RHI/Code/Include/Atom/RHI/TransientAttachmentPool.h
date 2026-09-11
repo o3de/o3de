@@ -20,8 +20,6 @@
 
 namespace AZ::RHI
 {
-    class BufferAttachment;
-    class ImageAttachment;
     class Scope;
     class SwapChainAttachment;
     struct TransientImageDescriptor;
