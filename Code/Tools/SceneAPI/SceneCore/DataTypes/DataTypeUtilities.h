@@ -61,6 +61,8 @@ namespace AZ
                 //! can use this with the selected mesh as the sub id. Other alternatives might be all the selected nodes concatenated into a single string.
                 SCENE_CORE_API Uuid CreateStableUuid(const Containers::Scene& scene, const Uuid& typeId, const char* subId);
 
+                SCENE_CORE_API AZStd::string CreateStableGroupName(const Containers::Scene& scene, const Uuid& typeId, const AZStd::string& subId);
+
             } // Utilities
         } // DataTypes
     } // SceneAPI

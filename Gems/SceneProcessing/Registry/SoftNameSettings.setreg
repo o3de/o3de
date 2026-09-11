@@ -45,18 +45,18 @@
                 },
                 {
                   "pattern": {
-                    "patterns": [ "_phys", "_phys_optimized" ],
+                    "patterns": [ "_phys_static", "_phys_static_optimized" ],
                     "matcher": 1
                   },
-                  "virtualType": "PhysicsMesh",
-                  "includeChildren": true
+                  "virtualType": "PhysicsMeshStatic",
+                  "includeChildren": false
                 },
                 {
                   "pattern": {
-                    "patterns": [ "^.*_[Pp][Hh][Yy][Ss](_optimized)?$" ],
+                    "patterns": [ "_phys_dynamic", "_phys_dynamic_optimized" ],
                     "matcher": 1
                   },
-                  "virtualType": "Ignore",
+                  "virtualType": "PhysicsMeshDynamic",
                   "includeChildren": false
                 }
               ],

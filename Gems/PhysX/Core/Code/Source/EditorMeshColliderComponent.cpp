@@ -583,7 +583,15 @@ namespace PhysX
 
         Utils::SetMaterialsFromPhysicsAssetShape(m_proxyShapeConfiguration.m_physicsAsset.m_configuration, m_configuration.m_materialSlots);
 
-        m_configuration.m_materialSlots.SetSlotsReadOnly(m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_useMaterialsFromAsset);
+        const bool materialSlotsDrivenByAsset = m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_useMaterialsFromAsset;
+        m_configuration.m_materialSlots.SetSlotsReadOnly(materialSlotsDrivenByAsset);
+
+        if (materialSlotsDrivenByAsset)
+        {
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
+            ValidateAssetMaterials();
+            return;
+        }
 
         InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
 
