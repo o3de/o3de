@@ -18,6 +18,7 @@
 
 #include <CrashHandler.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <CrashSupport.h>
 
@@ -250,6 +251,24 @@ namespace CrashHandler
         GetExecutableBaseName(executableName);
         executableName = "--executable-name=" + executableName;
         argumentList.push_back(executableName);
+
+        // Auto-attach this app's own log (by convention @log@/<moduleTag>.log, e.g. Editor.log)
+        // so the report always carries what led up to the crash, not just the dump itself.
+        // NOTE: this runs at startup, before the log file is created, so we can't check
+        // existence here - the handler only reads the file later, once a crash actually
+        // happens, by which point it exists. Just resolve the path and pass it through;
+        // AddAttachments() already skips it gracefully if it's somehow still missing.
+        if (AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance())
+        {
+            AZ::IO::FixedMaxPathString logAlias = AZ::IO::FixedMaxPathString::format("@log@/%s.log", moduleTag.c_str());
+            if (auto resolvedLogPath = fileIO->ResolvePath(AZ::IO::PathView(logAlias)); resolvedLogPath.has_value())
+            {
+                std::string uploadPathArg{ "--uploadpath=" };
+                uploadPathArg += resolvedLogPath->c_str();
+                argumentList.push_back(uploadPathArg);
+            }
+        }
+
         crashpad::CrashpadClient client;
         // Initialize automatic crashpad handling.
         bool rc = client.StartHandler(handler,
