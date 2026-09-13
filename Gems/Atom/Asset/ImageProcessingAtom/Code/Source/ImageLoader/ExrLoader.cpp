@@ -52,6 +52,15 @@ namespace ImageProcessingAtom
 
                 const Imf::Header& header = exrFile.header();
 
+                // Count the total number of channels actually present in the file, regardless of name.
+                // This is what lets us tell a dual-channel (or otherwise odd) layout apart from a true
+                // single-channel image or a full RGB/RGBA image.
+                int32_t totalChannelCount = 0;
+                for (Imf::ChannelList::ConstIterator countIt = header.channels().begin(); countIt != header.channels().end(); ++countIt)
+                {
+                    totalChannelCount++;
+                }
+
                 // Get Channel information for RGBA
                 const Imf::Channel* channels[4];
                 channels[0] = header.channels().findChannel("R");
@@ -86,43 +95,49 @@ namespace ImageProcessingAtom
                     }
                 }
 
-                // Identify single-channel utility maps (Luminance "Y", Height, Roughness, AO, etc.)
-                AZStd::string singleChannelName;
-                if (!hasChannels)
-                {
-                    const Imf::Channel* yChannel = header.channels().findChannel("Y");
-                    if (yChannel)
-                    {
-                        singleChannelName = "Y";
-                        pixelType = yChannel->type;
-                        hasChannels = true;
-                    }
-                    else
-                    {
-                        Imf::ChannelList::ConstIterator it = header.channels().begin();
-                        if (it != header.channels().end())
-                        {
-                            singleChannelName = it.name();
-                            pixelType = it.channel().type;
-                            hasChannels = true;
-                        }
-                    }
-                }
-                else if (rgbaChannelCount == 1)
-                {
-                    if (channels[0]) singleChannelName = "R";
-                    else if (channels[1]) singleChannelName = "G";
-                    else if (channels[2]) singleChannelName = "B";
-                    else if (channels[3]) singleChannelName = "A";
-                }
-
-                bool isSingleChannel = !singleChannelName.empty();
-
-                if (!hasChannels)
+                if (totalChannelCount == 0)
                 {
                     AZ_Error("Image Processing", false, "load exr file error: exr image doesn't contain "
                         "any valid channels [%s]", filename.c_str());
                     return nullptr;
+                }
+
+                // Only two channel layouts are supported today:
+                //  - Full RGB (3 channels) or RGBA (4 channels), made up exclusively of R/G/B/A channels
+                //  - A single channel image, regardless of how that one channel is named (Y, Height, Roughness, a lone R, etc.)
+                // Anything else - dual channel, a partial RGBA combo like R+G only, or any other multi-channel
+                // layout - isn't supported yet, so bail out here instead of silently mis-loading it.
+                bool isFullRgba = hasChannels && (rgbaChannelCount == totalChannelCount) && (rgbaChannelCount >= 3);
+                bool isSingleChannel = (totalChannelCount == 1);
+
+                if (!isFullRgba && !isSingleChannel)
+                {
+                    AZ_Error("Image Processing", false, "ExrLoader: file [%s] has %d channels - only full "
+                        "RGB/RGBA or single channel exr images are supported, this channel layout isn't "
+                        "supported in o3de yet", filename.c_str(), totalChannelCount);
+                    return nullptr;
+                }
+
+                // Identify single-channel utility maps (Luminance "Y", Height, Roughness, AO, a lone R/G/B/A, etc.)
+                AZStd::string singleChannelName;
+                if (isSingleChannel)
+                {
+                    if (hasChannels)
+                    {
+                        // The one channel present happens to be named R, G, B or A
+                        if (channels[0]) singleChannelName = "R";
+                        else if (channels[1]) singleChannelName = "G";
+                        else if (channels[2]) singleChannelName = "B";
+                        else singleChannelName = "A";
+                    }
+                    else
+                    {
+                        // The one channel present has some other name (Y, Height, Roughness, etc.)
+                        Imf::ChannelList::ConstIterator it = header.channels().begin();
+                        singleChannelName = it.name();
+                        pixelType = it.channel().type;
+                        hasChannels = true;
+                    }
                 }
 
                 // Map to native O3DE single-channel or multi-channel pixel formats
