@@ -19,6 +19,8 @@ set(FILES
     "${mimalloc_SOURCE_DIR}/src/page.c"
     "${mimalloc_SOURCE_DIR}/src/page-map.c"
     "${mimalloc_SOURCE_DIR}/src/random.c"
+    "${mimalloc_SOURCE_DIR}/src/sample-guarded.c"
+    "${mimalloc_SOURCE_DIR}/src/sample-profile.c"
     "${mimalloc_SOURCE_DIR}/src/stats.c"
     "${mimalloc_SOURCE_DIR}/src/subproc.c"
     "${mimalloc_SOURCE_DIR}/src/theap.c"
