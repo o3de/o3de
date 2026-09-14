@@ -95,28 +95,6 @@ namespace AZ
             }
         }
 
-        bool DecalTextureArray::PackingLayout::MapLayout::operator==(const MapLayout& rhs) const
-        {
-            return m_size == rhs.m_size && m_format == rhs.m_format && m_mipLevels == rhs.m_mipLevels;
-        }
-
-        bool DecalTextureArray::PackingLayout::operator==(const PackingLayout& rhs) const
-        {
-            for (size_t i = 0; i < m_maps.size(); ++i)
-            {
-                if (!(m_maps[i] == rhs.m_maps[i]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        bool DecalTextureArray::PackingLayout::operator!=(const PackingLayout& rhs) const
-        {
-            return !(*this == rhs);
-        }
-
         DecalTextureArray::PackingLayout DecalTextureArray::GetPackingLayout(AZ::RPI::MaterialAsset& materialAsset)
         {
             PackingLayout layout;

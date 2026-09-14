@@ -36,56 +36,34 @@ namespace UnitTest
         EXPECT_EQ(nothing, nullptr);
     }
 
-    static DecalTextureArray::PackingLayout MakeUniformLayout(
-        uint32_t width, uint32_t height, RHI::Format format, uint16_t mipLevels)
-    {
-        DecalTextureArray::PackingLayout layout;
-        for (int i = 0; i < DecalMapType_Num; ++i)
-        {
-            layout.m_maps[i].m_size = RHI::Size(width, height, 1);
-            layout.m_maps[i].m_format = format;
-            layout.m_maps[i].m_mipLevels = mipLevels;
-        }
-        return layout;
-    }
-
     // Decals group into texture arrays by PackingLayout equality, so any difference Pack() would
     // trample has to compare unequal. These all share one texture size on purpose -- the
     // same-resolution case a dimensions-only key failed to separate.
 
-    TEST_F(DecalTextureArrayTests, PackingLayout_IdenticalLayoutsMatch)
+    TEST_F(DecalTextureArrayTests, PackingLayout_EqualityIncludesEveryPackedProperty)
     {
-        const auto a = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 11);
-        const auto b = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 11);
-        EXPECT_TRUE(a == b);
-        EXPECT_FALSE(a != b);
-    }
+        DecalTextureArray::PackingLayout layout;
+        for (auto& map : layout.m_maps)
+        {
+            map.m_size = RHI::Size(1024, 1024, 1);
+            map.m_format = RHI::Format::BC7_UNORM;
+            map.m_mipLevels = 11;
+        }
 
-    TEST_F(DecalTextureArrayTests, PackingLayout_SameSizeDifferentFormatDoesNotMatch)
-    {
-        const auto bc7 = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 11);
-        const auto bc1 = MakeUniformLayout(1024, 1024, RHI::Format::BC1_UNORM, 11);
-        EXPECT_TRUE(bc7 != bc1);
-    }
+        const auto identical = layout;
+        EXPECT_EQ(layout, identical);
 
-    TEST_F(DecalTextureArrayTests, PackingLayout_SameSizeDifferentMipCountDoesNotMatch)
-    {
-        const auto fullMips = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 11);
-        const auto oneMip = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 1);
-        EXPECT_TRUE(fullMips != oneMip);
-    }
+        auto differentFormat = layout;
+        differentFormat.m_maps[DecalMapType_Diffuse].m_format = RHI::Format::BC1_UNORM;
+        EXPECT_NE(layout, differentFormat);
 
-    TEST_F(DecalTextureArrayTests, PackingLayout_DifferingOnlyInNormalMapDoesNotMatch)
-    {
-        // Pack() discards the whole packed normal-map array if any slice is missing one, so adding a
-        // decal without a normal map would otherwise strip normals from the rest of its array.
-        const auto withNormal = MakeUniformLayout(1024, 1024, RHI::Format::BC7_UNORM, 11);
+        auto differentMipCount = layout;
+        differentMipCount.m_maps[DecalMapType_Diffuse].m_mipLevels = 1;
+        EXPECT_NE(layout, differentMipCount);
 
-        auto withoutNormal = withNormal;
+        auto withoutNormal = layout;
         withoutNormal.m_maps[DecalMapType_Normal] = DecalTextureArray::PackingLayout::MapLayout{};
-
-        EXPECT_TRUE(withNormal.m_maps[DecalMapType_Diffuse] == withoutNormal.m_maps[DecalMapType_Diffuse]);
-        EXPECT_TRUE(withNormal != withoutNormal);
+        EXPECT_NE(layout, withoutNormal);
     }
 
     // [GFX TODO][ATOM-5915] Add more comprehensive tests here involving packing StreamingImages

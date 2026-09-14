@@ -528,10 +528,9 @@ namespace AZ::ShaderCompiler
             return m_returnTypeSet.m_type->GetDisplayName();
         }
 
-        const ExtendedTypeInfo& GetUniformReturnType() const
+        const optional<ExtendedTypeInfo>& GetUniformReturnType() const
         {
-            assert(HasHomogeneousReturnType());
-            return *m_returnTypeSet.m_type;
+            return m_returnTypeSet.m_type;
         }
 
         //! if there is a unique function that corresponds to a given arity, return its UID. otherwise return an empty UID
@@ -630,7 +629,7 @@ namespace AZ::ShaderCompiler
                     m_type = newType;
                     m_state = Homogeneous;
                 }
-                else if (m_state == Homogeneous)
+                else if (m_state == Homogeneous && m_type)
                 {
                     if (newType != *m_type)  // overloaded functions must in principle have the same return type
                     {                        // but we can tolerate differences in case of simple types.
@@ -643,6 +642,10 @@ namespace AZ::ShaderCompiler
                         }
                         m_type = none; // in case of a difference the cache becomes useless.
                     }
+                }
+                else if (!IsPredefinedType(newType.m_coreType.m_typeClass))
+                {
+                    m_state = HeterogeneousUserDefinedType;
                 }
                 return m_state == Homogeneous;
             }
@@ -1058,8 +1061,8 @@ namespace AZ::ShaderCompiler
         {
             if (m_forFunctionsGetReturnType)
             {
-                return overloadSet.HasHomogeneousReturnType() ? overloadSet.GetUniformReturnType().GetMimickedType()
-                                                              : QualifiedNameView{"<fail>"};
+                const auto& returnType = overloadSet.GetUniformReturnType();
+                return returnType ? returnType->GetMimickedType() : QualifiedNameView{"<fail>"};
             }
             return m_uid.GetName();
         }

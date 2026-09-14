@@ -55,13 +55,12 @@ namespace AZ
                     RHI::Format m_format = RHI::Format::Unknown;
                     uint16_t m_mipLevels = 0;
 
-                    bool operator==(const MapLayout& rhs) const;
+                    bool operator==(const MapLayout&) const = default;
                 };
 
                 AZStd::array<MapLayout, DecalMapType_Num> m_maps;
 
-                bool operator==(const PackingLayout& rhs) const;
-                bool operator!=(const PackingLayout& rhs) const;
+                bool operator==(const PackingLayout&) const = default;
             };
 
             //! Returns the packing layout this material requires across all decal map types.
