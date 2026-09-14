@@ -1186,7 +1186,7 @@ namespace EMotionFX
             else
             {
                 expectedResult.m_position = transformA.m_position + transformB.m_position * weight;
-                expectedResult.m_rotation = transformA.m_rotation.NLerp(transformB.m_rotation * transformA.m_rotation, weight);
+                expectedResult.m_rotation = transformA.m_rotation.NLerp(transformA.m_rotation * transformB.m_rotation, weight);
                 expectedResult.m_rotation.Normalize();
 
                 EMFX_SCALECODE
