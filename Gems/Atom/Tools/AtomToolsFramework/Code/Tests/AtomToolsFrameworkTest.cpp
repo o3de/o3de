@@ -143,7 +143,22 @@ namespace UnitTest
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] bool escalateJobs) override
         {
             ++m_requestCount;
-            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+            if (m_failRequest)
+            {
+                return AZ::Failure();
+            }
+            if (m_jobStatuses.empty())
+            {
+                return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+            }
+
+            AzToolsFramework::AssetSystem::JobInfo jobInfo;
+            jobInfo.m_status = m_jobStatuses.front();
+            if (m_jobStatuses.size() > 1)
+            {
+                m_jobStatuses.erase(m_jobStatuses.begin());
+            }
+            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{ jobInfo });
         }
 
         AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfoByAssetID(
@@ -172,16 +187,92 @@ namespace UnitTest
         }
 
         size_t m_requestCount = 0;
+        bool m_failRequest = false;
+        AZStd::vector<AzToolsFramework::AssetSystem::JobStatus> m_jobStatuses;
     };
 
-    TEST(AssetStatusReporterTest, UpdateDrainsAllSettledPaths)
+    class ReentrantAssetSystemJobRequestStub : public AssetSystemJobRequestStub
+    {
+    public:
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfo(
+            [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] bool escalateJobs) override
+        {
+            AtomToolsFramework::AssetStatusReporterSystemRequestBus::Event(
+                m_toolId,
+                &AtomToolsFramework::AssetStatusReporterSystemRequestBus::Events::StopReporting,
+                m_requestId);
+            m_requestReturned = true;
+            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+        }
+
+        AZ::Crc32 m_toolId = AZ_CRC_CE("ReentrantAssetStatusReporterTest");
+        AZ::Uuid m_requestId = AZ::Uuid::CreateRandom();
+        AZStd::atomic_bool m_requestReturned = false;
+    };
+
+    TEST(AssetStatusReporterTest, UpdateProcessesOneSettledPath)
     {
         AssetSystemJobRequestStub assetSystem;
+        assetSystem.m_jobStatuses = { AzToolsFramework::AssetSystem::JobStatus::Completed };
         const AZStd::vector<AZStd::string> sourcePaths = { "first.azsl", "second.shader", "third.material" };
         AtomToolsFramework::AssetStatusReporter reporter(sourcePaths);
 
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
         EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Succeeded);
         EXPECT_EQ(assetSystem.m_requestCount, sourcePaths.size());
+    }
+
+    TEST(AssetStatusReporterTest, FailedAndEmptyQueriesRemainQueuedUntilJobsComplete)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        AtomToolsFramework::AssetStatusReporter reporter({ "generated.material" });
+
+        assetSystem.m_failRequest = true;
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+
+        assetSystem.m_failRequest = false;
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+
+        assetSystem.m_jobStatuses = {
+            AzToolsFramework::AssetSystem::JobStatus::Queued,
+            AzToolsFramework::AssetSystem::JobStatus::Completed,
+        };
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Succeeded);
+    }
+
+    TEST(AssetStatusReporterTest, FailedJobFailsReporter)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        assetSystem.m_jobStatuses = { AzToolsFramework::AssetSystem::JobStatus::Failed };
+        AtomToolsFramework::AssetStatusReporter reporter({ "generated.material" });
+
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Failed);
+    }
+
+    TEST(AssetStatusReporterSystemTest, AssetRequestCanStopReporterReentrantly)
+    {
+        ReentrantAssetSystemJobRequestStub assetSystem;
+        AtomToolsFramework::AssetStatusReporterSystem reporterSystem(assetSystem.m_toolId);
+
+        reporterSystem.StartReporting(assetSystem.m_requestId, { "generated.material" });
+        for (int iteration = 0; iteration < 1000 && !assetSystem.m_requestReturned; ++iteration)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+        }
+
+        EXPECT_TRUE(assetSystem.m_requestReturned);
+        EXPECT_EQ(reporterSystem.GetStatus(assetSystem.m_requestId), AtomToolsFramework::AssetStatusReporterState::Invalid);
+    }
+
+    TEST(AssetStatusReporterSystemTest, IdleReporterSystemStops)
+    {
+        constexpr int systemCount = 20;
+        for (int index = 0; index < systemCount; ++index)
+        {
+            AtomToolsFramework::AssetStatusReporterSystem reporterSystem(AZ::Crc32(index + 1));
+        }
     }
 
     TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompile)

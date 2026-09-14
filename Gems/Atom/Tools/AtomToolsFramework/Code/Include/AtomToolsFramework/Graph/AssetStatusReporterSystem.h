@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
 
@@ -34,7 +35,6 @@ namespace AtomToolsFramework
         void StopReporting(const AZ::Uuid& requestId) override;
         void StopReportingAll() override;
         AssetStatusReporterState GetStatus(const AZ::Uuid& requestId) const override;
-        AZStd::string GetStatusMessage(const AZ::Uuid& requestId) const override;
 
     private:
         void Update();
@@ -44,6 +44,7 @@ namespace AtomToolsFramework
         AZStd::thread m_thread;
         AZStd::thread_desc m_threadDesc;
         mutable AZStd::mutex m_requestMutex;
+        AZStd::condition_variable m_requestCondition;
 
         using ReporterTable = AZStd::vector<AZStd::pair<AZ::Uuid, AZStd::shared_ptr<AssetStatusReporter>>>;
         ReporterTable m_activeReporterTable;

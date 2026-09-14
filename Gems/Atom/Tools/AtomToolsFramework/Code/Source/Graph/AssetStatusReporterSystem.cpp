@@ -28,9 +28,6 @@ namespace AtomToolsFramework
                 while (m_threadRunning)
                 {
                     Update();
-
-                    // Sleep briefly to give AP time to update and other possible threads time to make AssetSystemJobRequestBus requests
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                 }
             });
 
@@ -38,17 +35,31 @@ namespace AtomToolsFramework
 
     AssetStatusReporterSystem::~AssetStatusReporterSystem()
     {
-        StopReportingAll();
-        m_threadRunning = false;
-        m_thread.join();
         AssetStatusReporterSystemRequestBus::Handler::BusDisconnect();
+        {
+            AZStd::scoped_lock lock(m_requestMutex);
+            m_threadRunning = false;
+        }
+        m_requestCondition.notify_all();
+        m_thread.join();
+        StopReportingAll();
     }
 
     void AssetStatusReporterSystem::StartReporting(const AZ::Uuid& requestId, const AZStd::vector<AZStd::string>& sourcePaths)
     {
-        StopReporting(requestId);
-        AZStd::scoped_lock lock(m_requestMutex);
-        m_activeReporterTable.emplace_back(requestId, AZStd::make_shared<AssetStatusReporter>(sourcePaths));
+        {
+            AZStd::scoped_lock lock(m_requestMutex);
+            AZStd::erase_if(m_activeReporterTable, [&requestId](const auto& reporterPair)
+            {
+                return reporterPair.first == requestId;
+            });
+            AZStd::erase_if(m_inactiveReporterTable, [&requestId](const auto& reporterPair)
+            {
+                return reporterPair.first == requestId;
+            });
+            m_activeReporterTable.emplace_back(requestId, AZStd::make_shared<AssetStatusReporter>(sourcePaths));
+        }
+        m_requestCondition.notify_one();
     }
 
     void AssetStatusReporterSystem::StopReporting(const AZ::Uuid& requestId)
@@ -99,60 +110,63 @@ namespace AtomToolsFramework
         return AssetStatusReporterState::Invalid;
     }
 
-    AZStd::string AssetStatusReporterSystem::GetStatusMessage(const AZ::Uuid& requestId) const
-    {
-        AZStd::scoped_lock lock(m_requestMutex);
-        for (const auto& reporterTable : { &m_activeReporterTable, &m_inactiveReporterTable })
-        {
-            if (auto reporterIt = AZStd::find_if(
-                    reporterTable->begin(),
-                    reporterTable->end(),
-                    [&requestId](const auto& reporterPair)
-                    {
-                        return reporterPair.first == requestId;
-                    });
-                reporterIt != reporterTable->end())
-            {
-                return reporterIt->second->GetCurrentStatusMessage();
-            }
-        }
-
-        return {};
-    }
-
     void AssetStatusReporterSystem::Update()
     {
-        AZStd::scoped_lock lock(m_requestMutex);
-        if (!m_activeReporterTable.empty())
+        AZ::Uuid requestId;
+        AZStd::shared_ptr<AssetStatusReporter> reporter;
         {
-            // Retrieve and update the status for the current active request.
-            auto reporterIt = m_activeReporterTable.begin();
-            reporterIt->second->Update();
-
-            // Create a string message from the current status.
-            const AZStd::string statusMessage = reporterIt->second->GetCurrentStatusMessage();
-
-            // If the message has not changed since the last update then send it to the main windows status bar.
-            if (m_lastStatusMessage != statusMessage)
+            AZStd::unique_lock lock(m_requestMutex);
+            m_requestCondition.wait(lock, [this]() { return !m_threadRunning || !m_activeReporterTable.empty(); });
+            if (!m_threadRunning)
             {
-                m_lastStatusMessage = statusMessage;
+                return;
+            }
+            requestId = m_activeReporterTable.front().first;
+            reporter = m_activeReporterTable.front().second;
+        }
 
-                // Queuing the notification on the system take bus so that it triggers on the main thread.
-                AZ::SystemTickBus::QueueFunction([toolId = m_toolId, statusMessage]() {
-                    // This should be generalized with a status reporter notification bus so the message can be handled by other systems
-                    // or UI than the status bar.
-                    AtomToolsMainWindowRequestBus::Event(
-                        toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+        const AssetStatusReporterState state = reporter->Update();
+        const AZStd::string statusMessage = reporter->GetCurrentStatusMessage();
+        bool publishStatus = false;
+
+        {
+            AZStd::unique_lock lock(m_requestMutex);
+            const auto reporterIt = AZStd::find_if(
+                m_activeReporterTable.begin(),
+                m_activeReporterTable.end(),
+                [&requestId, &reporter](const auto& reporterPair)
+                {
+                    return reporterPair.first == requestId && reporterPair.second == reporter;
                 });
+            if (reporterIt != m_activeReporterTable.end())
+            {
+                if (m_lastStatusMessage != statusMessage)
+                {
+                    m_lastStatusMessage = statusMessage;
+                    publishStatus = true;
+                }
+
+                if (state != AssetStatusReporterState::Processing)
+                {
+                    m_inactiveReporterTable.emplace_back(AZStd::move(*reporterIt));
+                    m_activeReporterTable.erase(reporterIt);
+                    m_lastStatusMessage.clear();
+                }
+                else if (m_activeReporterTable.size() > 1)
+                {
+                    AZStd::rotate(reporterIt, AZStd::next(reporterIt), m_activeReporterTable.end());
+                }
             }
 
-            // Any complete or canceled requests will get moved to the inactive list.
-            if (reporterIt->second->GetCurrentState() != AssetStatusReporterState::Processing)
+            m_requestCondition.wait_for(lock, AZStd::chrono::milliseconds(10), [this]() { return !m_threadRunning; });
+        }
+
+        if (publishStatus)
+        {
+            AZ::SystemTickBus::QueueFunction([toolId = m_toolId, statusMessage]()
             {
-                m_inactiveReporterTable.emplace_back(AZStd::move(*reporterIt));
-                m_activeReporterTable.erase(reporterIt);
-                m_lastStatusMessage.clear();
-            }
+                AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+            });
         }
     }
 } // namespace AtomToolsFramework
