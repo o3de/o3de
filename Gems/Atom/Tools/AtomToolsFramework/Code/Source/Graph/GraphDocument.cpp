@@ -93,8 +93,30 @@ namespace AtomToolsFramework
             [toolId, documentId = m_id](const GraphCompiler* graphCompiler)
             {
                 AZ::SystemTickBus::QueueFunction(
-                    [toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]()
+                    [toolId,
+                     documentId,
+                     state = graphCompiler->GetState(),
+                     generatedFiles = graphCompiler->GetGeneratedFilePaths(),
+                     modifiedGeneratedFiles = graphCompiler->GetModifiedGeneratedFilePaths()]()
                     {
+                        if (state == GraphCompiler::State::Complete)
+                        {
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                        }
+
+                        if (!modifiedGeneratedFiles.empty()
+                            && (state == GraphCompiler::State::Complete
+                                || state == GraphCompiler::State::Failed
+                                || state == GraphCompiler::State::Canceled))
+                        {
+                            GraphDocumentNotificationBus::Event(
+                                toolId,
+                                &GraphDocumentNotificationBus::Events::OnCompileGraphGeneratedFilesChanged,
+                                documentId,
+                                modifiedGeneratedFiles);
+                        }
+
                         switch (state)
                         {
                         case GraphCompiler::State::Idle:
@@ -108,8 +130,6 @@ namespace AtomToolsFramework
                         case GraphCompiler::State::Processing:
                             break;
                         case GraphCompiler::State::Complete:
-                            GraphDocumentRequestBus::Event(
-                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
                             GraphDocumentNotificationBus::Event(
                                 toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
                             break;
