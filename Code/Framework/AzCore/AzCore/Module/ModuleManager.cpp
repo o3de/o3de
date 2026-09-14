@@ -427,7 +427,7 @@ namespace AZ
             // Create the module class
             {
                 ModuleInitializationSteps::CreateClass,
-                [&moduleDataPtr]() -> PhaseOutcome
+                [this, &moduleDataPtr]() -> PhaseOutcome
                 {
                     const char* moduleName = moduleDataPtr->GetDebugName();
                     // Find function that creates AZ::Module class.
@@ -451,6 +451,7 @@ namespace AZ
                             moduleName));
                     }
 
+                    RemoveDescriptorsOwnedByOtherModules(*moduleDataPtr->m_module);
                     return AZ::Success();
                 }
             },
@@ -572,6 +573,7 @@ namespace AZ
                 auto moduleData = AZStd::make_shared<ModuleDataImpl>();
                 moduleData->m_module = module;
                 moduleData->m_lastCompletedStep = ModuleInitializationSteps::CreateClass;
+                RemoveDescriptorsOwnedByOtherModules(*module);
 
                 if (lastStepToPerform >= ModuleInitializationSteps::RegisterComponentDescriptors)
                 {
@@ -601,6 +603,25 @@ namespace AZ
         }
 
         return results;
+    }
+
+    //=========================================================================
+    // RemoveDescriptorsOwnedByOtherModules
+    //=========================================================================
+    void ModuleManager::RemoveDescriptorsOwnedByOtherModules(Module& module)
+    {
+        // CreateDescriptor() returns the descriptor a loaded module already created for the same component, and every
+        // Module releases the descriptors it lists, so only the creator may keep it or it is released twice.
+        for (const auto& moduleData : m_ownedModules)
+        {
+            if (moduleData->m_module && moduleData->m_module != &module)
+            {
+                for (ComponentDescriptor* descriptor : moduleData->m_module->m_descriptors)
+                {
+                    module.m_descriptors.remove(descriptor);
+                }
+            }
+        }
     }
 
     //=========================================================================
