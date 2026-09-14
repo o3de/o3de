@@ -1052,7 +1052,7 @@ namespace EMotionFX
                 transform.m_rotation = refTransform.m_rotation.GetConjugate() * transform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    transform.m_scale *= refTransform.m_scale;
+                    transform.m_scale /= refTransform.m_scale;
                 )
             }
         }
@@ -1067,7 +1067,7 @@ namespace EMotionFX
                 transform.m_rotation = refTransform.m_rotation.GetConjugate() * transform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    transform.m_scale *= refTransform.m_scale;
+                    transform.m_scale /= refTransform.m_scale;
                 )
             }
         }

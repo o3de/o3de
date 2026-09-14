@@ -1165,7 +1165,7 @@ namespace EMotionFX
                 expectedResult.m_rotation = transformB.m_rotation.GetConjugate() * transformA.m_rotation;
                 EMFX_SCALECODE
                 (
-                    expectedResult.m_scale = transformA.m_scale * transformB.m_scale;
+                    expectedResult.m_scale = transformA.m_scale / transformB.m_scale;
                 )
             }
             else if (additiveFunction == ApplyAdditive || weight > 1.0f - MCore::Math::epsilon)
