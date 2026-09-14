@@ -71,27 +71,29 @@ namespace UnitTest
         ExpectHasIncludeFile(fileList, true, "..\\Relative\\Path\\To\\File.azsi");
     }
 
-    TEST_F(ShaderBuilderUtilityTests, IncludedFilesParser_HandleMaterialPipelineMacro)
+    TEST_F(ShaderBuilderUtilityTests, IncludedFilesParser_HandlesMaterialPipelineMacros)
     {
-        // This is a temporary solution to support material pipeline where the include path is specified in a #define and
-        // later included like #include MATERIAL_TYPE_AZSLI_FILE_PATH
-
         AZStd::string haystack(
             R"(
                 #define MATERIAL_TYPE_AZSLI_FILE_PATH "D:\o3de\Gems\Atom\TestData\TestData\Materials\Types\MaterialPipelineTest_Animated.azsli" 
+                #define MATERIAL_PARAMETERS_AZSLI_FILE_PATH "D:\project assets\Generated\MaterialParameters.azsli"
+                #define MATERIAL_TYPE_AZSLI_FILE_PATH_SUFFIX "D:\project\NotAnInclude.azsli"
+                #define UNRELATED_FILE_PATH "D:\project\AlsoNotAnInclude.azsli"
                 #include "D:\o3de\Gems\Atom\Feature\Common\Assets\Materials\Pipelines\LowEndPipeline\ForwardPass_BaseLighting.azsli" 
             )"
         );
 
         AZ::ShaderBuilder::ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
         auto fileList = includedFilesParser.ParseStringAndGetIncludedFiles(haystack);
-        EXPECT_EQ(fileList.size(), 2);
+        EXPECT_EQ(fileList.size(), 3);
 
         ExpectHasIncludeFile(fileList, true, R"(D:\o3de\Gems\Atom\TestData\TestData\Materials\Types\MaterialPipelineTest_Animated.azsli)");
+        ExpectHasIncludeFile(fileList, true, R"(D:\project assets\Generated\MaterialParameters.azsli)");
         ExpectHasIncludeFile(fileList, true, R"(D:\o3de\Gems\Atom\Feature\Common\Assets\Materials\Pipelines\LowEndPipeline\ForwardPass_BaseLighting.azsli)");
+        ExpectHasIncludeFile(fileList, false, R"(D:\project\NotAnInclude.azsli)");
+        ExpectHasIncludeFile(fileList, false, R"(D:\project\AlsoNotAnInclude.azsli)");
     }
 
 } //namespace UnitTest
 
 //AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-
