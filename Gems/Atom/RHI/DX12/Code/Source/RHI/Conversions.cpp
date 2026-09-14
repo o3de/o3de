@@ -175,11 +175,19 @@ namespace AZ
             const uint32_t elementOffsetBase = static_cast<uint32_t>(buffer.GetMemoryView().GetOffset()) / bufferViewDescriptor.m_elementSize;
             const uint32_t elementOffset = elementOffsetBase + bufferViewDescriptor.m_elementOffset;
 
-            if (elementOffsetBase * bufferViewDescriptor.m_elementSize != buffer.GetMemoryView().GetOffset())
-            {
-                AZ_Error("RHI DX12", false, "ConvertBufferView - SRV: buffer wasn't aligned with element size; buffer should be created"
-                    " with proper alignment");
-            }
+            // elementOffsetBase is computed via truncating integer division. If the buffer's pool
+            // sub-allocation offset isn't a whole multiple of the element size (e.g. a generic pool
+            // allocator that doesn't align sub-allocations per-element-size), the lost remainder silently
+            // shifts FirstElement to the wrong element -- the view then reads from the wrong location in
+            // the underlying pool buffer with no further signal that anything is wrong. AZ_Error only logs
+            // and lets that corrupted FirstElement through; escalate to AZ_Assert (matching the equivalent
+            // Vulkan check in Gems/Atom/RHI/Vulkan/Code/Source/RHI/BufferView.cpp) so validation/profile
+            // builds catch this at creation time instead of silently misreading buffer contents at runtime.
+#if defined(AZ_RHI_ENABLE_VALIDATION)
+            AZ_Assert(elementOffsetBase * bufferViewDescriptor.m_elementSize == buffer.GetMemoryView().GetOffset(),
+                "ConvertBufferView - SRV: buffer wasn't aligned with element size; buffer should be created"
+                " with proper alignment");
+#endif
 
             shaderResourceView = {};
             shaderResourceView.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -223,11 +231,13 @@ namespace AZ
             const uint32_t elementOffsetBase = static_cast<uint32_t>(buffer.GetMemoryView().GetOffset()) / bufferViewDescriptor.m_elementSize;
             const uint32_t elementOffset = elementOffsetBase + bufferViewDescriptor.m_elementOffset;
 
-            if (elementOffsetBase * bufferViewDescriptor.m_elementSize != buffer.GetMemoryView().GetOffset())
-            {
-                AZ_Error("RHI DX12", false, "ConvertBufferView - UAV: buffer wasn't aligned with element size; buffer should be created"
-                    " with proper alignment");
-            }
+            // See the matching comment in the SRV overload above: an unaligned pool sub-allocation offset
+            // must not be allowed to silently produce a wrong FirstElement via truncating division.
+#if defined(AZ_RHI_ENABLE_VALIDATION)
+            AZ_Assert(elementOffsetBase * bufferViewDescriptor.m_elementSize == buffer.GetMemoryView().GetOffset(),
+                "ConvertBufferView - UAV: buffer wasn't aligned with element size; buffer should be created"
+                " with proper alignment");
+#endif
             unorderedAccessView = {};
             unorderedAccessView.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
             unorderedAccessView.Format = ConvertFormat(bufferViewDescriptor.m_elementFormat);
