@@ -166,7 +166,6 @@ namespace AZ::ShaderCompiler
                 {
                     PrintWarning(Warn::W1, semanticAsClassInfo->GetDeclNode()->start,
                                  "If you have no options, SRG do not need a ShaderVariantFallback");
-                    variantFallback = none;
                 }
             }
         }

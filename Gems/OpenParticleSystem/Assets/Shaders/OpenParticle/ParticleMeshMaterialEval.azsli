@@ -115,6 +115,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     LightCullingTileIterator tileIterator;
     tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
+    // Apply Decals
+    ApplyDecals(tileIterator, surface);
+
     float3 views[MAX_SHADING_VIEWS];
     views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
 
@@ -131,9 +134,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Lighting Calculation -------
 
-    // Apply Decals
-    ApplyDecals(tileIterator, surface);
-
     // Apply Direct Lighting
     ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
 
@@ -148,4 +148,3 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     return lightingOutput;
 }
-
