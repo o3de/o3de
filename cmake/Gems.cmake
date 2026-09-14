@@ -87,7 +87,9 @@ macro(o3de_gem_setup) #default_gem_name)
 
     set(gem_json ${gem_path}/gem.json)
 
-    o3de_register_3rdparty_root("${gem_path}/3rdParty")
+    if(IS_DIRECTORY "${gem_path}/3rdParty")
+        o3de_register_3rdparty_root("${gem_path}/3rdParty")
+    endif()
 
     # Read the version field from the gem.json
     set(gem_version, "0.0.0")
