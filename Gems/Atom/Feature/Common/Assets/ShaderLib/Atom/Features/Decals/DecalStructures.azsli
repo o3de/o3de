@@ -13,5 +13,6 @@ struct Decal
     uint m_textureIndex;
     float3 m_decalColor;
     float m_decalColorFactor;
+    float m_maxDrawDistance;
     [[pad_to(16)]]
 };
