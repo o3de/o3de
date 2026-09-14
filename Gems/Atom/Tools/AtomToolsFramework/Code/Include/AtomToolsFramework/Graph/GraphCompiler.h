@@ -17,9 +17,8 @@
 
 namespace AtomToolsFramework
 {
-    //! GraphCompiler is a base class for setting up and managing the transformation of a graph model graph into
-    //! context specific data and assets. Derived classes will override the CompileGgraph function to traverse the graph and generate their
-    //! specific data.
+    //! Manages the transformation of a graph into context-specific data and assets.
+    //! Derived classes override CompileGraph to generate their data.
     class GraphCompiler
     {
     public:
@@ -31,7 +30,7 @@ namespace AtomToolsFramework
 
         GraphCompiler() = default;
         GraphCompiler(const AZ::Crc32& toolId);
-        virtual ~GraphCompiler();
+        virtual ~GraphCompiler() = default;
 
         //! Returns the value of a registry setting that enables or disables verbose logging for the compilation process.
         static bool IsCompileLoggingEnabled();
@@ -42,6 +41,7 @@ namespace AtomToolsFramework
             Idle = 0,
             Compiling,
             Processing,
+            //! Graph-to-source generation completed successfully.
             Complete,
             Canceled,
             Failed
@@ -50,7 +50,10 @@ namespace AtomToolsFramework
         //! Reserves an idle compiler, or requests cancellation if a compile is already active.
         virtual bool Reset();
 
-        //! Assign the current graph compiler state.
+        //! Requests cancellation without reserving an idle compiler.
+        void RequestCancel();
+
+        //! Assign a callback invoked after each state change.
         using StateChangeHandler = AZStd::function<void(const GraphCompiler*)>;
         virtual void SetStateChangeHandler(StateChangeHandler handler);
 
@@ -60,35 +63,33 @@ namespace AtomToolsFramework
         //! Get the current graph compiler state.
         virtual State GetState() const;
 
-        //! Returns the path that was passed into the compiled graph function unless overridden to provided different value. Generated files
+        //! Returns the path passed to CompileGraph unless overridden. Generated files
         //! will be saved to the same folder as this path.
         virtual AZStd::string GetGraphPath() const;
 
         //! Returns a list of all the files generated during the last compile.
         virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const;
 
-        //! Returns true if the graph is in a state that can be aborted or restarted to reinitiate a new compile.
+        //! Returns the generated files modified during the last compile.
+        virtual const AZStd::vector<AZStd::string>& GetModifiedGeneratedFilePaths() const;
+
+        //! Returns true if the compiler can accept a new graph.
         virtual bool CanCompileGraph() const;
 
-        //! Dysfunction initiates and executes the graph compile, changing states accordingly.
+        //! Initiates and executes the graph compile, changing states accordingly.
         virtual bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath);
 
     protected:
         // Helper function to log and report status messages.
         void ReportStatus(const AZStd::string& statusMessage);
 
-        // Requests and reports job status of generated files from the AP
-        // Return true if generation and processing is complete. Otherwise, return falss
-        bool ReportGeneratedFileStatus();
-
-        //! Returns whether graph completion should wait for the generated file's Asset Processor jobs.
-        virtual bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const;
-
         //! Returns true after another graph edit has requested that the active compilation stop.
         bool IsCancelRequested() const;
 
         //! Publishes one terminal state and releases the compiler reservation. Cancellation takes precedence over finalState.
         bool FinishCompile(State finalState);
+
+        void PublishState(State state);
 
         const AZ::Crc32 m_toolId = {};
 
@@ -104,6 +105,9 @@ namespace AtomToolsFramework
         // Container of file paths that were affected by the compiler
         AZStd::vector<AZStd::string> m_generatedFiles;
 
+        // Generated files modified during this compile
+        AZStd::vector<AZStd::string> m_modifiedGeneratedFiles;
+
         // Stores the last reported status message that it is not sent repeatedly
         AZStd::mutex m_lastStatusMessageMutex;
         AZStd::string m_lastStatusMessage;
@@ -111,16 +115,15 @@ namespace AtomToolsFramework
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
 
-        // Serializes reservation, cancellation, terminal state publication, and release.
+        // Serializes reservation, cancellation, and release.
         mutable AZStd::mutex m_compileLifecycleMutex;
+        // Serializes state notifications while allowing handlers to publish a subsequent state.
+        mutable AZStd::recursive_mutex m_statePublicationMutex;
         AZStd::atomic_bool m_compileInProgress = false;
         AZStd::atomic_bool m_cancelRequested = false;
         bool m_compileReserved = false;
 
         // Optional function for handling state changes
         StateChangeHandler m_stateChangeHandler;
-
-        // Asset status report request ID
-        const AZ::Uuid m_assetReportRequestId = AZ::Uuid::CreateRandom();
     };
 } // namespace AtomToolsFramework

@@ -6,16 +6,13 @@
  *
  */
 
-#include <AtomToolsFramework/Graph/AssetStatusReporterSystemRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/parallel/scoped_lock.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AtomToolsFramework
 {
@@ -34,13 +31,6 @@ namespace AtomToolsFramework
     {
     }
 
-    GraphCompiler::~GraphCompiler()
-    {
-        // Stop monitoring assets from prior requests since the graph compiler is being destroyed.
-        AssetStatusReporterSystemRequestBus::Event(
-            m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-    }
-
     bool GraphCompiler::IsCompileLoggingEnabled()
     {
         return GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging", false);
@@ -48,39 +38,38 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::Reset()
     {
-        bool stopAssetStatusReporting = false;
+        AZStd::scoped_lock lock(m_compileLifecycleMutex);
+        if (m_compileInProgress)
         {
-            AZStd::scoped_lock lock(m_compileLifecycleMutex);
-            if (m_compileInProgress)
-            {
-                stopAssetStatusReporting = !m_cancelRequested.exchange(true);
-            }
-            else
-            {
-                switch (m_state.load())
-                {
-                case State::Idle:
-                case State::Failed:
-                case State::Complete:
-                case State::Canceled:
-                    // Reserve before GraphDocument dispatches the background job.
-                    m_compileInProgress = true;
-                    m_compileReserved = true;
-                    m_cancelRequested = false;
-                    return true;
-                default:
-                    break;
-                }
-            }
+            m_cancelRequested = true;
+            return false;
         }
 
-        if (stopAssetStatusReporting)
+        switch (m_state.load())
         {
-            AssetStatusReporterSystemRequestBus::Event(
-                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+        case State::Idle:
+        case State::Failed:
+        case State::Complete:
+        case State::Canceled:
+            // Reserve before GraphDocument dispatches the background job.
+            m_compileInProgress = true;
+            m_compileReserved = true;
+            m_cancelRequested = false;
+            return true;
+        default:
+            break;
         }
 
         return false;
+    }
+
+    void GraphCompiler::RequestCancel()
+    {
+        AZStd::scoped_lock lock(m_compileLifecycleMutex);
+        if (m_compileInProgress)
+        {
+            m_cancelRequested = true;
+        }
     }
 
     void GraphCompiler::SetStateChangeHandler(StateChangeHandler handler)
@@ -89,6 +78,23 @@ namespace AtomToolsFramework
     }
 
     void GraphCompiler::SetState(GraphCompiler::State state)
+    {
+        switch (state)
+        {
+        case State::Complete:
+        case State::Canceled:
+        case State::Failed:
+            FinishCompile(state);
+            return;
+        default:
+            break;
+        }
+
+        AZStd::scoped_lock lock(m_statePublicationMutex);
+        PublishState(state);
+    }
+
+    void GraphCompiler::PublishState(GraphCompiler::State state)
     {
         m_state = state;
 
@@ -114,9 +120,6 @@ namespace AtomToolsFramework
             break;
         }
 
-        AssetStatusReporterSystemRequestBus::Event(
-            m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-
         // Invoke the optional state change handler function if provided
         if (m_stateChangeHandler)
         {
@@ -137,6 +140,11 @@ namespace AtomToolsFramework
     const AZStd::vector<AZStd::string>& GraphCompiler::GetGeneratedFilePaths() const
     {
         return m_generatedFiles;
+    }
+
+    const AZStd::vector<AZStd::string>& GraphCompiler::GetModifiedGeneratedFilePaths() const
+    {
+        return m_modifiedGeneratedFiles;
     }
 
     bool GraphCompiler::CanCompileGraph() const
@@ -187,6 +195,11 @@ namespace AtomToolsFramework
             m_compileReserved = false;
         }
 
+        {
+            AZStd::scoped_lock lock(m_statePublicationMutex);
+            m_generatedFiles.clear();
+            m_modifiedGeneratedFiles.clear();
+        }
         if (IsCancelRequested())
         {
             return FinishCompile(State::Canceled);
@@ -195,7 +208,6 @@ namespace AtomToolsFramework
         m_graph = graph;
         m_graphName = graphName;
         m_graphPath = graphPath;
-        m_generatedFiles.clear();
 
         // Skip compilation if there is no graph or this is a template.
         if (!m_graph || m_graphName.empty() || GetGraphPath().empty())
@@ -218,109 +230,36 @@ namespace AtomToolsFramework
 
     bool GraphCompiler::FinishCompile(State finalState)
     {
-        AZStd::scoped_lock lock(m_compileLifecycleMutex);
+        AZStd::unique_lock stateLock(m_statePublicationMutex);
+        AZStd::unique_lock lifecycleLock(m_compileLifecycleMutex);
         if (!m_compileInProgress)
         {
-            return false;
+            lifecycleLock.unlock();
+            PublishState(finalState);
+            return finalState == State::Complete;
         }
 
-        const State publishedState = m_cancelRequested ? State::Canceled : finalState;
-        SetState(publishedState);
+        State publishedState = finalState;
+        if (m_cancelRequested)
+        {
+            publishedState = State::Canceled;
+        }
+        m_state = publishedState;
         m_compileReserved = false;
         m_compileInProgress = false;
+        m_cancelRequested = false;
+        lifecycleLock.unlock();
+        PublishState(publishedState);
         return publishedState == State::Complete;
-    }
-
-    bool GraphCompiler::ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const
-    {
-        return !generatedFile.ends_with(".azsli");
-    }
-
-    bool GraphCompiler::ReportGeneratedFileStatus()
-    {
-        if (IsCancelRequested())
-        {
-            return false;
-        }
-
-        SetState(State::Processing);
-
-        // Keep all generated files available to consumers, but only query status for files with Asset Processor jobs.
-        AZStd::vector<AZStd::string> filesToReport;
-        filesToReport.reserve(m_generatedFiles.size());
-        for (const AZStd::string& generatedFile : m_generatedFiles)
-        {
-            if (ShouldReportGeneratedFileStatus(generatedFile))
-            {
-                filesToReport.push_back(generatedFile);
-            }
-        }
-
-        // Start monitoring and reporting AP status for any files generated during this compile.
-        if (!filesToReport.empty())
-        {
-            // Begin requesting status from the asset reporting system, which manages a queue of requests from multiple graphs.
-            AssetStatusReporterSystemRequestBus::Event(
-                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, filesToReport);
-
-            // Bound the wait because an Asset Processor path is not guaranteed to reach a terminal job state.
-            const AZ::u64 timeoutMs = GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/AssetStatusTimeoutMs", AZ::u64{15000});
-            const auto deadline = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(timeoutMs);
-
-            while (m_state == State::Processing && !IsCancelRequested())
-            {
-                AssetStatusReporterState status = AssetStatusReporterState::Failed;
-                AssetStatusReporterSystemRequestBus::EventResult(
-                    status, m_toolId, &AssetStatusReporterSystemRequestBus::Events::GetStatus, m_assetReportRequestId);
-
-                if (status != AssetStatusReporterState::Processing)
-                {
-                    AssetStatusReporterSystemRequestBus::Event(
-                        m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-                    return status == AssetStatusReporterState::Succeeded;
-                }
-
-                if (timeoutMs > 0 && AZStd::chrono::steady_clock::now() >= deadline)
-                {
-                    AZStd::string statusMessage;
-                    AssetStatusReporterSystemRequestBus::EventResult(
-                        statusMessage, m_toolId, &AssetStatusReporterSystemRequestBus::Events::GetStatusMessage,
-                        m_assetReportRequestId);
-
-                    AZ_Warning(
-                        "GraphCompiler",
-                        false,
-                        "Timed out after %llu ms waiting for the Asset Processor while compiling '%s'. Still waiting on: %s. "
-                        "The generated assets will be picked up when they reach the asset catalog.",
-                        timeoutMs,
-                        GetGraphPath().c_str(),
-                        statusMessage.empty() ? "(unknown)" : statusMessage.c_str());
-
-                    AssetStatusReporterSystemRequestBus::Event(
-                        m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-                    return true;
-                }
-
-                // Sleep to give other possible threats time to make AssetStatusReporterSystemRequestBus requests
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
-            }
-
-            if (IsCancelRequested())
-            {
-                AssetStatusReporterSystemRequestBus::Event(
-                    m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-                return false;
-            }
-
-            AssetStatusReporterSystemRequestBus::Event(
-                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
-        }
-
-        return true;
     }
 
     void GraphCompiler::ReportStatus(const AZStd::string& statusMessage)
     {
+        if (m_toolId == AZ::Crc32{})
+        {
+            return;
+        }
+
         AZStd::scoped_lock lock(m_lastStatusMessageMutex);
         if (m_lastStatusMessage != statusMessage)
         {
