@@ -87,12 +87,7 @@ namespace MaterialCanvas
 
     bool MaterialGraphCompiler::ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const
     {
-        // The viewport watches the asset catalog and reapplies the generated material when its product is ready. Waiting synchronously on
-        // the source .material job can strand the compiler in Processing when the Asset Processor supersedes or retriggers that job while
-        // the material type and shader pipeline settle. Keep the file in m_generatedFiles for the viewport, but do not use it as a gate.
-        // A file this compile left untouched has nothing to wait for. Whatever the Asset Processor has for it is what the previous compile
-        // already waited for, and the jobs the Asset Processor is running now -- triggered by the azsli files this compile did rewrite --
-        // reproduce it exactly. Waiting on them is 500-690 ms of latency for a result that is already on disk.
+        // Don't wait on the .material (the viewport reapplies it when ready) or on files this compile left untouched.
         return AtomToolsFramework::GraphCompiler::ShouldReportGeneratedFileStatus(generatedFile) &&
             !generatedFile.ends_with(".material") && m_writtenGeneratedFiles.contains(generatedFile);
     }
@@ -186,9 +181,7 @@ namespace MaterialCanvas
             // MaterialProperties with a shaderInput connection.
             // BuildMaterialSrgForCurrentNode();
 
-            // Write the output sets this compile owes. Everything above this point is output set independent and was done once: the
-            // template data has been preprocessed in place and the instructions are already spliced into it, so writing a second set is
-            // another pass over the same buffers rather than another traversal of the graph.
+            // Write every output set this compile owes, reusing the already spliced template buffers.
             for (const OutputSet outputSet : GetOutputSetsForThisCompile())
             {
                 if (!ExportOutputSetForCurrentNode(currentNode, outputSet))
@@ -197,8 +190,7 @@ namespace MaterialCanvas
                 }
             }
 
-            // Preview output that is no longer being produced is not merely unused. The Asset Processor goes on building it, so a graph
-            // that was edited once with preview output on would keep paying for preview shaders long after it was turned off.
+            // Delete preview output no longer produced, or the Asset Processor keeps building it.
             DeleteStalePreviewOutputForCurrentNode();
 
             // Whether Apply has anything left to do. Recorded here, while this node's template paths are still in hand.
@@ -208,12 +200,7 @@ namespace MaterialCanvas
             ++m_templateNodeCount;
         }
 
-        // Only wait on the Asset Processor when this compile produced something the viewport cannot resolve on its own.
-        //
-        // Nothing written means no job will ever be queued, so the status wait would poll paths whose jobs are all from a previous
-        // compile. A change confined to material property values is delivered to the viewport below and applied as overrides on the live
-        // material instance, so the preview is already correct before the Asset Processor has started. In both cases the wait is pure
-        // latency, and in the second it is also the thing that makes the preview hostage to the Asset Processor finishing at all.
+        // Only wait on the AP if something was written that the viewport can't apply itself (value-only changes are applied directly).
         if (m_wroteAnyGeneratedFile && !m_onlyMaterialPropertyValuesChanged)
         {
             const auto waitStart = AZStd::chrono::steady_clock::now();
@@ -240,8 +227,7 @@ namespace MaterialCanvas
                 m_wroteAnyGeneratedFile ? "only material property values changed" : "no generated file changed");
         }
 
-        // Send the current property values whatever path this compile took. A listener has to reapply them after anything that recreates
-        // the material instance, so it needs the full set even when this particular compile changed none of them.
+        // Always send the current property values: listeners reapply the full set whenever the material instance is recreated.
         return FinishCompile(
             State::Complete,
             [this]()
@@ -331,22 +317,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Collect the nodes that generate files, so that only nodes able to reach one of them contribute to the tables below.
-        //
-        // Include paths, class definitions and function definitions are injected verbatim into the generated shader code, and gathering
-        // them from every node in the graph had two costs. The visible one was spurious rebuilds: dropping an unconnected Mix or Map
-        // Range node onto the canvas changed the generated files and triggered a full compile, while an unconnected Material Input node
-        // did not, because material inputs contribute properties rather than code. That asymmetry is what made the behaviour look
-        // arbitrary. The quieter one is compile time, since anything injected is parsed by azslc and dxc whether or not it is reachable.
-        //
-        // This restores the invariant ShouldUseInstructionsFromInputNode already applies to instructions: a node counts when it is a
-        // template node itself, or has a path to one. HasInputConnectionFromNode walks transitively, so an entire disconnected subgraph
-        // is excluded rather than only the node on its end.
-        // Iterate in execution order rather than over Graph::GetNodes() directly. That map is an unordered_map, and m_classDefinitions
-        // and m_functionDefinitions are vectors appended to in iteration order, so hash order was leaking straight into the line order
-        // of the generated O3DE_GENERATED_FUNCTIONS block. On this project that block runs to hundreds of lines; reshuffling it changes
-        // the generated file, and a changed file is a full rebuild of every shader. m_includePaths escaped this only because it happens
-        // to be a set.
+        // Only nodes that reach a template node contribute code, visited in execution order so generated output stays stable.
         const auto nodesInExecutionOrder = GetAllNodesInExecutionOrder();
 
         AZStd::vector<GraphModel::ConstNodePtr> templateNodes;
@@ -648,8 +619,7 @@ namespace MaterialCanvas
                     return false;
                 }
 
-                // Anything written here is shader code, a lua functor or a material, none of which can be reflected in the viewport
-                // without rebuilding assets, so the fast path is off for this compile.
+                // Shader code, lua functors and materials need an asset rebuild, so the fast path is off for this compile.
                 if (wroteFile)
                 {
                     m_wroteAnyGeneratedFile = true;
@@ -691,8 +661,7 @@ namespace MaterialCanvas
 
     bool MaterialGraphCompiler::IsPreviewOutputPath(AZStd::string_view path)
     {
-        // Matched on the root folder name rather than on the full path. The same asset is named differently by the source tree, by the
-        // cache and by the asset system, and those spellings agree on no prefix and on no separator, but all of them keep the folder.
+        // Matched on the root folder name, since source, cache and asset system spell the full path differently.
         AZStd::string normalizedPath(path);
         AZ::StringFunc::Replace(normalizedPath, '\\', '/');
 
@@ -702,8 +671,7 @@ namespace MaterialCanvas
 
     AZStd::string MaterialGraphCompiler::GetPreviewOutputFolderForGraph() const
     {
-        // GetProjectPath returns a FixedMaxPathString, which has no conversion to AZStd::string. GetGraphPath above goes through
-        // c_str() for the same reason.
+        // GetProjectPath returns a FixedMaxPathString, which only converts to AZStd::string via c_str().
         AZStd::string projectFolder = AZ::Utils::GetProjectPath().c_str();
         NormalizeFolderPathForComparison(projectFolder);
 
@@ -714,8 +682,7 @@ namespace MaterialCanvas
         AZ::StringFunc::Path::StripFullName(graphFolder);
         NormalizeFolderPathForComparison(graphFolder);
 
-        // Mirror the graph's own folder under the root, so that two graphs sharing a file name in different folders do not write over
-        // each other. The separator test is what stops a project at C:/Foo from claiming a graph at C:/Foobar.
+        // Mirror the graph's folder so same-named graphs don't collide; the separator check stops C:/Foo matching C:/Foobar.
         if (graphFolder.size() > projectFolder.size() && AZ::StringFunc::StartsWith(graphFolder, projectFolder, false) &&
             (graphFolder[projectFolder.size()] == '/' || graphFolder[projectFolder.size()] == '\\'))
         {
@@ -724,19 +691,13 @@ namespace MaterialCanvas
             previewFolder = AZStd::move(mirroredFolder);
         }
 
-        // A graph from outside the project has nothing to mirror and lands in the root itself. Two such graphs with the same name open
-        // at once would collide, which is a narrow enough case to accept rather than to hash a path over.
+        // Graphs outside the project land in the root itself; same-named ones open together would collide, which is accepted.
         return previewFolder;
     }
 
     void MaterialGraphCompiler::RecordProductionOutputStaleness()
     {
-        // Production output is stale when preview output is newer than it, or when it does not exist at all.
-        //
-        // Comparing modification times rather than hashing the graph gets the awkward cases right for nothing. Every writer in this file
-        // leaves a file alone when its content has not changed, so a compile that changes nothing moves no timestamp and reports no
-        // staleness, and moving a node around the graph view does not either. A save writes preview before production, so the two come
-        // out of a save in the right order.
+        // Production output is stale if missing or older than the preview output; writers skip unchanged files, so mtimes suffice.
         if (!IsPreviewOutputEnabled())
         {
             return;
@@ -771,15 +732,13 @@ namespace MaterialCanvas
 
     AZStd::vector<MaterialGraphCompiler::OutputSet> MaterialGraphCompiler::GetOutputSetsForThisCompile() const
     {
-        // With the preview off there is one set and it is the production one, which is exactly the behaviour this tool had before the
-        // preview pipeline existed.
+        // With the preview off there is one set, the production one, as before the preview pipeline existed.
         if (!IsPreviewOutputEnabled())
         {
             return { OutputSet::Production };
         }
 
-        // An edit writes the preview alone. This is the point of the split: the material type the engine loads keeps describing the last
-        // saved state of the graph, so a level rendering this material is unaffected by the fact that someone has its graph open.
+        // Edits write only the preview, so the material type the engine loads keeps describing the last saved graph.
         if (!IsProductionOutputRequested())
         {
             return { OutputSet::Preview };
@@ -850,8 +809,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // After the material types have been processed and saved, save the materials that reference them. This is a real build
-        // rather than a template copy because the material now carries the graph's material input values.
+        // After the material types are saved, build (not copy) the materials that reference them, since they carry input values.
         if (!BuildMaterialForCurrentNode())
         {
             return false;
@@ -867,8 +825,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Deliberately not gated on ForceDeleteGeneratedFiles, unlike DeleteExistingFilesForCurrentNode. These are not previous versions
-        // of something this compile is about to write, they are the entire output of a mode that is now off.
+        // Not gated on ForceDeleteGeneratedFiles: this is the whole output of a mode that is now off, not an old version.
         auto fileIO = AZ::IO::FileIOBase::GetInstance();
         if (!fileIO)
         {
@@ -887,8 +844,7 @@ namespace MaterialCanvas
             }
         }
 
-        // The folder itself is left alone. Removing it would mean deciding whether anything else in it belongs to someone, and an empty
-        // folder costs nothing.
+        // The folder itself is left alone; an empty folder costs nothing.
     }
 
     AZStd::string MaterialGraphCompiler::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const
@@ -905,9 +861,7 @@ namespace MaterialCanvas
         AZStd::string templateOutputPath = GetGraphPath();
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
-        // The preview set keeps the file names and changes only the folder. Everything a generated file references by name -- the
-        // material's material type, the material type's generated azsli -- therefore resolves within whichever set is being written,
-        // with no path rewriting, and the two sets land in different intermediate asset folders so their shaders cannot collide.
+        // The preview set changes only the folder, so references by name resolve within a set and the sets' shaders can't collide.
         if (outputSet == OutputSet::Preview)
         {
             AZ::StringFunc::Path::Join(GetPreviewOutputFolderForGraph().c_str(), templateInputFileName.c_str(), templateOutputPath);
@@ -1012,9 +966,7 @@ namespace MaterialCanvas
 
     AZStd::any MaterialGraphCompiler::GetValueFromSlotOrConnection(GraphModel::ConstSlotPtr slot) const
     {
-        // A reroute output has no model-level incoming connection of its own. Resolve it through the paired input so callers see the
-        // upstream value type instead of the reroute's serialized default type. This matters for the universal reroute, whose default is
-        // float even when its connected value is a vector, color, or matrix.
+        // Resolve a reroute output through its paired input so callers see the upstream type, not the reroute's default float.
         if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
             slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
         {
@@ -1052,8 +1004,7 @@ namespace MaterialCanvas
                     }
                 }
 
-                // A disconnected reroute has no upstream type to forward. Use its input value's type instead of the output's
-                // previously inferred value, which can remain stale until the graph's slot-value table is rebuilt.
+                // Disconnected reroute: use the input value's type, since the output's inferred type can be stale.
                 return GetAzslTypeFromSlot(inputSlot);
             }
         }
@@ -1077,8 +1028,7 @@ namespace MaterialCanvas
         {
             if (const auto inputSlot = parentNode->GetSlot("inValue"))
             {
-                // Resolve both connected and disconnected reroutes through the input. When disconnected this emits the input's
-                // embedded default instead of retaining an expression derived from the former upstream connection.
+                // Resolve reroutes through the input, so a disconnected one emits its default rather than a stale upstream expression.
                 return GetAzslValueFromSlot(inputSlot);
             }
         }
@@ -1087,9 +1037,7 @@ namespace MaterialCanvas
         if (const auto parentNode = slot->GetParentNode(); IsRerouteNode(parentNode) &&
             slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
         {
-            // Universal reroutes store a float default, but a connected input must make conversion decisions using the actual upstream
-            // type. Otherwise a float4 passing through the reroute is treated as a scalar target and becomes "source.x", which then
-            // splats one channel across downstream vectors and destroys color information.
+            // Use the connected upstream type, not the reroute's float default, or a float4 becomes "source.x" and loses colour.
             slotValue = GetValueFromSlotOrConnection(slot);
         }
 
@@ -1141,11 +1089,7 @@ namespace MaterialCanvas
                     }
                 }
 
-                // A scalar target fed by a vector source. The table above only widens, so this case fell through to a bare assignment:
-                // "float inAlpha = node33_color_ramp_input_outColor;". That is legal HLSL and takes the first component, but DXC reports
-                // it as "implicit truncation of vector type [-Wconversion]" on every color or vector wired into a float slot. Writing the
-                // swizzle changes nothing about what the shader computes; it just says which component was taken, which is worth stating
-                // outright since a colour reaching a scalar slot is as often a mis-wire as it is deliberate.
+                // Vector into scalar: write the swizzle explicitly to avoid DXC's implicit truncation warning (same result).
                 if (slotValue.is<bool>() || slotValue.is<int>() || slotValue.is<unsigned int>() || slotValue.is<float>())
                 {
                     if (sourceSlotValue.is<AZ::Vector2>() ||
@@ -1596,38 +1540,16 @@ namespace MaterialCanvas
         // If the node providing all the template information has a description then assign it to the material type source data.
         materialTypeSourceData.m_description = GetStringValueFromSlot(templateNode->GetSlot("inDescription"));
 
-        // The preview set, and only the preview set, is built through the preview pipeline alone.
-        //
-        // This replaces the settings registry file the tool used to copy into the project, which swapped
-        // /O3DE/Atom/RPI/MaterialPipelineFiles out for the preview pipeline and therefore rebuilt every material type in the project
-        // through it, whether or not it had anything to do with Material Canvas, and needed the Asset Processor restarted to put back.
-        // Declaring the pipeline on the material type instead confines the choice to the graphs actually being edited, and takes effect
-        // on the next compile rather than the next restart.
-        //
-        // Note that the preview pipeline masquerades as MainPipeline: its shaders carry that material pipeline tag, because the Material
-        // Canvas viewport renders through the shared MainRenderPipeline asset and a render pipeline matches exactly one tag, so a preview
-        // tag of its own would leave every other material in that viewport with no shaders. The consequence is that a preview material
-        // type renders anywhere a production one would, at preview fidelity and without saying so, which is precisely why the two are
-        // separate files rather than one file with a switch.
+        // Only the preview set is built through the preview pipeline, declared per material type rather than via a project-wide setreg.
         if (m_currentOutputSet == OutputSet::Preview)
         {
-            // Matched against the material pipeline file stem by MaterialTypeBuilder, which resolves it against the project's default
-            // pipelines plus anything registered under /O3DE/Atom/RPI/OptInMaterialPipelineFiles. The MaterialCanvas gem registers its
-            // preview pipeline there permanently, so nothing has to be copied anywhere for this name to resolve.
+            // Resolved by MaterialTypeBuilder against the defaults plus OptInMaterialPipelineFiles, where this gem registers the preview.
             materialTypeSourceData.m_buildSettings["materialPipelines"] = AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/PreviewMaterialPipelineName", "MaterialCanvasPreview");
         }
         else
         {
-            // Optionally narrow which pipelines the production set is built through.
-            //
-            // Left empty, the material type declares nothing and MaterialTypeBuilder builds it through every pipeline the project
-            // registers, which by default is MainPipeline and LowEndPipeline. Those two produce near identical shaders -- measured at
-            // 13,201 and 13,181 preprocessed lines for the same transparent Standard PBR material, 1,287 ms and 1,286 ms of azslc -- so
-            // a project that does not ship a low end target pays for a second full set of shaders on every save and never loads them.
-            //
-            // Set this to "MainPipeline" to build only that one. Unrecognised names are reported by MaterialTypeBuilder and the default
-            // list is used instead, so a typo costs a warning rather than a material that does not render.
+            // Optionally narrow production pipelines (e.g. "MainPipeline" skips LowEndPipeline's duplicate shaders); empty builds all.
             const AZStd::string productionMaterialPipelines = AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/ProductionMaterialPipelines", "");
             if (!productionMaterialPipelines.empty())
@@ -1636,17 +1558,14 @@ namespace MaterialCanvas
             }
         }
 
-        // Opacity mode is structural for a generated graph material: it selects the exact forward, cutout, blended, or tinted-transparent
-        // shader group in the material pipeline scripts. Material types that do not provide this build setting retain the legacy Dynamic
-        // fallback and build every group.
+        // Opacity mode picks the exact shader group in the pipeline scripts; types without this setting build every group (Dynamic).
         const AZStd::string opacityMode = GetStringValueFromSlot(templateNode->GetSlot("inOpacityMode"));
         if (!opacityMode.empty())
         {
             materialTypeSourceData.m_buildSettings["opacityMode"] = opacityMode;
         }
 
-        // Position-offset instructions run in vertex stages. Record whether the graph actually feeds this input so the pipeline scripts
-        // can omit the extra depth, shadow, and motion-vector vertex passes for graphs that leave the position unchanged.
+        // Record whether Position Offset is connected so scripts can skip the extra vertex passes when positions are unchanged.
         const auto positionOffsetSlot = templateNode->GetSlot("inPositionOffset");
         if (positionOffsetSlot && !positionOffsetSlot->GetConnections().empty())
         {
@@ -1862,50 +1781,13 @@ namespace MaterialCanvas
                 // The property definition requires an explicit type enum that's converted from the actual data type.
                 property->m_dataType = GetMaterialPropertyDataTypeFromValue(property->m_value, !property->m_enumValues.empty());
 
-                // Captured before the conversion below, because the conversion is per file and this value is not.
-                //
-                // ConvertToExportFormat resolves an image reference into a path relative to the file being written, and the value
-                // recorded further down is written into every generated material. The preview set is written two folders below the
-                // graph, so an image sitting beside the graph converted to "../../<folder>/<image>.png", and that string, written into
-                // the material beside the graph, walks out of the project entirely. The material builder cannot resolve it, falls back
-                // to the invalid-asset UUID, and takes the Asset Processor down with it.
-                //
-                // The unconverted value is recorded instead and BuildMaterialFromTemplate converts it again for the path it is actually
-                // writing. The conversion below still runs on the property itself, which belongs to this material type and this path.
+                // Captured unconverted: image paths are relative to each output file, so BuildMaterialFromTemplate converts per file.
                 const AZ::RPI::MaterialPropertyValue materialPropertyValueBeforeConversion = property->m_value;
 
                 // Images and enums need additional conversion prior to being saved.
                 ConvertToExportFormat(templateOutputPath, materialPropertyId, *property, property->m_value);
 
-                // Keep the value the graph actually describes, then replace it in the material type with a placeholder of the same type.
-                //
-                // Property defaults are part of the material type's content, so leaving the graph's value here made every value edit
-                // change the material type: its hash changed, MaterialTypeBuilder's pipeline stage re-ran, and the fingerprint
-                // propagated to every shader job. Editing a single float rebuilt every shader for a change that touches no shader code.
-                // The values are written into the generated .material instead, which only re-runs the material builder, and are handed
-                // to the viewport over MaterialGraphCompilerNotificationBus so the preview updates without waiting for even that.
-                //
-                // The placeholder has to keep the type, because the type enum was derived from the value just above and the generated
-                // MaterialParameters struct is built from the property layout.
-                // A value only moves if the material type can be left with a placeholder of the same type and the generated material can
-                // express the real one. Those turn out to be the same question, so the reset reports whether it happened and the value is
-                // recorded only then. Tying the two halves together is deliberate: recording a value that never left the material type
-                // would write it into both files, and blanking one the material cannot carry would lose it outright.
-                //
-                // Enums never move. An enum's value is a name drawn from m_enumValues and that set has no blank member, so the placeholder
-                // is not a value of the property's own type. MaterialTypeAssetCreator rejects it twice, once for the type ("is a Enum
-                // type, can only accept UInt value, input value is Invalid") and once for the lookup ("Enum value '' couldn't be found").
-                // Leaving the real value in the material type costs one rebuild when the enum is edited, which for the enums that occur
-                // here -- opacity mode above all -- is a structural change to the material that should rebuild anyway.
-                //
-                // Sampler states never move either, for the other half of the reason. A material stores its property values as bare JSON
-                // with no type context, and MaterialPropertyValue's serializer has to infer the alternative from the shape of the value;
-                // a sampler is an object, so it comes back as a color and MaterialAssetCreator reports "Type mismatch. Expected
-                // SamplerState but was Vector4".
-                //
-                // The value moves out of every set that is built, but it is recorded once. Recording it per set would send the viewport
-                // each value as many times as there are sets, and the sets agree on the values by construction. The viewport's own set is
-                // the one that records, and it is built first, so the material written for either set has the full list to draw on.
+                // Move values into the .material, leaving a same-type placeholder, so edits skip shader rebuilds; enums/samplers stay.
                 if (property->m_enumValues.empty() && ResetMaterialPropertyValueToTypeDefault(property->m_value))
                 {
                     if (IsViewportOutputSet())
@@ -1950,9 +1832,7 @@ namespace MaterialCanvas
         // Substitute the material graph name and any other Material Canvas specific tokens
         AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", GetUniqueGraphName().c_str());
 
-        // Compare against what is already on disk before writing. Rewriting a file with identical content still invalidates the Asset
-        // Processor's file state cache and forces it to rehash the source and walk every job that depends on it, so an unchanged material
-        // type is worth detecting even though it would not ultimately rebuild anything.
+        // Compare with what's on disk first: rewriting identical content still makes the Asset Processor rehash and walk dependents.
         if (const auto existingText = AZ::Utils::ReadFile(templateOutputPath); existingText.IsSuccess())
         {
             if (existingText.GetValue() == templateOutputText)
@@ -1967,9 +1847,7 @@ namespace MaterialCanvas
 
             if (MaterialTypeTextsDifferOnlyByPropertyValues(existingText.GetValue(), templateOutputText))
             {
-                // Only default values moved. The file is still written so that the source on disk always describes the current graph,
-                // but the viewport does not have to wait for the result: CompileGraph skips the Asset Processor status wait for this
-                // compile and the values collected above are applied directly to the material instance instead.
+                // Only default values moved: still write the file, but skip the AP wait and apply the values to the material instance.
                 AZ_TracePrintf_IfTrue(
                     "MaterialGraphCompiler",
                     IsCompileLoggingEnabled(),
@@ -2010,8 +1888,7 @@ namespace MaterialCanvas
 
     namespace
     {
-        //! Deep comparison of two parsed material types that treats every "defaultValue" member as a wildcard. Everything else, including
-        //! the set of property groups, the property names, their declared types and their shader connections, has to match exactly.
+        //! Deep comparison of two material types treating every "defaultValue" as a wildcard; everything else must match.
         bool JsonEqualIgnoringPropertyValues(const rapidjson::Value& lhs, const rapidjson::Value& rhs)
         {
             static constexpr const char* DefaultValueMemberName = "defaultValue";
@@ -2033,8 +1910,7 @@ namespace MaterialCanvas
                     return count;
                 };
 
-                // Counting first catches a member that exists on one side only, which FindMember below cannot see from the other
-                // direction.
+                // Counting first catches members that exist on only one side, which FindMember can't see from the other direction.
                 if (countComparedMembers(lhs) != countComparedMembers(rhs))
                 {
                     return false;
@@ -2085,9 +1961,7 @@ namespace MaterialCanvas
         const auto existingDocument = AZ::JsonSerializationUtils::ReadJsonString(existingText);
         const auto newDocument = AZ::JsonSerializationUtils::ReadJsonString(newText);
 
-        // If either side will not parse, report a structural change. Writing the file and waiting for the Asset Processor is always
-        // correct, only slow. Taking the fast path on a comparison that could not be made would show a preview that does not match the
-        // graph.
+        // If either side won't parse, report a structural change: the slow path is always correct.
         if (!existingDocument.IsSuccess() || !newDocument.IsSuccess())
         {
             return false;
@@ -2098,10 +1972,7 @@ namespace MaterialCanvas
 
     bool MaterialGraphCompiler::ResetMaterialPropertyValueToTypeDefault(AZ::RPI::MaterialPropertyValue& value)
     {
-        // Assigning through MaterialPropertyValue's templated operator= keeps the variant on the same alternative, so the property's
-        // declared type and the generated parameter struct are unaffected. Anything not listed is left alone and reported as not reset,
-        // which is also the answer to whether the generated material can carry the real value: MaterialPropertyValue's remaining
-        // alternatives are RHI::SamplerState and Data::Instance<Image>, and neither survives a round trip through a .material.
+        // Templated operator= keeps the variant's alternative; unlisted types (samplers, images) aren't reset and can't go in a .material.
         if (value.Is<bool>())                                              { value = false; }
         else if (value.Is<int32_t>())                                      { value = static_cast<int32_t>(0); }
         else if (value.Is<uint32_t>())                                     { value = static_cast<uint32_t>(0); }
@@ -2134,11 +2005,7 @@ namespace MaterialCanvas
             const auto& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
             const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
 
-            // The preview material is built in the viewport from the material type, so writing this file produces a source the
-            // Asset Processor dutifully builds and nothing ever loads. Measured at 268 ms of Asset Processor time for 28 ms of
-            // builder work, every edit. Not writing it removes the job outright rather than merely not waiting for it.
-            //
-            // An existing one is removed, because a file left behind from before this was enabled keeps its job alive forever.
+            // The viewport builds the preview material from the type, so this file is never loaded; remove it to drop its AP job.
             if (m_currentOutputSet == OutputSet::Preview && IsInMemoryPreviewMaterialEnabled())
             {
                 if (auto fileIO = AZ::IO::FileIOBase::GetInstance(); fileIO && fileIO->Exists(templateOutputPath.c_str()))
@@ -2177,14 +2044,7 @@ namespace MaterialCanvas
 
         for (const auto& [propertyId, propertyValue] : m_materialPropertyValues)
         {
-            // The recorded values are unconverted. An image reference converts to a path relative to the file being written, and the same
-            // recorded set is written into every generated material, so the conversion has to happen here, against the path this call is
-            // writing, rather than once against whichever file happened to be built first.
-            //
-            // Only images need it. Enums are never recorded, because an enum is never reset out of the material type, and every other
-            // recorded type converts to itself. The two image alternatives are tested directly rather than asking
-            // GetMaterialPropertyDataTypeFromValue, which reports a plain string as an image and would send a genuine string property
-            // through the image branch.
+            // Convert image references against the path being written; only the two image alternatives need it.
             AZ::RPI::MaterialPropertyValue convertedValue = propertyValue;
             if (convertedValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>() || convertedValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
@@ -2205,8 +2065,7 @@ namespace MaterialCanvas
 
         AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", GetUniqueGraphName().c_str());
 
-        // Unchanged content is left alone for the same reason as everywhere else: rewriting it forces the Asset Processor to rehash the
-        // source and walk everything that depends on it.
+        // Leave unchanged content alone: rewriting forces the Asset Processor to rehash and walk dependents.
         if (const auto existingText = AZ::Utils::ReadFile(templateOutputPath);
             existingText.IsSuccess() && existingText.GetValue() == templateOutputText)
         {
@@ -2224,8 +2083,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Deliberately does not clear m_onlyMaterialPropertyValuesChanged. Writing the material re-runs the material builder and nothing
-        // else, and the viewport already has the values, so the compile still skips the asset status wait.
+        // Keeps m_onlyMaterialPropertyValuesChanged: only the material builder reruns and the viewport has the values already.
         m_wroteAnyGeneratedFile = true;
         m_writtenGeneratedFiles.insert(templateOutputPath);
         return true;

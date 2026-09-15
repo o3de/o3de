@@ -34,8 +34,7 @@ function MaterialTypeSetup(context)
         context:IncludeShader("MeshMotionVector")
     end
 
-    -- The Base and Skin lighting models have no transparent shader in this pipeline, so there is no opaque/transparent split to make.
-    -- A "Blended" declaration on one of them would leave the material type with nothing that draws, so it is reported and ignored.
+    -- Base and Skin have no transparent shader here, so a "Blended" declaration is reported and ignored.
     if(lightingModel == "Base") then
         if(buildBlendedShaders or buildTintedTransparentShaders) then
             Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')

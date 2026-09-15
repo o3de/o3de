@@ -1028,12 +1028,7 @@ namespace AZ
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
 
-            // The entry points of one shader are independent compiles of the same HLSL, and used to run strictly one after the other.
-            // On a Material Canvas preview shader that is dxc twice, measured at 80 ms for the vertex stage and 197 ms for the pixel
-            // stage, so overlapping them recovers the shorter of the two -- about 13% of a 621 ms job.
-            //
-            // Only the compile itself runs in parallel. Everything touching the variant creator, the byproducts or the trace stream
-            // happens afterwards in a fixed order, because none of it is worth making thread safe for what that would save.
+            // Entry points compile in parallel; the creator, byproducts and trace stream are only touched afterwards, in a fixed order.
             struct EntryPointCompile
             {
                 AZStd::string m_entryName;
@@ -1051,9 +1046,7 @@ namespace AZ
                 entryPointCompiles.push_back(EntryPointCompile{ shaderEntryPoint.first, shaderEntryPoint.second, {}, false });
             }
 
-            // shaderEntryPoints is unordered, so fix an order before anything observable depends on it. The shader functions were
-            // previously handed to the creator in whatever order the map happened to hash into, which is a poor property for a build
-            // step whose output is meant to be reproducible.
+            // shaderEntryPoints is unordered; sort it so the functions reach the creator in a reproducible order.
             AZStd::sort(
                 entryPointCompiles.begin(), entryPointCompiles.end(),
                 [](const EntryPointCompile& lhs, const EntryPointCompile& rhs) { return lhs.m_entryName < rhs.m_entryName; });
@@ -1071,8 +1064,7 @@ namespace AZ
 
             if (entryPointCompiles.size() > 1)
             {
-                // One thread per extra entry point, with the first compiled on this one. These spend their time waiting on a child
-                // process, so there is nothing to gain from a job system and a thread each is easy to reason about.
+                // One thread per extra entry point (first runs here); they mostly wait on dxc, so a job system buys nothing.
                 AZStd::vector<AZStd::thread> compileThreads;
                 compileThreads.reserve(entryPointCompiles.size() - 1);
                 for (size_t i = 1; i < entryPointCompiles.size(); ++i)
@@ -1107,9 +1099,7 @@ namespace AZ
                     return AZ::Failure(AZStd::string::format("Could not compile the shader function %s", shaderEntryName.c_str()));
                 }
 
-                // Bubble up the byproducts to the caller. Merged rather than assigned: this used to emplace into the optional once
-                // per entry point, and emplace on an optional that already holds a value replaces it, so the last entry point through
-                // discarded every earlier stage intermediate path before the caller could register them.
+                // Merge byproducts rather than emplace, which replaced the optional and dropped earlier entry points' intermediates.
                 if (!outputByproducts)
                 {
                     outputByproducts.emplace(AZStd::move(descriptor.m_byProducts));

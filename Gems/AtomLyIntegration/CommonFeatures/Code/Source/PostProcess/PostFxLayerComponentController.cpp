@@ -90,11 +90,7 @@ namespace AZ
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
 
-            // GetCurrentViewGroup returns null when the default viewport context has no view group yet, which happens whenever a tool
-            // starts up with no viewport widget realised. A restored window layout that leaves the viewport hidden or collapsed is enough
-            // to reach this on the very first tick, and the unguarded arrow below then dereferences null and takes the process down.
-            // Nothing here needs the current view when there is not one; the other scene views gathered above still get their blend
-            // weights, and the next tick picks the view up once the viewport exists.
+            // No view group before a viewport widget is realised; skip the current view rather than dereference null.
             if (const auto currentViewGroup = atomViewportRequests->GetCurrentViewGroup(contextName))
             {
                 auto currentView = currentViewGroup->GetView();

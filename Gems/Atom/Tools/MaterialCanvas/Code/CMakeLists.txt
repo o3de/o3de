@@ -41,9 +41,7 @@ ly_add_target(
             Gem::CommonFeaturesAtom.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
-            # AzslCompiler and ShaderBuilderUtility, for the in-memory preview shader path. They live in a static library rather
-            # than only in the builder gem module, so a tool can call the same reflection code the Shader Asset Builder calls
-            # instead of reimplementing it and drifting from it.
+            # AzslCompiler and ShaderBuilderUtility for the in-memory preview shader path, shared with the Shader Asset Builder.
             Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
@@ -84,19 +82,7 @@ else()
         " Perhaps it has been renamed")
 endif()
 
-################################################################################
-# Editor-hosted Material Canvas pane
-################################################################################
-#
-# A second target in this same gem, so that Material Canvas can also run as a view pane inside the O3DE Editor instead of
-# only as the standalone application declared above. The application target is untouched and continues to build and run
-# exactly as before -- the two are alternative front ends over the same window, graph compiler and node library.
-#
-# This lives in the MaterialCanvas gem rather than a gem of its own because the gem already owns the node configurations,
-# graph templates, style sheet and registry files, and every @gemroot:MaterialCanvas@ path in that data resolves here. A
-# separate gem would have to duplicate the node library or reach across gems for it.
-#
-# The shape follows Gems/LandscapeCanvas: a STATIC target with the real code, and a thin GEM_MODULE the Editor loads.
+# Editor-hosted Material Canvas pane: a STATIC target plus a thin GEM_MODULE the Editor loads, as in Gems/LandscapeCanvas.
 
 ly_add_target(
     NAME MaterialCanvas.Editor.Static STATIC
@@ -118,8 +104,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzToolsFramework
-            # Provides LyViewPaneNames.h, which defines LyViewPane::CategoryTools. Landscape Canvas takes the same
-            # dependency for the same reason.
+            # Provides LyViewPaneNames.h (LyViewPane::CategoryTools), as Landscape Canvas does.
             Legacy::Editor.Headers
         PUBLIC
             Gem::CommonFeaturesAtom.Static
@@ -154,9 +139,5 @@ ly_add_source_properties(
             O3DE_GEM_NAME=${gem_name}
             O3DE_GEM_VERSION=${gem_version})
 
-# The Tools variant is what the Editor loads for an enabled gem, so this alias is what actually makes the pane appear.
-#
-# Note that the standalone MaterialCanvas application also loads Tools-variant gems (see ly_set_gem_variant_to_load
-# above), which means it will load this module too. That is harmless by construction: MaterialCanvasEditorSystemComponent
-# does no work in Activate and builds nothing until NotifyRegisterViews, which only the Editor broadcasts.
+# The Editor loads the Tools variant; the standalone app loads it too, harmlessly, since nothing is built until NotifyRegisterViews.
 ly_create_alias(NAME MaterialCanvas.Tools NAMESPACE Gem TARGETS Gem::MaterialCanvas.Editor)

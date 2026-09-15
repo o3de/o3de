@@ -377,9 +377,7 @@ namespace AZ
                     }
                 }
 
-                // Registered but never built unless a material type names one. A tool that wants a material pipeline of its own -- a
-                // reduced one for a preview viewport, say -- can register it here without every material type in the project paying to
-                // build through it, which is what putting it in MaterialPipelineFiles would cost.
+                // Registered but only built for material types that name one, unlike MaterialPipelineFiles.
                 AZStd::vector<AZStd::string> optInMaterialPipelines;
                 settingsRegistry->GetObject(optInMaterialPipelines, "/O3DE/Atom/RPI/OptInMaterialPipelineFiles");
                 for (const auto& path : optInMaterialPipelines)
@@ -388,8 +386,7 @@ namespace AZ
                 }
             }
 
-            // No material type in hand, or nothing declared on it, means the project wide default. This is the path every existing
-            // material type takes, so nothing that does not opt in can change behaviour.
+            // No material type or no declaration means the project-wide default list, so non-opting types are unaffected.
             AZStd::string declaredPipelines;
             if (materialTypeSourceData)
             {
@@ -411,8 +408,7 @@ namespace AZ
             AZStd::set<AZStd::string> availableMaterialPipelinePaths = defaultMaterialPipelinePaths;
             availableMaterialPipelinePaths.insert(optInMaterialPipelinePaths.begin(), optInMaterialPipelinePaths.end());
 
-            // Matched by file stem, which is the same name GetMaterialPipelineName reports and the same name that ends up in every
-            // generated shader's file name, so what a material type declares reads the same as what it produces.
+            // Matched by file stem, the same name GetMaterialPipelineName reports and generated shader files use.
             AZStd::set<AZStd::string> selectedMaterialPipelinePaths;
             for (const AZStd::string& declaredPipelineName : declaredPipelineNames)
             {
@@ -435,9 +431,7 @@ namespace AZ
                     declaredPipelineName.c_str());
             }
 
-            // A declaration that matches nothing would otherwise produce a material type with no shaders at all, which renders as
-            // nothing and gives no clue why. Falling back to the default list keeps the material visible and leaves the warnings above
-            // as the explanation.
+            // Nothing matched: fall back to the default list rather than produce a material type with no shaders.
             if (selectedMaterialPipelinePaths.empty())
             {
                 AZ_Warning(
@@ -479,10 +473,7 @@ namespace AZ
         Name MaterialTypeBuilder::PipelineStage::GetMaterialPipelineTag(
             const AZ::IO::Path& materialPipelineFilePath, const MaterialPipelineSourceData& materialPipeline) const
         {
-            // The tag names the shader collection the runtime looks up, through RenderPipelineDescriptor::m_materialPipelineTag. It is
-            // the file stem unless the pipeline overrides it, which is how a pipeline can be addressed by one name and stand in for
-            // another: Material Canvas addresses its preview pipeline as MaterialCanvasPreview, but the viewport's render pipeline asks
-            // for MainPipeline, and a material with no collection under that name draws nothing at all.
+            // The tag (file stem unless overridden) names the runtime's shader collection, letting a pipeline stand in for another.
             if (!materialPipeline.m_materialPipelineTag.empty())
             {
                 return Name{ materialPipeline.m_materialPipelineTag };
@@ -568,10 +559,7 @@ namespace AZ
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
             AZStd::map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name /*materialPipielineName*/>> shaderTemplateReferences;
 
-            // Pipelines are tracked below by their own name, the file stem, because that is what the generated shader files are named
-            // after and what makes a product traceable back to the pipeline that produced it. The shader collections inside the material
-            // type are keyed by tag instead, which is usually the same string but not always: a pipeline standing in for another one
-            // carries that other one's tag so render pipelines still find its shaders. This maps one to the other.
+            // Pipelines are tracked by name (file stem) but collections are keyed by tag, which can differ; this maps name to tag.
             AZStd::unordered_map<Name, Name> materialPipelineTagsByName;
             {
                 bool foundProblems = false;
@@ -734,9 +722,7 @@ namespace AZ
 
             u32 commonCounter = 0;
 
-            // Loading the material pipeline files and running each one's Lua script to decide which shaders exist, plus building the
-            // material parameters. Largely independent of how many shaders come out of it, so a graph that builds one shader and one
-            // that builds twenty should land close together here.
+            // Loading pipeline files, running their Lua and building material parameters; roughly independent of shader count.
             phaseTimer.Mark("material pipelines + lua");
 
             // Generate the required shaders
@@ -882,8 +868,7 @@ namespace AZ
 
                 for (const Name& materialPipelineName : materialPipelineList)
                 {
-                    // Keyed by tag, not by the pipeline's own name, so that a stand-in pipeline's shaders land in the collection the
-                    // runtime will ask for. Pipelines that do not override their tag are unaffected: the two names are the same string.
+                    // Keyed by tag, not pipeline name, so a stand-in pipeline's shaders land in the collection the runtime asks for.
                     const auto materialPipelineTagIter = materialPipelineTagsByName.find(materialPipelineName);
                     const Name& materialPipelineTag =
                         materialPipelineTagIter != materialPipelineTagsByName.end() ? materialPipelineTagIter->second : materialPipelineName;
@@ -907,8 +892,7 @@ namespace AZ
                 // list.
             }
 
-            // Per shader: loading the shader template JSON, assembling the generated azsl, and writing both out. This is the part
-            // that scales with shader count, and therefore the part the opacity and vertex gating already act on.
+            // Per shader: loading the template JSON, assembling the azsl and writing both; this part scales with shader count.
             phaseTimer.Mark("generate shaders");
 
             // Sort the shader file reference just for convenience, for when the user inspects the intermediate .materialtype file

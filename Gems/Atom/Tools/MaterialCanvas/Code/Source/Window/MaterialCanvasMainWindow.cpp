@@ -139,15 +139,7 @@ namespace MaterialCanvas
     {
         Base::CreateMenus(menuBar);
 
-        // Apply sits next to Save because the two are halves of one decision. Save writes the graph; Apply publishes the material the
-        // graph describes. An edit refreshes only the reduced preview build, so without Apply the material the rest of the engine loads
-        // would change on no occasion other than a save, and there would be no way to try a change in a level without committing it to
-        // the source file first.
-        //
-        // Built by hand rather than through the base's CreateActionAtPosition. That is a function template defined in
-        // AtomToolsDocumentMainWindow.cpp rather than in its header, so it can only be instantiated inside that translation unit;
-        // calling it from here leaves a declared but undefined instantiation over a lambda's internal linkage closure type, which is
-        // MSVC's C5046 and, warnings as errors aside, an unresolved external at link time. These are the five lines it would have run.
+        // Apply publishes the material without saving; built by hand since CreateActionAtPosition is only instantiable in its own .cpp.
         m_actionApply = new QAction(tr("A&pply"), m_menuFile);
         m_actionApply->setShortcut(QKeySequence("Ctrl+Shift+A"));
         m_actionApply->setShortcutContext(Qt::WindowShortcut);
@@ -162,9 +154,7 @@ namespace MaterialCanvas
             });
         m_menuFile->insertAction(m_actionSaveAsCopy, m_actionApply);
 
-        // Measurement only, and deliberately manual. The spike answers what a shader costs to build in process, with the Asset
-        // Processor out of the way; running it automatically on every compile would add a second azslc invocation to the loop it is
-        // meant to be measuring.
+        // Measurement only, run manually: doing it on every compile would add an azslc run to the loop it measures.
         if (!m_menuTools)
         {
             return;
@@ -174,8 +164,7 @@ namespace MaterialCanvas
             tr("Run In-Memory Shader Spike..."),
             [this]()
             {
-                // Preprocessed AZSL, which the Asset Processor keeps as a cache product next to every shader it builds. Starting the
-                // dialog in the cache saves hunting for one; any *_dx12.azslin will do.
+                // Start in the cache, where the Asset Processor keeps preprocessed AZSL; any *_dx12.azslin will do.
                 const QString cacheFolder =
                     QString("%1/Cache/pc").arg(QString::fromUtf8(AZ::Utils::GetProjectPath().c_str()));
 
@@ -183,30 +172,21 @@ namespace MaterialCanvas
                     this,
                     tr("Select an intermediate AZSL file"),
                     cacheFolder,
-                    // .azsl runs the whole chain including MCPP; .azslin starts at azslc, which is useful if the reconstructed
-                    // include paths turn out to be wrong for this project.
+                    // .azsl runs the whole chain including MCPP; .azslin starts at azslc, bypassing the reconstructed include paths.
                     tr("AZSL (*.azsl *.azslin)"));
                 if (selectedPath.isEmpty())
                 {
                     return;
                 }
 
-                // Run on a worker, never on the UI thread. RHI::ExecuteShaderCompiler waits for azslc with a busy spin that has no
-                // sleep in it -- while(IsProcessRunning()) { PeekError(); PeekOutput(); } -- so on the main thread it saturates a core
-                // hammering pipe syscalls, blocks the Qt event loop, and starves the very process it is waiting on. Measured on this
-                // thread the same shader took 5,994 ms and then 7,028 ms against 670 ms for an identical azslc command line run from
-                // a script. The Asset Processor never sees this because its builders are separate processes with nothing else to do.
-                //
-                // The real in-memory path has the same constraint, and GraphDocument::CompileGraph already meets it by running the
-                // compile as a job.
+                // Run on a worker: ExecuteShaderCompiler busy-spins, which on the UI thread starves azslc (~6 s instead of 670 ms).
                 const AZStd::string inputPath = selectedPath.toUtf8().constData();
                 auto spikeJob = AZ::CreateJobFunction(
                     [this, inputPath]()
                     {
                         const auto spikeResult = RunInMemoryShaderSpike(inputPath);
 
-                        // Back to the UI thread to say so. The result is copied into the queued call because the job's frame is gone
-                        // by the time it runs.
+                        // Back to the UI thread to report; the result is copied since the job's frame is gone by then.
                         QMetaObject::invokeMethod(
                             this,
                             [this, spikeResult]()
@@ -242,9 +222,7 @@ namespace MaterialCanvas
                 spikeJob->Start();
             });
 
-        // The other half. This one needs no process spawned and no reimplementation: CreateMaterialTypeAsset is the same public
-        // call FinalStage makes, so if it works here it works, and the 300 ms the Asset Processor spends on that job is overhead
-        // rather than computation.
+        // The material half: CreateMaterialTypeAsset is the same public call FinalStage makes, so no process or reimplementation.
         m_menuTools->addAction(
             tr("Run In-Memory Material Spike..."),
             [this]()
@@ -319,13 +297,11 @@ namespace MaterialCanvas
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             applyNeeded, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::IsApplyGraphNeeded);
 
-        // Hidden rather than disabled when preview output is off. There is no second output to publish then, so every compile has
-        // already produced the real material and an Apply that could never do anything would only raise the question of what it is for.
+        // Hidden when preview output is off: every compile already produced the real material, so Apply would do nothing.
         m_actionApply->setVisible(MaterialGraphCompiler::IsPreviewOutputEnabled());
         m_actionApply->setEnabled(isOpen && applyNeeded);
 
-        // Greying out is the indicator, in the same way it is in other material editors: enabled means the material in the level is
-        // behind the graph. The tooltip says which state this is, because a disabled item on its own reads as broken rather than as done.
+        // Enabled means the material in the level is behind the graph; the tooltip explains either state.
         m_actionApply->setToolTip(
             applyNeeded ? tr("Rebuild the material for use outside Material Canvas. It is currently behind this graph.")
                         : tr("The material outside Material Canvas is up to date with this graph."));
@@ -338,8 +314,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // The menu only says this while it is open, so the state is also put somewhere permanently visible. This runs after the compile
-        // has finished reporting its own status, so it is not competing with those messages.
+        // Also show the state permanently, since the menu only shows it while open; runs after the compile's own status messages.
         bool applyNeeded = false;
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             applyNeeded, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::IsApplyGraphNeeded);

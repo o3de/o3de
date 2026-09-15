@@ -22,8 +22,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <Document/InMemoryShaderCompiler.h>
 
-// From Atom_Asset_Shader.Static. These are the same types the Shader Asset Builder uses, included exactly as the builder includes
-// them: the point of the spike is that a tool can call them, so wrapping them would defeat it.
+// From Atom_Asset_Shader.Static, included exactly as the Shader Asset Builder includes them.
 #include <Editor/AzslCompiler.h>
 #include <Editor/CommonFiles/Preprocessor.h>
 #include <Editor/ShaderBuilderUtility.h>
@@ -34,10 +33,7 @@
 #include <MaterialCanvas_Traits_Platform.h>
 
 #if AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED
-// The DX12 ShaderPlatformInterface, from Atom_RHI_DX12.Builders.Static. Its constructor is public and
-// CompilePlatformInternal ignores the PlatformInfo it is handed, so a tool can drive the same DXC invocation the Shader Asset
-// Builder drives without standing up any builder context. See MaterialCanvas_Traits_Windows.h and
-// shader_dependencies_windows.cmake for why only one platform has this.
+// DX12 ShaderPlatformInterface drives the builder's DXC invocation without a builder context; Windows only (see the traits).
 #include <RHI.Builders/ShaderPlatformInterface.h>
 #endif
 
@@ -45,24 +41,19 @@ namespace MaterialCanvas
 {
     namespace
     {
-        // Copied from a "ShaderPlatformInterface: Executing" line in a Material Canvas job log, so that this measures the work the
-        // Asset Processor measures. --full is what makes one invocation produce the HLSL and every reflection document together;
-        // asking for them one switch at a time would be several azslc runs and would report a cost the real pipeline never pays.
+        // Matches the Asset Processor's azslc command line; --full emits the HLSL and all reflection documents in one run.
         const AZStd::vector<AZStd::string> AzslcArguments = {
             "--full", "--Zpr", "--W1", "--strip-unused-srgs", "--root-const=128", "--sc-options", "--namespace=dx"
         };
 
-        // Reconstructed from the "Preprocessor: builder ..." line of a Material Canvas job log. -C keeps comments and -+ enables C++
-        // mode; the six defines are the preview pipeline's fidelity reductions, which have to be here or MCPP expands code the real
-        // preview shader never sees and the measurement is of a different shader.
+        // From the job log's MCPP line: -C keeps comments, -+ is C++ mode, and the defines are the preview's fidelity cuts.
         const AZStd::vector<AZStd::string> PreprocessorArguments = {
             "-C", "-+",
             "-DENABLE_AREA_LIGHTS=0", "-DENABLE_DECALS=0", "-DENABLE_SHADOWS=0",
             "-DENABLE_SHADER_DEBUGGING=0", "-DENABLE_LIGHT_CULLING=0", "-DENABLE_ACESCC_COLOR_SPACE=0"
         };
 
-        // The engine and project ShaderLib roots the builder puts on the include path, plus the folder holding the input so that a
-        // generated shader can find the azsli files generated beside it.
+        // The builder's engine and project ShaderLib include roots, plus the input's folder for azsli generated beside it.
         AZStd::vector<AZStd::string> BuildIncludePaths(const AZStd::string& inputPath)
         {
             const AZStd::string enginePath = AZ::Utils::GetEnginePath().c_str();
@@ -94,9 +85,7 @@ namespace MaterialCanvas
             {
                 return 0;
             }
-            // Counted by hand rather than with a standard algorithm: AzCore's AZStd/algorithm.h does not alias std::count, and
-            // reaching for <algorithm> here to save three lines would pull the std namespace into a file that otherwise lives
-            // entirely in AZStd.
+            // Counted by hand: AZStd has no count alias, and <algorithm> would pull std into an AZStd-only file.
             size_t lineCount = 0;
             for (const char character : contents.GetValue())
             {
@@ -128,33 +117,20 @@ namespace MaterialCanvas
             return fail(AZStd::string::format("input does not exist: '%s'", preprocessedAzslPath.c_str()));
         }
 
-        // A temp folder of our own, outside every asset scan folder, so nothing written here is ever seen by the Asset Processor.
-        // That is the whole point: this path has to be invisible to the pipeline it is trying to avoid. Note that handing this to
-        // the AzslCompiler constructor is not enough on its own -- see the output path built for EmitFullData below.
+        // Temp folder outside all scan folders so the Asset Processor never sees it; see also the EmitFullData output path below.
         const AZ::IO::Path tempFolder = AZ::IO::Path(AZ::Utils::GetProjectPath()) / "user" / "MaterialCanvasInMemorySpike";
         if (!fileIO->Exists(tempFolder.c_str()) && !fileIO->CreatePath(tempFolder.c_str()))
         {
             return fail(AZStd::string::format("could not create temp folder: '%s'", tempFolder.c_str()));
         }
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // MCPP, if the input still needs it. This is a library call rather than a process spawn, so unlike azslc it costs nothing
-        // to launch and cannot be starved by whatever thread is waiting on it.
-        // --------------------------------------------------------------------------------------------------------------------
+        // MCPP, if the input still needs it; a library call, so no process launch cost.
 
         AZStd::string azslcInputPath = preprocessedAzslPath;
 
         if (!preprocessedAzslPath.ends_with(".azslin"))
         {
-            // The common header has to go on first. azslc needs the platform's AzslcHeader.azsli -- root constant layout, sampler
-            // and binding declarations, the dx namespace setup -- and it is prepended to the source rather than included by it, so
-            // preprocessing the raw .azsl skips it entirely and azslc then rejects perfectly valid preprocessed output. That is what
-            // the first attempt at this did.
-            //
-            // The path is relative to the executable folder, the same convention azslc's own path uses, and is what the DX12
-            // ShaderPlatformInterface returns from GetAzslHeader. Hardcoded rather than discovered because reaching a
-            // ShaderPlatformInterface needs an AssetBuilderSDK::PlatformInfo, which is builder-side context this has no business
-            // constructing for a measurement.
+            // Prepend the platform's AzslcHeader.azsli first, or azslc rejects the output; hardcoded to what GetAzslHeader returns.
             AZStd::string prependedPath = preprocessedAzslPath;
             AZ::RHI::PrependArguments prependArguments;
             prependArguments.m_sourceFile = preprocessedAzslPath.c_str();
@@ -200,20 +176,11 @@ namespace MaterialCanvas
             }
         }
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // azslc. One invocation, producing the HLSL and the ia/om/srg/options/bindingdep documents together.
-        // --------------------------------------------------------------------------------------------------------------------
+        // azslc: one invocation producing the HLSL and the ia/om/srg/options/bindingdep documents.
 
         const AzslCompiler azslc(azslcInputPath, tempFolder.Native());
 
-        // The output path has to be given explicitly, and it is not the tempFolder handed to the constructor: EmitFullData does not
-        // use that member. Left empty it reproduces azslc's own default, which is to write every product beside the input file --
-        // and the input is a cache product, so the six files azslc emits would land inside Cache/pc while the Asset Processor is
-        // watching and locking that folder. Measured cost of getting this wrong: 5,994 ms against an expected 670 ms, essentially
-        // all of it contention rather than compilation.
-        //
-        // EmitFullData derives each sub-product by replacing this path's extension, so what it wants is one path with any extension
-        // on it; the .hlsl product keeps its own.
+        // Explicit output path: by default EmitFullData writes beside the input in Cache/pc, contending with the Asset Processor.
         AZ::IO::Path azslcOutputPath = tempFolder / AZ::IO::Path(azslcInputPath).Stem();
         azslcOutputPath.ReplaceExtension(".hlsl");
 
@@ -228,10 +195,7 @@ namespace MaterialCanvas
 
         const ShaderBuilderUtility::AzslSubProducts::Paths& products = emitOutcome.GetValue();
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // Reflection. Reading back what azslc just wrote and turning it into the engine objects a ShaderAsset is built from. This
-        // is the part that would have had to be reimplemented had AzslCompiler been confined to the builder gem module.
-        // --------------------------------------------------------------------------------------------------------------------
+        // Reflection: read back azslc's output into the engine objects a ShaderAsset is built from.
 
         const auto reflectionStart = AZStd::chrono::steady_clock::now();
 
@@ -267,15 +231,7 @@ namespace MaterialCanvas
 
         result.m_reflectionMs = MillisecondsSince(reflectionStart);
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // DXC. The last stage the Asset Processor performs that this had not yet reproduced, and the one the header called the
-        // remaining work. Driven through the DX12 ShaderPlatformInterface rather than by assembling a dxc command line here, so
-        // the arguments, the platform header prepend, the dxsc specialisation-constant patch and the byte code load all stay in
-        // the one place the builder already uses.
-        //
-        // Must not run on the main thread: ExecuteShaderCompiler busy-waits on the child process, so it saturates a core and
-        // starves the very process it is waiting for. The caller runs this as a job for that reason.
-        // --------------------------------------------------------------------------------------------------------------------
+        // DXC via the DX12 ShaderPlatformInterface; must not run on the main thread, since ExecuteShaderCompiler busy-waits.
 
         const AZStd::string hlslPath = products[ShaderBuilderUtility::AzslSubProducts::hlsl];
 
@@ -283,17 +239,14 @@ namespace MaterialCanvas
         {
             const auto dxcStart = AZStd::chrono::steady_clock::now();
 
-            // apiUniqueIndex is only used to index the per-API data on the assets this builds; nothing downstream of the spike
-            // reads it, so index zero is correct for a single-API run.
+            // apiUniqueIndex only indexes per-API data on the built assets, so zero is correct for a single-API run.
             AZ::DX12::ShaderPlatformInterface dx12ShaderPlatformInterface(0);
 
-            // What the Asset Processor passes for the preview pipeline, from the job log's dxc command line. -O1 rather than the
-            // -O3 default, and not -O0, which is measurably slower -- see the preview ShaderTemplates README.
+            // Same as the Asset Processor's preview dxc line: -O1 rather than -O3 (and not the slower -O0).
             AZ::RHI::ShaderBuildArguments shaderBuildArguments;
             shaderBuildArguments.m_dxcArguments = { "-Zpr", "-enable-16bit-types", "-O1" };
 
-            // Hardcoded for the spike. The real path takes these from the .shader file's programSettings, the way
-            // ShaderVariantAssetBuilder does; a preview forward or transparent shader has exactly these two.
+            // Hardcoded: a preview forward or transparent shader has exactly these two (the real path reads programSettings).
             const AZStd::vector<AZStd::pair<AZStd::string, AZ::RHI::ShaderHardwareStage>> entryPoints = {
                 { "VertexShader", AZ::RHI::ShaderHardwareStage::Vertex },
                 { "PixelShader", AZ::RHI::ShaderHardwareStage::Fragment },
@@ -303,8 +256,7 @@ namespace MaterialCanvas
             {
                 AZ::RHI::ShaderPlatformInterface::StageDescriptor descriptor;
 
-                // The PlatformInfo is declared [[maybe_unused]] by the DX12 implementation, so a default one is honest here
-                // rather than a stand-in for something that matters.
+                // The DX12 implementation ignores PlatformInfo, so a default one is fine.
                 const AssetBuilderSDK::PlatformInfo platformInfo;
 
                 // true for specialization constants, so this measures the dxsc pass the Asset Processor also runs, not just DXC.
@@ -327,10 +279,7 @@ namespace MaterialCanvas
         }
 #endif
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // What came back. Counts rather than contents, because the question is whether the reflection is real, not what is in it:
-        // an empty SRG list would parse perfectly well and mean nothing was understood.
-        // --------------------------------------------------------------------------------------------------------------------
+        // What came back: counts rather than contents, since an empty SRG list would parse fine and mean nothing.
 
         result.m_srgCount = srgData.size();
         result.m_shaderOptionCount = shaderOptionGroupLayout ? shaderOptionGroupLayout->GetShaderOptions().size() : 0;
@@ -380,10 +329,7 @@ namespace MaterialCanvas
             return result;
         };
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // Find and load the intermediate material type. This is PipelineStage's output: the concrete, Direct format material type
-        // with its shader list already resolved. MaterialBuilder locates it exactly this way.
-        // --------------------------------------------------------------------------------------------------------------------
+        // Find and load the intermediate (Direct format) material type from PipelineStage, as MaterialBuilder does.
 
         const auto locateStart = AZStd::chrono::steady_clock::now();
 
@@ -406,8 +352,7 @@ namespace MaterialCanvas
         const AZ::RPI::MaterialTypeSourceData intermediateSourceData = sourceDataOutcome.TakeValue();
         result.m_locateMs = MillisecondsSince(locateStart);
 
-        // CreateMaterialTypeAsset asserts and fails on the abstract format, so check first and say why rather than tripping an
-        // assert. Abstract means "no explicit shader collection", which is the state the canvas writes and PipelineStage resolves.
+        // CreateMaterialTypeAsset asserts on the abstract format, so check first and report why.
         if (intermediateSourceData.GetFormat() != AZ::RPI::MaterialTypeSourceData::Format::Direct)
         {
             return fail(
@@ -415,10 +360,7 @@ namespace MaterialCanvas
                 "resolved to the _generated material type rather than back to the source.");
         }
 
-        // --------------------------------------------------------------------------------------------------------------------
-        // The FinalStage call itself. Shader references inside are resolved through the asset system, so the shaders must already
-        // be built -- which is the one Asset Processor job this design keeps.
-        // --------------------------------------------------------------------------------------------------------------------
+        // FinalStage itself: shader references resolve through the asset system, so the shaders must already be built.
 
         const auto createStart = AZStd::chrono::steady_clock::now();
         auto materialTypeAssetOutcome = intermediateSourceData.CreateMaterialTypeAsset(
@@ -441,10 +383,7 @@ namespace MaterialCanvas
         result.m_propertyCount = materialTypeAsset->GetMaterialPropertiesLayout()
             ? materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount()
             : 0;
-        // Counted from the source data rather than the asset. MaterialTypeAsset exposes GetGeneralShaderCollection() and a
-        // non-const ForAllShaderItems, neither of which is a straight count, and for a material type built through a material
-        // pipeline the shaders live in the per-pipeline collections rather than the general one. The intermediate's own
-        // declaration is the more useful check anyway: it is exactly what CreateMaterialTypeAsset just consumed.
+        // Counted from the source data: the asset has no simple count, and pipeline shaders aren't in the general collection.
         result.m_shaderCount = intermediateSourceData.m_shaderCollection.size();
         for (const auto& [pipelineName, pipelineState] : intermediateSourceData.m_pipelineData)
         {
@@ -495,8 +434,7 @@ namespace MaterialCanvas
             return {};
         }
 
-        // Warnings are not elevated to errors: the intermediate can legitimately reference a shader whose asset is still building,
-        // and the caller's fallback handles that better than a hard failure would.
+        // Warnings stay warnings: a referenced shader may still be building, and the caller's fallback handles that.
         auto materialTypeAssetOutcome =
             intermediateSourceData.CreateMaterialTypeAsset(AZ::Uuid::CreateRandom(), intermediatePath, false);
         if (!materialTypeAssetOutcome.IsSuccess())
@@ -523,8 +461,7 @@ namespace MaterialCanvas
 
         auto decline = []([[maybe_unused]] const char* reason)
         {
-            // Not an error. Every way this can fail is a way of saying "let the Asset Processor do it", and the caller is expected
-            // to have that path available.
+            // Not an error: every failure here means "let the Asset Processor do it", which the caller has available.
             AZ_TracePrintf("MaterialCanvas", "In-memory shader asset declined: %s\n", reason);
             return AZ::Data::Asset<AZ::RPI::ShaderAsset>{};
         };
@@ -547,9 +484,7 @@ namespace MaterialCanvas
             return decline("the temp folder could not be created");
         }
 
-        // ------------------------------------------------------------------------------------------------------------------
-        // MCPP and azslc. Identical to the spike above, which exists to measure exactly this.
-        // ------------------------------------------------------------------------------------------------------------------
+        // MCPP and azslc, identical to the spike above.
 
         AZStd::string azslcInputPath = azslPath;
 
@@ -598,19 +533,7 @@ namespace MaterialCanvas
 
         const ShaderBuilderUtility::AzslSubProducts::Paths& products = emitOutcome.GetValue();
 
-        // ------------------------------------------------------------------------------------------------------------------
-        // The interface guard. Clone copies the SRG layouts, pipeline layout and contracts from the source asset, so this is only
-        // valid while the shader the graph now describes has the same interface as the one that asset was built from.
-        //
-        // Checked through the shader option group layout, which is the part of the interface that a Material Canvas edit is most
-        // likely to move: adding a node that introduces a shader option changes the option list, and a material built against the
-        // old layout would then index options that are not there. Its hash covers the option names, types, order and bit layout.
-        //
-        // This does not cover every possible interface change -- an SRG gaining a texture would not move the option layout -- so
-        // it is a guard rather than a proof. The remaining exposure is bounded by what the Asset Processor is doing concurrently:
-        // a structural edit changes the generated .shader and .azsl too, so the Asset Processor rebuilds the real asset and the
-        // catalog notification replaces whatever this produced.
-        // ------------------------------------------------------------------------------------------------------------------
+        // Interface guard: Clone reuses the source asset's layouts, so give up if the shader option layout changed.
 
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = AZ::RPI::ShaderOptionGroupLayout::Create();
         {
@@ -634,9 +557,7 @@ namespace MaterialCanvas
             return decline("the shader option layout has changed, so the existing asset is not safe to clone");
         }
 
-        // ------------------------------------------------------------------------------------------------------------------
         // DXC, one invocation per entry point, then the root variant those stages make up.
-        // ------------------------------------------------------------------------------------------------------------------
 
         AZ::DX12::ShaderPlatformInterface dx12ShaderPlatformInterface(0);
 
@@ -653,10 +574,7 @@ namespace MaterialCanvas
         variantCreator.Begin(
             sourceRootVariant.GetId(), sourceRootVariant->GetShaderVariantId(), AZ::RPI::RootShaderVariantStableId, false);
 
-        // The entry points are independent compiles of the same HLSL, so they run together and the shorter one costs nothing.
-        // Measured sequentially here: DXC and dxsc were 71 + 20 for the vertex stage against 261 + 36 for the pixel stage, so
-        // overlapping them hides the whole vertex stage. This is the same change ShaderVariantAssetBuilder already carries; only
-        // CompilePlatformInternal runs in parallel, and everything touching the variant creator happens afterwards in order.
+        // Entry points compile in parallel, as in ShaderVariantAssetBuilder; the variant creator is only touched afterwards, in order.
         AZStd::vector<AZ::RHI::ShaderPlatformInterface::StageDescriptor> descriptors(entryPoints.size());
         AZStd::vector<bool> compiled(entryPoints.size(), false);
 
@@ -671,13 +589,7 @@ namespace MaterialCanvas
                 tempFolder.Native(),
                 descriptors[index],
                 shaderBuildArguments,
-                // Specialization constants, matching what the Asset Processor does for this shader.
-                //
-                // azslc is run with --sc-options above, so the HLSL it emits addresses its shader options through specialization
-                // constants rather than baking them in, and the DXIL that comes out of DXC still holds the sentinel values. dxsc
-                // patches those and writes the offsets json that CreateShaderStageFunction needs; CompilePlatformInternal only
-                // runs it when told to. Passing false here produced a shader that ran on sentinels instead of the material's
-                // actual option values -- visible as geometry stretched along every axis, because the vertex stage read nonsense.
+                // Specialization constants: azslc used --sc-options, so skipping dxsc leaves sentinel option values in the DXIL.
                 true);
         };
 
@@ -715,15 +627,12 @@ namespace MaterialCanvas
             return decline("the root shader variant could not be created");
         }
 
-        // ------------------------------------------------------------------------------------------------------------------
         // Clone, keeping the source asset's id so the result can replace it in a material type's shader collection.
-        // ------------------------------------------------------------------------------------------------------------------
 
         AZ::RPI::ShaderAssetCreator::ShaderSupervariants supervariants;
         {
             AZ::RPI::ShaderAssetCreator::ShaderSupervariant supervariant;
-            // The default supervariant, whose name is empty. Material Canvas preview shaders declare no others, and Clone requires
-            // the incoming list to have one entry per supervariant on the source asset.
+            // The default (unnamed) supervariant; preview shaders declare no others, and Clone needs one entry per source supervariant.
             supervariant.m_name = AZ::Name{};
             supervariant.m_rootVariantAssets.push_back({ dx12ShaderPlatformInterface.GetAPIType(), rootVariantAsset });
             supervariants.push_back(AZStd::move(supervariant));
@@ -757,8 +666,7 @@ namespace MaterialCanvas
             return requests;
         }
 
-        // The intermediate .azsl and .shader sit next to the intermediate material type, which is where the pipeline stage put all
-        // three. Deriving the folder from that path rather than guessing keeps this working wherever the intermediate tree lives.
+        // The intermediate .azsl and .shader sit beside the intermediate material type, so derive their folder from its path.
         const AZStd::string intermediateMaterialTypePath =
             AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath(materialTypeSourcePath);
         if (intermediateMaterialTypePath.empty())
@@ -779,12 +687,7 @@ namespace MaterialCanvas
         size_t notReadyCount = 0;
         size_t sourcesMissingCount = 0;
 
-        // Both collections, not just the general one.
-        //
-        // A material type built through a material pipeline keeps its shaders in that pipeline's payload; the general collection is
-        // for shaders that apply whatever pipeline is in use, and for a Material Canvas preview material type it is empty. Walking
-        // only the general collection therefore finds nothing at all, silently -- which is exactly what an earlier attempt at this
-        // did when it subscribed to "the shader assets this material depends on" and got an empty list.
+        // Walk both collections: pipeline-built material types keep their shaders in the pipeline payloads, not the general one.
         auto collectFrom = [&](const AZ::RPI::ShaderCollection& shaderCollection)
         {
             for (const auto& shaderItem : shaderCollection)
@@ -798,16 +701,14 @@ namespace MaterialCanvas
                     continue;
                 }
 
-                // The shader asset's name is the stem the pipeline stage used for all three files it wrote: ShaderAssetBuilder sets
-                // it from the .shader source file name.
+                // The shader asset's name is the .shader file stem the pipeline stage used for all three files.
                 const AZStd::string shaderStem = shaderAsset->GetName().GetStringView();
                 if (shaderStem.empty())
                 {
                     continue;
                 }
 
-                // Already collected from another pipeline payload. The same shader can appear in more than one collection, and
-                // compiling it twice would be wasted work and two assets racing to replace the same id.
+                // A shader can appear in several collections; compile it once so two assets don't race to replace one id.
                 const bool alreadyCollected = AZStd::any_of(
                     requests.begin(),
                     requests.end(),
@@ -844,8 +745,7 @@ namespace MaterialCanvas
 
                 for (const auto& entryPoint : shaderSourceDataOutcome.GetValue().m_programSettings.m_entryPoints)
                 {
-                    // ShaderSourceData speaks RPI::ShaderStageType; the ShaderPlatformInterface speaks RHI::ShaderHardwareStage.
-                    // ToAssetBuilderShaderType is the same conversion ShaderVariantAssetBuilder makes at this boundary.
+                    // Convert RPI::ShaderStageType to RHI::ShaderHardwareStage, as ShaderVariantAssetBuilder does.
                     InMemoryShaderEntryPoint inMemoryEntryPoint;
                     inMemoryEntryPoint.m_name = entryPoint.m_name;
                     inMemoryEntryPoint.m_stage = AZ::ShaderBuilder::ShaderBuilderUtility::ToAssetBuilderShaderType(entryPoint.m_type);

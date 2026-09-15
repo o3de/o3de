@@ -108,9 +108,7 @@ namespace AtomToolsFramework
                                 toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
                             break;
                         case GraphCompiler::State::Processing:
-                            // The generated files are written by this point, so publish them now rather than only on completion.
-                            // What follows is the wait for the Asset Processor to build them, and a listener that only needs the
-                            // files can get on with its own work during it instead of after it.
+                            // Files are written, so publish them now; listeners can work while the Asset Processor builds them.
                             GraphDocumentRequestBus::Event(
                                 documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
                             GraphDocumentNotificationBus::Event(
@@ -433,8 +431,7 @@ namespace AtomToolsFramework
         m_compileGraphQueued = true;
         if (m_graphCompiler)
         {
-            // Signal the worker as soon as the edit is committed instead of waiting for the next system tick. The queued replacement
-            // remains a single boolean, so any number of rapid edits still coalesce into one compile of the newest graph snapshot.
+            // Signal the worker immediately; the queued flag still coalesces rapid edits into one compile.
             m_graphCompiler->Cancel();
         }
     }
@@ -446,16 +443,14 @@ namespace AtomToolsFramework
 
     void GraphDocument::QueueApplyGraph()
     {
-        // Deliberately does not save. Apply publishes what the graph currently describes; whether that state is also worth writing back
-        // to the source file is a separate decision, and one the user makes with Save.
+        // Deliberately does not save: Apply publishes the graph; writing it back is the user's Save.
         m_compileProductionOutputQueued = true;
         QueueCompileGraph();
     }
 
     bool GraphDocument::IsApplyGraphNeeded() const
     {
-        // A queued production compile counts as needed until it has actually run, so the answer does not flicker to "nothing to do"
-        // between the request and the compile that satisfies it.
+        // A queued production compile counts as needed until it runs, so the answer doesn't flicker.
         return m_compileProductionOutputQueued || (m_graphCompiler && m_graphCompiler->IsProductionOutputStale());
     }
 

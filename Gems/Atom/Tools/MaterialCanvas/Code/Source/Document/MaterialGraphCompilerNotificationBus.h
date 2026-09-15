@@ -17,8 +17,7 @@
 
 namespace MaterialCanvas
 {
-    //! Notifications raised by MaterialGraphCompiler for results that do not travel through the generated files, and therefore do not
-    //! travel through the Asset Processor either.
+    //! MaterialGraphCompiler results that bypass the generated files and the Asset Processor.
     class MaterialGraphCompilerNotifications : public AZ::EBusTraits
     {
     public:
@@ -30,18 +29,7 @@ namespace MaterialCanvas
 
         using PropertyValueList = AZStd::vector<AZStd::pair<AZ::Name, AZ::RPI::MaterialPropertyValue>>;
 
-        //! Raised at the end of every successful compile with the complete set of material property values the graph currently
-        //! describes, addressed by the absolute path of the graph they came from.
-        //!
-        //! Material Canvas writes material input node values as default values in the generated material type rather than as overrides
-        //! in the generated material, so the only way to see a changed value is to rebuild the material type asset, and every shader
-        //! built from it. Sending the values directly lets a listener apply them as property overrides on the live material instance,
-        //! which is both immediate and independent of whether the Asset Processor has finished, or has finished at all.
-        //!
-        //! The full set is sent rather than a delta because listeners have to reapply the values after anything that recreates the
-        //! material instance, and because a listener that missed an earlier compile would otherwise be permanently out of date.
-        //!
-        //! Raised from the graph compilation job thread. Handlers must marshal to whatever thread they need.
+        //! Full set of the graph's property values after each successful compile, applied as live overrides; raised on the job thread.
         virtual void OnMaterialPropertyValuesChanged(
             [[maybe_unused]] const AZStd::string& graphPath, [[maybe_unused]] const PropertyValueList& propertyValues)
         {

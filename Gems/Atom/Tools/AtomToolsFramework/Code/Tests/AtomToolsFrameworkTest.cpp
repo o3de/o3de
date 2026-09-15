@@ -106,8 +106,7 @@ namespace UnitTest
         EXPECT_TRUE(compiler.Reset());
         EXPECT_FALSE(compiler.CanCompileGraph());
 
-        // A second reservation attempt represents the next system tick seeing a queued edit while the first worker still owns the
-        // compiler. It requests cancellation and leaves the replacement queued.
+        // A second reservation (next tick, first worker still running) requests cancellation and leaves the replacement queued.
         EXPECT_FALSE(compiler.Reset());
         EXPECT_FALSE(compiler.Finish(
             AtomToolsFramework::GraphCompiler::State::Complete, [&completionPublished]() { completionPublished = true; }));

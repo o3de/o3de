@@ -260,16 +260,7 @@ namespace AZ
                 return false;
             }
 
-            // Every intermediate below is named per entry point rather than per source file.
-            //
-            // The entry points of one shader are compiled from the same source into the same temp folder, so names derived from the
-            // source alone are the same name twice: VertexShader and PixelShader were both writing <stem>.dxil.bin, <stem>.dxil.txt,
-            // and the two dxsc products. That is harmless only because they run strictly one after the other -- and it is exactly what
-            // stopped them running at the same time. The .pdb above was already disambiguated by profile name, so the shape of the
-            // problem was known; this applies the same treatment to the rest.
-            //
-            // The entry point name is unique within a shader by construction, being the key of the entry point map. RayTracing passes
-            // no entry point to dxc, so it falls back to the profile, which is unique for that stage.
+            // Intermediates are named per entry point (profile for RayTracing) so parallel stages don't write the same files.
             AZStd::string sourceFileStem;
             AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), sourceFileStem);
             const AZStd::string stageTag = entryPoint.empty() ? profileIt->second : entryPoint;
@@ -305,8 +296,7 @@ namespace AZ
             args.m_prependFile = PlatformShaderHeader;
             args.m_destinationFolder = tempFolder.c_str();
             args.m_digest = &sha1;
-            // Same reasoning as the outputs: this one is an input, but it is an input dxc has open while it runs, and both entry
-            // points would otherwise be writing it at the same address.
+            // Suffixed like the outputs: dxc holds this input open, and parallel entry points would otherwise share the path.
             args.m_addSuffixToFileName = stageTag.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash

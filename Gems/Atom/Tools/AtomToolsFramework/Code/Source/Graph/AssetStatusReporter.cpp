@@ -18,11 +18,7 @@ namespace AtomToolsFramework
 
     AssetStatusReporterState AssetStatusReporter::Update()
     {
-        // Advance past every path that has already settled instead of stepping a single path per call. AssetStatusReporterSystem drives
-        // this from a thread that sleeps 10ms between iterations, so stepping one path at a time imposed a floor of 10ms multiplied by the
-        // number of reported paths on every graph compile, even when all of the asset jobs had already finished. This loop always
-        // terminates: each iteration either returns or increments m_index, and GetCurrentState() stops returning Processing once m_index
-        // reaches the end of m_sourcePaths.
+        // Advance past all settled paths per call, not one, to avoid a 10 ms-per-path floor; terminates as m_index only grows.
         while (GetCurrentState() == AssetStatusReporterState::Processing)
         {
             const AZStd::string sourcePath = GetCurrentPath();

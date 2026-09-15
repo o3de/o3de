@@ -37,42 +37,26 @@ namespace MaterialCanvas
         bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath) override;
         bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const override;
 
-        //! Single root, relative to the project, that all preview output is written into. Every graph's preview output goes under here,
-        //! mirroring the graph's own folder, rather than into a sibling folder next to each graph. One root means one line in
-        //! .gitignore, one rule for the bundler and the reference check, and one folder to delete when the cache has to go.
-        //!
-        //! The preview and production material types share a file name and are told apart by this root alone, which also keeps their
-        //! generated shaders in separate intermediate asset folders.
+        //! Project-relative root for all preview output, mirroring each graph's folder; one root to ignore, bundle-exclude or delete.
         static constexpr const char* PreviewOutputRootFolderName = "MaterialCanvasPreview";
         static constexpr const char* PreviewOutputRootRelativePath = "Assets/MaterialCanvasPreview";
 
-        //! Whether @path lies inside the preview output root. This is the one predicate for the question "is this a preview asset",
-        //! shared by the viewport, and by anything that later has to refuse a preview asset where a real one was meant.
+        //! Whether @path is inside the preview output root: the single "is this a preview asset" predicate.
         static bool IsPreviewOutputPath(AZStd::string_view path);
 
-        //! Whether graphs currently generate a reduced preview output set alongside the production one. Public because the viewport has
-        //! to resolve the same choice when deciding which generated material to display.
+        //! Whether graphs also generate a reduced preview output set; public so the viewport picks the same material.
         static bool IsPreviewOutputEnabled();
 
-        //! Whether the viewport builds the preview material itself instead of waiting for the Asset Processor. When this is on the
-        //! preview .material file is not written at all, because nothing reads it, and its builder job therefore never runs.
+        //! Whether the viewport builds the preview material itself; if so the preview .material isn't written and its job never runs.
         static bool IsInMemoryPreviewMaterialEnabled();
 
-        //! Whether the production output is older than the graph it was built from, as of the last compile. False when there is nothing
-        //! to compare against, which is every case where preview output is off and the only output is the production one.
+        //! Whether production output is older than its graph as of the last compile; false when there is no preview to compare with.
         bool IsProductionOutputStale() const override
         {
             return m_productionOutputStale;
         }
 
-        //! The two sets of files a compile can produce from one graph.
-        //!
-        //! Production is what the rest of the engine consumes: the material type as the graph describes it, built through the project's
-        //! normal material pipelines. Preview is the same graph built through MaterialCanvasPreview alone, with the fidelity reductions
-        //! that make an edit compile in well under a second, and it exists only to feed the Material Canvas viewport.
-        //!
-        //! They are separated by folder rather than by content so that an edit cannot degrade a material a level is already using: an
-        //! edit writes Preview only, and Production is rewritten when the graph is saved.
+        //! Output sets per graph: Production for the engine, Preview (MaterialCanvasPreview, reduced fidelity) for the viewport only.
         enum class OutputSet
         {
             Production,
@@ -80,27 +64,22 @@ namespace MaterialCanvas
         };
 
     private:
-        //! The output sets this compile owes, in the order they should be written. Preview comes first when both are due, so the viewport
-        //! can resolve its material while the production shaders are still building.
+        //! Output sets this compile owes, in write order; Preview first so the viewport resolves while production shaders build.
         AZStd::vector<OutputSet> GetOutputSetsForThisCompile() const;
 
         //! Writes one output set for the current node. Everything before this point in the compile is set independent and is done once.
         bool ExportOutputSetForCurrentNode(const GraphModel::ConstNodePtr& currentNode, OutputSet outputSet);
 
-        //! True while building the output set the viewport displays, which is the only one whose material property values are worth
-        //! collecting and sending on.
+        //! True while building the set the viewport displays, the only one whose property values are collected.
         bool IsViewportOutputSet() const;
 
-        //! Creates the preview output folder if this compile is about to write into it. No-op for the production set, which is written
-        //! beside the graph.
+        //! Creates the preview output folder if this compile writes into it; no-op for the production set.
         bool EnsureOutputFolderExists() const;
 
-        //! Removes preview output left behind by an earlier compile once preview output is turned off, so the Asset Processor stops
-        //! building preview shaders for a graph that no longer asks for any.
+        //! Removes old preview output once preview output is off, so the Asset Processor stops building it.
         void DeleteStalePreviewOutputForCurrentNode();
 
-        //! The folder this graph's preview output is written into: the preview root, with the graph's own folder mirrored underneath so
-        //! that two graphs with the same file name in different folders cannot write over each other.
+        //! This graph's preview folder: the preview root with the graph's folder mirrored so same-named graphs don't collide.
         AZStd::string GetPreviewOutputFolderForGraph() const;
 
         //! Compares the preview and production output of the current node and records whether production has fallen behind.
@@ -119,21 +98,11 @@ namespace MaterialCanvas
         bool BuildMaterialTypeForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         bool ExportTemplatesMatchingRegex(const AZStd::string& pattern);
 
-        //! Returns true when @newText and @existingText describe the same material type except for property default values, which is the
-        //! shape every edit to a material input node's value produces. Both are the fully substituted text of a generated material type.
+        //! True when the two fully substituted material type texts differ only in property default values.
         static bool MaterialTypeTextsDifferOnlyByPropertyValues(
             const AZStd::string& existingText, const AZStd::string& newText);
 
-        //! Replaces @value with a placeholder of the same type, so that the material type's content stops depending on what the graph's
-        //! material inputs are currently set to. The real values are written into the generated material instead.
-        //!
-        //! Returns false, leaving @value alone, for the alternatives that have no placeholder: RHI::SamplerState and
-        //! Data::Instance<Image>. That is also the answer to whether the generated material could carry the real value, since a material
-        //! stores property values as bare JSON and its serializer infers the alternative from the shape, so callers should record a value
-        //! as moved only when this returns true.
-        //!
-        //! Not for enum properties, which the caller has to exclude: an enum's value is a name out of the property's enumValues list and
-        //! that set has no blank member either, but the value itself is an ordinary string that this function cannot tell apart.
+        //! Replaces @value with a same-type placeholder; returns false (untouched) for samplers and images. Callers must exclude enums.
         static bool ResetMaterialPropertyValueToTypeDefault(AZ::RPI::MaterialPropertyValue& value);
 
         //! Generates the .material files for the current template node, carrying the graph's material input values as property overrides.
@@ -218,8 +187,7 @@ namespace MaterialCanvas
 
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
         // properties defined in material input nodes.
-        // Not const: it records the property values the graph describes and classifies how the generated material type changed, both of
-        // which the rest of the compile reads back.
+        // Not const: records the graph's property values and how the generated material type changed, for the rest of the compile.
         bool BuildMaterialTypeFromTemplate(
             GraphModel::ConstNodePtr templateNode,
             const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
@@ -247,12 +215,10 @@ namespace MaterialCanvas
         // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
         int m_templateNodeCount = 0;
 
-        // The output set currently being written. Read by GetOutputPathFromTemplatePath and by the material type builder, which declares
-        // the preview material pipeline for one set and not the other.
+        // The output set being written; read by GetOutputPathFromTemplatePath and by the material type builder.
         OutputSet m_currentOutputSet = OutputSet::Production;
 
-        // Whether the production output is behind the graph, as of the end of the last compile. Read from the UI thread to decide
-        // whether there is anything for Apply to do, written by the compile worker, so it is atomic.
+        // Whether production output is behind the graph; written by the compile worker and read by the UI, hence atomic.
         AZStd::atomic_bool m_productionOutputStale = false;
 
         // Container of paths for template files that need to be evaluated and have products generated for the current node.
@@ -265,27 +231,16 @@ namespace MaterialCanvas
         AZStd::mutex m_instructionNodesForCurrentNodeMutex;
         AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
 
-        // True if any generated file was actually replaced on disk during this compile. A compile that writes nothing has given the Asset
-        // Processor no reason to run, so waiting on it for status would block on jobs that will never be queued.
+        // True if any generated file was actually replaced; if none were, no AP jobs will be queued, so don't wait.
         bool m_wroteAnyGeneratedFile = false;
 
-        // The generated files whose contents actually changed during this compile, which is a much smaller set than the files this compile
-        // is responsible for. A typical edit rewrites only the azsli instruction files: the material type and the shaders are byte for byte
-        // what they already were, and every product the Asset Processor derives from them comes out identical.
-        //
-        // Only these are worth waiting on. The Asset Processor still reruns the material type jobs, because the azsli files are source
-        // dependencies of them, but it rebuilds them into the same intermediate, and blocking the compile until it has done so was measured
-        // at 500-690 ms per edit -- the largest remaining cost in the preview, and all of it spent waiting for work whose result was already
-        // on disk before it started.
+        // Generated files whose content actually changed this compile; only these are worth waiting on.
         AZStd::set<AZStd::string> m_writtenGeneratedFiles;
 
-        // True while every change made during this compile is confined to material property values in a generated material type. Those are
-        // delivered straight to the viewport as property overrides, so the preview does not have to wait for the Asset Processor to rebuild
-        // the material type and every shader behind it.
+        // True while every change is confined to property values, which go straight to the viewport without an AP rebuild.
         bool m_onlyMaterialPropertyValuesChanged = true;
 
-        // Every material property value the graph currently describes, gathered while the material types are built and sent over
-        // MaterialGraphCompilerNotificationBus once the compile succeeds.
+        // Every property value the graph describes, sent over MaterialGraphCompilerNotificationBus when the compile succeeds.
         MaterialGraphCompilerNotifications::PropertyValueList m_materialPropertyValues;
     };
 } // namespace MaterialCanvas

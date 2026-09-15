@@ -30,9 +30,7 @@ namespace AtomToolsFramework
         bool Load(const AZStd::string& path);
 
         //! Concatenates and saves template lines to read text file at the specified, absolute path.
-        //! @param wroteFile Optional out parameter, set to true only when the file on disk was actually replaced. A save that finds
-        //! byte identical content already on disk skips the write and reports false. Callers use this to tell whether the Asset
-        //! Processor has any reason to reprocess the file, which is not the same question as whether the save succeeded.
+        //! @param wroteFile Optional; set true only if the file was actually rewritten (identical content skips the write).
         bool Save(const AZStd::string& path, bool* wroteFile = nullptr) const;
 
         //! Return true if the file has been modified since the last time it was loaded.

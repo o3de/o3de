@@ -264,16 +264,7 @@ namespace AZ::RHI
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
 
-        // No window for a non-interactive compiler whose output is already being piped back here.
-        //
-        // This matters far more than it looks. A console process launched from a parent that has no console of its own gets a
-        // brand new one, and on current Windows that means spawning a conhost.exe alongside it. An AssetBuilder is itself a
-        // console application, so its children attach to the console already there and pay none of that. A tool with a GUI has no
-        // console to attach to, so every child pays for one.
-        //
-        // Measured from Material Canvas driving the same azslc command line the Asset Processor runs: 619-673 ms against 226 ms
-        // standalone and ~234 ms from the AssetBuilder, with three consoles visibly opening and closing per compile. The wait loop
-        // below was suspected first and is not the cause -- making it sleep instead of spin changed nothing.
+        // No console window: from a GUI tool each child otherwise gets its own conhost.exe (azslc ~650 ms vs ~230 ms).
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
@@ -382,14 +373,7 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
-        // The profiling log is written next to this path, so a path inside the asset cache has to be redirected into the temp
-        // folder first. FileIO refuses writes under the cache ("You may not alter data inside the asset cache"), and the entry is
-        // simply lost.
-        //
-        // This used to call GetFileName and test that for "Cache", which is the file name, not the folder -- the local was even
-        // named shaderSourceFolder. A cache path only tripped it if the shader itself happened to be called something containing
-        // "Cache", so in practice the redirect never fired. It shows up as soon as anything outside a builder passes a cache path,
-        // which the Material Canvas in-memory shader path does: its input is the .azslin the Asset Processor left behind.
+        // FileIO refuses writes inside the asset cache, so redirect a cache path to the temp folder for the profiling log.
         AZStd::string shaderSourceArg = shaderSourcePathForDebug;
         AZStd::string shaderSourceFolder;
         StringFunc::Path::GetFullPath(shaderSourceArg.c_str(), shaderSourceFolder);

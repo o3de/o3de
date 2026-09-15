@@ -39,18 +39,7 @@
 
 namespace MaterialCanvas
 {
-    // MUST match the standalone application's tool id, which AtomToolsApplication derives from the build target name
-    // ("MaterialCanvas", via LY_CMAKE_TARGET). This is not cosmetic and it is not free to change.
-    //
-    // DynamicNode serializes its tool id into the graph file (DynamicNode::Reflect, Field("toolId")), and on load asks
-    // DynamicNodeManagerRequestBus at *that* address for its configuration. A graph saved by the standalone tool therefore
-    // carries Crc32("MaterialCanvas") in every node. If the pane registers its node manager under any other id, those lookups
-    // reach an address with no handler, every node loses its config, and the graph opens as a field of unknown nodes -- while
-    // the node palette still works, because the palette is built from the pane's own manager rather than from the file.
-    //
-    // Sharing the id is safe because the two never run in the same process: the standalone tool is its own executable, and
-    // MaterialCanvasEditorSystemComponent deliberately builds nothing outside NotifyRegisterViews, which only the Editor
-    // broadcasts. It is also what makes graphs interchangeable between the two front ends, which is the point.
+    // Must match the standalone tool id ("MaterialCanvas"): DynamicNode serializes it into graphs and looks up its config there.
     const AZ::Crc32 MaterialCanvasEditorSystemComponent::ToolId = AZ_CRC_CE("MaterialCanvas");
 
     MaterialCanvasEditorSystemComponent* MaterialCanvasEditorSystemComponent::s_instance = nullptr;
@@ -73,9 +62,7 @@ namespace MaterialCanvas
         {
             serialize->Class<MaterialCanvasEditorSystemComponent, AZ::Component>()->Version(0);
 
-            // The standalone application registers these through MaterialCanvasApplication::Reflect. Graph documents
-            // serialize slot values into AZStd::any, and the matrix types are stored as arrays of vectors, so the generic
-            // types have to be registered before any graph containing a matrix constant can be loaded.
+            // Registered by MaterialCanvasApplication::Reflect in the standalone tool; needed to load graphs with matrix constants.
             serialize->RegisterGenericType<AZStd::array<AZ::Vector2, 2>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 3>>();
@@ -95,8 +82,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasEditorSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        // The dynamic node manager loads node configurations through the asset system, and the viewport settings system
-        // resolves preset assets, so both need the RPI up before this component activates.
+        // The node manager and viewport settings load assets, so the RPI must be up first.
         required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
@@ -165,9 +151,7 @@ namespace MaterialCanvas
     {
         s_instance = this;
 
-        // Deliberately does no real work. All initialization happens in NotifyRegisterViews, which only the Editor
-        // broadcasts. The standalone MaterialCanvas application loads Tools-variant gems as well, so it would otherwise
-        // construct a second, entirely unused copy of every system MaterialCanvasApplication already owns.
+        // Deliberately no work here: the standalone app loads Tools gems too, so initialization waits for NotifyRegisterViews.
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
@@ -175,9 +159,7 @@ namespace MaterialCanvas
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
 
-        // Capture the dock layout first, while the widget definitely still exists and is still laid out. CloseViewPane below hands it
-        // to Qt to delete, and that deletion can land after this function has already written the registry to disk, which is why the
-        // layout never made it into the settings file even on a clean shutdown.
+        // Capture the dock layout while the widget still exists; Qt may delete it after the registry is written.
         if (m_paneWindow)
         {
             m_paneWindow->SaveLayout();
@@ -188,9 +170,7 @@ namespace MaterialCanvas
 
         ReleaseSystems();
 
-        // Order matches MaterialCanvasApplication::Destroy: act on the toggles first so the stub files reflect their final state, then
-        // write the registry out. ReleaseSystems has already put the graph view configuration into the registry by this point, and the
-        // dock layout was captured above, so both are picked up by the save below.
+        // Same order as MaterialCanvasApplication::Destroy: apply the toggles, then save the registry.
         ApplyShaderBuildSettings();
         ApplyPreviewMaterialPipelineSettings();
         SaveSettings();
@@ -200,13 +180,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasEditorSystemComponent::SaveSettings()
     {
-        // The target file and filters match AtomToolsApplication::Destroy so that the pane and the standalone tool read and write the
-        // same settings rather than drifting apart. SaveSettingsToFile dumps the whole filtered registry rather than a delta, so
-        // whichever of the two exits last still writes a complete file.
-        //
-        // "/O3DE/Atom/GraphView" is added to the filters. The standalone omits it, which means the graph view configuration it carefully
-        // writes to the registry in Destroy is then dropped on the floor by the very next call. Including it here is what actually makes
-        // panning, zoom and node palette state survive.
+        // Same file and filters as AtomToolsApplication::Destroy, plus "/O3DE/Atom/GraphView" so graph view state actually persists.
         const AZ::IO::FixedMaxPath settingsFilePath(
             AZStd::string::format("%s/user/Registry/usersettings.materialcanvas.setreg", AZ::Utils::GetProjectPath().c_str()));
 
@@ -224,8 +198,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasEditorSystemComponent::ApplyShaderBuildSettings()
     {
-        // Reproduced from MaterialCanvasApplication::ApplyShaderBuildSettings. Copying any of these files requires restarting the Editor
-        // and the Asset Processor before the change is picked up.
+        // Mirrors MaterialCanvasApplication::ApplyShaderBuildSettings; changes need an Editor and Asset Processor restart.
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
         {
             const AZ::IO::FixedMaxPath materialCanvasGemPath = AZ::Utils::GetGemPath("MaterialCanvas");
@@ -264,13 +237,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasEditorSystemComponent::ApplyPreviewMaterialPipelineSettings()
     {
-        // The preview-only material pipeline is no longer selected by swapping the project's pipeline list. Material types generated by
-        // Material Canvas now declare the preview pipeline themselves, in their build settings, so the choice applies to the graphs being
-        // edited instead of to every material type in the project, and it takes effect on the next compile rather than the next restart.
-        //
-        // All that remains here is removing the settings registry file older builds copied into the project. Left behind it would still
-        // replace /O3DE/Atom/RPI/MaterialPipelineFiles for everything, which is exactly the behaviour being retired, and it would do so
-        // silently because nothing writes it any more.
+        // Material types now declare the preview pipeline themselves; just remove the setreg older builds copied into the project.
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
         {
             const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
@@ -291,9 +258,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Inside the Editor the default viewport context belongs to the level viewport. EntityPreviewViewportScene renames
-        // its own context to the default name so that frame capture and PostFX can find it, which is correct for a
-        // standalone tool that owns the only viewport and actively harmful here. Opt out before any pane viewport exists.
+        // The Editor's level viewport owns the default viewport context, so opt out of renaming before a pane viewport exists.
         AtomToolsFramework::SetSettingsValue<bool>(
             "/O3DE/AtomToolsFramework/EntityPreviewViewport/RenameToDefaultViewportContext", false);
 
@@ -331,24 +296,20 @@ namespace MaterialCanvas
             return;
         }
 
-        // Persist the graph view configuration the same way MaterialCanvasApplication::Destroy does, so panning, zoom and
-        // node palette state survive closing the pane.
+        // Persist graph view configuration as MaterialCanvasApplication::Destroy does, so panning, zoom and palette state survive.
         if (m_graphViewSettingsPtr)
         {
             AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
         }
 
-        // Reverse construction order. The document system goes first because open documents hold references to the graph
-        // context and the template cache, and because destroying it is what stops any graph compiler still queueing work at
-        // the Asset Processor.
+        // Reverse construction order; the document system first, since documents reference the context and it stops compiles.
         m_documentSystem.reset();
         m_viewportSettingsSystem.reset();
         m_graphViewSettingsPtr.reset();
         m_graphTemplateFileDataCache.reset();
         m_graphContext.reset();
 
-        // Owns a polling thread that talks to the Asset Processor. Leaving it alive after the pane closes is a large part of
-        // why the Asset Processor appeared to still have Material Canvas open.
+        // Owns an Asset Processor polling thread, so don't leave it alive after the pane closes.
         m_assetStatusReporterSystem.reset();
 
         m_dynamicNodeManager.reset();
@@ -356,9 +317,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasEditorSystemComponent::NotifyRegisterViews()
     {
-        // Broadcast by the Editor once during startup, which makes it the reliable signal that we are actually running
-        // inside the Editor. Only the pane registration happens here -- the tool systems are built lazily when the pane is
-        // first opened, so an Editor session that never opens Material Canvas pays nothing for it.
+        // Broadcast once by the Editor at startup; only register the pane here, the tool systems are built when it first opens.
         AzToolsFramework::ViewPaneOptions options;
         options.paneRect = QRect(100, 100, 1280, 1024);
         options.showOnToolsToolbar = true;
@@ -376,10 +335,7 @@ namespace MaterialCanvas
 
         if (!paneWindow)
         {
-            // Deferred to the next system tick rather than run inline. This is reached from the pane widget's destructor,
-            // and the document system owns views parented to that window, so tearing it down here would destroy objects
-            // Qt is still unwinding through. The lambda captures nothing and re-resolves the component, so it cannot
-            // dangle if the component is deactivated before the tick arrives.
+            // Deferred a tick: this runs from the pane's destructor, and the lambda re-resolves the component so it can't dangle.
             AZ::SystemTickBus::QueueFunction(
                 []()
                 {
@@ -444,9 +400,7 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), defaultSamplerState, "sampler"),
         });
 
-        // Scans the project and all enabled gems for .materialgraphnode files, which is how the node palette is populated.
-        // Both this and the standalone tool read the same configs out of the MaterialCanvas gem, so the node library never
-        // needs duplicating.
+        // Load .materialgraphnode configs from the project and gems, the same node library the standalone tool uses.
         m_dynamicNodeManager->LoadConfigFiles("materialgraphnode");
     }
 
@@ -553,8 +507,7 @@ namespace MaterialCanvas
             m_graphContext,
             [](){ return AZStd::make_shared<MaterialGraphCompiler>(ToolId); });
 
-        // Unlike the standalone application, the window is owned by the Editor and only exists while the pane is open, so the
-        // factory has to resolve it at call time and cope with it being absent.
+        // The Editor owns the window and it only exists while the pane is open, so resolve it at call time.
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
             if (!m_paneWindow)

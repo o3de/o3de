@@ -47,8 +47,7 @@ namespace AtomToolsFramework
             Failed
         };
 
-        //! Reserves the compiler for a new job when idle. If a job is already active, requests cancellation and returns false so the
-        //! caller can leave the replacement queued until the active job acknowledges cancellation and releases the compiler.
+        //! Reserves the compiler if idle; otherwise requests cancellation and returns false, leaving the replacement queued.
         virtual bool Reset();
 
         //! Requests cooperative cancellation of the active compilation without reserving a new one.
@@ -77,9 +76,7 @@ namespace AtomToolsFramework
         //! Dysfunction initiates and executes the graph compile, changing states accordingly.
         virtual bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath);
 
-        //! Records whether the compile about to run should produce the derived compiler's full production output in addition to whatever
-        //! reduced output it maintains for its own preview. Set by the document immediately before the compile job is started, so it is
-        //! stable for the duration of that compile. A compiler that draws no such distinction can ignore this entirely.
+        //! Whether the next compile should also produce full production output, not just the preview; set before the job starts.
         void SetProductionOutputRequested(bool requested)
         {
             m_productionOutputRequested = requested;
@@ -91,9 +88,7 @@ namespace AtomToolsFramework
             return m_productionOutputRequested;
         }
 
-        //! Returns true when this compiler keeps a production output distinct from the reduced one it maintains for a preview, and that
-        //! production output is behind the graph as of the last compile. A compiler that produces a single output has nothing to
-        //! publish and always reports false.
+        //! True when the separate production output is stale as of the last compile; single-output compilers return false.
         virtual bool IsProductionOutputStale() const
         {
             return false;
@@ -107,15 +102,13 @@ namespace AtomToolsFramework
         // Return true if generation and processing is complete. Otherwise, return falss
         bool ReportGeneratedFileStatus();
 
-        //! Returns whether a generated source file should block graph completion while its Asset Processor jobs settle.
-        //! Derived compilers can exclude files whose readiness is handled asynchronously by their consumers.
+        //! Whether a generated file should block completion while its AP jobs settle; derived compilers can exclude async files.
         virtual bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const;
 
         //! Returns true after another graph edit has requested that the active compilation stop.
         bool IsCancelRequested() const;
 
-        //! Publishes one terminal state and releases the compiler reservation. A cancellation request always wins over the requested
-        //! state. The optional callback is invoked only for a successful completion while cancellation is excluded by the lifecycle lock.
+        //! Publishes one terminal state (cancellation wins) and releases the reservation; the callback runs only on success.
         bool FinishCompile(State finalState, AZStd::function<void()> completionCallback = {});
 
         const AZ::Crc32 m_toolId = {};
@@ -139,8 +132,7 @@ namespace AtomToolsFramework
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
 
-        // Serializes compile reservation, cancellation, terminal publication, and release. The atomics are read by the compile worker at
-        // cancellation checkpoints without taking this lock.
+        // Serializes reservation, cancellation, completion and release; workers read the atomics without it.
         mutable AZStd::mutex m_compileLifecycleMutex;
         AZStd::atomic_bool m_compileInProgress = false;
         AZStd::atomic_bool m_cancelRequested = false;

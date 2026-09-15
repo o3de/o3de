@@ -39,11 +39,7 @@ namespace AtomToolsFramework
 
         // The viewport context created by RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
-        //
-        // This is only safe when the tool owns the only viewport in the process, which is true for the standalone Atom Tools
-        // applications and false when one of them is hosted inside the O3DE Editor. There the default viewport context
-        // belongs to the level viewport, and claiming its name takes it away from the Editor. Hosts in that situation set the
-        // setting below to false before constructing a viewport; the default preserves the standalone behaviour exactly.
+        // Only safe when the tool owns the process's only viewport; hosts inside the Editor set the setting below to false.
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/EntityPreviewViewport/RenameToDefaultViewportContext", true))
         {
             auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();

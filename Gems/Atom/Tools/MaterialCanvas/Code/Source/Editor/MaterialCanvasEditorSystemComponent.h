@@ -23,26 +23,7 @@ namespace MaterialCanvas
 {
     class MaterialCanvasPaneWindow;
 
-    //! Hosts Material Canvas inside the O3DE Editor as a view pane, as an alternative to launching the standalone
-    //! MaterialCanvas application.
-    //!
-    //! WHY THIS EXISTS
-    //!
-    //! The standalone tool is its own process, which means a second AzFramework::Application, a second Qt application, a
-    //! second Asset Processor connection and asset catalog, a second RPI system, and a second copy of every gem DLL the
-    //! project enables. Running it alongside the Editor roughly doubles the memory footprint of a look-dev session. Every
-    //! system the standalone application owns is really just a toolId-scoped object constructed with aznew and nothing about
-    //! them requires an Application, so they are constructed here instead and the Editor's process is shared.
-    //!
-    //! RELATIONSHIP TO THE STANDALONE APPLICATION
-    //!
-    //! MaterialCanvasApplication and MaterialCanvasMainWindow are deliberately untouched and still build and run exactly as
-    //! before. The setup performed in EnsureSystemsInitialized below mirrors MaterialCanvasApplication::StartCommon. That
-    //! duplication is intentional for now: it keeps the working tool at zero risk while this path is brought up. Once the
-    //! pane is proven, the shared setup should be lifted into a single helper owned by both.
-    //!
-    //! Keep the two in sync. If a data type, node edit-data setting, or document type is added to
-    //! MaterialCanvasApplication, it must be added here too or the pane will silently differ from the standalone tool.
+    //! Hosts Material Canvas as an Editor view pane, sharing the Editor process; keep in sync with MaterialCanvasApplication::StartCommon.
     class MaterialCanvasEditorSystemComponent
         : public AZ::Component
         , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -56,26 +37,19 @@ namespace MaterialCanvas
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        //! Bus address shared by every Material Canvas system and widget in the Editor process. AtomToolsFramework addresses
-        //! all of its buses by tool id specifically so that several tools can coexist in one process without colliding, which
-        //! is what makes hosting this in the Editor viable at all. It must stay distinct from any other tool's id.
+        //! Bus address for every Material Canvas system in the Editor; tool-id addressing lets tools coexist, so keep it unique.
         static const AZ::Crc32 ToolId;
 
-        //! The pane window is default-constructed by AzToolsFramework::RegisterViewPane and has no way to be handed its
-        //! dependencies, so it looks the component up instead. This mirrors LandscapeCanvas::GraphContext::SetInstance, which
-        //! solves the same problem the same way. Valid between Activate and Deactivate; null outside that window.
+        //! The default-constructed pane looks the component up here, as LandscapeCanvas does; null outside Activate/Deactivate.
         static MaterialCanvasEditorSystemComponent* GetInstance();
 
         MaterialCanvasEditorSystemComponent();
         ~MaterialCanvasEditorSystemComponent() override;
 
-        //! Called by MaterialCanvasPaneWindow on construction and destruction. The document type view factories need the
-        //! window that owns the document tabs, and unlike the standalone application this component does not own it -- the
-        //! Editor creates and destroys it as the pane is opened and closed.
+        //! Called by MaterialCanvasPaneWindow on construction and destruction; the view factories need the Editor-owned window.
         void SetPaneWindow(MaterialCanvasPaneWindow* paneWindow);
 
-        //! Also brings the tool systems up on first use. The pane window asks for these in its constructor's initializer
-        //! list, before its body runs, which makes this the earliest reliable hook for lazy initialization.
+        //! Also brings the tool systems up on first use; the pane requests these in its initializer list, the earliest hook.
         AtomToolsFramework::GraphViewSettingsPtr GetGraphViewSettings();
 
         //! Persists the current Material Canvas registry subtree while the Editor is still running.
@@ -96,22 +70,17 @@ namespace MaterialCanvas
         void OnActionContextRegistrationHook() override;
         void OnActionRegistrationHook() override;
 
-        //! Constructs the tool systems if they are not up yet, and does nothing if they are. Called when the pane opens
-        //! rather than when the Editor starts, so an Editor session that never opens Material Canvas pays nothing for it.
+        //! Constructs the tool systems if needed; called when the pane opens so Editor sessions that never open it pay nothing.
         void EnsureSystemsInitialized();
 
         //! Loads settings written by the standalone Material Canvas application before creating the shared settings object.
         void LoadSettings();
 
-        //! Copies the shader build and preview pipeline setreg stubs into the project user registry, mirroring
-        //! MaterialCanvasApplication. The pane offers both toggles in its settings dialog but had no equivalent of these, so flipping
-        //! one in the Editor set a registry value that nothing ever acted on and the Asset Processor never saw the override.
+        //! Copies the shader build and preview pipeline setreg stubs into the project user registry, as MaterialCanvasApplication does.
         void ApplyShaderBuildSettings();
         void ApplyPreviewMaterialPipelineSettings();
 
-        //! Tears the tool systems back down. Idempotent. Called when the pane closes and again on Deactivate, so that
-        //! closing the pane actually stops the graph compiler, the asset status reporter thread and the preview viewport
-        //! instead of leaving them running for the rest of the Editor session.
+        //! Tears the tool systems down (idempotent) when the pane closes and on Deactivate, stopping compiles and background threads.
         void ReleaseSystems();
 
         // These mirror the equivalent Init functions on MaterialCanvasApplication.

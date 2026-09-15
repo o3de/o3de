@@ -7,6 +7,5 @@
  */
 #pragma once
 
-// Material Canvas itself is not built here (PAL_TRAIT_ATOM_MATERIAL_CANVAS_APPLICATION_SUPPORTED is FALSE), so this is only
-// here to keep the trait defined on every platform. See MaterialCanvas_Traits_Windows.h.
+// Material Canvas isn't built on this platform; defined only so the trait exists everywhere (see MaterialCanvas_Traits_Windows.h).
 #define AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED 0

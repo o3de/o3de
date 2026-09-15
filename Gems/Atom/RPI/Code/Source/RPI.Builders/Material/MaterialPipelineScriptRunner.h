@@ -46,8 +46,7 @@ namespace AZ
 
                 AZStd::string GetLightingModelName() const;
 
-                //! Returns the value the material type declared for @name, or @defaultValue when it declared nothing.
-                //! See MaterialTypeSourceData::m_buildSettings for what this is for and what is recognised.
+                //! Returns the material type's value for @name, or @defaultValue; see MaterialTypeSourceData::m_buildSettings.
                 AZStd::string GetBuildSetting(const char* name, const char* defaultValue) const;
                 void IncludeAllShaders();
                 void ExcludeAllShaders();

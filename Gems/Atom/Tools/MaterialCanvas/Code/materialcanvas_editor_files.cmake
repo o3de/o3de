@@ -6,15 +6,7 @@
 #
 #
 
-# Sources for the Editor-hosted Material Canvas pane.
-#
-# Note what is NOT here. MaterialCanvasMainWindow belongs to the standalone application: it derives from
-# AtomToolsMainWindow, which wraps itself in a top-level window, runs its own FancyDocking, and builds its own asset
-# browser, python terminal and log panel. The Editor already provides all of that, so the pane composes the underlying
-# widgets itself in MaterialCanvasPaneWindow instead, the way Script Canvas does. main.cpp, MaterialCanvasApplication and
-# MaterialCanvasTestData are likewise absent -- those are the standalone process entry point and its application object.
-#
-# The graph compiler and viewport content ARE shared with the standalone target, compiled into both binaries.
+# Sources for the Editor-hosted pane; the standalone window/app files are excluded, the compiler and viewport content shared.
 
 set(FILES
     Source/Editor/MaterialCanvasEditorSystemComponent.cpp

@@ -28,26 +28,7 @@
 
 namespace MaterialCanvas
 {
-    //! Material Canvas as an O3DE Editor view pane.
-    //!
-    //! WHAT THIS BORROWS FROM WHERE
-    //!
-    //! There are two distinct layers in the standalone tool, and only one of them belongs in a pane.
-    //!
-    //! AtomToolsMainWindow is the application shell: it wraps itself in a WindowDecorationWrapper to become a top-level
-    //! window, runs its own AzQtComponents::FancyDocking instance, persists its own geometry, and builds an Asset Browser,
-    //! Python Terminal and Log Panel of its own. The Editor already provides every one of those and owns placement itself,
-    //! so none of that layer is used here. Docking is plain Qt, the way Script Canvas does it, and the Editor's own docking
-    //! manages this window from outside. The one thing worth taking from that layer is the settings dialog, which is how
-    //! every Material Canvas option is reached -- so OpenSettingsDialog and PopulateSettingsInspector are reproduced below.
-    //!
-    //! AtomToolsDocumentMainWindow is a different matter. Its tab bar, create/open/save menus, recent files, drag and drop,
-    //! save prompts and document notification handling are pure document logic with nothing standalone-specific about them.
-    //! Those behaviours follow the same implementations here rather than being reinvented.
-    //!
-    //! Nothing here is a fork of Material Canvas. The graph view, inspector, viewport, node palette and viewport content are
-    //! the same public classes the standalone tool uses, assembled differently. MaterialCanvasApplication and
-    //! MaterialCanvasMainWindow are untouched.
+    //! Material Canvas as an Editor view pane: the standalone tool's document logic and widgets without its application shell.
     class MaterialCanvasPaneWindow
         : public AzQtComponents::DockMainWindow
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
@@ -59,20 +40,14 @@ namespace MaterialCanvas
 
         using Base = AzQtComponents::DockMainWindow;
 
-        //! Constructed by AzToolsFramework::RegisterViewPane, which always passes a null parent and reparents the finished
-        //! widget into its own DockWidget afterwards. Nothing here may assume it has a parent.
+        //! Constructed by RegisterViewPane with a null parent and reparented afterwards, so never assume a parent.
         explicit MaterialCanvasPaneWindow(QWidget* parent = nullptr);
         ~MaterialCanvasPaneWindow() override;
 
-        //! Adds a document view widget as a tab. Called by the document type view factories on
-        //! MaterialCanvasEditorSystemComponent, the equivalent of AtomToolsDocumentMainWindow::AddDocumentTab.
+        //! Adds a document view as a tab; the pane's equivalent of AtomToolsDocumentMainWindow::AddDocumentTab.
         bool AddDocumentView(const AZ::Uuid& documentId, QWidget* viewWidget);
 
-        //! Writes the current dock layout into the settings registry.
-        //!
-        //! Public because MaterialCanvasEditorSystemComponent has to call it while this widget is still alive. The destructor calls it
-        //! as well, but at Editor shutdown CloseViewPane hands the widget to Qt to delete, and that can happen after the component has
-        //! already deactivated and written the registry out to disk. Relying on the destructor alone lost the layout every time.
+        //! Writes the dock layout to the registry; public because the component must call it before Qt deletes this widget.
         void SaveLayout() const;
 
         //! Invoked by the Editor Action Manager Save action while this pane has focus.
@@ -91,9 +66,7 @@ namespace MaterialCanvas
         MaterialCanvasPaneWindow(const MaterialCanvasPaneWindow&) = delete;
         MaterialCanvasPaneWindow& operator=(const MaterialCanvasPaneWindow&) = delete;
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
-        // Every notification that can change a tab's title or the enabled state of a menu action is handled, matching
-        // AtomToolsDocumentMainWindow. Missing OnDocumentSaved is what leaves a saved document showing a modified marker.
+        // AtomToolsDocumentNotificationBus::Handler overrides, matching AtomToolsDocumentMainWindow (incl. OnDocumentSaved).
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
@@ -111,16 +84,13 @@ namespace MaterialCanvas
         void CreateInspectorDock();
         void CreateNodePaletteDock();
 
-        //! Adds @widget to a plain QDockWidget and docks it in @area. The local equivalent of
-        //! AtomToolsMainWindow::AddDockWidget, minus the FancyDocking involvement.
+        //! Docks @widget in a plain QDockWidget at @area; AtomToolsMainWindow::AddDockWidget without FancyDocking.
         QDockWidget* AddDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area, bool visible = true);
 
-        //! QMainWindow::saveState/restoreState, persisted through the settings registry. This is how Script Canvas keeps its
-        //! layout; AtomToolsMainWindow's equivalent goes through FancyDocking, which this window does not use.
+        //! Restores the saveState layout from the settings registry, as Script Canvas does (no FancyDocking).
         void RestoreLayout();
 
-        //! The settings dialog, reproduced from AtomToolsMainWindow. Without it none of the Material Canvas options --
-        //! including the shader build and preview pipeline toggles -- can be reached from the pane at all.
+        //! The settings dialog, reproduced from AtomToolsMainWindow so Material Canvas options are reachable from the pane.
         void OpenSettingsDialog();
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const;
 
@@ -153,8 +123,7 @@ namespace MaterialCanvas
         QDockWidget* m_viewportDock = {};
 
         QMenu* m_menuOpenRecent = {};
-        // Publishes the material the graph currently describes. The pane builds its own File menu rather than inheriting
-        // AtomToolsDocumentMainWindow's, so this is a second copy of the action added to MaterialCanvasMainWindow.
+        // Publishes the material the graph describes; a copy of MaterialCanvasMainWindow's action, since the pane builds its own menu.
         QAction* m_actionApply = {};
 
         QAction* m_actionSave = {};
@@ -163,8 +132,7 @@ namespace MaterialCanvas
         QAction* m_actionClose = {};
         QAction* m_actionCloseAll = {};
 
-        //! Rebuilt each time the settings dialog opens, so it is mutable for the const populate function, matching
-        //! MaterialCanvasMainWindow.
+        //! Rebuilt each time the settings dialog opens, hence mutable, matching MaterialCanvasMainWindow.
         mutable AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> m_materialCanvasCompileSettingsGroup;
     };
 } // namespace MaterialCanvas
