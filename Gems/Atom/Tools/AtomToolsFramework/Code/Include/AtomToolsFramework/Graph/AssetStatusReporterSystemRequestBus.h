@@ -38,8 +38,7 @@ namespace AtomToolsFramework
         //! Return the overall status for files corresponding to the request ID
         virtual AssetStatusReporterState GetStatus(const AZ::Uuid& requestId) const = 0;
 
-        //! Return a human readable description of what the request is currently waiting on, naming the file whose jobs have not
-        //! settled yet. Empty when the request ID is unknown.
+        //! Human readable description of what the request is waiting on; empty for an unknown request ID.
         virtual AZStd::string GetStatusMessage(const AZ::Uuid& requestId) const = 0;
     };
 

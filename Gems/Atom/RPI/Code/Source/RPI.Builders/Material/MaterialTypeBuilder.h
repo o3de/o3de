@@ -62,23 +62,14 @@ namespace AZ
                     MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
-                //! Material pipelines this material type should be built through.
-                //!
-                //! Without a material type, or without a "materialPipelines" build setting on it, this is the project wide default list:
-                //! /O3DE/Atom/RPI/MaterialPipelineFiles plus everything under MaterialPipelineFilesByGem, exactly as before.
-                //!
-                //! A material type that names pipelines in its build settings gets only those, resolved by file stem against the default
-                //! list and against /O3DE/Atom/RPI/OptInMaterialPipelineFiles. Opt-in pipelines are registered but never built unless a
-                //! material type asks for one by name, which is what lets a tool ship a pipeline of its own without adding it to every
-                //! material type in the project.
+                //! The project's default pipelines, or only those named by the material type's "materialPipelines" build setting.
                 AZStd::set<AZStd::string> GetMaterialPipelinePaths(const MaterialTypeSourceData* materialTypeSourceData = nullptr) const;
                 AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines(
                     const MaterialTypeSourceData* materialTypeSourceData = nullptr) const;
                 //! The addressable name of a pipeline: its file stem. This is what a material type names in "materialPipelines".
                 Name GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const;
 
-                //! The name the generated shader collection is stored under, which the runtime looks up through
-                //! RenderPipelineDescriptor::m_materialPipelineTag. Same as the file stem unless the pipeline overrides it.
+                //! Shader collection name the runtime looks up via m_materialPipelineTag; the file stem unless overridden.
                 Name GetMaterialPipelineTag(
                     const AZ::IO::Path& materialPipelineFilePath, const MaterialPipelineSourceData& materialPipeline) const;
 

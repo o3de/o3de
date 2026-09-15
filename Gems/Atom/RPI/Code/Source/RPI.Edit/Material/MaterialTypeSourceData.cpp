@@ -123,9 +123,7 @@ namespace AZ
                     ;
 
                 serializeContext->RegisterGenericType<VersionUpdates>();
-                // BuildSettings is the same underlying type as UvNameMap (AZStd::map<AZStd::string, AZStd::string>), so the
-                // registration above already covers it. Registering it a second time would be a duplicate registration of one generic
-                // type.
+                // BuildSettings is the same type as UvNameMap, so the registration above already covers it.
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()

@@ -6,8 +6,7 @@
 #
 #
 
-# The gem module itself. Everything of substance lives in MaterialCanvas.Editor.Static; this target only exists to expose
-# it to the Editor as a loadable gem module, which is the same split Landscape Canvas uses.
+# The gem module itself; everything of substance is in MaterialCanvas.Editor.Static, the same split as Landscape Canvas.
 
 set(FILES
     Source/Editor/MaterialCanvasEditorModule.cpp

@@ -200,10 +200,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 ${pal_builder_tools_includes}
             PUBLIC
                 Include
-                # Public so that RHI.Builders/ShaderPlatformInterface.h can be reached from outside this gem. Material Canvas
-                # drives it directly to run DXC in process for the preview shader, instead of writing files and waiting for the
-                # Asset Processor to run the same class. Same reasoning, and same one-line change, as AtomShader.Static, which
-                # exports Source so a tool can call AzslCompiler.
+                # Public so Material Canvas can use RHI.Builders/ShaderPlatformInterface.h to run DXC in process.
                 Source
         BUILD_DEPENDENCIES
             PRIVATE

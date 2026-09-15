@@ -48,16 +48,7 @@ namespace AZ
             //! Same as the above overload, but for material TYPE assets.
             void AddImageAssetDependenciesToProduct(const AZ::RPI::MaterialTypeAsset* materialTypeAsset, AssetBuilderSDK::JobProduct& product);
 
-            //! Measurement only: reports where a builder job's time actually went.
-            //!
-            //! The shader builder already has this. ExecuteShaderCompiler logs elapsedTimeMillis for every tool it runs, which is
-            //! why a shader job's duration can be broken down into azslc, DXC and the rest, and why every optimisation so far has
-            //! been aimed at that job. The material type and material jobs had no equivalent, so their durations in the Asset
-            //! Processor's job list were opaque totals -- and between them they are roughly 40% of the time a Material Canvas edit
-            //! takes to reach the viewport.
-            //!
-            //! Each Mark() closes the phase that was running and starts the next. The destructor closes the last one, so a job that
-            //! returns early still reports what it managed to do.
+            //! Measurement only: logs how long each Mark()ed phase of a builder job took; the destructor closes the last phase.
             class JobPhaseTimer final
             {
             public:
@@ -79,8 +70,7 @@ namespace AZ
 
                 ~JobPhaseTimer()
                 {
-                    // Whatever ran after the last Mark, including teardown. Named rather than hidden so the phases always sum to
-                    // the total and an unaccounted chunk is visible rather than quietly distributed.
+                    // Whatever ran after the last Mark, named so the phases always sum to the total.
                     Mark("(unmarked)");
 
                     const double totalMs =

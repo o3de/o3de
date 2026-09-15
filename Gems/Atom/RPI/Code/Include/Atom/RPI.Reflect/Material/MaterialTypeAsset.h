@@ -92,12 +92,7 @@ namespace AZ
             //! Return the general purpose shader collection that applies to any render pipeline.
             const ShaderCollection& GetGeneralShaderCollection() const;
 
-            //! Replaces the appropriate asset members with @asset, wherever this material type refers to an asset with the same id.
-            //!
-            //! Used by the reload path below, where the asset system has produced a newer version of something this material type
-            //! depends on. Public because that is not the only way a newer version can arrive: Material Canvas compiles a preview
-            //! shader in process and hands the result here directly, which is the same situation without the asset system in it.
-            //! Anything with a different id is ignored, so this cannot be used to substitute one shader for another.
+            //! Replaces any referenced asset with @asset's id (reloads, Material Canvas in-process shaders); other ids are ignored.
             void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
 
             //! The material may contain any number of MaterialFunctors.

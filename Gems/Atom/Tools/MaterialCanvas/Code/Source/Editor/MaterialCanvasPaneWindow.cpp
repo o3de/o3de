@@ -28,8 +28,7 @@
 #include <Editor/MaterialCanvasPaneWindow.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
-// NodePaletteDockWidget.h only forward declares NodePaletteConfig; the definition is in NodePaletteWidget.h. Constructing
-// one by value needs the complete type, which is why MaterialCanvasMainWindow.h includes both headers as well.
+// NodePaletteDockWidget.h only forward declares NodePaletteConfig; constructing one by value needs NodePaletteWidget.h.
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 
@@ -53,9 +52,7 @@ namespace MaterialCanvas
     {
         static constexpr const char* PaneLayoutSettingsKey = "/O3DE/Editor/MaterialCanvasPane/PaneWindowState";
 
-        //! Resolves the shared graph view settings, bringing the tool systems up on first use.
-        //!
-        //! Free rather than a member because it is called from the constructor's initializer list, before the object exists.
+        //! Resolves the shared graph view settings (initializing on first use); free because the initializer list calls it.
         AtomToolsFramework::GraphViewSettingsPtr GetGraphViewSettingsForPane()
         {
             if (auto systemComponent = MaterialCanvasEditorSystemComponent::GetInstance())
@@ -67,16 +64,7 @@ namespace MaterialCanvas
             return {};
         }
 
-        //! THIS MUST STAY A FREE FUNCTION, and so must anything else that names AtomToolsDocumentNotifications.
-        //!
-        //! MaterialCanvasPaneWindow inherits AtomToolsDocumentNotificationBus::Handler privately, which makes the injected
-        //! name AtomToolsDocumentNotifications an inaccessible member of this class. Forming
-        //! &AtomToolsDocumentNotifications::OnDocumentOpened inside a member function is therefore ill-formed (MSVC
-        //! C2247/C2248) no matter whether it is spelled through ::Handler:: or ::Events:: -- it is the name lookup that is
-        //! rejected, not the member. A namespace-scope function is not part of the hierarchy, so the check does not apply.
-        //!
-        //! This does NOT affect AtomToolsDocumentSystemRequestBus or AtomToolsDocumentRequestBus, which are not bases of
-        //! this window and are used from members normally.
+        //! Must stay free: the private Handler base makes AtomToolsDocumentNotifications inaccessible in members (MSVC C2247/C2248).
         void NotifyDocumentOpened(const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -142,8 +130,7 @@ namespace MaterialCanvas
     {
         setObjectName("MaterialCanvasPaneWindow");
 
-        // Plain Qt docking. The Editor's own FancyDocking instance manages this window from the outside, so this window must
-        // not create one of its own -- that is the arrangement Script Canvas uses.
+        // Plain Qt docking, as Script Canvas does; the Editor's FancyDocking manages this window from outside.
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -170,8 +157,7 @@ namespace MaterialCanvas
                 }
             });
 
-        // Starting widths, used only when there is no saved layout to restore. Without these the node palette can collapse
-        // to nothing, because Qt has no size hint worth using before any of these widgets have content.
+        // Starting widths when there is no saved layout, or the node palette can collapse to nothing.
         if (m_nodePalette && m_inspectorDock)
         {
             resizeDocks({ m_nodePalette, m_inspectorDock }, { 280, 380 }, Qt::Horizontal);
@@ -206,8 +192,7 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusDisconnect();
 
-        // Last resort. closeEvent normally closes documents with prompts before this point; by the time the destructor runs
-        // there is nobody left to ask, and the document views are children of a tab widget that is about to be destroyed.
+        // Last resort: closeEvent normally prompts first, but nobody is left to ask by the time the destructor runs.
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
 
@@ -219,8 +204,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasPaneWindow::closeEvent(QCloseEvent* event)
     {
-        // Give the user a chance to save before the pane goes away. Cancelling any prompt aborts the close, which is why
-        // this cannot simply live in the destructor.
+        // Prompt to save before the pane goes away; cancelling aborts the close, so this can't live in the destructor.
         if (!CloseDocuments(GetOpenDocumentIds()))
         {
             event->ignore();
@@ -229,15 +213,7 @@ namespace MaterialCanvas
 
         SaveLayout();
 
-        // AtomToolsMainWindow::closeEvent writes this window's dock state to a tool agnostic settings key that the standalone Material
-        // Canvas application also reads on startup. The two are not interchangeable: the pane and the application host different sets of
-        // dock widgets, so restoring the pane's state into the application leaves it without a realised viewport, and the first tick then
-        // dereferences a null ViewGroup inside PostFxLayerComponentController. That is the crash that made the standalone tool unusable
-        // until usersettings.materialcanvas.setreg was deleted by hand, and it survived closing the Editor because the bad value was
-        // already on disk.
-        //
-        // The pane keeps its own layout under PaneLayoutSettingsKey, base64 encoded, so nothing here is lost by leaving the shared key
-        // exactly as the standalone application left it.
+        // Keep the shared key as the standalone app left it: restoring the pane's layout there crashed the standalone tool.
         static constexpr const char* SharedWindowStateKey = "/O3DE/AtomToolsFramework/MainWindow/WindowState";
         const AZStd::string windowStateBeforeClose = AtomToolsFramework::GetSettingsObject(SharedWindowStateKey, AZStd::string());
 
@@ -264,11 +240,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasPaneWindow::SaveLayout() const
     {
-        // QMainWindow::saveState returns arbitrary binary. Copying it straight into a settings registry string, as this did before,
-        // produces a settings file that is not valid UTF-8 and therefore cannot be read back reliably. The same defect is visible in
-        // the standalone tool's own AtomToolsFramework/MainWindow/Layouts entry, which is where the invalid bytes in
-        // usersettings.materialcanvas.setreg come from. StringFunc::Base64 exists for exactly this, per its own documentation:
-        // "allows it to be stored safely in json or xml data".
+        // saveState returns binary, so base64 encode it; raw bytes made the settings file invalid UTF-8.
         const QByteArray windowState = saveState();
         const AZStd::string encodedState = AZ::StringFunc::Base64::Encode(
             reinterpret_cast<const AZ::u8*>(windowState.constData()), aznumeric_cast<size_t>(windowState.size()));
@@ -299,9 +271,7 @@ namespace MaterialCanvas
     {
         QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
 
-        // New and Open are built from the registered document types, exactly as AtomToolsDocumentMainWindow does, so all
-        // three types (Material Graph, Material Graph Node Config, Shader Source Data) get entries and each dialog is
-        // filtered to its own extensions.
+        // New and Open are built from the registered document types, as AtomToolsDocumentMainWindow does.
         const auto documentTypes = GetRegisteredDocumentTypes(m_toolId);
 
         QMenu* newMenu = documentTypes.size() > 1 ? fileMenu->addMenu(tr("&New")) : fileMenu;
@@ -319,9 +289,7 @@ namespace MaterialCanvas
                 this,
                 [this, documentType]()
                 {
-                    // CreateDocumentFromTypeName alone does not seed a new graph from its template, which is why creating
-                    // one that way produced nothing usable. The dialog collects a source template and a target path, and
-                    // CreateDocumentFromFilePath copies one to the other.
+                    // CreateDocumentFromTypeName doesn't seed from a template, so copy the chosen one via CreateDocumentFromFilePath.
                     AtomToolsFramework::CreateDocumentDialog dialog(
                         documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
                     dialog.adjustSize();
@@ -390,9 +358,7 @@ namespace MaterialCanvas
 
         fileMenu->addSeparator();
 
-        // Apply sits next to Save because the two are halves of one decision. Save writes the graph; Apply publishes the material the
-        // graph describes. An edit refreshes only the reduced preview build, so without Apply there is no way to try a change in a level
-        // without committing it to the source file first.
+        // Apply sits next to Save: Save writes the graph, Apply publishes its material (edits refresh only the preview).
         m_actionApply = fileMenu->addAction(tr("A&pply"));
         m_actionApply->setShortcut(QKeySequence("Ctrl+Shift+A"));
         connect(
@@ -471,14 +437,11 @@ namespace MaterialCanvas
 
         fileMenu->addSeparator();
 
-        // Without this, none of the Material Canvas options are reachable from the pane -- including Enable Faster Shader
-        // Builds and Use Preview-Only Material Pipeline, which are the two that matter most for compile times.
+        // Without this none of the Material Canvas options, including the shader build toggles, are reachable from the pane.
         auto actionSettings = fileMenu->addAction(tr("Settings..."));
         connect(actionSettings, &QAction::triggered, this, [this]() { OpenSettingsDialog(); });
 
-        // Built from this window's own docks rather than QMainWindow::createPopupMenu. That helper returns a menu whose
-        // actions are owned elsewhere, and copying them into another menu that is then rebuilt on every show does not
-        // survive reliably -- which is why the previous View menu came up empty.
+        // Built from this window's own docks; menus copied from createPopupMenu came up empty.
         QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
         connect(
             viewMenu,
@@ -599,8 +562,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasPaneWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
-        // Kept identical to MaterialCanvasMainWindow::PopulateSettingsInspector. If a setting is added there it must be
-        // added here too, or it will be reachable from the standalone tool and invisible in the pane.
+        // Keep identical to MaterialCanvasMainWindow::PopulateSettingsInspector, or settings go missing from the pane.
         m_materialCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
             tr("Material Canvas Settings").toUtf8().constData(),
             tr("Material Canvas Settings").toUtf8().constData(),
@@ -743,9 +705,7 @@ namespace MaterialCanvas
                     m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
         }
 
-        // The standalone tool would call Base::PopulateSettingsInspector here to append AtomToolsMainWindow's Application
-        // Settings group. Those are process-level options (log clearing on start, source control, tick intervals) that
-        // belong to a standalone application, not to a pane inside the Editor, so they are deliberately not shown.
+        // Base::PopulateSettingsInspector is deliberately skipped: its Application Settings are process-level, not for an Editor pane.
     }
 
     bool MaterialCanvasPaneWindow::SaveDocument(const AZ::Uuid& documentId)
@@ -952,8 +912,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasPaneWindow::CreateViewportDock()
     {
-        // Identical construction to MaterialCanvasMainWindow. The viewport, its scene, its content and its input controller
-        // are the same classes; only the surrounding window differs.
+        // Identical construction to MaterialCanvasMainWindow; only the surrounding window differs.
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
@@ -988,8 +947,7 @@ namespace MaterialCanvas
     {
         auto dockWidget = new QDockWidget(name, this);
 
-        // The object name is what QMainWindow::saveState keys dock positions on, so it must be stable across sessions or the
-        // saved layout will not restore.
+        // QMainWindow::saveState keys dock positions on the object name, so it must be stable across sessions.
         dockWidget->setObjectName(QString("MaterialCanvasPane_%1").arg(QString(name).remove(' ')));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         widget->setParent(dockWidget);
@@ -1085,13 +1043,11 @@ namespace MaterialCanvas
             AtomToolsFramework::GraphDocumentRequestBus::EventResult(
                 applyNeeded, GetCurrentDocumentId(), &AtomToolsFramework::GraphDocumentRequestBus::Events::IsApplyGraphNeeded);
 
-            // Hidden rather than disabled when preview output is off. There is no second output to publish then, so every compile has
-            // already produced the real material.
+            // Hidden when preview output is off: every compile already produced the real material.
             m_actionApply->setVisible(MaterialGraphCompiler::IsPreviewOutputEnabled());
             m_actionApply->setEnabled(isOpen && applyNeeded);
 
-            // Greying out is the indicator: enabled means the material outside Material Canvas is behind the graph. The tooltip says
-            // which state this is, because a disabled item on its own reads as broken rather than as done.
+            // Enabled means the material outside Material Canvas is behind the graph; the tooltip explains either state.
             m_actionApply->setToolTip(
                 applyNeeded ? tr("Rebuild the material for use outside Material Canvas. It is currently behind this graph.")
                             : tr("The material outside Material Canvas is up to date with this graph."));
@@ -1117,8 +1073,7 @@ namespace MaterialCanvas
     {
         if (const int index = GetTabIndexForDocument(documentId); index >= 0)
         {
-            // Removing the tab detaches the view widget; deleteLater keeps it alive until the current event has finished
-            // unwinding, since this can be reached from the view's own signal handlers.
+            // Removing the tab detaches the view; deleteLater keeps it alive while its own signal handlers unwind.
             QWidget* viewWidget = m_tabWidget->widget(index);
             m_tabWidget->removeTab(index);
             if (viewWidget)

@@ -7,6 +7,5 @@
  */
 #pragma once
 
-// No ShaderPlatformInterface a tool can construct here -- see MaterialCanvas_Traits_Windows.h and
-// shader_dependencies_linux.cmake, which links nothing for this reason. The preview still builds through the Asset Processor.
+// No tool-constructible ShaderPlatformInterface here, so the preview builds through the Asset Processor (see the Windows traits).
 #define AZ_TRAIT_MATERIALCANVAS_IN_MEMORY_SHADER_COMPILATION_SUPPORTED 0

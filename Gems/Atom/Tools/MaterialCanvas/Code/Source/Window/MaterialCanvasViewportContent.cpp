@@ -107,8 +107,7 @@ namespace MaterialCanvas
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusConnect(m_toolId);
 
-        // The viewport has to keep watching the asset catalog after a graph compile reports completion. See ApplyMaterial for why the
-        // assets it needs are frequently not registered yet at that point.
+        // Keep watching the catalog after a compile completes; see ApplyMaterial for why assets often aren't registered yet.
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
         MaterialGraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
@@ -152,16 +151,14 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportContent::OnDocumentClosed(const AZ::Uuid& documentId)
     {
-        // The path has to be read before the document is gone, and only this document's values are dropped. Another document's values
-        // stay put so that it still has them if it is brought back to the front.
+        // Read the path before the document is gone, and drop only this document's values.
         if (const AZStd::string graphPath = GetDocumentPath(documentId); !graphPath.empty())
         {
             AZStd::scoped_lock lock(m_materialPropertyValuesMutex);
             m_materialPropertyValuesByGraphPath.erase(graphPath);
         }
 
-        // Closing a document that is not the one on screen must not blank the preview. Every other member below describes the applied
-        // document only, so touching them for an unrelated close would clear a preview that is still perfectly valid.
+        // Closing a document that isn't on screen must not blank the preview.
         if (documentId != m_appliedDocumentId)
         {
             return;
@@ -188,17 +185,14 @@ namespace MaterialCanvas
     {
         if (m_lastOpenedDocumentId == documentId)
         {
-            // Anything compiled for the previous edit is now stale. Bumping the generation makes a job that is still running
-            // discard its own result rather than apply it to this edit.
+            // Bump the generation so a still-running job discards its result instead of applying it to this edit.
             ++m_compileGeneration;
         }
 
         if (m_lastOpenedDocumentId == documentId &&
             AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", true))
         {
-            // Blank the object but keep tracking the document. Clearing the tracked ID here would disarm the catalog handler for the
-            // duration of the compile, and a compile that never reports completion, which is what o3de/o3de#19642 describes, would leave
-            // the viewport blank with nothing able to recover it.
+            // Blank the object but keep tracking the document, so a compile that never completes (o3de/o3de#19642) can still recover.
             ClearMaterial();
         }
     }
@@ -215,15 +209,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Start compiling now, while the graph compiler waits for the Asset Processor to build the files it just wrote.
-        //
-        // That wait is about 600 ms of a 900 ms compile and none of it is work this needs: the shader is compiled from the
-        // generated .azsli files directly, and MCPP resolves them from disk. Waiting for OnCompileGraphCompleted meant running a
-        // ~550 ms compile strictly after a ~600 ms wait that it could have run underneath.
-        //
-        // The material type is not available yet, so the shaders to rebuild are taken from the one already on screen -- which is
-        // the same set, because a graph edit that changes which shaders exist also changes the material type, and that case falls
-        // back to the Asset Processor anyway.
+        // Start compiling now, under the ~600 ms Asset Processor wait, using the shaders of the material type already on screen.
         if (m_appliedMaterialTypeAsset)
         {
             QueueInMemoryShaderCompile(m_appliedMaterialTypeAsset, GetGeneratedFilePath(documentId, ".materialtype"));
@@ -239,15 +225,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Nothing to apply yet if the shader for this edit is still compiling.
-        //
-        // Now that the compile no longer waits for the Asset Processor, this runs a few hundred milliseconds before the shader is
-        // ready, and applying here builds a whole material -- instance, property overrides, pipeline state -- around the previous
-        // edit's shader, only to rebuild it around the right one moments later. Worse, that throwaway build occupies the main thread
-        // at exactly the moment the real result lands: the shader was ready at 585 ms and did not reach the screen until 890 ms.
-        //
-        // The compile job queues an apply when it finishes, whether or not it produced anything, so this is a deferral rather than a
-        // decision not to apply.
+        // Defer while this edit's shader is still compiling; the job queues an apply when it finishes.
         if (m_shaderCompileInFlight)
         {
             return;
@@ -322,10 +300,7 @@ namespace MaterialCanvas
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             generatedFiles, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGeneratedFilePaths);
 
-        // Prefer the preview output set over the production one. A compile triggered by a save writes both, they share a file name and
-        // differ only by folder, and both resolve, so without an explicit preference the viewport would display whichever one the Asset
-        // Processor happened to publish first. The production set stays in the list as the fallback, which is what a graph compiled with
-        // preview output turned off has, and what a graph has before its first save.
+        // Prefer the preview set when both exist (after a save); the production set remains as the fallback.
         if (MaterialGraphCompiler::IsPreviewOutputEnabled())
         {
             AZStd::vector<AZStd::string> previewFiles;
@@ -346,20 +321,10 @@ namespace MaterialCanvas
         {
             if (generatedFile.ends_with(extension))
             {
-                // TraceLevel::None because an unresolved file is an expected, transient state while the Asset Processor catches up with
-                // the files the graph compiler just wrote. QueueApplyMaterialIfAffected retries until it resolves, and reporting an error
-                // on every attempt would fill the log during ordinary editing.
+                // TraceLevel::None: an unresolved file is expected while the AP catches up, and QueueApplyMaterialIfAffected retries.
                 if (auto assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(generatedFile, 0, AZ::RPI::AssetUtils::TraceLevel::None))
                 {
-                    // MakeAssetId only maps the source file to its GUID. It succeeds as soon as the Asset Processor knows the source
-                    // exists and says nothing about whether the product has actually been built, so on its own it will happily hand back
-                    // an ID for an asset that is still being generated. Loading that leaves the material referencing shader assets from
-                    // a half finished build, which surfaces as "OptionGroup for specialization is different to the one in the
-                    // ShaderAsset" and, further along, as material functors initialised from data that was never written.
-                    //
-                    // Requiring the product to be registered in the catalog turns that into a miss instead. The catalog handler re-applies
-                    // once the Asset Processor publishes it, which is the same path that recovers from a compile whose status wait timed
-                    // out, so nothing is lost by waiting.
+                    // MakeAssetId succeeds before the product exists, so require a catalog entry; the catalog handler retries later.
                     AZ::Data::AssetInfo assetInfo;
                     AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                         assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetIdOutcome.GetValue());
@@ -377,32 +342,12 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportContent::ApplyMaterial(const AZ::Uuid& documentId)
     {
-        // Record what the viewport is showing so that later asset catalog updates can rebuild it.
-        //
-        // This function routinely runs before the assets it needs exist. GraphCompiler::ReportGeneratedFileStatus waits on the Asset
-        // Processor jobs for the files the graph compiler wrote, but the generated material type is abstract: MaterialTypeBuilder's
-        // pipeline stage expands it into intermediate azsl, shader and material type sources, and those are queued as a second wave of
-        // jobs that the original source paths know nothing about. AssetStatusReporter therefore reports success, and the compile is
-        // announced as complete, while the shaders are still building. Resolving the material here can fail outright, or succeed against
-        // products that are about to be replaced.
+        // Record what's shown so catalog updates can rebuild it; the pipeline stage's shader jobs often haven't finished yet.
         m_appliedDocumentId = documentId;
         m_appliedMaterialAssetId = GetGeneratedAssetId(documentId, ".material");
         m_appliedMaterialTypeAssetId = GetGeneratedAssetId(documentId, ".materialtype");
 
-        // When material canvas generates assets, material input property values are assigned as default values in the material type instead
-        // of overridden values in the material. The generated material asset is empty except for a single field referencing the material
-        // type. Because the material asset never changes, it won't be reprocessed by the AP or treated as a unique asset in the asset
-        // system. We force the viewport to create a unique material instance every time a change needs to be reflected in material canvas.
-        // Build the material here rather than waiting for the Asset Processor to finish building it, when that is enabled.
-        //
-        // The two jobs this replaces, FinalStage and MaterialBuilder, cost 300 ms and 268 ms of Asset Processor time for 16 ms and
-        // roughly 20 ms of actual work. The rest is hashing, dependency fingerprinting, product copies and catalog updates around
-        // builders that barely do anything. Nothing is reimplemented to skip them: CreateMaterialTypeAsset and MaterialAssetCreator
-        // are the same public calls those builders make.
-        //
-        // The shader is still built by the Asset Processor, and this depends on that having finished, because the material type
-        // resolves its shader references through the asset system. Every way this can fail is a way of saying "not ready yet", so
-        // failure falls through to the path below, which waits.
+        // Build the material in process if enabled, skipping FinalStage/MaterialBuilder; any failure falls through to the wait below.
         if (ApplyInMemoryMaterial(documentId))
         {
             AZ_TracePrintf(
@@ -416,6 +361,10 @@ namespace MaterialCanvas
             "Preview material applied through the asset system%s.\n",
             m_appliedMaterialAssetId.IsValid() ? "" : " (nothing resolved yet, so nothing is on screen)");
 
+        // When material canvas generates assets, material input property values are assigned as default values in the material type instead
+        // of overridden values in the material. The generated material asset is empty except for a single field referencing the material
+        // type. Because the material asset never changes, it won't be reprocessed by the AP or treated as a unique asset in the asset
+        // system. We force the viewport to create a unique material instance every time a change needs to be reflected in material canvas.
         AZ::Render::MaterialAssignment materialAssignment;
         materialAssignment.m_materialAsset.Create(m_appliedMaterialAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         materialAssignment.m_materialInstanceMustBeUnique = true;
@@ -424,8 +373,7 @@ namespace MaterialCanvas
         AZ::Render::MaterialComponentRequestBus::Event(
             GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialMap, materialAssignmentMap);
 
-        // SetMaterialMap replaces the assignment, and with it any property overrides that were on it, so the values from the last compile
-        // have to go back on afterwards.
+        // SetMaterialMap drops existing property overrides, so reapply the last compile's values.
         ApplyMaterialPropertyValues();
     }
 
@@ -437,8 +385,7 @@ namespace MaterialCanvas
             return; // One already running. It will queue an apply when it finishes.
         }
 
-        // Collected here, on the main thread, because it walks the material type's shader collection and reads asset handles.
-        // Only the compiling is handed to the job.
+        // Collected on the main thread (it reads asset handles); only the compiling runs in the job.
         AZStd::vector<InMemoryShaderRequest> requests = CollectInMemoryShaderRequests(materialTypeAsset, materialTypePath);
         if (requests.empty())
         {
@@ -454,13 +401,7 @@ namespace MaterialCanvas
             {
                 auto compiled = CompileInMemoryShaders(requests);
 
-                // Anything that did not compile has to go back to the Asset Processor, and it will not notice on its own: the
-                // preview shaders set SkipIncludeFileDependencies, so editing the graph's .azsli files no longer reprocesses them.
-                // Clearing the fingerprint is what the graph compiler already uses to force a source to be rebuilt.
-                //
-                // This is the safety net for the case the interface guard exists to catch. A graph edit that adds a shader option
-                // or changes an SRG makes the cached asset unsafe to clone from, CreateInMemoryShaderAsset declines, and without
-                // this the preview would stay on the last shader that did compile, indefinitely.
+                // Clear fingerprints for anything that failed: SkipIncludeFileDependencies means the AP won't rebuild it on its own.
                 if (compiled.size() != requests.size())
                 {
                     for (const InMemoryShaderRequest& request : requests)
@@ -487,8 +428,7 @@ namespace MaterialCanvas
                 }
                 {
                     AZStd::scoped_lock lock(m_compiledShadersMutex);
-                    // Discard silently if the graph moved on while this was compiling. Applying it would put the shader for an
-                    // edit that no longer exists on screen, which is worse than being a moment late.
+                    // Discard silently if the graph moved on; showing a shader for a stale edit is worse than being late.
                     if (generation == m_compileGeneration.load())
                     {
                         m_compiledShaders = AZStd::move(compiled);
@@ -498,8 +438,7 @@ namespace MaterialCanvas
 
                 m_shaderCompileInFlight = false;
 
-                // Rebuild on the next tick, bypassing the catalog debounce: this is one finished result rather than a burst, and
-                // deferring it by up to half a second would give back most of what compiling it here was meant to save.
+                // Rebuild next tick without the catalog debounce: this is one finished result, and waiting would undo the gain.
                 m_applyMaterialImmediately = true;
                 m_applyMaterialQueued = true;
             },
@@ -515,8 +454,7 @@ namespace MaterialCanvas
         AtomToolsFramework::GraphDocumentRequestBus::EventResult(
             generatedFiles, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGeneratedFilePaths);
 
-        // Preview first, for the same reason GetGeneratedAssetId prefers it: after a save both sets exist and the viewport shows the
-        // preview one.
+        // Preview first, as in GetGeneratedAssetId: after a save both sets exist and the viewport shows the preview one.
         for (const auto& generatedFile : generatedFiles)
         {
             if (generatedFile.ends_with(extension) && MaterialGraphCompiler::IsPreviewOutputPath(generatedFile))
@@ -550,17 +488,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Refuse an intermediate the Asset Processor has not rebuilt for this edit. Without this the first attempt, which runs the
-        // instant the compile reports complete, happily builds a material from the previous edit's intermediate: the viewport shows
-        // stale content until a later attempt corrects it, and the log records a success that measured nothing.
-        //
-        // Both sides of the comparison are FileIOBase modification times, so whatever units and epoch that uses cancel out. An
-        // earlier version of this compared one of them against a system_clock epoch, which is not the same base and never rejected
-        // anything.
-        //
-        // The source material type is what the compiler wrote for this edit and the intermediate is what PipelineStage derives from
-        // it, so an intermediate older than its own source has not been rebuilt yet. When the compiler leaves the source untouched
-        // because nothing changed, the intermediate is legitimately newer and this correctly allows it.
+        // Refuse an intermediate older than its source material type: PipelineStage hasn't rebuilt it for this edit yet.
         const AZStd::string intermediatePath =
             AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath(materialTypePath);
         if (auto fileIO = AZ::IO::FileIOBase::GetInstance(); fileIO && !intermediatePath.empty())
@@ -581,8 +509,7 @@ namespace MaterialCanvas
         const AZ::Data::Asset<AZ::RPI::MaterialTypeAsset> materialTypeAsset = CreateInMemoryMaterialTypeAsset(materialTypePath);
         if (!materialTypeAsset)
         {
-            // Either PipelineStage has not produced the intermediate yet, or it has and the shaders it references are still
-            // building. Both are transient; the distinction matters only for knowing which job the viewport is really waiting on.
+            // Either the intermediate or its shaders are still being built; both are transient.
             AZ_TracePrintf(
                 "MaterialCanvas",
                 "In-memory preview declined at %.0f ms: the intermediate material type or its shaders are not ready.\n",
@@ -590,16 +517,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Swap in any shader this viewport compiled for the current edit.
-        //
-        // TryReplaceShaderAsset only accepts an asset whose id matches the one it is replacing, which is exactly the guarantee
-        // CreateInMemoryShaderAsset provides by cloning: same id, new byte code. So this either replaces the Asset Processor's
-        // shader with an identical-but-fresher one, or does nothing at all.
-        //
-        // This is also what removes the one-edit-behind behaviour. The material used to be built from whatever shader the asset
-        // system had loaded, and the asset system never reloads shaders in this process, so a material built while the Asset
-        // Processor was still working showed the previous edit until unrelated catalog traffic happened to rebuild it late enough.
-        // A shader built here has nothing to wait for.
+        // Swap in shaders compiled for this edit; TryReplaceShaderAsset only accepts the same id, which cloning guarantees.
         m_appliedMaterialTypeAsset = materialTypeAsset;
 
         size_t replacedShaderCount = 0;
@@ -609,9 +527,7 @@ namespace MaterialCanvas
             {
                 for (const auto& [replacedAssetId, compiledShaderAsset] : m_compiledShaders)
                 {
-                    // The same call the reload path makes. It replaces this shader wherever the material type refers to an asset
-                    // with that id, general collection and pipeline payloads alike, and ignores anything else -- which is safe
-                    // here precisely because the compiled asset was cloned from the one it is replacing and kept its id.
+                    // Same call as the reload path; replaces every reference with this id, which the clone kept.
                     materialTypeAsset->ReinitializeAsset(compiledShaderAsset);
                     ++replacedShaderCount;
                 }
@@ -626,13 +542,11 @@ namespace MaterialCanvas
         }
         else
         {
-            // Nothing compiled for this edit yet. Start that now; the material below is still built from the Asset Processor's
-            // shaders so the viewport shows something in the meantime, and the job queues another apply when it lands.
+            // Nothing compiled yet: start now and show the AP's shaders meanwhile; the job queues another apply when done.
             QueueInMemoryShaderCompile(materialTypeAsset, materialTypePath);
         }
 
-        // The values the graph currently describes. These live in the material rather than the material type, which is why the
-        // generated material type carries placeholders, so they have to be set on the asset being built here.
+        // The graph's current values live in the material (the type has placeholders), so set them on this asset.
         MaterialGraphCompilerNotifications::PropertyValueList propertyValues;
         {
             AZStd::scoped_lock lock(m_materialPropertyValuesMutex);
@@ -646,14 +560,7 @@ namespace MaterialCanvas
         AZ::RPI::MaterialAssetCreator materialAssetCreator;
         materialAssetCreator.Begin(AZ::Uuid::CreateRandom(), materialTypeAsset);
 
-        // An image property's value is a path, not an asset. MaterialSourceData turns those into asset references in
-        // ApplyPropertiesToAssetCreator before handing them to this creator, but that function is private and driving the creator
-        // directly skips it: the property is then set to a bare string, the sampler finds no image, and it reads zero. On an opaque
-        // material that shows up as a black texture; on a transparent one the alpha is zero and the mesh disappears entirely, which
-        // is why a graph using only a noise node looked fine.
-        //
-        // GetImageAssetReference is the same public helper MaterialSourceData uses, so this resolves paths the way the Asset
-        // Processor path does rather than inventing a second set of rules.
+        // Resolve image paths to asset references via GetImageAssetReference, as MaterialSourceData does, or samplers read zero.
         const AZ::RPI::MaterialPropertiesLayout* propertiesLayout = materialTypeAsset->GetMaterialPropertiesLayout();
 
         for (const auto& [propertyId, propertyValue] : propertyValues)
@@ -668,8 +575,7 @@ namespace MaterialCanvas
                     const auto* propertyDescriptor = propertiesLayout->GetPropertyDescriptor(propertyIndex);
                     if (propertyDescriptor && propertyDescriptor->GetDataType() == AZ::RPI::MaterialPropertyDataType::Image)
                     {
-                        // Paths are relative to the material type the values came out of, which is the file the compiler wrote
-                        // them into before moving them to the material.
+                        // Paths are relative to the material type the values were written into before moving to the material.
                         AZ::Data::Asset<AZ::RPI::ImageAsset> imageAsset;
                         AZ::RPI::MaterialUtils::GetImageAssetReference(
                             imageAsset, materialTypePath, propertyValue.GetValue<AZStd::string>());
@@ -698,9 +604,7 @@ namespace MaterialCanvas
             return false;
         }
 
-        // m_materialInstancePreCreated is what makes this legitimate rather than a trick. MaterialAssignment checks it in the three
-        // places that matter: RequiresLoading returns false, RebuildInstance leaves the instance alone, and Release does not null it.
-        // The mesh consumes m_materialInstance directly through ConvertToCustomMaterialMap, so no asset id is ever resolved.
+        // m_materialInstancePreCreated makes MaterialAssignment use this instance directly without resolving any asset id.
         AZ::Render::MaterialAssignment materialAssignment;
         materialAssignment.m_materialInstance = materialInstance;
         materialAssignment.m_materialInstancePreCreated = true;
@@ -710,15 +614,13 @@ namespace MaterialCanvas
         AZ::Render::MaterialComponentRequestBus::Event(
             GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialMap, materialAssignmentMap);
 
-        // Deliberately no ApplyMaterialPropertyValues call. The values are already in the asset this instance was built from, so
-        // setting them again as overrides would be redundant.
+        // No ApplyMaterialPropertyValues: the values are already baked into the asset this instance was built from.
         return true;
     }
 
     void MaterialCanvasViewportContent::ClearMaterial()
     {
-        // Mirrors what ApplyMaterial produces when it cannot resolve an asset, so that blanking the object goes through the same path it
-        // always has. Only the tracked document ID is left alone.
+        // Mirrors ApplyMaterial's unresolved case so blanking takes the usual path; only the tracked document ID is kept.
         AZ::Render::MaterialAssignment materialAssignment;
         materialAssignment.m_materialAsset.Create(AZ::Data::AssetId(), AZ::Data::AssetLoadBehavior::PreLoad);
         materialAssignment.m_materialInstanceMustBeUnique = true;
@@ -730,8 +632,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportContent::ApplyMaterialPropertyValues()
     {
-        // Only the values belonging to the document currently on screen. Anything another document compiled is kept under its own path
-        // and applied if and when that document is brought forward.
+        // Only the on-screen document's values; others are kept under their own path until brought forward.
         const AZStd::string appliedGraphPath = GetDocumentPath(m_appliedDocumentId);
         if (appliedGraphPath.empty())
         {
@@ -758,19 +659,7 @@ namespace MaterialCanvas
         {
             AZStd::any propertyValueAsAny = AZ::RPI::MaterialPropertyValue::ToAny(propertyValue);
 
-            // These values describe the graph as it is now, but the material instance in the viewport was built from whatever material
-            // type asset the Asset Processor has finished, which during a structural edit is the previous one. Renaming a material input
-            // node, or changing its type from float2 to float, produces values for a layout the live material does not have, and setting
-            // one of those installs an override the material cannot use: MaterialPropertyCollection reports "Accessed as type Float but
-            // is type Vector2", the shader parameter write that follows reads a size out of the wrong layout, and the material renders
-            // black until the component is recreated, which is why it took an editor restart to clear.
-            //
-            // Skipping is free. The values are resent in full after every compile and reapplied after every rebuild, so a value that is
-            // correct but early is simply applied a moment later instead.
-            //
-            // Only the plain numeric types are checked. MaterialComponentController::GetPropertyValue passes asset values through
-            // ConvertAssetsForSerialization, so an image comes back as a different type than the one that went in and comparing against
-            // it would reject every image. Images keep the behaviour they had before this check existed.
+            // Skip values whose type doesn't match the live material (e.g. mid structural edit); only plain numeric types are compared.
             const bool propertyTypeIsComparable = propertyValue.Is<bool>() || propertyValue.Is<int32_t>() ||
                 propertyValue.Is<uint32_t>() || propertyValue.Is<float>() || propertyValue.Is<AZ::Vector2>() ||
                 propertyValue.Is<AZ::Vector3>() || propertyValue.Is<AZ::Vector4>() || propertyValue.Is<AZ::Color>();
@@ -785,8 +674,7 @@ namespace MaterialCanvas
                     AZ::Render::DefaultMaterialAssignmentId,
                     AZStd::string(propertyId.GetCStr()));
 
-                // An empty result means the live material has no property by that name at all, which is what a rename looks like from
-                // here. A differing type is the float2 to float case. Neither can be applied to this instance.
+                // Empty means no such property (a rename); a differing type is e.g. float2 to float. Neither can be applied.
                 if (currentValue.empty() || currentValue.type() != propertyValueAsAny.type())
                 {
                     continue;
@@ -801,10 +689,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Material Canvas bakes material input values into the material type as property defaults rather than into the material as
-        // overrides, so a value edit would otherwise only become visible once the material type asset, and every shader built from it, had
-        // been rebuilt. Setting the same values as overrides on the live instance shows them immediately and is independent of whether the
-        // Asset Processor has caught up. Overrides that already match the defaults are harmless.
+        // Values are baked into the material type as defaults, so also set them as overrides on the live instance to show them now.
         AZ::Render::MaterialComponentRequestBus::Event(
             GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyValues,
             AZ::Render::DefaultMaterialAssignmentId, propertyOverrides);
@@ -813,8 +698,7 @@ namespace MaterialCanvas
     void MaterialCanvasViewportContent::OnMaterialPropertyValuesChanged(
         const AZStd::string& graphPath, const MaterialGraphCompilerNotifications::PropertyValueList& propertyValues)
     {
-        // GraphCompiler::CompileGraph refuses to run without a graph path, so an empty one here means something upstream changed and the
-        // values cannot be attributed to a document. Storing them under an empty key would hand them to whichever document asked next.
+        // CompileGraph requires a graph path; an empty one can't be attributed to a document, so don't store it.
         if (graphPath.empty())
         {
             return;
@@ -825,12 +709,7 @@ namespace MaterialCanvas
             m_materialPropertyValuesByGraphPath[graphPath] = propertyValues;
         }
 
-        // Raised from the graph compilation job thread. Applying the values touches entity component buses, so it is deferred to the next
-        // system tick, which decides whose values are actually on screen.
-        //
-        // This asks for a property apply, not a material rebuild. The values are already excluded from the generated material type, so
-        // nothing about the assets has changed and the live instance only needs the overrides set on it. A structural change still
-        // reaches the viewport through the asset catalog and queues a rebuild there in the usual way.
+        // Raised on the job thread, so defer to the next tick; only overrides need applying, not a material rebuild.
         m_applyMaterialPropertyValuesQueued = true;
     }
 
@@ -851,18 +730,13 @@ namespace MaterialCanvas
             return;
         }
 
-        // While the generated material has not resolved there is no ID to compare against, so every catalog update is a reason to try
-        // again: the material becomes resolvable as soon as the Asset Processor registers its source file, and nothing announces that
-        // specifically. Once it has resolved, only its own products and those of its material type matter. Every product carries the GUID
-        // of the source it was built from, so comparing GUIDs covers the intermediate and final material type assets alike.
+        // Until the material resolves any catalog update may help; afterwards only products sharing its or its type's GUID matter.
         const bool affected = !m_appliedMaterialAssetId.IsValid() || m_appliedMaterialAssetId.m_guid == assetId.m_guid ||
             (m_appliedMaterialTypeAssetId.IsValid() && m_appliedMaterialTypeAssetId.m_guid == assetId.m_guid);
 
         if (affected)
         {
-            // Catalog notifications are raised from the asset system thread, and rebuilding the material touches entity component buses.
-            // Deferring to the next system tick keeps that work on the main thread and collapses the burst of notifications that arrives
-            // as the Asset Processor drains its queue into a single rebuild.
+            // Raised on the asset thread; defer to the main thread's next tick, collapsing the burst into one rebuild.
             m_applyMaterialQueued = true;
         }
     }
@@ -871,8 +745,7 @@ namespace MaterialCanvas
     {
         const auto now = AZStd::chrono::steady_clock::now();
 
-        // Cheap enough to run as soon as it is asked for: it sets property overrides on a material instance that already exists, with no
-        // asset resolution and no new instance, so there is nothing for the debounce below to protect against.
+        // Cheap (overrides on an existing instance), so apply immediately without the debounce.
         if (m_applyMaterialPropertyValuesQueued.exchange(false))
         {
             ApplyMaterialPropertyValues();
@@ -880,18 +753,14 @@ namespace MaterialCanvas
 
         if (m_applyMaterialQueued.exchange(false))
         {
-            // Each notification pushes the deadline back so that a burst collapses into a single rebuild once the catalog settles. The
-            // start of the burst is remembered separately so a catalog that never goes quiet cannot defer the rebuild forever.
+            // Each notification extends the deadline to collapse bursts; the burst start caps how long it can be deferred.
             if (!m_applyMaterialPending)
             {
                 m_applyMaterialPending = true;
                 m_applyMaterialBurstStart = now;
             }
 
-            // Short enough that the preview keeps pace with the Editor viewport, which reacts to the material asset reloading and does
-            // not wait for the catalog to settle at all. The original 250ms, paired with a 2s ceiling, meant a rebuild that emitted a
-            // steady trickle of catalog updates kept pushing the deadline out and the pane visibly lagged the main viewport. The point of
-            // the debounce is only to collapse a per-frame storm into something sane, and 100ms already achieves that.
+            // 100 ms quiet period keeps pace with the Editor viewport; the old 250 ms let trickling updates visibly lag the pane.
             const AZ::u64 quietPeriodMs = AtomToolsFramework::GetSettingsValue(
                 "/O3DE/Atom/MaterialCanvas/Viewport/ApplyMaterialQuietPeriodMs", (AZ::u64)100);
             m_applyMaterialQuietDeadline = now + AZStd::chrono::milliseconds(quietPeriodMs);
@@ -902,8 +771,7 @@ namespace MaterialCanvas
             return;
         }
 
-        // Hard ceiling on how long a burst may defer the rebuild. Worst case is now two rebuilds a second rather than one per frame,
-        // which is still far below what caused the runaway, while keeping the preview within half a second of the graph.
+        // Hard ceiling on deferral: at worst two rebuilds a second, keeping the preview within half a second of the graph.
         const AZ::u64 maxDeferralMs = AtomToolsFramework::GetSettingsValue(
             "/O3DE/Atom/MaterialCanvas/Viewport/ApplyMaterialMaxDeferralMs", (AZ::u64)500);
 

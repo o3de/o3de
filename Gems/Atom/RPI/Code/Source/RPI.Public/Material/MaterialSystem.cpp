@@ -200,8 +200,7 @@ namespace AZ::RPI
 
         int32_t materialTypeIndex{ -1 };
 
-        // Two parameter layouts describe the same buffer only if every descriptor agrees on name, GPU type and where it sits. Comparing
-        // sizes alone is not enough: renaming a material property reorders the descriptors without changing how many bytes they occupy.
+        // Layouts match only if every descriptor agrees on name, type and offset; renames can reorder without changing size.
         const auto layoutsDescribeTheSameBuffer =
             [](const MaterialShaderParameterLayout& lhs, const MaterialShaderParameterLayout& rhs)
         {
@@ -262,12 +261,7 @@ namespace AZ::RPI
         {
             materialTypeIndex = materialTypeAssetIterator->second;
 
-            // The entry is keyed by material type asset ID, and an asset keeps its ID across a hot reload. The layout captured when the
-            // ID was first seen was therefore kept forever, so after any rebuild that changed the parameter layout every instance --
-            // including ones created long afterwards -- addressed the buffer with offsets the reloaded shader had stopped using. Renaming
-            // a material property in Material Canvas does exactly that: the descriptors are reordered while the total size is unchanged,
-            // so values land in the wrong members and the material renders with a texture stretched by someone else's UV scale, or black,
-            // for the rest of the process.
+            // An asset keeps its ID across hot reloads, so refresh the cached layout when it changes or instances write stale offsets.
             MaterialTypeData& existingMaterialTypeData = m_materialTypeData[materialTypeIndex];
             const auto& reloadedLayout = materialTypeAsset->GetMaterialShaderParameterLayout();
             if (existingMaterialTypeData.m_shaderParameterLayout &&
@@ -496,40 +490,17 @@ namespace AZ::RPI
                 {
                     if (materialTypeEntry.m_useSceneMaterialSrg)
                     {
-                        // The parameter buffer is addressed as a flat array of identically sized structs: the offset below is
-                        // instanceIndex * shaderParamsSize, and shaderParamsSize was sampled from whichever instance happened to be
-                        // found first. That holds only while every live instance of this material type shares one parameter layout.
-                        //
-                        // It stops holding when a material type is rebuilt with a different layout while instances of the previous one
-                        // are still registered. Material Canvas does exactly that on every structural edit: adding a material input
-                        // node adds a property, the generated MaterialParameters struct grows, and the viewport is still holding the
-                        // unique instances it created before the rebuild. Copying shaderParamsSize bytes out of an instance whose own
-                        // struct is smaller reads off the end of it, which surfaces as an access violation inside Buffer::UpdateData
-                        // with no indication of where it came from.
-                        //
-                        // Skipping the mismatched instance leaves it showing stale parameters until whatever owns it recreates it,
-                        // which is recoverable and self correcting. The change ID is still advanced so this reports once per material
-                        // change rather than once per frame, since an instance built against the old layout will never match again.
+                        // Instances from before a layout-changing rebuild can be smaller; skip them rather than read past their struct.
                         if (!instanceData.m_shaderParameter)
                         {
                             instanceData.m_compiledChangeId = instanceData.m_material->GetCurrentChangeId();
                             continue;
                         }
 
-                        // Built against a layout this material type no longer uses. Its MaterialShaderParameter still holds the old
-                        // offsets, so writing it would scatter values across the wrong members rather than merely being stale. Whoever
-                        // owns the instance replaces it shortly after a reload, and the replacement carries the current generation.
+                        // Stale layout generation: writing would use the old offsets; skip until the owner recreates it.
                         if (instanceData.m_layoutGeneration != materialTypeEntry.m_layoutGeneration)
                         {
-                            // Identified by the material type, not by the instance. Reaching through m_material for its asset hint is
-                            // what the neighbouring Register and Release logs do, and it is safe there because the material is known
-                            // good at those points. It is not safe here: this branch exists precisely because the instance disagrees
-                            // with the material type about the parameter layout, and the reason it disagrees is that its material type
-                            // asset is being reloaded underneath it. Formatting a string read out of an asset reference that is mid
-                            // swap turned a recoverable, self correcting condition into an access violation inside vsnprintf.
-                            //
-                            // m_materialTypeAssetHint is a plain string owned by the material type entry, names the same thing for
-                            // diagnostic purposes, and is not touched by a reload in flight.
+                            // Use m_materialTypeAssetHint: m_material's asset may be mid-reload here, and formatting it crashed.
                             AZ_Warning(
                                 "MaterialSystem",
                                 false,

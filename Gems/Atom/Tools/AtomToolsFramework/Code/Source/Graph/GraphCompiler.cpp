@@ -64,8 +64,7 @@ namespace AtomToolsFramework
                 case State::Failed:
                 case State::Complete:
                 case State::Canceled:
-                    // Reserve synchronously, before GraphDocument dispatches the background job. This closes the window where a second
-                    // edit could observe the old terminal state and dispatch another job before the first worker had started.
+                    // Reserve synchronously before the job is dispatched, so a second edit can't dispatch another job first.
                     m_compileInProgress = true;
                     m_compileReserved = true;
                     m_cancelRequested = false;
@@ -183,8 +182,7 @@ namespace AtomToolsFramework
         {
             AZStd::scoped_lock lock(m_compileLifecycleMutex);
 
-            // GraphDocument normally reserves the compiler with Reset before dispatching this worker. Retain support for direct callers
-            // by creating and consuming a reservation here only when no job is already active.
+            // GraphDocument normally reserves via Reset; direct callers get a reservation here when no job is active.
             if (!m_compileInProgress)
             {
                 switch (m_state.load())
@@ -273,10 +271,7 @@ namespace AtomToolsFramework
 
         SetState(State::Processing);
 
-        // Only report on files that the Asset Processor will actually build. Include files like azsli have no builder and therefore no
-        // jobs, so querying their status costs a full round trip to the AP that can never return anything but an empty job list. They are
-        // deliberately left in m_generatedFiles, which other systems rely on in full, such as the viewport searching it for the generated
-        // material to apply.
+        // Only report files the Asset Processor builds (not azsli includes); m_generatedFiles itself stays complete.
         AZStd::vector<AZStd::string> filesToReport;
         filesToReport.reserve(m_generatedFiles.size());
         for (const auto& generatedFile : m_generatedFiles)
@@ -294,16 +289,7 @@ namespace AtomToolsFramework
             AssetStatusReporterSystemRequestBus::Event(
                 m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, filesToReport);
 
-            // Bound the wait. AssetStatusReporter walks its paths with an index that only ever moves forward, so a path it is sitting on
-            // has to reach a terminal job state or it waits on that path forever. The Asset Processor can finish all of its work without
-            // that happening: a structural change to a graph makes MaterialTypeBuilder delete and regenerate the intermediate shader
-            // sources, which retriggers the very jobs being polled, and a duplicated intermediate entry in the Asset Processor database
-            // (o3de/o3de#19642, visible in the AP log as "GetTopLevelSourceForProduct found multiple sources") leaves paths that never
-            // settle cleanly.
-            //
-            // Giving up costs nothing. The compile is reported complete and the viewport re-applies the material when the assets actually
-            // appear in the asset catalog, which it watches for exactly this reason. Waiting forever, by contrast, strands the preview
-            // until something else happens to change the compiler's state.
+            // Bound the wait: regenerated intermediates or duplicate AP entries (o3de/o3de#19642) can leave a path unsettled forever.
             const AZ::u64 timeoutMs =
                 GetSettingsValue("/O3DE/AtomToolsFramework/GraphCompiler/AssetStatusTimeoutMs", (AZ::u64)15000);
             const auto deadline = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(timeoutMs);

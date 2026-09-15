@@ -86,9 +86,7 @@ namespace AZ::RPI
             Material* m_material{ nullptr }; // can't use a smart pointer here, since the material de-registers itself in the destructor
             size_t m_compiledChangeId{ 0 };
 
-            //! Value of MaterialTypeData::m_layoutGeneration when m_shaderParameter was built. A material type asset keeps its asset ID
-            //! across a hot reload but not necessarily its parameter layout, so an instance created before a reload writes its values at
-            //! offsets the reloaded shader no longer agrees with. Comparing generations is how such an instance is recognised.
+            //! MaterialTypeData::m_layoutGeneration this was built with; a mismatch means the layout changed in a hot reload.
             uint32_t m_layoutGeneration{ 0 };
         };
 
@@ -113,8 +111,7 @@ namespace AZ::RPI
             // `struct MaterialParameters` for them the same way.
             AZStd::unique_ptr<MaterialShaderParameterLayout> m_shaderParameterLayout;
 
-            //! Incremented whenever m_shaderParameterLayout is replaced because the material type asset was reloaded with a different
-            //! one. Instances still carrying an older value were built against a layout that no longer describes the buffer.
+            //! Bumped when a reload replaces m_shaderParameterLayout; instances with an older value use a stale layout.
             uint32_t m_layoutGeneration{ 0 };
 
             AZStd::vector<InternalMaterialInstanceData> m_instanceData;

@@ -61,9 +61,7 @@ ly_add_target(
         PRIVATE
             ${pal_source_dir}
         PUBLIC
-            # Both are public because the public headers need both: AzslCompiler.h is found through Source/Editor but includes
-            # <Editor/ShaderBuilderUtility.h>, which only resolves with Source on the path. With Source private this target could
-            # not actually be linked by anything outside this gem.
+            # Both public: AzslCompiler.h (via Source/Editor) includes <Editor/ShaderBuilderUtility.h>, which needs Source on the path.
             Source
             Source/Editor
     COMPILE_DEFINITIONS

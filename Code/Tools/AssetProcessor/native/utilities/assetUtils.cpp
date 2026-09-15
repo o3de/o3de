@@ -65,16 +65,7 @@ namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
 
-    // Retry pacing for replacing a file in the cache, which starts short and backs off to g_RetryWaitInterval.
-    //
-    // The first failure to remove a product is usually not contention that needs waiting out. Immediately before removing one, the Asset
-    // Processor broadcasts JobFileClaimed to every connected client, and AzFramework's handler answers by *queuing* a streamer FlushCache:
-    // the handle is dropped a few milliseconds later on the streamer thread, and nothing acknowledges it back. So the remove races that
-    // flush and loses, and a flat quarter second sleep then charges full price for a wait that was over almost at once. With an editor
-    // open on the assets being built this is the normal path, not an exceptional one, and it costs 250 ms per product.
-    //
-    // Backing off keeps the same ceiling for a file that really is held open by something else, and reaches it within a few hundred
-    // milliseconds, while making the common case cost about as little as the platform's sleep granularity allows.
+    // Backoff for cache file replacement retries: the first remove usually just races a queued streamer FlushCache, so start short.
     static const unsigned int g_RetryWaitIntervalMin = 5;
 
     static unsigned int NextRetryWaitInterval(unsigned int currentInterval)

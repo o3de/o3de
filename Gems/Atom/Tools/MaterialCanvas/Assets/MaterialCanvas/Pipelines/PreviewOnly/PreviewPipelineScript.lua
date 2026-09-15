@@ -9,16 +9,7 @@
 --
 ----------------------------------------------------------------------------------------------------
 
--- Shader selection for the Material Canvas preview-only material pipeline.
---
--- This is the trimmed counterpart to MainPipelineScript.lua. It selects the smallest set of shaders that still renders a material
--- correctly in the Material Canvas viewport, so that editing a graph rebuilds four shaders instead of eleven (and none at all from
--- LowEndPipeline, which the accompanying registry stub removes).
---
--- Every name passed to IncludeShader is the stem of a .shader.template declared in MainPipeline.materialpipeline next to this file --
--- MaterialPipelineScriptRunner strips the folder, the ".template" extension and the ".shader" extension to build its lookup table, and
--- raises a script error for any name that is not in it. Do not add an IncludeShader call here without adding the matching template
--- there.
+-- Shader selection for the Material Canvas preview pipeline; every IncludeShader name needs a matching .shader.template entry.
 
 function MaterialTypeSetup(context)
     lightingModel = context:GetLightingModelName()
@@ -26,9 +17,7 @@ function MaterialTypeSetup(context)
 
     context:ExcludeAllShaders()
 
-    -- No _CustomZ variants anywhere below. ShaderEnable.lua reaches for them through TrySetShaderEnabledWithFallback, which falls back
-    -- to the plain depth, shadow and forward shaders when they are absent, so per-pixel-depth and alpha-cutout materials still draw --
-    -- their depth and shadow silhouettes are just the un-offset geometry.
+    -- No _CustomZ variants: ShaderEnable.lua falls back to the plain shaders, so only depth/shadow silhouettes lose the offset.
 
     opacityMode = context:GetBuildSetting("opacityMode", "Dynamic")
     if (opacityMode ~= "Dynamic" and opacityMode ~= "Opaque" and opacityMode ~= "Cutout" and

@@ -46,13 +46,10 @@ namespace AtomToolsFramework
         //! Returns true if graph compilation has already been scheduled.
         virtual bool IsCompileGraphQueued() const = 0;
 
-        //! Schedule a compile that produces the document's full production output as well as anything it keeps for its own preview,
-        //! without saving the document. This is what a compiler that maintains a reduced preview output needs in order to publish: an
-        //! edit refreshes only the preview, so the production output stays as the last save or apply left it until this is called.
+        //! Schedule a compile that also produces full production output, without saving; edits otherwise refresh only the preview.
         virtual void QueueApplyGraph() = 0;
 
-        //! Returns true when the production output is behind the graph, as of the last compile. False for a document whose compiler
-        //! draws no distinction between preview and production output, which has nothing to apply.
+        //! True when the production output is behind the graph as of the last compile; false if the compiler has no separate one.
         virtual bool IsApplyGraphNeeded() const = 0;
     };
 

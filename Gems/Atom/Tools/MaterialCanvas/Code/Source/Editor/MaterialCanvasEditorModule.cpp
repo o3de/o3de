@@ -11,12 +11,7 @@
 
 namespace MaterialCanvas
 {
-    //! Gem module for the Editor-hosted Material Canvas pane.
-    //!
-    //! This is a second target in the existing MaterialCanvas gem rather than a gem of its own. The gem already owns the node
-    //! configurations, graph templates, style sheet and registry files, and every @gemroot:MaterialCanvas@ path in the asset
-    //! data resolves here, so a separate gem would either duplicate all of that or reach across gems for it. The standalone
-    //! MaterialCanvas APPLICATION target is unchanged and continues to build and run exactly as before.
+    //! Gem module for the Editor-hosted Material Canvas pane, a second target in the MaterialCanvas gem.
     class MaterialCanvasEditorModule : public AZ::Module
     {
     public:
