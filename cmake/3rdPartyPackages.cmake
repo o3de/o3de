@@ -767,11 +767,13 @@ endif()
 # If URL is provided, each URL is attempted with retries.
 # If all URLs fail and GIT is also provided, it will fall back to a git clone.
 # Downloads are cached in LY_PACKAGE_DOWNLOAD_CACHE_LOCATION/<name>/
+# NO_ADD_SUBDIR populates sources without configuring the upstream CMakeLists.txt.
+# It cannot be combined with an explicit SOURCE_SUBDIR.
 #
 # NOTE: This function only calls FetchContent_Declare.
 # The caller must call FetchContent_MakeAvailable(<name>) after setting any desired build options.
 function(o3de_fetch_content arg_NAME)
-    set(options)
+    set(options NO_ADD_SUBDIR)
     set(oneValueArgs
         VERSION # Human-readable version string (e.g. "v1.15.2")
         LICENSE # License identifier (e.g. "BSD-3-Clause", "MIT")
@@ -799,6 +801,13 @@ function(o3de_fetch_content arg_NAME)
     # Note: do NOT initialize to "" - that creates an empty list element which
     # would insert a spurious empty argument into FetchContent_Declare.
     set(fc_args)
+
+    if(arg_NO_ADD_SUBDIR)
+        if("SOURCE_SUBDIR" IN_LIST arg_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "NO_ADD_SUBDIR and SOURCE_SUBDIR cannot both be specified.")
+        endif()
+        list(APPEND fc_args SOURCE_SUBDIR "no-add-subdir")
+    endif()
 
     # Stamp extracted files with the extraction time, matching CMP0135 NEW (see cmake/Policy.cmake).
     # Keeping the archive's own timestamps makes a newly extracted version look older than the

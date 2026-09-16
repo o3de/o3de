@@ -12,7 +12,7 @@ o3de_fetch_content(rapidjson
     URL_HASH "2d2601a82d2d3b7e143a3c8d43ef616671391034bc46891a9816b79cf2d3e7a8"
     GIT "https://github.com/Tencent/rapidjson.git"
     GIT_HASH "24b5e7a8b27f42fa16b96fc70aade9106cf7102f"
-    SOURCE_SUBDIR "no-add-subdir"
+    NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(rapidjson)
 
