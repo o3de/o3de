@@ -135,6 +135,10 @@ namespace SandboxEditor
                 cameras.AddCamera(m_firstPersonTranslateCamera);
                 cameras.AddCamera(m_firstPersonScrollCamera);
                 cameras.AddCamera(m_firstPersonFocusCamera);
+                cameras.AddCamera(m_firstPersonGesturePanCamera);
+                cameras.AddCamera(m_firstPersonGestureLookCamera);
+                cameras.AddCamera(m_firstPersonGestureDollyCamera);
+                cameras.AddCamera(m_firstPersonSmartZoomFocusCamera);
                 cameras.AddCamera(m_orbitCamera);
             });
 
@@ -300,47 +304,49 @@ namespace SandboxEditor
             return !trackingTransform();
         };
 
-        m_orbitRotateCamera->SetInitiateRotateFn(
-            [this]
+        // pick the point under the cursor to orbit about (shared by the mouse and trackpad orbit behaviors)
+        const auto pickOrbitPivot = [this]
+        {
+            AZStd::optional<AzFramework::ScreenPoint> screenPoint;
+            AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+                screenPoint, m_viewportId,
+                &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::MousePosition);
+
+            if (screenPoint.has_value())
             {
-                AZStd::optional<AzFramework::ScreenPoint> screenPoint;
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
-                    screenPoint, m_viewportId,
-                    &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::MousePosition);
+                const auto [origin, direction] =
+                    AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_viewportId, screenPoint.value());
 
-                if (screenPoint.has_value())
+                AzToolsFramework::EntityIdList visibleEntityIds;
+                AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+                    m_viewportId,
+                    &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
+                    visibleEntityIds);
+
+                bool pickedEntity = false;
+                float closestDistance = AZStd::numeric_limits<float>::max();
+                for (const auto& entityId : visibleEntityIds)
                 {
-                    const auto [origin, direction] =
-                        AzToolsFramework::ViewportInteraction::ViewportScreenToWorldRay(m_viewportId, screenPoint.value());
-
-                    AzToolsFramework::EntityIdList visibleEntityIds;
-                    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
-                        m_viewportId,
-                        &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
-                        visibleEntityIds);
-
-                    bool pickedEntity = false;
-                    float closestDistance = AZStd::numeric_limits<float>::max();
-                    for (const auto& entityId : visibleEntityIds)
+                    float distance;
+                    if (AzToolsFramework::PickEntity(entityId, origin, direction, distance, m_viewportId))
                     {
-                        float distance;
-                        if (AzToolsFramework::PickEntity(entityId, origin, direction, distance, m_viewportId))
-                        {
-                            pickedEntity = true;
-                            closestDistance = AZStd::min(distance, closestDistance);
-                        }
+                        pickedEntity = true;
+                        closestDistance = AZStd::min(distance, closestDistance);
                     }
-
-                    const float distance = pickedEntity ? closestDistance : AzToolsFramework::GetDefaultEntityPlacementDistance();
-                    m_pivot = origin + direction * distance;
-
-                    // ensure we immediately set the camera pivot to ensure no interpolation of current to target occurs
-                    AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                        m_viewportId,
-                        &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotDetachedImmediate,
-                        m_pivot.value());
                 }
-            });
+
+                const float distance = pickedEntity ? closestDistance : AzToolsFramework::GetDefaultEntityPlacementDistance();
+                m_pivot = origin + direction * distance;
+
+                // ensure we immediately set the camera pivot to ensure no interpolation of current to target occurs
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    m_viewportId,
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotDetachedImmediate,
+                    m_pivot.value());
+            }
+        };
+
+        m_orbitRotateCamera->SetInitiateRotateFn(pickOrbitPivot);
 
         m_orbitRotateCamera->SetActivationBeganFn(
             [this]
@@ -408,12 +414,135 @@ namespace SandboxEditor
 
         m_orbitFocusCamera->SetPivotFn(focusPivotFn);
 
+        SetupGestureCameras(focusPivotFn, pickOrbitPivot, trackingTransform);
+
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitRotateCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitTranslateCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitScrollDollyCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitMotionDollyCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitPanCamera);
         m_orbitCamera->m_orbitCameras.AddCamera(m_orbitFocusCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitGestureLookCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitGestureDollyCamera);
+        m_orbitCamera->m_orbitCameras.AddCamera(m_orbitSmartZoomFocusCamera);
+    }
+
+    void EditorModularViewportCameraComposer::SetupGestureCameras(
+        const AZStd::function<AZStd::optional<AZ::Vector3>()>& focusPivotFn,
+        const AZStd::function<void()>& pickOrbitPivotFn,
+        const AZStd::function<bool()>& trackingTransformFn)
+    {
+        // Trackpad two finger scroll arrives on the gesture channels (a mouse wheel never does), what it does is a user
+        // preference. Holding ctrl/cmd always zooms, and while the orbit modifier is held the orbit camera is exclusive so
+        // only the orbit gesture cameras below run.
+        const auto zoomModifierHeld = [](const AzFramework::InputState& state)
+        {
+            return state.m_modifiers.IsActive(AzFramework::ModifierKeyMask::CtrlAny) ||
+                state.m_modifiers.IsActive(AzFramework::ModifierKeyMask::SuperAny);
+        };
+
+        const auto scrollZooms = [zoomModifierHeld](const AzFramework::InputState& state)
+        {
+            return SandboxEditor::CameraTrackpadScrollAction() == SandboxEditor::TrackpadScrollAction::Zoom || zoomModifierHeld(state);
+        };
+
+        const auto scrollPans = [zoomModifierHeld](const AzFramework::InputState& state)
+        {
+            return SandboxEditor::CameraTrackpadScrollAction() == SandboxEditor::TrackpadScrollAction::Pan && !zoomModifierHeld(state);
+        };
+
+        const auto scrollLooks = [zoomModifierHeld](const AzFramework::InputState& state)
+        {
+            return SandboxEditor::CameraTrackpadScrollAction() == SandboxEditor::TrackpadScrollAction::Look && !zoomModifierHeld(state);
+        };
+
+        // while orbiting, two finger scroll orbits unless the user wants trackpad scrolling to behave like a mouse wheel
+        const auto scrollOrbits = [zoomModifierHeld](const AzFramework::InputState& state)
+        {
+            return SandboxEditor::CameraTrackpadScrollAction() != SandboxEditor::TrackpadScrollAction::Zoom && !zoomModifierHeld(state);
+        };
+
+        const auto setupDolly = [scrollZooms](AzFramework::GestureDollyCameraInput& dollyCamera)
+        {
+            dollyCamera.SetScrollFilterFn(scrollZooms);
+
+            dollyCamera.m_scrollSpeedFn = []
+            {
+                return SandboxEditor::CameraTrackpadScrollDollySpeedScaled();
+            };
+
+            dollyCamera.m_pinchSpeedFn = []
+            {
+                return SandboxEditor::CameraTrackpadPinchSpeedScaled();
+            };
+
+            dollyCamera.m_invertZoomFn = []
+            {
+                return SandboxEditor::CameraZoomInverted();
+            };
+        };
+
+        const auto setupLook = [trackingTransformFn](AzFramework::GestureLookCameraInput& lookCamera)
+        {
+            lookCamera.m_rotateSpeedFn = []
+            {
+                return SandboxEditor::CameraRotateSpeed();
+            };
+
+            lookCamera.m_constrainPitch = [trackingTransformFn]
+            {
+                return !trackingTransformFn();
+            };
+        };
+
+        m_firstPersonGesturePanCamera =
+            AZStd::make_shared<AzFramework::GesturePanCameraInput>(AzFramework::LookPan, AzFramework::TranslatePivotLook);
+
+        m_firstPersonGesturePanCamera->SetGestureFilterFn(scrollPans);
+
+        m_firstPersonGesturePanCamera->m_panSpeedFn = []
+        {
+            return SandboxEditor::CameraTrackpadPanSpeedScaled();
+        };
+
+        m_firstPersonGestureLookCamera = AZStd::make_shared<AzFramework::GestureLookCameraInput>();
+        m_firstPersonGestureLookCamera->SetGestureFilterFn(scrollLooks);
+        setupLook(*m_firstPersonGestureLookCamera);
+
+        m_firstPersonGestureDollyCamera = AZStd::make_shared<AzFramework::GestureDollyCameraInput>(AzFramework::LookDolly);
+        setupDolly(*m_firstPersonGestureDollyCamera);
+
+        m_firstPersonSmartZoomFocusCamera = AZStd::make_shared<AzFramework::FocusCameraInput>(
+            AzFramework::InputDeviceMouse::Gesture::SmartZoom, AzFramework::FocusLook);
+        m_firstPersonSmartZoomFocusCamera->SetPivotFn(focusPivotFn);
+
+        m_orbitGestureLookCamera = AZStd::make_shared<AzFramework::GestureLookCameraInput>();
+        m_orbitGestureLookCamera->SetGestureFilterFn(scrollOrbits);
+        m_orbitGestureLookCamera->SetInitiateGestureFn(pickOrbitPivotFn);
+        setupLook(*m_orbitGestureLookCamera);
+
+        m_orbitGestureLookCamera->m_invertYawFn = []
+        {
+            return SandboxEditor::CameraOrbitYawRotationInverted();
+        };
+
+        m_orbitGestureLookCamera->SetActivationBeganFn(
+            [this]
+            {
+                m_pivotDisplayState = PivotDisplayState::Full;
+            });
+        m_orbitGestureLookCamera->SetActivationEndedFn(
+            [this]
+            {
+                m_pivotDisplayState = PivotDisplayState::Faded;
+            });
+
+        m_orbitGestureDollyCamera = AZStd::make_shared<AzFramework::GestureDollyCameraInput>(AzFramework::OrbitDolly);
+        setupDolly(*m_orbitGestureDollyCamera);
+
+        m_orbitSmartZoomFocusCamera = AZStd::make_shared<AzFramework::FocusCameraInput>(
+            AzFramework::InputDeviceMouse::Gesture::SmartZoom, AzFramework::FocusOrbit);
+        m_orbitSmartZoomFocusCamera->SetPivotFn(focusPivotFn);
     }
 
     void EditorModularViewportCameraComposer::OnEditorModularViewportCameraComposerSettingsChanged()

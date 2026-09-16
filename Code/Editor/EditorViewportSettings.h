@@ -109,6 +109,29 @@ namespace SandboxEditor
     SANDBOX_API bool CameraZoomInverted();
     SANDBOX_API void SetCameraZoomInverted(bool inverted);
 
+    //! What a two finger scroll on a trackpad does to the camera (a mouse wheel always zooms).
+    enum class TrackpadScrollAction
+    {
+        Zoom, //!< Dolly the camera forward/backward (same as the mouse wheel).
+        Pan, //!< Pan the camera (drag the scene with two fingers).
+        Look //!< Rotate the camera (free look, or orbit while the orbit modifier is held).
+    };
+
+    SANDBOX_API TrackpadScrollAction CameraTrackpadScrollAction();
+    SANDBOX_API void SetCameraTrackpadScrollAction(TrackpadScrollAction action);
+
+    SANDBOX_API float CameraTrackpadScrollDollySpeed();
+    SANDBOX_API float CameraTrackpadScrollDollySpeedScaled();
+    SANDBOX_API void SetCameraTrackpadScrollDollySpeed(float speed);
+
+    SANDBOX_API float CameraTrackpadPanSpeed();
+    SANDBOX_API float CameraTrackpadPanSpeedScaled();
+    SANDBOX_API void SetCameraTrackpadPanSpeed(float speed);
+
+    SANDBOX_API float CameraTrackpadPinchSpeed();
+    SANDBOX_API float CameraTrackpadPinchSpeedScaled();
+    SANDBOX_API void SetCameraTrackpadPinchSpeed(float speed);
+
     SANDBOX_API float CameraRotateSmoothness();
     SANDBOX_API void SetCameraRotateSmoothness(float smoothness);
 
@@ -211,6 +234,10 @@ namespace SandboxEditor
     SANDBOX_API void ResetCameraPanInvertedX();
     SANDBOX_API void ResetCameraPanInvertedY();
     SANDBOX_API void ResetCameraZoomInverted();
+    SANDBOX_API void ResetCameraTrackpadScrollAction();
+    SANDBOX_API void ResetCameraTrackpadScrollDollySpeed();
+    SANDBOX_API void ResetCameraTrackpadPanSpeed();
+    SANDBOX_API void ResetCameraTrackpadPinchSpeed();
     SANDBOX_API void ResetCameraDefaultEditorPosition();
     SANDBOX_API void ResetCameraDefaultOrbitDistance();
     SANDBOX_API void ResetCameraDefaultEditorOrientation();

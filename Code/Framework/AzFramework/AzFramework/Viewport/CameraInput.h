@@ -123,6 +123,19 @@ namespace AzFramework
         float m_delta;
     };
 
+    //! Two finger scroll on a trackpad (see InputDeviceMouse::Gesture::PanX/PanY), delta in pixels.
+    //! @note Unlike ScrollEvent this is never produced by a mouse wheel.
+    struct GesturePanEvent
+    {
+        ScreenVector m_delta;
+    };
+
+    //! Pinch on a trackpad (see InputDeviceMouse::Gesture::Pinch), delta in magnification (1.0 == doubled).
+    struct GesturePinchEvent
+    {
+        float m_delta;
+    };
+
     //! Represents an input event which occurs as a discrete change in state (e.g. button down, button up) rather than a continuous stream.
     //! @note Such as a key press with a down/up event as opposed to a continuous delta.
     struct DiscreteInputEvent
@@ -132,8 +145,15 @@ namespace AzFramework
     };
 
     //! Represents a type-safe union of input events that are handled by the camera system.
-    using InputEvent =
-        AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, CursorEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<
+        AZStd::monostate,
+        HorizontalMotionEvent,
+        VerticalMotionEvent,
+        CursorEvent,
+        ScrollEvent,
+        DiscreteInputEvent,
+        GesturePanEvent,
+        GesturePinchEvent>;
 
     //! Encapsulates an InputEvent in addition to the current key state of the modifiers.
     struct InputState
@@ -334,6 +354,9 @@ namespace AzFramework
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
+        //! Returns the cursor motion to use for this frame (cursor position delta, or raw motion delta while captured).
+        ScreenVector MotionDelta() const;
+
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
         CursorState m_cursorState; //!< The current and previous position of the cursor (used to calculate movement delta).
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
@@ -660,6 +683,115 @@ namespace AzFramework
 
         AZStd::function<float()> m_scrollSpeedFn;
         AZStd::function<bool()> m_invertZoomFn;
+    };
+
+    //! Predicate deciding whether a gesture camera input should react to an event (e.g. depending on modifier keys or user settings).
+    using GestureFilterFn = AZStd::function<bool(const InputState& state)>;
+
+    //! Common behavior for camera inputs driven by trackpad gestures (see GesturePanEvent/GesturePinchEvent).
+    //! Gestures have no explicit begin/end input, so the camera input activates on the first accepted event, accumulates deltas
+    //! until the next StepCamera, and ends once no further events have arrived for a short period of time.
+    class AZF_API GestureCameraInput : public CameraInput
+    {
+    public:
+        //! Called for every gesture event to decide whether this camera input handles it (default: accept all).
+        void SetGestureFilterFn(GestureFilterFn gestureFilterFn);
+        //! Called once when a gesture starts (before the first StepCamera), e.g. to pick a pivot.
+        void SetInitiateGestureFn(AZStd::function<void()> initiateGestureFn);
+        //! How long (in seconds) without events before the gesture is considered finished.
+        void SetGestureTimeout(float timeoutSeconds);
+
+    protected:
+        //! Accept an event (call from HandleEvents once the event type matched and the filter accepted it).
+        //! @return True if this event started a new gesture (the camera input was idle), false if one was already in progress.
+        bool AcceptGesture();
+        //! Update the timeout, ending the activation if the gesture has gone quiet (call from StepCamera).
+        void StepGesture(float deltaTime);
+        //! Should the event be handled by this camera input (runs the gesture filter).
+        bool FilterGesture(const InputState& state) const;
+
+    private:
+        GestureFilterFn m_gestureFilterFn;
+        AZStd::function<void()> m_initiateGestureFn;
+        float m_gestureTimeout = 0.15f;
+        float m_timeSinceLastEvent = 0.0f;
+    };
+
+    //! A camera input to pan the camera with a two finger trackpad scroll (no button required).
+    class AZF_API GesturePanCameraInput : public GestureCameraInput
+    {
+    public:
+        GesturePanCameraInput(PanAxesFn panAxesFn, TranslationDeltaFn translationDeltaFn);
+
+        // CameraInput overrides ...
+        bool HandleEvents(const InputState& state, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<float()> m_panSpeedFn;
+        AZStd::function<bool()> m_invertPanXFn;
+        AZStd::function<bool()> m_invertPanYFn;
+
+    private:
+        void ResetImpl() override;
+
+        PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes (provided in the constructor).
+        TranslationDeltaFn m_translationDeltaFn; //!< How to apply the translation delta to the camera offset or pivot.
+        ScreenVector m_pendingDelta; //!< Accumulated gesture delta since the last StepCamera.
+    };
+
+    //! A camera input to rotate the camera with a two finger trackpad scroll (no button required).
+    //! @note Use as a child of OrbitCameraInput to orbit around the pivot, or on its own for free look.
+    class AZF_API GestureLookCameraInput : public GestureCameraInput
+    {
+    public:
+        GestureLookCameraInput();
+
+        // CameraInput overrides ...
+        bool HandleEvents(const InputState& state, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<float()> m_rotateSpeedFn;
+        AZStd::function<bool()> m_invertPitchFn;
+        AZStd::function<bool()> m_invertYawFn;
+        AZStd::function<bool()> m_constrainPitch;
+
+    private:
+        void ResetImpl() override;
+
+        ScreenVector m_pendingDelta; //!< Accumulated gesture delta since the last StepCamera.
+    };
+
+    //! How a dolly camera input moves the camera forward/backward by some distance.
+    using DollyFn = AZStd::function<void(Camera& camera, float distance)>;
+
+    //! Dolly to use while in 'look' camera behavior (translates the pivot along the view direction).
+    AZF_API void LookDolly(Camera& camera, float distance);
+    //! Dolly to use while in 'orbit' camera behavior (shrinks/grows the offset from the pivot, never crossing it).
+    AZF_API void OrbitDolly(Camera& camera, float distance);
+
+    //! A camera input to dolly the camera with a trackpad pinch and/or a two finger scroll.
+    class AZF_API GestureDollyCameraInput : public GestureCameraInput
+    {
+    public:
+        explicit GestureDollyCameraInput(DollyFn dollyFn);
+
+        // CameraInput overrides ...
+        bool HandleEvents(const InputState& state, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        //! Decides whether a two finger scroll (GesturePanEvent) should dolly, pinch is always accepted (subject to the gesture filter).
+        void SetScrollFilterFn(GestureFilterFn scrollFilterFn);
+
+        AZStd::function<float()> m_scrollSpeedFn; //!< Distance per pixel of vertical two finger scroll.
+        AZStd::function<float()> m_pinchSpeedFn; //!< Distance per unit of pinch magnification.
+        AZStd::function<bool()> m_invertZoomFn;
+
+    private:
+        void ResetImpl() override;
+
+        DollyFn m_dollyFn; //!< How to move the camera forward/backward.
+        GestureFilterFn m_scrollFilterFn; //!< Whether two finger scroll events are accepted.
+        float m_pendingDistance = 0.0f; //!< Accumulated dolly distance since the last StepCamera.
     };
 
     //! A camera input that doubles as its own set of camera inputs.

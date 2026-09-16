@@ -375,13 +375,32 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
+    // Hover mouse moves (and the matching enter/leave events) do not reach this widget on every platform, on macOS Qt
+    // delivers them to the top level window because the viewport is not painted by Qt (see QtEventToAzInputMapper),
+    // so the cached mouse position can be stale. Prefer the live cursor position whenever the cursor is over the widget.
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::LiveMousePosition() const
+    {
+        const QPoint globalCursorPosition = QCursor::pos();
+        if (QApplication::widgetAt(globalCursorPosition) == this)
+        {
+            return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mapFromGlobal(globalCursorPosition) * devicePixelRatioF());
+        }
+
+        return AZStd::nullopt;
+    }
+
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mousePosition.has_value();
+        return m_mousePosition.has_value() || LiveMousePosition().has_value();
     }
 
     AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
     {
+        if (const auto liveMousePosition = LiveMousePosition(); liveMousePosition.has_value())
+        {
+            return liveMousePosition;
+        }
+
         return m_mousePosition;
     }
 

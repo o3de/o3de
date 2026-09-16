@@ -157,29 +157,36 @@ namespace AzFramework
             m_cursorState.SetCurrentPosition(cursor->m_position);
             m_cursorState.SetCaptured(cursor->m_captured);
         }
+        // motion and scroll deltas are accumulated until the next StepCamera call, several events can arrive per frame
+        // (high polling rate mice, trackpads) and only keeping the last one would drop input
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_x = horizontalMotion->m_delta;
+            m_motionDelta.m_x += horizontalMotion->m_delta;
         }
         else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_y = verticalMotion->m_delta;
+            m_motionDelta.m_y += verticalMotion->m_delta;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
         {
-            m_scrollDelta = scroll->m_delta;
+            m_scrollDelta += scroll->m_delta;
         }
 
-        m_handlingEvents =
-            m_cameras.HandleEvents(state, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta);
+        m_handlingEvents = m_cameras.HandleEvents(state, MotionDelta(), m_scrollDelta);
 
         return m_handlingEvents;
     }
 
+    ScreenVector CameraSystem::MotionDelta() const
+    {
+        // while the cursor is captured it is pinned in place (or warped back) after every move, so the cursor
+        // position is not a reliable source of motion - use the accumulated raw motion deltas instead
+        return ed_cameraSystemUseCursor && !m_cursorState.Captured() ? m_cursorState.CursorDelta() : m_motionDelta;
+    }
+
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto nextCamera = m_cameras.StepCamera(
-            targetCamera, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta, deltaTime);
+        const auto nextCamera = m_cameras.StepCamera(targetCamera, MotionDelta(), m_scrollDelta, deltaTime);
 
         m_cursorState.Update();
         m_motionDelta = ScreenVector{ 0, 0 };
@@ -630,6 +637,264 @@ namespace AzFramework
         m_translateCameraInputChannelIds = translateCameraInputChannelIds;
     }
 
+    void GestureCameraInput::SetGestureFilterFn(GestureFilterFn gestureFilterFn)
+    {
+        m_gestureFilterFn = AZStd::move(gestureFilterFn);
+    }
+
+    void GestureCameraInput::SetInitiateGestureFn(AZStd::function<void()> initiateGestureFn)
+    {
+        m_initiateGestureFn = AZStd::move(initiateGestureFn);
+    }
+
+    void GestureCameraInput::SetGestureTimeout(const float timeoutSeconds)
+    {
+        m_gestureTimeout = timeoutSeconds;
+    }
+
+    bool GestureCameraInput::FilterGesture(const InputState& state) const
+    {
+        return !m_gestureFilterFn || m_gestureFilterFn(state);
+    }
+
+    bool GestureCameraInput::AcceptGesture()
+    {
+        m_timeSinceLastEvent = 0.0f;
+
+        // note: an attempt to begin can be cancelled (e.g. while an exclusive camera input is running), in which case
+        // the camera input is idle again and the next accepted event starts a new gesture
+        if (Idle())
+        {
+            if (m_initiateGestureFn)
+            {
+                m_initiateGestureFn();
+            }
+
+            BeginActivation();
+            return true;
+        }
+
+        return false;
+    }
+
+    void GestureCameraInput::StepGesture(const float deltaTime)
+    {
+        m_timeSinceLastEvent += deltaTime;
+        if (m_timeSinceLastEvent >= m_gestureTimeout)
+        {
+            EndActivation();
+        }
+    }
+
+    GesturePanCameraInput::GesturePanCameraInput(PanAxesFn panAxesFn, TranslationDeltaFn translationDeltaFn)
+        : m_panAxesFn(AZStd::move(panAxesFn))
+        , m_translationDeltaFn(AZStd::move(translationDeltaFn))
+    {
+        m_panSpeedFn = []() constexpr
+        {
+            return 0.01f;
+        };
+
+        // scrolling with two fingers should feel like dragging the scene, which is the opposite of dragging the camera
+        m_invertPanXFn = []() constexpr
+        {
+            return true;
+        };
+
+        m_invertPanYFn = []() constexpr
+        {
+            return true;
+        };
+    }
+
+    bool GesturePanCameraInput::HandleEvents(
+        const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
+    {
+        if (const auto* pan = AZStd::get_if<GesturePanEvent>(&state.m_inputEvent); pan && FilterGesture(state))
+        {
+            if (AcceptGesture())
+            {
+                // discard anything accumulated by a previous attempt that was cancelled
+                m_pendingDelta = ScreenVector{ 0, 0 };
+            }
+
+            m_pendingDelta += pan->m_delta;
+        }
+
+        return !Idle();
+    }
+
+    Camera GesturePanCameraInput::StepCamera(
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
+        const float deltaTime)
+    {
+        Camera nextCamera = targetCamera;
+
+        const auto panAxes = m_panAxesFn(nextCamera);
+
+        const float panSpeed = m_panSpeedFn();
+        const auto deltaPanX = aznumeric_cast<float>(m_pendingDelta.m_x) * panAxes.m_horizontalAxis * panSpeed;
+        const auto deltaPanY = aznumeric_cast<float>(m_pendingDelta.m_y) * panAxes.m_verticalAxis * panSpeed;
+
+        m_translationDeltaFn(nextCamera, deltaPanX * Invert(m_invertPanXFn()));
+        m_translationDeltaFn(nextCamera, deltaPanY * -Invert(m_invertPanYFn()));
+
+        m_pendingDelta = ScreenVector{ 0, 0 };
+        StepGesture(deltaTime);
+
+        return nextCamera;
+    }
+
+    void GesturePanCameraInput::ResetImpl()
+    {
+        m_pendingDelta = ScreenVector{ 0, 0 };
+    }
+
+    GestureLookCameraInput::GestureLookCameraInput()
+    {
+        m_rotateSpeedFn = []() constexpr
+        {
+            return 0.005f;
+        };
+
+        m_invertPitchFn = []() constexpr
+        {
+            return false;
+        };
+
+        m_invertYawFn = []() constexpr
+        {
+            return false;
+        };
+
+        m_constrainPitch = []() constexpr
+        {
+            return true;
+        };
+    }
+
+    bool GestureLookCameraInput::HandleEvents(
+        const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
+    {
+        if (const auto* pan = AZStd::get_if<GesturePanEvent>(&state.m_inputEvent); pan && FilterGesture(state))
+        {
+            if (AcceptGesture())
+            {
+                // discard anything accumulated by a previous attempt that was cancelled
+                m_pendingDelta = ScreenVector{ 0, 0 };
+            }
+
+            m_pendingDelta += pan->m_delta;
+        }
+
+        return !Idle();
+    }
+
+    Camera GestureLookCameraInput::StepCamera(
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
+        const float deltaTime)
+    {
+        Camera nextCamera = targetCamera;
+
+        const float rotateSpeed = m_rotateSpeedFn();
+        const float deltaPitch = aznumeric_cast<float>(m_pendingDelta.m_y) * rotateSpeed * Invert(m_invertPitchFn());
+        const float deltaYaw = aznumeric_cast<float>(m_pendingDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
+
+        nextCamera.m_pitch -= deltaPitch;
+        nextCamera.m_yaw -= deltaYaw;
+        nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
+
+        if (m_constrainPitch())
+        {
+            nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        }
+
+        m_pendingDelta = ScreenVector{ 0, 0 };
+        StepGesture(deltaTime);
+
+        return nextCamera;
+    }
+
+    void GestureLookCameraInput::ResetImpl()
+    {
+        m_pendingDelta = ScreenVector{ 0, 0 };
+    }
+
+    GestureDollyCameraInput::GestureDollyCameraInput(DollyFn dollyFn)
+        : m_dollyFn(AZStd::move(dollyFn))
+    {
+        m_scrollSpeedFn = []() constexpr
+        {
+            return 0.04f;
+        };
+
+        m_pinchSpeedFn = []() constexpr
+        {
+            return 8.0f;
+        };
+
+        m_invertZoomFn = []() constexpr
+        {
+            return false;
+        };
+    }
+
+    void GestureDollyCameraInput::SetScrollFilterFn(GestureFilterFn scrollFilterFn)
+    {
+        m_scrollFilterFn = AZStd::move(scrollFilterFn);
+    }
+
+    bool GestureDollyCameraInput::HandleEvents(
+        const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
+    {
+        if (const auto* pinch = AZStd::get_if<GesturePinchEvent>(&state.m_inputEvent); pinch && FilterGesture(state))
+        {
+            if (AcceptGesture())
+            {
+                m_pendingDistance = 0.0f;
+            }
+
+            m_pendingDistance += pinch->m_delta * m_pinchSpeedFn();
+        }
+        else if (const auto* pan = AZStd::get_if<GesturePanEvent>(&state.m_inputEvent);
+                 pan && FilterGesture(state) && (!m_scrollFilterFn || m_scrollFilterFn(state)))
+        {
+            if (AcceptGesture())
+            {
+                m_pendingDistance = 0.0f;
+            }
+
+            // scrolling up (content moving down) moves the camera forward, matching the mouse wheel
+            m_pendingDistance += aznumeric_cast<float>(pan->m_delta.m_y) * m_scrollSpeedFn();
+        }
+
+        return !Idle();
+    }
+
+    Camera GestureDollyCameraInput::StepCamera(
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
+        const float deltaTime)
+    {
+        Camera nextCamera = targetCamera;
+        m_dollyFn(nextCamera, m_pendingDistance * Invert(m_invertZoomFn()));
+
+        m_pendingDistance = 0.0f;
+        StepGesture(deltaTime);
+
+        return nextCamera;
+    }
+
+    void GestureDollyCameraInput::ResetImpl()
+    {
+        m_pendingDistance = 0.0f;
+    }
+
     OrbitCameraInput::OrbitCameraInput(const InputChannelId& orbitChannelId)
         : m_orbitChannelId(orbitChannelId)
     {
@@ -742,31 +1007,33 @@ namespace AzFramework
         return !Idle();
     }
 
-    static Camera OrbitDolly(const Camera& targetCamera, const float delta)
+    void OrbitDolly(Camera& camera, const float distance)
     {
-        Camera nextCamera = targetCamera;
-
         // handle case where pivot and offset may be the same to begin with
         // choose negative y-axis for offset to default to moving the camera backwards from the pivot (standard centered pivot behavior)
-        const auto pivotDirection = [&targetCamera]
+        const auto pivotDirection = [&camera]
         {
-            if (const auto offsetLength = targetCamera.m_offset.GetLength(); AZ::IsCloseMag(offsetLength, 0.0f))
+            if (const auto offsetLength = camera.m_offset.GetLength(); AZ::IsCloseMag(offsetLength, 0.0f))
             {
                 return -AZ::Vector3::CreateAxisY();
             }
             else
             {
-                return targetCamera.m_offset / offsetLength;
+                return camera.m_offset / offsetLength;
             }
         }();
 
-        nextCamera.m_offset -= pivotDirection * delta;
-        if (pivotDirection.Dot(nextCamera.m_offset) < 0.0f)
+        camera.m_offset -= pivotDirection * distance;
+        if (pivotDirection.Dot(camera.m_offset) < 0.0f)
         {
-            nextCamera.m_offset = pivotDirection * 0.001f;
+            camera.m_offset = pivotDirection * 0.001f;
         }
+    }
 
-        return nextCamera;
+    void LookDolly(Camera& camera, const float distance)
+    {
+        const auto translationBasis = LookTranslation(camera);
+        camera.m_pivot += translationBasis.GetBasisY() * distance;
     }
 
     Camera OrbitScrollDollyCameraInput::StepCamera(
@@ -775,7 +1042,8 @@ namespace AzFramework
         const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
-        const auto nextCamera = OrbitDolly(targetCamera, aznumeric_cast<float>(scrollDelta * Invert(m_invertZoomFn())) * m_scrollSpeedFn());
+        Camera nextCamera = targetCamera;
+        OrbitDolly(nextCamera, aznumeric_cast<float>(scrollDelta * Invert(m_invertZoomFn())) * m_scrollSpeedFn());
         EndActivation();
         return nextCamera;
     }
@@ -802,7 +1070,9 @@ namespace AzFramework
         [[maybe_unused]] const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
-        return OrbitDolly(targetCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
+        Camera nextCamera = targetCamera;
+        OrbitDolly(nextCamera, aznumeric_cast<float>(cursorDelta.m_y) * m_motionSpeedFn());
+        return nextCamera;
     }
 
     void OrbitMotionDollyCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
@@ -1024,9 +1294,26 @@ namespace AzFramework
             {
                 return InputState{ ScrollEvent{ inputChannel.GetValue() }, modifiers };
             }
+            else if (inputChannelId == InputDeviceMouse::Gesture::PanX)
+            {
+                return InputState{ GesturePanEvent{ ScreenVector(aznumeric_cast<int>(AZStd::lround(inputChannel.GetValue())), 0) },
+                                   modifiers };
+            }
+            else if (inputChannelId == InputDeviceMouse::Gesture::PanY)
+            {
+                return InputState{ GesturePanEvent{ ScreenVector(0, aznumeric_cast<int>(AZStd::lround(inputChannel.GetValue()))) },
+                                   modifiers };
+            }
+            else if (inputChannelId == InputDeviceMouse::Gesture::Pinch)
+            {
+                return InputState{ GesturePinchEvent{ inputChannel.GetValue() }, modifiers };
+            }
         }
 
-        if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
+        // smart zoom (two finger double tap) is a discrete gesture, treat it like a button/key press
+        const bool wasGestureButton = inputChannelId == InputDeviceMouse::Gesture::SmartZoom;
+
+        if (wasMouseButton || wasGestureButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
             return InputState{ DiscreteInputEvent{ inputChannelId, inputChannel.GetState() }, modifiers };
         }
