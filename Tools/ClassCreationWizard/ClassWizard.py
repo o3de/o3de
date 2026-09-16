@@ -9,6 +9,7 @@ import argparse
 import contextlib
 import ctypes
 import fnmatch
+import importlib.util
 import io
 import json
 import os
@@ -34,15 +35,16 @@ from wizard_logging import IN_EDITOR, wizard_log, wizard_error
 # ============================================================================
 # PySide6 Bootstrap
 # ============================================================================
-# O3DE ships PySide6 as a C++ runtime dependency of the QtForPython gem: the
-# native libraries are copied next to Editor.exe, but PySide6 is never installed
-# into the o3de Python venv (python/requirements.txt does not list it). The
-# Editor's embedded interpreter can therefore "import PySide6" -- it is
-# bootstrapped by Gems/QtForPython/Editor/Scripts/bootstrap.py -- but a
-# standalone tool launched through python/python.cmd cannot.
+# The engine registers its pyside6 3rdParty package into the Python venv as an
+# editable install during CMake configure (Findpyside6.cmake), so an engine
+# interpreter can usually FIND PySide6 -- but not always LOAD it, because the
+# package keeps its native libraries away from the extension modules that need
+# them (see the notes on the natural import further down). The registration is
+# also per engine path, and is lost whenever the venv is rebuilt until the next
+# configure restores it.
 #
-# To run standalone we locate the exact Qt-matched pyside6 and qt 3rdParty
-# packages the engine downloaded, put the PySide6 Python package on sys.path and
+# So when PySide6 will not import, we locate the exact Qt-matched pyside6 and qt
+# 3rdParty packages the engine uses, put the PySide6 Python package on sys.path and
 # make its native libraries loadable BEFORE importing PySide6. This reuses the
 # shipped, ABI-correct build: no PyPI wheel, no venv mutation, no dependence on
 # the host machine's Python. The whole step is skipped when PySide6 already
@@ -72,19 +74,49 @@ def _pyside6_engine_root() -> Optional[Path]:
     return fallback if (fallback / "engine.json").exists() else None
 
 
-def _pyside6_packages_folder(engine_root: Path) -> Path:
-    """The o3de 3rdParty 'packages' folder (shared across engines). Resolved via
-    the o3de manifest API when available, else the default ~/.o3de location."""
-    scripts = engine_root / "scripts" / "o3de"
-    sys.path.insert(0, str(scripts))
+def _pyside6_package_folders() -> List[Tuple[Path, str]]:
+    """Candidate 3rdParty 'packages' folders, each paired with where it came from.
+
+    Mirrors how the engine's CMake picks LY_3RDPARTY_PATH
+    (get_default_third_party_folder in cmake/3rdParty.cmake), so the wizard looks
+    where the packages were actually unpacked:
+      1. the LY_3RDPARTY_PATH environment variable
+      2. "default_third_party_folder" in ~/.o3de/o3de_manifest.json
+      3. ~/.o3de/3rdParty
+    All of them are returned, in that order, rather than only the first.
+
+    CMake's LY_3RDPARTY_PATH cache variable outranks all three, but it is recorded
+    only in the build's CMakeCache.txt, which does not exist at runtime, so a
+    folder passed ONLY as -DLY_3RDPARTY_PATH cannot be named here. That case is
+    covered by _pyside6_site_packages_on_path() instead, for as long as the venv
+    still registers the package.
+
+    o3de.manifest.get_o3de_third_party_folder() is deliberately not used: it
+    always returns ~/.o3de/3rdParty and never reads the manifest entry above."""
+    candidates = []
+
+    env_folder = os.environ.get("LY_3RDPARTY_PATH")
+    if env_folder:
+        candidates.append((Path(env_folder), "LY_3RDPARTY_PATH environment variable"))
+
+    manifest_path = Path.home() / ".o3de" / "o3de_manifest.json"
     try:
-        from o3de import manifest
-        return Path(manifest.get_o3de_third_party_folder()) / "packages"
-    except Exception:
-        return Path.home() / ".o3de" / "3rdParty" / "packages"
-    finally:
-        if sys.path and sys.path[0] == str(scripts):
-            sys.path.pop(0)
+        manifest_folder = json.loads(manifest_path.read_text(encoding="utf-8")).get("default_third_party_folder")
+    except (OSError, ValueError, AttributeError):
+        manifest_folder = None
+    if manifest_folder:
+        candidates.append((Path(manifest_folder), "default_third_party_folder in o3de_manifest.json"))
+
+    candidates.append((Path.home() / ".o3de" / "3rdParty", "default location"))
+
+    folders, seen = [], set()
+    for third_party, source in candidates:
+        packages = third_party.expanduser() / "packages"
+        key = os.path.normcase(os.path.abspath(str(packages)))
+        if key not in seen:
+            seen.add(key)
+            folders.append((packages, source))
+    return folders
 
 
 def _pal_platform_name() -> str:
@@ -132,7 +164,7 @@ def _pinned_package_names(engine_root: Path, target: str) -> List[str]:
     return names
 
 
-def _pyside6_resolve_package(packages: Path, engine_root: Path, target: str,
+def _pyside6_resolve_package(package_folders: List[Path], engine_root: Path, target: str,
                              prefix: str, subpath: str) -> Optional[Path]:
     """<subpath> inside the 3rdParty package this engine should be using.
 
@@ -144,10 +176,12 @@ def _pyside6_resolve_package(packages: Path, engine_root: Path, target: str,
     different Qt's plugins is a real mismatch, not a cosmetic one.
 
     Falling back to the newest on disk only happens when no pin is readable or
-    none of the pinned packages has been downloaded."""
+    none of the pinned packages has been downloaded. Folders are searched in the
+    order given, so a pinned package wins from whichever folder holds it."""
     pattern = prefix + "*"
-    pinned = [packages / name for name in _pinned_package_names(engine_root, target)]
-    newest = sorted((p for p in packages.glob(pattern) if p.is_dir()),
+    pins = _pinned_package_names(engine_root, target)
+    pinned = [folder / name for folder in package_folders for name in pins]
+    newest = sorted((p for folder in package_folders for p in folder.glob(pattern) if p.is_dir()),
                     key=lambda p: _natural_key(p.name), reverse=True)
 
     for pkg in pinned + newest:
@@ -157,6 +191,31 @@ def _pyside6_resolve_package(packages: Path, engine_root: Path, target: str,
         if candidate.exists():
             return candidate
     return None
+
+
+def _pyside6_site_packages_on_path(py_tag: str) -> Optional[Path]:
+    """site-packages of an engine pyside6 package that Python can already FIND,
+    even if it cannot LOAD it (see the notes on the natural import further down).
+
+    CMake configure registers the package in the venv (pyside6.egg-link) by its
+    absolute path, so this finds it even when its 3rdParty folder is unknowable
+    at runtime -- one passed only as -DLY_3RDPARTY_PATH. find_spec() locates the
+    package without running it. Only a package in the engine's own
+    pyside6-*-<py_tag>-* layout is accepted, because the native-library preload
+    that follows depends on that layout."""
+    try:
+        spec = importlib.util.find_spec("PySide6")
+    except (ImportError, ValueError):
+        return None
+    if spec is None or not spec.origin:
+        return None
+
+    # <package>/pyside6/lib/[python<X.Y>/]site-packages/PySide6/__init__.py
+    site_packages = Path(spec.origin).resolve().parent.parent
+    pyside_root = next((p for p in site_packages.parents if p.name == "pyside6"), None)
+    if pyside_root is None or not fnmatch.fnmatch(pyside_root.parent.name, f"pyside6-*-{py_tag}-*"):
+        return None
+    return site_packages
 
 
 def _pyside6_site_packages_subpath() -> str:
@@ -232,13 +291,42 @@ def _pyside6_preload_libraries(lib_dirs: List[Path], stems: List[str]) -> None:
                 continue
 
 
-def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
+@dataclass
+class _PySide6BootstrapReport:
+    """What _bootstrap_pyside6() searched and found. It is shown only if PySide6
+    still cannot be imported afterwards -- a launch that works never prints it."""
+    lines: List[str] = field(default_factory=list)
+    hint: str = ""      # the one thing the user should do, when it can be known
+
+
+def _bootstrap_pyside6(embedded_editor: bool = False) -> _PySide6BootstrapReport:
     """Put O3DE's shipped PySide6 on the path so a standalone launch can import
-    it. Safe to call when PySide6 is partially available."""
+    it. Safe to call when PySide6 is partially available.
+
+    Returns a report of every place it looked, so that if the import still fails
+    the error can say where and why instead of leaving the user to guess."""
+    report = _PySide6BootstrapReport()
+    py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    py_tag = f"py{py_version}"
+    report.lines.append(f"Interpreter: Python {py_version}")
+
     engine_root = _pyside6_engine_root()
     if engine_root is None:
-        return
-    packages = _pyside6_packages_folder(engine_root)
+        report.lines.append("Engine root: not found (--engine-path is missing or has no "
+                            "engine.json, and this script is not inside an engine)")
+        report.hint = ("Pass --engine-path pointing at the engine root, the folder "
+                       "that contains engine.json.")
+        return report
+    report.lines.append(f"Engine root: {engine_root}")
+
+    package_folders = _pyside6_package_folders()
+    for folder, source in package_folders:
+        missing = "" if folder.is_dir() else " (does not exist)"
+        report.lines.append(f"3rdParty packages: {folder} [{source}]{missing}")
+    search_folders = [folder for folder, _ in package_folders if folder.is_dir()]
+
+    pins = _pinned_package_names(engine_root, "pyside6")
+    report.lines.append("Engine's pinned pyside6: " + (", ".join(pins) if pins else "none found"))
 
     # 1. Put the engine's own complete PySide6 package first on sys.path. We match
     #    the package to the RUNNING interpreter's Python tag (e.g. "py3.10") so a
@@ -248,13 +336,49 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     #    venv can carry a BROKEN/partial PySide6 + shiboken6 (e.g. the native
     #    shiboken6.Shiboken .pyd absent -> "No module named 'shiboken6.Shiboken'"),
     #    and the engine's complete 3rdParty copy must win over that.
-    py_tag = f"py{sys.version_info.major}.{sys.version_info.minor}"
-    site_packages = _pyside6_resolve_package(packages, engine_root, "pyside6",
-                                             f"pyside6-*-{py_tag}-", _pyside6_site_packages_subpath())
+    site_packages_subpath = _pyside6_site_packages_subpath()
+    site_packages = _pyside6_resolve_package(search_folders, engine_root, "pyside6",
+                                             f"pyside6-*-{py_tag}-", site_packages_subpath)
     if site_packages is None or not (site_packages / "PySide6").is_dir():
-        return  # No interpreter-matched engine package; leave any existing PySide6 alone.
+        # Not in any folder we can name, but Python may still find the package on
+        # its own path -- e.g. a 3rdParty folder passed only as -DLY_3RDPARTY_PATH.
+        site_packages = _pyside6_site_packages_on_path(py_tag)
+        report.lines.append(f"On the interpreter's own path: {site_packages}" if site_packages
+                            else "Not on the interpreter's own path either.")
+    if site_packages is None or not (site_packages / "PySide6").is_dir():
+        # Nothing usable. Tell apart the three reasons, because each one needs
+        # the user to do something different. Any existing PySide6 is left alone.
+        found = sorted({p.name for folder in search_folders for p in folder.glob("pyside6-*") if p.is_dir()},
+                       key=_natural_key)
+        for_this_python = [name for name in found if f"-{py_tag}-" in name]
+        if for_this_python:
+            report.lines.append(f"pyside6 package has no {site_packages_subpath}/PySide6: "
+                                + ", ".join(for_this_python))
+            report.hint = ("The engine's pyside6 package looks incomplete. Re-run the "
+                           "engine's CMake configure to download it again.")
+        elif found:
+            launcher = "python\\python.cmd" if sys.platform.startswith("win") else "python/python.sh"
+            report.lines.append(f"pyside6 packages found, none built for Python {py_version}: "
+                                + ", ".join(found))
+            report.hint = (f"This is Python {py_version}, which the engine's PySide6 was not "
+                           f"built for. Run the wizard with the engine's own Python: {launcher}")
+        else:
+            report.lines.append("No pyside6 package in any of the folders above.")
+            report.hint = ("If this engine's 3rdParty packages were unpacked somewhere else "
+                           "(a custom LY_3RDPARTY_PATH), set \"default_third_party_folder\" in "
+                           "~/.o3de/o3de_manifest.json, or the LY_3RDPARTY_PATH environment "
+                           "variable, to that 3rdParty folder (the one containing 'packages').")
+        return report
+
+    report.lines.append(f"Using PySide6 from: {site_packages}")
     sys.path.insert(0, str(site_packages))
     pyside_root = next(p for p in site_packages.parents if p.name == "pyside6")
+
+    # The folder holding the pyside6 package holds the qt package as well. Search
+    # it too, in case it is not one of the folders above (the -D case).
+    packages_folder = pyside_root.parent.parent
+    if packages_folder not in search_folders:
+        search_folders.append(packages_folder)
 
     # 2. Make PySide6's native dependencies loadable. This is required even when
     #    the PySide6 Python package is already importable: the shiboken6/pyside6
@@ -266,7 +390,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
         # Search paths are enough on Windows; the engine's built bin/<config> is
         # added too when it is an exact match for the loaded Qt.
         _pyside6_add_dll_dir(pyside_root / "bin")
-        qt_bin = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/bin")
+        qt_bin = _pyside6_resolve_package(search_folders, engine_root, "Qt", "qt-", "qt/bin")
         if qt_bin is not None:
             _pyside6_add_dll_dir(qt_bin)
         for built_bin in engine_root.glob("build/*/bin/*"):
@@ -279,7 +403,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
         # process with two Qt instances -- so only shiboken6/pyside6, the pieces
         # that are genuinely missing there, are preloaded.
         if not embedded_editor:
-            qt_lib = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/lib")
+            qt_lib = _pyside6_resolve_package(search_folders, engine_root, "Qt", "qt-", "qt/lib")
             if qt_lib is not None:
                 _pyside6_preload_libraries([qt_lib], _PYSIDE6_QT_PRELOAD)
         # Prefer the copy sitting next to the running executable: in the editor
@@ -297,9 +421,11 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     #    editor's Gems/QtForPython/Editor/Scripts/bootstrap.py. Do not clobber a
     #    value the caller already set (e.g. when embedded in the Editor).
     if not os.environ.get("QT_PLUGIN_PATH"):
-        qt_plugins = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/plugins")
+        qt_plugins = _pyside6_resolve_package(search_folders, engine_root, "Qt", "qt-", "qt/plugins")
         if qt_plugins is not None:
             os.environ["QT_PLUGIN_PATH"] = str(qt_plugins)
+
+    return report
 
 
 # Try the NATURAL import first -- exactly as any O3DE-tied Python app would, using
@@ -320,6 +446,7 @@ def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
 # ALSO fails -- and pure noise if it succeeds.
 _pyside_fallback_reason = ""     # non-empty once the natural import has failed
 _pyside_probe_diag = ""
+_pyside_bootstrap_report = None  # what the bootstrap searched, once it has run
 
 _pyside_probe_stderr = io.StringIO()
 try:
@@ -340,9 +467,12 @@ except BaseException as _natural_pyside_err:
         del sys.modules[_m]
 
     try:
-        _bootstrap_pyside6(IN_EDITOR)
-    except Exception:
-        pass  # Fall through: the import below reports and raises.
+        _pyside_bootstrap_report = _bootstrap_pyside6(IN_EDITOR)
+    except Exception as _bootstrap_err:
+        # A bug in the bootstrap must not mask the real import error below, but
+        # it is recorded rather than swallowed, so it shows up if that fails.
+        _pyside_bootstrap_report = _PySide6BootstrapReport(
+            lines=[f"Bootstrap raised {type(_bootstrap_err).__name__}: {_bootstrap_err}"])
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
@@ -356,17 +486,20 @@ try:
 except ImportError as pyside_import_error:
     # The bootstrap could not recover either. THIS is the failure worth raising
     # loudly: the wizard cannot open. Lead with the probe's diagnostic, which
-    # names the library that would not load.
+    # names the library that would not load, then everywhere the bootstrap
+    # looked, then the single action most likely to fix it.
     if _pyside_probe_diag:
         wizard_error(_pyside_probe_diag)
-    raise ImportError(
-        "PySide6 could not be imported. O3DE ships PySide6 as a runtime "
-        "dependency of the QtForPython gem (copied next to the editor binary), "
-        "not in the Python venv, so the ClassWizard bootstraps it from the "
-        "engine's 3rdParty packages. Ensure --engine-path points at an engine "
-        "whose 'pyside6' and 'qt' 3rdParty packages have been downloaded (they "
-        "are fetched during the engine's CMake configure)."
-    ) from pyside_import_error
+    if _pyside_bootstrap_report is None:
+        _pyside_hint = "See the error above."
+    else:
+        wizard_error("PySide6 bootstrap could not recover. It searched:")
+        for _line in _pyside_bootstrap_report.lines:
+            wizard_error("  " + _line)
+        _pyside_hint = _pyside_bootstrap_report.hint or (
+            "The engine's PySide6 package was found and put on the path, but "
+            "importing it still failed; see the errors above.")
+    raise ImportError("PySide6 could not be imported. " + _pyside_hint) from pyside_import_error
 
 if _pyside_fallback_reason:
     # Recovered. One plain line so the log says where PySide6 came from, with
