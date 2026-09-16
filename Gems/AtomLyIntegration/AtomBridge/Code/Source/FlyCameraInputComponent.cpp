@@ -90,8 +90,7 @@ void FlyCameraInputComponent::GetIncompatibleServices(AZ::ComponentDescriptor::D
 //////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
 {
-    AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
-    if (serializeContext)
+    if (auto* const serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
     {
         serializeContext->Class<FlyCameraInputComponent, AZ::Component>()
             ->Version(1)
@@ -102,8 +101,7 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             ->Field("Invert Rotation Input Y", &FlyCameraInputComponent::m_InvertRotationInputAxisY)
             ->Field("Is enabled", &FlyCameraInputComponent::m_isEnabled);
 
-        AZ::EditContext* editContext = serializeContext->GetEditContext();
-        if (editContext)
+        if (auto* const editContext = serializeContext->GetEditContext())
         {
             editContext->Class<FlyCameraInputComponent>(QT_TRANSLATE_NOOP("AtomBridge", "Fly Camera Input"), QT_TRANSLATE_NOOP("AtomBridge", "The Fly Camera Input allows you to control the camera"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -115,7 +113,6 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC_CE("Game"))
                 ->DataElement(nullptr, &FlyCameraInputComponent::m_moveSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Move Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera moves"))
                 ->Attribute("Min", 1.0f)
-                ->Attribute("Max", 100.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(nullptr, &FlyCameraInputComponent::m_rotationSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Rotation Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera rotates"))
                 ->Attribute("Min", 1.0f)
@@ -134,8 +131,7 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
         }
     }
 
-    AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection);
-    if (behaviorContext)
+    if (auto* const behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
     {
         behaviorContext->EBus<FlyCameraInputBus>("FlyCameraInputBus")
             ->Event("SetIsEnabled", &FlyCameraInputBus::Events::SetIsEnabled)
