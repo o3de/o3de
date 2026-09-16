@@ -1228,8 +1228,6 @@ namespace AzToolsFramework
                         DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_translate, "Translate", "Local Position (Relative to parent) in meters.")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
                             Attribute(AZ::Edit::Attributes::Suffix, " m")->
-                            Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)->
-                            Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                         DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_rotate, "Rotate", "Local Rotation (Relative to parent) in degrees.")->
