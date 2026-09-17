@@ -9,6 +9,7 @@
 #include "Tools/WhiteBoxLayerGizmo.h"
 
 #include "EditorWhiteBoxComponent.h"
+#include "Util/WhiteBoxSnapUtil.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
@@ -163,6 +164,56 @@ namespace WhiteBox
         }
     }
 
+    void WhiteBoxLayerGizmo::ApplyPositionSnapped(const AZ::Vector3& localPosition)
+    {
+        EditorWhiteBoxComponent* component = Component();
+        if (component == nullptr || !SnapUtil::SnappingActive())
+        {
+            ApplyPosition(localPosition);
+            return;
+        }
+
+        const int viewportId = SnapUtil::ActiveViewportId();
+
+        // Resolve the snap anchor once, as an offset from the layer origin (valid for the whole translate).
+        if (!m_snapAnchorResolved)
+        {
+            m_snapAnchorResolved = true;
+            m_snapAnchorOffset.reset();
+
+            const AZStd::vector<AZ::Vector3> layerVertices =
+                component->GetLayerVertexPositionsEntityLocal(m_layerIndex);
+
+            if (const auto anchorIndex = SnapUtil::FindAnchorIndex(m_entityId, viewportId, layerVertices))
+            {
+                const EditorWhiteBoxComponent::LayerMeta meta = component->GetLayerMeta(m_layerIndex);
+                m_snapAnchorOffset = layerVertices[anchorIndex.value()] - meta.m_position;
+            }
+        }
+
+        if (!m_snapAnchorOffset.has_value())
+        {
+            ApplyPosition(localPosition);
+            SnapUtil::SetActiveSnapTarget(AZStd::nullopt);
+            return;
+        }
+
+        // Nothing is excluded: this layer's own vertices are legitimate targets for another part
+        // of the same mesh, and the snapper works on the evaluated (all layers) geometry anyway.
+        const auto snapTarget = SnapUtil::FindSnapTargetWorld(m_entityId, viewportId, {});
+        SnapUtil::SetActiveSnapTarget(snapTarget);
+
+        if (!snapTarget.has_value())
+        {
+            ApplyPosition(localPosition);
+            return;
+        }
+
+        // Place the layer so the anchor vertex lands exactly on the target.
+        const AZ::Vector3 targetEntityLocal = SnapUtil::MeshLocalFromWorld(m_entityId, snapTarget.value());
+        ApplyPosition(targetEntityLocal - m_snapAnchorOffset.value());
+    }
+
     void WhiteBoxLayerGizmo::ApplyPosition(const AZ::Vector3& localPosition)
     {
         if (EditorWhiteBoxComponent* component = Component())
@@ -232,19 +283,31 @@ namespace WhiteBox
                     [this, undoLabel](const Aztf::LinearManipulator::Action& action)
                     {
                         BeginBatch(undoLabel);
-                        ApplyPosition(action.LocalPosition());
+                        ApplyPositionSnapped(action.LocalPosition());
                     });
                 m_translation->InstallLinearManipulatorMouseUpCallback(
-                    [this]([[maybe_unused]] const Aztf::LinearManipulator::Action& action) { EndBatch(); });
+                    [this]([[maybe_unused]] const Aztf::LinearManipulator::Action& action)
+                    {
+                        m_snapAnchorResolved = false;
+                        m_snapAnchorOffset.reset();
+                        SnapUtil::ClearActiveSnapTarget();
+                        EndBatch();
+                    });
 
                 m_translation->InstallPlanarManipulatorMouseMoveCallback(
                     [this, undoLabel](const Aztf::PlanarManipulator::Action& action)
                     {
                         BeginBatch(undoLabel);
-                        ApplyPosition(action.LocalPosition());
+                        ApplyPositionSnapped(action.LocalPosition());
                     });
                 m_translation->InstallPlanarManipulatorMouseUpCallback(
-                    [this]([[maybe_unused]] const Aztf::PlanarManipulator::Action& action) { EndBatch(); });
+                    [this]([[maybe_unused]] const Aztf::PlanarManipulator::Action& action)
+                    {
+                        m_snapAnchorResolved = false;
+                        m_snapAnchorOffset.reset();
+                        SnapUtil::ClearActiveSnapTarget();
+                        EndBatch();
+                    });
 
                 m_translation->Register(Aztf::GetMainManipulatorManagerId());
             }

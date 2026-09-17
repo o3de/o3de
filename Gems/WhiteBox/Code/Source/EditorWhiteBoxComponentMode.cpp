@@ -10,17 +10,22 @@
 #include "SubComponentModes/EditorWhiteBoxDefaultMode.h"
 #include "SubComponentModes/EditorWhiteBoxEdgeRestoreMode.h"
 #include "SubComponentModes/EditorWhiteBoxTransformMode.h"
+#include "Util/WhiteBoxSnapUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/sort.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -75,6 +80,7 @@ namespace WhiteBox
         EditorWhiteBoxComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
         AZ::TransformNotificationBus::Handler::BusConnect(entityComponentIdPair.GetEntityId());
         EditorWhiteBoxComponentNotificationBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::ViewportSnapping::ViewportDragCancelRequestBus::Handler::BusConnect();
 
         // default behavior for querying modifier keys (ask the QApplication)
         m_keyboardModifierQueryFn = []()
@@ -82,6 +88,7 @@ namespace WhiteBox
             return AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         };
 
+        m_deferredWorkToken = AZStd::make_shared<bool>(true);
         m_worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId());
         CreateSubModeSelectionCluster();
         // start with DefaultMode
@@ -90,8 +97,25 @@ namespace WhiteBox
 
     EditorWhiteBoxComponentMode::~EditorWhiteBoxComponentMode()
     {
+        // Invalidate any queued deferred work (see EnterDefaultMode) before anything else, so a
+        // callback that fires after this point cannot touch the editor's action context mode.
+        m_deferredWorkToken.reset();
+
+        // Safety net: if a White Box sub-mode is still set after leaving component mode, restore the
+        // default, or Play and most actions stay locked out.
+        if (!AzToolsFramework::ComponentModeFramework::InComponentMode())
+        {
+            if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+            {
+                actionManagerInterface->SetActiveActionContextMode(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    AzToolsFramework::DefaultActionContextModeIdentifier);
+            }
+        }
+
         RemoveSubModeSelectionCluster();
 
+        AzToolsFramework::ViewportSnapping::ViewportDragCancelRequestBus::Handler::BusDisconnect();
         EditorWhiteBoxComponentNotificationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         EditorWhiteBoxComponentModeRequestBus::Handler::BusDisconnect();
@@ -305,6 +329,10 @@ namespace WhiteBox
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportId);
 
+        // Publish the viewport for the manipulator callbacks, whose Action types (Linear, Planar,
+        // Surface) do not carry a viewport id of their own. See WhiteBoxSnapUtil.h.
+        SnapUtil::SetActiveViewportId(viewportId);
+
         const AZStd::optional<EdgeIntersection> edgeIntersection = FindClosestEdgeIntersection(
             m_intersectionAndRenderData->m_whiteBoxIntersectionData, localRayOrigin, localRayDirection,
             m_worldFromLocal, cameraState);
@@ -358,14 +386,47 @@ namespace WhiteBox
         return azrtti_typeid<EditorWhiteBoxComponentMode>();
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
+    bool EditorWhiteBoxComponentMode::CancelActiveDrag()
     {
         return AZStd::visit(
+            [](auto& mode)
+            {
+                return mode->CancelActiveDrag();
+            },
+            m_modes);
+    }
+
+    AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
+    {
+        auto actions = AZStd::visit(
             [entityComponentIdPair = GetEntityComponentIdPair()](auto& mode)
             {
                 return mode->PopulateActions(entityComponentIdPair);
             },
             m_modes);
+
+        // Take over Escape by reusing the back-action URI (the later binding wins). Cancel a drag, then
+        // numeric input, and only then leave component mode.
+        actions.push_back(AzToolsFramework::CreateBackAction(
+            "Done",
+            "Cancel the current operation, or return to normal viewport editing",
+            [this]()
+            {
+                const bool consumed = AZStd::visit(
+                    [](auto& mode)
+                    {
+                        return mode->HandleEscape();
+                    },
+                    m_modes);
+
+                if (!consumed)
+                {
+                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+                        &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+                }
+            }));
+
+        return actions;
     }
 
 
@@ -410,11 +471,22 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Default;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_defaultModeButtonId);
-        // Change sub-mode to default at the next frame to go after the automated mode switching in ComponentModeActionHandler.
+        // Switch to the default sub-mode next frame, after ComponentModeActionHandler's own switch - only
+        // if this mode and component mode are both still alive, or the editor is left stranded.
         QTimer::singleShot(
             0,
-            []()
+            [this, aliveToken = AZStd::weak_ptr<bool>(m_deferredWorkToken)]()
             {
+                if (aliveToken.expired() || !AzToolsFramework::ComponentModeFramework::InComponentMode())
+                {
+                    return; // the White Box component mode has gone away - leave the mode alone
+                }
+                // Safe to touch 'this' now: the token is only released by the destructor.
+                if (m_currentSubMode != SubMode::Default)
+                {
+                    return; // the sub-mode moved on before this ran; whoever moved it set the mode
+                }
+
                 // Set the Action Context Mode in the Action Manager, if enabled.
                 auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
                 if (actionManagerInterface)
@@ -458,7 +530,11 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-    
+
+        // Draw the active snap target here; most draggable tools are not display handlers.
+        SnapUtil::DrawActiveSnapTarget(debugDisplay);
+
+
         const auto modifiers = m_keyboardModifierQueryFn();
         // handle mode switch
         {

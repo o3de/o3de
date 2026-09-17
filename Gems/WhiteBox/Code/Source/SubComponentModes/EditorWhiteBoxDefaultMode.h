@@ -80,6 +80,14 @@ namespace WhiteBox
             AzFramework::DebugDisplayRequests& debugDisplay);
         bool HandleMouseInteraction(const ModeMouseInteraction& mouse);
 
+        //! Handle Escape. Cancels a drag in progress, otherwise clears any numeric input.
+        //! @return True if the Escape was consumed (so it must not also leave component mode).
+        bool HandleEscape();
+
+        //! Ask whichever translation modifier is mid-drag to abandon it.
+        //! @return True if a drag was cancelled.
+        bool CancelActiveDrag();
+
     private:
         // EditorWhiteBoxDefaultModeRequestBus ...
         void CreatePolygonScaleModifier(const Api::PolygonHandle& polygonHandle) override;
@@ -125,7 +133,8 @@ namespace WhiteBox
         void NumericMoveSetAxisY()  override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Y); }
         void NumericMoveSetAxisZ()  override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Z); }
         void NumericMoveConfirm()   override { ApplyNumeric(); }
-        void NumericMoveCancel()    override { m_numericInput.Reset(); }
+        //! Escape is handled by HandleEscape (via the component mode's back action), not here.
+        void NumericMoveCancel() override { m_numericInput.Reset(); }
         void NumericMoveBackspace() override { if (m_numericInput.IsActive()) m_numericInput.Backspace(); }
         void NumericMoveDecimal()   override { if (m_numericInput.IsActive()) m_numericInput.AppendDecimal(); }
         void NumericMoveNegate()    override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('-'); }

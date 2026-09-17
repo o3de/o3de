@@ -745,6 +745,44 @@ namespace WhiteBox
         return vertexIntersection;
     }
 
+    bool DefaultMode::HandleEscape()
+    {
+        if (CancelActiveDrag())
+        {
+            return true;
+        }
+
+        if (m_numericInput.IsActive())
+        {
+            m_numericInput.Reset();
+            return true;
+        }
+
+        return false;
+    }
+
+    bool DefaultMode::CancelActiveDrag()
+    {
+        // Only one translation modifier can be mid-drag at a time, so the first one that reports
+        // a cancellable drag wins.
+        if (m_vertexTranslationModifier && m_vertexTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        if (m_edgeTranslationModifier && m_edgeTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        if (m_polygonTranslationModifier && m_polygonTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     bool DefaultMode::HandleMouseInteraction(const ModeMouseInteraction& mouse)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);

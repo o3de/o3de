@@ -53,6 +53,13 @@ namespace WhiteBox
 
         // Submode interface
         void Refresh();
+        //! Handle Escape. Edge restore has no drag or numeric state of its own, so it never
+        //! consumes the key - Escape leaves component mode as usual.
+        bool HandleEscape() { return false; }
+
+        //! Edge restore has no drag state of its own.
+        bool CancelActiveDrag() { return false; }
+
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(
             const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Display(

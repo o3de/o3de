@@ -26,6 +26,7 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QDropEvent>
 #include <QEvent>
 #include <QGraphicsEffect>
 #include <QFormLayout>
@@ -106,6 +107,64 @@ namespace WhiteBox
             }
             return row;
         }
+
+        //! The layer list, with drag-and-drop reordering.
+        //!
+        //! The rows are NOT moved by the view: letting Qt do an InternalMove would edit the
+        //! item model behind the component's back (and fire itemChanged mid-move, writing a
+        //! layer's name/visibility onto the wrong slot). Instead the drop is intercepted, the
+        //! from/to rows are computed and handed to the owner, which reorders the component's
+        //! layer list and rebuilds the widget from it - the component stays the source of truth.
+        //! No signals/slots of its own, so it needs no Q_OBJECT / moc.
+        class LayerListWidget : public QListWidget
+        {
+        public:
+            using QListWidget::QListWidget;
+
+            //! Called with (fromRow, toRow) when the user drops a dragged layer.
+            AZStd::function<void(int, int)> m_onRowMoved;
+
+        protected:
+            void dropEvent(QDropEvent* event) override
+            {
+                const int from = currentRow();
+
+                // Where the drop indicator sits translates to an INSERTION index in the list.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                const QPoint dropPos = event->position().toPoint();
+#else
+                const QPoint dropPos = event->pos();
+#endif
+                int insertIndex = count();
+                if (const QModelIndex index = indexAt(dropPos); index.isValid())
+                {
+                    switch (dropIndicatorPosition())
+                    {
+                    case QAbstractItemView::AboveItem:
+                        insertIndex = index.row();
+                        break;
+                    case QAbstractItemView::BelowItem:
+                    case QAbstractItemView::OnItem:
+                        insertIndex = index.row() + 1;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                // Removing the dragged row first shifts everything after it down by one.
+                const int to = (insertIndex > from) ? insertIndex - 1 : insertIndex;
+
+                // Swallow the event so the base class never touches the model.
+                event->setDropAction(Qt::IgnoreAction);
+                event->accept();
+
+                if (m_onRowMoved && from >= 0 && to >= 0 && to != from)
+                {
+                    m_onRowMoved(from, to);
+                }
+            }
+        };
     } // namespace
 
     WhiteBoxPaneWidget::WhiteBoxPaneWidget(QWidget* parent)
@@ -528,10 +587,40 @@ namespace WhiteBox
         buttonRow->addWidget(applyTransformButton);
         layout->addLayout(buttonRow);
 
-        m_layerList = new QListWidget();
-        m_layerList->setToolTip(tr("All layers. Double-click to rename; use the checkbox to show/hide."));
+        auto* moveRow = new QHBoxLayout();
+        auto* moveUpButton = new QPushButton(tr("Move Up"));
+        auto* moveDownButton = new QPushButton(tr("Move Down"));
+        const QString moveTip =
+            tr("Reorder the selected layer. Layer order is the order the Combine modes accumulate "
+               "in, so moving a layer restacks its boolean.");
+        moveUpButton->setToolTip(moveTip);
+        moveDownButton->setToolTip(moveTip);
+        moveRow->addWidget(moveUpButton);
+        moveRow->addWidget(moveDownButton);
+        layout->addLayout(moveRow);
+
+        auto* layerList = new LayerListWidget();
+        m_layerList = layerList;
+        m_layerList->setToolTip(
+            tr("All layers, in combine order. Double-click to rename; use the checkbox to "
+               "show/hide; drag a layer (or use Move Up / Move Down) to reorder."));
         // The list grows to show EVERY layer (the pane itself scrolls); no inner scrollbar.
         m_layerList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        // Drag to reorder. The drop is intercepted by LayerListWidget and applied to the
+        // component (which owns the order); the widget is then rebuilt from it.
+        m_layerList->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_layerList->setDragEnabled(true);
+        m_layerList->viewport()->setAcceptDrops(true);
+        m_layerList->setDropIndicatorShown(true);
+        m_layerList->setDragDropMode(QAbstractItemView::InternalMove);
+        m_layerList->setDefaultDropAction(Qt::MoveAction);
+        // Rename on double-click / F2 only - a single click on an already-selected layer must
+        // start a drag, not an inline rename.
+        m_layerList->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        layerList->m_onRowMoved = [this](int from, int to)
+        {
+            MoveLayerRow(from, to);
+        };
         layout->addWidget(m_layerList);
 
         m_layerMetaGroup = new QGroupBox(tr("Selected Layer"));
@@ -707,6 +796,18 @@ namespace WhiteBox
                 ModifyComponent(
                     "White Box Apply Layer Transform",
                     [](EditorWhiteBoxComponent* c) { c->ApplyActiveLayerTransform(); });
+            });
+        connect(moveUpButton, &QPushButton::clicked, this,
+            [this]()
+            {
+                const int row = m_layerList->currentRow();
+                MoveLayerRow(row, row - 1);
+            });
+        connect(moveDownButton, &QPushButton::clicked, this,
+            [this]()
+            {
+                const int row = m_layerList->currentRow();
+                MoveLayerRow(row, row + 1);
             });
         connect(
             m_activeLayerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -1041,6 +1142,28 @@ namespace WhiteBox
         m_applyBooleanButton = new QPushButton(tr("Apply Boolean"));
         layout->addRow(m_applyBooleanButton);
 
+        // --- Global (scene-wide) boolean -------------------------------------------------------
+        auto* globalLabel = new QLabel(tr("<b>Global Boolean</b>"));
+        layout->addRow(globalLabel);
+        m_booleanOthers = new QCheckBox(tr("Boolean Other Entities (Cutter)"));
+        m_booleanOthers->setToolTip(
+            tr("When on, this entity acts as a boolean brush: it cuts every overlapping White Box entity "
+               "that is not excluded. Use Refresh Global Booleans to apply."));
+        layout->addRow(QString(), m_booleanOthers);
+        m_cutterOpCombo = new QComboBox();
+        m_cutterOpCombo->setToolTip(tr("Operation this cutter applies to the entities it overlaps."));
+        m_cutterOpCombo->addItem(tr("Subtract"), static_cast<int>(Api::BooleanOperation::Subtraction));
+        m_cutterOpCombo->addItem(tr("Union"), static_cast<int>(Api::BooleanOperation::Union));
+        m_cutterOpCombo->addItem(tr("Intersect"), static_cast<int>(Api::BooleanOperation::Intersection));
+        layout->addRow(tr("Cutter Operation"), m_cutterOpCombo);
+        m_excludeFromBoolean = new QCheckBox(tr("Exclude From Boolean"));
+        m_excludeFromBoolean->setToolTip(tr("When on, this entity is never cut by global cutters."));
+        layout->addRow(QString(), m_excludeFromBoolean);
+        m_refreshGlobalBooleansButton = new QPushButton(tr("Refresh Global Booleans"));
+        m_refreshGlobalBooleansButton->setToolTip(
+            tr("Re-evaluate every non-excluded White Box entity against the current set of cutters."));
+        layout->addRow(m_refreshGlobalBooleansButton);
+
         connect(
             m_csgSolverCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this](int index)
@@ -1114,6 +1237,48 @@ namespace WhiteBox
         connect(m_applyBooleanButton, &QPushButton::clicked, this,
             [this]() {
                 ModifyComponent("White Box Apply Boolean", [](EditorWhiteBoxComponent* c) { c->ApplyBoolean(); });
+            });
+
+        connect(m_booleanOthers, &QCheckBox::toggled, this,
+            [this](bool booleanOthers)
+            {
+                if (!m_updating)
+                {
+                    ModifyComponent(
+                        "White Box Boolean Others",
+                        [booleanOthers](EditorWhiteBoxComponent* c) { c->SetBooleanOthers(booleanOthers); });
+                }
+            });
+        connect(
+            m_cutterOpCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int index)
+            {
+                if (m_updating || index < 0)
+                {
+                    return;
+                }
+                const auto op = static_cast<Api::BooleanOperation>(m_cutterOpCombo->itemData(index).toInt());
+                ModifyComponent(
+                    "White Box Cutter Operation",
+                    [op](EditorWhiteBoxComponent* c) { c->SetCutterOperation(op); });
+            });
+        connect(m_excludeFromBoolean, &QCheckBox::toggled, this,
+            [this](bool exclude)
+            {
+                if (!m_updating)
+                {
+                    ModifyComponent(
+                        "White Box Exclude From Boolean",
+                        [exclude](EditorWhiteBoxComponent* c) { c->SetExcludeFromBoolean(exclude); });
+                }
+            });
+        connect(m_refreshGlobalBooleansButton, &QPushButton::clicked, this,
+            []()
+            {
+                // Scene-wide re-evaluate. Wrap in one undo batch so the whole refresh is a single
+                // undo step (RefreshGlobalBooleans touches many entities).
+                AzToolsFramework::ScopedUndoBatch undoBatch("White Box Refresh Global Booleans");
+                EditorWhiteBoxComponent::RefreshGlobalBooleans();
             });
 
         return group;
@@ -1294,6 +1459,38 @@ namespace WhiteBox
             fn(component);
             undoBatch.MarkEntityDirty(m_currentEntityId);
         }
+        RefreshFromComponent();
+    }
+
+    void WhiteBoxPaneWidget::MoveLayerRow(const int from, const int to)
+    {
+        EditorWhiteBoxComponent* component = CurrentComponent();
+        if (component == nullptr)
+        {
+            return;
+        }
+        const int layerCount = component->GetLayerCount();
+        if (from < 0 || from >= layerCount || to < 0 || to >= layerCount || from == to)
+        {
+            return; // nothing selected, or already at the top / bottom
+        }
+
+        ModifyComponent(
+            "White Box Reorder Layer",
+            [from, to](EditorWhiteBoxComponent* c)
+            {
+                c->MoveLayer(from, to);
+                // Selecting a layer in this list is what makes it the edit target, so keep the
+                // two in step: the moved layer stays selected below, so make it active too.
+                c->SetActiveLayer(to);
+            });
+
+        // RefreshLayerControls restores the previously selected ROW, which now holds a different
+        // layer - follow the layer the user moved instead.
+        const bool wasUpdating = m_updating;
+        m_updating = true;
+        m_layerList->setCurrentRow(to);
+        m_updating = wasUpdating;
         RefreshFromComponent();
     }
 
@@ -1603,6 +1800,14 @@ namespace WhiteBox
             m_booleanActiveOnly->setEnabled(hasSource);
             m_booleanSourceAfterCombo->setEnabled(hasSource);
             m_applyBooleanButton->setEnabled(hasSource);
+
+            // Global (scene-wide) boolean.
+            const bool booleanOthers = component->GetBooleanOthers();
+            m_booleanOthers->setChecked(booleanOthers);
+            m_cutterOpCombo->setCurrentIndex(
+                m_cutterOpCombo->findData(static_cast<int>(component->GetCutterOperation())));
+            m_cutterOpCombo->setEnabled(booleanOthers);
+            m_excludeFromBoolean->setChecked(component->GetExcludeFromBoolean());
 
             // Material / display.
             const bool useGlobalTint = component->GetUseGlobalTint();

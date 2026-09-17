@@ -89,7 +89,9 @@ namespace WhiteBox
         void NumericSetAxisY()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Y); }
         void NumericSetAxisZ()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Z); }
         void NumericConfirm()           override { ApplyNumericTransform(); }
-        void NumericCancel()            override { m_numericInput.Reset(); }
+        //! @note Escape is NOT routed here - see the note on DefaultMode::NumericMoveCancel.
+        //! The real handler is HandleEscape, dispatched from the back-action override.
+        void NumericCancel() override { m_numericInput.Reset(); }
         void NumericBackspace()         override { if (m_numericInput.IsActive()) m_numericInput.Backspace(); }
         void NumericDecimal()           override { if (m_numericInput.IsActive()) m_numericInput.AppendDecimal(); }
         void NumericNegate()             override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('-'); }
@@ -97,6 +99,14 @@ namespace WhiteBox
         void NumericAppendOperatorPlus() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('+'); }
         void NumericAppendOperatorMult() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('*'); }
         void NumericAppendOperatorDiv()  override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('/'); }
+
+        //! Abandon the manipulator drag in progress, restoring the selection to its pre-drag
+        //! positions. @return True if there was a drag to cancel.
+        bool CancelActiveDrag();
+
+        //! Handle Escape. Cancels a drag in progress, otherwise clears any numeric input.
+        //! @return True if the Escape was consumed (so it must not also leave component mode).
+        bool HandleEscape();
 
     private:
         //! shared data that is used between the different transformation modes Translation/Rotation/Scale.
@@ -107,7 +117,18 @@ namespace WhiteBox
             AZStd::vector<AZ::Vector3> m_vertexPositions;
             Api::VertexHandles m_vertexHandles;
             IntersectionSelection m_selection;
+
+            //! Snap anchor (translate only), resolved on the first move of a drag and held until mouse up.
+            AZStd::optional<size_t> m_snapAnchorIndex;
+            bool m_snapAnchorResolved = false;
+            //! The snap correction applied on the most recent move, so mouse up can fold it into
+            //! m_localPosition and keep the gizmo on the geometry.
+            AZ::Vector3 m_snapOffset = AZ::Vector3::CreateZero();
+
+            //! Set when Escape abandons the drag; blocks movement until the mouse is released.
+            bool m_dragCancelled = false;
         };
+
 
         void CreateTranslationManipulators();
         void CreateRotationManipulators();

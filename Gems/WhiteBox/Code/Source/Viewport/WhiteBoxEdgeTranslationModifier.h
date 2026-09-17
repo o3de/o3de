@@ -57,10 +57,23 @@ namespace WhiteBox
         void CreateView();
         bool PerformingAction() const;
 
+        //! Abandon the drag (right click): restore the mesh and ignore movement until release.
+        //! @param notify false from the destructor, where the component mode may be tearing down.
+        //! @return True if there was a drag to cancel.
+        bool CancelDrag(bool notify = true);
+
     private:
         void CreateManipulator();
         void DestroyManipulator();
 
+        //! Copy of the mesh taken at mouse down, used to revert the drag when Escape is pressed.
+        //! Restores topology too, so it also undoes an extrude performed during the drag.
+        Api::WhiteBoxMeshPtr m_dragSnapshot;
+        //! The handles at mouse down, restored with the mesh (an extrude repoints them at new geometry).
+        Api::EdgeHandles m_dragEdgeHandlesSnapshot;
+        Api::EdgeHandle m_dragHoveredEdgeHandleSnapshot;
+        //! Set by CancelDrag - suppresses further movement until the mouse button is released.
+        bool m_dragCancelled = false;
         Api::EdgeHandles m_edgeHandles; //!< The edge handles this modifier is currently associated with (edge group).
         Api::EdgeHandle m_hoveredEdgeHandle; //!< The edge handle the mouse is currently over.
         //! The entity and component id this modifier is associated with.

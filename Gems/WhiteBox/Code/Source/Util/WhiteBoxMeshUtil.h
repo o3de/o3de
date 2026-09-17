@@ -31,6 +31,10 @@ namespace WhiteBox
     //! working mesh and an asset-backed mesh).
     void ClearMeshInPlace(WhiteBoxMesh& mesh);
 
+    //! Restore @p target from @p snapshot (an Api::CloneMesh taken at mouse-down), topology included, to
+    //! revert a cancelled drag. False, leaving @p target untouched, if the copy failed.
+    bool RestoreMeshFromSnapshot(WhiteBoxMesh& target, const WhiteBoxMesh& snapshot);
+
     //! A copy of @p src with every face's winding reversed, for Invert Normals: flipping the mesh itself
     //! keeps render, physics (single-sided) and selection in agreement.
     Api::WhiteBoxMeshPtr FlippedMeshWinding(const WhiteBoxMesh& src);

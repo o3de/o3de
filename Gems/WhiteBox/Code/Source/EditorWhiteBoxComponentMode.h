@@ -10,8 +10,10 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportDragCancelBus.h>
 #include <EditorWhiteBoxComponentModeBus.h>
 #include <EditorWhiteBoxComponentModeTypes.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
@@ -38,6 +40,7 @@ namespace WhiteBox
         , private AZ::TransformNotificationBus::Handler
         , private EditorWhiteBoxComponentNotificationBus::Handler
         , public EditorWhiteBoxComponentModeRequestBus::Handler
+        , private AzToolsFramework::ViewportSnapping::ViewportDragCancelRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -76,6 +79,10 @@ namespace WhiteBox
         void OverrideKeyboardModifierQuery(const KeyboardModifierQueryFn& keyboardModifierQueryFn) override;
 
     private:
+        // AzToolsFramework::ViewportSnapping::ViewportDragCancelRequestBus ...
+        //! Right click during a drag (sent by the viewport snapping drag handler).
+        bool CancelActiveDrag() override;
+
         // AzFramework::EntityDebugDisplayEventBus ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
@@ -116,6 +123,9 @@ namespace WhiteBox
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
+
+        //! Lets deferred work (EnterDefaultMode) detect that this mode was destroyed in the meantime.
+        AZStd::shared_ptr<bool> m_deferredWorkToken;
 
         AzToolsFramework::ViewportUi::ClusterId
             m_transformClusterId; 

@@ -121,6 +121,9 @@ namespace WhiteBox
         void RefreshFromComponent();
         //! Reload the layer list / active-layer combo / per-layer meta editors.
         void RefreshLayerControls(EditorWhiteBoxComponent* component);
+        //! Move layer row @p from to row @p to (drag-and-drop in the list, or Move Up/Down),
+        //! keeping the moved layer selected and the edit target. No-op if either row is invalid.
+        void MoveLayerRow(int from, int to);
         //! Select @p entityId in the dropdown (adds it first if the list is stale).
         void SetCurrentEntity(AZ::EntityId entityId);
         //! Load the Entity Transform spin boxes from the entity's local transform.
@@ -238,6 +241,11 @@ namespace WhiteBox
         QCheckBox* m_booleanActiveOnly = nullptr;
         QComboBox* m_booleanSourceAfterCombo = nullptr; //!< Keep / Hide / Delete the source after Apply.
         QPushButton* m_applyBooleanButton = nullptr;
+        // Global (scene-wide) boolean controls.
+        QCheckBox* m_excludeFromBoolean = nullptr; //!< This entity is never cut by global cutters.
+        QCheckBox* m_booleanOthers = nullptr;      //!< This entity is a cutter affecting overlapping entities.
+        QComboBox* m_cutterOpCombo = nullptr;      //!< Operation this cutter applies to its targets.
+        QPushButton* m_refreshGlobalBooleansButton = nullptr; //!< Manual re-evaluate of every target.
 
         // Material section.
         QCheckBox* m_useGlobalTint = nullptr;

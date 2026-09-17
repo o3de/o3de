@@ -10,7 +10,9 @@
 #include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Util/WhiteBoxEditorDrawUtil.h"
+#include "Util/WhiteBoxSnapUtil.h"
 
+#include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -859,6 +861,69 @@ namespace WhiteBox
         m_whiteBoxSelection->m_localRotation = AZ::Quaternion::CreateIdentity();
     }
 
+    bool TransformMode::HandleEscape()
+    {
+        if (CancelActiveDrag())
+        {
+            return true;
+        }
+
+        if (m_numericInput.IsActive())
+        {
+            m_numericInput.Reset();
+            return true;
+        }
+
+        return false;
+    }
+
+    bool TransformMode::CancelActiveDrag()
+    {
+        if (!m_whiteBoxSelection || !m_manipulator || !m_manipulator->PerformingAction() ||
+            m_whiteBoxSelection->m_dragCancelled)
+        {
+            return false;
+        }
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+        if (whiteBox == nullptr)
+        {
+            return false;
+        }
+
+        // Transform mode never changes topology, so restoring the start positions is a full revert.
+        size_t vertexIndex = 0;
+        for (const Api::VertexHandle& vertexHandle : m_whiteBoxSelection->m_vertexHandles)
+        {
+            Api::SetVertexPosition(*whiteBox, vertexHandle, m_whiteBoxSelection->m_vertexPositions[vertexIndex++]);
+        }
+
+        Api::CalculateNormals(*whiteBox);
+        Api::CalculatePlanarUVs(*whiteBox);
+
+        // The manipulators hold their own interaction state until the mouse is released, so rather
+        // than trying to abort them we latch a flag and ignore movement for the rest of the drag.
+        m_whiteBoxSelection->m_dragCancelled = true;
+        m_whiteBoxSelection->m_snapOffset = AZ::Vector3::CreateZero();
+        m_whiteBoxSelection->m_snapAnchorResolved = false;
+        m_whiteBoxSelection->m_snapAnchorIndex.reset();
+        SnapUtil::ClearActiveSnapTarget();
+
+        m_manipulator->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
+
+        EditorWhiteBoxComponentModeRequestBus::Event(
+            m_entityComponentIdPair,
+            &EditorWhiteBoxComponentModeRequestBus::Events::MarkWhiteBoxIntersectionDataDirty);
+
+        EditorWhiteBoxComponentNotificationBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
+
+        return true;
+    }
+
     void TransformMode::CreateTranslationManipulators()
     {
         if (!m_whiteBoxSelection)
@@ -887,19 +952,66 @@ namespace WhiteBox
                                    transformSelection = m_whiteBoxSelection,
                                    currentManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(translationManipulators)](const auto& action)
         {
+            // the drag was abandoned with Escape - ignore movement until the button is released
+            if (transformSelection->m_dragCancelled)
+            {
+                return;
+            }
+
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
+            // vertex snapping: resolve the anchor on the first move of this drag (there is no
+            // mouse-down callback on TranslationManipulators), then hold it.
+            if (!transformSelection->m_snapAnchorResolved)
+            {
+                transformSelection->m_snapAnchorIndex = SnapUtil::SnappingActive()
+                    ? SnapUtil::FindAnchorIndex(
+                          entityComponentIdPair.GetEntityId(), SnapUtil::ActiveViewportId(),
+                          transformSelection->m_vertexPositions)
+                    : AZStd::nullopt;
+                transformSelection->m_snapAnchorResolved = true;
+            }
+
+            // Pull the whole selection rigidly so the anchor vertex lands on the target under the
+            // cursor. Recomputed from the drag-start positions each frame, so it is not cumulative.
+            AZStd::optional<AZ::Vector3> snapTarget;
+            AZ::Vector3 snapOffset = AZ::Vector3::CreateZero();
+
+            if (transformSelection->m_snapAnchorIndex.has_value() &&
+                transformSelection->m_snapAnchorIndex.value() < transformSelection->m_vertexPositions.size())
+            {
+                snapTarget = SnapUtil::FindSnapTargetWorld(
+                    entityComponentIdPair.GetEntityId(), SnapUtil::ActiveViewportId(),
+                    SnapUtil::ExcludeIndicesFromHandles(transformSelection->m_vertexHandles));
+
+                if (snapTarget.has_value())
+                {
+                    const AZ::Vector3 anchorUnsnapped =
+                        transformSelection->m_vertexPositions[transformSelection->m_snapAnchorIndex.value()] +
+                        action.LocalPositionOffset();
+
+                    snapOffset =
+                        SnapUtil::MeshLocalFromWorld(entityComponentIdPair.GetEntityId(), snapTarget.value()) -
+                        anchorUnsnapped;
+                }
+            }
+
+            SnapUtil::SetActiveSnapTarget(snapTarget);
+            transformSelection->m_snapOffset = snapOffset;
+
             size_t vertexIndex = 0;
             for (const Api::VertexHandle& vertexHandle : transformSelection->m_vertexHandles)
             {
-                const AZ::Vector3 vertexPosition = transformSelection->m_vertexPositions[vertexIndex++] + action.LocalPositionOffset();
+                const AZ::Vector3 vertexPosition =
+                    transformSelection->m_vertexPositions[vertexIndex++] + action.LocalPositionOffset() + snapOffset;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
             if (auto manipulator = currentManipulator.lock())
             {
-                manipulator->SetLocalPosition(transformSelection->m_localPosition + action.LocalPositionOffset());
+                manipulator->SetLocalPosition(
+                    transformSelection->m_localPosition + action.LocalPositionOffset() + snapOffset);
             }
 
             Api::CalculateNormals(*whiteBox);
@@ -914,6 +1026,14 @@ namespace WhiteBox
                                  currentManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
                                      translationManipulators)](const auto& action)
         {
+            // reverted by Escape - nothing to commit, just clear the latch for the next drag
+            if (transformSelection->m_dragCancelled)
+            {
+                transformSelection->m_dragCancelled = false;
+                SnapUtil::ClearActiveSnapTarget();
+                return;
+            }
+
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -921,11 +1041,20 @@ namespace WhiteBox
             mouseMoveHandlerFn(action);
 
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
-            transformSelection->m_localPosition = transformSelection->m_localPosition + action.LocalPositionOffset();
+            // m_snapOffset is whatever the move above just applied - fold it in or the gizmo pivot
+            // ends up displaced from the geometry it just moved.
+            transformSelection->m_localPosition =
+                transformSelection->m_localPosition + action.LocalPositionOffset() + transformSelection->m_snapOffset;
             if (auto manipulator = currentManipulator.lock())
             {
                 manipulator->SetLocalPosition(transformSelection->m_localPosition);
             }
+
+            transformSelection->m_snapAnchorResolved = false;
+            transformSelection->m_snapAnchorIndex.reset();
+            transformSelection->m_snapOffset = AZ::Vector3::CreateZero();
+            SnapUtil::ClearActiveSnapTarget();
+
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
@@ -976,6 +1105,12 @@ namespace WhiteBox
              currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
+                // the drag was abandoned with Escape - ignore movement until the button is released
+                if (transformSelection->m_dragCancelled)
+                {
+                    return;
+                }
+
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -1007,6 +1142,14 @@ namespace WhiteBox
              currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
+                // reverted by Escape - nothing to commit, just clear the latch for the next drag
+                if (transformSelection->m_dragCancelled)
+                {
+                    transformSelection->m_dragCancelled = false;
+                    SnapUtil::ClearActiveSnapTarget();
+                    return;
+                }
+
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -1063,6 +1206,12 @@ namespace WhiteBox
             [entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
+            // the drag was abandoned with Escape - ignore movement until the button is released
+            if (transformSelection->m_dragCancelled)
+            {
+                return;
+            }
+
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -1099,6 +1248,14 @@ namespace WhiteBox
             [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
+            // reverted by Escape - nothing to commit, just clear the latch for the next drag
+            if (transformSelection->m_dragCancelled)
+            {
+                transformSelection->m_dragCancelled = false;
+                SnapUtil::ClearActiveSnapTarget();
+                return;
+            }
+
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);

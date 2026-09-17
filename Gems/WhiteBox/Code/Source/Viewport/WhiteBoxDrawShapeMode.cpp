@@ -15,8 +15,10 @@
 #include "Viewport/WhiteBoxManipulatorBounds.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 #include "Util/WhiteBoxMathUtil.h"
+#include "Util/WhiteBoxSnapUtil.h"
 
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -283,13 +285,24 @@ namespace WhiteBox
             }
         };
 
+        // A zero cavity gap means a solid wall, not two leaves pressed together. Emitting both
+        // tubes anyway would leave a pair of coincident faces buried inside the wall and make it
+        // 2t thick instead of t - so below the threshold the room is built as a single leaf.
+        const bool singleLeaf = gap < 1e-4f;
+
         // Inner wall leaf: interior boundary out by one wall thickness.
         addTube(ihx, ihy, ihx + t, ihy + t, 0.0f, ih);
-        // Outer wall leaf: past the cavity gap, out by another wall thickness.
-        addTube(ihx + t + gap, ihy + t + gap, ihx + 2.0f * t + gap, ihy + 2.0f * t + gap, 0.0f, ih);
 
-        const float ox = ihx + 2.0f * t + gap; // full outer half-extents (used by floor/ceiling)
-        const float oy = ihy + 2.0f * t + gap;
+        if (!singleLeaf)
+        {
+            // Outer wall leaf: past the cavity gap, out by another wall thickness.
+            addTube(ihx + t + gap, ihy + t + gap, ihx + 2.0f * t + gap, ihy + 2.0f * t + gap, 0.0f, ih);
+        }
+
+        // Full outer half-extents (used by floor/ceiling) - one leaf or two.
+        const float wallSpan = singleLeaf ? t : (2.0f * t + gap);
+        const float ox = ihx + wallSpan;
+        const float oy = ihy + wallSpan;
         if (floor)
         {
             addBox(AZ::Vector3(-ox, -oy, -t), AZ::Vector3(ox, oy, 0.0f));
@@ -947,7 +960,10 @@ namespace WhiteBox
                 AZ::Vector3 hitNormal;
                 const AZ::Vector3 hitWorld = RaycastToSurface(mi, worldFromLocal, intersectionData, hitNormal);
                 AZ::Vector3 baseMin;
-                m_unitCubeHoverValid = UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin);
+                const auto snapTarget = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                m_unitCubeHoverValid =
+                    UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin, snapTarget);
+                SnapUtil::SetActiveSnapTarget(snapTarget);
                 m_unitCubeAnchorMin = baseMin;
                 m_unitCubeCursorCell = baseMin;
                 m_unitCubeAnchorWorld = hitWorld;
@@ -1060,7 +1076,10 @@ namespace WhiteBox
                 AZ::Vector3 hitNormal;
                 const AZ::Vector3 hitWorld = RaycastToSurface(mi, worldFromLocal, intersectionData, hitNormal);
                 AZ::Vector3 baseMin;
-                m_unitCubeHoverValid = UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin);
+                const auto snapTarget = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                m_unitCubeHoverValid =
+                    UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin, snapTarget);
+                SnapUtil::SetActiveSnapTarget(snapTarget);
                 m_unitCubeCarve = liveCarve;
                 m_unitCubeAnchorMin = baseMin;
                 m_unitCubeCursorCell = baseMin;
@@ -1078,6 +1097,8 @@ namespace WhiteBox
                 {
                     StampUnitCubeRegion();
                 }
+
+                SnapUtil::ClearActiveSnapTarget();
                 return true;
             }
 
@@ -1087,6 +1108,8 @@ namespace WhiteBox
         m_unitCubeDragging = false;
         m_unitCubeDragMoved = false;
         m_unitCubeAcrossGrow = false;
+        // left unit cube mode entirely - drop any lingering snap highlight
+        SnapUtil::ClearActiveSnapTarget();
 
         if (rightDown)
         {
@@ -1105,9 +1128,15 @@ namespace WhiteBox
                 AZ::Vector3 hitNormal;
                 const AZ::Vector3 hitWorld = RaycastToSurface(mi, worldFromLocal, intersectionData, hitNormal);
                 m_surfaceNormal = hitNormal;            // remember the surface orientation
-                m_groundZ = hitWorld.GetZ();
-                m_worldP0 = hitWorld;
-                m_worldP1 = hitWorld;
+
+                // Snap the anchor onto a vertex under the cursor; the orientation still comes from the hit surface.
+                const auto anchorSnap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                const AZ::Vector3 anchorWorld = anchorSnap.value_or(hitWorld);
+                SnapUtil::SetActiveSnapTarget(anchorSnap);
+
+                m_groundZ = anchorWorld.GetZ();
+                m_worldP0 = anchorWorld;
+                m_worldP1 = anchorWorld;
                 m_height  = 0.f;
                 m_state   = DrawState::DraggingBase;
                 return true;
@@ -1122,11 +1151,16 @@ namespace WhiteBox
                 AZ::Vector3 dummyNormal;
                 const AZ::Vector3 rawHit = RaycastToSurface(mi, worldFromLocal, intersectionData, dummyNormal);
 
+                // Snap the far corner too; it is projected onto the base plane below.
+                const auto cornerSnap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                SnapUtil::SetActiveSnapTarget(cornerSnap);
+
                 // Project the raw hit onto the anchor's surface plane so the base rectangle
                 // always lies flat on that surface -- works for horizontal, vertical, or tilted.
                 const AZ::Vector3 up = m_surfaceNormal.GetNormalized();
-                const float distFromPlane = (rawHit - m_worldP0).Dot(up);
-                m_worldP1 = rawHit - up * distFromPlane;
+                const AZ::Vector3 cornerWorld = cornerSnap.value_or(rawHit);
+                const float distFromPlane = (cornerWorld - m_worldP0).Dot(up);
+                m_worldP1 = cornerWorld - up * distFromPlane;
 
                 return true;
             }
@@ -1165,6 +1199,8 @@ namespace WhiteBox
             {
                 // A click also commits (using the typed depth if numeric is active).
                 m_numericInput.Reset();
+                // the shape is about to be committed (or abandoned) - drop the snap highlight
+                SnapUtil::ClearActiveSnapTarget();
 
                 if (AZStd::abs(m_height) < cl_whiteBoxMouseClickDeltaThreshold)
                 {
@@ -1393,6 +1429,9 @@ namespace WhiteBox
         m_numericInput.Reset();
         m_state  = DrawState::Idle;
         m_height = 0.f;
+        // Escape / right click already return the shape to nothing, so the drag is effectively
+        // cancelled here - just drop the snap highlight with it.
+        SnapUtil::ClearActiveSnapTarget();
     }
 
     bool DrawShapeMode::BeginNumericIfPulling()
@@ -1460,6 +1499,19 @@ namespace WhiteBox
         {
             Cancel();
         }
+    }
+
+    bool DrawShapeMode::HandleEscape()
+    {
+        // Only consume the Escape when there is something to cancel - with nothing in progress it
+        // has to fall through and leave component mode as usual.
+        if (!m_numericInput.IsActive() && m_state == DrawState::Idle)
+        {
+            return false;
+        }
+
+        NumericCancel();
+        return true;
     }
 
     void DrawShapeMode::DisplayViewport(
@@ -1856,11 +1908,28 @@ namespace WhiteBox
         return showGrid;
     }
 
+    AZStd::optional<AZ::Vector3> DrawShapeMode::SnapTargetUnderCursor(const int viewportId) const
+    {
+        // Nothing is excluded: the stamp is new geometry, so every existing vertex - including
+        // this mesh's own - is a legitimate target.
+        return SnapUtil::FindSnapTargetWorld(m_entityComponentIdPair.GetEntityId(), viewportId, {});
+    }
+
     bool DrawShapeMode::UnitCubeCell(
         const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, const bool carve,
-        AZ::Vector3& outMinLocal) const
+        AZ::Vector3& outMinLocal, const AZStd::optional<AZ::Vector3>& snapTargetWorld) const
     {
         const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
+
+        // Snap the cell corner onto the target, rounded (a corner, not a point inside a cell).
+        if (snapTargetWorld.has_value())
+        {
+            const AZ::Vector3 snapCell = localFromWorld.TransformPoint(snapTargetWorld.value()) / m_unitCubeCellSize;
+            outMinLocal = AZ::Vector3(
+                std::round(snapCell.GetX()), std::round(snapCell.GetY()), std::round(snapCell.GetZ()));
+            return true;
+        }
+
         // Work in grid-cell index space (local units divided by the cell size).
         const AZ::Vector3 localHitCell = localFromWorld.TransformPoint(hitWorld) / m_unitCubeCellSize;
         const AZ::Vector3 localNormal =

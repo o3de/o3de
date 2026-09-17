@@ -83,6 +83,25 @@ namespace WhiteBox
         Api::RemoveIsolatedVertices(mesh);
     }
 
+    bool RestoreMeshFromSnapshot(WhiteBoxMesh& target, const WhiteBoxMesh& snapshot)
+    {
+        // Round-trip through the serialised form.
+        Api::WhiteBoxMeshStream snapshotData;
+        if (!Api::WriteMesh(snapshot, snapshotData))
+        {
+            AZ_Error("WhiteBox", false, "Failed to serialise the White Box mesh snapshot; drag not reverted.");
+            return false;
+        }
+
+        if (Api::ReadMesh(target, snapshotData) != Api::ReadResult::Full)
+        {
+            AZ_Error("WhiteBox", false, "Failed to restore the White Box mesh from its snapshot.");
+            return false;
+        }
+
+        return true;
+    }
+
     Api::WhiteBoxMeshPtr FlippedMeshWinding(const WhiteBoxMesh& src)
     {
         Api::WhiteBoxMeshPtr dest = Api::CreateWhiteBoxMesh();

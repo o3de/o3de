@@ -17,8 +17,11 @@ set(FILES
     Source/EditorWhiteBoxComponentBoolean.cpp
     Source/EditorWhiteBoxComponentRender.cpp
     Source/EditorWhiteBoxComponentAsset.cpp
+    Source/EditorWhiteBoxComponentSnap.cpp
     Source/Util/WhiteBoxMeshUtil.cpp
     Source/Util/WhiteBoxMeshUtil.h
+    Source/Util/WhiteBoxSnapUtil.cpp
+    Source/Util/WhiteBoxSnapUtil.h
     Source/Util/WhiteBoxVoxelUtil.cpp
     Source/Util/WhiteBoxVoxelUtil.h
     Source/Tools/WhiteBoxLayerUtil.cpp

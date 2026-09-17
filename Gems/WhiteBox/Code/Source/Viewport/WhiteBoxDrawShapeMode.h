@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/optional.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
@@ -79,6 +80,13 @@ namespace WhiteBox
 
         //! Required by EditorWhiteBoxComponentMode variant dispatch.
         void Refresh() {}
+
+        //! Escape drops numeric entry first, then the shape. True if consumed (do not leave component mode).
+        bool HandleEscape();
+
+        //! Draw mode is not manipulator driven, so right click already reaches its own
+        //! HandleMouseInteraction and cancels there. Nothing extra to do for the polled path.
+        bool CancelActiveDrag() { return false; }
 
         //! Required by EditorWhiteBoxComponentMode variant dispatch.
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(
@@ -154,11 +162,15 @@ namespace WhiteBox
         float CurrentCellSize() const;
         //! Whether the ghost preview should show the per-cube grid (true) or a single box.
         bool UnitCubeShowGrid() const;
-        //! Snapped local-space min corner of the unit cube targeted by a hit.
-        //! @param carve subtract (true) targets the clicked cell; add (false) the empty cell beyond it.
+        //! The snappable vertex under the cursor (nothing excluded: the drawn shape is new geometry).
+        AZStd::optional<AZ::Vector3> SnapTargetUnderCursor(int viewportId) const;
+
+        //! @param snapTargetWorld When set, the cell is derived from this vertex instead of from
+        //! @p hitWorld, so the stamp lands on an existing corner rather than wherever the ray hit.
         bool UnitCubeCell(
             const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, bool carve,
-            AZ::Vector3& outMinLocal) const;
+            AZ::Vector3& outMinLocal,
+            const AZStd::optional<AZ::Vector3>& snapTargetWorld = AZStd::nullopt) const;
         //! Local dominant axis (0=X,1=Y,2=Z) and sign (+/-1) of a world-space surface
         //! normal - used to pick the region's thickness axis/direction.
         void UnitCubeAxisFromNormal(

@@ -675,10 +675,7 @@ namespace WhiteBox
         {
             //! Volumetric (Manifold library): robust, needs closed manifold inputs; inverted normals mean the complement.
             Manifold,
-            //! Face/plane-based BSP (brush-style, like Blender's "Fast" solver). Tolerant of open,
-            //! non-manifold and INWARD-facing (shell/room) meshes and composes inverted-normal
-            //! operands intuitively. Best suited to White Box's blocky, mostly-planar geometry.
-            //! Less numerically robust than Manifold on tiny slivers, and may emit non-manifold output.
+            //! Face-based BSP, like Blender's "Fast": tolerates open meshes and inward-facing rooms; less robust on slivers.
             Fast
         };
 

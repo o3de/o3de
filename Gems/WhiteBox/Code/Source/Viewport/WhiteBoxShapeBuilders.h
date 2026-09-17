@@ -68,11 +68,15 @@ namespace WhiteBox
             const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up, float baseUp, float topUp,
             int segmentsIn);
 
-        //! Build a parametric hollow room with DOUBLE (cavity) walls, sitting on z in [0, height]
-        //! and centred at the XY origin. The interior clear volume is
-        //! @p interiorWidth x @p interiorDepth x @p interiorHeight. Around it are two concentric
-        //! rectangular wall "leaves", each @p wallThickness thick, separated by an empty
-        //! @p cavityGap. Optionally caps the interior with a floor slab (below z=0) and/or a
+        //! Build a parametric hollow room sitting on z in [0, height] and centred at the XY origin.
+        //! The interior clear volume is @p interiorWidth x @p interiorDepth x @p interiorHeight.
+        //!
+        //! With a non-zero @p cavityGap the walls are DOUBLE: two concentric rectangular "leaves",
+        //! each @p wallThickness thick, separated by that empty gap. With @p cavityGap at zero a
+        //! single solid leaf of @p wallThickness is emitted instead - two leaves pressed together
+        //! would bury a pair of coincident faces inside the wall and double its thickness.
+        //!
+        //! Optionally caps the interior with a floor slab (below z=0) and/or a
         //! ceiling slab (above z=height). Emitted as several closed, outward-wound solids appended
         //! together (walls compose cleanly without any CSG - this is a shell, so a boolean is not
         //! used). All faces are wound outward / into the interior as appropriate.
