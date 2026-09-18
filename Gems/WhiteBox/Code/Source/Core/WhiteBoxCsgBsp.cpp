@@ -122,11 +122,15 @@ namespace WhiteBox
             {
                 std::vector<Vec3> m_vertices;
                 Plane m_plane;
+                std::string m_material;
+                uint32_t m_color = 0;
 
                 Polygon() = default;
-                Polygon(std::vector<Vec3> vertices, const Plane& plane)
+                Polygon(std::vector<Vec3> vertices, const Plane& plane, std::string material = {}, uint32_t color = 0)
                     : m_vertices(std::move(vertices))
                     , m_plane(plane)
+                    , m_material(std::move(material))
+                    , m_color(color)
                 {
                 }
 
@@ -201,11 +205,11 @@ namespace WhiteBox
                     // than recomputing from a possibly near-degenerate sub-polygon).
                     if (frontVerts.size() >= 3)
                     {
-                        front.emplace_back(std::move(frontVerts), polygon.m_plane);
+                        front.emplace_back(std::move(frontVerts), polygon.m_plane, polygon.m_material, polygon.m_color);
                     }
                     if (backVerts.size() >= 3)
                     {
-                        back.emplace_back(std::move(backVerts), polygon.m_plane);
+                        back.emplace_back(std::move(backVerts), polygon.m_plane, polygon.m_material, polygon.m_color);
                     }
                     break;
                 }
@@ -366,7 +370,7 @@ namespace WhiteBox
                     {
                         continue;
                     }
-                    polygons.emplace_back(std::vector<Vec3>{ a, b, c }, plane);
+                    polygons.emplace_back(std::vector<Vec3>{ a, b, c }, plane, mesh.Material(t), mesh.Color(t));
                 }
                 return polygons;
             }
@@ -425,6 +429,8 @@ namespace WhiteBox
             {
                 mesh.m_positions.clear();
                 mesh.m_indices.clear();
+                mesh.m_materials.clear();
+                mesh.m_colors.clear();
                 for (const Polygon& polygon : polygons)
                 {
                     const size_t count = polygon.m_vertices.size();
@@ -449,6 +455,8 @@ namespace WhiteBox
                         mesh.m_indices.push_back(i0);
                         mesh.m_indices.push_back(i1);
                         mesh.m_indices.push_back(i2);
+                        mesh.m_materials.push_back(polygon.m_material);
+                        mesh.m_colors.push_back(polygon.m_color);
                     }
                 }
             }

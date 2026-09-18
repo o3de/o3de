@@ -9,6 +9,7 @@
 #include "WhiteBoxRenderData.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace WhiteBox
 {
@@ -44,12 +45,14 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxFace>()
-                ->Version(1)
+                ->Version(3)
+                ->Field("PaintColor", &WhiteBoxFace::m_paintColor)
                 ->Field("Vertex1", &WhiteBoxFace::m_v1)
                 ->Field("Vertex2", &WhiteBoxFace::m_v2)
                 ->Field("Vertex3", &WhiteBoxFace::m_v3)
                 ->Field("Normal", &WhiteBoxFace::m_normal)
-                ->Field("Color", &WhiteBoxFace::m_color);
+                ->Field("Color", &WhiteBoxFace::m_color)
+                ->Field("MaterialAsset", &WhiteBoxFace::m_materialAsset);
         }
     }
 

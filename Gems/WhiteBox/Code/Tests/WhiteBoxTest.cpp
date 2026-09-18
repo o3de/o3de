@@ -8,6 +8,8 @@
 
 #include "WhiteBoxTestFixtures.h"
 #include "WhiteBoxTestUtil.h"
+#include "Util/WhiteBoxMeshUtil.h"
+#include "Core/WhiteBoxCsgCore.h"
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -2326,3 +2328,154 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
 }
 
 IMPLEMENT_TEST_EXECUTABLE_MAIN();
+
+namespace UnitTest
+{
+    TEST_F(WhiteBoxTestFixture, FacePaintSurvivesRepeatedInitializationAndSerialization)
+    {
+        namespace Api = WhiteBox::Api;
+        // Reinitialization must reuse persistent face properties, not create duplicate names.
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto faces = Api::MeshFaceHandles(*m_whiteBox);
+        ASSERT_GT(faces.size(), 1);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:6");
+        constexpr AZ::u32 color = 0xFF3366CC;
+        Api::SetFaceMaterial(*m_whiteBox, faces.front(), material);
+        Api::SetFacePaintColor(*m_whiteBox, faces.front(), color);
+        auto clone = Api::CloneMesh(*m_whiteBox);
+        ASSERT_NE(clone, nullptr);
+        EXPECT_EQ(Api::FaceMaterial(*clone, faces.front()), material);
+        EXPECT_EQ(Api::FacePaintColor(*clone, faces.front()), color);
+        EXPECT_EQ(Api::FacePaintColor(*clone, faces.back()), 0);
+
+        Api::WhiteBoxMeshStream saved;
+        ASSERT_TRUE(Api::WriteMesh(*clone, saved));
+        Api::SetFacePaintColor(*clone, faces.front(), 0);
+        ASSERT_EQ(Api::ReadMesh(*clone, saved), Api::ReadResult::Full);
+        EXPECT_EQ(Api::FacePaintColor(*clone, faces.front()), color);
+        EXPECT_EQ(Api::FaceMaterial(*clone, faces.front()), material);
+    }
+
+    TEST_F(WhiteBoxTestFixture, PolygonMaterialsSurviveSerializationAndClone)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto polygons = Api::MeshPolygonHandles(*m_whiteBox);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        Api::SetPolygonMaterial(*m_whiteBox, polygons.front(), material);
+
+        auto clone = Api::CloneMesh(*m_whiteBox);
+        ASSERT_NE(clone, nullptr);
+        for (const auto face : polygons.front().m_faceHandles)
+        {
+            EXPECT_EQ(Api::FaceMaterial(*clone, face), material);
+        }
+        EXPECT_FALSE(Api::FaceMaterial(*clone, polygons.back().m_faceHandles.front()).IsValid());
+
+        Api::WhiteBoxMeshStream saved;
+        ASSERT_TRUE(Api::WriteMesh(*clone, saved));
+        Api::SetPolygonMaterial(*clone, polygons.front(), {});
+        EXPECT_FALSE(Api::FaceMaterial(*clone, polygons.front().m_faceHandles.front()).IsValid());
+        ASSERT_EQ(Api::ReadMesh(*clone, saved), Api::ReadResult::Full);
+        EXPECT_EQ(Api::FaceMaterial(*clone, polygons.front().m_faceHandles.front()), material);
+    }
+
+    TEST_F(WhiteBoxTestFixture, PolygonMaterialsSurviveLayerAppendAndWindingFlip)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:2");
+        const auto polygon = Api::MeshPolygonHandles(*m_whiteBox).front();
+        Api::SetPolygonMaterial(*m_whiteBox, polygon, material);
+        auto appended = Api::CreateWhiteBoxMesh();
+        WhiteBox::AppendMesh(*appended, *m_whiteBox);
+        auto flipped = WhiteBox::FlippedMeshWinding(*appended);
+        size_t assigned = 0;
+        for (const auto face : Api::MeshFaceHandles(*flipped))
+        {
+            assigned += Api::FaceMaterial(*flipped, face) == material ? 1 : 0;
+        }
+        EXPECT_EQ(assigned, polygon.m_faceHandles.size());
+    }
+
+    TEST_F(WhiteBoxTestFixture, MeshRepairKeepsCoplanarMaterialBoundaries)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitQuad(*m_whiteBox);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:3");
+        const auto faces = Api::MeshFaceHandles(*m_whiteBox);
+        ASSERT_EQ(faces.size(), 2);
+        Api::SetFaceMaterial(*m_whiteBox, faces.front(), material);
+        ASSERT_TRUE(Api::RepairMesh(*m_whiteBox));
+        EXPECT_EQ(Api::MeshPolygonHandles(*m_whiteBox).size(), 2);
+        size_t assigned = 0;
+        for (const auto face : Api::MeshFaceHandles(*m_whiteBox))
+        {
+            assigned += Api::FaceMaterial(*m_whiteBox, face) == material ? 1 : 0;
+        }
+        EXPECT_EQ(assigned, 1);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BooleanMaterialsFollowBothOperandsForBothSolvers)
+    {
+        namespace Api = WhiteBox::Api;
+        const auto materialA = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:4");
+        const auto materialB = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:5");
+        for (const auto solver : {Api::CsgSolver::Fast, Api::CsgSolver::Manifold})
+        {
+            for (const auto operation : {Api::BooleanOperation::Union, Api::BooleanOperation::Subtraction,
+                                        Api::BooleanOperation::Intersection})
+            {
+                SCOPED_TRACE(static_cast<int>(solver));
+                SCOPED_TRACE(static_cast<int>(operation));
+                auto target = Api::CreateWhiteBoxMesh();
+                auto cutter = Api::CreateWhiteBoxMesh();
+                Api::InitializeAsUnitCube(*target);
+                Api::InitializeAsUnitCube(*cutter);
+                for (const auto& polygon : Api::MeshPolygonHandles(*target))
+                {
+                    Api::SetPolygonMaterial(*target, polygon, materialA);
+                }
+                for (const auto& polygon : Api::MeshPolygonHandles(*cutter))
+                {
+                    Api::SetPolygonMaterial(*cutter, polygon, materialB);
+                }
+                ASSERT_TRUE(Api::ApplyMeshBoolean(*target, *cutter,
+                    AZ::Transform::CreateTranslation(AZ::Vector3(0.3f, 0.2f, 0.1f)), operation, solver));
+                size_t fromA = 0;
+                size_t fromB = 0;
+                for (const auto face : Api::MeshFaceHandles(*target))
+                {
+                    const auto material = Api::FaceMaterial(*target, face);
+                    EXPECT_TRUE(material == materialA || material == materialB);
+                    fromA += material == materialA ? 1 : 0;
+                    fromB += material == materialB ? 1 : 0;
+                }
+                EXPECT_GT(fromA, 0);
+                EXPECT_GT(fromB, 0);
+                // Coplanar regrouping must never hide a material boundary inside a polygon.
+                for (const auto& polygon : Api::MeshPolygonHandles(*target))
+                {
+                    const auto material = Api::FaceMaterial(*target, polygon.m_faceHandles.front());
+                    for (const auto face : polygon.m_faceHandles)
+                    {
+                        EXPECT_EQ(Api::FaceMaterial(*target, face), material);
+                    }
+                }
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, WeldingDegenerateTrianglesKeepsMaterialsAligned)
+    {
+        WhiteBox::Csg::TriangleMesh mesh;
+        mesh.m_positions = {0,0,0, 1,0,0, 0,1,0, 0,0,0};
+        mesh.m_indices = {0,3,1, 0,1,2};
+        mesh.m_materials = {"discarded", "retained"};
+        WhiteBox::Csg::WeldVertices(mesh, 1e-6);
+        ASSERT_EQ(mesh.TriangleCount(), 1);
+        ASSERT_EQ(mesh.m_materials.size(), 1);
+        EXPECT_EQ(mesh.m_materials.front(), "retained");
+    }
+}

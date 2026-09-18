@@ -11,6 +11,8 @@
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "Tools/WhiteBoxLayerUtil.h"
+#include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -181,6 +183,7 @@ namespace WhiteBox
         mainLayout->addWidget(BuildEntitySection());
         mainLayout->addWidget(BuildEntityTransformSection());
         mainLayout->addWidget(BuildModeSection());
+        mainLayout->addWidget(BuildVertexPaintSection());
         mainLayout->addWidget(BuildShapeSection());
         mainLayout->addWidget(BuildLayersSection());
         mainLayout->addWidget(BuildDrawSection());
@@ -498,6 +501,10 @@ namespace WhiteBox
         m_modeEdgeRestore = makeModeButton(tr("Edge Restore"), SubMode::EdgeRestore);
         m_modeTransform = makeModeButton(tr("Transform"), SubMode::Transform);
         m_modeDrawShape = makeModeButton(tr("Draw Shape"), SubMode::DrawShape);
+        m_modePaint = makeModeButton(tr("Vertex Paint"), SubMode::VertexPaint);
+        m_modeTransform->setToolTip(tr(
+            "Click a vertex, edge, or polygon to select it. Ctrl-click adds or removes elements of the same type. "
+            "Selected elements transform together around their shared center."));
 
         return group;
     }
@@ -1284,18 +1291,127 @@ namespace WhiteBox
         return group;
     }
 
+    QWidget* WhiteBoxPaneWidget::BuildVertexPaintSection()
+    {
+        auto* group = new QGroupBox(tr("Vertex Paint"));
+        auto* layout = new QFormLayout(group);
+        auto* hint = new QLabel(tr(
+            "Choose Vertex Paint above, then click or drag over triangle faces of the active layer. "
+            "Escape or right-click cancels a stroke. Painting makes parametric layers editable meshes."));
+        hint->setWordWrap(true);
+        layout->addRow(hint);
+        m_paintOperation = new QComboBox(group);
+        m_paintOperation->addItem(tr("Paint Material"), static_cast<int>(FacePaintOperation::Material));
+        m_paintOperation->addItem(tr("Paint Color"), static_cast<int>(FacePaintOperation::Color));
+        m_paintOperation->addItem(tr("Reset Material"), static_cast<int>(FacePaintOperation::ResetMaterial));
+        m_paintOperation->addItem(tr("Reset Color"), static_cast<int>(FacePaintOperation::ResetColor));
+        layout->addRow(tr("Operation"), m_paintOperation);
+        m_paintMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
+        m_paintMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
+        layout->addRow(tr("Material"), m_paintMaterial);
+        m_paintColor = new QPushButton(tr("Choose Color"), group);
+        m_paintColor->setToolTip(tr(
+            "Paint an opaque face color. Custom materials need a base color property; their textures remain enabled."));
+        layout->addRow(tr("Color"), m_paintColor);
+        connect(m_paintOperation, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int)
+            {
+                if (auto* component = CurrentComponent(); component && !m_updating)
+                {
+                    auto settings = component->GetFacePaintSettings();
+                    settings.m_operation = static_cast<FacePaintOperation>(m_paintOperation->currentData().toInt());
+                    component->SetFacePaintSettings(settings);
+                    RefreshFromComponent();
+                }
+            });
+        connect(m_paintMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
+            [this](const AZ::Data::AssetId& material)
+            {
+                if (auto* component = CurrentComponent(); component && !m_updating)
+                {
+                    auto settings = component->GetFacePaintSettings();
+                    settings.m_material = material;
+                    component->SetFacePaintSettings(settings);
+                }
+            });
+        connect(m_paintColor, &QPushButton::clicked, this,
+            [this]()
+            {
+                auto* component = CurrentComponent();
+                if (!component)
+                {
+                    return;
+                }
+                auto settings = component->GetFacePaintSettings();
+                const QColor initial(settings.m_color & 255, (settings.m_color >> 8) & 255, (settings.m_color >> 16) & 255);
+                const QColor chosen = QColorDialog::getColor(initial, this, tr("Face Paint Color"));
+                if (chosen.isValid())
+                {
+                    settings.m_color = static_cast<AZ::u32>(chosen.red()) |
+                        (static_cast<AZ::u32>(chosen.green()) << 8) |
+                        (static_cast<AZ::u32>(chosen.blue()) << 16) | 0xFF000000u;
+                    component->SetFacePaintSettings(settings);
+                    RefreshFromComponent();
+                }
+            });
+        return group;
+    }
+
     QWidget* WhiteBoxPaneWidget::BuildMaterialSection()
     {
         auto* group = new QGroupBox(tr("Material / Display"));
         auto* layout = new QFormLayout(group);
+
+        m_defaultMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
+        m_defaultMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
+        m_defaultMaterial->setToolTip(tr("Default material for this entity. Clear to use the built-in WhiteBox material."));
+        layout->addRow(tr("Default Material"), m_defaultMaterial);
+        connect(m_defaultMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
+            [this](const AZ::Data::AssetId& material)
+            {
+                if (!m_updating)
+                {
+                    ModifyComponent("White Box Default Material",
+                        [material](EditorWhiteBoxComponent* c) { c->SetMaterialOverride(material); });
+                }
+            });
+
+        auto* selectionHint = new QLabel(tr("In Transform mode, Ctrl-click polygons to add or remove them from the selection."), group);
+        selectionHint->setWordWrap(true);
+        layout->addRow(selectionHint);
+        m_polygonSelectionLabel = new QLabel(group);
+        layout->addRow(m_polygonSelectionLabel);
+        m_polygonMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
+        m_polygonMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
+        layout->addRow(tr("Polygon Material"), m_polygonMaterial);
+        auto* materialButtons = new QHBoxLayout();
+        m_assignPolygonMaterial = new QPushButton(tr("Assign Material"), group);
+        m_resetPolygonMaterial = new QPushButton(tr("Reset to Default"), group);
+        m_assignPolygonMaterial->setToolTip(tr("Assign to selected polygons. Parametric layers become editable meshes."));
+        materialButtons->addWidget(m_assignPolygonMaterial);
+        materialButtons->addWidget(m_resetPolygonMaterial);
+        layout->addRow(materialButtons);
+        connect(m_assignPolygonMaterial, &QPushButton::clicked, this,
+            [this]() { AssignSelectedPolygonMaterial(false); });
+        connect(m_resetPolygonMaterial, &QPushButton::clicked, this,
+            [this]() { AssignSelectedPolygonMaterial(true); });
+        connect(m_polygonMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
+            [this](const AZ::Data::AssetId&) { RefreshPolygonMaterialSelection(); });
+        // Selection changes do not modify the component. Keep only these lightweight controls in sync.
+        auto* selectionTimer = new QTimer(this);
+        connect(selectionTimer, &QTimer::timeout, this, &WhiteBoxPaneWidget::RefreshPolygonMaterialSelection);
+        selectionTimer->start(150);
+        RefreshPolygonMaterialSelection();
 
         m_useGlobalTint = new QCheckBox(tr("Use Global Tint"));
         m_useGlobalTint->setToolTip(
             tr("When on, every layer renders with the global tint below; when off each layer uses its own tint."));
         layout->addRow(QString(), m_useGlobalTint);
         m_globalTintButton = new QPushButton();
+        m_globalTintButton->setToolTip(tr("Tint for the built-in WhiteBox material. Custom materials keep their authored settings."));
         layout->addRow(tr("Tint"), m_globalTintButton);
         m_useTexture = new QCheckBox(tr("Use Texture"));
+        m_useTexture->setToolTip(tr("Texture toggle for the built-in WhiteBox material."));
         layout->addRow(QString(), m_useTexture);
         m_edgesOnly = new QCheckBox(tr("Edges Only"));
         m_edgesOnly->setToolTip(tr("Hide the solid render mesh and draw only the mesh edges."));
@@ -1356,6 +1472,44 @@ namespace WhiteBox
             });
 
         return group;
+    }
+
+    void WhiteBoxPaneWidget::RefreshPolygonMaterialSelection()
+    {
+        if (!m_polygonSelectionLabel)
+        {
+            return;
+        }
+        Api::PolygonHandles polygons;
+        if (auto* component = CurrentComponent())
+        {
+            EditorWhiteBoxTransformModeRequestBus::EventResult(
+                polygons, AZ::EntityComponentIdPair(m_currentEntityId, component->GetId()),
+                &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
+        }
+        m_polygonSelectionLabel->setText(tr("%1 polygons selected").arg(static_cast<int>(polygons.size())));
+        m_assignPolygonMaterial->setEnabled(!polygons.empty() && m_polygonMaterial->GetSelectedAssetID().IsValid());
+        m_resetPolygonMaterial->setEnabled(!polygons.empty());
+    }
+
+    void WhiteBoxPaneWidget::AssignSelectedPolygonMaterial(const bool reset)
+    {
+        auto* component = CurrentComponent();
+        if (!component)
+        {
+            return;
+        }
+        Api::PolygonHandles polygons;
+        EditorWhiteBoxTransformModeRequestBus::EventResult(
+            polygons, AZ::EntityComponentIdPair(m_currentEntityId, component->GetId()),
+            &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
+        const AZ::Data::AssetId material = reset ? AZ::Data::AssetId{} : m_polygonMaterial->GetSelectedAssetID();
+        if (polygons.empty() || (!reset && !material.IsValid()))
+        {
+            return;
+        }
+        ModifyComponent(reset ? "White Box Reset Polygon Material" : "White Box Assign Polygon Material",
+            [polygons, material](EditorWhiteBoxComponent* c) { c->AssignPolygonMaterial(polygons, material); });
     }
 
     QWidget* WhiteBoxPaneWidget::BuildMeshOpsSection()
@@ -1810,6 +1964,14 @@ namespace WhiteBox
             m_excludeFromBoolean->setChecked(component->GetExcludeFromBoolean());
 
             // Material / display.
+            m_defaultMaterial->SetSelectedAssetID(component->GetMaterialOverride());
+            const auto paint = component->GetFacePaintSettings();
+            m_paintOperation->setCurrentIndex(m_paintOperation->findData(static_cast<int>(paint.m_operation)));
+            m_paintMaterial->SetSelectedAssetID(paint.m_material);
+            m_paintMaterial->setEnabled(paint.m_operation == FacePaintOperation::Material);
+            m_paintColor->setEnabled(paint.m_operation == FacePaintOperation::Color);
+            SetColorButtonSwatch(m_paintColor, QColor(
+                paint.m_color & 255, (paint.m_color >> 8) & 255, (paint.m_color >> 16) & 255));
             const bool useGlobalTint = component->GetUseGlobalTint();
             m_useGlobalTint->setChecked(useGlobalTint);
             const AZ::Color tint = component->GetMaterialTint();
@@ -1830,6 +1992,7 @@ namespace WhiteBox
             m_modeEdgeRestore->setChecked(subMode == SubMode::EdgeRestore);
             m_modeTransform->setChecked(subMode == SubMode::Transform);
             m_modeDrawShape->setChecked(subMode == SubMode::DrawShape);
+            m_modePaint->setChecked(subMode == SubMode::VertexPaint);
 
             // Layer gizmo: keep it targeting the selected layer.
             m_layerGizmo->SetTarget(m_currentEntityId, m_layerList->currentRow());

@@ -80,6 +80,7 @@ namespace WhiteBox
 
         // EditorWhiteBoxTransformModeRequestBus overrides ...
         void ChangeTransformType(TransformType subModeType) override;
+        Api::PolygonHandles GetSelectedPolygons() const override;
 
         // Numeric input bus overrides
         void NumericBeginMove()         override { if (m_whiteBoxSelection) m_numericInput.Begin(NumericOpMode::Move);   }
@@ -117,6 +118,9 @@ namespace WhiteBox
             AZStd::vector<AZ::Vector3> m_vertexPositions;
             Api::VertexHandles m_vertexHandles;
             IntersectionSelection m_selection;
+            Api::PolygonHandles m_polygons;
+            Api::EdgeHandles m_edges;
+            Api::VertexHandles m_vertices;
 
             //! Snap anchor (translate only), resolved on the first move of a drag and held until mouse up.
             AZStd::optional<size_t> m_snapAnchorIndex;

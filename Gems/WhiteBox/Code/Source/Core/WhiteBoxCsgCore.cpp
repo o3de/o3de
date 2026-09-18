@@ -66,6 +66,10 @@ namespace WhiteBox
             // remap the index buffer, dropping triangles that have collapsed to a line/point
             std::vector<uint32_t> weldedIndices;
             weldedIndices.reserve(mesh.m_indices.size());
+            std::vector<std::string> weldedMaterials;
+            const bool hasMaterials = !mesh.m_materials.empty();
+            std::vector<uint32_t> weldedColors;
+            const bool hasColors = !mesh.m_colors.empty();
             for (size_t triangleIndex = 0; triangleIndex < mesh.TriangleCount(); ++triangleIndex)
             {
                 const uint32_t i0 = remap[mesh.m_indices[triangleIndex * 3 + 0]];
@@ -76,22 +80,41 @@ namespace WhiteBox
                     weldedIndices.push_back(i0);
                     weldedIndices.push_back(i1);
                     weldedIndices.push_back(i2);
+                    if (hasColors)
+                    {
+                        weldedColors.push_back(mesh.Color(triangleIndex));
+                    }
+                    if (hasMaterials)
+                    {
+                        weldedMaterials.push_back(mesh.Material(triangleIndex));
+                    }
                 }
             }
 
             mesh.m_positions = std::move(weldedPositions);
             mesh.m_indices = std::move(weldedIndices);
+            mesh.m_materials = std::move(weldedMaterials);
+            mesh.m_colors = std::move(weldedColors);
         }
 
         namespace
         {
             // Convert a TriangleMesh into a manifold::Manifold (double precision).
-            manifold::Manifold ToManifold(const TriangleMesh& mesh)
+            manifold::Manifold ToManifold(const TriangleMesh& mesh, uint64_t faceOffset, bool preserveMaterials)
             {
                 manifold::MeshGL64 meshGl;
                 meshGl.numProp = 3;
                 meshGl.vertProperties = mesh.m_positions;
                 meshGl.triVerts.assign(mesh.m_indices.begin(), mesh.m_indices.end());
+                // Manifold preserves source face IDs and the boundaries between them.
+                if (preserveMaterials)
+                {
+                    meshGl.faceID.reserve(mesh.TriangleCount());
+                    for (size_t triangle = 0; triangle < mesh.TriangleCount(); ++triangle)
+                    {
+                        meshGl.faceID.push_back(faceOffset + triangle);
+                    }
+                }
                 // fill the merge vectors in case the input is not perfectly indexed
                 meshGl.Merge();
                 return manifold::Manifold(meshGl);
@@ -108,7 +131,9 @@ namespace WhiteBox
             }
 
 
-            const manifold::Manifold manifoldA = ToManifold(meshA);
+            const bool preserveMaterials = !meshA.m_materials.empty() || !meshB.m_materials.empty() ||
+                !meshA.m_colors.empty() || !meshB.m_colors.empty();
+            const manifold::Manifold manifoldA = ToManifold(meshA, 0, preserveMaterials);
             if (manifoldA.Status() != manifold::Manifold::Error::NoError)
             {
                 AZ_Warning("WhiteBox", false,
@@ -117,7 +142,7 @@ namespace WhiteBox
                 return false;
             }
 
-            const manifold::Manifold manifoldB = ToManifold(meshB);
+            const manifold::Manifold manifoldB = ToManifold(meshB, meshA.TriangleCount(), preserveMaterials);
             if (manifoldB.Status() != manifold::Manifold::Error::NoError)
             {
                 AZ_Warning("WhiteBox", false,
@@ -178,6 +203,19 @@ namespace WhiteBox
             for (const uint64_t index : outputMesh.triVerts)
             {
                 result.m_indices.push_back(static_cast<uint32_t>(index));
+            }
+
+            result.m_materials.clear();
+            result.m_colors.clear();
+            if (preserveMaterials)
+            {
+                for (const uint64_t face : outputMesh.faceID)
+                {
+                    result.m_colors.push_back(face < meshA.TriangleCount()
+                        ? meshA.Color(face) : meshB.Color(face - meshA.TriangleCount()));
+                    result.m_materials.push_back(face < meshA.TriangleCount()
+                        ? meshA.Material(face) : meshB.Material(face - meshA.TriangleCount()));
+                }
             }
 
             // compact any duplicate vertices so the rebuilt mesh is a closed two-manifold

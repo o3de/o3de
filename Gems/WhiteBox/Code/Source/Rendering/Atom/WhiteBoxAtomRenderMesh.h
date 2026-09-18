@@ -87,7 +87,7 @@ namespace WhiteBox
         void CreateModelAsset();
         bool CreateModel();
         void AddLodBuffers(AZ::RPI::ModelLodAssetCreator& modelLodCreator);
-        void AddMeshBuffers(AZ::RPI::ModelLodAssetCreator& modelLodCreator);
+        void AddMeshBuffers(AZ::RPI::ModelLodAssetCreator& modelLodCreator, uint32_t indexOffset, uint32_t indexCount);
         bool AreAttributesValid() const;
         bool DoesMeshRequireFullRebuild(const WhiteBoxMeshAtomData& meshData) const;
 
@@ -99,7 +99,16 @@ namespace WhiteBox
         AZ::Data::Instance<AZ::RPI::Model> m_model;
         AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
-        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
+        struct MaterialGroup
+        {
+            AZ::Data::AssetId m_assetId;
+            AZ::u32 m_paintColor = 0;
+            uint32_t m_indexOffset = 0;
+            uint32_t m_indexCount = 0;
+            AZ::Data::Instance<AZ::RPI::Material> m_instance;
+            bool m_customMaterial = false;
+        };
+        AZStd::vector<MaterialGroup> m_materialGroups;
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<
@@ -113,7 +122,6 @@ namespace WhiteBox
 
         //! Default white box mesh material.
         static constexpr AZStd::string_view TexturedMaterialPath = "materials/whiteboxdefault.azmaterial";
-        static constexpr AZ::RPI::ModelMaterialSlot::StableId OneMaterialSlotId = 0;
 
         //! White box model name.
         static constexpr AZStd::string_view ModelName = "WhiteBoxMesh";

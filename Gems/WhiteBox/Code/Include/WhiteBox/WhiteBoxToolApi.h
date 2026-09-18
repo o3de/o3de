@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/array.h>
@@ -808,6 +809,14 @@ namespace WhiteBox
 
         //! Take a white box mesh and write it out to a stream of bytes.
         //! @return Will return false if any error was encountered during serialization, true otherwise.
+        //! Per-face material override. Invalid means inherit the entity's default.
+        AZ::Data::AssetId FaceMaterial(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        //! Packed RGBA (R in the low byte); zero means no face-color override.
+        AZ::u32 FacePaintColor(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFacePaintColor(WhiteBoxMesh& whiteBox, FaceHandle face, AZ::u32 color);
+        void SetFaceMaterial(WhiteBoxMesh& whiteBox, FaceHandle face, const AZ::Data::AssetId& material);
+        void SetPolygonMaterial(WhiteBoxMesh& whiteBox, const PolygonHandle& polygon, const AZ::Data::AssetId& material);
+
         bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output);
 
         //! Clones the white box mesh object into a new mesh.

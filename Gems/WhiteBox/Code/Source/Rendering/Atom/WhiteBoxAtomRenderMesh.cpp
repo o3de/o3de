@@ -38,7 +38,7 @@ namespace WhiteBox
 
     AtomRenderMesh::~AtomRenderMesh()
     {
-        m_materialInstance = {};
+        m_materialGroups.clear();
         if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
         {
             m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
@@ -117,9 +117,12 @@ namespace WhiteBox
         }
     }
 
-    void AtomRenderMesh::AddMeshBuffers(AZ::RPI::ModelLodAssetCreator& modelLodCreator)
+    void AtomRenderMesh::AddMeshBuffers(AZ::RPI::ModelLodAssetCreator& modelLodCreator, uint32_t indexOffset, uint32_t indexCount)
     {
-        modelLodCreator.SetMeshIndexBuffer(m_indexBuffer->GetBufferAssetView());
+        auto indexView = m_indexBuffer->GetBufferViewDescriptor();
+        indexView.m_elementOffset = indexOffset;
+        indexView.m_elementCount = indexCount;
+        modelLodCreator.SetMeshIndexBuffer(AZ::RPI::BufferAssetView(m_indexBuffer->GetBuffer(), indexView));
 
         for (auto& attribute : m_attributes)
         {
@@ -142,13 +145,15 @@ namespace WhiteBox
         AZ::RPI::ModelLodAssetCreator modelLodCreator;
         modelLodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         AddLodBuffers(modelLodCreator);
-        modelLodCreator.BeginMesh();
-        modelLodCreator.SetMeshAabb(meshData.GetAabb());
-        
-        modelLodCreator.SetMeshMaterialSlot(OneMaterialSlotId);
-
-        AddMeshBuffers(modelLodCreator);
-        modelLodCreator.EndMesh();
+        for (uint32_t slot = 0; slot < m_materialGroups.size(); ++slot)
+        {
+            const MaterialGroup& group = m_materialGroups[slot];
+            modelLodCreator.BeginMesh();
+            modelLodCreator.SetMeshAabb(meshData.GetAabb());
+            modelLodCreator.SetMeshMaterialSlot(slot);
+            AddMeshBuffers(modelLodCreator, group.m_indexOffset, group.m_indexCount);
+            modelLodCreator.EndMesh();
+        }
 
         if (!modelLodCreator.End(m_lodAsset))
         {
@@ -178,35 +183,30 @@ namespace WhiteBox
         modelCreator.SetName(ModelName);
         modelCreator.AddLodAsset(AZStd::move(m_lodAsset));
         
-        // Prefer an external override material asset (set via SetMaterialAssetOverride) and fall
-        // back to the built-in White Box material.
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
-        if (m_materialAssetOverride.IsValid())
+        for (uint32_t slot = 0; slot < m_materialGroups.size(); ++slot)
         {
-            materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(
-                m_materialAssetOverride, AZ::RPI::AssetUtils::TraceLevel::Warning);
-        }
-        if (!materialAsset)
-        {
-            materialAsset =
-                AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data());
-        }
-        if (materialAsset)
-        {
-            // Create (not FindOrCreate): FindOrCreate returns a single cached instance shared by
-            // every white box that loads this material asset, so setting the tint on one entity
-            // changed them all. Create gives this render mesh its own material instance.
-            m_materialInstance = AZ::RPI::Material::Create(materialAsset);
-
+            MaterialGroup& group = m_materialGroups[slot];
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
+            if (group.m_assetId.IsValid())
+            {
+                materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(
+                    group.m_assetId, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            }
+            group.m_customMaterial = static_cast<bool>(materialAsset);
+            if (!materialAsset)
+            {
+                materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data());
+            }
+            if (!materialAsset)
+            {
+                AZ_Error("WhiteBox", false, "Could not load WhiteBox material.");
+                return;
+            }
+            group.m_instance = AZ::RPI::Material::Create(materialAsset);
             AZ::RPI::ModelMaterialSlot materialSlot;
-            materialSlot.m_stableId = OneMaterialSlotId;
+            materialSlot.m_stableId = slot;
             materialSlot.m_defaultMaterialAsset = materialAsset;
             modelCreator.AddMaterialSlot(materialSlot);
-        }
-        else
-        {
-            AZ_Error("CreateLodAsset", false, "Could not load material.");
-            return;
         }
 
         modelCreator.End(m_modelAsset);
@@ -227,7 +227,12 @@ namespace WhiteBox
         }
 
         m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor(m_modelAsset, m_materialInstance));
+        AZ::Render::CustomMaterialMap materials;
+        for (uint32_t slot = 0; slot < m_materialGroups.size(); ++slot)
+        {
+            materials[{AZ::Render::DefaultCustomMaterialLodIndex, slot}] = {m_materialGroups[slot].m_instance, {}};
+        }
+        m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor(m_modelAsset, materials));
         if (m_isPrimary)
         {
             AZ::Render::MeshHandleStateNotificationBus::Event(m_entityId, &AZ::Render::MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
@@ -273,7 +278,47 @@ namespace WhiteBox
     void AtomRenderMesh::BuildMesh(const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal)
     {
         const WhiteBoxFaces culledFaceList = BuildCulledWhiteBoxFaces(renderData.m_faces);
-        const WhiteBoxMeshAtomData meshData(culledFaceList);
+        m_materialGroups.clear();
+        AZStd::vector<WhiteBoxFaces> facesByMaterial;
+        const AZ::Data::AssetId defaultMaterial = renderData.m_material.m_materialAsset.GetId().IsValid()
+            ? renderData.m_material.m_materialAsset.GetId() : m_materialAssetOverride;
+        for (const WhiteBoxFace& face : culledFaceList)
+        {
+            const AZ::Data::AssetId material = face.m_materialAsset.GetId().IsValid()
+                ? face.m_materialAsset.GetId() : defaultMaterial;
+            size_t group = 0;
+            while (group < m_materialGroups.size() &&
+                (m_materialGroups[group].m_assetId != material || m_materialGroups[group].m_paintColor != face.m_paintColor))
+            {
+                ++group;
+            }
+            if (group == m_materialGroups.size())
+            {
+                MaterialGroup newGroup;
+                newGroup.m_assetId = material;
+                newGroup.m_paintColor = face.m_paintColor;
+                m_materialGroups.push_back(AZStd::move(newGroup));
+                facesByMaterial.emplace_back();
+            }
+            facesByMaterial[group].push_back(face);
+        }
+        WhiteBoxFaces groupedFaces;
+        groupedFaces.reserve(culledFaceList.size());
+        for (size_t group = 0; group < m_materialGroups.size(); ++group)
+        {
+            m_materialGroups[group].m_indexOffset = static_cast<uint32_t>(groupedFaces.size() * 3);
+            m_materialGroups[group].m_indexCount = static_cast<uint32_t>(facesByMaterial[group].size() * 3);
+            groupedFaces.insert(groupedFaces.end(), facesByMaterial[group].begin(), facesByMaterial[group].end());
+        }
+        if (groupedFaces.empty())
+        {
+            if (m_meshFeatureProcessor && m_meshHandle.IsValid())
+            {
+                m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+            }
+            return;
+        }
+        const WhiteBoxMeshAtomData meshData(groupedFaces);
 
         if (DoesMeshRequireFullRebuild(meshData))
         {
@@ -308,15 +353,27 @@ namespace WhiteBox
 
     void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
-        if (m_meshFeatureProcessor && m_materialInstance)
-        {            
+        for (MaterialGroup& group : m_materialGroups)
+        {
+            // Custom assets keep their authored color and texture settings.
+            auto& materialInstance = group.m_instance;
+            if (!materialInstance || (group.m_customMaterial && group.m_paintColor == 0))
+            {
+                continue;
+            }
             // Per-layer tint travels in COLOR0, so the base colour must be white; global tint uses baseColor.
-            const AZ::Color baseColor = material.m_useVertexColor ? AZ::Color(1.0f, 1.0f, 1.0f, 1.0f)
-                                                                  : AZ::Color(material.m_tint);
-            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.color"));
+            const bool painted = group.m_paintColor != 0;
+            const bool useVertexColor = material.m_useVertexColor && !painted;
+            const AZ::Color baseColor = painted
+                ? AZ::Color(
+                    float(group.m_paintColor & 255) / 255.0f,
+                    float((group.m_paintColor >> 8) & 255) / 255.0f,
+                    float((group.m_paintColor >> 16) & 255) / 255.0f, 1.0f)
+                : (useVertexColor ? AZ::Color(1.0f, 1.0f, 1.0f, 1.0f) : AZ::Color(material.m_tint));
+            if (const auto& materialPropertyIndex = materialInstance->FindPropertyIndex(AZ::Name("baseColor.color"));
                 materialPropertyIndex.IsValid())
             {
-                m_materialInstance->SetPropertyValue(materialPropertyIndex, baseColor);
+                materialInstance->SetPropertyValue(materialPropertyIndex, baseColor);
             }
 
             // Enable StandardPBR's vertex colour group; the property id varies by engine version.
@@ -324,37 +381,29 @@ namespace WhiteBox
                  {"vertexColor.enable", "vertexColor.useVertexColor", "vertexColor.enableVertexColor",
                   "vertexColor.toggle"})
             {
-                if (const auto& idx = m_materialInstance->FindPropertyIndex(AZ::Name(enableName)); idx.IsValid())
+                if (const auto& idx = materialInstance->FindPropertyIndex(AZ::Name(enableName)); idx.IsValid())
                 {
-                    m_materialInstance->SetPropertyValue(idx, material.m_useVertexColor);
+                    materialInstance->SetPropertyValue(idx, useVertexColor);
                     break;
                 }
             }
-            if (material.m_useVertexColor)
+            if (useVertexColor)
             {
-                if (const auto& idx = m_materialInstance->FindPropertyIndex(AZ::Name("vertexColor.factor"));
+                if (const auto& idx = materialInstance->FindPropertyIndex(AZ::Name("vertexColor.factor"));
                     idx.IsValid())
                 {
-                    m_materialInstance->SetPropertyValue(idx, 1.0f);
+                    materialInstance->SetPropertyValue(idx, 1.0f);
                 }
             }
 
-            if (const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
-                materialPropertyIndex.IsValid())
+            if (const auto& materialPropertyIndex = materialInstance->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                materialPropertyIndex.IsValid() && !group.m_customMaterial)
             {
-                m_materialInstance->SetPropertyValue(materialPropertyIndex, material.m_useTexture);
+                materialInstance->SetPropertyValue(materialPropertyIndex, material.m_useTexture && !painted);
             }
 
-            // If the material changes were successfully applied then disconnect from the tick bus. Otherwise, make another attempt on the next tick.
-            if (!m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-            else if (!AZ::TickBus::Handler::BusIsConnected())
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
         }
+        OnTick(0.0f, AZ::ScriptTimePoint{});
     }
 
     void AtomRenderMesh::SetMaterialAssetOverride(const AZ::Data::AssetId& materialAssetId)
@@ -364,9 +413,21 @@ namespace WhiteBox
 
     void AtomRenderMesh::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (!m_materialInstance || !m_materialInstance->NeedsCompile() || m_materialInstance->Compile())
+        bool compiled = true;
+        for (MaterialGroup& group : m_materialGroups)
+        {
+            if (group.m_instance && group.m_instance->NeedsCompile() && !group.m_instance->Compile())
+            {
+                compiled = false;
+            }
+        }
+        if (compiled)
         {
             AZ::TickBus::Handler::BusDisconnect();
+        }
+        else if (!AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusConnect();
         }
     }
 

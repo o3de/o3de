@@ -23,6 +23,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/Visibility/BoundsBus.h>
@@ -349,12 +350,49 @@ namespace WhiteBox
             return;
         }
         m_materialOverrideAssetId = materialAssetId;
+        m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+            materialAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
+        m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         // The material asset is baked into the model when it is created, so force the render mesh to
         // be recreated (drop to a null render mesh first) with the new material.
         if (m_renderMesh.has_value())
         {
             m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
-            RebuildRenderMesh();
+        }
+        RebuildWhiteBox(); // hidden entities also need fresh runtime bake data
+    }
+
+    void EditorWhiteBoxComponent::AssignPolygonMaterial(
+        const Api::PolygonHandles& polygons, const AZ::Data::AssetId& materialAssetId)
+    {
+        WhiteBoxMesh* mesh = GetWhiteBoxMesh();
+        if (!mesh || polygons.empty())
+        {
+            return;
+        }
+        const Api::PolygonHandles validPolygons = Api::MeshPolygonHandles(*mesh);
+        bool changed = false;
+        for (const Api::PolygonHandle& polygon : polygons)
+        {
+            if (AZStd::find(validPolygons.begin(), validPolygons.end(), polygon) == validPolygons.end())
+            {
+                continue; // stale selection after an undo or layer change
+            }
+            for (const Api::FaceHandle face : polygon.m_faceHandles)
+            {
+                if (Api::FaceMaterial(*mesh, face) != materialAssetId)
+                {
+                    Api::SetFaceMaterial(*mesh, face, materialAssetId);
+                    changed = true;
+                }
+            }
+        }
+        if (changed)
+        {
+            // Explicit polygon edits freeze parametric geometry, just like vertex edits.
+            BakeParametricLayer(m_activeLayerIndex);
+            SerializeWhiteBox();
+            OnWhiteBoxMeshModified();
         }
     }
 

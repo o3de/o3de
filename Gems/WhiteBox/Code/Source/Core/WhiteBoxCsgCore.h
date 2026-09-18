@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <string>
 
 namespace WhiteBox
 {
@@ -31,6 +32,20 @@ namespace WhiteBox
         {
             std::vector<double> m_positions; //!< Flattened vertex positions (x0, y0, z0, x1, y1, z1, ...).
             std::vector<uint32_t> m_indices; //!< Triangle list indices (three per triangle, CCW winding).
+
+            //! Optional per-triangle material asset IDs. Empty values inherit the entity default.
+            std::vector<std::string> m_materials;
+            std::vector<uint32_t> m_colors;
+
+            uint32_t Color(size_t triangle) const
+            {
+                return triangle < m_colors.size() ? m_colors[triangle] : 0;
+            }
+
+            std::string Material(size_t triangle) const
+            {
+                return triangle < m_materials.size() ? m_materials[triangle] : std::string{};
+            }
 
             size_t VertexCount() const
             {

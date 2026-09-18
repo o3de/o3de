@@ -24,6 +24,7 @@ namespace WhiteBox
     class EdgeRestoreMode;
     class TransformMode;
     class DrawShapeMode;
+    class PaintMode;
 
     //! The type of edge selection the component mode is in (either normal selection of
     //! 'user' edges or selection of all edges ('mesh') in restoration mode).
@@ -111,8 +112,9 @@ namespace WhiteBox
         void RemoveSubModeSelectionCluster();
 
         void EnterDrawShapeMode();
+        void EnterPaintMode();
         //! The current set of 'sub' modes the white box component mode can be in.
-        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>, AZStd::unique_ptr<DrawShapeMode>> m_modes;
+        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>, AZStd::unique_ptr<DrawShapeMode>, AZStd::unique_ptr<PaintMode>> m_modes;
 
         //! The most up to date intersection and render data for the white box (edge and polygon bounds).
         AZStd::optional<IntersectionAndRenderData> m_intersectionAndRenderData;
@@ -137,6 +139,7 @@ namespace WhiteBox
             m_transformScaleButtonId; 
 
         AzToolsFramework::ViewportUi::ButtonId m_drawShapeModeButtonId;
+        AzToolsFramework::ViewportUi::ButtonId m_paintModeButtonId;
         //! Viewport UI cluster for changing sub mode.
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId;

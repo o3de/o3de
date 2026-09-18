@@ -49,9 +49,15 @@ namespace WhiteBox
                 triangleMesh.m_positions.reserve(faces.size() * 9);
                 triangleMesh.m_indices.reserve(faces.size() * 3);
 
+                const FaceHandles faceHandles = MeshFaceHandles(whiteBox);
+                size_t faceIndex = 0;
                 uint32_t index = 0;
                 for (const Face& face : faces)
                 {
+                    triangleMesh.m_colors.push_back(FacePaintColor(whiteBox, faceHandles[faceIndex]));
+                    const AZ::Data::AssetId material = FaceMaterial(whiteBox, faceHandles[faceIndex++]);
+                    triangleMesh.m_materials.emplace_back(
+                        material.IsValid() ? material.ToString<AZStd::string>().c_str() : "");
                     for (const AZ::Vector3& position : face)
                     {
                         const AZ::Vector3 transformedPosition = transform.TransformPoint(position);
@@ -141,6 +147,8 @@ namespace WhiteBox
                             for (const size_t neighborTriangle : neighbors)
                             {
                                 if (!visited[neighborTriangle] &&
+                                    triangleMesh.Material(triangleIndex) == triangleMesh.Material(neighborTriangle) &&
+                                    triangleMesh.Color(triangleIndex) == triangleMesh.Color(neighborTriangle) &&
                                     triangleNormals[triangleIndex].Dot(triangleNormals[neighborTriangle]) >
                                         CoplanarNormalDotThreshold)
                                 {
@@ -790,7 +798,14 @@ namespace WhiteBox
                             FaceVertHandles{ handleFor(t[0]), handleFor(t[1]), handleFor(t[2]) });
                     }
 
-                    AddPolygon(whiteBox, faceVertHandlesList);
+                    const PolygonHandle polygon = AddPolygon(whiteBox, faceVertHandlesList);
+                    const std::string material = triangleMesh.Material(groups[gi].front());
+                    SetPolygonMaterial(whiteBox, polygon,
+                        material.empty() ? AZ::Data::AssetId{} : AZ::Data::AssetId::CreateString(material.c_str()));
+                    for (const FaceHandle face : polygon.m_faceHandles)
+                    {
+                        SetFacePaintColor(whiteBox, face, triangleMesh.Color(groups[gi].front()));
+                    }
                 }
 
                 CalculateNormals(whiteBox);

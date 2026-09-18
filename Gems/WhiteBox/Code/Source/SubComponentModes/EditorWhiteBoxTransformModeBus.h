@@ -28,6 +28,9 @@ namespace WhiteBox
         //! Change the TransformType for the WhiteBox Transform sub-mode.
         virtual void ChangeTransformType(TransformType subModeType) = 0;
 
+        //! Polygon selection on the active editable layer (empty for edge/vertex selection).
+        virtual Api::PolygonHandles GetSelectedPolygons() const { return {}; }
+
         // ------------------------------------------------------------------ //
         // Blender-style numeric input dispatch methods                       //
         // ------------------------------------------------------------------ //

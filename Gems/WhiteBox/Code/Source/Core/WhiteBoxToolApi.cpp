@@ -579,6 +579,20 @@ namespace WhiteBox
             whiteBox.mesh.add_property(vertexPropsHiddenHandle, VertexHiddenProp);
             whiteBox.mesh.property(vertexPropsHiddenHandle).set_persistent(true);
 
+            OpenMesh::FPropHandleT<std::string> materialProperty;
+            if (!whiteBox.mesh.get_property_handle(materialProperty, "WhiteBoxFaceMaterial"))
+            {
+                whiteBox.mesh.add_property(materialProperty, "WhiteBoxFaceMaterial");
+            }
+            whiteBox.mesh.property(materialProperty).set_persistent(true);
+
+            OpenMesh::FPropHandleT<unsigned int> colorProperty;
+            if (!whiteBox.mesh.get_property_handle(colorProperty, "WhiteBoxFacePaintColor"))
+            {
+                whiteBox.mesh.add_property(colorProperty, "WhiteBoxFacePaintColor");
+            }
+            whiteBox.mesh.property(colorProperty).set_persistent(true);
+
             // request default properties required for all white box meshes
             whiteBox.mesh.request_face_normals();
             whiteBox.mesh.request_halfedge_texcoords2D();
@@ -3426,6 +3440,56 @@ namespace WhiteBox
 
             CalculateNormals(whiteBox);
             CalculatePlanarUVs(whiteBox);
+        }
+
+        AZ::u32 FacePaintColor(const WhiteBoxMesh& whiteBox, const FaceHandle face)
+        {
+            OpenMesh::FPropHandleT<unsigned int> property;
+            return whiteBox.mesh.get_property_handle(property, "WhiteBoxFacePaintColor")
+                ? whiteBox.mesh.property(property, om_fh(face)) : 0;
+        }
+
+        void SetFacePaintColor(WhiteBoxMesh& whiteBox, const FaceHandle face, const AZ::u32 color)
+        {
+            OpenMesh::FPropHandleT<unsigned int> property;
+            if (!whiteBox.mesh.get_property_handle(property, "WhiteBoxFacePaintColor"))
+            {
+                whiteBox.mesh.add_property(property, "WhiteBoxFacePaintColor");
+            }
+            whiteBox.mesh.property(property).set_persistent(true);
+            whiteBox.mesh.property(property, om_fh(face)) = color;
+        }
+
+        AZ::Data::AssetId FaceMaterial(const WhiteBoxMesh& whiteBox, const FaceHandle face)
+        {
+            OpenMesh::FPropHandleT<std::string> property;
+            if (!whiteBox.mesh.get_property_handle(property, "WhiteBoxFaceMaterial"))
+            {
+                return {};
+            }
+            const std::string& value = whiteBox.mesh.property(property, om_fh(face));
+            return value.empty() ? AZ::Data::AssetId{} : AZ::Data::AssetId::CreateString(value.c_str());
+        }
+
+        void SetFaceMaterial(WhiteBoxMesh& whiteBox, const FaceHandle face, const AZ::Data::AssetId& material)
+        {
+            OpenMesh::FPropHandleT<std::string> property;
+            if (!whiteBox.mesh.get_property_handle(property, "WhiteBoxFaceMaterial"))
+            {
+                whiteBox.mesh.add_property(property, "WhiteBoxFaceMaterial");
+            }
+            whiteBox.mesh.property(property).set_persistent(true);
+            whiteBox.mesh.property(property, om_fh(face)) =
+                material.IsValid() ? material.ToString<AZStd::string>().c_str() : "";
+        }
+
+        void SetPolygonMaterial(
+            WhiteBoxMesh& whiteBox, const PolygonHandle& polygon, const AZ::Data::AssetId& material)
+        {
+            for (const FaceHandle face : polygon.m_faceHandles)
+            {
+                SetFaceMaterial(whiteBox, face, material);
+            }
         }
 
         bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output)

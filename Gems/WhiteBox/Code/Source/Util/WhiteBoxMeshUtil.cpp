@@ -50,7 +50,12 @@ namespace WhiteBox
             }
             if (!faceVertHandles.empty())
             {
-                Api::AddPolygon(dest, faceVertHandles);
+                const Api::PolygonHandle added = Api::AddPolygon(dest, faceVertHandles);
+                for (size_t face = 0; face < added.m_faceHandles.size() && face < polygon.m_faceHandles.size(); ++face)
+                {
+                    Api::SetFaceMaterial(dest, added.m_faceHandles[face], Api::FaceMaterial(src, polygon.m_faceHandles[face]));
+                    Api::SetFacePaintColor(dest, added.m_faceHandles[face], Api::FacePaintColor(src, polygon.m_faceHandles[face]));
+                }
             }
         }
     }
@@ -136,7 +141,12 @@ namespace WhiteBox
             }
             if (!faceVertHandles.empty())
             {
-                Api::AddPolygon(*dest, faceVertHandles);
+                const Api::PolygonHandle added = Api::AddPolygon(*dest, faceVertHandles);
+                for (size_t face = 0; face < added.m_faceHandles.size() && face < polygon.m_faceHandles.size(); ++face)
+                {
+                    Api::SetFaceMaterial(*dest, added.m_faceHandles[face], Api::FaceMaterial(src, polygon.m_faceHandles[face]));
+                    Api::SetFacePaintColor(*dest, added.m_faceHandles[face], Api::FacePaintColor(src, polygon.m_faceHandles[face]));
+                }
             }
         }
 
@@ -160,6 +170,10 @@ namespace WhiteBox
 
         WhiteBoxFace face;
         face.m_normal = Api::FaceNormal(whiteBox, faceHandle);
+        face.m_paintColor = Api::FacePaintColor(whiteBox, faceHandle);
+        face.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+            Api::FaceMaterial(whiteBox, faceHandle), azrtti_typeid<AZ::RPI::MaterialAsset>());
+        face.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
 
         if (flipWinding)

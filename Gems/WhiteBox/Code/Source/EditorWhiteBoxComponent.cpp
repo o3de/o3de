@@ -565,6 +565,9 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::Activate()
     {
+        m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+            m_materialOverrideAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
+        m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         const AZ::EntityId entityId = GetEntityId();
         const AZ::EntityComponentIdPair entityComponentIdPair{entityId, GetId()};
 

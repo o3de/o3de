@@ -37,6 +37,9 @@ set(FILES
     Source/EditorWhiteBoxComponentModeBus.h
     Source/EditorWhiteBoxComponentModeTypes.cpp
     Source/EditorWhiteBoxComponentModeTypes.h
+    Source/SubComponentModes/EditorWhiteBoxPaintMode.h
+    Source/SubComponentModes/EditorWhiteBoxPaintMode.cpp
+    Source/SubComponentModes/WhiteBoxPaintSettings.h
     Source/EditorWhiteBoxEdgeModifierBus.h
     Source/EditorWhiteBoxPolygonModifierBus.h
     Source/EditorWhiteBoxDefaultShapeTypes.h

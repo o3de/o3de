@@ -38,6 +38,8 @@ class QListWidgetItem;
 class QPushButton;
 class QSpinBox;
 
+namespace AzToolsFramework { class PropertyAssetCtrl; }
+
 namespace WhiteBox
 {
     class EditorWhiteBoxComponent;
@@ -108,6 +110,7 @@ namespace WhiteBox
         QWidget* BuildCubeStampSection();
         QWidget* BuildBooleanSection();
         QWidget* BuildMaterialSection();
+        QWidget* BuildVertexPaintSection();
         QWidget* BuildMeshOpsSection();
 
         //! The White Box component on the entity currently picked in the dropdown (null if none).
@@ -166,6 +169,10 @@ namespace WhiteBox
         QPushButton* m_modeEdgeRestore = nullptr;
         QPushButton* m_modeTransform = nullptr;
         QPushButton* m_modeDrawShape = nullptr;
+        QPushButton* m_modePaint = nullptr;
+        QComboBox* m_paintOperation = nullptr;
+        AzToolsFramework::PropertyAssetCtrl* m_paintMaterial = nullptr;
+        QPushButton* m_paintColor = nullptr;
 
         // Shape section.
         QComboBox* m_defaultShapeCombo = nullptr;
@@ -248,6 +255,13 @@ namespace WhiteBox
         QPushButton* m_refreshGlobalBooleansButton = nullptr; //!< Manual re-evaluate of every target.
 
         // Material section.
+        AzToolsFramework::PropertyAssetCtrl* m_defaultMaterial = nullptr;
+        AzToolsFramework::PropertyAssetCtrl* m_polygonMaterial = nullptr;
+        QLabel* m_polygonSelectionLabel = nullptr;
+        QPushButton* m_assignPolygonMaterial = nullptr;
+        QPushButton* m_resetPolygonMaterial = nullptr;
+        void RefreshPolygonMaterialSelection();
+        void AssignSelectedPolygonMaterial(bool reset);
         QCheckBox* m_useGlobalTint = nullptr;
         QPushButton* m_globalTintButton = nullptr;
         QCheckBox* m_useTexture = nullptr;

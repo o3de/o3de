@@ -59,6 +59,9 @@ namespace WhiteBox
         WhiteBoxVertex m_v2;
         WhiteBoxVertex m_v3;
         AZ::Vector3 m_normal;
+        AZ::u32 m_paintColor = 0; //!< Packed face paint override; zero inherits the material/layer color.
+        //! Polygon override, or empty to inherit WhiteBoxMaterial::m_materialAsset.
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset{AZ::Data::AssetLoadBehavior::PreLoad};
         AZ::Vector4 m_color = AZ::Vector4::CreateOne(); //!< Per-face tint (per-layer colour); white = untinted.
     };
 

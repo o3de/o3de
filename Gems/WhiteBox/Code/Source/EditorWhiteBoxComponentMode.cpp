@@ -10,6 +10,7 @@
 #include "SubComponentModes/EditorWhiteBoxDefaultMode.h"
 #include "SubComponentModes/EditorWhiteBoxEdgeRestoreMode.h"
 #include "SubComponentModes/EditorWhiteBoxTransformMode.h"
+#include "SubComponentModes/EditorWhiteBoxPaintMode.h"
 #include "Util/WhiteBoxSnapUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
@@ -39,6 +40,7 @@
 namespace WhiteBox
 {
     constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
+    constexpr AZStd::string_view WhiteBoxPaintSubModeIdentifier = "o3de.context.mode.whiteBox.vertexPaint";
 
     constexpr AZStd::string_view WhiteBoxDefaultSubModeIdentifier = "o3de.context.mode.whiteBox.default";
     constexpr AZStd::string_view WhiteBoxEdgeRestoreSubModeIdentifier = "o3de.context.mode.whiteBox.edgeRestore";
@@ -135,6 +137,7 @@ namespace WhiteBox
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxPaintSubModeIdentifier);
         actionManagerInterface->RegisterActionContextMode(
             EditorIdentifiers::MainWindowActionContextIdentifier,
             WhiteBoxDrawShapeSubModeIdentifier);
@@ -161,6 +164,10 @@ namespace WhiteBox
         EdgeRestoreMode::BindActionsToModes(WhiteBoxEdgeRestoreSubModeIdentifier);
         TransformMode::BindActionsToModes(WhiteBoxTransformSubModeIdentifier);
         DrawShapeMode::BindActionsToModes(WhiteBoxDrawShapeSubModeIdentifier);
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            actionManager->AssignModeToAction(WhiteBoxPaintSubModeIdentifier, "o3de.action.componentMode.end");
+        }
     }
 
     void EditorWhiteBoxComponentMode::BindActionsToMenus()
@@ -434,6 +441,9 @@ namespace WhiteBox
     {
         switch (subMode)
         {
+        case SubMode::VertexPaint:
+            EnterPaintMode();
+            break;
         case SubMode::DrawShape:
             EnterDrawShapeMode();
             break;
@@ -447,6 +457,19 @@ namespace WhiteBox
         default:
             EnterDefaultMode();
             break;
+        }
+    }
+
+    void EditorWhiteBoxComponentMode::EnterPaintMode()
+    {
+        m_modes = AZStd::make_unique<PaintMode>(GetEntityComponentIdPair());
+        m_intersectionAndRenderData = {};
+        m_currentSubMode = SubMode::VertexPaint;
+        SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_paintModeButtonId);
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            actionManager->SetActiveActionContextMode(
+                EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxPaintSubModeIdentifier);
         }
     }
 
@@ -715,6 +738,7 @@ namespace WhiteBox
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
         m_drawShapeModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "AddComponent");
+        m_paintModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
 
         // temporary setting to disable this feature
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
@@ -761,6 +785,10 @@ namespace WhiteBox
                 {
                     EnterDrawShapeMode();
                 }
+                else if (buttonId == m_paintModeButtonId)
+                {
+                    EnterPaintMode();
+                }
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -772,5 +800,9 @@ namespace WhiteBox
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
             m_modeSelectionClusterId, m_drawShapeModeButtonId,
             WhiteboxModeClusterDrawShapeTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_modeSelectionClusterId, m_paintModeButtonId, "Switch to Vertex Paint mode");
     }
 } // namespace WhiteBox

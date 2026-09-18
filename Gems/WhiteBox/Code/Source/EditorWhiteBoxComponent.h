@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "SubComponentModes/WhiteBoxPaintSettings.h"
+
 #include "Rendering/WhiteBoxMaterial.h"
 #include "Rendering/WhiteBoxRenderData.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
@@ -101,6 +103,9 @@ namespace WhiteBox
         void SetMaterialUseTexture(bool useTexture) override;
         void SetMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
         AZ::Data::AssetId GetMaterialOverride() override;
+        void AssignPolygonMaterial(const Api::PolygonHandles& polygons, const AZ::Data::AssetId& materialAssetId);
+        FacePaintSettings GetFacePaintSettings() const { return m_facePaintSettings; }
+        void SetFacePaintSettings(const FacePaintSettings& settings) { m_facePaintSettings = settings; }
         int GetDrawSides() override { return m_drawShapeData.m_sides; }
         DrawShapeType GetDrawShape() override { return m_drawShapeData.m_shape; }
         DrawStairInfo GetDrawStairInfo() override
@@ -748,6 +753,7 @@ namespace WhiteBox
         bool m_edgesOnly = false; //!< When set, hide the solid render mesh and draw only the mesh edges.
         bool m_useGlobalTint = true; //!< When set, every layer renders with the global material tint; otherwise each layer uses its own tint.
         AZ::Data::AssetId m_materialOverrideAssetId; //!< External material asset override (invalid = built-in material).
+        FacePaintSettings m_facePaintSettings; //!< Transient brush settings, not scene data.
 
 
 

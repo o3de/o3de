@@ -10,6 +10,7 @@
 
 #include "Viewport/WhiteBoxViewportConstants.h"
 
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
@@ -38,5 +39,8 @@ namespace WhiteBox
         //! Runtime flag: per-vertex COLOR0 carries the tint (per-layer tint mode) so the base
         //! color must be white. Not user-editable; set by the component when building render data.
         bool m_useVertexColor = false;
+
+        //! Entity default material. An empty asset uses the built-in WhiteBox material.
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset{AZ::Data::AssetLoadBehavior::PreLoad};
     };
 } // namespace WhiteBox
