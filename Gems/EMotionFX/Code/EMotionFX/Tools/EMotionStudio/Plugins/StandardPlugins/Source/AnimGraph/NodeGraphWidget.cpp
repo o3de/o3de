@@ -462,6 +462,19 @@ namespace EMStudio
                 }
             }
 
+            // check if we are dragging a transition waypoint
+            if (m_activeGraph->GetIsRepositioningWaypoint())
+            {
+                NodeConnection* connection = m_activeGraph->GetRepositionedWaypointConnection();
+                EMotionFX::AnimGraphStateTransition* transition = connection->GetModelIndex().data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+                if (transition)
+                {
+                    const QPoint snappedPos = SnapLocalToGrid(globalPos);
+                    transition->SetWaypoint(m_activeGraph->GetRepositionedWaypointIndex(),
+                        AZ::Vector2(aznumeric_cast<float>(snappedPos.x()), aznumeric_cast<float>(snappedPos.y())));
+                }
+            }
+
             // connection relinking or creation
             if (port)
             {
@@ -839,6 +852,17 @@ namespace EMStudio
                             m_activeGraph->StartReplaceTransitionTail(stateConnection, startOffset, endOffset, stateConnection->GetSourceNode(), stateConnection->GetTargetNode());
                             return;
                         }
+
+                        const size_t waypointIndex = stateConnection->FindWaypoint(globalPos);
+                        if (!stateConnection->GetIsWildcardTransition() && waypointIndex != InvalidIndex)
+                        {
+                            m_moveNode = nullptr;
+                            m_panning = false;
+                            m_rectSelecting = false;
+
+                            m_activeGraph->StartRepositionWaypoint(stateConnection, waypointIndex, transition->GetWaypoints());
+                            return;
+                        }
                     }
                 }
             }
@@ -1169,6 +1193,20 @@ namespace EMStudio
                 }
 
                 m_activeGraph->StopRelinkConnection();
+                m_leftMousePressed = false;
+                UpdateMouseCursor(mousePos, globalPos);
+                return;
+            }
+
+            // in case we dragged a transition waypoint
+            if (m_activeGraph->GetIsRepositioningWaypoint())
+            {
+                NodeConnection* connection = m_activeGraph->GetRepositionedWaypointConnection();
+                const AZStd::vector<AZ::Vector2> oldWaypoints = m_activeGraph->GetRepositionedWaypointOldValues();
+                m_activeGraph->StopRepositionWaypoint();
+
+                CommitTransitionWaypoints(connection, oldWaypoints);
+
                 m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
                 return;
@@ -1614,6 +1652,12 @@ namespace EMStudio
         AZ_UNUSED(targetIsInputPort);
         AZ_UNUSED(startOffset);
         AZ_UNUSED(endOffset);
+    }
+
+    void NodeGraphWidget::CommitTransitionWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    {
+        AZ_UNUSED(connection);
+        AZ_UNUSED(oldWaypoints);
     }
 
     void NodeGraphWidget::ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset,

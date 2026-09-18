@@ -54,6 +54,25 @@ namespace EMStudio
         bool CheckIfIsCloseToHead(const QPoint& point) const override;
         bool CheckIfIsCloseToTail(const QPoint& point) const override;
 
+        // Builds the routed path in graph space, from the clipped source point through every waypoint to the clipped target point.
+        void CalcPolyline(AZStd::vector<QPoint>& outPoints) const;
+
+        // Returns the point halfway along the routed path, which is where a new waypoint goes by default.
+        QPoint CalcPathMidpoint() const;
+
+        // Returns the index of the waypoint handle under the given point, or InvalidIndex when none is hit.
+        size_t FindWaypoint(const QPoint& point) const;
+
+        // Returns the index of the waypoint nearest the given point regardless of distance, or InvalidIndex when there are none.
+        size_t FindClosestWaypoint(const QPoint& point) const;
+
+        // Returns the index at which a new waypoint has to be inserted so it splits the path segment closest to the given point.
+        size_t CalcWaypointInsertIndex(const QPoint& point) const;
+
+        void RenderWaypoints(QPainter& painter, QBrush& brush, QPen& pen, const QColor& color) const;
+
+        static constexpr int s_waypointRadius = 4;
+
         uint32 GetType() const override                     { return TYPE_ID; }
 
         EMotionFX::AnimGraphTransitionCondition* FindCondition(const QPoint& mousePos);
@@ -65,12 +84,24 @@ namespace EMStudio
             const QColor& color, const QColor& activeColor,
             bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator);
 
+        static void RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
+            const QPoint* points, size_t pointCount,
+            const QColor& color, const QColor& activeColor,
+            bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator);
+
         static void RenderInterruptedTransitions(QPainter& painter, EMStudio::AnimGraphModel& animGraphModel, EMStudio::NodeGraph& nodeGraph);
 
     private:
-        void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end);
+        void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, const EMotionFX::AnimGraphStateTransition* transition,
+            QPainter* painter, QPen* pen, QBrush* brush, const QPoint* points, size_t pointCount);
+
+        const EMotionFX::AnimGraphStateTransition* GetTransition() const;
+        void CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const;
 
         bool m_isWildcardConnection;
+
+        // Reused across frames so the render and hit-test paths stay free of per-frame allocations.
+        mutable AZStd::vector<QPoint> m_pathScratch;
     };
 
 
