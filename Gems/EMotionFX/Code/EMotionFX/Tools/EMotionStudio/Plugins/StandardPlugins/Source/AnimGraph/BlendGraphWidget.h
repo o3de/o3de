@@ -101,6 +101,7 @@ namespace EMStudio
         void OnVisualizeToggle(GraphNode* node, bool visualizeEnabled) override;
         void OnEnabledToggle(GraphNode* node, bool enabled) override;
         void OnSetupVisualizeOptions(GraphNode* node) override;
+        void CommitTransitionWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints) override;
         void ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset, GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode) override;
 
         void OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset) override;
@@ -130,6 +131,9 @@ namespace EMStudio
 
         bool CanInsertRerouteOnSelectedConnections();
         void InsertRerouteOnSelectedConnections();
+
+        bool CanRemoveRerouteFromSelection();
+        void RemoveRerouteFromSelection();
 
     protected:
         void dropEvent(QDropEvent* event) override;
@@ -170,6 +174,15 @@ namespace EMStudio
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
+        bool CanInsertWaypointOnSelectedTransitions() const;
+        void InsertWaypointOnSelectedTransitions();
+        void InsertTransitionWaypoint(StateConnection* connection, const QPoint& position);
+        void RemoveTransitionWaypoint(StateConnection* connection, size_t waypointIndex);
+        void RemoveAllTransitionWaypoints(StateConnection* connection);
+        bool CanRemoveWaypointFromSelectedTransitions() const;
+        void RemoveWaypointFromSelectedTransitions();
+        bool CanDissolveSelectedRerouteNodes() const;
+        void DissolveSelectedRerouteNodes();
         void InsertRerouteOnConnection(NodeConnection* connection);
         bool CanInsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections) const;
         void InsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections, const QPoint& position);

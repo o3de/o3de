@@ -300,6 +300,16 @@ namespace EMStudio
             m_parentPlugin->GetGraphWidget(),
             &BlendGraphWidget::InsertRerouteOnSelectedConnections);
 
+        m_actions[EDIT_REMOVE_REROUTE] = new QAction(tr("Remove Reroute From Selection"), this);
+        m_actions[EDIT_REMOVE_REROUTE]->setShortcut(0x0 | Qt::Key_R | Qt::ShiftModifier);
+        shortcutManager->RegisterKeyboardShortcut(
+            m_actions[EDIT_REMOVE_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(
+            m_actions[EDIT_REMOVE_REROUTE],
+            &QAction::triggered,
+            m_parentPlugin->GetGraphWidget(),
+            &BlendGraphWidget::RemoveRerouteFromSelection);
+
         for (QAction* action : m_actions)
         {
             action->setShortcutContext(Qt::WidgetShortcut);
@@ -539,10 +549,11 @@ namespace EMStudio
         SetOptionEnabled(EDIT_COPY, actionFilter.m_copyAndPaste && anySelection);
         SetOptionEnabled(EDIT_PASTE, actionFilter.m_copyAndPaste && isEditable && m_parentPlugin->GetActionManager().GetIsReadyForPaste());
         SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
+        // The action filter this needs depends on the graph type, so the graph widget decides it.
         SetOptionEnabled(
-            EDIT_REROUTE,
-            actionFilter.m_createNodes && actionFilter.m_delete && isEditable &&
-                m_parentPlugin->GetGraphWidget()->CanInsertRerouteOnSelectedConnections());
+            EDIT_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanInsertRerouteOnSelectedConnections());
+        SetOptionEnabled(
+            EDIT_REMOVE_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanRemoveRerouteFromSelection());
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)

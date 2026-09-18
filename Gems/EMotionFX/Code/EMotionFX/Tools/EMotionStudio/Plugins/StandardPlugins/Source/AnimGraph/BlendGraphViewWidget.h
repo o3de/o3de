@@ -83,6 +83,7 @@ namespace EMStudio
             EDIT_PASTE,
             EDIT_DELETE,
             EDIT_REROUTE,
+            EDIT_REMOVE_REROUTE,
 
             NUM_OPTIONS //automatically gets the next number assigned
         };

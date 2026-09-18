@@ -40,6 +40,7 @@
 #include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 // qt includes
+#include <QCursor>
 #include <QDropEvent>
 #include <QMessageBox>
 #include <QMimeData>
@@ -486,6 +487,11 @@ namespace EMStudio
     bool BlendGraphWidget::CheckIfIsStateMachine()
     {
         NodeGraph* nodeGraph = GetActiveGraph();
+        if (!nodeGraph)
+        {
+            return false;
+        }
+
         const QModelIndex modelIndex = nodeGraph->GetModelIndex();
         const EMotionFX::AnimGraphNode* animGraphNode = modelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
         return (azrtti_typeid(animGraphNode) == azrtti_typeid<EMotionFX::AnimGraphStateMachine>());
@@ -566,7 +572,8 @@ namespace EMStudio
         // Early out in case we're adjusting or creating a new connection. Elsewise the user can open the context menu and
         // delete selected nodes while creating a new connection.
         if (nodeGraph->GetIsCreatingConnection() || nodeGraph->GetIsRelinkingConnection() ||
-            nodeGraph->GetRepositionedTransitionHead() || nodeGraph->GetRepositionedTransitionTail())
+            nodeGraph->GetRepositionedTransitionHead() || nodeGraph->GetRepositionedTransitionTail() ||
+            nodeGraph->GetIsRepositioningWaypoint())
         {
             return;
         }
@@ -618,6 +625,53 @@ namespace EMStudio
                 {
                     QAction* disableConnectionAction = menu.addAction(tr("Disable transition%1").arg(pluralPostfix));
                     connect(disableConnectionAction, &QAction::triggered, this, &BlendGraphWidget::DisableSelectedTransitions);
+                }
+
+                if (actionFilter.m_editConnections &&
+                    selectedConnections.size() == 1 &&
+                    selectedConnections[0]->GetType() == StateConnection::TYPE_ID &&
+                    !selectedConnections[0]->GetIsWildcardTransition() &&
+                    !m_activeGraph->IsInReferencedGraph())
+                {
+                    StateConnection* stateConnection = static_cast<StateConnection*>(selectedConnections[0]);
+                    const EMotionFX::AnimGraphStateTransition* waypointTransition = FindTransitionForConnection(stateConnection);
+                    const size_t hitWaypoint = stateConnection->FindWaypoint(globalPos);
+
+                    // Adding on top of an existing handle would stack the two, so only offer it elsewhere on the line.
+                    if (hitWaypoint == InvalidIndex)
+                    {
+                        QAction* addWaypointAction = menu.addAction(tr("Add waypoint"));
+                        connect(addWaypointAction, &QAction::triggered, this,
+                            [this, stateConnection, globalPos]()
+                            {
+                                InsertTransitionWaypoint(stateConnection, SnapLocalToGrid(globalPos));
+                            });
+                    }
+
+                    if (waypointTransition && waypointTransition->GetNumWaypoints() > 0)
+                    {
+                        // Take the handle under the mouse when there is one, otherwise the nearest, so the entry always does something.
+                        const size_t removeIndex = hitWaypoint != InvalidIndex
+                            ? hitWaypoint
+                            : stateConnection->FindClosestWaypoint(globalPos);
+
+                        QAction* removeWaypointAction = menu.addAction(tr("Remove waypoint"));
+                        connect(removeWaypointAction, &QAction::triggered, this,
+                            [this, stateConnection, removeIndex]()
+                            {
+                                RemoveTransitionWaypoint(stateConnection, removeIndex);
+                            });
+
+                        if (waypointTransition->GetNumWaypoints() > 1)
+                        {
+                            QAction* removeAllWaypointsAction = menu.addAction(tr("Remove all waypoints"));
+                            connect(removeAllWaypointsAction, &QAction::triggered, this,
+                                [this, stateConnection]()
+                                {
+                                    RemoveAllTransitionWaypoints(stateConnection);
+                                });
+                        }
+                    }
                 }
 
                 if (actionFilter.m_copyAndPaste &&
@@ -1020,14 +1074,103 @@ namespace EMStudio
 
     bool BlendGraphWidget::CanInsertRerouteOnSelectedConnections()
     {
-        return m_activeGraph && !m_activeGraph->IsInReferencedGraph() && !CheckIfIsStateMachine() &&
+        if (!m_activeGraph || m_activeGraph->IsInReferencedGraph())
+        {
+            return false;
+        }
+
+        const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
+
+        // A state machine transition cannot hold a pass-through node, so it gets a visual bend point instead.
+        if (CheckIfIsStateMachine())
+        {
+            return actionFilter.m_editConnections && CanInsertWaypointOnSelectedTransitions();
+        }
+
+        return actionFilter.m_createNodes && actionFilter.m_delete &&
             CanInsertRerouteOnConnections(m_activeGraph->GetSelectedNodeConnections());
+    }
+
+    bool BlendGraphWidget::CanInsertWaypointOnSelectedTransitions() const
+    {
+        const AZStd::vector<NodeConnection*> connections = m_activeGraph->GetSelectedNodeConnections();
+        if (connections.empty())
+        {
+            return false;
+        }
+
+        for (NodeConnection* connection : connections)
+        {
+            if (connection->GetType() != StateConnection::TYPE_ID || connection->GetIsWildcardTransition() ||
+                !FindTransitionForConnection(connection))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void BlendGraphWidget::InsertWaypointOnSelectedTransitions()
+    {
+        const AZStd::vector<NodeConnection*> connections = m_activeGraph->GetSelectedNodeConnections();
+
+        MCore::CommandGroup commandGroup(connections.size() == 1 ? "Add transition waypoint" : "Add transition waypoints");
+        commandGroup.SetContinueAfterError(false);
+        commandGroup.SetReturnFalseAfterError(true);
+
+        for (NodeConnection* connection : connections)
+        {
+            if (connection->GetType() != StateConnection::TYPE_ID)
+            {
+                continue;
+            }
+
+            StateConnection* stateConnection = static_cast<StateConnection*>(connection);
+            EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+            if (!transition)
+            {
+                continue;
+            }
+
+            QPoint position = SnapLocalToGrid(stateConnection->CalcPathMidpoint());
+
+            // Nudge the new bend point off any handle already sitting there, so both stay separately grabbable.
+            for (size_t i = 0; i <= transition->GetNumWaypoints(); ++i)
+            {
+                if (stateConnection->FindWaypoint(position) == InvalidIndex)
+                {
+                    break;
+                }
+
+                position += QPoint(aznumeric_cast<int>(s_snapCellSize), aznumeric_cast<int>(s_snapCellSize));
+            }
+
+            const size_t insertIndex = stateConnection->CalcWaypointInsertIndex(position);
+            AZStd::vector<AZ::Vector2> waypoints = transition->GetWaypoints();
+            waypoints.insert(waypoints.begin() + insertIndex,
+                AZ::Vector2(aznumeric_cast<float>(position.x()), aznumeric_cast<float>(position.y())));
+
+            CommandSystem::AdjustTransitionWaypoints(transition, waypoints, &commandGroup);
+        }
+
+        AZStd::string result;
+        if (!GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, "%s", result.c_str());
+        }
     }
 
     void BlendGraphWidget::InsertRerouteOnSelectedConnections()
     {
         if (!CanInsertRerouteOnSelectedConnections())
         {
+            return;
+        }
+
+        if (CheckIfIsStateMachine())
+        {
+            InsertWaypointOnSelectedTransitions();
             return;
         }
 
@@ -1405,12 +1548,14 @@ namespace EMStudio
         // Do not allow to delete nodes or connections when creating or relinking connections or transitions.
         // In this case the delete operation will cancel the create or relink operation.
         if (nodeGraph->GetIsCreatingConnection() || nodeGraph->GetIsRelinkingConnection() ||
-            nodeGraph->GetRepositionedTransitionHead() || nodeGraph->GetRepositionedTransitionTail())
+            nodeGraph->GetRepositionedTransitionHead() || nodeGraph->GetRepositionedTransitionTail() ||
+            nodeGraph->GetIsRepositioningWaypoint())
         {
             nodeGraph->StopCreateConnection();
             nodeGraph->StopRelinkConnection();
             nodeGraph->StopReplaceTransitionHead();
             nodeGraph->StopReplaceTransitionTail();
+            nodeGraph->StopRepositionWaypoint();
             return;
         }
 
@@ -1931,6 +2076,200 @@ namespace EMStudio
         return NodeGraphWidget::event(event);
     }
 
+
+    void BlendGraphWidget::InsertTransitionWaypoint(StateConnection* connection, const QPoint& position)
+    {
+        EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+        if (!transition)
+        {
+            return;
+        }
+
+        // The insert index has to be taken from the path as it is now, so the new bend point splits the segment under the mouse.
+        const size_t insertIndex = connection->CalcWaypointInsertIndex(position);
+        AZStd::vector<AZ::Vector2> waypoints = transition->GetWaypoints();
+        waypoints.insert(waypoints.begin() + insertIndex,
+            AZ::Vector2(aznumeric_cast<float>(position.x()), aznumeric_cast<float>(position.y())));
+
+        CommandSystem::AdjustTransitionWaypoints(transition, waypoints);
+    }
+
+    void BlendGraphWidget::RemoveTransitionWaypoint(StateConnection* connection, size_t waypointIndex)
+    {
+        EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+        if (!transition || waypointIndex >= transition->GetNumWaypoints())
+        {
+            return;
+        }
+
+        AZStd::vector<AZ::Vector2> waypoints = transition->GetWaypoints();
+        waypoints.erase(waypoints.begin() + waypointIndex);
+
+        CommandSystem::AdjustTransitionWaypoints(transition, waypoints);
+    }
+
+    void BlendGraphWidget::RemoveAllTransitionWaypoints(StateConnection* connection)
+    {
+        EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+        if (!transition || transition->GetWaypoints().empty())
+        {
+            return;
+        }
+
+        CommandSystem::AdjustTransitionWaypoints(transition, AZStd::vector<AZ::Vector2>());
+    }
+
+    bool BlendGraphWidget::CanRemoveRerouteFromSelection()
+    {
+        if (!m_activeGraph || m_activeGraph->IsInReferencedGraph())
+        {
+            return false;
+        }
+
+        const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
+
+        // The counterpart of inserting a reroute: a bend point in a state machine, a pass-through node in a blend tree.
+        if (CheckIfIsStateMachine())
+        {
+            return actionFilter.m_editConnections && CanRemoveWaypointFromSelectedTransitions();
+        }
+
+        return actionFilter.m_editNodes && actionFilter.m_delete && CanDissolveSelectedRerouteNodes();
+    }
+
+    void BlendGraphWidget::RemoveRerouteFromSelection()
+    {
+        if (!CanRemoveRerouteFromSelection())
+        {
+            return;
+        }
+
+        if (CheckIfIsStateMachine())
+        {
+            RemoveWaypointFromSelectedTransitions();
+            return;
+        }
+
+        DissolveSelectedRerouteNodes();
+    }
+
+    bool BlendGraphWidget::CanDissolveSelectedRerouteNodes() const
+    {
+        const AZStd::vector<EMotionFX::AnimGraphNode*> selectedNodes = m_activeGraph->GetSelectedAnimGraphNodes();
+        for (EMotionFX::AnimGraphNode* node : selectedNodes)
+        {
+            if (CanDissolveRerouteNode(node))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void BlendGraphWidget::DissolveSelectedRerouteNodes()
+    {
+        // Dissolved one at a time on purpose: a chain of reroutes rewires by node name, so each step has to
+        // see the graph the previous one left behind rather than batch into a single command group.
+        const AZStd::vector<EMotionFX::AnimGraphNode*> selectedNodes = m_activeGraph->GetSelectedAnimGraphNodes();
+        for (EMotionFX::AnimGraphNode* node : selectedNodes)
+        {
+            DissolveRerouteNode(node);
+        }
+    }
+
+    bool BlendGraphWidget::CanRemoveWaypointFromSelectedTransitions() const
+    {
+        const AZStd::vector<NodeConnection*> connections = m_activeGraph->GetSelectedNodeConnections();
+        if (connections.empty())
+        {
+            return false;
+        }
+
+        // One selected transition carrying a waypoint is enough for the action to have something to do.
+        for (NodeConnection* connection : connections)
+        {
+            if (connection->GetType() != StateConnection::TYPE_ID)
+            {
+                return false;
+            }
+
+            const EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+            if (transition && transition->GetNumWaypoints() > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void BlendGraphWidget::RemoveWaypointFromSelectedTransitions()
+    {
+        const AZStd::vector<NodeConnection*> connections = m_activeGraph->GetSelectedNodeConnections();
+
+        // Aim at the cursor when it is over the graph, so the handle being looked at is the one that goes.
+        const bool useMousePos = underMouse();
+        const QPoint mouseGlobalPos = LocalToGlobal(mapFromGlobal(QCursor::pos()));
+
+        MCore::CommandGroup commandGroup(connections.size() == 1 ? "Remove transition waypoint" : "Remove transition waypoints");
+        commandGroup.SetContinueAfterError(false);
+        commandGroup.SetReturnFalseAfterError(true);
+
+        for (NodeConnection* connection : connections)
+        {
+            if (connection->GetType() != StateConnection::TYPE_ID)
+            {
+                continue;
+            }
+
+            StateConnection* stateConnection = static_cast<StateConnection*>(connection);
+            EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+            if (!transition || transition->GetWaypoints().empty())
+            {
+                continue;
+            }
+
+            const size_t removeIndex = useMousePos
+                ? stateConnection->FindClosestWaypoint(mouseGlobalPos)
+                : transition->GetNumWaypoints() - 1;
+            if (removeIndex == InvalidIndex)
+            {
+                continue;
+            }
+
+            AZStd::vector<AZ::Vector2> waypoints = transition->GetWaypoints();
+            waypoints.erase(waypoints.begin() + removeIndex);
+
+            CommandSystem::AdjustTransitionWaypoints(transition, waypoints, &commandGroup);
+        }
+
+        AZStd::string result;
+        if (!GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
+        {
+            AZ_Error("EMotionFX", false, "%s", result.c_str());
+        }
+    }
+
+    void BlendGraphWidget::CommitTransitionWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    {
+        EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection);
+        if (!transition)
+        {
+            return;
+        }
+
+        const AZStd::vector<AZ::Vector2> newWaypoints = transition->GetWaypoints();
+        if (newWaypoints == oldWaypoints)
+        {
+            return;
+        }
+
+        // Reset the visual transition before calling the actual command so that undo captures the right previous values.
+        transition->SetWaypoints(oldWaypoints);
+
+        CommandSystem::AdjustTransitionWaypoints(transition, newWaypoints);
+    }
 
     void BlendGraphWidget::ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset, GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode)
     {

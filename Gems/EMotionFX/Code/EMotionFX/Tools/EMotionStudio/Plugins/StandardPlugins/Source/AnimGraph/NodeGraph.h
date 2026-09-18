@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/Math/Vector2.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 
@@ -83,6 +84,14 @@ namespace EMStudio
         void SetReplaceTransitionValid(bool isValid)                        { m_replaceTransitionValid = isValid; }
         bool GetReplaceTransitionValid() const                              { return m_replaceTransitionValid; }
         void RenderReplaceTransition(QPainter& painter);
+
+        bool GetIsRepositioningWaypoint() const                             { return (m_waypointConnection != nullptr); }
+        NodeConnection* GetRepositionedWaypointConnection() const           { return m_waypointConnection; }
+        size_t GetRepositionedWaypointIndex() const                         { return m_waypointIndex; }
+        const AZStd::vector<AZ::Vector2>& GetRepositionedWaypointOldValues() const { return m_waypointOldValues; }
+
+        void StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints);
+        void StopRepositionWaypoint();
 
         GraphNode* GetCreateConnectionNode() const;
         NodeConnection* GetRelinkConnection()                  { return m_relinkConnection; }
@@ -228,6 +237,10 @@ namespace EMStudio
         GraphNode*                  m_replaceTransitionSourceNode;
         GraphNode*                  m_replaceTransitionTargetNode;
         bool                        m_replaceTransitionValid;
+
+        NodeConnection*             m_waypointConnection; // nullptr when not dragging a transition waypoint
+        size_t                      m_waypointIndex;
+        AZStd::vector<AZ::Vector2>  m_waypointOldValues;
 
         QPen                        m_subgridPen;
         QPen                        m_gridPen;

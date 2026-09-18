@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/optional.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -95,6 +96,11 @@ namespace CommandSystem
         const AZStd::optional<AZ::s32>& startOffsetX = AZStd::nullopt, const AZStd::optional<AZ::s32>& startOffsetY = AZStd::nullopt,
         const AZStd::optional<AZ::s32>& endOffsetX = AZStd::nullopt, const AZStd::optional<AZ::s32>& endOffsetY = AZStd::nullopt,
         const AZStd::optional<AZStd::string>& attributesString = AZStd::nullopt, const AZStd::optional<AZStd::string>& serializedMembers = AZStd::nullopt,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+
+    // Replace the visual bend points of a transition. The waypoints are purely visual, the state machine ignores them.
+    void AdjustTransitionWaypoints(const EMotionFX::AnimGraphStateTransition* transition,
+        const AZStd::vector<AZ::Vector2>& waypoints,
         MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
 
     class CommandAnimGraphAdjustTransition
