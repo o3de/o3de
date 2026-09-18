@@ -213,6 +213,7 @@ namespace WhiteBox
         // Mirror the just-written working state into the layer it belongs to so the serialized
         // layer list always reflects the latest edits.
         StoreLayer(m_layerRuntime.m_loadedIndex);
+        m_rebuild.m_workingMeshUnwritten = false;
     }
 
     void EditorWhiteBoxComponent::ExportToFile()

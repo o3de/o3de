@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/WhiteBox/Icons">
+    <file alias="Draw.svg">../../../Assets/Editor/Icons/Toolbar/Draw.svg</file>
+    <file alias="VertexPaint.svg">../../../Assets/Editor/Icons/Toolbar/VertexPaint.svg</file>
+  </qresource>
+</RCC>

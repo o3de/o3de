@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ
@@ -67,5 +68,14 @@ namespace WhiteBox
 
     //! Builds a vector of visible faces by removing the degenerate faces from the source data
     WhiteBoxFaces BuildCulledWhiteBoxFaces(const WhiteBoxFaces& sourceData);
+
+    //! Packs render data sets into one byte blob, so serialization is a single string rather than a
+    //! prefab DOM node per triangle.
+    AZStd::vector<AZ::u8> PackWhiteBoxRenderData(const AZStd::vector<const WhiteBoxRenderData*>& renderDataSets);
+
+    //! Unpacks a blob produced by PackWhiteBoxRenderData into @p renderDataSets, in the packed order.
+    //! Sets beyond the blob's contents (and every set when the blob is empty or malformed) are cleared.
+    bool UnpackWhiteBoxRenderData(
+        const AZStd::vector<AZ::u8>& blob, const AZStd::vector<WhiteBoxRenderData*>& renderDataSets);
 
 } // namespace WhiteBox

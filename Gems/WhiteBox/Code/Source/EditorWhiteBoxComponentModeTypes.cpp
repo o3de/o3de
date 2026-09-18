@@ -16,11 +16,13 @@ namespace WhiteBox
 {
     void DrawEdges(
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color,
-        const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle, const Api::EdgeHandles& excludedEdgeHandles)
+        const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle, const Api::EdgeHandles& excludedEdgeHandles,
+        AZStd::vector<AZ::Vector3>& lineBuffer)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        debugDisplay.SetColor(color);
+        lineBuffer.clear(); // keeps the capacity, so a steady state costs no allocation
+        lineBuffer.reserve(edgeBoundsWithHandle.size() * 2);
         for (const EdgeBoundWithHandle& edge : edgeBoundsWithHandle)
         {
             // if any of the edges in edgeBoundsWithHandle match
@@ -35,7 +37,14 @@ namespace WhiteBox
                 continue;
             }
 
-            debugDisplay.DrawLine(edge.m_bound.m_start, edge.m_bound.m_end);
+            lineBuffer.push_back(edge.m_bound.m_start);
+            lineBuffer.push_back(edge.m_bound.m_end);
+        }
+
+        if (!lineBuffer.empty())
+        {
+            debugDisplay.SetColor(color);
+            debugDisplay.DrawLines(lineBuffer, color);
         }
     }
 } // namespace WhiteBox

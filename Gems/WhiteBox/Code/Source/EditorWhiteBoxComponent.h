@@ -12,6 +12,7 @@
 
 #include "Rendering/WhiteBoxMaterial.h"
 #include "Rendering/WhiteBoxRenderData.h"
+#include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
 #include <AzCore/Component/NonUniformScaleBus.h>
@@ -39,6 +40,10 @@
 
 namespace WhiteBox
 {
+    //! Tube Sides used to be derived from the shape's side count. Data written before it became its
+    //! own parameter is migrated through this so existing tori keep the tessellation they had.
+    int LegacyTubeSidesFromSides(int sides);
+
     class EditorWhiteBoxMeshAsset;
     class RenderMeshInterface;
 
@@ -107,6 +112,8 @@ namespace WhiteBox
         FacePaintSettings GetFacePaintSettings() const { return m_facePaintSettings; }
         void SetFacePaintSettings(const FacePaintSettings& settings) { m_facePaintSettings = settings; }
         int GetDrawSides() override { return m_drawShapeData.m_sides; }
+        float GetDrawHoleRatio() override { return m_drawShapeData.m_holeRatio; }
+        int GetDrawTubeSides() override { return m_drawShapeData.m_tubeSides; }
         DrawShapeType GetDrawShape() override { return m_drawShapeData.m_shape; }
         DrawStairInfo GetDrawStairInfo() override
         {
@@ -242,6 +249,11 @@ namespace WhiteBox
             m_drawShapeData.OnShapeChange(); // resets Draw Sides to a sensible default for the shape
         }
         void SetDrawSides(int sides) { m_drawShapeData.m_sides = AZStd::clamp(sides, 3, 128); }
+        void SetDrawHoleRatio(float ratio) { m_drawShapeData.m_holeRatio = AZStd::clamp(ratio, 0.05f, 0.95f); }
+        void SetDrawTubeSides(int tubeSides)
+        {
+            m_drawShapeData.m_tubeSides = AZStd::clamp(tubeSides, MinTubeSides, MaxTubeSides);
+        }
         void SetDrawStairInfo(const DrawStairInfo& info)
         {
             m_drawShapeData.m_stair.m_steps = info.m_steps;
@@ -300,11 +312,19 @@ namespace WhiteBox
             float m_height = 1.0f; //!< Full extent along local Z (a tall sphere makes a bullet). Room: INTERIOR height.
             int m_sides = 4;       //!< Side count (round shapes) / sphere subdivision.
             int m_steps = 8;       //!< Staircase step count.
+            bool m_stepsByHeight = false;
+            float m_stepHeight = 0.25f; //!< Target riser height; count is rounded to fit the total height.
             // Room-only parameters (ignored by the other shapes).
             float m_wallThickness = 0.15f; //!< Thickness of EACH wall leaf (inner and outer).
             float m_cavityGap = 0.1f;      //!< Empty gap between the inner and outer wall leaves (double wall).
             bool m_floor = true;           //!< Add a floor slab beneath the interior.
             bool m_ceiling = false;        //!< Add a ceiling slab above the interior.
+            bool m_doorFrame = true;       //!< Open frame instead of a solid door panel.
+            float m_archHeight = 0.0f;     //!< Rise of the door arch; zero gives a rectangular door.
+            float m_innerRadius = 0.5f;    //!< Circular stairs: radius of the central opening.
+            float m_sweepAngle = 270.0f;   //!< Circular stairs: counterclockwise sweep in degrees.
+            float m_holeRatio = 0.5f;      //!< Pipe/torus hole diameter divided by outer diameter.
+            int m_tubeSides = DefaultTubeSides; //!< Torus: segments around the tube's cross-section.
         };
         //! Append a new PARAMETRIC layer generating @p shape (made active). Returns its index.
         int AddParametricShapeLayer(DrawShapeType shape);
@@ -315,6 +335,9 @@ namespace WhiteBox
         ShapeParams GetLayerShapeParams(int index) const;
         //! Write new shape parameters and regenerate the layer's mesh (live rebuild).
         void SetLayerShapeParams(int index, const ShapeParams& params);
+        //! SetLayerShapeParams for intermediate drag values: the mesh updates now, the stream write, cook and
+        //! bake wait. Follow up with SetLayerShapeParams (in an undo batch) when the value settles.
+        void SetLayerShapeParamsPreview(int index, const ShapeParams& params);
         //! Freeze a parametric layer into an ordinary mesh layer (enables vertex editing;
         //! the shape parameters stop driving it).
         void BakeParametricLayer(int index);
@@ -506,6 +529,10 @@ namespace WhiteBox
 
             DrawShapeType m_shape = DrawShapeType::Box; //!< Shape the Draw Shape tool builds.
             int m_sides = 4;        //!< Side count the Draw Shape tool uses for round / N-gon shapes (4 = box/square).
+            float m_holeRatio = 0.5f;
+            int m_tubeSides = DefaultTubeSides; //!< Torus tube tessellation (independent of m_sides).
+            //! Tube Sides only means anything for a torus.
+            AZ::Crc32 TubeSidesVisibility() const;
             DrawStairData m_stair;  //!< Staircase-specific settings.
             bool m_carve = false;           //!< Draw acts as a CSG boolean (same as holding Ctrl).
             bool m_mergeUnion = false;      //!< Committing a drawn shape CSG-unions it into the mesh.
@@ -550,11 +577,19 @@ namespace WhiteBox
             float m_paramHeight = 1.0f; //!< Full extent along local Z.
             int m_paramSides = 4;       //!< Side count (round shapes) / sphere subdivision.
             int m_paramSteps = 8;       //!< Staircase step count.
+            bool m_paramStepsByHeight = false;
+            float m_paramStepHeight = 0.25f;
             // Room-only parameters (m_paramShape == DrawShapeType::Room).
             float m_paramWallThickness = 0.15f; //!< Thickness of each wall leaf.
             float m_paramCavityGap = 0.1f;      //!< Gap between the inner and outer wall leaves.
             bool m_paramFloor = true;           //!< Generate a floor slab.
             bool m_paramCeiling = false;        //!< Generate a ceiling slab.
+            bool m_paramDoorFrame = true;
+            float m_paramArchHeight = 0.0f;
+            float m_paramInnerRadius = 0.5f;
+            float m_paramSweepAngle = 270.0f;
+            float m_paramHoleRatio = 0.5f;
+            int m_paramTubeSides = DefaultTubeSides;
 
             Api::WhiteBoxMeshStream m_freeformData;   //!< Serialized freeform (drawable) mesh.
             Api::WhiteBoxMeshStream m_gridData;       //!< Serialized stamped-cube grid mesh.
@@ -572,6 +607,11 @@ namespace WhiteBox
             float m_physicsTimer = 0.0f;
             bool m_bakedDataDirty = false;     //!< Game-mode bake caches need recomputing (debounced).
             float m_bakedDataDelay = 0.0f;
+            //! A streaming edit (slider/spin-box drag) is in flight: skip work that only the serialized
+            //! state needs, since a committing rebuild always follows once the value settles.
+            bool m_streaming = false;
+            //! A preview replaced the working mesh without writing it back; the debounce tick flushes it.
+            bool m_workingMeshUnwritten = false;
         };
 
         //! Runtime layer bookkeeping (never serialized): which layer the working members hold,
@@ -656,8 +696,15 @@ namespace WhiteBox
         //! Ensure the per-cell size array (m_voxel.m_sizes) is consistent with m_voxel.m_cells,
         //! migrating legacy data that only stored a single baked size (m_voxel.m_legacySize).
         void NormalizeVoxelData();
-        //! Regenerate a parametric layer's mesh from its shape parameters, then rebuild.
-        void RegenerateParametricLayer(int index);
+        //! Clamp @p params into the layer's valid ranges and store them. Returns false (and changes
+        //! nothing) when @p index is not a parametric layer.
+        bool StoreLayerShapeParams(int index, const ShapeParams& params);
+        //! Regenerate a parametric layer from its parameters and rebuild. With @p commit false (a preview)
+        //! the stream write, cook and bake are deferred.
+        void RegenerateParametricLayer(int index, bool commit = true);
+        //! RebuildWhiteBox without the synchronous collider cook and game-mode bake - both are queued
+        //! on m_rebuild and run from OnTick once the edits stop arriving. For streaming edits only.
+        void RebuildWhiteBoxDeferred();
 
         //! The mesh used for RENDER / collision / bounds / selection. In live
         //! (non-destructive) boolean mode this is the evaluated result; otherwise
@@ -754,6 +801,9 @@ namespace WhiteBox
         bool m_useGlobalTint = true; //!< When set, every layer renders with the global material tint; otherwise each layer uses its own tint.
         AZ::Data::AssetId m_materialOverrideAssetId; //!< External material asset override (invalid = built-in material).
         FacePaintSettings m_facePaintSettings; //!< Transient brush settings, not scene data.
+        //! Scratch storage for the batched viewport debug lines, kept so drawing does not reallocate
+        //! every frame. Never serialized; contents are meaningless between draws.
+        AZStd::vector<AZ::Vector3> m_debugLineBuffer;
 
 
 
@@ -789,6 +839,19 @@ namespace WhiteBox
         //! The collision-filtered physics data has been baked, so an empty bake means collision off rather
         //! than legacy data. Serialized for the game build.
         bool m_physicsBaked = false;
+        //! m_renderData and the bake caches as byte streams: reflected face vectors put every triangle
+        //! in the undo system's prefab DOM, which made dense meshes crawl.
+        AZStd::vector<AZ::u8> m_renderDataBlob;
+        AZStd::vector<AZ::u8> m_bakedDataBlob;
+        //! Refresh the blobs above from the live render data. Called wherever that data is rebuilt, so
+        //! whatever the undo system or a level save serializes next is current.
+        void PackRenderDataBlob();
+        void PackBakedDataBlob();
+        //! Restore the live render data from the serialized blobs (on load, undo and redo).
+        void UnpackRenderDataBlobs();
+        //! UnpackRenderDataBlobs, but only when the live render data is empty and a blob is not - for
+        //! the game-entity build, which can run on a clone that was never activated.
+        void EnsureRenderDataUnpacked();
         //! Re-evaluates this component's live boolean when the source entity moves.
         struct BooleanSourceListener : public AZ::TransformNotificationBus::Handler
         {

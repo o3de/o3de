@@ -37,6 +37,7 @@ class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 class QSpinBox;
+class QTimer;
 
 namespace AzToolsFramework { class PropertyAssetCtrl; }
 
@@ -195,6 +196,9 @@ namespace WhiteBox
         QDoubleSpinBox* m_shapeParamHeight = nullptr;
         QSpinBox* m_shapeParamSides = nullptr;
         QSpinBox* m_shapeParamSteps = nullptr;
+        QCheckBox* m_shapeParamStepsByHeight = nullptr;
+        QDoubleSpinBox* m_shapeParamStepHeight = nullptr;
+        QLabel* m_shapeParamStepHeightLabel = nullptr;
         QLabel* m_shapeParamSidesLabel = nullptr;
         QLabel* m_shapeParamStepsLabel = nullptr;
         // Room-only shape parameters.
@@ -202,10 +206,23 @@ namespace WhiteBox
         QDoubleSpinBox* m_shapeParamCavityGap = nullptr;
         QCheckBox* m_shapeParamFloor = nullptr;
         QCheckBox* m_shapeParamCeiling = nullptr;
+        QCheckBox* m_shapeParamDoorFrame = nullptr;
+        QDoubleSpinBox* m_shapeParamArchHeight = nullptr;
+        QDoubleSpinBox* m_shapeParamInnerRadius = nullptr;
+        QDoubleSpinBox* m_shapeParamSweepAngle = nullptr;
+        QDoubleSpinBox* m_shapeParamHoleRatio = nullptr;
+        QSpinBox* m_shapeParamTubeSides = nullptr;
+        QLabel* m_shapeParamTubeSidesLabel = nullptr;
         QLabel* m_shapeParamWallThicknessLabel = nullptr;
         QLabel* m_shapeParamCavityGapLabel = nullptr;
         QPushButton* m_bakeShapeButton = nullptr;
         QGroupBox* m_shapeParamsGroup = nullptr;
+        //! Restarted by every shape spin-box change; the commit (cook, bake, undo step) waits for it.
+        QTimer* m_shapeParamCommitTimer = nullptr;
+        //! A preview has been applied to the component but not yet committed inside an undo batch, and
+        //! the layer row it was applied to (the commit uses it, in case the selection moved meanwhile).
+        bool m_shapeParamsPendingCommit = false;
+        int m_shapeParamsPendingRow = -1;
         QPushButton* m_gizmoOff = nullptr;
         QPushButton* m_gizmoMove = nullptr;
         QPushButton* m_gizmoRotate = nullptr;
@@ -225,6 +242,10 @@ namespace WhiteBox
         // Draw Shape section.
         QComboBox* m_drawShapeCombo = nullptr;
         QSpinBox* m_drawSides = nullptr;
+        QDoubleSpinBox* m_drawHoleRatio = nullptr;
+        QLabel* m_drawHoleRatioLabel = nullptr;
+        QSpinBox* m_drawTubeSides = nullptr;
+        QLabel* m_drawTubeSidesLabel = nullptr;
         QCheckBox* m_stairByHeight = nullptr;
         QSpinBox* m_stairSteps = nullptr;
         QDoubleSpinBox* m_stairStepHeight = nullptr;

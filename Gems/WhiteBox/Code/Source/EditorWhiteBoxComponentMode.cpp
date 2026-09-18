@@ -15,7 +15,6 @@
 #include "Viewport/WhiteBoxViewportConstants.h"
 
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/sort.h>
@@ -39,7 +38,6 @@
 
 namespace WhiteBox
 {
-    constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
     constexpr AZStd::string_view WhiteBoxPaintSubModeIdentifier = "o3de.context.mode.whiteBox.vertexPaint";
 
     constexpr AZStd::string_view WhiteBoxDefaultSubModeIdentifier = "o3de.context.mode.whiteBox.default";
@@ -714,7 +712,8 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+            iconName[0] == ':' ? AZStd::string(iconName)
+                              : AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
     }
@@ -737,24 +736,14 @@ namespace WhiteBox
         // create and register the buttons
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
-        m_drawShapeModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "AddComponent");
-        m_paintModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
+        m_drawShapeModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, ":/WhiteBox/Icons/Draw.svg");
+        m_paintModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, ":/WhiteBox/Icons/VertexPaint.svg");
 
-        // temporary setting to disable this feature
-        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
-        {
-            bool hasTransformMode = false;
-            settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
-            if (hasTransformMode)
-            {
-                //TODO: this is a temporary icon
-                m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Align_to_Object");
-                AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                    AzToolsFramework::ViewportUi::DefaultViewportId,
-                    &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
-                    m_transformModeButtonId, WhiteboxModeClusterManipulatorTooltip);
-            }
-        }
+        m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Align_to_Object");
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+            m_transformModeButtonId, WhiteboxModeClusterManipulatorTooltip);
 
         // set button tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(

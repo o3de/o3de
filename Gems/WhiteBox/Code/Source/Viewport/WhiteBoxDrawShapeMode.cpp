@@ -16,12 +16,17 @@
 #include "Viewport/WhiteBoxViewportConstants.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Util/WhiteBoxSnapUtil.h"
+#include "Util/WhiteBoxMeshUtil.h"
 
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -97,6 +102,12 @@ namespace WhiteBox
         case DrawShapeType::Sphere:    return "Sphere";
         case DrawShapeType::Staircase: return "Staircase";
         case DrawShapeType::Room:      return "Room";
+        case DrawShapeType::Door:      return "Door";
+        case DrawShapeType::CircularStairs: return "Circular Stairs";
+        case DrawShapeType::Plane: return "Plane";
+        case DrawShapeType::Torus: return "Torus";
+        case DrawShapeType::Pipe: return "Pipe";
+        case DrawShapeType::Polygon: return "Freeform Polygon";
         default:                       return "Shape";
         }
     }
@@ -558,8 +569,16 @@ namespace WhiteBox
     void Detail::BuildShapeSolid(
         WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld,
         const AZ::Vector3& center, const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up,
-        const float baseUp, const float topUp, const DrawShapeType shapeType, const int sidesIn, const int steps)
+        const float baseUp, const float topUp, const DrawShapeType shapeType, const int sidesIn, const int steps,
+        const float holeRatio, const int tubeSides)
     {
+        if (shapeType == DrawShapeType::Plane || shapeType == DrawShapeType::Torus || shapeType == DrawShapeType::Pipe)
+        {
+            BuildAdditionalShape(
+                mesh, localFromWorld, center, uAxis, vAxis, up, baseUp, topUp, shapeType, sidesIn, holeRatio,
+                tubeSides);
+            return;
+        }
         // Sphere and Staircase have dedicated builders (not prism/pyramid based).
         if (shapeType == DrawShapeType::Sphere)
         {
@@ -928,6 +947,75 @@ namespace WhiteBox
         const bool  rightDown = mi.m_mouseButtons.Right() && mouseInteraction.m_mouseEvent == MouseEvent::Down;
         const bool  moved     = mouseInteraction.m_mouseEvent == MouseEvent::Move;
 
+        if (m_state == DrawState::DrawingPolygon && (CurrentShape() != DrawShapeType::Polygon || UnitCubeMode()))
+        {
+            Cancel();
+        }
+        if (!UnitCubeMode() && CurrentShape() == DrawShapeType::Polygon)
+        {
+            if (m_state != DrawState::Idle && m_state != DrawState::DrawingPolygon) { Cancel(); }
+            if (mi.m_keyboardModifiers.Alt()) { return false; }
+            if (rightDown)
+            {
+                const bool active = m_state != DrawState::Idle;
+                Cancel();
+                return active;
+            }
+            if (m_state == DrawState::Idle && leftDown)
+            {
+                AZ::Vector3 normal;
+                const auto hit = RaycastToSurface(mi, worldFromLocal, intersectionData, normal);
+                m_surfaceNormal = normal.IsZero() ? AZ::Vector3::CreateAxisZ() : normal.GetNormalized();
+                m_worldP0 = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId).value_or(hit);
+                m_worldP1 = m_worldP0;
+                m_polygonPoints = {m_worldP0};
+                m_polygonInvalid = false;
+                m_state = DrawState::DrawingPolygon;
+                return true;
+            }
+            if (m_state == DrawState::DrawingPolygon && (moved || leftDown))
+            {
+                const auto& pick = mi.m_mousePick;
+                // Test the raw cursor in pixels, before plane/grid snapping. This
+                // keeps closing easy at any zoom and when the drawing plane is edge-on.
+                const auto camera = AzToolsFramework::GetCameraState(mi.m_interactionId.m_viewportId);
+                const auto firstCorner = AzFramework::WorldToScreen(m_worldP0, camera);
+                const float dx = static_cast<float>(firstCorner.m_x - pick.m_screenCoordinates.m_x);
+                const float dy = static_cast<float>(firstCorner.m_y - pick.m_screenCoordinates.m_y);
+                constexpr float closeRadiusPixels = 16.0f;
+                m_polygonCloseHovered = m_polygonPoints.size() >= 3 &&
+                    (m_worldP0 - camera.m_position).Dot(camera.m_forward) > camera.m_nearClip &&
+                    dx * dx + dy * dy <= closeRadiusPixels * closeRadiusPixels;
+                if (m_polygonCloseHovered)
+                {
+                    m_worldP1 = m_worldP0;
+                    SnapUtil::SetActiveSnapTarget(m_worldP0);
+                    if (leftDown) { CommitPolygon(); }
+                    return true;
+                }
+                const float denominator = pick.m_rayDirection.Dot(m_surfaceNormal);
+                if (AZStd::abs(denominator) > 1e-6f)
+                {
+                    const float distance = (m_worldP0 - pick.m_rayOrigin).Dot(m_surfaceNormal) / denominator;
+                    if (distance < 0.0f) { return true; }
+                    const auto snap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                    const auto point = snap.value_or(pick.m_rayOrigin + pick.m_rayDirection * distance);
+                    m_worldP1 = point - m_surfaceNormal * (point - m_worldP0).Dot(m_surfaceNormal);
+                    SnapUtil::SetActiveSnapTarget(snap);
+                    if (leftDown)
+                    {
+                        if (m_polygonPoints.size() < 256 && (m_worldP1 - m_polygonPoints.back()).GetLength() > 0.0001f)
+                        {
+                            m_polygonPoints.push_back(m_worldP1);
+                            m_polygonInvalid = false;
+                        }
+                    }
+                }
+                return true;
+            }
+            return m_state == DrawState::DrawingPolygon;
+        }
+
         // Unit-cube stamp: press anchors, drag stretches a footprint of cells, release stamps it. Ctrl
         // (or Carve) subtracts.
         if (UnitCubeMode())
@@ -1113,12 +1201,15 @@ namespace WhiteBox
 
         if (rightDown)
         {
+            const bool active = m_state != DrawState::Idle;
             Cancel();
-            return m_state != DrawState::Idle;
+            return active;
         }
 
         switch (m_state)
         {
+        case DrawState::DrawingPolygon:
+            return true; // Handled before the rectangle/height workflow.
         case DrawState::Idle:
         {
             if (leftDown)
@@ -1177,6 +1268,12 @@ namespace WhiteBox
                 }
 
                 m_height = 0.f;
+                if (CurrentShape() == DrawShapeType::Plane)
+                {
+                    CommitBox(worldFromLocal);
+                    Cancel();
+                    return true;
+                }
                 m_state  = DrawState::PullingHeight;
                 return true;
             }
@@ -1262,7 +1359,7 @@ namespace WhiteBox
 
         // Reject degenerate base / height.
         if (uAxis.GetLength() < 0.0001f || vAxis.GetLength() < 0.0001f ||
-            AZStd::abs(m_height) < 0.0001f)
+            (CurrentShape() != DrawShapeType::Plane && AZStd::abs(m_height) < 0.0001f))
         {
             return;
         }
@@ -1287,7 +1384,8 @@ namespace WhiteBox
         const size_t vertsBeforeCommit = Api::MeshVertexHandles(*whiteBox).size();
         Detail::BuildShapeSolid(
             *whiteBox, worldFromLocal.GetInverse(), center, uAxis, vAxis, up,
-            0.0f, m_height, CurrentShape(), CurrentSides(), EffectiveStairSteps());
+            0.0f, m_height, CurrentShape(), CurrentSides(), EffectiveStairSteps(), CurrentHoleRatio(),
+            CurrentTubeSides());
 
         // Map the new geometry into the active layer's space so it shows where it was drawn.
         EditorWhiteBoxComponentRequestBus::Event(
@@ -1380,7 +1478,8 @@ namespace WhiteBox
         Api::WhiteBoxMeshPtr cutter = Api::CreateWhiteBoxMesh();
         Detail::BuildShapeSolid(
             *cutter, worldFromLocal.GetInverse(), center, uAxis, vAxis, up,
-            baseUp, topUp, CurrentShape(), CurrentSides(), EffectiveStairSteps());
+            baseUp, topUp, CurrentShape(), CurrentSides(), EffectiveStairSteps(), CurrentHoleRatio(),
+            CurrentTubeSides());
         // Map into the active layer's storage space (it may display transformed) so the
         // carve/boss lands exactly where it was drawn.
         EditorWhiteBoxComponentRequestBus::Event(
@@ -1426,6 +1525,9 @@ namespace WhiteBox
 
     void DrawShapeMode::Cancel()
     {
+        m_polygonPoints.clear();
+        m_polygonInvalid = false;
+        m_polygonCloseHovered = false;
         m_numericInput.Reset();
         m_state  = DrawState::Idle;
         m_height = 0.f;
@@ -1460,6 +1562,11 @@ namespace WhiteBox
 
     void DrawShapeMode::NumericConfirm()
     {
+        if (m_state == DrawState::DrawingPolygon)
+        {
+            CommitPolygon();
+            return;
+        }
         if (!m_numericInput.IsActive() || m_state != DrawState::PullingHeight)
         {
             return;
@@ -1479,6 +1586,10 @@ namespace WhiteBox
         if (m_carveMode)
         {
             BooleanAtPolygon(m_worldFromLocal, m_height);
+        }
+        else if (CurrentMergeUnion())
+        {
+            BooleanAtPolygon(m_worldFromLocal, m_height, true);
         }
         else
         {
@@ -1514,10 +1625,93 @@ namespace WhiteBox
         return true;
     }
 
+    void DrawShapeMode::NumericBackspace()
+    {
+        if (m_state == DrawState::DrawingPolygon)
+        {
+            if (m_polygonPoints.size() > 1) { m_polygonPoints.pop_back(); }
+            else { Cancel(); }
+            m_polygonInvalid = false;
+            m_polygonCloseHovered = false;
+        }
+        else if (m_numericInput.IsActive())
+        {
+            m_numericInput.Backspace();
+            SyncPreviewHeight();
+        }
+    }
+
+    bool DrawShapeMode::CommitPolygon()
+    {
+        auto polygon = Api::CreateWhiteBoxMesh();
+        if (!Detail::BuildPolygonFace(*polygon, m_worldFromLocal.GetInverse(), m_polygonPoints, m_surfaceNormal))
+        {
+            m_polygonInvalid = true;
+            return false;
+        }
+        WhiteBoxMesh* mesh = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            mesh, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+        if (!mesh) { return false; }
+        AzToolsFramework::ScopedUndoBatch undo("Draw White Box Polygon");
+        const size_t firstVertex = Api::MeshVertexHandles(*mesh).size();
+        AppendMesh(*mesh, *polygon);
+        EditorWhiteBoxComponentRequestBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::MapMeshToActiveLayerSpace, *mesh, firstVertex);
+        Api::CalculateNormals(*mesh);
+        Api::CalculatePlanarUVs(*mesh);
+        EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
+        EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::RebuildWhiteBox);
+        EditorWhiteBoxComponentModeRequestBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentModeRequests::MarkWhiteBoxIntersectionDataDirty);
+        undo.MarkEntityDirty(m_entityComponentIdPair.GetEntityId());
+        Cancel();
+        return true;
+    }
+
+    float DrawShapeMode::CurrentHoleRatio() const
+    {
+        float ratio = 0.5f;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            ratio, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetDrawHoleRatio);
+        return AZStd::clamp(ratio, 0.05f, 0.95f);
+    }
+
+    int DrawShapeMode::CurrentTubeSides() const
+    {
+        int tubeSides = DefaultTubeSides;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            tubeSides, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetDrawTubeSides);
+        return AZStd::clamp(tubeSides, MinTubeSides, MaxTubeSides);
+    }
+
     void DrawShapeMode::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        if (m_state == DrawState::DrawingPolygon && !m_polygonPoints.empty())
+        {
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(m_polygonInvalid ? AZ::Color(1.0f, 0.2f, 0.2f, 1.0f) : AZ::Color(0.3f, 1.0f, 0.5f, 1.0f));
+            for (size_t i = 1; i < m_polygonPoints.size(); ++i)
+            {
+                debugDisplay.DrawLine(m_polygonPoints[i - 1], m_polygonPoints[i]);
+            }
+            debugDisplay.DrawLine(m_polygonPoints.back(), m_worldP1);
+            debugDisplay.DrawLine(m_worldP1, m_polygonPoints.front());
+            const auto camera = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+            const float markerRadius = 0.08f *
+                AzToolsFramework::CalculateScreenToWorldMultiplier(m_worldP0, camera);
+            debugDisplay.SetColor(m_polygonCloseHovered
+                ? AZ::Color(1.0f, 0.85f, 0.15f, 1.0f) : AZ::Color(0.3f, 1.0f, 0.5f, 1.0f));
+            debugDisplay.DrawBall(m_worldP0, markerRadius);
+            debugDisplay.DrawTextLabel(m_worldP0, 1.0f, m_polygonInvalid
+                ? "Invalid outline: remove crossing/duplicate corners with Backspace"
+                : (m_polygonCloseHovered ? "Click to close polygon"
+                    : "Click corners | Enter or click first corner to finish | Backspace undo | Esc cancel"), true, 0, 0);
+            debugDisplay.DepthTestOn();
+            return;
+        }
         // Unit-cube stamp hover ghost, showing the individual cubes.
         if (m_unitCubeHoverValid)
         {
@@ -1609,6 +1803,63 @@ namespace WhiteBox
         const AZ::Vector3 center = m_worldP0 + (uAxis + vAxis) * 0.5f;
 
         const DrawShapeType shape = CurrentShape();
+        if (shape == DrawShapeType::Plane || shape == DrawShapeType::Pipe || shape == DrawShapeType::Torus)
+        {
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(AZ::Color(0.3f, 1.0f, 0.5f, 1.0f));
+            const auto point = [&](float x, float y, float z)
+            {
+                return center + uAxis * (0.5f * x) + vAxis * (0.5f * y) + up * z;
+            };
+            if (shape == DrawShapeType::Plane)
+            {
+                const AZ::Vector3 corners[] = {point(-1, -1, 0), point(1, -1, 0), point(1, 1, 0), point(-1, 1, 0)};
+                for (int i = 0; i < 4; ++i) { debugDisplay.DrawLine(corners[i], corners[(i + 1) % 4]); }
+            }
+            else
+            {
+                const int n = CurrentSides();
+                const float hole = CurrentHoleRatio();
+                const int tubeSides = AZStd::clamp(n / 2, 8, 32);
+                const auto ringPoint = [&](int i, float radius, float z)
+                {
+                    const float a = AZ::Constants::TwoPi * i / n;
+                    return point(radius * std::cos(a), radius * std::sin(a), z);
+                };
+                for (int i = 0; i < n; ++i)
+                {
+                    if (shape == DrawShapeType::Pipe)
+                    {
+                        for (float radius : {hole, 1.0f})
+                        {
+                            debugDisplay.DrawLine(ringPoint(i, radius, 0), ringPoint(i + 1, radius, 0));
+                            debugDisplay.DrawLine(ringPoint(i, radius, m_height), ringPoint(i + 1, radius, m_height));
+                            debugDisplay.DrawLine(ringPoint(i, radius, 0), ringPoint(i, radius, m_height));
+                        }
+                    }
+                    else
+                    {
+                        const auto torusPoint = [&](int ring, int tube)
+                        {
+                            const float a = AZ::Constants::TwoPi * tube / tubeSides;
+                            return ringPoint(ring, (1 + hole) * 0.5f + (1 - hole) * 0.5f * std::cos(a),
+                                m_height * (0.5f + 0.5f * std::sin(a)));
+                        };
+                        for (int j = 0; j < tubeSides; ++j)
+                        {
+                            debugDisplay.DrawLine(torusPoint(i, j), torusPoint(i + 1, j));
+                            debugDisplay.DrawLine(torusPoint(i, j), torusPoint(i, j + 1));
+                        }
+                    }
+                }
+            }
+            if (m_numericInput.IsActive())
+            {
+                debugDisplay.DrawTextLabel(center + up * m_height, 1.0f, m_numericInput.GetStatusText().c_str(), true, 0, 0);
+            }
+            debugDisplay.DepthTestOn();
+            return;
+        }
         // Staircase: re-orient run/width within the same footprint for the preview.
         if (shape == DrawShapeType::Staircase)
         {

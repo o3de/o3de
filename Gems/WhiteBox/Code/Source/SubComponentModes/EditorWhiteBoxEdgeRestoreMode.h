@@ -72,5 +72,9 @@ namespace WhiteBox
         AZStd::optional<EdgeIntersection> m_edgeIntersection; //!< The hovered edge if one exists.
         AZStd::optional<VertexIntersection> m_vertexIntersection; //!< The hovered vertex if one exists.
         Api::EdgeHandles m_edgeHandlesBeingRestored; //!< The edge handles currently attempting to be restored.
+
+        //! Scratch storage for the batched debug lines drawn each frame, kept so the steady state
+        //! does not reallocate. Contents are meaningless between Display calls.
+        AZStd::vector<AZ::Vector3> m_lineBuffer;
     };
 } // namespace WhiteBox

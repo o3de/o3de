@@ -31,6 +31,12 @@ namespace WhiteBox
         Sphere,    //!< UV ellipsoid inscribed in the drawn footprint + pull height (Draw Sides = subdivision)
         Staircase, //!< stepped solid rising along the drawn footprint (Draw Steps = number of stairs)
         Room,      //!< parametric hollow room with double (cavity) walls + optional floor/ceiling
+        Door,      //!< parametric solid panel or doorway frame with an adjustable arch
+        CircularStairs, //!< parametric stairway around a central opening
+        Plane,
+        Torus,
+        Pipe,
+        Polygon, //!< Click-defined planar polygon; edited using mesh vertices.
     };
 
     //! Staircase build parameters the Draw Shape tool reads from the component. Plain data

@@ -12,9 +12,11 @@
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <cmath>
 
 namespace WhiteBox
 {
@@ -216,15 +218,238 @@ namespace WhiteBox
         return renderData;
     }
 
+    namespace
+    {
+        // Prefer a boundary fan (two triangles for a quad). Retain every boundary
+        // vertex so adjoining stepped faces share complete edges without T-junctions.
+        void AddParametricFace(
+            WhiteBoxMesh& mesh, const AZStd::vector<Api::VertexHandle>& handles,
+            const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<AZ::u32>& loop,
+            const AZ::Vector3& outward)
+        {
+            for (size_t anchor = 0; anchor < loop.size(); ++anchor)
+            {
+                Api::FaceVertHandlesList triangles;
+                triangles.reserve(loop.size() - 2);
+                for (size_t i = 1; i + 1 < loop.size(); ++i)
+                {
+                    const auto a = loop[anchor];
+                    const auto b = loop[(anchor + i) % loop.size()];
+                    const auto c = loop[(anchor + i + 1) % loop.size()];
+                    const auto normal = (positions[b] - positions[a]).Cross(positions[c] - positions[a]);
+                    if (normal.GetLengthSq() <= 1e-12f)
+                    {
+                        break; // This anchor would lose a collinear boundary segment.
+                    }
+                    const bool flip = normal.Dot(outward) < 0.0f;
+                    triangles.push_back(Api::FaceVertHandles{{handles[a], handles[flip ? c : b], handles[flip ? b : c]}});
+                }
+                if (triangles.size() == loop.size() - 2)
+                {
+                    Api::AddPolygon(mesh, triangles);
+                    return;
+                }
+            }
+            // A center fan is only needed when no boundary anchor preserves all edges.
+            AZ::Vector3 center = AZ::Vector3::CreateZero();
+            for (const auto index : loop)
+            {
+                center += positions[index];
+            }
+            center /= static_cast<float>(loop.size());
+            const auto middle = Api::AddVertex(mesh, center);
+            Api::FaceVertHandlesList faces;
+            for (size_t i = 0; i < loop.size(); ++i)
+            {
+                const auto a = loop[i];
+                const auto b = loop[(i + 1) % loop.size()];
+                const bool flip = (positions[a] - center).Cross(positions[b] - center).Dot(outward) < 0.0f;
+                faces.push_back(Api::FaceVertHandles{{middle, handles[flip ? b : a], handles[flip ? a : b]}});
+            }
+            Api::AddPolygon(mesh, faces);
+        }
+
+        void BuildDoor(
+            WhiteBoxMesh& mesh, float width, float depth, float height, int segments,
+            float thickness, bool frame, float archHeight)
+        {
+            const float radius = width * 0.5f;
+            const float rise = AZStd::clamp(archHeight, 0.0f, height - 0.001f);
+            const float spring = height - rise;
+            const float t = AZStd::max(thickness, 0.001f);
+            AZStd::vector<AZ::Vector3> inner{{-radius, 0.0f, 0.0f}};
+            AZStd::vector<AZ::Vector3> outer{{-radius - t, 0.0f, 0.0f}};
+            if (rise == 0.0f)
+            {
+                inner.push_back(AZ::Vector3(-radius, 0.0f, height));
+                inner.push_back(AZ::Vector3(radius, 0.0f, height));
+                outer.push_back(AZ::Vector3(-radius - t, 0.0f, height + t));
+                outer.push_back(AZ::Vector3(radius + t, 0.0f, height + t));
+            }
+            else
+            {
+                // An even segment count includes the exact apex.
+                segments += segments % 2;
+                for (int i = 0; i <= segments; ++i)
+                {
+                    const float angle = AZ::Constants::Pi * static_cast<float>(i) / segments;
+                    const float x = -std::cos(angle);
+                    const float z = (i == 0 || i == segments) ? 0.0f : std::sin(angle);
+                    inner.push_back(AZ::Vector3(radius * x, 0.0f, spring + rise * z));
+                    outer.push_back(AZ::Vector3((radius + t) * x, 0.0f, spring + (rise + t) * z));
+                }
+            }
+            inner.push_back(AZ::Vector3(radius, 0.0f, 0.0f));
+            outer.push_back(AZ::Vector3(radius + t, 0.0f, 0.0f));
+            AZStd::vector<AZ::Vector3> positions;
+            AZStd::vector<Api::VertexHandle> handles;
+            const AZ::u32 count = static_cast<AZ::u32>(inner.size());
+            for (int side = 0; side < 2; ++side)
+            {
+                for (int ring = 0; ring < (frame ? 2 : 1); ++ring)
+                {
+                    for (const auto& point : (ring == 0 ? inner : outer))
+                    {
+                        const AZ::Vector3 position = point + AZ::Vector3(0.0f, (side ? 0.5f : -0.5f) * depth, 0.0f);
+                        positions.push_back(position);
+                        handles.push_back(Api::AddVertex(mesh, position));
+                    }
+                }
+            }
+            if (!frame)
+            {
+                AZStd::vector<AZ::u32> front, back;
+                for (AZ::u32 i = 0; i < count; ++i)
+                {
+                    front.push_back(i);
+                    back.push_back(count + i);
+                    const AZ::u32 next = (i + 1) % count;
+                    Detail::AddOutwardFace(mesh, handles, positions, {i, next, count + next, count + i},
+                        AZ::Vector3(0.0f, 0.0f, height * 0.5f));
+                }
+                AddParametricFace(mesh, handles, positions, front, -AZ::Vector3::CreateAxisY());
+                AddParametricFace(mesh, handles, positions, back, AZ::Vector3::CreateAxisY());
+                return;
+            }
+            for (AZ::u32 i = 0; i + 1 < count; ++i)
+            {
+                const AZ::u32 j = i + 1;
+                const AZ::Vector3 center = (inner[i] + inner[j] + outer[i] + outer[j]) * 0.25f;
+                const auto face = [&](AZStd::vector<AZ::u32> loop)
+                {
+                    Detail::AddOutwardFace(mesh, handles, positions, loop, center);
+                };
+                face({i, j, count + j, count + i});
+                face({2 * count + i, 3 * count + i, 3 * count + j, 2 * count + j});
+                face({i, 2 * count + i, 2 * count + j, j});
+                face({count + i, count + j, 3 * count + j, 3 * count + i});
+                if (i == 0)
+                {
+                    face({i, count + i, 3 * count + i, 2 * count + i});
+                }
+                if (j == count - 1)
+                {
+                    face({j, 2 * count + j, 3 * count + j, count + j});
+                }
+            }
+        }
+
+        void BuildCircularStairs(WhiteBoxMesh& mesh, float width, float height, int steps, float innerRadius, float sweepAngle)
+        {
+            const float radius = AZStd::max(innerRadius, 0.01f);
+            const float degrees = AZStd::clamp(sweepAngle, 1.0f, 360.0f);
+            const bool closed = degrees == 360.0f;
+            const int subdivisions = AZStd::max(1, static_cast<int>(std::ceil(degrees / (steps * 15.0f))));
+            const int columns = steps * subdivisions;
+            const float sweep = degrees * AZ::Constants::Pi / 180.0f;
+            AZStd::vector<AZ::Vector3> positions;
+            AZStd::vector<Api::VertexHandle> handles;
+            AZStd::unordered_map<int, AZ::u32> indices;
+            const auto vertex = [&](int side, int column, int level)
+            {
+                if (closed && column == columns)
+                {
+                    column = 0; // Shared seam, including the bottom ring.
+                }
+                const int key = (side * (columns + 1) + column) * (steps + 1) + level;
+                const auto found = indices.find(key);
+                if (found != indices.end())
+                {
+                    return found->second;
+                }
+                const float angle = sweep * static_cast<float>(column) / columns;
+                const float r = radius + side * width;
+                const AZ::Vector3 position(r * std::cos(angle), r * std::sin(angle), height * level / steps);
+                const AZ::u32 index = static_cast<AZ::u32>(handles.size());
+                positions.push_back(position);
+                handles.push_back(Api::AddVertex(mesh, position));
+                indices.emplace(key, index);
+                return index;
+            };
+            const auto levelAt = [&](int column)
+            {
+                if (column < 0) { return closed ? steps : 0; }
+                if (column >= columns) { return closed ? 1 : 0; }
+                return column / subdivisions + 1;
+            };
+            const auto face = [&](const AZStd::vector<AZ::u32>& loop, const AZ::Vector3& outward)
+            {
+                AddParametricFace(mesh, handles, positions, loop, outward);
+            };
+            for (int c = 0; c < columns; ++c)
+            {
+                const int level = levelAt(c);
+                const int previous = levelAt(c - 1);
+                const int next = levelAt(c + 1);
+                const float angle = sweep * (c + 0.5f) / columns;
+                const AZ::Vector3 radial(std::cos(angle), std::sin(angle), 0.0f);
+                for (int side = 0; side < 2; ++side)
+                {
+                    AZStd::vector<AZ::u32> loop{vertex(side, c + 1, 0)};
+                    if (next > 0 && next < level) { loop.push_back(vertex(side, c + 1, next)); }
+                    loop.push_back(vertex(side, c + 1, level));
+                    loop.push_back(vertex(side, c, level));
+                    if (previous > 0 && previous < level) { loop.push_back(vertex(side, c, previous)); }
+                    loop.push_back(vertex(side, c, 0));
+                    face(loop, side ? radial : -radial);
+                }
+                face({vertex(0, c, 0), vertex(1, c, 0), vertex(1, c + 1, 0), vertex(0, c + 1, 0)},
+                    -AZ::Vector3::CreateAxisZ());
+                face({vertex(0, c, level), vertex(1, c, level), vertex(1, c + 1, level), vertex(0, c + 1, level)},
+                    AZ::Vector3::CreateAxisZ());
+                if (previous < level)
+                {
+                    const float a = sweep * c / columns;
+                    face({vertex(0, c, previous), vertex(1, c, previous), vertex(1, c, level), vertex(0, c, level)},
+                        AZ::Vector3(std::sin(a), -std::cos(a), 0.0f));
+                }
+                if (next < level)
+                {
+                    const float a = sweep * (c + 1) / columns;
+                    face({vertex(0, c + 1, next), vertex(1, c + 1, next),
+                        vertex(1, c + 1, level), vertex(0, c + 1, level)},
+                        AZ::Vector3(-std::sin(a), std::cos(a), 0.0f));
+                }
+            }
+        }
+    }
+
     Api::WhiteBoxMeshPtr BuildParametricShapeMesh(
         const DrawShapeType shape, const float width, const float depth, const float height, const int sides,
-        const int steps, const float wallThickness, const float cavityGap, const bool floor, const bool ceiling)
+        const int steps, const float wallThickness, const float cavityGap, const bool floor, const bool ceiling,
+        const bool doorFrame, const float archHeight, const float innerRadius, const float sweepAngle,
+        const bool stepsByHeight, const float stepHeight, const float holeRatio, const int tubeSides)
     {
         const float w = AZStd::max(width, 0.01f);
         const float d = AZStd::max(depth, 0.01f);
         const float h = AZStd::max(height, 0.01f);
         const int clampedSides = AZStd::clamp(sides, 3, 128);
-        const int clampedSteps = AZStd::clamp(steps, 1, 128);
+        // Match Draw Shape's nearest-count behavior while retaining the layer's 128-step limit.
+        // Clamp before conversion so very small riser heights cannot overflow the count.
+        const bool stair = shape == DrawShapeType::Staircase || shape == DrawShapeType::CircularStairs;
+        const int clampedSteps = stair && stepsByHeight
+            ? static_cast<int>(std::lround(AZStd::clamp(h / AZStd::max(stepHeight, 0.001f), 1.0f, 128.0f)))
+            : AZStd::clamp(steps, 1, 128);
 
         Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();
 
@@ -234,13 +459,21 @@ namespace WhiteBox
         {
             Detail::BuildRoomSolid(*mesh, w, d, h, wallThickness, cavityGap, floor, ceiling);
         }
+        else if (shape == DrawShapeType::Door)
+        {
+            BuildDoor(*mesh, w, d, h, clampedSides, wallThickness, doorFrame, archHeight);
+        }
+        else if (shape == DrawShapeType::CircularStairs)
+        {
+            BuildCircularStairs(*mesh, w, h, clampedSteps, innerRadius, sweepAngle);
+        }
         else
         {
             // Note: the builders take FULL-extent axis vectors (they halve internally).
             Detail::BuildShapeSolid(
                 *mesh, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateZero(),
                 AZ::Vector3(w, 0.0f, 0.0f), AZ::Vector3(0.0f, d, 0.0f),
-                AZ::Vector3::CreateAxisZ(), 0.0f, h, shape, clampedSides, clampedSteps);
+                AZ::Vector3::CreateAxisZ(), 0.0f, h, shape, clampedSides, clampedSteps, holeRatio, tubeSides);
         }
         if (!Api::MeshFaceHandles(*mesh).empty())
         {

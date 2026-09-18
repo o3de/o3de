@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <title>Draw shape</title>
+  <g fill="none" stroke="#DADADA" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M3 8 10 4 15 7M3 8v10l7 4 7-4v-5M3 8l7 4m0 0v10"/>
+  </g>
+  <path d="m11 13 7.8-9.8a1.2 1.2 0 0 1 1.7-.2l1.3 1a1.2 1.2 0 0 1 .2 1.7L14.2 15.5 10 17Z" fill="#DADADA" stroke="#25282C" stroke-width="1" stroke-linejoin="round"/>
+  <path d="m18 4.2 3.2 2.5M11 13l3.2 2.5" fill="none" stroke="#25282C" stroke-width="1"/>
+  <path d="m11 13-1 4 4.2-1.5Z" fill="#67C7E8"/>
+</svg>

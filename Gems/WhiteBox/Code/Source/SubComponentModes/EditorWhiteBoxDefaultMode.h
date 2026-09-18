@@ -152,6 +152,10 @@ namespace WhiteBox
         //! Local-space anchor captured when numeric input begins; used for the viewport overlay label.
         AZ::Vector3 m_numericAnchorLocal{ AZ::Vector3::CreateZero() };
 
+        //! Scratch storage for the batched debug lines drawn each frame, kept so the steady state
+        //! does not reallocate. Contents are meaningless between Display calls.
+        AZStd::vector<AZ::Vector3> m_lineBuffer;
+
         AZStd::unique_ptr<PolygonTranslationModifier>
             m_polygonTranslationModifier; //!< The hovered polygon translation modifier.
         AZStd::unique_ptr<EdgeTranslationModifier>

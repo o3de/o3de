@@ -24,12 +24,29 @@
 
 namespace WhiteBox
 {
+    static bool WhiteBoxLayerVersionConverter(
+        AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    {
+        if (classElement.GetVersion() <= 5)
+        {
+            // v6 split the torus tube tessellation out of ParamSides. Seed it from the value the old
+            // builder derived, so a torus made before the split renders identically.
+            int sides = 4;
+            if (const int idx = classElement.FindElement(AZ_CRC_CE("ParamSides")); idx != -1)
+            {
+                classElement.GetSubElement(idx).GetData(sides);
+            }
+            classElement.AddElementWithData(context, "ParamTubeSides", LegacyTubeSidesFromSides(sides));
+        }
+        return true;
+    }
+
     void EditorWhiteBoxComponent::WhiteBoxLayer::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxLayer>()
-                ->Version(2)
+                ->Version(6, &WhiteBoxLayerVersionConverter)
                 ->Field("Name", &WhiteBoxLayer::m_name)
                 ->Field("Id", &WhiteBoxLayer::m_id)
                 ->Field("Visible", &WhiteBoxLayer::m_visible)
@@ -41,10 +58,18 @@ namespace WhiteBox
                 ->Field("ParamHeight", &WhiteBoxLayer::m_paramHeight)
                 ->Field("ParamSides", &WhiteBoxLayer::m_paramSides)
                 ->Field("ParamSteps", &WhiteBoxLayer::m_paramSteps)
+                ->Field("ParamStepsByHeight", &WhiteBoxLayer::m_paramStepsByHeight)
+                ->Field("ParamStepHeight", &WhiteBoxLayer::m_paramStepHeight)
                 ->Field("ParamWallThickness", &WhiteBoxLayer::m_paramWallThickness)
                 ->Field("ParamCavityGap", &WhiteBoxLayer::m_paramCavityGap)
                 ->Field("ParamFloor", &WhiteBoxLayer::m_paramFloor)
                 ->Field("ParamCeiling", &WhiteBoxLayer::m_paramCeiling)
+                ->Field("ParamDoorFrame", &WhiteBoxLayer::m_paramDoorFrame)
+                ->Field("ParamArchHeight", &WhiteBoxLayer::m_paramArchHeight)
+                ->Field("ParamInnerRadius", &WhiteBoxLayer::m_paramInnerRadius)
+                ->Field("ParamSweepAngle", &WhiteBoxLayer::m_paramSweepAngle)
+                ->Field("ParamHoleRatio", &WhiteBoxLayer::m_paramHoleRatio)
+                ->Field("ParamTubeSides", &WhiteBoxLayer::m_paramTubeSides)
                 ->Field("Tint", &WhiteBoxLayer::m_tint)
                 ->Field("Combine", &WhiteBoxLayer::m_combineMode)
                 ->Field("InvertNormals", &WhiteBoxLayer::m_invertNormals)
@@ -317,6 +342,8 @@ namespace WhiteBox
         {
         case DrawShapeType::Cylinder:
         case DrawShapeType::Cone:
+        case DrawShapeType::Pipe:
+        case DrawShapeType::Torus:
             layer.m_paramSides = 24;
             break;
         case DrawShapeType::Sphere:
@@ -329,15 +356,34 @@ namespace WhiteBox
             layer.m_paramDepth = 4.0f;
             layer.m_paramHeight = 3.0f;
             break;
+        case DrawShapeType::Door:
+            layer.m_paramWidth = 1.0f;
+            layer.m_paramDepth = 0.2f;
+            layer.m_paramHeight = 2.1f;
+            layer.m_paramSides = 16;
+            break;
+        case DrawShapeType::CircularStairs:
+            layer.m_paramWidth = 1.0f;
+            layer.m_paramHeight = 3.0f;
+            layer.m_paramSteps = 16;
+            break;
         default:
             layer.m_paramSides = 4;
             break;
         }
 
+        if (shape == DrawShapeType::Torus)
+        {
+            layer.m_paramHeight = 0.25f;
+            layer.m_paramTubeSides = DefaultTubeSides;
+        }
+
         const Api::WhiteBoxMeshPtr mesh = BuildParametricShapeMesh(
             layer.m_paramShape, layer.m_paramWidth, layer.m_paramDepth, layer.m_paramHeight, layer.m_paramSides,
             layer.m_paramSteps, layer.m_paramWallThickness, layer.m_paramCavityGap, layer.m_paramFloor,
-            layer.m_paramCeiling);
+            layer.m_paramCeiling, layer.m_paramDoorFrame, layer.m_paramArchHeight,
+            layer.m_paramInnerRadius, layer.m_paramSweepAngle, layer.m_paramStepsByHeight, layer.m_paramStepHeight,
+            layer.m_paramHoleRatio, layer.m_paramTubeSides);
         Api::WriteMesh(*mesh, layer.m_freeformData);
 
         m_layers.push_back(AZStd::move(layer));
@@ -363,19 +409,43 @@ namespace WhiteBox
             params.m_height = layer.m_paramHeight;
             params.m_sides = layer.m_paramSides;
             params.m_steps = layer.m_paramSteps;
+            params.m_stepsByHeight = layer.m_paramStepsByHeight;
+            params.m_stepHeight = layer.m_paramStepHeight;
             params.m_wallThickness = layer.m_paramWallThickness;
             params.m_cavityGap = layer.m_paramCavityGap;
             params.m_floor = layer.m_paramFloor;
             params.m_ceiling = layer.m_paramCeiling;
+            params.m_doorFrame = layer.m_paramDoorFrame;
+            params.m_archHeight = layer.m_paramArchHeight;
+            params.m_innerRadius = layer.m_paramInnerRadius;
+            params.m_sweepAngle = layer.m_paramSweepAngle;
+            params.m_holeRatio = layer.m_paramHoleRatio;
+            params.m_tubeSides = layer.m_paramTubeSides;
         }
         return params;
     }
 
     void EditorWhiteBoxComponent::SetLayerShapeParams(const int index, const ShapeParams& params)
     {
+        if (StoreLayerShapeParams(index, params))
+        {
+            RegenerateParametricLayer(index);
+        }
+    }
+
+    void EditorWhiteBoxComponent::SetLayerShapeParamsPreview(const int index, const ShapeParams& params)
+    {
+        if (StoreLayerShapeParams(index, params))
+        {
+            RegenerateParametricLayer(index, false);
+        }
+    }
+
+    bool EditorWhiteBoxComponent::StoreLayerShapeParams(const int index, const ShapeParams& params)
+    {
         if (!IsLayerParametric(index))
         {
-            return;
+            return false;
         }
         WhiteBoxLayer& layer = m_layers[index];
         layer.m_paramShape = params.m_shape;
@@ -384,11 +454,19 @@ namespace WhiteBox
         layer.m_paramHeight = AZStd::max(params.m_height, 0.01f);
         layer.m_paramSides = AZStd::clamp(params.m_sides, 3, 128);
         layer.m_paramSteps = AZStd::clamp(params.m_steps, 1, 128);
+        layer.m_paramStepsByHeight = params.m_stepsByHeight;
+        layer.m_paramStepHeight = AZStd::max(params.m_stepHeight, 0.001f);
         layer.m_paramWallThickness = AZStd::max(params.m_wallThickness, 0.001f);
         layer.m_paramCavityGap = AZStd::max(params.m_cavityGap, 0.0f);
         layer.m_paramFloor = params.m_floor;
         layer.m_paramCeiling = params.m_ceiling;
-        RegenerateParametricLayer(index);
+        layer.m_paramDoorFrame = params.m_doorFrame;
+        layer.m_paramArchHeight = AZStd::clamp(params.m_archHeight, 0.0f, layer.m_paramHeight - 0.001f);
+        layer.m_paramInnerRadius = AZStd::max(params.m_innerRadius, 0.01f);
+        layer.m_paramSweepAngle = AZStd::clamp(params.m_sweepAngle, 1.0f, 360.0f);
+        layer.m_paramHoleRatio = AZStd::clamp(params.m_holeRatio, 0.05f, 0.95f);
+        layer.m_paramTubeSides = AZStd::clamp(params.m_tubeSides, MinTubeSides, MaxTubeSides);
+        return true;
     }
 
     void EditorWhiteBoxComponent::BakeParametricLayer(const int index)
@@ -401,7 +479,7 @@ namespace WhiteBox
         }
     }
 
-    void EditorWhiteBoxComponent::RegenerateParametricLayer(const int index)
+    void EditorWhiteBoxComponent::RegenerateParametricLayer(const int index, const bool commit)
     {
         if (!IsLayerParametric(index))
         {
@@ -411,20 +489,35 @@ namespace WhiteBox
         const ShapeParams params = GetLayerShapeParams(index);
         Api::WhiteBoxMeshPtr mesh = BuildParametricShapeMesh(
             params.m_shape, params.m_width, params.m_depth, params.m_height, params.m_sides, params.m_steps,
-            params.m_wallThickness, params.m_cavityGap, params.m_floor, params.m_ceiling);
+            params.m_wallThickness, params.m_cavityGap, params.m_floor, params.m_ceiling,
+            params.m_doorFrame, params.m_archHeight, params.m_innerRadius, params.m_sweepAngle,
+            params.m_stepsByHeight, params.m_stepHeight, params.m_holeRatio, params.m_tubeSides);
         if (index == m_layerRuntime.m_loadedIndex)
         {
-            // The parametric layer is the ACTIVE one: replace the working mesh so viewport
-            // display/selection track the new shape, then flush it into the layer's stream.
+            // Active layer: replace the working mesh; a preview skips the stream write, the commit does it.
             m_whiteBox = AZStd::move(mesh);
-            SerializeWhiteBox();
+            if (commit)
+            {
+                SerializeWhiteBox();
+            }
+            else
+            {
+                m_rebuild.m_workingMeshUnwritten = true;
+            }
         }
         else
         {
             Api::WriteMesh(*mesh, layer.m_freeformData);
         }
         m_layerRuntime.m_meshCache.erase(layer.m_id); // the cached display mesh is stale now
-        RebuildWhiteBox();
+        if (commit)
+        {
+            RebuildWhiteBox();
+        }
+        else
+        {
+            RebuildWhiteBoxDeferred();
+        }
         RefreshComponentMode();
     }
 

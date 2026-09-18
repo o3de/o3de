@@ -20,6 +20,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/numeric.h>
@@ -649,13 +650,15 @@ namespace WhiteBox
             const auto& polygonProps = whiteBox.mesh.property(polygonPropsHandle);
 
             AZStd::vector<PolygonHandle> polygonHandles;
+            // A polygon's first face represents it; keep first-encounter order without a linear search.
+            AZStd::unordered_set<int> seenPolygons;
+            seenPolygons.reserve(polygonProps.size());
             for (const auto& polygonProp : polygonProps)
             {
-                // don't add duplicate polygons
-                PolygonHandle polygonHandle = PolygonHandleFromInternal(polygonProp.second);
-                if (AZStd::find(polygonHandles.begin(), polygonHandles.end(), polygonHandle) == polygonHandles.end())
+                const int representative = polygonProp.second.empty() ? -1 : polygonProp.second.front().idx();
+                if (seenPolygons.insert(representative).second)
                 {
-                    polygonHandles.push_back(AZStd::move(polygonHandle));
+                    polygonHandles.push_back(PolygonHandleFromInternal(polygonProp.second));
                 }
             }
 
@@ -3556,18 +3559,9 @@ namespace WhiteBox
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-            WhiteBoxMeshStream clonedData;
-            if (!WriteMesh(whiteBox, clonedData))
-            {
-                return nullptr;
-            }
-
-            WhiteBoxMeshPtr newMesh = CreateWhiteBoxMesh();
-            if (ReadMesh(*newMesh, clonedData) != ReadResult::Full)
-            {
-                return nullptr;
-            }
-
+            // OpenMesh deep-copies connectivity and all properties - far cheaper than a write/read round-trip.
+            WhiteBoxMeshPtr newMesh(aznew WhiteBoxMesh());
+            newMesh->mesh = whiteBox.mesh;
             return newMesh;
         }
 

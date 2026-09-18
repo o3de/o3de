@@ -559,6 +559,8 @@ namespace WhiteBox
             { "Pyramid", DrawShapeType::Pyramid },   { "Cone", DrawShapeType::Cone },
             { "Sphere", DrawShapeType::Sphere },     { "Staircase", DrawShapeType::Staircase },
             { "Room", DrawShapeType::Room },
+            { "Door", DrawShapeType::Door }, { "Circular Stairs", DrawShapeType::CircularStairs },
+            { "Plane", DrawShapeType::Plane }, { "Torus", DrawShapeType::Torus }, { "Pipe", DrawShapeType::Pipe },
         };
         int shapeButtonIndex = 0;
         for (const auto& [label, shapeType] : shapeDefs)
@@ -685,8 +687,7 @@ namespace WhiteBox
         m_gizmoOff->setChecked(true);
         metaLayout->addRow(tr("Gizmo"), gizmoRow);
 
-        // Shape Parameters: shown only for PARAMETRIC layers; every change regenerates the
-        // layer's mesh live (the other layers come from the cache, so this is real-time).
+        // Parametric shapes update live as their values change.
         m_shapeParamsGroup = new QGroupBox(tr("Shape Parameters"));
         auto* shapeLayout = new QFormLayout(m_shapeParamsGroup);
         m_shapeParamShape = new QComboBox();
@@ -697,6 +698,11 @@ namespace WhiteBox
         m_shapeParamShape->addItem(tr("Sphere"), static_cast<int>(DrawShapeType::Sphere));
         m_shapeParamShape->addItem(tr("Staircase"), static_cast<int>(DrawShapeType::Staircase));
         m_shapeParamShape->addItem(tr("Room"), static_cast<int>(DrawShapeType::Room));
+        m_shapeParamShape->addItem(tr("Door"), static_cast<int>(DrawShapeType::Door));
+        m_shapeParamShape->addItem(tr("Circular Stairs"), static_cast<int>(DrawShapeType::CircularStairs));
+        m_shapeParamShape->addItem(tr("Plane"), static_cast<int>(DrawShapeType::Plane));
+        m_shapeParamShape->addItem(tr("Torus"), static_cast<int>(DrawShapeType::Torus));
+        m_shapeParamShape->addItem(tr("Pipe"), static_cast<int>(DrawShapeType::Pipe));
         shapeLayout->addRow(tr("Shape"), m_shapeParamShape);
         m_shapeParamWidth = MakeSpin(0.01, 10000.0, 0.1);
         shapeLayout->addRow(tr("Width"), m_shapeParamWidth);
@@ -713,6 +719,14 @@ namespace WhiteBox
         m_shapeParamSteps->setRange(1, 128);
         m_shapeParamStepsLabel = new QLabel(tr("Steps"));
         shapeLayout->addRow(m_shapeParamStepsLabel, m_shapeParamSteps);
+        m_shapeParamStepsByHeight = new QCheckBox(tr("Divide By Step Height"));
+        shapeLayout->addRow(QString(), m_shapeParamStepsByHeight);
+        m_shapeParamStepHeight = MakeSpin(0.001, 10000.0, 0.05);
+        m_shapeParamStepHeight->setToolTip(tr(
+            "Derives the nearest whole step count from Height / Step Height (1?128 steps), "
+            "then fits equal risers to the total height, like the staircase Draw tool."));
+        m_shapeParamStepHeightLabel = new QLabel(tr("Step Height"));
+        shapeLayout->addRow(m_shapeParamStepHeightLabel, m_shapeParamStepHeight);
         // Room-only controls. Width/Depth/Height above are the interior dimensions for a Room.
         m_shapeParamWallThickness = MakeSpin(0.001, 100.0, 0.05);
         m_shapeParamWallThickness->setToolTip(tr("Thickness of each wall leaf (inner and outer)."));
@@ -728,6 +742,27 @@ namespace WhiteBox
         m_shapeParamCeiling = new QCheckBox(tr("Ceiling"));
         m_shapeParamCeiling->setToolTip(tr("Add a ceiling slab above the interior."));
         shapeLayout->addRow(QString(), m_shapeParamCeiling);
+        m_shapeParamDoorFrame = new QCheckBox(tr("Doorway Frame (open)"));
+        m_shapeParamDoorFrame->setToolTip(tr("Uncheck to create a solid door panel. Width and height describe the opening when checked."));
+        shapeLayout->addRow(QString(), m_shapeParamDoorFrame);
+        m_shapeParamArchHeight = MakeSpin(0.0, 10000.0, 0.05);
+        m_shapeParamArchHeight->setToolTip(tr("Zero gives a rectangular door. Increase for an elliptical arch; half the width gives a semicircle."));
+        shapeLayout->addRow(tr("Arch Height"), m_shapeParamArchHeight);
+        m_shapeParamInnerRadius = MakeSpin(0.01, 10000.0, 0.1);
+        shapeLayout->addRow(tr("Inner Radius"), m_shapeParamInnerRadius);
+        m_shapeParamSweepAngle = MakeSpin(1.0, 360.0, 15.0);
+        m_shapeParamSweepAngle->setToolTip(tr("Counterclockwise sweep around local Z. 360 degrees creates a full circular stairway."));
+        shapeLayout->addRow(tr("Sweep Angle (degrees)"), m_shapeParamSweepAngle);
+        m_shapeParamHoleRatio = MakeSpin(0.05, 0.95, 0.05);
+        m_shapeParamHoleRatio->setToolTip(tr("Hole diameter as a fraction of the outer diameter. Higher values make a thinner wall or tube."));
+        shapeLayout->addRow(tr("Hole Ratio"), m_shapeParamHoleRatio);
+        m_shapeParamTubeSides = new QSpinBox();
+        m_shapeParamTubeSides->setRange(MinTubeSides, MaxTubeSides);
+        m_shapeParamTubeSides->setToolTip(
+            tr("Segments around the torus tube's cross-section. A torus has Sides x Tube Sides quads, so this "
+               "is the other half of its triangle count - raise Sides for a rounder ring, this for a rounder tube."));
+        m_shapeParamTubeSidesLabel = new QLabel(tr("Tube Sides"));
+        shapeLayout->addRow(m_shapeParamTubeSidesLabel, m_shapeParamTubeSides);
         m_bakeShapeButton = new QPushButton(tr("Bake To Mesh"));
         m_bakeShapeButton->setToolTip(
             tr("Freeze this parametric shape into an ordinary mesh layer so vertex-level edits are safe "
@@ -735,43 +770,131 @@ namespace WhiteBox
         shapeLayout->addRow(m_bakeShapeButton);
         metaLayout->addRow(m_shapeParamsGroup);
 
-        const auto applyShapeParams = [this]()
+        // Reads the controls. Returns false when there is no layer to apply them to; `changed` reports
+        // whether they actually differ from what the component already holds.
+        const auto readShapeParams = [this](int& row, EditorWhiteBoxComponent::ShapeParams& params, bool& changed)
         {
-            if (m_updating)
-            {
-                return;
-            }
-            const int row = m_layerList->currentRow();
+            row = m_layerList->currentRow();
             if (row < 0)
             {
-                return;
+                return false;
             }
-            EditorWhiteBoxComponent::ShapeParams params;
+            params = EditorWhiteBoxComponent::ShapeParams{};
             params.m_shape = static_cast<DrawShapeType>(m_shapeParamShape->currentData().toInt());
             params.m_width = aznumeric_cast<float>(m_shapeParamWidth->value());
             params.m_depth = aznumeric_cast<float>(m_shapeParamDepth->value());
             params.m_height = aznumeric_cast<float>(m_shapeParamHeight->value());
             params.m_sides = m_shapeParamSides->value();
             params.m_steps = m_shapeParamSteps->value();
+            params.m_stepsByHeight = m_shapeParamStepsByHeight->isChecked();
+            params.m_stepHeight = aznumeric_cast<float>(m_shapeParamStepHeight->value());
             params.m_wallThickness = aznumeric_cast<float>(m_shapeParamWallThickness->value());
             params.m_cavityGap = aznumeric_cast<float>(m_shapeParamCavityGap->value());
             params.m_floor = m_shapeParamFloor->isChecked();
             params.m_ceiling = m_shapeParamCeiling->isChecked();
+            params.m_doorFrame = m_shapeParamDoorFrame->isChecked();
+            params.m_archHeight = aznumeric_cast<float>(m_shapeParamArchHeight->value());
+            params.m_innerRadius = aznumeric_cast<float>(m_shapeParamInnerRadius->value());
+            params.m_sweepAngle = aznumeric_cast<float>(m_shapeParamSweepAngle->value());
+            params.m_holeRatio = aznumeric_cast<float>(m_shapeParamHoleRatio->value());
+            params.m_tubeSides = m_shapeParamTubeSides->value();
+
+            changed = true;
+            if (auto* component = CurrentComponent())
+            {
+                const auto current = component->GetLayerShapeParams(row);
+                changed = !(params.m_shape == current.m_shape && params.m_width == current.m_width &&
+                    params.m_depth == current.m_depth && params.m_height == current.m_height &&
+                    params.m_sides == current.m_sides && params.m_steps == current.m_steps &&
+                    params.m_stepsByHeight == current.m_stepsByHeight && params.m_stepHeight == current.m_stepHeight &&
+                    params.m_wallThickness == current.m_wallThickness && params.m_cavityGap == current.m_cavityGap &&
+                    params.m_floor == current.m_floor && params.m_ceiling == current.m_ceiling &&
+                    params.m_doorFrame == current.m_doorFrame && params.m_archHeight == current.m_archHeight &&
+                    params.m_innerRadius == current.m_innerRadius && params.m_sweepAngle == current.m_sweepAngle &&
+                    params.m_holeRatio == current.m_holeRatio && params.m_tubeSides == current.m_tubeSides);
+            }
+            return true;
+        };
+
+        // Intermediate values: regenerate geometry now; cook, bake and undo wait for the commit below.
+        const auto previewShapeParams = [this, readShapeParams]()
+        {
+            if (m_updating)
+            {
+                return;
+            }
+            int row = -1;
+            EditorWhiteBoxComponent::ShapeParams params;
+            bool changed = false;
+            if (!readShapeParams(row, params, changed) || !changed)
+            {
+                return;
+            }
+            if (auto* component = CurrentComponent())
+            {
+                component->SetLayerShapeParamsPreview(row, params);
+                m_shapeParamsPendingCommit = true;
+                m_shapeParamsPendingRow = row;
+            }
+            m_shapeParamCommitTimer->start();
+        };
+
+        // The real edit: full rebuild inside an undo batch. Runs once the value settles, or straight
+        // away for the controls that cannot stream (the shape combo and the check boxes).
+        const auto commitShapeParams = [this, readShapeParams]()
+        {
+            m_shapeParamCommitTimer->stop();
+            if (m_updating)
+            {
+                return;
+            }
+            int row = -1;
+            EditorWhiteBoxComponent::ShapeParams params;
+            bool changed = false;
+            if (!readShapeParams(row, params, changed))
+            {
+                return;
+            }
+            // A pending preview already wrote these values into the component, so `changed` is false by
+            // then - the undo step and the deferred work still have to happen.
+            if (!changed && !m_shapeParamsPendingCommit)
+            {
+                return;
+            }
+            if (m_shapeParamsPendingCommit && m_shapeParamsPendingRow >= 0)
+            {
+                row = m_shapeParamsPendingRow; // commit where the preview landed, not where the selection is now
+            }
+            m_shapeParamsPendingCommit = false;
+            m_shapeParamsPendingRow = -1;
             ModifyComponent(
                 "Edit Parametric Shape",
                 [row, params](EditorWhiteBoxComponent* c) { c->SetLayerShapeParams(row, params); });
         };
-        connect(m_shapeParamShape, QOverload<int>::of(&QComboBox::currentIndexChanged), this, applyShapeParams);
+
+        m_shapeParamCommitTimer = new QTimer(this);
+        m_shapeParamCommitTimer->setSingleShot(true);
+        m_shapeParamCommitTimer->setInterval(300);
+        connect(m_shapeParamCommitTimer, &QTimer::timeout, this, commitShapeParams);
+
+        connect(m_shapeParamShape, QOverload<int>::of(&QComboBox::currentIndexChanged), this, commitShapeParams);
         for (QDoubleSpinBox* spin :
              { m_shapeParamWidth, m_shapeParamDepth, m_shapeParamHeight, m_shapeParamWallThickness,
-               m_shapeParamCavityGap })
+               m_shapeParamCavityGap, m_shapeParamArchHeight, m_shapeParamInnerRadius, m_shapeParamSweepAngle,
+               m_shapeParamStepHeight, m_shapeParamHoleRatio })
         {
-            connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, applyShapeParams);
+            connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, previewShapeParams);
+            connect(spin, &QAbstractSpinBox::editingFinished, this, commitShapeParams);
         }
-        connect(m_shapeParamSides, QOverload<int>::of(&QSpinBox::valueChanged), this, applyShapeParams);
-        connect(m_shapeParamSteps, QOverload<int>::of(&QSpinBox::valueChanged), this, applyShapeParams);
-        connect(m_shapeParamFloor, &QCheckBox::toggled, this, applyShapeParams);
-        connect(m_shapeParamCeiling, &QCheckBox::toggled, this, applyShapeParams);
+        for (QSpinBox* spin : { m_shapeParamSides, m_shapeParamSteps, m_shapeParamTubeSides })
+        {
+            connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, previewShapeParams);
+            connect(spin, &QAbstractSpinBox::editingFinished, this, commitShapeParams);
+        }
+        connect(m_shapeParamStepsByHeight, &QCheckBox::toggled, this, commitShapeParams);
+        connect(m_shapeParamFloor, &QCheckBox::toggled, this, commitShapeParams);
+        connect(m_shapeParamCeiling, &QCheckBox::toggled, this, commitShapeParams);
+        connect(m_shapeParamDoorFrame, &QCheckBox::toggled, this, commitShapeParams);
         connect(m_bakeShapeButton, &QPushButton::clicked, this,
             [this]()
             {
@@ -955,7 +1078,45 @@ namespace WhiteBox
         m_drawShapeCombo->addItem(tr("Cone"), static_cast<int>(DrawShapeType::Cone));
         m_drawShapeCombo->addItem(tr("Sphere"), static_cast<int>(DrawShapeType::Sphere));
         m_drawShapeCombo->addItem(tr("Staircase"), static_cast<int>(DrawShapeType::Staircase));
+        m_drawShapeCombo->addItem(tr("Plane"), static_cast<int>(DrawShapeType::Plane));
+        m_drawShapeCombo->addItem(tr("Torus"), static_cast<int>(DrawShapeType::Torus));
+        m_drawShapeCombo->addItem(tr("Pipe"), static_cast<int>(DrawShapeType::Pipe));
+        m_drawShapeCombo->addItem(tr("Freeform Polygon"), static_cast<int>(DrawShapeType::Polygon));
         layout->addRow(tr("Shape"), m_drawShapeCombo);
+        auto* drawHint = new QLabel(tr(
+            "Plane: drag and release. Solids: drag a base, then pull height and click. "
+            "Polygon: click corners; Enter or click the first corner to finish; Backspace removes a corner. Esc cancels."));
+        drawHint->setWordWrap(true);
+        layout->addRow(drawHint);
+        m_drawHoleRatio = MakeSpin(0.05, 0.95, 0.05);
+        m_drawHoleRatioLabel = new QLabel(tr("Hole Ratio"));
+        layout->addRow(m_drawHoleRatioLabel, m_drawHoleRatio);
+        connect(m_drawHoleRatio, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+            [this](double value)
+            {
+                if (!m_updating)
+                {
+                    ModifyComponent("White Box Hole Ratio",
+                        [value](EditorWhiteBoxComponent* c) { c->SetDrawHoleRatio(static_cast<float>(value)); });
+                }
+            });
+
+        m_drawTubeSides = new QSpinBox();
+        m_drawTubeSides->setRange(MinTubeSides, MaxTubeSides);
+        m_drawTubeSides->setToolTip(
+            tr("Segments around the torus tube's cross-section. A torus has Sides x Tube Sides quads, so this "
+               "is the other half of its triangle count."));
+        m_drawTubeSidesLabel = new QLabel(tr("Tube Sides"));
+        layout->addRow(m_drawTubeSidesLabel, m_drawTubeSides);
+        connect(m_drawTubeSides, QOverload<int>::of(&QSpinBox::valueChanged), this,
+            [this](int tubeSides)
+            {
+                if (!m_updating)
+                {
+                    ModifyComponent("White Box Tube Sides",
+                        [tubeSides](EditorWhiteBoxComponent* c) { c->SetDrawTubeSides(tubeSides); });
+                }
+            });
 
         m_drawSides = new QSpinBox();
         m_drawSides->setRange(3, 128);
@@ -1752,28 +1913,76 @@ namespace WhiteBox
             m_shapeParamHeight->setValue(params.m_height);
             m_shapeParamSides->setValue(params.m_sides);
             m_shapeParamSteps->setValue(params.m_steps);
+            m_shapeParamStepsByHeight->setChecked(params.m_stepsByHeight);
+            m_shapeParamStepHeight->setValue(params.m_stepHeight);
             m_shapeParamWallThickness->setValue(params.m_wallThickness);
             m_shapeParamCavityGap->setValue(params.m_cavityGap);
             m_shapeParamFloor->setChecked(params.m_floor);
             m_shapeParamCeiling->setChecked(params.m_ceiling);
+            m_shapeParamDoorFrame->setChecked(params.m_doorFrame);
+            m_shapeParamArchHeight->setMaximum(AZStd::max(0.0f, params.m_height - 0.001f));
+            m_shapeParamArchHeight->setValue(params.m_archHeight);
+            m_shapeParamInnerRadius->setValue(params.m_innerRadius);
+            m_shapeParamSweepAngle->setValue(params.m_sweepAngle);
+            m_shapeParamHoleRatio->setValue(params.m_holeRatio);
+            m_shapeParamTubeSides->setValue(params.m_tubeSides);
             // Room has no Sides/Steps; every other non-staircase shape honours Sides (round shapes
             // inscribe the N-gon in the ellipse, angular shapes fill the rectangle with it).
-            const bool stair = params.m_shape == DrawShapeType::Staircase;
+            const bool circular = params.m_shape == DrawShapeType::CircularStairs;
+            const bool door = params.m_shape == DrawShapeType::Door;
+            const bool stair = params.m_shape == DrawShapeType::Staircase || circular;
             const bool room = params.m_shape == DrawShapeType::Room;
-            const bool hasSides = !stair && !room;
+            const bool plane = params.m_shape == DrawShapeType::Plane;
+            const bool torus = params.m_shape == DrawShapeType::Torus;
+            const bool ringShape = params.m_shape == DrawShapeType::Pipe || torus;
+            const bool hasSides = !plane && !stair && !room && (!door || params.m_archHeight > 0.0f);
             m_shapeParamSides->setVisible(hasSides);
             m_shapeParamSidesLabel->setVisible(hasSides);
             m_shapeParamSidesLabel->setText(
-                params.m_shape == DrawShapeType::Sphere ? tr("Subdivision") : tr("Sides"));
-            m_shapeParamSteps->setVisible(stair);
-            m_shapeParamStepsLabel->setVisible(stair);
+                door ? tr("Arch Segments") : (params.m_shape == DrawShapeType::Sphere ? tr("Subdivision") : tr("Sides")));
+            m_shapeParamTubeSides->setVisible(torus);
+            m_shapeParamTubeSidesLabel->setVisible(torus);
+            m_shapeParamSteps->setVisible(stair && !params.m_stepsByHeight);
+            m_shapeParamStepsLabel->setVisible(stair && !params.m_stepsByHeight);
+            m_shapeParamStepsByHeight->setVisible(stair);
+            m_shapeParamStepHeight->setVisible(stair && params.m_stepsByHeight);
+            m_shapeParamStepHeightLabel->setVisible(stair && params.m_stepsByHeight);
             // Room-only controls (Width/Depth/Height read as the interior dimensions for a Room).
-            m_shapeParamWallThickness->setVisible(room);
-            m_shapeParamWallThicknessLabel->setVisible(room);
+            m_shapeParamWallThickness->setVisible(room || (door && params.m_doorFrame));
+            m_shapeParamWallThicknessLabel->setVisible(room || (door && params.m_doorFrame));
+            m_shapeParamWallThicknessLabel->setText(door ? tr("Frame Thickness") : tr("Wall Thickness"));
+            m_shapeParamWallThickness->setToolTip(door ? tr("Thickness around the door opening.") : tr("Thickness of each wall leaf."));
             m_shapeParamCavityGap->setVisible(room);
             m_shapeParamCavityGapLabel->setVisible(room);
             m_shapeParamFloor->setVisible(room);
             m_shapeParamCeiling->setVisible(room);
+            m_shapeParamDoorFrame->setVisible(door);
+            auto* shapeLayout = qobject_cast<QFormLayout*>(m_shapeParamsGroup->layout());
+            const auto showField = [shapeLayout](QWidget* field, bool visible)
+            {
+                field->setVisible(visible);
+                if (auto* label = shapeLayout->labelForField(field))
+                {
+                    label->setVisible(visible);
+                }
+            };
+            showField(m_shapeParamArchHeight, door);
+            showField(m_shapeParamInnerRadius, circular);
+            showField(m_shapeParamSweepAngle, circular);
+            showField(m_shapeParamDepth, !circular);
+            showField(m_shapeParamHeight, !plane);
+            showField(m_shapeParamHoleRatio, ringShape);
+            const auto setLabel = [shapeLayout](QWidget* field, const QString& text)
+            {
+                if (auto* label = qobject_cast<QLabel*>(shapeLayout->labelForField(field)))
+                {
+                    label->setText(text);
+                }
+            };
+            setLabel(m_shapeParamWidth, circular ? tr("Tread Width") :
+                (door && params.m_doorFrame ? tr("Opening Width") : tr("Width")));
+            setLabel(m_shapeParamHeight, door && params.m_doorFrame ? tr("Opening Height") : tr("Height"));
+            setLabel(m_shapeParamDepth, door ? tr("Thickness / Depth") : tr("Depth"));
         }
 
         if (hasLayer)
@@ -1912,9 +2121,18 @@ namespace WhiteBox
             m_drawShapeCombo->setCurrentIndex(m_drawShapeCombo->findData(static_cast<int>(drawShape)));
             m_drawSides->setValue(component->GetDrawSides());
             const bool isStair = drawShape == DrawShapeType::Staircase;
+            const bool flat = drawShape == DrawShapeType::Plane || drawShape == DrawShapeType::Polygon;
+            const bool ringShape = drawShape == DrawShapeType::Torus || drawShape == DrawShapeType::Pipe;
+            m_drawHoleRatio->setValue(component->GetDrawHoleRatio());
+            m_drawHoleRatio->setVisible(ringShape);
+            m_drawHoleRatioLabel->setVisible(ringShape);
+            const bool torus = drawShape == DrawShapeType::Torus;
+            m_drawTubeSides->setValue(component->GetDrawTubeSides());
+            m_drawTubeSides->setVisible(torus);
+            m_drawTubeSidesLabel->setVisible(torus);
             m_stairGroup->setVisible(isStair);
-            m_drawSides->setVisible(!isStair);
-            m_drawSidesLabel->setVisible(!isStair);
+            m_drawSides->setVisible(!isStair && !flat);
+            m_drawSidesLabel->setVisible(!isStair && !flat);
             const DrawStairInfo stair = component->GetDrawStairInfo();
             m_stairByHeight->setChecked(stair.m_byHeight);
             m_stairSteps->setValue(stair.m_steps);
@@ -1924,6 +2142,8 @@ namespace WhiteBox
             m_stairStepHeight->setEnabled(stair.m_byHeight);
             m_drawCarve->setChecked(component->GetDrawCarve());
             m_drawMergeUnion->setChecked(component->GetDrawMergeUnion());
+            m_drawCarve->setEnabled(!flat);
+            m_drawMergeUnion->setEnabled(!flat);
 
             // Unit Cube Stamp.
             const bool unitCube = component->GetDrawUnitCube();

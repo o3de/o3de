@@ -10,6 +10,7 @@
 
 #include "EditorWhiteBoxDefaultShapeTypes.h"
 #include "Rendering/WhiteBoxMaterial.h"
+#include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Rendering/WhiteBoxRenderData.h"
 
 #include <AzCore/Math/Vector3.h>
@@ -48,14 +49,14 @@ namespace WhiteBox
     WhiteBoxRenderData CreateWhiteBoxRenderData(
         const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material, bool flipWinding = false);
 
-    //! Generate a parametric shape solid in layer-local space: footprint centred on the origin
-    //! in XY, extruded from z=0 up to @p height. The extents are FULL sizes along each axis.
-    //! For DrawShapeType::Room, @p width / @p depth / @p height are the INTERIOR dimensions and the
-    //! room-only parameters (@p wallThickness, @p cavityGap, @p floor, @p ceiling) drive the double
-    //! walls and caps; those are ignored by every other shape.
+    //! Generate a parametric shape centred on the origin in XY, from z=0 up to @p height (full extents).
+    //! Room sizes are interior; Door and CircularStairs reuse width/depth/height as their own dimensions.
     Api::WhiteBoxMeshPtr BuildParametricShapeMesh(
         DrawShapeType shape, float width, float depth, float height, int sides, int steps,
-        float wallThickness = 0.15f, float cavityGap = 0.1f, bool floor = true, bool ceiling = false);
+        float wallThickness = 0.15f, float cavityGap = 0.1f, bool floor = true, bool ceiling = false,
+        bool doorFrame = true, float archHeight = 0.0f, float innerRadius = 0.5f, float sweepAngle = 270.0f,
+        bool stepsByHeight = false, float stepHeight = 0.25f, float holeRatio = 0.5f,
+        int tubeSides = DefaultTubeSides);
 
     //! True when the default shape is set to a custom mesh asset.
     bool DisplayingAsset(DefaultShapeType defaultShapeType);

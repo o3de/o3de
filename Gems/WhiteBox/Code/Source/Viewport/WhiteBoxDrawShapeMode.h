@@ -61,7 +61,7 @@ namespace WhiteBox
         void NumericAppendOperatorPlus() override       { if (m_numericInput.IsActive()) { m_numericInput.AppendOperator('+'); SyncPreviewHeight(); } }
         void NumericAppendOperatorMult() override       { if (m_numericInput.IsActive()) { m_numericInput.AppendOperator('*'); SyncPreviewHeight(); } }
         void NumericAppendOperatorDiv() override        { if (m_numericInput.IsActive()) { m_numericInput.AppendOperator('/'); SyncPreviewHeight(); } }
-        void NumericBackspace() override                { if (m_numericInput.IsActive()) { m_numericInput.Backspace(); SyncPreviewHeight(); } }
+        void NumericBackspace() override;
         void NumericConfirm() override;
         void NumericCancel() override;
 
@@ -103,6 +103,7 @@ namespace WhiteBox
             Idle,           //!< Waiting for first click.
             DraggingBase,   //!< User is dragging out the base rectangle.
             PullingHeight,  //!< Base is locked; user moves mouse to set height.
+            DrawingPolygon, //!< Click-defined planar outline.
         };
 
         //! Raycast the mouse ray against the existing white box mesh polygons,
@@ -139,6 +140,12 @@ namespace WhiteBox
         //! "Draw Sides" properties (sides clamped to a safe range).
         DrawShapeType CurrentShape() const;
         int CurrentSides() const;
+        float CurrentHoleRatio() const;
+        int CurrentTubeSides() const;
+        bool CommitPolygon();
+        AZStd::vector<AZ::Vector3> m_polygonPoints;
+        bool m_polygonInvalid = false;
+        bool m_polygonCloseHovered = false;
 
         //! Staircase build parameters (step count, step-division mode, step height and rotation),
         //! read from the component in one request and sanitised to safe ranges.

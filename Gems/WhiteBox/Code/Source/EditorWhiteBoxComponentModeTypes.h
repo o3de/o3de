@@ -130,12 +130,13 @@ namespace WhiteBox
         AZStd::optional<VertexIntersection> m_vertexIntersection;
     };
 
-    //! Utility function to draw all edge handles in edgeBoundsWithHandle.
-    //! Note: Any edges in excludedEdgeHandles will be filtered out and not drawn.
+    //! Draw all edge handles except @p excludedEdgeHandles, batched into one DrawLines call.
+    //! @param lineBuffer caller-owned scratch storage, kept between frames.
     void DrawEdges(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZ::Color& color,
         const AZStd::vector<EdgeBoundWithHandle>& edgeBoundsWithHandle,
-        const Api::EdgeHandles& excludedEdgeHandles);
+        const Api::EdgeHandles& excludedEdgeHandles,
+        AZStd::vector<AZ::Vector3>& lineBuffer);
 
 } // namespace WhiteBox

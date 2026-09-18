@@ -9,6 +9,7 @@
 #include "WhiteBoxTestFixtures.h"
 #include "WhiteBoxTestUtil.h"
 #include "Util/WhiteBoxMeshUtil.h"
+#include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Core/WhiteBoxCsgCore.h"
 
 #include <AzCore/Math/Transform.h>
@@ -1463,6 +1464,33 @@ namespace UnitTest
         EXPECT_THAT(Api::MeshFaces(*m_whiteBox), Eq(Api::MeshFaces(*whiteBoxClone)));
     }
 
+    TEST_F(WhiteBoxTestFixture, ClonedMeshGeometryAndFacePropertiesAreIndependent)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto vertex = Api::MeshVertexHandles(*m_whiteBox).front();
+        const auto position = Api::VertexPosition(*m_whiteBox, vertex);
+        const auto polygons = Api::MeshPolygonHandles(*m_whiteBox);
+        const auto face = polygons.front().m_faceHandles.front();
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:9");
+        Api::SetFaceMaterial(*m_whiteBox, face, material);
+        Api::SetFacePaintColor(*m_whiteBox, face, 0xFF3366CC);
+        auto clone = Api::CloneMesh(*m_whiteBox);
+        ASSERT_NE(clone, nullptr);
+        EXPECT_EQ(Api::FacePolygonHandle(*clone, face), Api::FacePolygonHandle(*m_whiteBox, face));
+        EXPECT_EQ(Api::FaceMaterial(*clone, face), material);
+        EXPECT_EQ(Api::FacePaintColor(*clone, face), 0xFF3366CC);
+
+        Api::SetVertexPosition(*clone, vertex, position + AZ::Vector3::CreateAxisX());
+        Api::SetFaceMaterial(*clone, face, {});
+        Api::SetFacePaintColor(*clone, face, 0);
+        EXPECT_TRUE(Api::VertexPosition(*m_whiteBox, vertex).IsClose(position));
+        EXPECT_EQ(Api::FaceMaterial(*m_whiteBox, face), material);
+        EXPECT_EQ(Api::FacePaintColor(*m_whiteBox, face), 0xFF3366CC);
+        Api::Clear(*clone);
+        EXPECT_EQ(Api::MeshPolygonHandles(*m_whiteBox), polygons);
+    }
+
     TEST_F(WhiteBoxTestFixture, EdgeVertexHandlesTailTipAreExpected)
     {
         namespace Api = WhiteBox::Api;
@@ -2331,6 +2359,154 @@ IMPLEMENT_TEST_EXECUTABLE_MAIN();
 
 namespace UnitTest
 {
+    TEST_F(WhiteBoxTestFixture, RingPrimitivesAreClosedAndPlaneHasAnOpenBoundary)
+    {
+        namespace Api = WhiteBox::Api;
+        for (const auto shape : {WhiteBox::DrawShapeType::Pipe, WhiteBox::DrawShapeType::Torus})
+        {
+            SCOPED_TRACE(static_cast<int>(shape));
+            for (const float hole : {0.1f, 0.5f, 0.9f})
+            {
+                auto mesh = WhiteBox::BuildParametricShapeMesh(
+                    shape, 2.0f, 3.0f, 0.5f, 24, 8, 0.15f, 0.1f, true, false,
+                    true, 0.0f, 0.5f, 270.0f, false, 0.25f, hole);
+                ASSERT_FALSE(Api::MeshFaceHandles(*mesh).empty());
+                for (const auto edge : Api::MeshEdgeHandles(*mesh))
+                {
+                    EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+                }
+                double volume = 0.0;
+                for (const auto face : Api::MeshFaceHandles(*mesh))
+                {
+                    const auto points = Api::FaceVertexPositions(*mesh, face);
+                    volume += points[0].Dot(points[1].Cross(points[2])) / 6.0;
+                }
+                EXPECT_GT(volume, 0.0);
+            }
+        }
+        auto plane = WhiteBox::BuildParametricShapeMesh(WhiteBox::DrawShapeType::Plane, 2, 3, 1, 4, 8);
+        EXPECT_EQ(Api::MeshFaceHandles(*plane).size(), 2);
+        size_t boundaryEdges = 0;
+        for (const auto edge : Api::MeshEdgeHandles(*plane))
+        {
+            boundaryEdges += Api::EdgeFaceHandles(*plane, edge).size() == 1 ? 1 : 0;
+        }
+        EXPECT_EQ(boundaryEdges, 4);
+    }
+
+    TEST_F(WhiteBoxTestFixture, FreeformPolygonSupportsConcaveOutlinesAndRejectsCrossingsWithoutMutation)
+    {
+        namespace Api = WhiteBox::Api;
+        const AZStd::vector<AZ::Vector3> outline{
+            AZ::Vector3(0, 0, 0), AZ::Vector3(2, 0, 0), AZ::Vector3(2, 2, 0),
+            AZ::Vector3(1, 1, 0), AZ::Vector3(0, 2, 0)};
+        auto mesh = Api::CreateWhiteBoxMesh();
+        ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), outline, AZ::Vector3::CreateAxisZ()));
+        EXPECT_EQ(Api::MeshFaceHandles(*mesh).size(), 3);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 1);
+        float area = 0.0f;
+        for (const auto face : Api::MeshFaceHandles(*mesh))
+        {
+            const auto p = Api::FaceVertexPositions(*mesh, face);
+            const float signedArea = (p[1] - p[0]).Cross(p[2] - p[0]).GetZ() * 0.5f;
+            EXPECT_GT(signedArea, 0.0f);
+            area += signedArea;
+        }
+        EXPECT_NEAR(area, 3.0f, 1e-5f);
+        const auto before = Api::MeshVertexCount(*mesh);
+        const AZStd::vector<AZ::Vector3> crossing{
+            AZ::Vector3(0, 0, 0), AZ::Vector3(2, 2, 0), AZ::Vector3(0, 2, 0), AZ::Vector3(2, 0, 0)};
+        EXPECT_FALSE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), crossing, AZ::Vector3::CreateAxisZ()));
+        EXPECT_EQ(Api::MeshVertexCount(*mesh), before);
+        EXPECT_EQ(Api::MeshFaceHandles(*mesh).size(), 3);
+    }
+
+    TEST_F(WhiteBoxTestFixture, ParametricStairsDeriveStepCountFromTargetRiserHeight)
+    {
+        namespace Api = WhiteBox::Api;
+        struct Case
+        {
+            float m_height;
+            float m_stepHeight;
+            int m_expectedSteps;
+        };
+        for (const auto shape : {WhiteBox::DrawShapeType::Staircase, WhiteBox::DrawShapeType::CircularStairs})
+        {
+            for (const auto& example : {Case{2.1f, 0.25f, 8}, Case{3.0f, 0.2f, 15},
+                     Case{0.5f, 2.0f, 1}, Case{3.0f, 0.001f, 128}})
+            {
+                SCOPED_TRACE(static_cast<int>(shape));
+                SCOPED_TRACE(example.m_expectedSteps);
+                auto derived = WhiteBox::BuildParametricShapeMesh(
+                    shape, 1.0f, 2.0f, example.m_height, 16, 3,
+                    0.15f, 0.1f, true, false, true, 0.0f, 0.5f, 270.0f, true, example.m_stepHeight);
+                auto counted = WhiteBox::BuildParametricShapeMesh(
+                    shape, 1.0f, 2.0f, example.m_height, 16, example.m_expectedSteps);
+                EXPECT_EQ(Api::MeshVertexCount(*derived), Api::MeshVertexCount(*counted));
+                EXPECT_THAT(Api::MeshFaces(*derived), ::testing::Eq(Api::MeshFaces(*counted)));
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ParametricDoorsAndCircularStairsHaveClosedNondegenerateOutwardMeshes)
+    {
+        namespace Api = WhiteBox::Api;
+        const auto checkSolid = [](const WhiteBox::WhiteBoxMesh& mesh)
+        {
+            EXPECT_FALSE(Api::MeshFaceHandles(mesh).empty());
+            for (const auto edge : Api::MeshEdgeHandles(mesh))
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(mesh, edge).size(), 2);
+            }
+            double volume = 0.0;
+            for (const auto face : Api::MeshFaceHandles(mesh))
+            {
+                const auto points = Api::FaceVertexPositions(mesh, face);
+                ASSERT_EQ(points.size(), 3);
+                EXPECT_GT((points[1] - points[0]).Cross(points[2] - points[0]).GetLengthSq(), 1e-12f);
+                volume += static_cast<double>(points[0].Dot(points[1].Cross(points[2]))) / 6.0;
+            }
+            EXPECT_GT(volume, 0.0);
+        };
+        for (const bool frame : {false, true})
+        {
+            for (const float arch : {0.0f, 0.5f, 1.5f})
+            {
+                SCOPED_TRACE(frame);
+                SCOPED_TRACE(arch);
+                auto mesh = WhiteBox::BuildParametricShapeMesh(
+                    WhiteBox::DrawShapeType::Door, 1.0f, 0.2f, 2.1f, 16, 8,
+                    0.15f, 0.0f, false, false, frame, arch);
+                checkSolid(*mesh);
+            }
+        }
+        for (const int steps : {1, 3, 16})
+        {
+            for (const float sweep : {90.0f, 270.0f, 360.0f})
+            {
+                SCOPED_TRACE(steps);
+                SCOPED_TRACE(sweep);
+                auto mesh = WhiteBox::BuildParametricShapeMesh(
+                    WhiteBox::DrawShapeType::CircularStairs, 1.0f, 1.0f, 3.0f, 16, steps,
+                    0.15f, 0.0f, false, false, true, 0.0f, 0.5f, sweep);
+                checkSolid(*mesh);
+                if (steps == 16 && sweep == 270.0f)
+                {
+                    // Ordinary quads must not regain a center vertex and four triangles.
+                    EXPECT_LT(Api::MeshFaceHandles(*mesh).size(), 400);
+                }
+                float maximumHeight = 0.0f;
+                for (const auto vertex : Api::MeshVertexHandles(*mesh))
+                {
+                    maximumHeight = AZStd::max(maximumHeight, Api::VertexPosition(*mesh, vertex).GetZ());
+                }
+                EXPECT_NEAR(maximumHeight, 3.0f, 1e-5f);
+            }
+        }
+    }
+
     TEST_F(WhiteBoxTestFixture, FacePaintSurvivesRepeatedInitializationAndSerialization)
     {
         namespace Api = WhiteBox::Api;

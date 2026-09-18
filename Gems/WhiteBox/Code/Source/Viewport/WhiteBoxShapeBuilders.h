@@ -17,12 +17,27 @@
 
 namespace WhiteBox
 {
+    //! Torus tube tessellation, separate from the ring's sides (they multiply).
+    inline constexpr int MinTubeSides = 3;
+    inline constexpr int MaxTubeSides = 64;
+    inline constexpr int DefaultTubeSides = 12;
+
     //! Free geometry helpers used by DrawShapeMode to build white box shape solids
     //! (boxes, prisms, cones/pyramids, cylinders, spheres and staircases) from a drawn
     //! footprint. Declared here so DrawShapeMode.cpp keeps only their definitions and so
     //! they can be reused/tested. All faces are wound outward.
     namespace Detail
     {
+        //! Plane, torus and hollow pipe builders shared by viewport drawing and parametric layers.
+        void BuildAdditionalShape(
+            WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld, const AZ::Vector3& center,
+            const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up,
+            float baseUp, float topUp, DrawShapeType shape, int sides, float holeRatio, int tubeSides);
+        //! Validate and triangulate a simple planar outline, including concave polygons.
+        //! Returns false without modifying the mesh for crossing/degenerate outlines.
+        bool BuildPolygonFace(
+            WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld,
+            const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& normal);
         //! Build a right-handed basis with @p n (the surface normal) as the up axis.
         void BasisFromNormal(const AZ::Vector3& n, AZ::Vector3& right, AZ::Vector3& fwd, AZ::Vector3& up);
 
@@ -90,6 +105,7 @@ namespace WhiteBox
         void BuildShapeSolid(
             WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld, const AZ::Vector3& center,
             const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up, float baseUp, float topUp,
-            DrawShapeType shapeType, int sidesIn, int steps = 8);
+            DrawShapeType shapeType, int sidesIn, int steps = 8, float holeRatio = 0.5f,
+            int tubeSides = DefaultTubeSides);
     } // namespace Detail
 } // namespace WhiteBox

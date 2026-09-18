@@ -483,6 +483,9 @@ namespace WhiteBox
         }
         // else: a source is set but evaluation transiently failed (e.g. the source entity is
         // not active yet at load time). Keep any previously cached boolean render data.
+
+        // Refresh the serialized byte stream now that every bake above is current.
+        PackBakedDataBlob();
     }
 
     void EditorWhiteBoxComponent::UpdateBooleanSourceListener()

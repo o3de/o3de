@@ -95,6 +95,12 @@ namespace WhiteBox
         //! Number of sides the draw-shape tool uses for round / N-gon shapes
         //! (4 = box / square). Sourced from the component's "Draw Sides" property.
         virtual int GetDrawSides() { return 4; }
+        //! Tube tessellation for a drawn torus (see DefaultTubeSides).
+        virtual int GetDrawTubeSides()
+        {
+            return 12;
+        }
+        virtual float GetDrawHoleRatio() { return 0.5f; }
 
         //! Shape the draw-shape tool builds, from the component's "Draw Shape" property.
         virtual DrawShapeType GetDrawShape() { return DrawShapeType::Box; }

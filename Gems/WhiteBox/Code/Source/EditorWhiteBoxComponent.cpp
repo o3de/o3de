@@ -82,6 +82,8 @@ namespace WhiteBox
             break;
         case DrawShapeType::Cylinder:
         case DrawShapeType::Cone:
+        case DrawShapeType::Pipe:
+        case DrawShapeType::Torus:
             m_sides = 24;
             break;
         case DrawShapeType::Sphere:
@@ -96,13 +98,42 @@ namespace WhiteBox
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
+    // Tube Sides was split out of Draw Sides. Seed it from the old derived value so a torus drawn
+    // before the split keeps the tessellation it had.
+    int LegacyTubeSidesFromSides(const int sides)
+    {
+        return AZStd::clamp(sides / 2, 8, 32);
+    }
+
+    bool DrawShapeDataVersionConverter(
+        AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    {
+        if (classElement.GetVersion() <= 2)
+        {
+            int sides = 4;
+            if (const int idx = classElement.FindElement(AZ_CRC_CE("Sides")); idx != -1)
+            {
+                classElement.GetSubElement(idx).GetData(sides);
+            }
+            classElement.AddElementWithData(context, "TubeSides", LegacyTubeSidesFromSides(sides));
+        }
+        return true;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::TubeSidesVisibility() const
+    {
+        return m_shape == DrawShapeType::Torus ? AZ::Edit::PropertyVisibility::Show
+                                               : AZ::Edit::PropertyVisibility::Hide;
+    }
+
     AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::SidesVisibility() const
     {
         // Sides applies to every solid shape: it sets the footprint resolution for
         // round shapes (Cylinder/Cone), the subdivision for the Sphere, and the
         // N-gon footprint for Box/Pyramid (3 = triangular prism, 4 = box, etc.).
         // Only the Staircase ignores it.
-        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Hide
+        return (m_shape == DrawShapeType::Staircase || m_shape == DrawShapeType::Plane || m_shape == DrawShapeType::Polygon)
+            ? AZ::Edit::PropertyVisibility::Hide
                                                    : AZ::Edit::PropertyVisibility::Show;
     }
 
@@ -291,6 +322,24 @@ namespace WhiteBox
             }
         }
 
+        if (classElement.GetVersion() <= 5)
+        {
+            // v6 moved render data and bakes into byte-stream blobs; drop the old elements and rebake on load.
+            for (const AZ::Crc32 field :
+                 { AZ_CRC_CE("RenderData"), AZ_CRC_CE("BakedBooleanRenderData"), AZ_CRC_CE("BakedBaseRenderData"),
+                   AZ_CRC_CE("BakedPhysicsBaseRenderData"), AZ_CRC_CE("BakedPhysicsBooleanRenderData") })
+            {
+                if (const int idx = classElement.FindElement(field); idx != -1)
+                {
+                    classElement.RemoveElement(idx);
+                }
+            }
+            if (const int idx = classElement.FindElement(AZ_CRC_CE("PhysicsBaked")); idx != -1)
+            {
+                classElement.GetSubElement(idx).SetData(context, false);
+            }
+        }
+
         return true;
     }
 
@@ -350,9 +399,11 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DrawShapeData>()
-                ->Version(1)
+                ->Version(3, &DrawShapeDataVersionConverter)
                 ->Field("Shape", &DrawShapeData::m_shape)
                 ->Field("Sides", &DrawShapeData::m_sides)
+                ->Field("HoleRatio", &DrawShapeData::m_holeRatio)
+                ->Field("TubeSides", &DrawShapeData::m_tubeSides)
                 ->Field("Stair", &DrawShapeData::m_stair)
                 ->Field("Carve", &DrawShapeData::m_carve)
                 ->Field("MergeUnion", &DrawShapeData::m_mergeUnion)
@@ -377,6 +428,10 @@ namespace WhiteBox
                     ->EnumAttribute(DrawShapeType::Cone, QT_TRANSLATE_NOOP("WhiteBox", "Cone"))
                     ->EnumAttribute(DrawShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
                     ->EnumAttribute(DrawShapeType::Staircase, QT_TRANSLATE_NOOP("WhiteBox", "Staircase"))
+                    ->EnumAttribute(DrawShapeType::Plane, QT_TRANSLATE_NOOP("WhiteBox", "Plane"))
+                    ->EnumAttribute(DrawShapeType::Torus, QT_TRANSLATE_NOOP("WhiteBox", "Torus"))
+                    ->EnumAttribute(DrawShapeType::Pipe, QT_TRANSLATE_NOOP("WhiteBox", "Pipe"))
+                    ->EnumAttribute(DrawShapeType::Polygon, QT_TRANSLATE_NOOP("WhiteBox", "Freeform Polygon"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DrawShapeData::OnShapeChange)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_sides,
@@ -386,8 +441,15 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::Max, 128)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::SidesVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
+                        AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_tubeSides,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Tube Sides"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Segments around the torus tube's cross-section. A torus has Draw Sides x Tube Sides "
+                        "quads, so this is the other half of its triangle count."))
+                    ->Attribute(AZ::Edit::Attributes::Min, MinTubeSides)
+                    ->Attribute(AZ::Edit::Attributes::Max, MaxTubeSides)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::TubeSidesVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair, QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Staircase-specific settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::StairVisibility)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
@@ -438,7 +500,7 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorWhiteBoxComponent, EditorComponentBase>()
-                ->Version(5, &EditorWhiteBoxVersionConverter)
+                ->Version(6, &EditorWhiteBoxVersionConverter)
                 ->Field("WhiteBoxData", &EditorWhiteBoxComponent::m_whiteBoxData)
                 ->Field("Layers", &EditorWhiteBoxComponent::m_layers)
                 ->Field("ActiveLayer", &EditorWhiteBoxComponent::m_activeLayerIndex)
@@ -446,7 +508,6 @@ namespace WhiteBox
                 ->Field("DefaultShape", &EditorWhiteBoxComponent::m_defaultShape)
                 ->Field("EditorMeshAsset", &EditorWhiteBoxComponent::m_editorMeshAsset)
                 ->Field("Material", &EditorWhiteBoxComponent::m_material)
-                ->Field("RenderData", &EditorWhiteBoxComponent::m_renderData)
                 ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate)
                 ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport)
                 ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
@@ -458,14 +519,9 @@ namespace WhiteBox
                 // Whether this entity is an active global-boolean target (show the composed result by default).
                 ->Field("GlobalBooleanActive", &EditorWhiteBoxComponent::m_globalBooleanActive)
                 ->Field("CsgSolver", &EditorWhiteBoxComponent::m_csgSolver)
-                ->Field("BakedBooleanRenderData", &EditorWhiteBoxComponent::m_bakedBooleanRenderData)
-                ->Field("BakedBaseRenderData", &EditorWhiteBoxComponent::m_bakedBaseRenderData)
-                // Persist the collision-filtered physics bakes too, so the game-mode / asset-processor
-                // build (which runs on a clone that is never live-edited) has the FILTERED physics
-                // geometry available - otherwise it falls back to the full visual mesh and the runtime
-                // collider wireframe shows layers whose Collision flag is off.
-                ->Field("BakedPhysicsBaseRenderData", &EditorWhiteBoxComponent::m_bakedPhysicsBaseRenderData)
-                ->Field("BakedPhysicsBooleanRenderData", &EditorWhiteBoxComponent::m_bakedPhysicsBooleanRenderData)
+                // Render data and game-mode bakes, as byte streams (see m_renderDataBlob / m_bakedDataBlob).
+                ->Field("RenderDataBlob", &EditorWhiteBoxComponent::m_renderDataBlob)
+                ->Field("BakedDataBlob", &EditorWhiteBoxComponent::m_bakedDataBlob)
                 ->Field("PhysicsBaked", &EditorWhiteBoxComponent::m_physicsBaked);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -595,6 +651,9 @@ namespace WhiteBox
 
         m_editorMeshAsset->Associate(entityComponentIdPair);
 
+        // Restore the serialized render data and bakes first, for clones that never rebuild and for undo.
+        UnpackRenderDataBlobs();
+
         // deserialize the white box data into a mesh object or load the serialized asset ref
         // (the serialized stream already contains the full combined geometry - freeform
         // faces plus any voxel-stamped surface - so no voxel regeneration is needed here;
@@ -700,6 +759,11 @@ namespace WhiteBox
             if (m_rebuild.m_bakedDataDelay >= 0.5f)
             {
                 m_rebuild.m_bakedDataDirty = false;
+                m_rebuild.m_bakedDataDelay = 0.0f;
+                if (m_rebuild.m_workingMeshUnwritten)
+                {
+                    SerializeWhiteBox(); // a preview left the working mesh out of the layer's stream
+                }
                 RebuildBakedRenderData();
                 // The bake writes SERIALIZED members; without a dirty mark the prefab state
                 // (what play-in-editor spawns from) would keep the stale previous bake.
@@ -719,7 +783,25 @@ namespace WhiteBox
         // Bake synchronously for discrete edits: play-in-editor spawns from the serialized state captured
         // when the edit marks the entity dirty, so a debounced bake would leave game mode one edit behind.
         m_rebuild.m_bakedDataDirty = false;
+        m_rebuild.m_bakedDataDelay = 0.0f;
+        m_rebuild.m_physicsPending = false; // cooked synchronously just above
         RebuildBakedRenderData();
+    }
+
+    void EditorWhiteBoxComponent::RebuildWhiteBoxDeferred()
+    {
+        // Update geometry and display now; the collider cook and game-mode bake wait for OnTick until edits stop.
+        EvaluateLiveBoolean();
+        RebuildCombinedMesh();
+
+        m_rebuild.m_streaming = true;
+        RebuildRenderMesh();
+        m_rebuild.m_streaming = false;
+
+        m_rebuild.m_physicsPending = true;
+        m_rebuild.m_physicsTimer = 0.0f;
+        m_rebuild.m_bakedDataDirty = true;
+        m_rebuild.m_bakedDataDelay = 0.0f;
     }
 
     void EditorWhiteBoxComponent::BuildGameEntity(AZ::Entity* gameEntity)
@@ -729,6 +811,10 @@ namespace WhiteBox
         {
             return;
         }
+
+        // Every fallback below reads the live render data, which on a never-activated clone exists
+        // only in the serialized blobs.
+        EnsureRenderDataUnpacked();
 
         // note: it is important no edit time only functions are called here as BuildGameEntity
         // will be called by the Asset Processor when creating dynamic slices

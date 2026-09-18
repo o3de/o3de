@@ -170,11 +170,11 @@ namespace WhiteBox
         // draw user (polygon border) edges in the standard dark colour
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user,
-            interactiveEdgeHandles);
+            interactiveEdgeHandles, m_lineBuffer);
         // draw hidden/mesh edges in a bright orange so they stand out as "restorable"
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeUnselected, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_mesh,
-            interactiveEdgeHandles);
+            interactiveEdgeHandles, m_lineBuffer);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(

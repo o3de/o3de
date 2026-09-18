@@ -80,6 +80,7 @@ set(FILES
     Source/Viewport/WhiteBoxDrawShapeMode.cpp
     Source/Viewport/WhiteBoxDrawShapeMode.h
     Source/Viewport/WhiteBoxShapeBuilders.h
+    Source/Viewport/WhiteBoxAdditionalShapeBuilders.cpp
     Source/Viewport/WhiteBoxDrawShapeModeBus.h
     Source/Asset/EditorWhiteBoxMeshAsset.cpp
     Source/Asset/EditorWhiteBoxMeshAsset.h
