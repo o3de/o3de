@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -90,6 +91,16 @@ namespace SandboxEditor
         SetupCameras();
 
         auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+        controller->SetCameraMovementConstraint(
+            [](const AZ::Vector3& previousPosition, const AZ::Vector3& desiredPosition)
+            {
+                if (auto* collision = AZ::Interface<Camera::EditorCameraCollisionInterface>::Get())
+                {
+                    return collision->ConstrainCameraMovement(previousPosition, desiredPosition);
+                }
+                return desiredPosition;
+            });
 
         controller->SetCameraViewportContextBuilderCallback(
             [viewportId = m_viewportId](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)

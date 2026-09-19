@@ -21,6 +21,19 @@ namespace AzFramework
 
 namespace Camera
 {
+    //! Optional provider of collision constraints for the free editor camera.
+    //! A physics gem can register this interface without adding a physics dependency to the camera controller.
+    class EditorCameraCollisionInterface
+    {
+    public:
+        AZ_RTTI(EditorCameraCollisionInterface, "{A01AD0D8-967B-41DF-B531-417083720567}");
+        virtual ~EditorCameraCollisionInterface() = default;
+
+        virtual bool IsCameraCollisionEnabled() const = 0;
+        virtual void SetCameraCollisionEnabled(bool enabled) = 0;
+        virtual AZ::Vector3 ConstrainCameraMovement(const AZ::Vector3& previousPosition, const AZ::Vector3& desiredPosition) const = 0;
+    };
+
     /**
      * This bus allows you to get and set the current editor viewport camera
      */

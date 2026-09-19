@@ -123,6 +123,11 @@ namespace AtomToolsFramework
         }
     }
 
+    void ModularViewportCameraController::SetCameraMovementConstraint(const CameraMovementConstraint& constraint)
+    {
+        m_cameraMovementConstraint = constraint;
+    }
+
     void ModularViewportCameraController::SetupCameraProperties(AzFramework::CameraProps& cameraProps)
     {
         if (m_cameraPropsBuilder)
@@ -171,6 +176,7 @@ namespace AtomToolsFramework
         controller->SetupCameraProperties(m_cameraProps);
         controller->SetupCameraControllerPriority(m_priorityFn);
         controller->SetupCameraControllerViewportContext(m_modularCameraViewportContext);
+        m_cameraMovementConstraint = controller->m_cameraMovementConstraint;
 
         auto handleCameraChangeFn = [this]([[maybe_unused]] const AZ::Matrix4x4& cameraView)
         {
@@ -242,6 +248,7 @@ namespace AtomToolsFramework
         }
 
         m_updatingTransformInternally = true;
+        const AZ::Vector3 previousPosition = m_camera.Translation();
 
         if (m_cameraMode == CameraMode::Control)
         {
@@ -249,6 +256,7 @@ namespace AtomToolsFramework
             m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
             m_roll = AzFramework::SmoothValue(m_targetRoll, m_roll, m_cameraProps.m_rotateSmoothnessFn(), event.m_deltaTime.count());
 
+            ConstrainCameraMovement(previousPosition);
             m_modularCameraViewportContext->SetCameraTransform(CombinedCameraTransform());
         }
         else if (m_cameraMode == CameraMode::Animation)
@@ -285,9 +293,12 @@ namespace AtomToolsFramework
             m_targetRoll = eulerAngles.GetY();
             m_targetCamera = m_camera;
 
-            m_modularCameraViewportContext->SetCameraTransform(current);
+            ConstrainCameraMovement(previousPosition);
+            AZ::Transform constrainedTransform = current;
+            constrainedTransform.SetTranslation(m_camera.Translation());
+            m_modularCameraViewportContext->SetCameraTransform(constrainedTransform);
 
-            if (animationTime >= 1.0f)
+            if (animationTime >= 1.0f || !constrainedTransform.GetTranslation().IsClose(current.GetTranslation(), 1.0e-5f))
             {
                 m_cameraMode = CameraMode::Control;
                 m_cameraAnimation.reset();
@@ -295,6 +306,35 @@ namespace AtomToolsFramework
         }
 
         m_updatingTransformInternally = false;
+    }
+
+    void ModularViewportCameraControllerInstance::ConstrainCameraMovement(const AZ::Vector3& previousPosition)
+    {
+        if (!m_cameraMovementConstraint || IsTrackingTransform())
+        {
+            return;
+        }
+
+        const AZ::Vector3 desiredPosition = m_camera.Translation();
+        const AZ::Vector3 position = m_cameraMovementConstraint(previousPosition, desiredPosition);
+        if (position.IsClose(desiredPosition, 1.0e-5f))
+        {
+            return;
+        }
+
+        if (m_camera.m_offset.IsZero())
+        {
+            m_camera.m_pivot = position;
+            m_targetCamera.m_pivot = position;
+            m_targetCamera.m_offset = AZ::Vector3::CreateZero();
+        }
+        else
+        {
+            // Preserve the orbit pivot, expressing the corrected position in each camera's local frame.
+            m_camera.m_offset = m_camera.Rotation().GetTranspose() * (position - m_camera.m_pivot);
+            m_targetCamera.m_pivot = m_camera.m_pivot;
+            m_targetCamera.m_offset = m_targetCamera.Rotation().GetTranspose() * (position - m_targetCamera.m_pivot);
+        }
     }
 
     bool ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float duration)
