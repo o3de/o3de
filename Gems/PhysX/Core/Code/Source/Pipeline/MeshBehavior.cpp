@@ -112,7 +112,7 @@ namespace PhysX
                 AZ::SceneAPI::Events::GraphMetaInfo::VirtualTypesSet types;
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, nodeIndex);
 
-                if (types.count(AZ_CRC_CE("PhysicsMesh")) == 1)
+                if (types.count(AZ_CRC_CE("PhysicsMeshStatic")) == 1 || types.count(AZ_CRC_CE("PhysicsMeshDynamic")) == 1)
                 {
                     nodeSelectionList.AddSelectedNode(graph.GetNodeName(nodeIndex).GetPath());
                 }
@@ -142,23 +142,50 @@ namespace PhysX
 
         AZ::SceneAPI::Events::ProcessingResult MeshBehavior::BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const
         {
-            if (!AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IMeshData>(scene, true))
+            const AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
+            AZ::SceneAPI::Containers::SceneGraph::ContentStorageConstData graphContent = graph.GetContentStorage();
+            auto view = AZ::SceneAPI::Containers::Views::MakeFilterView(
+                graphContent, AZ::SceneAPI::Containers::DerivedTypeFilter<AZ::SceneAPI::DataTypes::IMeshData>());
+
+            bool created = false;
+            for (auto iter = view.begin(), iterEnd = view.end(); iter != iterEnd; ++iter)
             {
-                return AZ::SceneAPI::Events::ProcessingResult::Ignored;
+                AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.ConvertToNodeIndex(iter.GetBaseIterator());
+
+                AZ::SceneAPI::Events::GraphMetaInfo::VirtualTypesSet types;
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, nodeIndex);
+
+                if (types.count(AZ_CRC_CE("PhysicsMeshStatic")) == 0 && types.count(AZ_CRC_CE("PhysicsMeshDynamic")) == 0)
+                {
+                    continue;
+                }
+
+                AZStd::string nodePath{ graph.GetNodeName(nodeIndex).GetPath() };
+
+                AZStd::shared_ptr<MeshGroup> group = AZStd::make_shared<MeshGroup>();
+                group->SetName(AZ::SceneAPI::DataTypes::Utilities::CreateStableGroupName(scene, MeshGroup::TYPEINFO_Uuid(), nodePath));
+                group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, MeshGroup::TYPEINFO_Uuid(), nodePath));
+
+                AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& nodeSelectionList = group->GetSceneNodeSelectionList();
+                AZ::SceneAPI::Utilities::SceneGraphSelector::UnselectAll(graph, nodeSelectionList);
+                nodeSelectionList.AddSelectedNode(nodePath);
+
+                auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+                coordinateSystemRule->SetUseAdvancedData(true);
+                coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
+                coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
+                coordinateSystemRule->SetScale(1.0f);
+                group->GetRuleContainer().AddRule(AZStd::move(coordinateSystemRule));
+
+                group->SetSceneGraph(&graph);
+                group->UpdateMaterialSlots();
+
+                scene.GetManifest().AddEntry(AZStd::move(group));
+                created = true;
             }
 
-            AZStd::shared_ptr<MeshGroup> group = AZStd::make_shared<MeshGroup>();
-
-            // This is a group that's generated automatically so may not be saved to disk but would need to be recreated
-            //      in the same way again. To guarantee the same uuid, generate a stable one instead.
-            group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, MeshGroup::TYPEINFO_Uuid()));
-
-            group->SetSceneGraph(&scene.GetGraph());
-
-            AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
-            scene.GetManifest().AddEntry(AZStd::move(group));
-
-            return AZ::SceneAPI::Events::ProcessingResult::Success;
+            return created ? AZ::SceneAPI::Events::ProcessingResult::Success : AZ::SceneAPI::Events::ProcessingResult::Ignored;
         }
 
         AZ::SceneAPI::Events::ProcessingResult MeshBehavior::UpdatePhysXMeshGroups(AZ::SceneAPI::Containers::Scene& scene) const
