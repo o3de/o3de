@@ -55,6 +55,14 @@ namespace EditorPreferencesViewportCameraStrings
     static const char* InvertPanYDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Invert direction of pan in local Y axis");
     static const char* InvertZoomName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Invert Zoom Direction");
     static const char* InvertZoomDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Invert Mouse Wheel Zoom direction");
+    static const char* TrackpadScrollActionName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Trackpad Two Finger Scroll");
+    static const char* TrackpadScrollActionDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "What scrolling with two fingers on a trackpad does (Zoom behaves like the mouse wheel, Pan drags the scene, Look rotates the camera). Holding Ctrl always zooms, holding the orbit modifier always orbits, pinch always zooms");
+    static const char* TrackpadScrollDollySpeedName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Trackpad Scroll Zoom Speed");
+    static const char* TrackpadScrollDollySpeedDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Camera movement speed while zooming with a two finger scroll on a trackpad");
+    static const char* TrackpadPanSpeedName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Trackpad Pan Speed");
+    static const char* TrackpadPanSpeedDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Camera movement speed while panning with a two finger scroll on a trackpad");
+    static const char* TrackpadPinchSpeedName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Trackpad Pinch Zoom Speed");
+    static const char* TrackpadPinchSpeedDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Camera movement speed while zooming with a pinch on a trackpad");
     static const char* CameraCaptureLookCursorName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Camera Capture Look Cursor");
     static const char* CameraCaptureLookCursorDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Should the cursor be captured (hidden) while performing free look");
     static const char* DefaultCameraPositionName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportCamera", "Default Camera Position");
@@ -144,7 +152,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
 void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
-        ->Version(6)
+        ->Version(7)
         ->Field("TranslateSpeed", &CameraMovementSettings::m_translateSpeed)
         ->Field("RotateSpeed", &CameraMovementSettings::m_rotateSpeed)
         ->Field("BoostMultiplier", &CameraMovementSettings::m_boostMultiplier)
@@ -155,6 +163,10 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
         ->Field("RotateSmoothness", &CameraMovementSettings::m_rotateSmoothness)
         ->Field("TranslateSmoothing", &CameraMovementSettings::m_translateSmoothing)
         ->Field("TranslateSmoothness", &CameraMovementSettings::m_translateSmoothness)
+        ->Field("TrackpadScrollAction", &CameraMovementSettings::m_trackpadScrollAction)
+        ->Field("TrackpadScrollDollySpeed", &CameraMovementSettings::m_trackpadScrollDollySpeed)
+        ->Field("TrackpadPanSpeed", &CameraMovementSettings::m_trackpadPanSpeed)
+        ->Field("TrackpadPinchSpeed", &CameraMovementSettings::m_trackpadPinchSpeed)
         ->Field("CaptureCursorLook", &CameraMovementSettings::m_captureCursorLook)
         ->Field("OrbitYawRotationInverted", &CameraMovementSettings::m_orbitYawRotationInverted)
         ->Field("PanInvertedX", &CameraMovementSettings::m_panInvertedX)
@@ -255,6 +267,32 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reflect(AZ::
                 &CameraMovementSettings::m_zoomInverted,
                 InvertZoomName,
                 InvertZoomDesc)
+            ->DataElement(
+                AZ::Edit::UIHandlers::ComboBox,
+                &CameraMovementSettings::m_trackpadScrollAction,
+                TrackpadScrollActionName,
+                TrackpadScrollActionDesc)
+            ->EnumAttribute(SandboxEditor::TrackpadScrollAction::Zoom, "Zoom")
+            ->EnumAttribute(SandboxEditor::TrackpadScrollAction::Pan, "Pan")
+            ->EnumAttribute(SandboxEditor::TrackpadScrollAction::Look, "Look")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox,
+                &CameraMovementSettings::m_trackpadScrollDollySpeed,
+                TrackpadScrollDollySpeedName,
+                TrackpadScrollDollySpeedDesc)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox,
+                &CameraMovementSettings::m_trackpadPanSpeed,
+                TrackpadPanSpeedName,
+                TrackpadPanSpeedDesc)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox,
+                &CameraMovementSettings::m_trackpadPinchSpeed,
+                TrackpadPinchSpeedName,
+                TrackpadPinchSpeedDesc)
+            ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &CameraMovementSettings::m_captureCursorLook,
@@ -485,6 +523,10 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_panInvertedX);
     SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_panInvertedY);
     SandboxEditor::SetCameraZoomInverted(m_cameraMovementSettings.m_zoomInverted);
+    SandboxEditor::SetCameraTrackpadScrollAction(m_cameraMovementSettings.m_trackpadScrollAction);
+    SandboxEditor::SetCameraTrackpadScrollDollySpeed(m_cameraMovementSettings.m_trackpadScrollDollySpeed);
+    SandboxEditor::SetCameraTrackpadPanSpeed(m_cameraMovementSettings.m_trackpadPanSpeed);
+    SandboxEditor::SetCameraTrackpadPinchSpeed(m_cameraMovementSettings.m_trackpadPinchSpeed);
     SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
     SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
     SandboxEditor::SetCameraDefaultEditorOrientation(m_cameraMovementSettings.m_defaultPitchYaw);
@@ -534,6 +576,10 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Reset()
     SandboxEditor::ResetCameraPanInvertedX();
     SandboxEditor::ResetCameraPanInvertedY();
     SandboxEditor::ResetCameraZoomInverted();
+    SandboxEditor::ResetCameraTrackpadScrollAction();
+    SandboxEditor::ResetCameraTrackpadScrollDollySpeed();
+    SandboxEditor::ResetCameraTrackpadPanSpeed();
+    SandboxEditor::ResetCameraTrackpadPinchSpeed();
     SandboxEditor::ResetCameraDefaultEditorPosition();
     SandboxEditor::ResetCameraDefaultOrbitDistance();
     SandboxEditor::ResetCameraDefaultEditorOrientation();
@@ -561,6 +607,10 @@ void CEditorPreferencesPage_ViewportCamera::CameraMovementSettings::Initialize()
     m_panInvertedX = SandboxEditor::CameraPanInvertedX();
     m_panInvertedY = SandboxEditor::CameraPanInvertedY();
     m_zoomInverted = SandboxEditor::CameraZoomInverted();
+    m_trackpadScrollAction = SandboxEditor::CameraTrackpadScrollAction();
+    m_trackpadScrollDollySpeed = SandboxEditor::CameraTrackpadScrollDollySpeed();
+    m_trackpadPanSpeed = SandboxEditor::CameraTrackpadPanSpeed();
+    m_trackpadPinchSpeed = SandboxEditor::CameraTrackpadPinchSpeed();
     m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
     m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
     m_defaultPitchYaw = SandboxEditor::CameraDefaultEditorOrientation();

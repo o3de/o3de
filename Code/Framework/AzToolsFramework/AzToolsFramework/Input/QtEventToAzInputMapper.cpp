@@ -23,6 +23,8 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QInputDevice>
+#include <QNativeGestureEvent>
 #include <QWidget>
 
 namespace AzToolsFramework
@@ -426,11 +428,17 @@ namespace AzToolsFramework
             auto mouseEvent = static_cast<QMouseEvent*>(event);
             HandleMouseMoveEvent(mouseEvent->globalPosition().toPoint());
         }
-        // Map wheel events to the mouse Z movement channel.
+        // Map wheel events to the mouse Z movement channel (or the gesture pan channels for trackpads).
         else if (eventType == QEvent::Type::Wheel)
         {
             auto wheelEvent = static_cast<QWheelEvent*>(event);
             HandleWheelEvent(wheelEvent);
+        }
+        // Map trackpad gestures (pinch, rotate, smart zoom) to the mouse gesture channels.
+        else if (eventType == QEvent::Type::NativeGesture)
+        {
+            auto gestureEvent = static_cast<QNativeGestureEvent*>(event);
+            HandleNativeGestureEvent(gestureEvent);
         }
 
         return false;
@@ -483,6 +491,16 @@ namespace AzToolsFramework
         NotifyUpdateChannelIfNotIdle(movementXChannel, nullptr);
         NotifyUpdateChannelIfNotIdle(movementYChannel, nullptr);
         NotifyUpdateChannelIfNotIdle(mouseWheelChannel, nullptr);
+
+        // gesture deltas have no explicit end event either, settle them the same way as the wheel
+        for (const auto& gestureChannelId : AzFramework::InputDeviceMouse::Gesture::Deltas)
+        {
+            if (auto* gestureChannel = GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(gestureChannelId))
+            {
+                gestureChannel->ProcessRawInputEvent(0.0f);
+                NotifyUpdateChannelIfNotIdle(gestureChannel, nullptr);
+            }
+        }
     }
 
     void QtEventToAzInputMapper::HandleMouseButtonEvent(QMouseEvent* mouseEvent)
@@ -669,37 +687,117 @@ namespace AzToolsFramework
         }
     }
 
+    void QtEventToAzInputMapper::ProcessDeltaChannel(const AzFramework::InputChannelId& channelId, const float delta, QEvent* event)
+    {
+        auto* channel = GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(channelId);
+        if (!channel)
+        {
+            return;
+        }
+
+        // reset the consumed event cache so the chain of calls from ProcessRawInputEvent below can properly update it, if necessary
+        m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
+
+        channel->ProcessRawInputEvent(delta);
+
+        if (event && m_lastConsumedInputChannelIdCrc32 == channel->GetInputChannelId().GetNameCrc32())
+        {
+            // a standard az-input handler consumed the event so mark it as such
+            event->accept();
+        }
+        else
+        {
+            // only notify if not consumed elsewhere
+            NotifyUpdateChannelIfNotIdle(channel, event);
+        }
+    }
+
+    static bool IsPreciseScrollEvent(const QWheelEvent* wheelEvent)
+    {
+        // trackpads (and the magic mouse, which is indistinguishable) report pixel precise deltas with scroll phases,
+        // a regular mouse wheel reports discrete notches
+        return wheelEvent->source() == Qt::MouseEventSynthesizedBySystem ||
+            (wheelEvent->device() && wheelEvent->device()->type() == QInputDevice::DeviceType::TouchPad);
+    }
+
     void QtEventToAzInputMapper::HandleWheelEvent(QWheelEvent* wheelEvent)
     {
-        auto cursorZChannel =
-            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
         // Trackpads keep sending 'momentum' wheel events after the fingers have been lifted, ignore them so the
-        // viewport only reacts to deliberate input (the camera would otherwise keep dollying on its own).
+        // viewport only reacts to deliberate input (the camera would otherwise keep moving on its own).
         if (wheelEvent->phase() == Qt::ScrollMomentum)
         {
             wheelEvent->accept();
             return;
         }
 
+        if (IsPreciseScrollEvent(wheelEvent))
+        {
+            // two finger scroll goes to the gesture pan channels (in pixels), never to the mouse wheel channel,
+            // what it does to the camera is decided by whoever consumes the gesture channels
+            QPoint pixelDelta = wheelEvent->pixelDelta();
+            if (pixelDelta.isNull())
+            {
+                // no pixel deltas available, angle deltas for precise scrolling are scaled from pixels
+                pixelDelta = wheelEvent->angleDelta() / 2;
+            }
+
+            if (pixelDelta.x() != 0)
+            {
+                ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::PanX, aznumeric_cast<float>(pixelDelta.x()), wheelEvent);
+            }
+            if (pixelDelta.y() != 0)
+            {
+                ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::PanY, aznumeric_cast<float>(pixelDelta.y()), wheelEvent);
+            }
+            return;
+        }
+
         const QPoint angleDelta = wheelEvent->angleDelta();
-        // Check both angles, as the alt modifier can change the wheel direction. Trackpads report both axes for
-        // any two finger scroll that is not perfectly vertical, so use whichever axis is dominant.
+        // Check both angles, as the alt modifier can change the wheel direction, using whichever axis is dominant.
         const int wheelAngle = AZStd::abs(angleDelta.y()) >= AZStd::abs(angleDelta.x()) ? angleDelta.y() : angleDelta.x();
 
-        // reset the consumed event cache so the chain of calls from ProcessRawInputEvent below can properly update it, if necessary
-        m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
+        ProcessDeltaChannel(AzFramework::InputDeviceMouse::Movement::Z, aznumeric_cast<float>(wheelAngle), wheelEvent);
+    }
 
-        cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(wheelAngle));
-
-        if (m_lastConsumedInputChannelIdCrc32 == cursorZChannel->GetInputChannelId().GetNameCrc32())
+    void QtEventToAzInputMapper::HandleNativeGestureEvent(QNativeGestureEvent* gestureEvent)
+    {
+        switch (gestureEvent->gestureType())
         {
-            // a standard az-input handler consumed the event so mark it as such
-            wheelEvent->accept();
-        }
-        else
-        {
-            // only notify if not consumed elsewhere
-            NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
+        case Qt::ZoomNativeGesture:
+            ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::Pinch, aznumeric_cast<float>(gestureEvent->value()), gestureEvent);
+            break;
+        case Qt::RotateNativeGesture:
+            ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::Rotate, aznumeric_cast<float>(gestureEvent->value()), gestureEvent);
+            break;
+        case Qt::SmartZoomNativeGesture:
+            {
+                // a discrete gesture (two finger double tap), report it as a button press and release
+                auto* channel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedPosition2D>(
+                    AzFramework::InputDeviceMouse::Gesture::SmartZoom);
+                if (channel)
+                {
+                    m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
+                    channel->UpdateState(true);
+                    if (m_lastConsumedInputChannelIdCrc32 == channel->GetInputChannelId().GetNameCrc32())
+                    {
+                        gestureEvent->accept();
+                    }
+                    else
+                    {
+                        NotifyUpdateChannelIfNotIdle(channel, gestureEvent);
+                    }
+                    channel->UpdateState(false);
+                    NotifyUpdateChannelIfNotIdle(channel, gestureEvent);
+                }
+            }
+            break;
+        case Qt::EndNativeGesture:
+            // the continuous gestures are over, settle their channels
+            ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::Pinch, 0.0f, nullptr);
+            ProcessDeltaChannel(AzFramework::InputDeviceMouse::Gesture::Rotate, 0.0f, nullptr);
+            break;
+        default:
+            break;
         }
     }
 
