@@ -10,12 +10,14 @@
 #include <ImageLoader/ImageLoaders.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 
+#include <AzCore/std/containers/vector.h>
+
 #include <QString>
 
 // From OpenEXR third party library
 #include <OpenEXR/ImfArray.h>
-#include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfHeader.h>
 #include <OpenEXR/ImfInputFile.h>
 #include <OpenEXR/ImfRgba.h>
@@ -51,99 +53,140 @@ namespace ImageProcessingAtom
                 }
 
                 const Imf::Header& header = exrFile.header();
+                const Imf::ChannelList& channelList = header.channels();
 
-                // Get Channel information for RGBA
-                const Imf::Channel* channels[4];
-                channels[0] = header.channels().findChannel("R");
-                channels[1] = header.channels().findChannel("G");
-                channels[2] = header.channels().findChannel("B");
-                channels[3] = header.channels().findChannel("A");
-                // Initialize pixel format to invalid one
-                Imf::PixelType pixelType = Imf::NUM_PIXELTYPES;
-                bool hasChannels = false;
-                for (int32_t idx = 0; idx < 4; idx++)
+                int32_t channelCount = 0;
+                for (Imf::ChannelList::ConstIterator channel = channelList.begin(); channel != channelList.end(); ++channel)
                 {
-                    if (channels[idx])
+                    ++channelCount;
+                }
+
+                if (channelCount == 0)
+                {
+                    AZ_Error("Image Processing", false, "ExrLoader: file [%s] contains no channels", filename.c_str());
+                    return nullptr;
+                }
+
+                const Imf::Channel* rgbaChannels[] = {
+                    channelList.findChannel("R"),
+                    channelList.findChannel("G"),
+                    channelList.findChannel("B"),
+                    channelList.findChannel("A"),
+                };
+
+                int32_t rgbaChannelCount = 0;
+                for (const Imf::Channel* channel : rgbaChannels)
+                {
+                    if (channel)
                     {
-                        if (hasChannels)
+                        ++rgbaChannelCount;
+                    }
+                }
+
+                const bool isSingleChannel = channelCount == 1;
+                const bool hasOnlyRgbaChannels = rgbaChannelCount == channelCount;
+
+                // Arbitrary channel names are supported only for single-channel images.
+                if (!isSingleChannel && !hasOnlyRgbaChannels)
+                {
+                    AZ_Error("Image Processing", false, "ExrLoader: unsupported channel layout in file [%s]", filename.c_str());
+                    return nullptr;
+                }
+
+                Imf::PixelType pixelType = Imf::NUM_PIXELTYPES;
+                const char* singleChannelName = nullptr;
+                if (isSingleChannel)
+                {
+                    const Imf::ChannelList::ConstIterator channel = channelList.begin();
+                    singleChannelName = channel.name();
+                    pixelType = channel.channel().type;
+                }
+                else
+                {
+                    for (const Imf::Channel* channel : rgbaChannels)
+                    {
+                        if (!channel)
                         {
-                            if (pixelType != channels[idx]->type)
-                            {
-                                // return null if there are different pixel types in different channels
-                                AZ_Error("Image Processing", false, "load exr file error: image "
-                                    "channels have different data types", filename.c_str());
-                                return nullptr;
-                            }
+                            continue;
                         }
-                        else
+
+                        if (pixelType == Imf::NUM_PIXELTYPES)
                         {
-                            pixelType = channels[idx]->type;
-                            hasChannels = true;
+                            pixelType = channel->type;
+                        }
+                        else if (pixelType != channel->type)
+                        {
+                            AZ_Error("Image Processing", false, "ExrLoader: mismatched channel pixel types in file [%s]", filename.c_str());
+                            return nullptr;
                         }
                     }
                 }
 
-                if (!hasChannels)
-                {
-                    // return null if there are no rgba channels
-                    AZ_Error("Image Processing", false, "load exr file error: exr image doesn't contain "
-                        "any rgba channels", filename.c_str());
-                    return nullptr;
-                }
-
-                // Find the EPixelFormat to matching the format
-                EPixelFormat format = ePixelFormat_Unknown;
-                int32_t pixelSize = 0;
+                EPixelFormat format;
+                size_t pixelSize;
                 if (pixelType == Imf::FLOAT)
                 {
-                    format = EPixelFormat::ePixelFormat_R32G32B32A32F;
-                    pixelSize = 16;
+                    if (isSingleChannel)
+                    {
+                        format = EPixelFormat::ePixelFormat_R32F;
+                        pixelSize = 4;
+                    }
+                    else
+                    {
+                        format = EPixelFormat::ePixelFormat_R32G32B32A32F;
+                        pixelSize = 16;
+                    }
                 }
                 else if (pixelType == Imf::HALF)
                 {
-                    format = EPixelFormat::ePixelFormat_R16G16B16A16F;
-                    pixelSize = 8;
+                    if (isSingleChannel)
+                    {
+                        format = EPixelFormat::ePixelFormat_R16F;
+                        pixelSize = 2;
+                    }
+                    else
+                    {
+                        format = EPixelFormat::ePixelFormat_R16G16B16A16F;
+                        pixelSize = 8;
+                    }
                 }
                 else
                 {
-                    AZ_Error("Image Processing", false, "load exr file error: unsupported exr pixel format [%d]", pixelType);
+                    AZ_Error("Image Processing", false, "ExrLoader: unsupported pixel type [%d] in file [%s]", pixelType, filename.c_str());
                     return nullptr;
                 }
 
-                // Get the image size
-                int width, height;
-                ImfMath::Box2i dw = header.dataWindow();
-                width = dw.max.x - dw.min.x + 1;
-                height = dw.max.y - dw.min.y + 1;
+                const ImfMath::Box2i dataWindow = header.dataWindow();
+                const int32_t width = dataWindow.max.x - dataWindow.min.x + 1;
+                const int32_t height = dataWindow.max.y - dataWindow.min.y + 1;
 
-                // Create IImageObject
-                IImageObject* newImage = IImageObject::CreateImage(width, height, 1, format);
-
-                // Setup Imf FrameBuffer for loading data
-                char* pixels = new char[width * height * pixelSize];
+                AZStd::vector<char> pixels(static_cast<size_t>(width) * height * pixelSize);
                 Imf::FrameBuffer frameBuffer;
-                size_t xStride = pixelSize;
-                size_t yStride = pixelSize * width;
-                int32_t channelPixelSize = pixelSize / 4;
-                char* base = pixels;
-                frameBuffer.insert("R",
-                    Imf::Slice(pixelType, base, xStride, yStride));
-                frameBuffer.insert("G",
-                    Imf::Slice(pixelType, base + channelPixelSize, xStride, yStride));
-                frameBuffer.insert("B",
-                    Imf::Slice(pixelType, base + channelPixelSize * 2, xStride, yStride));
-                // Insert A with default value of 1
-                frameBuffer.insert("A",
-                    Imf::Slice(pixelType, base + channelPixelSize * 3, xStride, yStride, 1, 1, 1.0));
-                exrFile.setFrameBuffer(frameBuffer);
+                const size_t xStride = pixelSize;
+                const size_t yStride = pixelSize * width;
+                char* base = pixels.data();
 
+                if (isSingleChannel)
+                {
+                    frameBuffer.insert(singleChannelName, Imf::Slice(pixelType, base, xStride, yStride));
+                }
+                else
+                {
+                    const size_t channelPixelSize = pixelSize / 4;
+                    frameBuffer.insert("R", Imf::Slice(pixelType, base, xStride, yStride));
+                    frameBuffer.insert("G", Imf::Slice(pixelType, base + channelPixelSize, xStride, yStride));
+                    frameBuffer.insert("B", Imf::Slice(pixelType, base + channelPixelSize * 2, xStride, yStride));
+                    frameBuffer.insert("A", Imf::Slice(pixelType, base + channelPixelSize * 3, xStride, yStride, 1, 1, 1.0));
+                }
+
+                exrFile.setFrameBuffer(frameBuffer);
                 exrFile.readPixels(0, height - 1);
-                // save pixel data to newImage's mipmap data buffer
+
+                IImageObject* newImage = IImageObject::CreateImage(width, height, 1, format);
                 AZ::u32 pitch;
                 AZ::u8* mem;
                 newImage->GetImagePointer(0, mem, pitch);
-                memcpy(mem, base, newImage->GetMipBufSize(0));
-                delete [] pixels;
+                memcpy(mem, pixels.data(), newImage->GetMipBufSize(0));
 
                 return newImage;
             }
@@ -156,10 +199,6 @@ namespace ImageProcessingAtom
 
         IImageObject* LoadImageFromFile(const AZStd::string& filename)
         {
-            // In the current implementation it supports load one flat image with one or few of rgba channels.
-            // It wont handle multi-part, deep image or some arbitrary channels. It also won't handle layers.
-            // It's often the environment map wasn't saved with "envmap" header, so we are not trying get the information.
-
             // Get exr file feature information
             bool isTiled, isDeep, isMultiPart;
             bool isExr = Imf::isOpenExrFile(filename.c_str(), isTiled, isDeep, isMultiPart);
@@ -185,8 +224,8 @@ namespace ImageProcessingAtom
 
             return LoadImageFromScanlineFile(filename);
         }
-    }// namespace ExrLoader
-} //namespace ImageProcessingAtom
+    } // namespace ExrLoader
+} // namespace ImageProcessingAtom
 
 #undef Imf
 #undef ImfMath
