@@ -104,6 +104,28 @@ namespace AzFramework
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        //! All the input channel ids that identify trackpad (touchpad) gestures. Desktop trackpads
+        //! are pointing devices that report through the mouse, but unlike a mouse wheel they send
+        //! precise two finger scroll deltas as well as pinch, rotate and 'smart zoom' gestures.
+        //! These channels are only ever active on platforms/frontends that support them, and are
+        //! left idle everywhere else, so existing mouse (wheel) input is never affected by them.
+        struct Gesture
+        {
+            static constexpr inline InputChannelId PanX{"mouse_gesture_pan_x"}; //!< Horizontal two finger scroll delta (pixels) over the last frame
+            static constexpr inline InputChannelId PanY{"mouse_gesture_pan_y"}; //!< Vertical two finger scroll delta (pixels) over the last frame
+            static constexpr inline InputChannelId Pinch{"mouse_gesture_pinch"}; //!< Pinch magnification delta (1.0 = doubled) over the last frame
+            static constexpr inline InputChannelId Rotate{"mouse_gesture_rotate"}; //!< Two finger rotation delta (degrees) over the last frame
+            static constexpr inline InputChannelId SmartZoom{"mouse_gesture_smart_zoom"}; //!< Two finger double tap (digital)
+            static constexpr inline AZStd::array Deltas
+            {
+                PanX,
+                PanY,
+                Pinch,
+                Rotate
+            };
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Input channel id of the system cursor position normalized relative to the active window.
         //! The position obtained has had os ballistics applied, and is valid regardless of whether
         //! the system cursor is hidden or visible. When the system cursor has been constrained to

@@ -31,6 +31,7 @@ class QWidget;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
+class QNativeGestureEvent;
 
 namespace AzToolsFramework
 {
@@ -170,6 +171,10 @@ namespace AzToolsFramework
             const AZStd::function<void(const AzFramework::InputChannel* channel, QEvent* event)>& notifyUpdateChannelFn);
         // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
+        // Handles trackpad gesture events (pinch, rotate, smart zoom).
+        void HandleNativeGestureEvent(QNativeGestureEvent* gestureEvent);
+        // Feed a delta into a delta channel, marking the originating event as accepted if a handler consumed it.
+        void ProcessDeltaChannel(const AzFramework::InputChannelId& channelId, float delta, QEvent* event);
 
         // Clear all input channels (set all channel states to 'ended').
         void ClearInputChannels(QEvent* event);

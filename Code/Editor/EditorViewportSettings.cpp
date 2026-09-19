@@ -40,6 +40,10 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanInvertedYSetting = "/Amazon/Preferences/Editor/Camera/PanInvertedY";
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
     constexpr AZStd::string_view CameraZoomInvertedSetting = "/Amazon/Preferences/Editor/Camera/ZoomInverted";
+    constexpr AZStd::string_view CameraTrackpadScrollActionSetting = "/Amazon/Preferences/Editor/Camera/TrackpadScrollAction";
+    constexpr AZStd::string_view CameraTrackpadScrollDollySpeedSetting = "/Amazon/Preferences/Editor/Camera/TrackpadScrollDollySpeed";
+    constexpr AZStd::string_view CameraTrackpadPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/TrackpadPanSpeed";
+    constexpr AZStd::string_view CameraTrackpadPinchSpeedSetting = "/Amazon/Preferences/Editor/Camera/TrackpadPinchSpeed";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
@@ -445,6 +449,72 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraZoomInvertedSetting, inverted);
     }
 
+    TrackpadScrollAction CameraTrackpadScrollAction()
+    {
+        // default to zoom so a trackpad (or magic mouse) behaves exactly like a mouse wheel unless the user opts in
+        const auto action = AzToolsFramework::GetRegistry(CameraTrackpadScrollActionSetting, static_cast<AZ::s64>(TrackpadScrollAction::Zoom));
+        switch (action)
+        {
+        case static_cast<AZ::s64>(TrackpadScrollAction::Pan):
+            return TrackpadScrollAction::Pan;
+        case static_cast<AZ::s64>(TrackpadScrollAction::Look):
+            return TrackpadScrollAction::Look;
+        default:
+            return TrackpadScrollAction::Zoom;
+        }
+    }
+
+    void SetCameraTrackpadScrollAction(const TrackpadScrollAction action)
+    {
+        AzToolsFramework::SetRegistry(CameraTrackpadScrollActionSetting, static_cast<AZ::s64>(action));
+    }
+
+    float CameraTrackpadScrollDollySpeed()
+    {
+        // two finger scroll deltas are in pixels, previously they arrived as wheel angle (pixels * 2) * scroll speed (0.02)
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTrackpadScrollDollySpeedSetting, 0.04));
+    }
+
+    float CameraTrackpadScrollDollySpeedScaled()
+    {
+        return CameraTrackpadScrollDollySpeed() * CameraSpeedScale();
+    }
+
+    void SetCameraTrackpadScrollDollySpeed(const float speed)
+    {
+        AzToolsFramework::SetRegistry(CameraTrackpadScrollDollySpeedSetting, speed);
+    }
+
+    float CameraTrackpadPanSpeed()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTrackpadPanSpeedSetting, 0.01));
+    }
+
+    float CameraTrackpadPanSpeedScaled()
+    {
+        return CameraTrackpadPanSpeed() * CameraSpeedScale();
+    }
+
+    void SetCameraTrackpadPanSpeed(const float speed)
+    {
+        AzToolsFramework::SetRegistry(CameraTrackpadPanSpeedSetting, speed);
+    }
+
+    float CameraTrackpadPinchSpeed()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTrackpadPinchSpeedSetting, 8.0));
+    }
+
+    float CameraTrackpadPinchSpeedScaled()
+    {
+        return CameraTrackpadPinchSpeed() * CameraSpeedScale();
+    }
+
+    void SetCameraTrackpadPinchSpeed(const float speed)
+    {
+        AzToolsFramework::SetRegistry(CameraTrackpadPinchSpeedSetting, speed);
+    }
+
     float CameraRotateSmoothness()
     {
         return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraRotateSmoothnessSetting, 5.0));
@@ -797,6 +867,26 @@ namespace SandboxEditor
     void ResetCameraZoomInverted()
     {
         AzToolsFramework::ClearRegistry(CameraZoomInvertedSetting);
+    }
+
+    void ResetCameraTrackpadScrollAction()
+    {
+        AzToolsFramework::ClearRegistry(CameraTrackpadScrollActionSetting);
+    }
+
+    void ResetCameraTrackpadScrollDollySpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraTrackpadScrollDollySpeedSetting);
+    }
+
+    void ResetCameraTrackpadPanSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraTrackpadPanSpeedSetting);
+    }
+
+    void ResetCameraTrackpadPinchSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraTrackpadPinchSpeedSetting);
     }
 
     void ResetCameraDefaultEditorPosition()
