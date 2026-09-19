@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/algorithm.h>
 
 #include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
@@ -1519,7 +1520,18 @@ namespace AssetUtilities
             return {};
         }
 
-        if (sources.size() > 1)
+        // The product table has no unique constraint on (job, sub id), so a product can be recorded more than once and
+        // then resolves to the same source more than once. Only distinct sources are a conflict.
+        const AZ::s64 firstSourceId = sources.front().m_sourceID;
+        const bool distinctSources = AZStd::any_of(
+            sources.begin(),
+            sources.end(),
+            [firstSourceId](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source)
+            {
+                return source.m_sourceID != firstSourceId;
+            });
+
+        if (distinctSources)
         {
             AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", sourceAsset.AbsolutePath().c_str());
             return {};
