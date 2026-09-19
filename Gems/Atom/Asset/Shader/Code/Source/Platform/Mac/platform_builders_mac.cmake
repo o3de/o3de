@@ -6,6 +6,15 @@
 #
 #
 
+# The AZSL compiler is launched by the shader builder through a path relative to the executable directory
+# (see AzslCompiler::Compile), which on macOS is the Contents/MacOS directory of the AssetProcessor bundle.
+# Executable runtime dependencies are staged next to a bundle rather than inside it, so copy azslc into the
+# bundle explicitly, the same way AssetProcessor stages AssetBuilder.
+ly_add_target_files(
+   TARGETS ${gem_name}.Builders
+   FILES $<TARGET_FILE:Azslc>
+)
+
 # Shader Headers
 ly_add_target_files(
    TARGETS ${gem_name}.Builders
