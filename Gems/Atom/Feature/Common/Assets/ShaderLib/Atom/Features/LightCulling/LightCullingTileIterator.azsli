@@ -8,8 +8,16 @@
 
 #pragma once
 
-#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+// Must come first: it declares ENABLE_LIGHT_CULLING, and the guard below reads an undefined macro as 0.
 #include <Atom/Features/PBR/LightingOptions.azsli>
+
+#if ENABLE_LIGHT_CULLING
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+#else
+// With culling off only the sentinels are needed, so define them instead of including NVLC.azsli (285 preprocessed lines).
+#define NVLC_END_OF_LIST     0xFFFF
+#define NVLC_END_OF_GROUP    0xFFFE
+#endif
 
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator

@@ -38,6 +38,9 @@
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 
+#include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/sort.h>
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/IO/FileIO.h>
@@ -1025,34 +1028,92 @@ namespace AZ
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
 
+            // Entry points compile in parallel; the creator, byproducts and trace stream are only touched afterwards, in a fixed order.
+            struct EntryPointCompile
+            {
+                AZStd::string m_entryName;
+                RPI::ShaderStageType m_stageType{};
+                RHI::ShaderPlatformInterface::StageDescriptor m_descriptor;
+                bool m_compiled = false;
+            };
+
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
+
+            AZStd::vector<EntryPointCompile> entryPointCompiles;
+            entryPointCompiles.reserve(shaderEntryPoints.size());
             for (const auto& shaderEntryPoint : shaderEntryPoints)
             {
-                auto shaderEntryName = shaderEntryPoint.first;
-                auto shaderStageType = shaderEntryPoint.second;
+                entryPointCompiles.push_back(EntryPointCompile{ shaderEntryPoint.first, shaderEntryPoint.second, {}, false });
+            }
 
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Entry Point: %s", shaderEntryName.c_str());
-                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Begin compiling shader function \"%s\"", shaderEntryName.c_str());
+            // shaderEntryPoints is unordered; sort it so the functions reach the creator in a reproducible order.
+            AZStd::sort(
+                entryPointCompiles.begin(), entryPointCompiles.end(),
+                [](const EntryPointCompile& lhs, const EntryPointCompile& rhs) { return lhs.m_entryName < rhs.m_entryName; });
 
-                auto assetBuilderShaderType = ShaderBuilderUtility::ToAssetBuilderShaderType(shaderStageType);
-
-                // Compile HLSL to the platform specific shader.
-                RHI::ShaderPlatformInterface::StageDescriptor descriptor;
-                bool shaderWasCompiled = creationContext.m_shaderPlatformInterface.CompilePlatformInternal(
-                    creationContext.m_platformInfo, variantShaderSourcePath, shaderEntryName, assetBuilderShaderType,
+            const auto compileEntryPoint = [&creationContext, &variantShaderSourcePath](EntryPointCompile& entryPointCompile)
+            {
+                entryPointCompile.m_compiled = creationContext.m_shaderPlatformInterface.CompilePlatformInternal(
+                    creationContext.m_platformInfo, variantShaderSourcePath, entryPointCompile.m_entryName,
+                    ShaderBuilderUtility::ToAssetBuilderShaderType(entryPointCompile.m_stageType),
                     creationContext.m_tempDirPath,
-                    descriptor,
+                    entryPointCompile.m_descriptor,
                     creationContext.m_shaderBuildArguments,
                     creationContext.m_useSpecializationConstants);
+            };
 
-                if (!shaderWasCompiled)
+            if (entryPointCompiles.size() > 1)
+            {
+                // One thread per extra entry point (first runs here); they mostly wait on dxc, so a job system buys nothing.
+                AZStd::vector<AZStd::thread> compileThreads;
+                compileThreads.reserve(entryPointCompiles.size() - 1);
+                for (size_t i = 1; i < entryPointCompiles.size(); ++i)
+                {
+                    compileThreads.emplace_back([&compileEntryPoint, &entryPointCompiles, i]()
+                        {
+                            compileEntryPoint(entryPointCompiles[i]);
+                        });
+                }
+
+                compileEntryPoint(entryPointCompiles[0]);
+
+                for (AZStd::thread& compileThread : compileThreads)
+                {
+                    compileThread.join();
+                }
+            }
+            else if (!entryPointCompiles.empty())
+            {
+                compileEntryPoint(entryPointCompiles[0]);
+            }
+
+            for (EntryPointCompile& entryPointCompile : entryPointCompiles)
+            {
+                const AZStd::string& shaderEntryName = entryPointCompile.m_entryName;
+                RHI::ShaderPlatformInterface::StageDescriptor& descriptor = entryPointCompile.m_descriptor;
+
+                AZ_TracePrintf(ShaderVariantAssetBuilderName, "Entry Point: %s", shaderEntryName.c_str());
+
+                if (!entryPointCompile.m_compiled)
                 {
                     return AZ::Failure(AZStd::string::format("Could not compile the shader function %s", shaderEntryName.c_str()));
                 }
-                // bubble up the byproducts to the caller by moving them to the context.
-                outputByproducts.emplace(AZStd::move(descriptor.m_byProducts));
 
-                RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction = creationContext.m_shaderPlatformInterface.CreateShaderStageFunction(descriptor);
+                // Merge byproducts rather than emplace, which replaced the optional and dropped earlier entry points' intermediates.
+                if (!outputByproducts)
+                {
+                    outputByproducts.emplace(AZStd::move(descriptor.m_byProducts));
+                }
+                else
+                {
+                    outputByproducts->m_intermediatePaths.insert(
+                        descriptor.m_byProducts.m_intermediatePaths.begin(), descriptor.m_byProducts.m_intermediatePaths.end());
+                    outputByproducts->m_dynamicBranchCount = descriptor.m_byProducts.m_dynamicBranchCount;
+                }
+
+                const auto assetBuilderShaderType = ShaderBuilderUtility::ToAssetBuilderShaderType(entryPointCompile.m_stageType);
+                RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction =
+                    creationContext.m_shaderPlatformInterface.CreateShaderStageFunction(descriptor);
                 variantCreator.SetShaderFunction(ToRHIShaderStage(assetBuilderShaderType), shaderStageFunction);
 
                 if (descriptor.m_byProducts.m_dynamicBranchCount != AZ::RHI::ShaderPlatformInterface::ByProducts::UnknownDynamicBranchCount)

@@ -85,6 +85,9 @@ namespace AZ::RPI
             Data::Instance<MaterialShaderParameter> m_shaderParameter;
             Material* m_material{ nullptr }; // can't use a smart pointer here, since the material de-registers itself in the destructor
             size_t m_compiledChangeId{ 0 };
+
+            //! MaterialTypeData::m_layoutGeneration this was built with; a mismatch means the layout changed in a hot reload.
+            uint32_t m_layoutGeneration{ 0 };
         };
 
         struct MaterialTypeData
@@ -107,6 +110,10 @@ namespace AZ::RPI
             // materials that use the MaterialPipelines that this layout actually matches, since we generate the
             // `struct MaterialParameters` for them the same way.
             AZStd::unique_ptr<MaterialShaderParameterLayout> m_shaderParameterLayout;
+
+            //! Bumped when a reload replaces m_shaderParameterLayout; instances with an older value use a stale layout.
+            uint32_t m_layoutGeneration{ 0 };
+
             AZStd::vector<InternalMaterialInstanceData> m_instanceData;
         };
 

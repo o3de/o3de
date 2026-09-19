@@ -38,6 +38,8 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
@@ -194,12 +196,42 @@ namespace AZ
             auto projectIncludePaths = BuildListOfIncludeDirectories(ShaderAssetBuilderName);
 
             AZStd::unordered_set<AZStd::string> includedFiles;
-            GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            // Skipped per m_skipIncludeFileDependencies; the dependency on the .azsl itself is always kept.
+            if (!shaderSourceData.m_skipIncludeFileDependencies)
+            {
+                GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            }
             for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
+            }
+
+            // Include scanning can't follow MATERIAL_PARAMETERS_AZSLI_FILE_PATH, so register that parameters file as a dependency.
+            if (const auto azslContents = AZ::Utils::ReadFile(azslFullPath); azslContents.IsSuccess())
+            {
+                static constexpr const char DefineToken[] = "#define MATERIAL_PARAMETERS_AZSLI_FILE_PATH";
+                if (const size_t definePos = azslContents.GetValue().find(DefineToken); definePos != AZStd::string::npos)
+                {
+                    const size_t nameBegin = azslContents.GetValue().find('"', definePos + AZ_ARRAY_SIZE(DefineToken) - 1);
+                    const size_t nameEnd =
+                        (nameBegin != AZStd::string::npos) ? azslContents.GetValue().find('"', nameBegin + 1) : AZStd::string::npos;
+
+                    if (nameEnd != AZStd::string::npos)
+                    {
+                        const AZStd::string parametersFileName =
+                            azslContents.GetValue().substr(nameBegin + 1, nameEnd - nameBegin - 1);
+
+                        // Relative to the AZSL's folder; stored in an owning Path since ParentPath() borrows the temporary.
+                        const AZ::IO::Path azslDirectory = AZ::IO::Path(azslFullPath).ParentPath();
+                        const AZ::IO::Path parametersFilePath = azslDirectory / AZStd::string_view(parametersFileName);
+
+                        AssetBuilderSDK::SourceFileDependency parametersFileDependency;
+                        parametersFileDependency.m_sourceFileDependencyPath = parametersFilePath.LexicallyNormal().String();
+                        response.m_sourceFileDependencyList.emplace_back(AZStd::move(parametersFileDependency));
+                    }
+                }
             }
 
             // Add the shader_build_option files as source dependencies

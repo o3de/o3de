@@ -213,6 +213,10 @@ namespace AZ
             //! This is relevant for "abstract" material type files (see GetFormat()).
             AZStd::string m_lightingModel;
 
+            //! Build-time name/value facts for .materialpipeline scripts, e.g. opacityMode, positionOffset and materialPipelines.
+            using BuildSettings = AZStd::map<AZStd::string, AZStd::string>;
+            BuildSettings m_buildSettings;
+
             //! This indicates a .azsli file that contains only material-specific shader definitions, which will be included.
             //! in the final shader before any other files.
             //! The build system will automatically combine this code with .materialpipeline shader code
