@@ -375,13 +375,36 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
+    // Hover mouse moves (and the matching enter/leave events) do not reach this widget on every platform, on macOS Qt
+    // delivers them to the top level window because the viewport is not painted by Qt (see QtEventToAzInputMapper),
+    // so the cached mouse position can be stale. Prefer the live cursor position whenever the cursor is over the widget.
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::LiveMousePosition() const
+    {
+        const QPoint globalCursorPosition = QCursor::pos();
+        const QPoint localCursorPosition = mapFromGlobal(globalCursorPosition);
+        // cheap bounds check before the full hit test
+        if (isVisible() && rect().contains(localCursorPosition) && QApplication::widgetAt(globalCursorPosition) == this)
+        {
+            return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(localCursorPosition * devicePixelRatioF());
+        }
+
+        return AZStd::nullopt;
+    }
+
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mousePosition.has_value();
+        // the cached position is only trustworthy while a button is held (the implicit mouse grab keeps delivering
+        // moves to this widget), a leave event that would reset it might never arrive otherwise
+        return LiveMousePosition().has_value() || (QApplication::mouseButtons() != Qt::NoButton && m_mousePosition.has_value());
     }
 
     AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
     {
+        if (const auto liveMousePosition = LiveMousePosition(); liveMousePosition.has_value())
+        {
+            return liveMousePosition;
+        }
+
         return m_mousePosition;
     }
 

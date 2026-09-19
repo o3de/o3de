@@ -651,4 +651,46 @@ namespace UnitTest
 
         EXPECT_THAT(m_firstPersonTranslateCamera->Boosting(), ::testing::IsFalse());
     }
+    TEST_F(CameraInputFixture, MotionDeltasAccumulateAcrossEventsWithinAFrame)
+    {
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+
+        // several motion events arrive before the camera steps (high polling rate devices), none may be dropped
+        const int halfDelta = PixelMotionDelta90Degrees / 2;
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
+        Update();
+
+        const float expectedYaw = AzFramework::WrapYawRotation(-2.0f * halfDelta * 0.001f);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
+    }
+
+    TEST_F(CameraInputFixture, MotionDeltasAreUsedInsteadOfCursorPositionWhileCursorIsCaptured)
+    {
+        // cursor positions are preferred (default), but not while the cursor is captured as it is then pinned in place
+        AzFramework::ed_cameraSystemUseCursor = true;
+
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+
+        // the cursor reports the same (captured) position every frame while the motion deltas carry the movement
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 }, true },
+                                             AzFramework::ModifierKeyStates{} });
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ PixelMotionDelta90Degrees },
+                                             AzFramework::ModifierKeyStates{} });
+        Update();
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 }, true },
+                                             AzFramework::ModifierKeyStates{} });
+        Update();
+
+        const float expectedYaw = AzFramework::WrapYawRotation(-AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
+    }
 } // namespace UnitTest
