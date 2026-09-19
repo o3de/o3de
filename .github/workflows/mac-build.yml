@@ -131,6 +131,15 @@ jobs:
           rm -f "${{ github.workspace }}/cache.tar"
           trap - EXIT
           ccache --zero-stats --cleanup
+          # Summarize the restored asset cache, the first place to look when asset jobs fail on "missing source"
+          # job dependencies (a database that lists files but has no source entries for them)
+          if [[ -d AutomatedTesting/Cache ]]; then
+            echo "Restored asset cache:"
+            ls -la AutomatedTesting/Cache
+            echo "  intermediate assets: $(find "AutomatedTesting/Cache/Intermediate Assets" -type f 2>/dev/null | wc -l | tr -d ' ') files"
+          else
+            echo "No asset cache restored"
+          fi
 
       - name: Setup cmake
         # Pin the version of cmake
@@ -152,6 +161,7 @@ jobs:
 
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Mac/build_config.json
+        id: build
         timeout-minutes: 330
         env:
           CMAKE_C_COMPILER_LAUNCHER: ccache
@@ -168,6 +178,12 @@ jobs:
         continue-on-error: true
         run: |
           ccache --cleanup
+          # Never hand a failed asset run's cache to the next run: it would inherit the failure (and the ~5GB
+          # upload) forever. ccache and downloaded packages are content addressed and always safe to keep.
+          if [[ "${{ steps.build.outcome }}" != "success" ]]; then
+            echo "::warning::Build step did not succeed, not caching AutomatedTesting/Cache"
+            rm -rf AutomatedTesting/Cache
+          fi
           mkdir -p .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
           gtar --format=posix -cpf ${{ github.workspace }}/cache.tar \
             .ccache \
