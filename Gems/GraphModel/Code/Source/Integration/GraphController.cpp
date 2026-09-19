@@ -473,8 +473,7 @@ namespace GraphModelIntegration
             GraphCanvas::DataSlotRequestBus::Event(
                 m_elementMap.Find(outputSlot), &GraphCanvas::DataSlotRequests::SetDataTypeId, typeId);
 
-            // A passthrough can feed another passthrough. Refresh the chain so every pin reflects the
-            // upstream type even when the chain was wired before its first input was connected.
+            // Passthroughs can chain, so refresh downstream pins to reflect the upstream type even if wired before connecting.
             for (const auto& connection : outputSlot->GetConnections())
             {
                 if (const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot())
