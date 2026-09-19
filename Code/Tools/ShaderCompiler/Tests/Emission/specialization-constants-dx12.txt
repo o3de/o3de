@@ -1,0 +1,15 @@
+/*
+    Cmdargs: ['--namespace', 'dx', '--sc-options']
+*/
+":: QualityT GetSpecializationConstant_Quality ( ) "
+"volatile int sc_Quality = 0 ;"
+"return ( :: QualityT ) sc_Quality ;"
+"static const :: QualityT Quality = GetSpecializationConstant_Quality ( ) ;"
+"bool GetSpecializationConstant_UseGI ( )"
+"volatile int sc_UseGI = 1 ;"
+"return ( bool ) sc_UseGI ;"
+"static const bool UseGI = GetSpecializationConstant_UseGI ( ) ;"
+"int GetSpecializationConstant_IntOption ( )"
+"volatile int sc_IntOption = 2 ;"
+"return ( int ) sc_IntOption ;"
+"static const int IntOption = GetSpecializationConstant_IntOption ( ) ;"

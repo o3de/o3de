@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include "level0.azsli"
+
+ShaderResourceGroup SRG1 : Slot1
+{
+    struct Colors
+    {
+        float4 m_color0;
+        float4 m_color1;
+    } m_colors;
+
+    float4 GetColorsSum()
+    {
+        const float4 level0_color = SRG0::GetColorsSum();
+        return m_colors.m_color0 + m_colors.m_color1 + level0_color;
+    }
+}
+
+float4 GetZeroColor()
+{
+    return float4(0,0,0,0);
+}

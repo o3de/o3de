@@ -12,6 +12,8 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/limits.h>
 
 #include <stdio.h>
 
@@ -144,6 +146,14 @@ namespace AZ::IO::Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
+    constexpr SystemFile::SizeType MaxTransferSize = AZStd::numeric_limits<int>::max();
+
+    static bool IsRegularFile(FileHandleType handle)
+    {
+        struct stat fileStatus;
+        return fstat(handle, &fileStatus) == 0 && S_ISREG(fileStatus.st_mode);
+    }
+
     void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
@@ -207,6 +217,23 @@ namespace AZ::IO::Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
+            if (byteSize > MaxTransferSize && IsRegularFile(handle))
+            {
+                AZStd::byte* cursor = static_cast<AZStd::byte*>(buffer);
+                SizeType totalBytesRead = 0;
+                while (totalBytesRead < byteSize)
+                {
+                    const ssize_t bytesRead =
+                        read(handle, cursor + totalBytesRead, AZStd::min(byteSize - totalBytesRead, MaxTransferSize));
+                    if (bytesRead <= 0)
+                    {
+                        break;
+                    }
+                    totalBytesRead += bytesRead;
+                }
+                return totalBytesRead;
+            }
+
             ssize_t bytesRead = read(handle, buffer, byteSize);
             if (bytesRead == -1)
             {
@@ -222,12 +249,29 @@ namespace AZ::IO::Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            ssize_t result = write(handle, buffer, byteSize);
-            if (result == -1)
+            if (byteSize > MaxTransferSize && IsRegularFile(handle))
+            {
+                const AZStd::byte* cursor = static_cast<const AZStd::byte*>(buffer);
+                SizeType totalBytesWritten = 0;
+                while (totalBytesWritten < byteSize)
+                {
+                    const ssize_t bytesWritten =
+                        write(handle, cursor + totalBytesWritten, AZStd::min(byteSize - totalBytesWritten, MaxTransferSize));
+                    if (bytesWritten <= 0)
+                    {
+                        break;
+                    }
+                    totalBytesWritten += bytesWritten;
+                }
+                return totalBytesWritten;
+            }
+
+            ssize_t bytesWritten = write(handle, buffer, byteSize);
+            if (bytesWritten == -1)
             {
                 return 0;
             }
-            return result;
+            return bytesWritten;
         }
 
         return 0;

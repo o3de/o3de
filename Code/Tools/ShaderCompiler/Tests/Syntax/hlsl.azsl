@@ -1,0 +1,295 @@
+//==============================================================================
+//
+// Filename: MizuchiBase_Common_Utility.fx
+//
+// Author:   Silicon Studio Co., Ltd.
+//           Technology Business Division - Research Group
+//
+// Description: MizuchiBase Common Utility code
+//
+//==============================================================================
+// Copyright (C) 2013 Silicon Studio Corporation. All rights reserved.
+//==============================================================================
+
+void SinCos(float rads, out float s, out float c)
+{
+    sincos(rads, s, c);
+}
+
+float Atan2(float y, float x)
+{
+    return atan2(y, x);
+}
+
+float3x3 m4x4To3x3( float4x4 m4 )
+{
+   return ( float3x3 )( m4 );
+}
+
+//------------------------------------------------------------------------------
+float2 MaterialCalcUV(float2 texCoord, float2 scale, float2 rotate, float2 offset)
+{
+  //       float2(   S0    *     U      +     R0   *      V     +    T0   ,
+  //                 R1    *     U      +     S1   *      V     +    T1   );
+    return float2(scale.x  * texCoord.x + rotate.x * texCoord.y + offset.x,
+                  rotate.y * texCoord.x + scale.y  * texCoord.y + offset.y);
+}
+
+float2 MATERIAL_CALC_UV_2(float2 texcoordArray[TEXCOORD_ARRAY_COUNT], float4 uvTransforms[2], uint uvSlot)
+{
+    float2 texCoord = texcoordArray[min(UV_SLOT_COUNT, uvSlot)];
+    float2 scale    = float2(uvTransforms[0].x, uvTransforms[0].w);
+    float2 rotate   = float2(uvTransforms[0].z, uvTransforms[0].y);
+    float2 offset   = uvTransforms[1].xy;
+    return MaterialCalcUV(texCoord, scale, rotate, offset);
+}
+
+//------------------------------------------------------------------------------
+//
+// Convert RGB to YCbCr space
+//
+//------------------------------------------------------------------------------
+void ConvertRGBToYCbCr( float3 rgbColor,
+                        out float3 YCbCrColor )
+{
+    float Y  = dot(rgbColor,float3(0.299,0.587,0.114));
+    float Cb = dot(rgbColor,float3(-0.168,-0.331,0.5))  + 0.5;
+    float Cr = dot(rgbColor,float3(0.5,-0.418,-0.0081)) + 0.5;
+
+    YCbCrColor.r = Y;
+    YCbCrColor.g = Cb;
+    YCbCrColor.b = Cr;
+} // End of ConvertRGBToYCbCr
+
+
+//------------------------------------------------------------------------------
+//
+// Convert YCbCr to RGB space
+//
+//------------------------------------------------------------------------------
+void ConvertYCbCrToRGB( float3 YCbCrColor,
+                        out float3 rgbColor )
+{
+    float Y  = YCbCrColor.r;
+    float Cb = YCbCrColor.g;
+    float Cr = YCbCrColor.b;
+
+    rgbColor.r = Y + 1.402 * (Cr-0.5);
+    rgbColor.g = Y - 0.344 * (Cb-0.5) - 0.714 * (Cr-0.5);
+    rgbColor.b = Y + 1.772 * (Cb-0.5);
+} // End of ConvertYCbCrToRGB
+
+
+//------------------------------------------------------------------------------
+//
+// Conver Linear Z to Normalized Z
+//
+//------------------------------------------------------------------------------
+float ConvertToNormalizedDepth( float linearZ )
+{
+    PerSubView subView = GET_UNIFORM( PerViewCB, u_subViews )[GET_UNIFORM(PerDrawCB, u_drawView).x];
+    float normZ = mad(linearZ,subView.projRatio.x,subView.projRatio.y)
+                / mad(linearZ,subView.projRatio.z,subView.projRatio.w);
+    return normZ;
+} // End of ConvertToNormalizedDepth
+
+
+//------------------------------------------------------------------------------
+//
+// Conver ZBuffer z to Linear Z
+//
+//------------------------------------------------------------------------------
+float ConvertToLinearDepth( float zBufferDepth )
+{
+    PerSubView subView = GET_UNIFORM( PerViewCB, u_subViews )[GET_UNIFORM(PerDrawCB, u_drawView).x];
+    float linearDepth = mad(zBufferDepth,subView.projRatio.w,-subView.projRatio.y)
+                      / mad(-zBufferDepth,subView.projRatio.z,subView.projRatio.x);
+    return linearDepth;
+} // End of ConvertToLinearDepth
+
+
+//------------------------------------------------------------------------------
+//
+// Conver ZBuffer z to Linear Z
+//
+//------------------------------------------------------------------------------
+float ConvertToLinearDepth( float zBufferDepth, float4 projRatio )
+{
+    float linearDepth = mad( zBufferDepth, projRatio.w,-projRatio.y)
+                      / mad(-zBufferDepth, projRatio.z, projRatio.x);
+    return linearDepth;
+} // End of ConvertToLinearDepth
+
+
+//------------------------------------------------------------------------------
+//
+// Convert 2D coordinate to 3D view space position
+//
+// - screenPos is -1 to 1 range ( left to right,
+//                                bottomto top )
+//
+//------------------------------------------------------------------------------
+float3 ConvertToViewSpacePos( float2 screenPos, float linearZ )
+{
+    // Revert viewport jittering
+    PerSubView subView = GET_UNIFORM( PerViewCB, u_subViews )[GET_UNIFORM(PerDrawCB, u_drawView).x];
+    //float2 jitterOffset = subView.zPlane.z > 0.0 ? 2.0 * subView.viewportSizeJitterOffset.zw / subView.viewportSizeJitterOffset.xy : float2(0.0, 0.0);
+    float select = subView.zPlane.z > 0.0 ? 1.0 : 0.0;
+    float2 jitterOffset =  (2.0f * subView.viewportSizeJitterOffset.zw / subView.viewportSizeJitterOffset.xy) * select;
+
+    // Map to left to right and top to bottom range
+    float2 screenPosAtNearPlane;
+    screenPosAtNearPlane.xy = lerp(subView.frustum.xw,subView.frustum.yz,mad(screenPos.xy-jitterOffset,0.5,0.5));
+
+    // u_CubeMapFetchScaler contains scaler for RHS
+    float3 viewSpacePos;
+
+    float xyScale = subView.zPlane.z > 0.0 ? linearZ / subView.zPlane.x : -1.0;
+    viewSpacePos.xy = screenPosAtNearPlane * subView.cubeMapFetchScaler.x * xyScale;
+    viewSpacePos.z  = linearZ;
+
+    return viewSpacePos;
+} // End of ConvertToViewSpacePos
+
+//------------------------------------------------------------------------------
+//
+// Convert 2D coordinate to 3D view space position
+//
+// - screenPos is -1 to 1 range ( left to right,
+//                                bottomto top )
+//
+//------------------------------------------------------------------------------
+float3 ConvertToViewSpacePosWithoutJitterOffset( float2 screenPos, float linearZ )
+{
+    // Map to left to right and top to bottom range
+    PerSubView subView = GET_UNIFORM( PerViewCB, u_subViews )[GET_UNIFORM(PerDrawCB, u_drawView).x];
+    float2 screenPosAtNearPlane;
+    screenPosAtNearPlane.xy = lerp(subView.frustum.xw,subView.frustum.yz,mad(screenPos.xy,0.5,0.5));
+
+    // u_CubeMapFetchScaler contains scaler for RHS
+    float3 viewSpacePos;
+
+    float xyScale = subView.zPlane.z > 0.0 ? linearZ / subView.zPlane.x : -1.0;
+    viewSpacePos.xy = screenPosAtNearPlane * subView.cubeMapFetchScaler.x * xyScale;
+    viewSpacePos.z  = linearZ;
+
+    return viewSpacePos;
+} // End of ConvertToViewSpacePos
+
+//------------------------------------------------------------------------------
+//
+// Calc specular AO
+//
+//------------------------------------------------------------------------------
+float CalcSpecularAO(float ao, float dotNV, float roughness)
+{
+    float val = pow(max(dotNV + ao, 0.0), roughness) - 1.0 + ao;
+    return SATURATE(val);
+}
+
+//------------------------------------------------------------------------------
+// Remap the clothnessLevel in [0,7] to a uniform float value in [0.0,1.0]
+//------------------------------------------------------------------------------
+float ClothnessRatio(int clothnessLevel)
+{
+    return float(clothnessLevel) / 7.0;
+}
+
+//------------------------------------------------------------------------------
+// Remap shininess by clothness
+// To make sure that the material looks "fully cloth" with clothnessRatio = 1.0,
+// we fix the roughness to 0.5 if clothnessRatio is 1.0.
+// - finalRoughness = roughness^2 = (1 - shinness)^2 = (1-0.2929)^2 = 0.49999041
+//------------------------------------------------------------------------------
+float GetRemappedShininess(float shininess, float clothnessRatio)
+{
+    return lerp(shininess, 0.2929f, clothnessRatio);
+}
+
+//------------------------------------------------------------------------------
+// Remap metallic by clothness
+//------------------------------------------------------------------------------
+float GetRemappedMetallic(float metallic, float clothnessRatio)
+{
+    return lerp(metallic, metallic * 0.5 + 0.5, clothnessRatio);
+}
+
+float2 OctWrap(float2 v)
+{
+    return (1.0 - abs(v.yx)) * float2(
+        v.x >= 0.0 ? 1.0 : -1.0,
+        v.y >= 0.0 ? 1.0 : -1.0);
+}
+
+//------------------------------------------------------------------------------
+// Pack Normal
+//------------------------------------------------------------------------------
+float2 PackNormal(float3 normal)
+{
+    // Octahedron normal vector encoding
+    // https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+    float3 n = normal / (abs(normal.x) + abs(normal.y) + abs(normal.z));
+    n.xy = n.z >= 0.0 ? n.xy : OctWrap(n.xy);
+
+    return n.xy * 0.5 + 0.5;
+} // End of PackNormal
+
+
+//------------------------------------------------------------------------------
+// Unpack Normal
+//------------------------------------------------------------------------------
+float3 UnpackNormal(float2 packedNormal)
+{
+    // Octahedron normal vector encoding
+    // https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
+    float2 encN = packedNormal.xy * 2.0 - 1.0;
+        float3 n;
+    n.z = 1.0 - abs(encN.x) - abs(encN.y);
+    n.xy = n.z >= 0.0 ? encN.xy : OctWrap(encN.xy);
+    return normalize(n);
+} // End of UnpackNormal
+
+
+//------------------------------------------------------------------------------
+// Compute Jittering Offset
+// In SDK2, placed on Common_Jittering.fx
+//------------------------------------------------------------------------------
+float2 ComputeJitterOffset(const float4 vHgPos, const float3 WPrevPos, const float4x4 previousViewProjectionMatrix, const float4 viewportSizeJitterOffset)
+{
+    float4 vHgPrevPos = MUL_VEC_MAT(float4(WPrevPos, 1.0f), previousViewProjectionMatrix);
+
+    // w除算してクリップ座標系へ
+    // Convert to clip coordinates (by dividing by w)
+    float2 vClipPos = vHgPos.xy / vHgPos.w;
+    float2 vClipPrevPos = vHgPrevPos.xy / vHgPrevPos.w;
+
+    // スクリーン上でのベロシティ(画面端から端まで動くと1.0)
+    // Velocity on screen (1.0 means: move from one screen side to the other)
+    float2 vVelocity = vClipPos - vClipPrevPos;
+    float2 vVelocityInPixels = vVelocity * viewportSizeJitterOffset.xy * 0.5f;
+
+    // ピクセル単位での移動量
+    // Velocity Length, in Pixels
+    float fVelocityLengthInPixels = length(vVelocityInPixels);
+
+    // Remap move range [0.1px ~ full stop] to [0.0 ~ 1.0] - 0.1 is an arbitrary value, but seems ok
+    // 0.1ピクセルくらいから静止までの動きを0.0～1.0にマッピングしてクランプ - この値は適当に調整する(おそらくこの程度の値で問題ない)
+    const float fThreshold = 0.1;
+
+    float fJitterScale = SATURATE(1.0 - fVelocityLengthInPixels / fThreshold);
+
+    // fJitterScale がジッタリングすべき最大ピクセルサイズを示す - fJitterScale が 1.0 の時に1ピクセル分ジッタリングさせるように出力座標にオフセット
+    // fJitterScale is the biggest distance jitter should cover (in pixels) - if fJitterScale==1.0, we offset output coordinates in order to have a jittering of 1px
+    float2 vJitterInPixels = viewportSizeJitterOffset.zw * fJitterScale * 20;
+
+    // ピクセル単位からクリップ座標系のオフセット量へ
+    // Convert from pixel unit to clip coordinates
+    float2 vClipJitterOffset = float2(2, 2) * vJitterInPixels / viewportSizeJitterOffset.xy;
+    // クリップ座標系のオフセット量から射影空間上のオフセット量へ
+    // Convert from offset clip coordinates to projective space
+    float2 vHgJitterOffset = vClipJitterOffset * vHgPos.w;
+
+    // 出力頂点座標
+    // output vertex coordinates
+    return vHgJitterOffset;
+}

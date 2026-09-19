@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// You can specify pixel output format hints for each render target
+// Usage [[global::output_format([index] format)]]
+// If no index is specified the attribute is applied to all render targets
+// The format can be one of the following:
+// R32 - one channel (R), can be Float32, Uint32 or Sint32
+// R32G32 - two channels (RG), can be Float32, Uint32 or Sint32
+// R32A32- two channels (RA), can be Float32, Uint32 or Sint32
+// R16G16B16A16_FLOAT - Default. Four or less channels (RGBA), Float16
+// R16G16B16A16_UNORM - four or less channels (RGBA), Unorm16
+// R16G16B16A16_SNORM - four or less channels (RGBA), Snorm16
+// R16G16B16A16_UINT - four or less channels (RGBA), Uint16
+// R16G16B16A16_SINT - four or less channels (RGBA), Sint16
+// R32G32B32A32 - four channels (RGBA), can be Float32, Uint32 or Sint32
+
+// Note! Although we define R16G16B16A16_FLOAT for all targets, we actually override each one of them
+// This is a demo, we don't recommend actually writing code like that
+[[global::output_format("R16G16B16A16_FLOAT")]]
+[[global::output_format(0, "R32")]]
+[[global::output_format(1, "R32G32")]]
+[[global::output_format(2, "R32A32")]]
+[[global::output_format(3, "R16G16B16A16_UNORM")]]
+[[global::output_format(4, "R16G16B16A16_SNORM")]]
+[[global::output_format(5, "R16G16B16A16_UINT")]]
+[[global::output_format(6, "R16G16B16A16_SINT")]]
+[[global::output_format(7, "R32G32B32A32")]]
+
+struct PSOut_All
+{
+    float4 m_color0 : SV_Target0;
+    float4 m_color1 : SV_Target1;
+    float4 m_color2 : SV_Target2;
+    float4 m_color3 : SV_Target3;
+    float4 m_color4 : SV_Target4;
+    float4 m_color5 : SV_Target5;
+    float4 m_color6 : SV_Target6;
+    float4 m_color7 : SV_Target7;
+};
+
+PSOut_All MainPS_All() 
+{
+    PSOut_All psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float4(1, 1, 1, 1);
+    psOut.m_color2 = float4(1, 1, 1, 1);
+    psOut.m_color3 = float4(1, 1, 1, 1);
+    psOut.m_color4 = float4(1, 1, 1, 1);
+    psOut.m_color5 = float4(1, 1, 1, 1);
+    psOut.m_color6 = float4(1, 1, 1, 1);
+    psOut.m_color7 = float4(1, 1, 1, 1);
+
+    return psOut;
+}
+
+struct PSOut_Half
+{
+    float4 m_color0 : SV_Target0;
+    float4 m_color1 : SV_Target1;
+    float4 m_color2 : SV_Target2;
+    float4 m_color3 : SV_Target3;
+};
+
+PSOut_Half MainPS_Half() 
+{
+    PSOut_Half psOut;
+    psOut.m_color0 = float4(1, 1, 1, 1);
+    psOut.m_color1 = float4(1, 1, 1, 1);
+    psOut.m_color2 = float4(1, 1, 1, 1);
+    psOut.m_color3 = float4(1, 1, 1, 1);
+
+    return psOut;
+}

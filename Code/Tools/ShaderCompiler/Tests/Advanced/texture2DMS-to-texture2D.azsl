@@ -1,0 +1,218 @@
+// Used for validation of compiler flag --no-ms
+// This file contains most common use cases of Texture2DMS & Texture2DMSArray and related APIs and system semantics.
+// This file is used to validate automatic conversion of the Texture2DMS
+// variables into Texture2D variables, and Texture2DMSArray to Texture2DArray, along with changes in API usage
+// of the methods Load(), GetSamplePosition() and GetDimensions().
+// Also system semantics like SV_SampleIndex and SV_Coverage are also mutated.
+
+ShaderResourceGroupSemantic SRG_PerPass
+{
+    FrequencyId = 0;
+}
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> m_texture0ms;
+
+    // We use regular Texture2D to validate that --no-ms
+    // does not affect Texture2D
+    Texture2D<float4>   m_texture1;
+
+    Texture2DMS<float4> m_texture2ms;
+    Texture2DMSArray<float4> m_textureArray0ms;
+
+    // We use regular Texture2DArray to validate that --no-ms
+    // does not affect Texture2DArray
+    Texture2DArray<float4> m_textureArray1;
+
+    // Let's declare some functions with identical name
+    // as Load() to prove that the code only modifies Load()
+    // when called as instance method of Texture2DMS
+    float4 Load(int2 texelLoc, int2 texelLocDelta, int element, int sampleIndex)
+    {
+        float4 color = float4(0,0,0,0);
+
+        color += m_texture0ms.Load(texelLoc, sampleIndex);
+        color -= m_texture0ms.Load(texelLoc + texelLocDelta, sampleIndex + sampleIndex);
+        color += m_texture0ms.Load(texelLoc + texelLocDelta, sampleIndex + sampleIndex, int2(0, 2));
+
+        color -= m_texture1.Load(int3(texelLoc, 0)); // mip 0
+        color += m_texture1.Load(int3(texelLoc, 1)); // mip 1
+
+        color -= m_texture2ms.Load(texelLoc - 2.0*texelLocDelta, sampleIndex + 1, int2(1,1));
+
+        color += m_textureArray0ms.Load(int3(texelLoc, element), sampleIndex/2) - m_textureArray1.Load(int4(texelLoc, element, 3));
+
+        return color;
+    }
+
+    float2 GetSamplePosition(int sampleIndex)
+    {
+        return m_texture0ms.GetSamplePosition(2 * sampleIndex) +
+               m_texture2ms.GetSamplePosition(sampleIndex) +
+               m_textureArray0ms.GetSamplePosition((sampleIndex + 7)/3);
+    }
+
+    void GetDimensions(out uint width, out uint height, out uint elements, out uint numSamples)
+    {
+        uint tmpWidth;
+        uint tmpHeight;
+        uint tmpElements;
+        uint tmpNumSamples;
+        
+        width = 0;
+        height = 0;
+        elements = 0;
+        numSamples = 0;
+
+        m_texture0ms.GetDimensions(tmpWidth, tmpHeight, tmpNumSamples);
+        width += tmpWidth; height += tmpHeight; numSamples += tmpNumSamples;
+
+        m_texture1.GetDimensions(tmpWidth, tmpHeight);
+        width += tmpWidth; height += tmpHeight;
+
+        m_texture2ms.GetDimensions(tmpWidth, tmpHeight, tmpNumSamples);
+        width += tmpWidth; height += tmpHeight; numSamples += tmpNumSamples;
+
+        m_textureArray0ms.GetDimensions(tmpWidth, tmpHeight, tmpElements, tmpNumSamples);
+        width += tmpWidth; height += tmpHeight; elements += tmpElements; numSamples += tmpNumSamples;
+
+        m_textureArray1.GetDimensions(tmpWidth, tmpHeight, tmpElements);
+        width += tmpWidth; height += tmpHeight; elements += tmpElements;
+
+        width /= 5;
+        height /= 5;
+        elements /= 2;
+        numSamples /= 3;
+    }
+}
+
+// A simple global function called Load to make sure its signature is not messed up.
+float4 Load(int2 texelLoc, int2 texelLocDelta, int element, int sampleIndex,
+            Texture2DMS<float4> tex0ms, Texture2D<float4> tex1, Texture2DMS<float4> tex2ms,
+            Texture2DMSArray<float4> texArray0ms, Texture2DArray<float4> texArray1)
+{
+    float4 color = float4(0,0,0,0);
+
+    color += tex0ms.Load(texelLoc, sampleIndex);
+    color -= tex0ms.Load(texelLoc + texelLocDelta, sampleIndex + sampleIndex);
+    color += tex0ms.Load(texelLoc + texelLocDelta, sampleIndex + sampleIndex, int2(0, 2));
+
+    color -= tex1.Load(int3(texelLoc, 0)); // mip 0
+    color += tex1.Load(int3(texelLoc, 1)); // mip 1
+
+    color -= tex2ms.Load(texelLoc - 2.0*texelLocDelta, sampleIndex + 1, int2(1,1));
+
+    color += texArray0ms.Load(int3(texelLoc, element), sampleIndex/2) - texArray1.Load(int4(texelLoc, element, 3));
+
+    return color;
+}
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput PSMain(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    PSOutput OUT;
+    int2 texelCoord = int2(IN.m_position.xy);
+
+    float4 color1 = PassSrg::Load(texelCoord, int2(0, 0), 1, sampleIndex);
+    float4 color2 = Load(texelCoord, int2(0, 0), 1, sampleIndex,
+                         PassSrg::m_texture0ms, PassSrg::m_texture1, PassSrg::m_texture2ms,
+                         PassSrg::m_textureArray0ms, PassSrg::m_textureArray1);
+    
+    float2 samplePos = PassSrg::GetSamplePosition(sampleIndex);
+
+    uint width; uint height; uint elements; uint numSamples;
+    PassSrg::GetDimensions(width, height, elements, numSamples);
+    
+    if ((samplePos.x == samplePos.y) && (width == height) && (elements != numSamples))
+    {
+        OUT.m_color = color1;
+    }
+    else
+    {
+        OUT.m_color = color2;
+    }
+
+    return OUT;
+}
+
+PSOutput PSMainCoverage(VSOutput IN, inout uint coverage : SV_Coverage)
+{
+    PSOutput OUT;
+    int2 texelCoord = int2(IN.m_position.xy);
+
+    // Let's get the number of samples
+    uint width; uint height; uint elements; uint numSamples;
+    PassSrg::GetDimensions(width, height, elements, numSamples);
+
+    for (uint sampleIndex = 0; sampleIndex < numSamples; ++sampleIndex)
+    {
+        if ( !(coverage & (1 << sampleIndex)) )
+        {
+            continue;
+        }
+        float4 color1 = PassSrg::Load(texelCoord, int2(0, 0), 1, sampleIndex);
+        float4 color2 = Load(texelCoord, int2(0, 0), 1, sampleIndex,
+                             PassSrg::m_texture0ms, PassSrg::m_texture1, PassSrg::m_texture2ms,
+                             PassSrg::m_textureArray0ms, PassSrg::m_textureArray1);
+
+        float2 samplePos = PassSrg::GetSamplePosition(sampleIndex);
+        if ((samplePos.x == samplePos.y) && (width == height) && (elements != numSamples))
+        {
+            OUT.m_color += color1;
+            coverage &= ~(1 << sampleIndex);
+        }
+        else
+        {
+            OUT.m_color -= color2;
+        }
+    }
+
+    return OUT;
+}
+
+// In this case, SV_SampleIndex is embedded on the input struct, instead
+// of the function arguments.
+struct VSOutputWithSampleIndex
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+    uint   m_sampleIndex : SV_SampleIndex;
+};
+
+PSOutput PSMain2(VSOutputWithSampleIndex IN)
+{
+    PSOutput OUT;
+    int2 texelCoord = int2(IN.m_position.xy);
+
+    float4 color1 = PassSrg::Load(texelCoord, int2(0, 0), 1, IN.m_sampleIndex);
+    float4 color2 = Load(texelCoord, int2(0, 0), 1, IN.m_sampleIndex,
+                         PassSrg::m_texture0ms, PassSrg::m_texture1, PassSrg::m_texture2ms,
+                         PassSrg::m_textureArray0ms, PassSrg::m_textureArray1);
+    
+    float2 samplePos = PassSrg::GetSamplePosition(IN.m_sampleIndex);
+
+    uint width; uint height; uint elements; uint numSamples;
+    PassSrg::GetDimensions(width, height, elements, numSamples);
+    
+    if ((samplePos.x == samplePos.y) && (width == height) && (elements != numSamples))
+    {
+        OUT.m_color = color1;
+    }
+    else
+    {
+        OUT.m_color = color2;
+    }
+
+    return OUT;
+}

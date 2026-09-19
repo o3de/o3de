@@ -1,0 +1,13 @@
+class A
+{
+    void MethodA();
+};
+
+int main()
+{
+    A a;
+    a.A::MethodA();
+
+    // RHS qualification is legal in MAE. cf https://stackoverflow.com/questions/56253767/
+    // this test verifies that tracking happens as expected.
+}

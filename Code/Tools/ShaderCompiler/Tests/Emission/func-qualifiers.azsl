@@ -1,0 +1,6 @@
+inline volatile payload static unorm const unsigned int t();
+
+center centroid unorm const unsigned int t()
+{
+    return 0;
+}

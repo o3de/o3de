@@ -1,0 +1,25 @@
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup MySRG : freq
+{
+    double Luminosity(double){}
+    float Luminosity(float){}
+    
+    void DoStuff()
+    {
+        half x = Luminosity(0.5h);
+    }
+}
+
+ShaderResourceGroupSemantic freq2
+{ FrequencyId = 2; }
+ShaderResourceGroup MySRG2 : freq2
+{
+    void DoStuff()
+    {
+        half x = MySRG::Luminosity(0.5);
+    }
+}
+
+float4 main()
+{}

@@ -1,0 +1,7 @@
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float2x2 mat;
+    [[pad_to(36)]]
+    bool b;
+};

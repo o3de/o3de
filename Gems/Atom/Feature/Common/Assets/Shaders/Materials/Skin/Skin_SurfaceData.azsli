@@ -70,6 +70,7 @@ class SurfaceData_Skin
                                                             // Search the code for 'GetDefaultNormal' to see how/where this is applied
     real3 GetVertexNormal() { return vertexNormal; }        // Returns the interpolated vertex normal
     real3 GetSpecularF0() { return specularF0.xxx; }
+    real GetMetallic() { return metallic; }
 };
 
 void SurfaceData_Skin::CalculateRoughnessA()

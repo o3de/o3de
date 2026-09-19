@@ -204,14 +204,17 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     // Clear Coat
     surface.clearCoat.InitializeToZero();
 
+    // Light iterator
+    LightCullingTileIterator tileIterator;
+    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+
+    // Apply Decals
+    ApplyDecals(tileIterator, surface);
+
     // ------- LightingData -------
 
     LightingData lightingData;
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
-
-    // Light iterator
-    LightCullingTileIterator tileIterator;
-    tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
     // Shadow
     lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
@@ -223,9 +226,6 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float alpha = 1.0f;
 
     // ------- Lighting Calculation -------
-
-    // Apply Decals
-    ApplyDecals(tileIterator, surface);
 
     // Apply Direct Lighting
     ApplyDirectLighting(surface, lightingData, IN.m_position, tileIterator);
@@ -251,4 +251,3 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     return OUT;
 }
-

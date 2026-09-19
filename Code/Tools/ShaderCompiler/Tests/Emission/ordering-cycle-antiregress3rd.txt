@@ -1,0 +1,3 @@
+"static const uint ViewSrg_MaxCascadeCount = 4 ;"
+"struct ViewSrg_DirectionalLightShadow"
+"float4x4 m_depthBiasMatrices [ :: ViewSrg_MaxCascadeCount ] ;"

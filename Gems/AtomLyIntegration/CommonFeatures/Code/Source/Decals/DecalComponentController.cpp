@@ -31,6 +31,7 @@ namespace AZ
                     ->Field("Decal Color", &DecalComponentConfig::m_decalColor)
                     ->Field("Decal Color Factor", &DecalComponentConfig::m_decalColorFactor)
                     ->Field("Material", &DecalComponentConfig::m_materialAsset)
+                    ->Field("Max Draw Distance", &DecalComponentConfig::m_maxDrawDistance)
                 ;
             }
         }
@@ -55,6 +56,8 @@ namespace AZ
                     ->Event("SetOpacity", &DecalRequestBus::Events::SetOpacity)
                     ->Event("GetNormalMapOpacity", &DecalRequestBus::Events::GetNormalMapOpacity)
                     ->Event("SetNormalMapOpacity", &DecalRequestBus::Events::SetNormalMapOpacity)
+                    ->Event("GetMaxDrawDistance", &DecalRequestBus::Events::GetMaxDrawDistance)
+                    ->Event("SetMaxDrawDistance", &DecalRequestBus::Events::SetMaxDrawDistance)
                     ->Event("SetSortKey", &DecalRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &DecalRequestBus::Events::GetSortKey)
                     ->Event("GetDecalColor", &DecalRequestBus::Events::GetDecalColor)
@@ -64,6 +67,7 @@ namespace AZ
                     ->VirtualProperty("AttenuationAngle", "GetAttenuationAngle", "SetAttenuationAngle")
                     ->VirtualProperty("Opacity", "GetOpacity", "SetOpacity")
                     ->VirtualProperty("NormalMapOpacity", "GetNormalMapOpacity", "SetNormalMapOpacity")
+                    ->VirtualProperty("MaxDrawDistance", "GetMaxDrawDistance", "SetMaxDrawDistance")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
                     ->VirtualProperty("DecalColor", "GetDecalColor", "SetDecalColor")
                     ->VirtualProperty("DecalColorFactor", "GetDecalColorFactor", "SetDecalColorFactor")
@@ -166,6 +170,7 @@ namespace AZ
             AttenuationAngleChanged();
             OpacityChanged();
             NormalMapOpacityChanged();
+            MaxDrawDistanceChanged();
             SortKeyChanged();
             DecalColorChanged();
             DecalColorFactorChanged();
@@ -227,6 +232,17 @@ namespace AZ
             NormalMapOpacityChanged();
         }
 
+        float DecalComponentController::GetMaxDrawDistance() const
+        {
+            return m_configuration.m_maxDrawDistance;
+        }
+
+        void DecalComponentController::SetMaxDrawDistance(float maxDrawDistance)
+        {
+            m_configuration.m_maxDrawDistance = maxDrawDistance;
+            MaxDrawDistanceChanged();
+        }
+
         uint8_t DecalComponentController::GetSortKey() const
         {
             return m_configuration.m_sortKey;
@@ -280,6 +296,15 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetDecalNormalMapOpacity(m_handle, m_configuration.m_normalMapOpacity);
+            }
+        }
+
+        void DecalComponentController::MaxDrawDistanceChanged()
+        {
+            DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnMaxDrawDistanceChanged, m_configuration.m_maxDrawDistance);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetDecalMaxDrawDistance(m_handle, m_configuration.m_maxDrawDistance);
             }
         }
 

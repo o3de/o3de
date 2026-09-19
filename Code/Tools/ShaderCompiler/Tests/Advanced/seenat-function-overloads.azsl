@@ -1,0 +1,64 @@
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup MySRG : freq
+{
+    struct Metal
+    {
+        float shininess;
+        float3 clr;
+    };
+
+    struct Barrel
+    {
+        Metal underLayer;
+        Texture2D rust;
+    };
+
+    Metal MakeMat(float shini)
+    {
+        Metal m;
+        m.shininess = shini;
+        m.clr = float3(0.5,0.5,0.5);
+        return m;
+    }
+
+    Texture2D channel1;
+
+    Barrel MakeMat(Metal m)
+    {
+        Barrel b;
+        b.underLayer = m;
+        b.rust = channel1;
+        return b;
+    }
+
+    float4 exposure;
+
+    float3 Luminosity(float3 clr)
+    {
+        return dot(exposure.rgb * clr, float3(0.299, 0.587, 0.114));
+    }
+
+    half3 Luminosity(half3 clr)
+    {
+        return dot((half3)exposure.rgb * clr, half3(0.299h, 0.587h, 0.114h));
+    }
+} // end SRG
+
+float4 main() : SV_Target0
+{
+    typealias Metal = MySRG::Metal;
+    typealias Barrel = MySRG::Barrel;
+    double shness;
+    shness = MySRG::MakeMat(0.5f).shininess;
+    Metal copper, oxide;
+    oxide = MySRG::MakeMat(copper).underLayer;
+
+    float x,y,z;
+    shness = MySRG::MakeMat((float)clamp(x, y, z)).shininess;  // clamp is an intrinsic function. to be able to track its return type...
+    // ...we'd need to register all these: https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-intrinsic-functions
+    // into the fixed_table of symbols. (one shot?) tedious manual repetitive work. requires updates to follow new shader models.
+    // -> instead, ask the programmer to help the compiler, by using a cast expression (to the returned type of clamp).
+
+    return float4(MySRG::Luminosity(oxide.clr * shness), 1);
+}

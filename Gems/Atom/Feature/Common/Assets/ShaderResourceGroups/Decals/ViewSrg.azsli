@@ -16,8 +16,8 @@ partial ShaderResourceGroup ViewSrg
     Buffer<uint> m_visibleDecalIndices; 
 
     // Each texture array stores all the decals for one size permutation.
-    // e.g. m_decalTextureArray0 might store 24 textures @128x128, 
-    // m_decalTextureArray1 might store 16 * 256x256 
+    // e.g. m_decalTextureArray0 might store 24 textures @128x128,
+    // m_decalTextureArray1 might store 16 * 256x256
     // and m_decalTextureArray2 might store 4 @ 512x512
     // This must match the variable NumTextureArrays in DecalTextureArrayFeatureProcessor.h
     Texture2DArray<float4> m_decalTextureArrayDiffuse0;
@@ -25,12 +25,34 @@ partial ShaderResourceGroup ViewSrg
     Texture2DArray<float4> m_decalTextureArrayDiffuse2;
     Texture2DArray<float4> m_decalTextureArrayDiffuse3;
     Texture2DArray<float4> m_decalTextureArrayDiffuse4;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse5;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse6;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse7;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse8;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse9;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse10;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse11;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse12;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse13;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse14;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse15;
 
     Texture2DArray<float4> m_decalTextureArrayNormalMaps0;
     Texture2DArray<float4> m_decalTextureArrayNormalMaps1;
     Texture2DArray<float4> m_decalTextureArrayNormalMaps2;
     Texture2DArray<float4> m_decalTextureArrayNormalMaps3;
     Texture2DArray<float4> m_decalTextureArrayNormalMaps4;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps5;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps6;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps7;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps8;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps9;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps10;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps11;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps12;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps13;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps14;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps15;
 
     uint m_decalCount;
     uint m_visibleDecalCount;

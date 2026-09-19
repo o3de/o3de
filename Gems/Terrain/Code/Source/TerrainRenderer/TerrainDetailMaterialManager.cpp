@@ -915,6 +915,17 @@ namespace Terrain
                     aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
                 pixel.m_material1 = defaultMaterial;
             }
+            else if (foundMaterials == 1 && firstWeight < 1.0f)
+            {
+                // Only one material matched and it doesn't fully cover this position (e.g. a gradient
+                // falling off toward the edge of its area) -- blend the remaining weight against the
+                // region's default material instead of leaving material2/blend unset, which rendered
+                // the one matched material at full opacity right up to the point its weight hit zero,
+                // producing a hard edge instead of a smooth transition.
+                pixel.m_material2 = region->m_defaultDetailMaterialId == InvalidDetailMaterialId ? m_passthroughMaterialId :
+                    aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
+                pixel.m_blend = aznumeric_cast<uint8_t>((1.0f - firstWeight) * 255.0f + 0.5f);
+            }
             else if (foundMaterials == 2)
             {
                 float totalWeight = firstWeight + secondWeight;

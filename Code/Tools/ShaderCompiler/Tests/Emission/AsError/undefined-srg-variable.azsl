@@ -1,0 +1,36 @@
+// Used to validate proper error detection
+// when the code refers to an unknown SRG field.
+
+ShaderResourceGroupSemantic SRG_PerPass
+{
+    FrequencyId = 0;
+}
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> m_texture0ms;
+    float4 m_color;
+}
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput PSMain(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    PSOutput OUT;
+    OUT.m_color = PassSrg::m_calor; // The typo is on purpose! Should be m_color.
+    return OUT;
+}
+
+// Emitter Error 267 (Undefined Symbol From SRG)
+// #EC 267
+
+

@@ -1,0 +1,6 @@
+struct Func_vd_Real{};  // attack
+void Func()
+{
+    typealias Real = float;  // has to be removed
+    Real r,g,b;
+}

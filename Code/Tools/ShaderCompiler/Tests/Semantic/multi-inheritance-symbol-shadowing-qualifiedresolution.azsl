@@ -1,0 +1,37 @@
+class A0
+{
+    int16_t a;
+};
+
+class A : A0
+{
+    int a;  
+};
+
+interface A2
+{
+    float a();  
+};
+
+class B : A, A2
+{
+    dword a();
+};
+
+static B b;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.A0::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'int16_t'\n");
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.A::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'int'\n");
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.A2::a()), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'float'\n");
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(b.a()), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'dword'\n");
