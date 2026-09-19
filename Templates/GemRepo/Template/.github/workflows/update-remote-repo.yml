@@ -1,0 +1,134 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+# This automation updates the repo.json when a gem.json file is changed
+name: Update remote repository 
+
+on:
+  # This empty 'workflow_dispatch' sections allows you to run this 
+  # workflow manually from the GitHub Actions page
+  workflow_dispatch:
+
+  # Automatically run this workflow when a gem.json file in the 
+  # 'main' branch if changed
+  push:
+    branches:
+      - main
+    paths:
+      - '**gem.json'
+        
+run-name: Updating repo.json
+
+jobs:
+  Publish:
+    name: Deploy
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      # Checkout this repository under $GITHUB_WORKSPACE/repo, so the job can access it
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          lfs: true
+
+      - name: Read gem.json from the repository root folder
+        working-directory: repo
+        id: gem-json 
+        run: |
+          {
+            echo 'CONTENT<<EOF'
+            cat gem.json
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Get gem name and version 
+        id: info
+        env:
+          GEM_NAME: ${{ fromJson( steps.gem-json.outputs.CONTENT ).gem_name }}
+          GEM_VERSION: ${{ fromJson( steps.gem-json.outputs.CONTENT ).version }}
+        run: |
+          echo $GEM_NAME
+          echo $GEM_VERSION
+          echo "version=$GEM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$GEM_NAME" >> "$GITHUB_OUTPUT"
+
+      # Checkout the o3de repository under $GITHUB_WORKSPACE/o3de, so the job can access it
+      # use sparse checkout to only get the few folders we need to run the o3de CLI
+      - name: Checkout o3de
+        uses: actions/checkout@v4
+        with:
+          path: o3de
+          repository: o3de/o3de
+          ref: main
+          lfs: false
+          fetch-depth: 0
+          sparse-checkout: |
+            cmake
+            python 
+            scripts
+            Templates
+      
+      - name: Install O3DE Python
+        working-directory: o3de
+        run: |
+          python/get_python.sh
+
+      - name: Register O3DE
+        working-directory: o3de
+        run: |
+          scripts/o3de.sh register --this-engine
+
+      # Create a new repo.json file if one doesn't exist using the o3de CLI
+      # We use a temporary folder for the command because it might create additional
+      # files and folders and we only want the repo.json file
+      - name: Create repo.json if needed
+        run: |
+          if ! test -f ${{github.workspace}}/repo/repo.json; then
+            echo "Creating repo.json"
+            o3de/scripts/o3de.sh create-repo --repo-path ${{github.workspace}}/repo-tmp --repo-uri ${{github.server_url}}/${{github.repository}}.git --origin ${{github.repository_owner}}  --origin-url ${{github.server_url}}/${{github.repository}}
+            cp ${{github.workspace}}/repo-tmp/repo.json ${{github.workspace}}/repo/repo.json
+          fi
+
+      - name: Update repo.json and create archive
+        id: archive
+        run: |
+          mkdir ${{github.workspace}}/artifacts
+          echo "Update repo.json"
+          o3de/scripts/o3de.sh edit-repo-properties --repo-path ${{github.workspace}}/repo --add-gem ${{github.workspace}}/repo --release-archive-path ${{github.workspace}}/artifacts --download-prefix ${{github.server_url}}/${{github.repository}}/releases/download/${{steps.info.outputs.version}}
+          echo "Generated artifacts:"
+          ls -la ${{github.workspace}}/artifacts
+
+      - name: Commit repo.json changes
+        run: |
+          git -C repo config --global user.name 'github-actions'
+          git -C repo config --global user.email 'github-actions@users.noreply.github.com'
+          git -C repo tag -d ${{steps.info.outputs.version}} || true
+          git -C repo add gem.json repo.json
+          echo "Committing changes"
+          git -C repo commit -m "${{steps.info.outputs.name}} ${{steps.info.outputs.version}} JSON updates" --allow-empty
+          git -C repo tag ${{steps.info.outputs.version}}
+          echo "Pushing changes"
+          git -C repo push --force
+          
+      # Creates a release tag based on inputs
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1.11.1
+        with:
+          name: "${{steps.info.outputs.name}} ${{ steps.info.outputs.version }}"
+          tag: ${{ steps.info.outputs.version }}
+          allowUpdates: true
+          body: |
+            ## Release Notes
+            ${{steps.info.outputs.name}} ${{steps.info.outputs.version}}
+          draft: false
+          prerelease: false
+          artifacts: "${{github.workspace}}/artifacts/*.zip"
