@@ -51,6 +51,12 @@ namespace AzFramework
                 ->Constant(Movement::X.GetName(), BehaviorConstant(Movement::X.GetName()))
                 ->Constant(Movement::Y.GetName(), BehaviorConstant(Movement::Y.GetName()))
                 ->Constant(Movement::Z.GetName(), BehaviorConstant(Movement::Z.GetName()))
+
+                ->Constant(Gesture::PanX.GetName(), BehaviorConstant(Gesture::PanX.GetName()))
+                ->Constant(Gesture::PanY.GetName(), BehaviorConstant(Gesture::PanY.GetName()))
+                ->Constant(Gesture::Pinch.GetName(), BehaviorConstant(Gesture::Pinch.GetName()))
+                ->Constant(Gesture::Rotate.GetName(), BehaviorConstant(Gesture::Rotate.GetName()))
+                ->Constant(Gesture::SmartZoom.GetName(), BehaviorConstant(Gesture::SmartZoom.GetName()))
             ;
 
             // The system cursor state enum, named so scripts can pass the values to
@@ -103,6 +109,19 @@ namespace AzFramework
             InputChannelDeltaWithSharedPosition2D* channel = aznew InputChannelDeltaWithSharedPosition2D(channelId, *this, m_cursorPositionData2D);
             m_allChannelsById[channelId] = channel;
             m_movementChannelsById[channelId] = channel;
+        }
+
+        // Create all gesture input channels (delta channels share the movement queues/maps, smart zoom is a button)
+        for (const InputChannelId& channelId : Gesture::Deltas)
+        {
+            InputChannelDeltaWithSharedPosition2D* channel = aznew InputChannelDeltaWithSharedPosition2D(channelId, *this, m_cursorPositionData2D);
+            m_allChannelsById[channelId] = channel;
+            m_movementChannelsById[channelId] = channel;
+        }
+        {
+            InputChannelDigitalWithSharedPosition2D* channel = aznew InputChannelDigitalWithSharedPosition2D(Gesture::SmartZoom, *this, m_cursorPositionData2D);
+            m_allChannelsById[Gesture::SmartZoom] = channel;
+            m_buttonChannelsById[Gesture::SmartZoom] = channel;
         }
 
         // Create the cursor position input channel
@@ -290,7 +309,7 @@ namespace AzFramework
 
         // we can detect the situation where the mouse has not moved this tick by seeing if any events were in the
         // queue.  If there was no event for this game tick, we can assume the mouse has stopped moving.
-        for (const InputChannelId& movementChannelId : Movement::All)
+        const auto settleDeltaChannel = [this](const InputChannelId& movementChannelId)
         {
             // if the channel was already idle, there's no reason to add synthetic events to it.
             if (!m_inputDevice.m_movementChannelsById[movementChannelId]->IsStateIdle())
@@ -300,6 +319,15 @@ namespace AzFramework
                     m_rawMovementEventQueuesById[movementChannelId].push_back(0.0f);
                 }
             }
+        };
+        for (const InputChannelId& movementChannelId : Movement::All)
+        {
+            settleDeltaChannel(movementChannelId);
+        }
+        // gesture deltas behave the same way (the platform only reports them while the gesture is in progress)
+        for (const InputChannelId& gestureChannelId : Gesture::Deltas)
+        {
+            settleDeltaChannel(gestureChannelId);
         }
 
         // Process all raw input events that were queued since the last call to this function

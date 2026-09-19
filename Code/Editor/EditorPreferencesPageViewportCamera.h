@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
+#include <EditorViewportSettings.h>
 
 #include <QIcon>
 
@@ -61,6 +62,10 @@ private:
         float m_translateSmoothness;
         float m_defaultOrbitDistance;
         float m_goToPositionDuration;
+        SandboxEditor::TrackpadScrollAction m_trackpadScrollAction;
+        float m_trackpadScrollDollySpeed;
+        float m_trackpadPanSpeed;
+        float m_trackpadPinchSpeed;
         bool m_captureCursorLook;
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;

@@ -1073,6 +1073,15 @@ namespace AzQtComponents
 
         m_mousePosition = event->pos();
 
+        // The queued press is only meaningful while a button is still held. On macOS the mouse release that ends a
+        // native drag session is consumed by AppKit and never reaches this widget (Qt only delivers a button-less
+        // release that no widget receives), so without this a plain hover move after such a drag would start the
+        // drag all over again, forever.
+        if (m_queuedMouseEvent && event->buttons() == Qt::NoButton)
+        {
+            ResetDragState();
+        }
+
         if (m_queuedMouseEvent && !m_isDragSelectActive)
         {
             // Determine whether the mouse move should trigger a rect selection or an entity drag.
@@ -1112,13 +1121,17 @@ namespace AzQtComponents
             ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
         }
 
-        ClearQueuedMouseEvent();
+        ResetDragState();
 
+        QAbstractItemView::mouseReleaseEvent(event);
+    }
+
+    void AssetFolderThumbnailView::ResetDragState()
+    {
+        ClearQueuedMouseEvent();
         m_previousSelection.clear();
         m_selectionUpdater->stop();
         m_isDragSelectActive = false;
-
-        QAbstractItemView::mouseReleaseEvent(event);
     }
 
     void AssetFolderThumbnailView::SelectAllEntitiesInSelectionRect()

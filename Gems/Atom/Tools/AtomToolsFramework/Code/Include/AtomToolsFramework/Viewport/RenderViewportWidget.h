@@ -138,6 +138,10 @@ namespace AtomToolsFramework
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
     private:
+        //! The current cursor position (in device pixels) if the cursor is over this widget, regardless of whether
+        //! hover mouse events were delivered to it.
+        AZStd::optional<AzFramework::ScreenPoint> LiveMousePosition() const;
+
         void SendWindowResizeEvent();
         void SendWindowCloseEvent();
 

@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
+#include <AzToolsFramework/Input/NativeCursorCapture.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
@@ -30,6 +31,7 @@ class QWidget;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
+class QNativeGestureEvent;
 
 namespace AzToolsFramework
 {
@@ -37,9 +39,10 @@ namespace AzToolsFramework
     {
         CursorModeNone,
         CursorModeCaptured, //!< Sets whether or not the cursor should be constrained to the source widget and invisible.
-                            //!< Internally, this will reset the cursor position after each move event to ensure movement
-                            //!< events don't allow the cursor to escape. This can be used for typical camera controls
-                            //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
+                            //!< Internally, this either pins the cursor in place (platforms with a native relative mouse
+                            //!< mode, see NativeCursorCapture) or resets the cursor position after each move event, so
+                            //!< movement events don't allow the cursor to escape. This can be used for typical camera
+                            //!< controls like a dolly or rotation, where mouse movement is important but cursor location is not.
         CursorModeWrapped, //!< Flags whether the cursor is going to wrap around the source widget.
         CursorModeWrappedX, //!< Flags whether the cursor is going to wrap around the source widget only on the left and right side.
         CursorModeWrappedY //!< Flags whether the cursor is going to wrap around the source widget only on the top and bottom side.
@@ -69,9 +72,7 @@ namespace AzToolsFramework
         void SetEnabled(bool enabled);
 
         //! Sets whether or not the cursor should be constrained to the source widget and invisible.
-        //! Internally, this will reset the cursor position after each move event to ensure movement
-        //! events don't allow the cursor to escape. This can be used for typical camera controls
-        //! like a dolly or rotation, where mouse movement is important but cursor location is not.
+        //! See CursorInputMode::CursorModeCaptured.
         //! @deprecated Use #SetCursorMode()
         void SetCursorCaptureEnabled(bool enabled);
 
@@ -162,12 +163,18 @@ namespace AzToolsFramework
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
         void HandleMouseMoveEvent(const QPoint& globalCursorPosition);
+        // Handle raw cursor motion reported by the native cursor capture (see NativeCursorCapture).
+        void HandleNativeMotionDelta(const QPoint& delta);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(
             QKeyEvent* keyEvent,
             const AZStd::function<void(const AzFramework::InputChannel* channel, QEvent* event)>& notifyUpdateChannelFn);
         // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
+        // Handles trackpad gesture events (pinch, rotate, smart zoom).
+        void HandleNativeGestureEvent(QNativeGestureEvent* gestureEvent);
+        // Feed a delta into a delta channel, marking the originating event as accepted if a handler consumed it.
+        void ProcessDeltaChannel(const AzFramework::InputChannelId& channelId, float delta, QEvent* event);
 
         // Clear all input channels (set all channel states to 'ended').
         void ClearInputChannels(QEvent* event);
@@ -207,5 +214,8 @@ namespace AzToolsFramework
         // Our viewport-specific AZ devices. We control their internal input channel states.
         AZStd::unique_ptr<EditorQtMouseDevice> m_mouseDevice;
         AZStd::unique_ptr<EditorQtKeyboardDevice> m_keyboardDevice;
+        // Platform relative mouse mode used while the cursor is captured (nullptr if the platform has none,
+        // in which case the cursor is warped back to m_previousGlobalCursorPosition after every move instead).
+        AZStd::unique_ptr<NativeCursorCapture> m_nativeCursorCapture;
     };
 } // namespace AzToolsFramework

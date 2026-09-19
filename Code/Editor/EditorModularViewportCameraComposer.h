@@ -49,6 +49,11 @@ namespace SandboxEditor
 
         //! Setup all internal camera inputs.
         void SetupCameras();
+        //! Setup the camera inputs driven by trackpad gestures (called from SetupCameras).
+        void SetupGestureCameras(
+            const AZStd::function<AZStd::optional<AZ::Vector3>()>& focusPivotFn,
+            const AZStd::function<void()>& pickOrbitPivotFn,
+            const AZStd::function<bool()>& trackingTransformFn);
 
         // EditorModularViewportCameraComposerNotificationBus overrides ...
         void OnEditorModularViewportCameraComposerSettingsChanged() override;
@@ -68,6 +73,15 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_orbitMotionDollyCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
         AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitFocusCamera;
+
+        // trackpad gestures (two finger scroll, pinch, two finger double tap), never driven by a mouse
+        AZStd::shared_ptr<AzFramework::GesturePanCameraInput> m_firstPersonGesturePanCamera;
+        AZStd::shared_ptr<AzFramework::GestureLookCameraInput> m_firstPersonGestureLookCamera;
+        AZStd::shared_ptr<AzFramework::GestureDollyCameraInput> m_firstPersonGestureDollyCamera;
+        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_firstPersonSmartZoomFocusCamera;
+        AZStd::shared_ptr<AzFramework::GestureLookCameraInput> m_orbitGestureLookCamera;
+        AZStd::shared_ptr<AzFramework::GestureDollyCameraInput> m_orbitGestureDollyCamera;
+        AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitSmartZoomFocusCamera;
 
         AzFramework::ViewportId m_viewportId;
 
