@@ -21,7 +21,7 @@ namespace AzFramework
         true,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "Should the camera use cursor absolute positions or motion deltas");
+        "Should the camera use cursor absolute positions or motion deltas (motion deltas are always used while the cursor is captured)");
 
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
@@ -152,6 +152,10 @@ namespace AzFramework
 
     bool CameraSystem::HandleEvents(const InputState& state)
     {
+        // motion and scroll deltas are accumulated until the next StepCamera call, several events can arrive per frame
+        // (high polling rate mice, trackpads) and only keeping the last one would drop input, but the camera inputs
+        // are handed the delta of this event only (e.g. to detect a click turning into a drag)
+        ScreenVector eventMotionDelta{ 0, 0 };
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
@@ -159,27 +163,35 @@ namespace AzFramework
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_x = horizontalMotion->m_delta;
+            eventMotionDelta.m_x = horizontalMotion->m_delta;
+            m_motionDelta.m_x += horizontalMotion->m_delta;
         }
         else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_y = verticalMotion->m_delta;
+            eventMotionDelta.m_y = verticalMotion->m_delta;
+            m_motionDelta.m_y += verticalMotion->m_delta;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
         {
-            m_scrollDelta = scroll->m_delta;
+            m_scrollDelta += scroll->m_delta;
         }
 
-        m_handlingEvents =
-            m_cameras.HandleEvents(state, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta);
+        m_handlingEvents = m_cameras.HandleEvents(state, UseCursorDelta() ? m_cursorState.CursorDelta() : eventMotionDelta, m_scrollDelta);
 
         return m_handlingEvents;
     }
 
+    bool CameraSystem::UseCursorDelta() const
+    {
+        // while the cursor is captured it is pinned in place (or warped back) after every move, so the cursor
+        // position is not a reliable source of motion - use the raw motion deltas instead
+        return ed_cameraSystemUseCursor && !m_cursorState.Captured();
+    }
+
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto nextCamera = m_cameras.StepCamera(
-            targetCamera, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta, deltaTime);
+        const auto nextCamera =
+            m_cameras.StepCamera(targetCamera, UseCursorDelta() ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta, deltaTime);
 
         m_cursorState.Update();
         m_motionDelta = ScreenVector{ 0, 0 };
