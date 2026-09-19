@@ -3714,6 +3714,19 @@ namespace AssetProcessor
         // File is a non-tracked file, aka a file that no builder cares about.
         // The fact that it has a matching modtime means we've already seen this file and attempted to process it
         // If it were a new, unprocessed source file, there would be no modtime stored
+
+        // Intermediate assets are the exception: they are produced by a builder for another builder to consume, so one
+        // without a source entry was not processed but merely seen (for example when it was written by the last job of a
+        // batch run and the file change was handled while the builders were already going away). Trusting the modtime
+        // here would skip it forever, and with it every job that depends on it ("missing source" dependencies).
+        // Re-assessing such a file is cheap and self-healing, so never skip it.
+        const auto intermediateScanFolderId = GetIntermediateAssetScanFolderId();
+        if (intermediateScanFolderId.has_value() && fileInfo.m_scanFolder->ScanFolderID() == intermediateScanFolderId.value())
+        {
+            ++m_assetsNeedingProcessing_NewFile;
+            return false;
+        }
+
         return true;
     }
 
