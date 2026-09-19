@@ -178,6 +178,8 @@ namespace AzQtComponents
         QItemSelection m_previousSelection;
 
         void ClearQueuedMouseEvent();
+        //! Discard the queued press and any drag selection in progress.
+        void ResetDragState();
         void ProcessQueuedMousePressedEvent(QMouseEvent* event);
         void HandleDrag();
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions);
