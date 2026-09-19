@@ -44,6 +44,10 @@ namespace AZ
             bool SetExclusiveFullScreenState(bool fullScreenState) override;
             //////////////////////////////////////////////////////////////////////////
 
+            //! Offers the freshly created DXGI swapchain to a registered AZ::DX12::ISwapChainProxy
+            //! (frame-generation proxy swapchain) and adopts the replacement if it takes it.
+            void TryReplaceWithProxy(Device& device);
+
             void ConfigureDisplayMode(const RHI::SwapChainDimensions& dimensions);
             void EnsureColorSpace(const DXGI_COLOR_SPACE_TYPE& colorSpace);
             void DisableHdr();
@@ -55,6 +59,7 @@ namespace AZ
             RHI::Ptr<IDXGISwapChainX> m_swapChain;
             bool m_isInFullScreenExclusiveState = false; //!< Was SetFullscreenState used to enter full screen exclusive state?
             bool m_isTearingSupported = false; //!< Is tearing support available for full screen borderless windowed mode?
+            bool m_replacedByProxy = false; //!< Is m_swapChain a proxy handed to us by an ISwapChainProxy?
         };
     }
 }
