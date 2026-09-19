@@ -199,8 +199,7 @@ namespace AtomToolsFramework
         m_sceneContextMenu = aznew GraphCanvas::SceneContextMenu(m_toolId, this);
         m_sceneContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
-        // Add the same node palette to the connection context menu so compatible nodes can be
-        // created and spliced directly onto an existing connection.
+        // Reuse the node palette in the connection context menu so nodes can be spliced onto an existing connection.
         nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         m_connectionContextMenu = aznew GraphCanvas::ConnectionContextMenu(m_toolId, this);
         m_connectionContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
