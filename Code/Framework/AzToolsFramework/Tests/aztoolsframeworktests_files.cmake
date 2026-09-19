@@ -169,6 +169,7 @@ set(FILES
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp
     PropertyIntSpinCtrlTests.cpp
+    EntityPresetsTests.cpp
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
     PythonLoaderTests.cpp
