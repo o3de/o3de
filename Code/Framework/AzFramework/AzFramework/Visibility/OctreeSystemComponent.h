@@ -70,6 +70,10 @@ namespace AzFramework
         //! Returns true if this is a leaf node.
         bool IsLeaf() const;
 
+        //! Expand the bounds of this node by doubling it around the center until the provided volume fits into it.
+        //! This is only valid on the root node.
+        void GrowToContain(const AZ::Aabb& volume);
+
     private:
 
         void TryMerge(OctreeScene& octreeScene);
