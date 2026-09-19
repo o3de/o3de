@@ -27,8 +27,7 @@ namespace GraphModelIntegration
         //! a given AZ type class, that will also check any base class that it is derived from
         static AZStd::string GetTitlePaletteOverride(void* nodePtr, const AZ::TypeId& typeId);
 
-        //! Helper method to retrieve the NodeStyleOverride attribute (if it exists) set on
-        //! a given AZ type class, also checking any base class that it is derived from.
+        //! Helper method to retrieve the NodeStyleOverride attribute set on a given AZ type class or its base classes.
         static AZStd::string GetNodeStyleOverride(void* nodePtr, const AZ::TypeId& typeId);
 
         //! Returns a pipe-delimited input and output slot pair whose displayed and validated data type follows the input connection.
