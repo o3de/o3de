@@ -67,7 +67,19 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     // --- Diffuse Lighting ---
 
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
-    OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
+
+#if defined(MATERIAL_HAS_ALPHA_TO_COVERAGE) && defined(MATERIAL_HAS_SURFACE_ALPHA)
+    if (o_alphaToCoverage && o_opacity_mode == OpacityMode::Cutout)
+    {
+        OUT.m_diffuseColor.a = surface.alpha;
+    }
+    else
+    {
+        OUT.m_diffuseColor.a = -1;
+    }
+#else
+    OUT.m_diffuseColor.a = -1;
+#endif
 
     // --- Specular Lighting ---
 
