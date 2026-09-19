@@ -306,6 +306,13 @@ namespace PhysX
         Internal::EventRegisterHelper(m_physxSystem, sceneHandle, handler, &AzPhysics::Scene::RegisterSceneSimulationFinishHandler);
     }
 
+    void PhysXSceneInterface::RegisterSceneSimulationSynchronizedWithTickHandler(
+        AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationSynchronizedWithTickHandler& handler)
+    {
+        Internal::EventRegisterHelper(
+            m_physxSystem, sceneHandle, handler, &AzPhysics::Scene::RegisterSceneSimulationSynchronizedWithTickHandler);
+    }
+
     void PhysXSceneInterface::RegisterSceneActiveSimulatedBodiesHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler& handler)
     {
         Internal::EventRegisterHelper(m_physxSystem, sceneHandle, handler, &AzPhysics::Scene::RegisterSceneActiveSimulatedBodiesHandler);
