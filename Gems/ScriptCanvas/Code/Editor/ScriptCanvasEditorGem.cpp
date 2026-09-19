@@ -27,6 +27,7 @@
 
 #include <Editor/ReflectComponent.h>
 #include <Editor/SystemComponent.h>
+#include <Editor/LuaSymbolCategoryReporter.h>
 
 #include <Editor/Components/IconComponent.h>
 #include <Editor/Model/EntityMimeDataHandler.h>
@@ -82,6 +83,7 @@ namespace ScriptCanvas
             ScriptCanvasEditor::IconComponent::CreateDescriptor(),
             ScriptCanvasEditor::ReflectComponent::CreateDescriptor(),
             ScriptCanvasEditor::SystemComponent::CreateDescriptor(),
+            ScriptCanvasEditor::LuaSymbolCategoryReporterSystemComponent::CreateDescriptor(),
             ScriptCanvasEditor::EditorGraphVariableManagerComponent::CreateDescriptor(),
             ScriptCanvasEditor::VariablePropertiesComponent::CreateDescriptor(),
             ScriptCanvasEditor::SlotMappingComponent::CreateDescriptor(),
@@ -120,7 +122,8 @@ namespace ScriptCanvas
         components.insert(components.end(), std::initializer_list<AZ::Uuid> {
                 azrtti_typeid<ScriptCanvasEditor::EditorAssetSystemComponent>(),
                 azrtti_typeid<ScriptCanvasEditor::ReflectComponent>(),
-                azrtti_typeid<ScriptCanvasEditor::SystemComponent>()
+                azrtti_typeid<ScriptCanvasEditor::SystemComponent>(),
+                azrtti_typeid<ScriptCanvasEditor::LuaSymbolCategoryReporterSystemComponent>()
         });
 
         return components;
