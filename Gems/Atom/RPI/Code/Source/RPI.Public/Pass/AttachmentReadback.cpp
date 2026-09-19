@@ -143,7 +143,7 @@ namespace AZ
                 }
                 else
                 {
-                    m_bufferAttachmentByteSize = attachment->m_descriptor.m_buffer.m_byteCount;
+                    m_bufferAttachmentByteSize = attachment->m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_byteCount;
                 }
                 m_readbackItems.push_back({});
                 auto& item = m_readbackItems.back();
@@ -158,7 +158,7 @@ namespace AZ
                 }
                 else
                 {
-                    m_imageDescriptor = attachment->m_descriptor.m_image;
+                    m_imageDescriptor = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
                 }
 
                 m_imageMipsRange = (mipsRange != nullptr)

@@ -97,7 +97,7 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
                     subpassLayoutBuilder.DepthStencilAttachment(
-                        binding.GetAttachment()->m_descriptor.m_image.m_format,
+                        binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format,
                         binding.GetAttachment()->GetAttachmentId(),
                         binding.m_unifiedScopeDesc.m_loadStoreAction,
                         binding.GetAttachmentAccess(),
@@ -109,7 +109,7 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::ShadingRate)
                 {
                     subpassLayoutBuilder.ShadingRateAttachment(
-                        binding.GetAttachment()->m_descriptor.m_image.m_format, binding.GetAttachment()->GetAttachmentId());
+                        binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format, binding.GetAttachment()->GetAttachmentId());
                     continue;
                 }
 
@@ -129,7 +129,7 @@ namespace AZ
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
-                    RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
+                    RHI::Format format = binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
                     subpassLayoutBuilder.RenderTargetAttachment(
                         format,
                         binding.GetAttachment()->GetAttachmentId(),
@@ -193,13 +193,13 @@ namespace AZ
                     if (!wasSet)
                     {
                         // save multi-sample state found in the first output color attachment
-                        outputMultiSampleState = binding.GetAttachment()->m_descriptor.m_image.m_multisampleState;
+                        outputMultiSampleState = binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState;
                         wasSet = true;
                     }
                     else if (PassValidation::IsEnabled())
                     {
                         // return false directly if the current output color attachment has different multi-sample state then previous ones
-                        if (outputMultiSampleState != binding.GetAttachment()->m_descriptor.m_image.m_multisampleState)
+                        if (outputMultiSampleState != binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState)
                         {
                             AZ_Error("RPI", false, "Pass %s has different multi-sample states within its color attachments", GetPathName().GetCStr());
                             break;
@@ -356,7 +356,7 @@ namespace AZ
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
                     {
-                        RHI::Size size = attachment->m_descriptor.m_image.m_size;
+                        RHI::Size size = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
                         AZ::Vector4 imageDimensions;
                         imageDimensions.SetX(float(size.m_width));
