@@ -1,9 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <title>Draw shape</title>
-  <g fill="none" stroke="#DADADA" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M3 8 10 4 15 7M3 8v10l7 4 7-4v-5M3 8l7 4m0 0v10"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2.2 2.19 20.6 20.6"
+   version="1.1"
+   id="svg4"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <title
+     id="title1">Draw shape</title>
+  <g
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.5"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="g1"
+     transform="matrix(1.2414453,0,0,1.049248,-0.61388225,-1.1841838)">
+    <path
+       d="M 3.3572056,9.4645981 9.6644498,4.2684361 17.384699,4.1670878 M 3.3572056,9.4645981 3.3405246,21.720268 13.698089,21.772728 17.767632,14.822742 17.668596,4.2599521 M 3.3572042,9.4645981 13.96539,9.5170579 m 0.0179,0.1411123 C 13.883313,11.056752 13.733886,21.692092 13.733886,21.692092"
+       id="path1"
+       style="stroke-width:1.89383" />
   </g>
-  <path d="m11 13 7.8-9.8a1.2 1.2 0 0 1 1.7-.2l1.3 1a1.2 1.2 0 0 1 .2 1.7L14.2 15.5 10 17Z" fill="#DADADA" stroke="#25282C" stroke-width="1" stroke-linejoin="round"/>
-  <path d="m18 4.2 3.2 2.5M11 13l3.2 2.5" fill="none" stroke="#25282C" stroke-width="1"/>
-  <path d="m11 13-1 4 4.2-1.5Z" fill="#67C7E8"/>
+  <g
+     id="g2"
+     transform="matrix(0.76452293,0.04822817,0,0.77726937,4.8475545,0.26376953)"
+     style="display:inline">
+    <path
+       d="m 10.437958,10.910995 8.603146,-7.4203359 a 1.3222654,1.0884319 48.300391 0 1 1.707453,0.2814885 l 1.205892,1.3460689 a 1.3222654,1.0884319 48.300391 0 1 0.05167,1.723565 L 13.402973,14.262118 9.097478,14.55325 Z"
+       fill="#dadada"
+       stroke="#25282c"
+       stroke-width="0.991527"
+       stroke-linejoin="round"
+       id="path2" />
+    <path
+       d="m 18.094992,4.303607 2.970832,3.310075 m -10.683785,3.206292 2.97083,3.310073"
+       fill="none"
+       stroke="#25282c"
+       stroke-width="1.02445"
+       id="path3" />
+    <path
+       d="M 10.370027,10.995908 9.0295462,14.638163 13.335041,14.347031 Z"
+       fill="#67c7e8"
+       id="path4"
+       style="stroke-width:0.999715" />
+  </g>
 </svg>

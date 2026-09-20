@@ -399,7 +399,7 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DrawShapeData>()
-                ->Version(3, &DrawShapeDataVersionConverter)
+                ->Version(4, &DrawShapeDataVersionConverter)
                 ->Field("Shape", &DrawShapeData::m_shape)
                 ->Field("Sides", &DrawShapeData::m_sides)
                 ->Field("HoleRatio", &DrawShapeData::m_holeRatio)
@@ -407,6 +407,7 @@ namespace WhiteBox
                 ->Field("Stair", &DrawShapeData::m_stair)
                 ->Field("Carve", &DrawShapeData::m_carve)
                 ->Field("MergeUnion", &DrawShapeData::m_mergeUnion)
+                ->Field("PolygonExtrude", &DrawShapeData::m_polygonExtrude)
                 ->Field("UnitCube", &DrawShapeData::m_unitCube)
                 ->Field("UnitCubeSize", &DrawShapeData::m_unitCubeSize)
                 ->Field("UnitCubeShowGrid", &DrawShapeData::m_unitCubeShowGrid);
@@ -428,6 +429,8 @@ namespace WhiteBox
                     ->EnumAttribute(DrawShapeType::Cone, QT_TRANSLATE_NOOP("WhiteBox", "Cone"))
                     ->EnumAttribute(DrawShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
                     ->EnumAttribute(DrawShapeType::Staircase, QT_TRANSLATE_NOOP("WhiteBox", "Staircase"))
+                    // Room, Door and Circular Stairs are parametric-only - they are created as a layer,
+                    // never dragged out as a brush - so they are not offered here.
                     ->EnumAttribute(DrawShapeType::Plane, QT_TRANSLATE_NOOP("WhiteBox", "Plane"))
                     ->EnumAttribute(DrawShapeType::Torus, QT_TRANSLATE_NOOP("WhiteBox", "Torus"))
                     ->EnumAttribute(DrawShapeType::Pipe, QT_TRANSLATE_NOOP("WhiteBox", "Pipe"))
@@ -486,6 +489,48 @@ namespace WhiteBox
                 ->Field("ExcludeFromBoolean", &BooleanSettings::m_excludeFromBoolean)
                 ->Field("BooleanOthers", &BooleanSettings::m_booleanOthers)
                 ->Field("CutterOperation", &BooleanSettings::m_cutterOperation);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<BooleanSettings>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "Boolean"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BooleanSettings::m_sourceEntity,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Source"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Another entity whose White Box mesh is the operand."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &BooleanSettings::m_operation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Operation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "How the source mesh combines with this one."))
+                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_live, QT_TRANSLATE_NOOP("WhiteBox", "Live"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Evaluate for display only; the editable mesh underneath is left alone."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_affectActiveOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Active Layer Only"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut only the active layer instead of the whole combined mesh."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_booleanOthers,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut Others"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Make this entity a cutter: it booleans every overlapping entity that is not excluded."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &BooleanSettings::m_cutterOperation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cutter Operation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The operation this entity applies to the meshes it cuts."))
+                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_excludeFromBoolean,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Never Cut This"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Keep this entity out of every other entity's global boolean."));
+            }
         }
     }
 
@@ -540,9 +585,78 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(
                         AZ::Edit::UIHandlers::Button, "",
-                        QT_TRANSLATE_NOOP("WhiteBox", "Open the White Box pane - all White Box editing lives there."))
+                        QT_TRANSLATE_NOOP("WhiteBox", "Open the White Box pane, which holds the layer stack."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnOpenPane)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Open White Box Pane"))
+
+                    // Set-once per-entity state belongs on the card (search, collapsing, prefab overrides).
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default Shape"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The shape a new or reset White Box mesh starts as."))
+                    ->EnumAttribute(DefaultShapeType::Cube, QT_TRANSLATE_NOOP("WhiteBox", "Cube"))
+                    ->EnumAttribute(DefaultShapeType::Tetrahedron, QT_TRANSLATE_NOOP("WhiteBox", "Tetrahedron"))
+                    ->EnumAttribute(DefaultShapeType::Icosahedron, QT_TRANSLATE_NOOP("WhiteBox", "Icosahedron"))
+                    ->EnumAttribute(DefaultShapeType::Cylinder, QT_TRANSLATE_NOOP("WhiteBox", "Cylinder"))
+                    ->EnumAttribute(DefaultShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
+                    ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Asset"))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Material / Display")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_useGlobalTint,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Use Global Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render every layer with the material tint below. Turn off to let each layer use its own."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnGlobalTintChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Tint, texture and game-mode visibility for this White Box."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::GlobalTintVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_edgesOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Edges Only"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Hide the solid render mesh and draw only the mesh edges."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnEdgesOnlyChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_boolean, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's mesh."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Mesh / Asset")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Weld coincident vertices and regroup coplanar faces so the whole mesh is a clean manifold."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::FixNonManifoldMesh)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Fix Non-Manifold"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Remove every cube placed with the Cube Stamp tool."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ClearVoxelCubes)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Clear Cube Stamp"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Add a White Box collider component to this entity."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAddCollision)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Add Collision"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Save this mesh as a shareable White Box asset."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Save As Asset..."))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Export this mesh to an obj file."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_flipYZForExport,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Swap Y and Z on export, for tools that use a different up axis."))
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
                         QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),

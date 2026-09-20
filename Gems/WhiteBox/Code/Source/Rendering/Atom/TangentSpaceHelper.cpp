@@ -7,6 +7,7 @@
  */
 
 #include "TangentSpaceHelper.h"
+#include "Util/WhiteBoxMathUtil.h"
 
 #include <AzCore/std/containers/array.h>
 #include <CryCommon/Cry_Math.h>
@@ -81,11 +82,11 @@ namespace WhiteBox
 
                 // calculate tangent vectors
 
-                AZ::Vector3 normal = triangleEdges[0].Cross(triangleEdges[1]);
+                AZ::Vector3 normal;
 
-                // Avoid situations where the edges are parallel resulting in an invalid normal.
-                // This can happen if the simulation moves particles of triangle to the same spot or very far away.
-                if (normal.IsZero(0.0001f))
+                // Use the same scale-independent validity check as render culling,
+                // so fine bevel faces keep their actual normal instead of an identity basis.
+                if (!TryCalculateTriangleNormal(triangleEdges[0], triangleEdges[1], normal))
                 {
                     // Use the identity base with low influence to leave other valid triangles to
                     // affect these vertices. In case no other triangle affects the vertices the base
@@ -93,8 +94,6 @@ namespace WhiteBox
                     triangleBases.push_back(identityBase);
                     continue;
                 }
-
-                normal.Normalize();
 
                 const float deltaU1 = triangleUVs[1].GetX() - triangleUVs[0].GetX();
                 const float deltaU2 = triangleUVs[2].GetX() - triangleUVs[0].GetX();

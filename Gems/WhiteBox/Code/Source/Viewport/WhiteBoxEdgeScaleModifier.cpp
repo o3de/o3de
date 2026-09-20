@@ -6,6 +6,7 @@
  *
  */
 
+#include "Util/WhiteBoxEditorUtil.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
@@ -78,7 +79,7 @@ namespace WhiteBox
         for (size_t vertexIndex = 0; vertexIndex < vertexPositions.size(); ++vertexIndex)
         {
             auto manipulator = AzToolsFramework::LinearManipulator::MakeShared(
-                AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+                EditorSpaceFromLocal(m_entityComponentIdPair));
 
             // configure manipulator
             manipulator->AddEntityComponentIdPair(m_entityComponentIdPair);

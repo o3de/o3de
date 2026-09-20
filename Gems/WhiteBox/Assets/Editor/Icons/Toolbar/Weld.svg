@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="2 2 20.6 20.6">
+  <title>Weld</title>
+  <g fill="none" stroke="#DADADA" stroke-width="1.6" stroke-linecap="round">
+    <path d="M6.6 6.6 10.4 10.4M18 6.6 14.2 10.4M6.6 18.2 10.4 14.4M18 18.2 14.2 14.4"/>
+  </g>
+  <circle cx="5.4" cy="5.4" r="1.8" fill="#DADADA"/>
+  <circle cx="19.2" cy="5.4" r="1.8" fill="#DADADA"/>
+  <circle cx="5.4" cy="19.4" r="1.8" fill="#DADADA"/>
+  <circle cx="19.2" cy="19.4" r="1.8" fill="#DADADA"/>
+  <circle cx="12.3" cy="12.4" r="3" fill="#67C7E8" stroke="#25282C" stroke-width="1"/>
+</svg>

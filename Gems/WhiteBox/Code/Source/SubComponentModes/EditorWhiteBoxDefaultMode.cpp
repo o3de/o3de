@@ -1107,6 +1107,9 @@ namespace WhiteBox
         }
     }
 
+
+
+
     void DefaultMode::HideSelectedVertex()
     {
         auto modifier = AZStd::get_if<AZStd::unique_ptr<VertexTranslationModifier>>(&m_selectedModifier);

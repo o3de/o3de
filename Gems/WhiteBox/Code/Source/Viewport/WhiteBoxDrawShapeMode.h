@@ -104,11 +104,10 @@ namespace WhiteBox
             DraggingBase,   //!< User is dragging out the base rectangle.
             PullingHeight,  //!< Base is locked; user moves mouse to set height.
             DrawingPolygon, //!< Click-defined planar outline.
+            PullingPolygonHeight, //!< Closed outline; previewing its extrusion.
         };
 
-        //! Raycast the mouse ray against the existing white box mesh polygons,
-        //! falling back to an infinite XZ plane through the entity origin.
-        //! Returns a position in world space.
+        //! Raycast the mouse against the mesh, falling back to a plane through the entity origin. World space.
         AZ::Vector3 RaycastToSurface(
             const AzToolsFramework::ViewportInteraction::MouseInteraction& mouseInteraction,
             const AZ::Transform& worldFromLocal,
@@ -128,6 +127,8 @@ namespace WhiteBox
         //! @p height picks the operation: pull in = subtract (carve), pull out =
         //! union (add).
         void BooleanAtPolygon(const AZ::Transform& worldFromLocal, float height, bool forceUnion = false);
+        //! Shared boolean commit for primitive and freeform cutters; maps to active-layer storage space.
+        bool ApplyDrawBoolean(WhiteBoxMesh& cutter, bool carve);
         
         bool m_carveMode = false;   // set on first click if Ctrl is held
         //! Stamp the current drawn AABB into the white box mesh and record an undo batch.
@@ -142,10 +143,15 @@ namespace WhiteBox
         int CurrentSides() const;
         float CurrentHoleRatio() const;
         int CurrentTubeSides() const;
-        bool CommitPolygon();
+        bool FinishPolygonOutline();
+        bool CommitPolygon(float height = 0.0f);
+        bool PolygonContextValid() const;
+        AZ::u64 m_polygonLayerId = 0;
+        AZ::Vector3 m_polygonHeightAnchor = AZ::Vector3::CreateZero();
         AZStd::vector<AZ::Vector3> m_polygonPoints;
         bool m_polygonInvalid = false;
         bool m_polygonCloseHovered = false;
+        bool m_polygonBooleanFailed = false;
 
         //! Staircase build parameters (step count, step-division mode, step height and rotation),
         //! read from the component in one request and sanitised to safe ranges.
@@ -203,8 +209,8 @@ namespace WhiteBox
         //! Blender-style numeric depth entry (active only during height pull).
         NumericInputState m_numericInput;
 
-        //! Latest worldFromLocal seen in HandleMouseInteraction, cached so a
-        //! keyboard-driven confirm (which carries no transform) can commit.
+        //! Latest entity-to-world transform (without the active layer transform), cached
+        //! so a keyboard-driven confirm (which carries no transform) can commit.
         AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity();
 
         // Add a member to store the anchor's surface frame:

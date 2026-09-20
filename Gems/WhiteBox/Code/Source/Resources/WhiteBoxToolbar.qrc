@@ -2,5 +2,34 @@
   <qresource prefix="/WhiteBox/Icons">
     <file alias="Draw.svg">../../../Assets/Editor/Icons/Toolbar/Draw.svg</file>
     <file alias="VertexPaint.svg">../../../Assets/Editor/Icons/Toolbar/VertexPaint.svg</file>
+    <file alias="Bridge.svg">../../../Assets/Editor/Icons/Toolbar/Bridge.svg</file>
+    <file alias="Weld.svg">../../../Assets/Editor/Icons/Toolbar/Weld.svg</file>
+    <file alias="LoopCut.svg">../../../Assets/Editor/Icons/Toolbar/LoopCut.svg</file>
+    <file alias="Bevel.svg">../../../Assets/Editor/Icons/Toolbar/Bevel.svg</file>
+    <file alias="ShapeBox.svg">../../../Assets/Editor/Icons/Toolbar/ShapeBox.svg</file>
+    <file alias="ShapeCylinder.svg">../../../Assets/Editor/Icons/Toolbar/ShapeCylinder.svg</file>
+    <file alias="ShapePyramid.svg">../../../Assets/Editor/Icons/Toolbar/ShapePyramid.svg</file>
+    <file alias="ShapeCone.svg">../../../Assets/Editor/Icons/Toolbar/ShapeCone.svg</file>
+    <file alias="ShapeSphere.svg">../../../Assets/Editor/Icons/Toolbar/ShapeSphere.svg</file>
+    <file alias="ShapeStaircase.svg">../../../Assets/Editor/Icons/Toolbar/ShapeStaircase.svg</file>
+    <file alias="ShapeRoom.svg">../../../Assets/Editor/Icons/Toolbar/ShapeRoom.svg</file>
+    <file alias="ShapeDoor.svg">../../../Assets/Editor/Icons/Toolbar/ShapeDoor.svg</file>
+    <file alias="ShapeCircularStairs.svg">../../../Assets/Editor/Icons/Toolbar/ShapeCircularStairs.svg</file>
+    <file alias="ShapePlane.svg">../../../Assets/Editor/Icons/Toolbar/ShapePlane.svg</file>
+    <file alias="ShapeTorus.svg">../../../Assets/Editor/Icons/Toolbar/ShapeTorus.svg</file>
+    <file alias="ShapePipe.svg">../../../Assets/Editor/Icons/Toolbar/ShapePipe.svg</file>
+    <file alias="ShapePolygon.svg">../../../Assets/Editor/Icons/Toolbar/ShapePolygon.svg</file>
+    <file alias="Extrude.svg">../../../Assets/Editor/Icons/Toolbar/Extrude.svg</file>
+    <file alias="Inset.svg">../../../Assets/Editor/Icons/Toolbar/Inset.svg</file>
+    <file alias="HideEdge.svg">../../../Assets/Editor/Icons/Toolbar/HideEdge.svg</file>
+    <file alias="HideVertex.svg">../../../Assets/Editor/Icons/Toolbar/HideVertex.svg</file>
+    <file alias="FlipEdge.svg">../../../Assets/Editor/Icons/Toolbar/FlipEdge.svg</file>
+    <file alias="ShapeCubeStamp.svg">../../../Assets/Editor/Icons/Toolbar/ShapeCubeStamp.svg</file>
+    <file alias="PaintMaterial.svg">../../../Assets/Editor/Icons/Toolbar/PaintMaterial.svg</file>
+    <file alias="PaintColor.svg">../../../Assets/Editor/Icons/Toolbar/PaintColor.svg</file>
+    <file alias="ResetMaterial.svg">../../../Assets/Editor/Icons/Toolbar/ResetMaterial.svg</file>
+    <file alias="ResetColor.svg">../../../Assets/Editor/Icons/Toolbar/ResetColor.svg</file>
+    <file alias="EdgeLoop.svg">../../../Assets/Editor/Icons/Toolbar/EdgeLoop.svg</file>
+    <file alias="EdgeRing.svg">../../../Assets/Editor/Icons/Toolbar/EdgeRing.svg</file>
   </qresource>
 </RCC>

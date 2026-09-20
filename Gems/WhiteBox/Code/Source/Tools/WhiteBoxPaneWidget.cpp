@@ -7,6 +7,7 @@
  */
 
 #include "Tools/WhiteBoxPaneWidget.h"
+#include "Util/WhiteBoxModelingOps.h"
 
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentModeBus.h"
@@ -20,10 +21,12 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/std/algorithm.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QColorDialog>
 #include <QComboBox>
@@ -37,9 +40,17 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QIcon>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QPainterPath>
 #include <QPushButton>
+#include <QStyledItemDelegate>
+#include <QToolButton>
 #include <QSpinBox>
 #include <QTimer>
+#include <QSignalBlocker>
 #include <QVBoxLayout>
 
 namespace WhiteBox
@@ -110,14 +121,297 @@ namespace WhiteBox
             return row;
         }
 
-        //! The layer list, with drag-and-drop reordering.
-        //!
-        //! The rows are NOT moved by the view: letting Qt do an InternalMove would edit the
-        //! item model behind the component's back (and fire itemChanged mid-move, writing a
-        //! layer's name/visibility onto the wrong slot). Instead the drop is intercepted, the
-        //! from/to rows are computed and handed to the owner, which reorders the component's
-        //! layer list and rebuilds the widget from it - the component stays the source of truth.
-        //! No signals/slots of its own, so it needs no Q_OBJECT / moc.
+        //! What a layer row carries beyond its name and check state.
+        constexpr int LayerTintRole = Qt::UserRole + 1;
+        constexpr int LayerCombineRole = Qt::UserRole + 2;
+
+        //! Row metrics, in pixels at the list's own font size.
+        constexpr int RowPadding = 6;
+        constexpr int EyeWidth = 14;
+        constexpr int SwatchWidth = 10;
+        constexpr int RowGap = 7;
+        constexpr int MinimumRowHeight = 24;
+
+        //! The badge text for a layer's combine mode - the Combine combo's own labels.
+        QString CombineModeLabel(const LayerCombineMode mode)
+        {
+            switch (mode)
+            {
+            case LayerCombineMode::Union:
+                return QObject::tr("Union");
+            case LayerCombineMode::Subtract:
+                return QObject::tr("Subtract");
+            case LayerCombineMode::Intersect:
+                return QObject::tr("Intersect");
+            case LayerCombineMode::Separate:
+            default:
+                return QObject::tr("Separate");
+            }
+        }
+
+        //! Two offset squares, for the Duplicate button. Painted rather than typed: no copy glyph
+        //! has dependable font coverage, and a missing one shows up as a box.
+        QPixmap DuplicatePixmap(const QColor& color)
+        {
+            QPixmap pixmap(16, 16);
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setPen(QPen(color, 1.2));
+            painter.drawRoundedRect(QRectF(2.0, 2.0, 8.0, 8.0), 1.5, 1.5);
+            // Punch the front square out of the back one so they read as stacked, not crossed.
+            painter.setCompositionMode(QPainter::CompositionMode_Clear);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(Qt::black);
+            painter.drawRoundedRect(QRectF(4.6, 4.6, 9.8, 9.8), 2.0, 2.0);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setPen(QPen(color, 1.2));
+            painter.setBrush(Qt::NoBrush);
+            painter.drawRoundedRect(QRectF(5.6, 5.6, 8.0, 8.0), 1.5, 1.5);
+            return pixmap;
+        }
+
+        QIcon MakeDuplicateIcon(const QColor& normal, const QColor& accent)
+        {
+            QIcon icon(DuplicatePixmap(normal));
+            icon.addPixmap(DuplicatePixmap(accent), QIcon::Active);
+            return icon;
+        }
+
+        //! Layer buttons painted explicitly (the tool-button style can drop their borders), from the palette.
+        class LayerToolButton : public QToolButton
+        {
+        public:
+            explicit LayerToolButton(AZStd::function<QIcon(const QColor&, const QColor&)> iconPainter = {})
+                : m_iconPainter(AZStd::move(iconPainter))
+            {
+                setObjectName(QStringLiteral("whiteBoxLayerToolButton"));
+                setAutoRaise(true);
+                setAttribute(Qt::WA_Hover);
+                setFocusPolicy(Qt::NoFocus);
+                setFixedSize(26, 26);
+                setIconSize(QSize(16, 16));
+            }
+
+        protected:
+            void paintEvent(QPaintEvent* /*event*/) override
+            {
+                const auto group = isEnabled() ? QPalette::Active : QPalette::Disabled;
+                const QColor foreground = palette().color(group, QPalette::Text);
+                const QColor accent = palette().color(group, QPalette::Highlight);
+                const bool hovered = isEnabled() && underMouse();
+                const bool pressed = isEnabled() && (isDown() || isChecked());
+
+                QPainter painter(this);
+                painter.setRenderHint(QPainter::Antialiasing);
+                const QRectF frame = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+                QColor border = foreground;
+                border.setAlpha(isEnabled() ? 110 : 55);
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(palette().brush(group, QPalette::Button));
+                painter.drawRoundedRect(frame, 3.0, 3.0);
+                if (hovered || pressed)
+                {
+                    QColor wash = accent;
+                    wash.setAlpha(pressed ? 90 : 45);
+                    painter.setBrush(wash);
+                    painter.drawRoundedRect(frame, 3.0, 3.0);
+                    border = accent;
+                }
+                painter.setBrush(Qt::NoBrush);
+                painter.setPen(QPen(border, 1.0));
+                painter.drawRoundedRect(frame, 3.0, 3.0);
+
+                const QColor content = hovered || pressed ? accent : foreground;
+                if (m_iconPainter)
+                {
+                    // Generate artwork from the live palette, including its disabled text colour.
+                    // Using Normal avoids Qt applying an additional automatic greyscale treatment.
+                    const QIcon artwork = m_iconPainter(content, accent);
+                    const QRect iconRect(
+                        (width() - iconSize().width()) / 2, (height() - iconSize().height()) / 2,
+                        iconSize().width(), iconSize().height());
+                    artwork.paint(&painter, iconRect, Qt::AlignCenter, QIcon::Normal);
+                }
+                else
+                {
+                    painter.setPen(content);
+                    painter.drawText(rect(), Qt::AlignCenter, text());
+                }
+            }
+
+        private:
+            AZStd::function<QIcon(const QColor&, const QColor&)> m_iconPainter;
+        };
+
+        QRect EyeRect(const QRect& row)
+        {
+            return QRect(row.left() + RowPadding, row.center().y() - EyeWidth / 2, EyeWidth, EyeWidth);
+        }
+
+        //! An eye outline with a pupil, struck through when the layer is hidden. Drawn rather than
+        //! loaded so it takes its colour from the editor theme, like everything else on the row.
+        void DrawEye(QPainter* painter, const QRect& rect, const QColor& color, const bool open)
+        {
+            QPen pen(color, 1.2);
+            pen.setCapStyle(Qt::RoundCap);
+            painter->setPen(pen);
+            painter->setBrush(Qt::NoBrush);
+
+            const QPointF center = rect.center();
+            const qreal halfWidth = rect.width() * 0.5;
+            const qreal lidDepth = rect.height() * 0.6;
+            QPainterPath eye;
+            eye.moveTo(center.x() - halfWidth, center.y());
+            eye.quadTo(center.x(), center.y() - lidDepth, center.x() + halfWidth, center.y());
+            eye.quadTo(center.x(), center.y() + lidDepth, center.x() - halfWidth, center.y());
+            painter->drawPath(eye);
+            if (open)
+            {
+                painter->setBrush(color);
+                painter->drawEllipse(center, halfWidth * 0.26, halfWidth * 0.26);
+                painter->setBrush(Qt::NoBrush);
+            }
+            else
+            {
+                painter->drawLine(
+                    QPointF(center.x() - halfWidth, center.y() + halfWidth),
+                    QPointF(center.x() + halfWidth, center.y() - halfWidth));
+            }
+        }
+
+        //! Paints a layer row: eye, tint swatch, name and combine-mode badge.
+        class LayerRowDelegate : public QStyledItemDelegate
+        {
+        public:
+            using QStyledItemDelegate::QStyledItemDelegate;
+
+            QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+            {
+                QSize size = QStyledItemDelegate::sizeHint(option, index);
+                size.setHeight(AZStd::max(size.height(), MinimumRowHeight));
+                return size;
+            }
+
+            void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index)
+                const override
+            {
+                QStyleOptionViewItem opt = option;
+                initStyleOption(&opt, index);
+                // The eye stands in for the check indicator, and the name is placed by hand so the
+                // badge can share the row - leave the style the background and the selection only.
+                opt.features &= ~QStyleOptionViewItem::HasCheckIndicator;
+                opt.text.clear();
+                opt.icon = QIcon();
+                const QWidget* widget = opt.widget;
+                QStyle* style = widget != nullptr ? widget->style() : QApplication::style();
+                style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
+
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing, true);
+
+                const bool selected = (option.state & QStyle::State_Selected) != 0;
+                const QColor textColor =
+                    opt.palette.color(selected ? QPalette::HighlightedText : QPalette::Text);
+                const bool visible = index.data(Qt::CheckStateRole).toInt() == Qt::Checked;
+
+                QColor eyeColor = textColor;
+                eyeColor.setAlpha(visible ? 210 : 80);
+                DrawEye(painter, EyeRect(option.rect), eyeColor, visible);
+
+                int left = EyeRect(option.rect).right() + RowGap;
+                const QColor tint = index.data(LayerTintRole).value<QColor>();
+                if (tint.isValid())
+                {
+                    const QRect swatch(
+                        left, option.rect.center().y() - SwatchWidth / 2, SwatchWidth, SwatchWidth);
+                    painter->setPen(QPen(QColor(0, 0, 0, 90), 1.0));
+                    painter->setBrush(tint);
+                    painter->drawRoundedRect(QRectF(swatch).adjusted(0.5, 0.5, -0.5, -0.5), 2.0, 2.0);
+                    left = swatch.right() + RowGap;
+                }
+
+                int right = option.rect.right() - RowPadding;
+                const QString badge = index.data(LayerCombineRole).toString();
+                if (!badge.isEmpty())
+                {
+                    const QFontMetrics metrics(opt.font);
+                    const int badgeWidth = metrics.horizontalAdvance(badge) + 14;
+                    const int badgeHeight = metrics.height() + 2;
+                    const QRect badgeRect(
+                        right - badgeWidth, option.rect.center().y() - badgeHeight / 2, badgeWidth,
+                        badgeHeight);
+                    QColor fill = textColor;
+                    fill.setAlpha(selected ? 60 : 30);
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(fill);
+                    painter->drawRoundedRect(badgeRect, 3.0, 3.0);
+                    QColor badgeText = textColor;
+                    badgeText.setAlpha(200);
+                    painter->setPen(badgeText);
+                    painter->setFont(opt.font);
+                    painter->drawText(badgeRect, Qt::AlignCenter, badge);
+                    right = badgeRect.left() - RowGap;
+                }
+
+                const QRect nameRect(
+                    left, option.rect.top(), AZStd::max(right - left, 0), option.rect.height());
+                QColor nameColor = textColor;
+                if (!visible)
+                {
+                    nameColor.setAlpha(120); // a hidden layer reads as dimmed, like its eye
+                }
+                painter->setPen(nameColor);
+                painter->setFont(opt.font);
+                painter->drawText(
+                    nameRect, Qt::AlignVCenter | Qt::AlignLeft,
+                    QFontMetrics(opt.font).elidedText(
+                        index.data(Qt::DisplayRole).toString(), Qt::ElideRight, nameRect.width()));
+                painter->restore();
+            }
+
+            //! Clicking the eye toggles visibility, and never starts a rename.
+            bool editorEvent(
+                QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
+                const QModelIndex& index) override
+            {
+                if (event->type() == QEvent::MouseButtonRelease ||
+                    event->type() == QEvent::MouseButtonPress ||
+                    event->type() == QEvent::MouseButtonDblClick)
+                {
+                    auto* mouse = static_cast<QMouseEvent*>(event);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                    const QPoint position = mouse->position().toPoint();
+#else
+                    const QPoint position = mouse->pos();
+#endif
+                    if (mouse->button() == Qt::LeftButton &&
+                        EyeRect(option.rect).adjusted(-3, -3, 3, 3).contains(position))
+                    {
+                        if (event->type() == QEvent::MouseButtonRelease)
+                        {
+                            const bool visible = index.data(Qt::CheckStateRole).toInt() == Qt::Checked;
+                            model->setData(
+                                index, visible ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
+                        }
+                        return true;
+                    }
+                }
+                return QStyledItemDelegate::editorEvent(event, model, option, index);
+            }
+
+            //! Rename in place over the name, not across the eye and the badge.
+            void updateEditorGeometry(
+                QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+            {
+                QStyledItemDelegate::updateEditorGeometry(editor, option, index);
+                const int left = EyeRect(option.rect).right() + RowGap + SwatchWidth + RowGap;
+                editor->setGeometry(QRect(
+                    left, option.rect.top(), AZStd::max(option.rect.right() - RowPadding - left, 40),
+                    option.rect.height()));
+            }
+        };
+
         class LayerListWidget : public QListWidget
         {
         public:
@@ -180,17 +474,11 @@ namespace WhiteBox
         m_layerGizmo = AZStd::make_unique<WhiteBoxLayerGizmo>();
         m_entityGizmo = AZStd::make_unique<WhiteBoxEntityGizmo>();
 
+        // The pane holds the layer stack; other settings live on the component card and the viewport tools.
         mainLayout->addWidget(BuildEntitySection());
         mainLayout->addWidget(BuildEntityTransformSection());
         mainLayout->addWidget(BuildModeSection());
-        mainLayout->addWidget(BuildVertexPaintSection());
-        mainLayout->addWidget(BuildShapeSection());
         mainLayout->addWidget(BuildLayersSection());
-        mainLayout->addWidget(BuildDrawSection());
-        mainLayout->addWidget(BuildCubeStampSection());
-        mainLayout->addWidget(BuildBooleanSection());
-        mainLayout->addWidget(BuildMaterialSection());
-        mainLayout->addWidget(BuildMeshOpsSection());
         mainLayout->addStretch();
 
         setWidget(container);
@@ -509,36 +797,6 @@ namespace WhiteBox
         return group;
     }
 
-    QWidget* WhiteBoxPaneWidget::BuildShapeSection()
-    {
-        auto* group = new QGroupBox(tr("Default Shape"));
-        auto* layout = new QFormLayout(group);
-
-        m_defaultShapeCombo = new QComboBox();
-        m_defaultShapeCombo->addItem(tr("Cube"), static_cast<int>(DefaultShapeType::Cube));
-        m_defaultShapeCombo->addItem(tr("Tetrahedron"), static_cast<int>(DefaultShapeType::Tetrahedron));
-        m_defaultShapeCombo->addItem(tr("Icosahedron"), static_cast<int>(DefaultShapeType::Icosahedron));
-        m_defaultShapeCombo->addItem(tr("Cylinder"), static_cast<int>(DefaultShapeType::Cylinder));
-        m_defaultShapeCombo->addItem(tr("Sphere"), static_cast<int>(DefaultShapeType::Sphere));
-        m_defaultShapeCombo->addItem(tr("Mesh Asset"), static_cast<int>(DefaultShapeType::Asset));
-        layout->addRow(tr("Shape"), m_defaultShapeCombo);
-
-        connect(
-            m_defaultShapeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating)
-                {
-                    return;
-                }
-                const auto shape = static_cast<DefaultShapeType>(m_defaultShapeCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box Default Shape",
-                    [shape](EditorWhiteBoxComponent* component) { component->SetDefaultShape(shape); });
-            });
-
-        return group;
-    }
 
     QWidget* WhiteBoxPaneWidget::BuildLayersSection()
     {
@@ -585,31 +843,38 @@ namespace WhiteBox
         createGroup->setLayout(createGrid);
         layout->addWidget(createGroup);
 
-        auto* buttonRow = new QHBoxLayout();
-        auto* newLayerButton = new QPushButton(tr("New"));
-        auto* deleteLayerButton = new QPushButton(tr("Delete"));
-        auto* applyTransformButton = new QPushButton(tr("Apply Transform"));
-        applyTransformButton->setToolTip(
-            tr("Bake the active layer's Position/Rotation/Scale into its geometry and reset them to identity."));
-        buttonRow->addWidget(newLayerButton);
-        buttonRow->addWidget(deleteLayerButton);
-        buttonRow->addWidget(applyTransformButton);
-        layout->addLayout(buttonRow);
-
-        auto* moveRow = new QHBoxLayout();
-        auto* moveUpButton = new QPushButton(tr("Move Up"));
-        auto* moveDownButton = new QPushButton(tr("Move Down"));
+        // One compact strip above the list rather than two rows of wide buttons: these actions are
+        // all about the list right below them, and the count belongs with it too.
         const QString moveTip =
             tr("Reorder the selected layer. Layer order is the order the Combine modes accumulate "
                "in, so moving a layer restacks its boolean.");
-        moveUpButton->setToolTip(moveTip);
-        moveDownButton->setToolTip(moveTip);
-        moveRow->addWidget(moveUpButton);
-        moveRow->addWidget(moveDownButton);
-        layout->addLayout(moveRow);
+        auto* buttonRow = new QHBoxLayout();
+        buttonRow->setSpacing(2);
+        const auto makeToolButton = [buttonRow](const QString& glyph, const QString& tip)
+        {
+            auto* button = new LayerToolButton();
+            button->setText(glyph);
+            button->setToolTip(tip);
+            buttonRow->addWidget(button);
+            return button;
+        };
+        auto* newLayerButton = makeToolButton(QStringLiteral("+"), tr("Add a new layer."));
+        auto* deleteLayerButton = makeToolButton(QString(QChar(0x2212)), tr("Delete the selected layer."));
+        auto* duplicateLayerButton = new LayerToolButton(&MakeDuplicateIcon);
+        duplicateLayerButton->setToolTip(tr("Duplicate the selected layer, geometry and settings alike."));
+        buttonRow->addWidget(duplicateLayerButton);
+        auto* moveUpButton = makeToolButton(QString(QChar(0x2191)), moveTip);
+        auto* moveDownButton = makeToolButton(QString(QChar(0x2193)), moveTip);
+        buttonRow->addStretch();
+        m_layerCountLabel = new QLabel();
+        m_layerCountLabel->setEnabled(false); // the theme's secondary text, which is what a count is
+        buttonRow->addWidget(m_layerCountLabel);
+        layout->addLayout(buttonRow);
 
         auto* layerList = new LayerListWidget();
         m_layerList = layerList;
+        m_layerList->setItemDelegate(new LayerRowDelegate(m_layerList));
+        m_layerList->setUniformItemSizes(true);
         m_layerList->setToolTip(
             tr("All layers, in combine order. Double-click to rename; use the checkbox to "
                "show/hide; drag a layer (or use Move Up / Move Down) to reorder."));
@@ -659,6 +924,10 @@ namespace WhiteBox
         metaLayout->addRow(tr("Position"), MakeVec3Row(m_layerPos, -100000.0, 100000.0, 0.1));
         metaLayout->addRow(tr("Rotation"), MakeVec3Row(m_layerRot, -3600.0, 3600.0, 1.0));
         metaLayout->addRow(tr("Scale"), MakeVec3Row(m_layerScale, 0.001, 1000.0, 0.1));
+        auto* applyTransformButton = new QPushButton(tr("Apply Transform"));
+        applyTransformButton->setToolTip(
+            tr("Bake the active layer's Position/Rotation/Scale into its geometry and reset them to identity."));
+        metaLayout->addRow(QString(), applyTransformButton);
 
         // Viewport gizmo for the selected layer's transform (same manipulators as the editor's
         // Transform component, but driving the layer's non-destructive Position/Rotation/Scale).
@@ -912,11 +1181,11 @@ namespace WhiteBox
 
         layout->addWidget(m_layerMetaGroup);
 
-        connect(newLayerButton, &QPushButton::clicked, this,
+        connect(newLayerButton, &QAbstractButton::clicked, this,
             [this]() {
                 ModifyComponent("White Box New Layer", [](EditorWhiteBoxComponent* c) { c->AddLayer(); });
             });
-        connect(deleteLayerButton, &QPushButton::clicked, this,
+        connect(deleteLayerButton, &QAbstractButton::clicked, this,
             [this]() {
                 ModifyComponent("White Box Delete Layer", [](EditorWhiteBoxComponent* c) { c->DeleteActiveLayer(); });
             });
@@ -927,13 +1196,19 @@ namespace WhiteBox
                     "White Box Apply Layer Transform",
                     [](EditorWhiteBoxComponent* c) { c->ApplyActiveLayerTransform(); });
             });
-        connect(moveUpButton, &QPushButton::clicked, this,
+        connect(duplicateLayerButton, &QAbstractButton::clicked, this,
+            [this]() {
+                ModifyComponent(
+                    "White Box Duplicate Layer",
+                    [](EditorWhiteBoxComponent* c) { c->DuplicateActiveLayer(); });
+            });
+        connect(moveUpButton, &QAbstractButton::clicked, this,
             [this]()
             {
                 const int row = m_layerList->currentRow();
                 MoveLayerRow(row, row - 1);
             });
-        connect(moveDownButton, &QPushButton::clicked, this,
+        connect(moveDownButton, &QAbstractButton::clicked, this,
             [this]()
             {
                 const int row = m_layerList->currentRow();
@@ -1066,689 +1341,19 @@ namespace WhiteBox
         return group;
     }
 
-    QWidget* WhiteBoxPaneWidget::BuildDrawSection()
-    {
-        auto* group = new QGroupBox(tr("Draw Shape"));
-        auto* layout = new QFormLayout(group);
 
-        m_drawShapeCombo = new QComboBox();
-        m_drawShapeCombo->addItem(tr("Box"), static_cast<int>(DrawShapeType::Box));
-        m_drawShapeCombo->addItem(tr("Cylinder"), static_cast<int>(DrawShapeType::Cylinder));
-        m_drawShapeCombo->addItem(tr("Pyramid"), static_cast<int>(DrawShapeType::Pyramid));
-        m_drawShapeCombo->addItem(tr("Cone"), static_cast<int>(DrawShapeType::Cone));
-        m_drawShapeCombo->addItem(tr("Sphere"), static_cast<int>(DrawShapeType::Sphere));
-        m_drawShapeCombo->addItem(tr("Staircase"), static_cast<int>(DrawShapeType::Staircase));
-        m_drawShapeCombo->addItem(tr("Plane"), static_cast<int>(DrawShapeType::Plane));
-        m_drawShapeCombo->addItem(tr("Torus"), static_cast<int>(DrawShapeType::Torus));
-        m_drawShapeCombo->addItem(tr("Pipe"), static_cast<int>(DrawShapeType::Pipe));
-        m_drawShapeCombo->addItem(tr("Freeform Polygon"), static_cast<int>(DrawShapeType::Polygon));
-        layout->addRow(tr("Shape"), m_drawShapeCombo);
-        auto* drawHint = new QLabel(tr(
-            "Plane: drag and release. Solids: drag a base, then pull height and click. "
-            "Polygon: click corners; Enter or click the first corner to finish; Backspace removes a corner. Esc cancels."));
-        drawHint->setWordWrap(true);
-        layout->addRow(drawHint);
-        m_drawHoleRatio = MakeSpin(0.05, 0.95, 0.05);
-        m_drawHoleRatioLabel = new QLabel(tr("Hole Ratio"));
-        layout->addRow(m_drawHoleRatioLabel, m_drawHoleRatio);
-        connect(m_drawHoleRatio, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-            [this](double value)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent("White Box Hole Ratio",
-                        [value](EditorWhiteBoxComponent* c) { c->SetDrawHoleRatio(static_cast<float>(value)); });
-                }
-            });
 
-        m_drawTubeSides = new QSpinBox();
-        m_drawTubeSides->setRange(MinTubeSides, MaxTubeSides);
-        m_drawTubeSides->setToolTip(
-            tr("Segments around the torus tube's cross-section. A torus has Sides x Tube Sides quads, so this "
-               "is the other half of its triangle count."));
-        m_drawTubeSidesLabel = new QLabel(tr("Tube Sides"));
-        layout->addRow(m_drawTubeSidesLabel, m_drawTubeSides);
-        connect(m_drawTubeSides, QOverload<int>::of(&QSpinBox::valueChanged), this,
-            [this](int tubeSides)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent("White Box Tube Sides",
-                        [tubeSides](EditorWhiteBoxComponent* c) { c->SetDrawTubeSides(tubeSides); });
-                }
-            });
 
-        m_drawSides = new QSpinBox();
-        m_drawSides->setRange(3, 128);
-        m_drawSides->setToolTip(
-            tr("Number of sides for round / N-gon shapes (4 = box / square), or the subdivision of the Sphere."));
-        m_drawSidesLabel = new QLabel(tr("Sides"));
-        layout->addRow(m_drawSidesLabel, m_drawSides);
 
-        m_stairGroup = new QGroupBox(tr("Staircase"));
-        auto* stairLayout = new QFormLayout(m_stairGroup);
-        m_stairByHeight = new QCheckBox(tr("Divide By Step Height"));
-        stairLayout->addRow(QString(), m_stairByHeight);
-        m_stairSteps = new QSpinBox();
-        m_stairSteps->setRange(1, 128);
-        stairLayout->addRow(tr("Step Count"), m_stairSteps);
-        m_stairStepHeight = MakeSpin(0.01, 1000.0, 0.05);
-        stairLayout->addRow(tr("Step Height"), m_stairStepHeight);
-        m_stairRotation = new QSpinBox();
-        m_stairRotation->setRange(0, 3);
-        m_stairRotation->setToolTip(tr("Orientation in 90-degree steps about the drawn surface."));
-        stairLayout->addRow(tr("Rotation (x90)"), m_stairRotation);
-        layout->addRow(m_stairGroup);
 
-        m_drawCarve = new QCheckBox(tr("Carve (Boolean)"));
-        m_drawCarve->setToolTip(
-            tr("When on, drawing performs a CSG boolean (same as holding Ctrl): pull in to carve, out to add."));
-        layout->addRow(QString(), m_drawCarve);
-        m_drawMergeUnion = new QCheckBox(tr("Merge Draw Shape (Union)"));
-        m_drawMergeUnion->setToolTip(
-            tr("When on, committing a drawn shape CSG-unions it into the mesh instead of leaving overlapping "
-               "geometry."));
-        layout->addRow(QString(), m_drawMergeUnion);
 
-        connect(
-            m_drawShapeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating)
-                {
-                    return;
-                }
-                const auto shape = static_cast<DrawShapeType>(m_drawShapeCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box Draw Shape",
-                    [shape](EditorWhiteBoxComponent* c) { c->SetDrawShape(shape); });
-            });
-        connect(m_drawSides, QOverload<int>::of(&QSpinBox::valueChanged), this,
-            [this](int sides)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Draw Sides", [sides](EditorWhiteBoxComponent* c) { c->SetDrawSides(sides); });
-                }
-            });
-        const auto applyStair = [this]()
-        {
-            if (m_updating)
-            {
-                return;
-            }
-            DrawStairInfo info;
-            info.m_byHeight = m_stairByHeight->isChecked();
-            info.m_steps = m_stairSteps->value();
-            info.m_stepHeight = aznumeric_cast<float>(m_stairStepHeight->value());
-            info.m_rotation = m_stairRotation->value();
-            ModifyComponent(
-                "White Box Stair Settings", [info](EditorWhiteBoxComponent* c) { c->SetDrawStairInfo(info); });
-        };
-        connect(m_stairByHeight, &QCheckBox::toggled, this, applyStair);
-        connect(m_stairSteps, QOverload<int>::of(&QSpinBox::valueChanged), this, applyStair);
-        connect(m_stairStepHeight, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, applyStair);
-        connect(m_stairRotation, QOverload<int>::of(&QSpinBox::valueChanged), this, applyStair);
-        connect(m_drawCarve, &QCheckBox::toggled, this,
-            [this](bool carve)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Draw Carve", [carve](EditorWhiteBoxComponent* c) { c->SetDrawCarve(carve); });
-                }
-            });
-        connect(m_drawMergeUnion, &QCheckBox::toggled, this,
-            [this](bool merge)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Draw Merge",
-                        [merge](EditorWhiteBoxComponent* c) { c->SetDrawMergeUnion(merge); });
-                }
-            });
 
-        return group;
-    }
 
-    QWidget* WhiteBoxPaneWidget::BuildCubeStampSection()
-    {
-        auto* group = new QGroupBox(tr("Unit Cube Stamp"));
-        auto* layout = new QFormLayout(group);
 
-        m_unitCube = new QCheckBox(tr("Stamp Cubes In Draw Mode"));
-        m_unitCube->setToolTip(
-            tr("In draw mode, press to place a grid-snapped cube and drag to extrude it along the surface "
-               "(hold Ctrl before drawing to subtract)."));
-        layout->addRow(QString(), m_unitCube);
-        m_unitCubeSize = MakeSpin(0.05, 100.0, 0.5, 2);
-        m_unitCubeSize->setToolTip(tr("World-space size of the next stamped cube."));
-        layout->addRow(tr("Cube Size"), m_unitCubeSize);
-        m_unitCubeShowGrid = new QCheckBox(tr("Show Cube Grid Preview"));
-        layout->addRow(QString(), m_unitCubeShowGrid);
-        m_clearCubesButton = new QPushButton(tr("Clear Cube Stamp"));
-        m_clearCubesButton->setToolTip(tr("Remove every cube placed with the Unit Cube Stamp tool."));
-        layout->addRow(m_clearCubesButton);
 
-        connect(m_unitCube, &QCheckBox::toggled, this,
-            [this](bool on)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Unit Cube", [on](EditorWhiteBoxComponent* c) { c->SetDrawUnitCube(on); });
-                }
-            });
-        connect(m_unitCubeSize, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-            [this](double size)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Cube Size",
-                        [size](EditorWhiteBoxComponent* c)
-                        { c->SetDrawUnitCubeSize(aznumeric_cast<float>(size)); });
-                }
-            });
-        connect(m_unitCubeShowGrid, &QCheckBox::toggled, this,
-            [this](bool show)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Cube Grid Preview",
-                        [show](EditorWhiteBoxComponent* c) { c->SetDrawUnitCubeShowGrid(show); });
-                }
-            });
-        connect(m_clearCubesButton, &QPushButton::clicked, this,
-            [this]() {
-                ModifyComponent("White Box Clear Cubes", [](EditorWhiteBoxComponent* c) { c->ClearCubeStamp(); });
-            });
 
-        return group;
-    }
 
-    QWidget* WhiteBoxPaneWidget::BuildBooleanSection()
-    {
-        auto* group = new QGroupBox(tr("Boolean"));
-        auto* layout = new QFormLayout(group);
 
-        m_csgSolverCombo = new QComboBox();
-        m_csgSolverCombo->setToolTip(tr(
-            "CSG solver used for EVERY boolean on this component - the per-layer Combine modes and the "
-            "entity Boolean below.\n"
-            "Fast (BSP): brush-style, face-based. Handles inward-facing shells (rooms/corridors) and "
-            "inverted-normal meshes, and tolerates open/non-manifold geometry. Best for blocky level "
-            "geometry.\n"
-            "Manifold: volumetric and precise, but needs closed watertight meshes and treats inverted "
-            "normals as a shape's complement."));
-        m_csgSolverCombo->addItem(tr("Manifold"), static_cast<int>(Api::CsgSolver::Manifold));
-        m_csgSolverCombo->addItem(tr("Fast (BSP)"), static_cast<int>(Api::CsgSolver::Fast));
-        layout->addRow(tr("Solver"), m_csgSolverCombo);
-
-        m_booleanSourceCombo = new QComboBox();
-        m_booleanSourceCombo->setToolTip(
-            tr("Another entity with a White Box component to use as the boolean operand."));
-        layout->addRow(tr("Source"), m_booleanSourceCombo);
-        m_booleanOpCombo = new QComboBox();
-        m_booleanOpCombo->addItem(tr("Subtract"), static_cast<int>(Api::BooleanOperation::Subtraction));
-        m_booleanOpCombo->addItem(tr("Union"), static_cast<int>(Api::BooleanOperation::Union));
-        m_booleanOpCombo->addItem(tr("Intersect"), static_cast<int>(Api::BooleanOperation::Intersection));
-        layout->addRow(tr("Operation"), m_booleanOpCombo);
-        m_booleanLive = new QCheckBox(tr("Non-Destructive (Live)"));
-        layout->addRow(QString(), m_booleanLive);
-        m_booleanActiveOnly = new QCheckBox(tr("Affect Only The Active Layer"));
-        layout->addRow(QString(), m_booleanActiveOnly);
-        m_booleanSourceAfterCombo = new QComboBox();
-        m_booleanSourceAfterCombo->setToolTip(tr("What happens to the source entity after Apply Boolean."));
-        m_booleanSourceAfterCombo->addItem(tr("Keep Source"), static_cast<int>(SourceAfterApply::Keep));
-        m_booleanSourceAfterCombo->addItem(tr("Hide Source"), static_cast<int>(SourceAfterApply::Hide));
-        m_booleanSourceAfterCombo->addItem(tr("Delete Source"), static_cast<int>(SourceAfterApply::Delete));
-        layout->addRow(tr("After Apply"), m_booleanSourceAfterCombo);
-        m_applyBooleanButton = new QPushButton(tr("Apply Boolean"));
-        layout->addRow(m_applyBooleanButton);
-
-        // --- Global (scene-wide) boolean -------------------------------------------------------
-        auto* globalLabel = new QLabel(tr("<b>Global Boolean</b>"));
-        layout->addRow(globalLabel);
-        m_booleanOthers = new QCheckBox(tr("Boolean Other Entities (Cutter)"));
-        m_booleanOthers->setToolTip(
-            tr("When on, this entity acts as a boolean brush: it cuts every overlapping White Box entity "
-               "that is not excluded. Use Refresh Global Booleans to apply."));
-        layout->addRow(QString(), m_booleanOthers);
-        m_cutterOpCombo = new QComboBox();
-        m_cutterOpCombo->setToolTip(tr("Operation this cutter applies to the entities it overlaps."));
-        m_cutterOpCombo->addItem(tr("Subtract"), static_cast<int>(Api::BooleanOperation::Subtraction));
-        m_cutterOpCombo->addItem(tr("Union"), static_cast<int>(Api::BooleanOperation::Union));
-        m_cutterOpCombo->addItem(tr("Intersect"), static_cast<int>(Api::BooleanOperation::Intersection));
-        layout->addRow(tr("Cutter Operation"), m_cutterOpCombo);
-        m_excludeFromBoolean = new QCheckBox(tr("Exclude From Boolean"));
-        m_excludeFromBoolean->setToolTip(tr("When on, this entity is never cut by global cutters."));
-        layout->addRow(QString(), m_excludeFromBoolean);
-        m_refreshGlobalBooleansButton = new QPushButton(tr("Refresh Global Booleans"));
-        m_refreshGlobalBooleansButton->setToolTip(
-            tr("Re-evaluate every non-excluded White Box entity against the current set of cutters."));
-        layout->addRow(m_refreshGlobalBooleansButton);
-
-        connect(
-            m_csgSolverCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating || index < 0)
-                {
-                    return;
-                }
-                const auto solver = static_cast<Api::CsgSolver>(m_csgSolverCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box CSG Solver", [solver](EditorWhiteBoxComponent* c) { c->SetCsgSolver(solver); });
-            });
-        connect(
-            m_booleanSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating || index < 0)
-                {
-                    return;
-                }
-                const AZ::EntityId sourceId(m_booleanSourceCombo->itemData(index).toULongLong());
-                ModifyComponent(
-                    "White Box Boolean Source",
-                    [sourceId](EditorWhiteBoxComponent* c) { c->SetBooleanSourceEntity(sourceId); });
-            });
-        connect(
-            m_booleanOpCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating)
-                {
-                    return;
-                }
-                const auto op = static_cast<Api::BooleanOperation>(m_booleanOpCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box Boolean Operation",
-                    [op](EditorWhiteBoxComponent* c) { c->SetBooleanOperation(op); });
-            });
-        connect(m_booleanLive, &QCheckBox::toggled, this,
-            [this](bool live)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Live Boolean", [live](EditorWhiteBoxComponent* c) { c->SetLiveBoolean(live); });
-                }
-            });
-        connect(m_booleanActiveOnly, &QCheckBox::toggled, this,
-            [this](bool activeOnly)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Boolean Target",
-                        [activeOnly](EditorWhiteBoxComponent* c) { c->SetBooleanAffectActiveOnly(activeOnly); });
-                }
-            });
-        connect(
-            m_booleanSourceAfterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating || index < 0)
-                {
-                    return;
-                }
-                const auto mode = static_cast<SourceAfterApply>(m_booleanSourceAfterCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box Boolean Source Fate",
-                    [mode](EditorWhiteBoxComponent* c) { c->SetSourceAfterApply(mode); });
-            });
-        connect(m_applyBooleanButton, &QPushButton::clicked, this,
-            [this]() {
-                ModifyComponent("White Box Apply Boolean", [](EditorWhiteBoxComponent* c) { c->ApplyBoolean(); });
-            });
-
-        connect(m_booleanOthers, &QCheckBox::toggled, this,
-            [this](bool booleanOthers)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Boolean Others",
-                        [booleanOthers](EditorWhiteBoxComponent* c) { c->SetBooleanOthers(booleanOthers); });
-                }
-            });
-        connect(
-            m_cutterOpCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int index)
-            {
-                if (m_updating || index < 0)
-                {
-                    return;
-                }
-                const auto op = static_cast<Api::BooleanOperation>(m_cutterOpCombo->itemData(index).toInt());
-                ModifyComponent(
-                    "White Box Cutter Operation",
-                    [op](EditorWhiteBoxComponent* c) { c->SetCutterOperation(op); });
-            });
-        connect(m_excludeFromBoolean, &QCheckBox::toggled, this,
-            [this](bool exclude)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Exclude From Boolean",
-                        [exclude](EditorWhiteBoxComponent* c) { c->SetExcludeFromBoolean(exclude); });
-                }
-            });
-        connect(m_refreshGlobalBooleansButton, &QPushButton::clicked, this,
-            []()
-            {
-                // Scene-wide re-evaluate. Wrap in one undo batch so the whole refresh is a single
-                // undo step (RefreshGlobalBooleans touches many entities).
-                AzToolsFramework::ScopedUndoBatch undoBatch("White Box Refresh Global Booleans");
-                EditorWhiteBoxComponent::RefreshGlobalBooleans();
-            });
-
-        return group;
-    }
-
-    QWidget* WhiteBoxPaneWidget::BuildVertexPaintSection()
-    {
-        auto* group = new QGroupBox(tr("Vertex Paint"));
-        auto* layout = new QFormLayout(group);
-        auto* hint = new QLabel(tr(
-            "Choose Vertex Paint above, then click or drag over triangle faces of the active layer. "
-            "Escape or right-click cancels a stroke. Painting makes parametric layers editable meshes."));
-        hint->setWordWrap(true);
-        layout->addRow(hint);
-        m_paintOperation = new QComboBox(group);
-        m_paintOperation->addItem(tr("Paint Material"), static_cast<int>(FacePaintOperation::Material));
-        m_paintOperation->addItem(tr("Paint Color"), static_cast<int>(FacePaintOperation::Color));
-        m_paintOperation->addItem(tr("Reset Material"), static_cast<int>(FacePaintOperation::ResetMaterial));
-        m_paintOperation->addItem(tr("Reset Color"), static_cast<int>(FacePaintOperation::ResetColor));
-        layout->addRow(tr("Operation"), m_paintOperation);
-        m_paintMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
-        m_paintMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
-        layout->addRow(tr("Material"), m_paintMaterial);
-        m_paintColor = new QPushButton(tr("Choose Color"), group);
-        m_paintColor->setToolTip(tr(
-            "Paint an opaque face color. Custom materials need a base color property; their textures remain enabled."));
-        layout->addRow(tr("Color"), m_paintColor);
-        connect(m_paintOperation, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this](int)
-            {
-                if (auto* component = CurrentComponent(); component && !m_updating)
-                {
-                    auto settings = component->GetFacePaintSettings();
-                    settings.m_operation = static_cast<FacePaintOperation>(m_paintOperation->currentData().toInt());
-                    component->SetFacePaintSettings(settings);
-                    RefreshFromComponent();
-                }
-            });
-        connect(m_paintMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
-            [this](const AZ::Data::AssetId& material)
-            {
-                if (auto* component = CurrentComponent(); component && !m_updating)
-                {
-                    auto settings = component->GetFacePaintSettings();
-                    settings.m_material = material;
-                    component->SetFacePaintSettings(settings);
-                }
-            });
-        connect(m_paintColor, &QPushButton::clicked, this,
-            [this]()
-            {
-                auto* component = CurrentComponent();
-                if (!component)
-                {
-                    return;
-                }
-                auto settings = component->GetFacePaintSettings();
-                const QColor initial(settings.m_color & 255, (settings.m_color >> 8) & 255, (settings.m_color >> 16) & 255);
-                const QColor chosen = QColorDialog::getColor(initial, this, tr("Face Paint Color"));
-                if (chosen.isValid())
-                {
-                    settings.m_color = static_cast<AZ::u32>(chosen.red()) |
-                        (static_cast<AZ::u32>(chosen.green()) << 8) |
-                        (static_cast<AZ::u32>(chosen.blue()) << 16) | 0xFF000000u;
-                    component->SetFacePaintSettings(settings);
-                    RefreshFromComponent();
-                }
-            });
-        return group;
-    }
-
-    QWidget* WhiteBoxPaneWidget::BuildMaterialSection()
-    {
-        auto* group = new QGroupBox(tr("Material / Display"));
-        auto* layout = new QFormLayout(group);
-
-        m_defaultMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
-        m_defaultMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
-        m_defaultMaterial->setToolTip(tr("Default material for this entity. Clear to use the built-in WhiteBox material."));
-        layout->addRow(tr("Default Material"), m_defaultMaterial);
-        connect(m_defaultMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
-            [this](const AZ::Data::AssetId& material)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent("White Box Default Material",
-                        [material](EditorWhiteBoxComponent* c) { c->SetMaterialOverride(material); });
-                }
-            });
-
-        auto* selectionHint = new QLabel(tr("In Transform mode, Ctrl-click polygons to add or remove them from the selection."), group);
-        selectionHint->setWordWrap(true);
-        layout->addRow(selectionHint);
-        m_polygonSelectionLabel = new QLabel(group);
-        layout->addRow(m_polygonSelectionLabel);
-        m_polygonMaterial = new AzToolsFramework::PropertyAssetCtrl(group);
-        m_polygonMaterial->SetCurrentAssetType(azrtti_typeid<AZ::RPI::MaterialAsset>());
-        layout->addRow(tr("Polygon Material"), m_polygonMaterial);
-        auto* materialButtons = new QHBoxLayout();
-        m_assignPolygonMaterial = new QPushButton(tr("Assign Material"), group);
-        m_resetPolygonMaterial = new QPushButton(tr("Reset to Default"), group);
-        m_assignPolygonMaterial->setToolTip(tr("Assign to selected polygons. Parametric layers become editable meshes."));
-        materialButtons->addWidget(m_assignPolygonMaterial);
-        materialButtons->addWidget(m_resetPolygonMaterial);
-        layout->addRow(materialButtons);
-        connect(m_assignPolygonMaterial, &QPushButton::clicked, this,
-            [this]() { AssignSelectedPolygonMaterial(false); });
-        connect(m_resetPolygonMaterial, &QPushButton::clicked, this,
-            [this]() { AssignSelectedPolygonMaterial(true); });
-        connect(m_polygonMaterial, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, this,
-            [this](const AZ::Data::AssetId&) { RefreshPolygonMaterialSelection(); });
-        // Selection changes do not modify the component. Keep only these lightweight controls in sync.
-        auto* selectionTimer = new QTimer(this);
-        connect(selectionTimer, &QTimer::timeout, this, &WhiteBoxPaneWidget::RefreshPolygonMaterialSelection);
-        selectionTimer->start(150);
-        RefreshPolygonMaterialSelection();
-
-        m_useGlobalTint = new QCheckBox(tr("Use Global Tint"));
-        m_useGlobalTint->setToolTip(
-            tr("When on, every layer renders with the global tint below; when off each layer uses its own tint."));
-        layout->addRow(QString(), m_useGlobalTint);
-        m_globalTintButton = new QPushButton();
-        m_globalTintButton->setToolTip(tr("Tint for the built-in WhiteBox material. Custom materials keep their authored settings."));
-        layout->addRow(tr("Tint"), m_globalTintButton);
-        m_useTexture = new QCheckBox(tr("Use Texture"));
-        m_useTexture->setToolTip(tr("Texture toggle for the built-in WhiteBox material."));
-        layout->addRow(QString(), m_useTexture);
-        m_edgesOnly = new QCheckBox(tr("Edges Only"));
-        m_edgesOnly->setToolTip(tr("Hide the solid render mesh and draw only the mesh edges."));
-        layout->addRow(QString(), m_edgesOnly);
-
-        connect(m_useGlobalTint, &QCheckBox::toggled, this,
-            [this](bool use)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Global Tint", [use](EditorWhiteBoxComponent* c) { c->SetUseGlobalTint(use); });
-                }
-            });
-        connect(m_globalTintButton, &QPushButton::clicked, this,
-            [this]()
-            {
-                EditorWhiteBoxComponent* component = CurrentComponent();
-                if (component == nullptr)
-                {
-                    return;
-                }
-                const AZ::Color current = component->GetMaterialTint();
-                const QColor picked = QColorDialog::getColor(
-                    QColor::fromRgbF(current.GetR(), current.GetG(), current.GetB()), this, tr("White Box Tint"));
-                if (!picked.isValid())
-                {
-                    return;
-                }
-                ModifyComponent(
-                    "White Box Tint",
-                    [picked](EditorWhiteBoxComponent* c)
-                    {
-                        c->SetMaterialTint(AZ::Color(
-                            aznumeric_cast<float>(picked.redF()), aznumeric_cast<float>(picked.greenF()),
-                            aznumeric_cast<float>(picked.blueF()), 1.0f));
-                    });
-            });
-        connect(m_useTexture, &QCheckBox::toggled, this,
-            [this](bool use)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Texture",
-                        [use](EditorWhiteBoxComponent* c) { c->SetMaterialUseTexture(use); });
-                }
-            });
-        connect(m_edgesOnly, &QCheckBox::toggled, this,
-            [this](bool edgesOnly)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Edges Only",
-                        [edgesOnly](EditorWhiteBoxComponent* c) { c->SetEdgesOnly(edgesOnly); });
-                }
-            });
-
-        return group;
-    }
-
-    void WhiteBoxPaneWidget::RefreshPolygonMaterialSelection()
-    {
-        if (!m_polygonSelectionLabel)
-        {
-            return;
-        }
-        Api::PolygonHandles polygons;
-        if (auto* component = CurrentComponent())
-        {
-            EditorWhiteBoxTransformModeRequestBus::EventResult(
-                polygons, AZ::EntityComponentIdPair(m_currentEntityId, component->GetId()),
-                &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
-        }
-        m_polygonSelectionLabel->setText(tr("%1 polygons selected").arg(static_cast<int>(polygons.size())));
-        m_assignPolygonMaterial->setEnabled(!polygons.empty() && m_polygonMaterial->GetSelectedAssetID().IsValid());
-        m_resetPolygonMaterial->setEnabled(!polygons.empty());
-    }
-
-    void WhiteBoxPaneWidget::AssignSelectedPolygonMaterial(const bool reset)
-    {
-        auto* component = CurrentComponent();
-        if (!component)
-        {
-            return;
-        }
-        Api::PolygonHandles polygons;
-        EditorWhiteBoxTransformModeRequestBus::EventResult(
-            polygons, AZ::EntityComponentIdPair(m_currentEntityId, component->GetId()),
-            &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
-        const AZ::Data::AssetId material = reset ? AZ::Data::AssetId{} : m_polygonMaterial->GetSelectedAssetID();
-        if (polygons.empty() || (!reset && !material.IsValid()))
-        {
-            return;
-        }
-        ModifyComponent(reset ? "White Box Reset Polygon Material" : "White Box Assign Polygon Material",
-            [polygons, material](EditorWhiteBoxComponent* c) { c->AssignPolygonMaterial(polygons, material); });
-    }
-
-    QWidget* WhiteBoxPaneWidget::BuildMeshOpsSection()
-    {
-        auto* group = new QGroupBox(tr("Mesh / Asset"));
-        auto* layout = new QVBoxLayout(group);
-
-        auto* opsRow = new QHBoxLayout();
-        auto* fixButton = new QPushButton(tr("Fix Non-Manifold"));
-        fixButton->setToolTip(
-            tr("Weld coincident vertices and regroup coplanar faces so the whole mesh is a clean manifold."));
-        auto* collisionButton = new QPushButton(tr("Add Collision"));
-        collisionButton->setToolTip(tr("Add a White Box collider component to this entity."));
-        opsRow->addWidget(fixButton);
-        opsRow->addWidget(collisionButton);
-        layout->addLayout(opsRow);
-
-        auto* assetRow = new QHBoxLayout();
-        auto* saveAsButton = new QPushButton(tr("Save As Asset..."));
-        auto* exportButton = new QPushButton(tr("Export"));
-        exportButton->setToolTip(tr("Export to obj."));
-        auto* exportDescendantsButton = new QPushButton(tr("Export Descendants"));
-        exportDescendantsButton->setToolTip(
-            tr("Export all whiteboxes on descendant entities as a single obj (excluding this one)."));
-        assetRow->addWidget(saveAsButton);
-        assetRow->addWidget(exportButton);
-        assetRow->addWidget(exportDescendantsButton);
-        layout->addLayout(assetRow);
-
-        m_flipYZ = new QCheckBox(tr("Flip Y and Z For Export"));
-        layout->addWidget(m_flipYZ);
-
-        connect(fixButton, &QPushButton::clicked, this,
-            [this]() {
-                ModifyComponent("White Box Fix Mesh", [](EditorWhiteBoxComponent* c) { c->FixNonManifold(); });
-            });
-        connect(collisionButton, &QPushButton::clicked, this,
-            [this]() {
-                ModifyComponent("White Box Add Collision", [](EditorWhiteBoxComponent* c) { c->AddCollision(); });
-            });
-        connect(saveAsButton, &QPushButton::clicked, this,
-            [this]()
-            {
-                if (EditorWhiteBoxComponent* component = CurrentComponent())
-                {
-                    component->SaveMeshAsAsset(); // runs its own dialog + undo handling
-                    RefreshFromComponent();
-                }
-            });
-        connect(exportButton, &QPushButton::clicked, this,
-            [this]()
-            {
-                if (EditorWhiteBoxComponent* component = CurrentComponent())
-                {
-                    component->ExportToFile();
-                }
-            });
-        connect(exportDescendantsButton, &QPushButton::clicked, this,
-            [this]()
-            {
-                if (EditorWhiteBoxComponent* component = CurrentComponent())
-                {
-                    component->ExportDescendantsToFile();
-                }
-            });
-        connect(m_flipYZ, &QCheckBox::toggled, this,
-            [this](bool flip)
-            {
-                if (!m_updating)
-                {
-                    ModifyComponent(
-                        "White Box Export Axes",
-                        [flip](EditorWhiteBoxComponent* c) { c->SetFlipYZForExport(flip); });
-                }
-            });
-
-        return group;
-    }
 
     // ---- data plumbing --------------------------------------------------------------------
 
@@ -1841,19 +1446,6 @@ namespace WhiteBox
             m_currentEntityId = AZ::EntityId();
         }
 
-        // Boolean source: None + every White Box entity except the current one.
-        m_booleanSourceCombo->clear();
-        m_booleanSourceCombo->addItem(
-            tr("None"), QVariant(static_cast<qulonglong>(static_cast<AZ::u64>(AZ::EntityId()))));
-        for (const AZ::EntityId& entityId : entityIds)
-        {
-            if (entityId != m_currentEntityId)
-            {
-                m_booleanSourceCombo->addItem(
-                    EntityDisplayName(entityId), QVariant(static_cast<qulonglong>(static_cast<AZ::u64>(entityId))));
-            }
-        }
-
         m_updating = wasUpdating;
     }
 
@@ -1886,7 +1478,15 @@ namespace WhiteBox
             auto* item = new QListWidgetItem(QString::fromUtf8(meta.m_name.c_str()));
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsEditable);
             item->setCheckState(meta.m_visible ? Qt::Checked : Qt::Unchecked);
+            item->setData(
+                LayerTintRole,
+                QColor::fromRgbF(meta.m_tint.GetX(), meta.m_tint.GetY(), meta.m_tint.GetZ()));
+            item->setData(LayerCombineRole, CombineModeLabel(meta.m_combineMode));
             m_layerList->addItem(item);
+        }
+        if (m_layerCountLabel != nullptr)
+        {
+            m_layerCountLabel->setText(layerCount == 1 ? tr("1 layer") : tr("%1 layers").arg(layerCount));
         }
         const int row = (previousRow >= 0 && previousRow < layerCount) ? previousRow
             : (layerCount > 0 ? AZStd::clamp(activeIndex, 0, layerCount - 1) : -1);
@@ -2066,7 +1666,6 @@ namespace WhiteBox
 
         EditorWhiteBoxComponent* component = CurrentComponent();
         const bool hasComponent = component != nullptr;
-
         // Follow the current entity's transform (for the Entity Transform section).
         if (m_transformBusEntityId != m_currentEntityId)
         {
@@ -2110,98 +1709,7 @@ namespace WhiteBox
 
         if (hasComponent)
         {
-            // Default shape.
-            m_defaultShapeCombo->setCurrentIndex(
-                m_defaultShapeCombo->findData(static_cast<int>(component->GetDefaultShape())));
-
             RefreshLayerControls(component);
-
-            // Draw Shape.
-            const DrawShapeType drawShape = component->GetDrawShape();
-            m_drawShapeCombo->setCurrentIndex(m_drawShapeCombo->findData(static_cast<int>(drawShape)));
-            m_drawSides->setValue(component->GetDrawSides());
-            const bool isStair = drawShape == DrawShapeType::Staircase;
-            const bool flat = drawShape == DrawShapeType::Plane || drawShape == DrawShapeType::Polygon;
-            const bool ringShape = drawShape == DrawShapeType::Torus || drawShape == DrawShapeType::Pipe;
-            m_drawHoleRatio->setValue(component->GetDrawHoleRatio());
-            m_drawHoleRatio->setVisible(ringShape);
-            m_drawHoleRatioLabel->setVisible(ringShape);
-            const bool torus = drawShape == DrawShapeType::Torus;
-            m_drawTubeSides->setValue(component->GetDrawTubeSides());
-            m_drawTubeSides->setVisible(torus);
-            m_drawTubeSidesLabel->setVisible(torus);
-            m_stairGroup->setVisible(isStair);
-            m_drawSides->setVisible(!isStair && !flat);
-            m_drawSidesLabel->setVisible(!isStair && !flat);
-            const DrawStairInfo stair = component->GetDrawStairInfo();
-            m_stairByHeight->setChecked(stair.m_byHeight);
-            m_stairSteps->setValue(stair.m_steps);
-            m_stairStepHeight->setValue(stair.m_stepHeight);
-            m_stairRotation->setValue(stair.m_rotation);
-            m_stairSteps->setEnabled(!stair.m_byHeight);
-            m_stairStepHeight->setEnabled(stair.m_byHeight);
-            m_drawCarve->setChecked(component->GetDrawCarve());
-            m_drawMergeUnion->setChecked(component->GetDrawMergeUnion());
-            m_drawCarve->setEnabled(!flat);
-            m_drawMergeUnion->setEnabled(!flat);
-
-            // Unit Cube Stamp.
-            const bool unitCube = component->GetDrawUnitCube();
-            m_unitCube->setChecked(unitCube);
-            m_unitCubeSize->setValue(component->GetDrawUnitCubeSize());
-            m_unitCubeShowGrid->setChecked(component->GetDrawUnitCubeShowGrid());
-            m_unitCubeSize->setEnabled(unitCube);
-            m_unitCubeShowGrid->setEnabled(unitCube);
-            // Clear works whenever stamped cells are recorded, independent of the stamp toggle.
-            m_clearCubesButton->setEnabled(true);
-
-            // Boolean.
-            m_csgSolverCombo->setCurrentIndex(
-                m_csgSolverCombo->findData(static_cast<int>(component->GetCsgSolver())));
-            const AZ::EntityId sourceId = component->GetBooleanSourceEntity();
-            const int sourceIndex =
-                m_booleanSourceCombo->findData(QVariant(static_cast<qulonglong>(static_cast<AZ::u64>(sourceId))));
-            m_booleanSourceCombo->setCurrentIndex(sourceIndex >= 0 ? sourceIndex : 0);
-            m_booleanOpCombo->setCurrentIndex(
-                m_booleanOpCombo->findData(static_cast<int>(component->GetBooleanOperation())));
-            m_booleanLive->setChecked(component->GetLiveBoolean());
-            m_booleanActiveOnly->setChecked(component->GetBooleanAffectActiveOnly());
-            m_booleanSourceAfterCombo->setCurrentIndex(
-                m_booleanSourceAfterCombo->findData(static_cast<int>(component->GetSourceAfterApply())));
-            const bool hasSource = sourceId.IsValid();
-            m_booleanOpCombo->setEnabled(hasSource);
-            m_booleanLive->setEnabled(hasSource);
-            m_booleanActiveOnly->setEnabled(hasSource);
-            m_booleanSourceAfterCombo->setEnabled(hasSource);
-            m_applyBooleanButton->setEnabled(hasSource);
-
-            // Global (scene-wide) boolean.
-            const bool booleanOthers = component->GetBooleanOthers();
-            m_booleanOthers->setChecked(booleanOthers);
-            m_cutterOpCombo->setCurrentIndex(
-                m_cutterOpCombo->findData(static_cast<int>(component->GetCutterOperation())));
-            m_cutterOpCombo->setEnabled(booleanOthers);
-            m_excludeFromBoolean->setChecked(component->GetExcludeFromBoolean());
-
-            // Material / display.
-            m_defaultMaterial->SetSelectedAssetID(component->GetMaterialOverride());
-            const auto paint = component->GetFacePaintSettings();
-            m_paintOperation->setCurrentIndex(m_paintOperation->findData(static_cast<int>(paint.m_operation)));
-            m_paintMaterial->SetSelectedAssetID(paint.m_material);
-            m_paintMaterial->setEnabled(paint.m_operation == FacePaintOperation::Material);
-            m_paintColor->setEnabled(paint.m_operation == FacePaintOperation::Color);
-            SetColorButtonSwatch(m_paintColor, QColor(
-                paint.m_color & 255, (paint.m_color >> 8) & 255, (paint.m_color >> 16) & 255));
-            const bool useGlobalTint = component->GetUseGlobalTint();
-            m_useGlobalTint->setChecked(useGlobalTint);
-            const AZ::Color tint = component->GetMaterialTint();
-            SetColorButtonSwatch(m_globalTintButton, QColor::fromRgbF(tint.GetR(), tint.GetG(), tint.GetB()));
-            m_globalTintButton->setEnabled(useGlobalTint);
-            m_useTexture->setChecked(component->GetMaterialUseTexture());
-            m_edgesOnly->setChecked(component->GetEdgesOnly());
-
-            // Mesh ops.
-            m_flipYZ->setChecked(component->GetFlipYZForExport());
 
             // Tool sub-mode (only meaningful while in component mode).
             SubMode subMode = SubMode::Default;

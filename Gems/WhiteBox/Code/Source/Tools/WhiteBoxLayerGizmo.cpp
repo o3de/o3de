@@ -42,6 +42,10 @@ namespace WhiteBox
         }
     } // namespace
 
+    // Define construction where the owned manipulator types are complete;
+    // constructor cleanup can instantiate their unique_ptr destructors too.
+    WhiteBoxLayerGizmo::WhiteBoxLayerGizmo() = default;
+
     WhiteBoxLayerGizmo::~WhiteBoxLayerGizmo()
     {
         Destroy();

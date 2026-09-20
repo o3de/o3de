@@ -822,6 +822,45 @@ namespace WhiteBox
         //! Clones the white box mesh object into a new mesh.
         //! @return Will return null if any error was encountered during serialization, otherwise the cloned mesh.
         WhiteBoxMeshPtr CloneMesh(const WhiteBoxMesh& whiteBox);
+        //! Copy a prepared mesh while preserving its topology handles and properties.
+        void AssignMesh(WhiteBoxMesh& target, const WhiteBoxMesh& source);
+        //! Transactional extrusion of connected boundary edges (or one solid edge using Sketch semantics).
+        bool ExtrudeEdgeSelection(
+            WhiteBoxMesh& mesh, const EdgeHandles& edges, const AZ::Vector3& offset,
+            EdgeHandles& result, PolygonHandles& preview, AZStd::string& error);
+
+        //! Extrude connected selected regions along their area-weighted normals, or inset planar
+        //! convex regions by a fraction (0, 1), matching Sketch's proportional inset.
+        //! Preserves polygon divisions, face materials/paint and existing UVs. Transactional on failure.
+        bool ExtrudeInsetRegions(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& selection, float amount, bool inset,
+            PolygonHandles& result, AZStd::string& error, PolygonHandles* preview = nullptr);
+
+        //! Bridge two boundary edges, open polygons or two facing caps with a connecting strip.
+        //! Transactional: a failure returns a message and leaves the mesh unchanged.
+        bool BridgeSelection(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const EdgeHandles& edges, AZStd::string& error);
+
+        //! Merge selected vertices at their average or the last selected one. Failure leaves the mesh unchanged.
+        bool WeldVertices(WhiteBoxMesh& whiteBox, const VertexHandles& vertices, bool toLastSelected, AZStd::string& error);
+
+        //! Cut an edge loop across a strip of convex quads at @p fraction along @p edge. Failure leaves the mesh unchanged.
+        bool InsertEdgeLoop(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error);
+        //! Expand edge seeds along regular quad loops, or along unambiguous open borders.
+        //! Invalid handles and internal triangulation edges are ignored. Does not modify the mesh.
+        EdgeHandles FindEdgeLoop(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        //! Expand across opposite quad edges, stopping at non-quads and ambiguous topology.
+        EdgeHandles FindEdgeRing(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+
+        //! Bevel convex edges, including connected selections at simple corners. Width is the face offset.
+        //! Segments (1-32) controls the rounded profile. Failure leaves the mesh unchanged.
+        bool BevelEdges(WhiteBoxMesh& whiteBox, const EdgeHandles& edges, float width, int segments, AZStd::string& error, float profile = 0.5f);
+
+        //! Insert 1-64 evenly spaced cuts as one transactional mesh edit. Slide [-1, 1] translates the group within its end margins.
+        bool InsertEdgeLoops(WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::string& error, float slide = 0.0f);
+        //! Read-only preview: pairs of local-space endpoints, using the same strip validation as insertion.
+        bool PreviewEdgeLoops(
+            WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::vector<AZ::Vector3>& lines, AZStd::string& error, float slide = 0.0f);
 
         //! Writes the white box mesh to an obj file at the specified path.
         //! @return Will return false if any error was encountered during serialization, true otherwise.

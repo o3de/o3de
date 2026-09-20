@@ -12,8 +12,10 @@
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "SubComponentModes/WhiteBoxNumericInput.h"
 #include "Viewport/WhiteBoxManipulatorViews.h"
+#include "Viewport/WhiteBoxModifierUtil.h" // GeometryIntersection, taken by value below
 
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
@@ -80,7 +82,17 @@ namespace WhiteBox
 
         // EditorWhiteBoxTransformModeRequestBus overrides ...
         void ChangeTransformType(TransformType subModeType) override;
+        void SetModelingLatch(TransformModelingLatch latch) override;
+        TransformModelingLatch GetModelingLatch() const override { return m_modelingLatch; }
+        bool HasLatchedDrag() const override { return m_latchSource != nullptr; }
         Api::PolygonHandles GetSelectedPolygons() const override;
+        Api::EdgeHandles GetSelectedEdges() const override;
+        Api::VertexHandles GetSelectedVertices() const override;
+        void ClearSelection() override;
+        void RefreshManipulatorSpace() override { RefreshManipulator(); }
+        void SetSelectedPolygons(const Api::PolygonHandles& polygons) override;
+        void BeginLoopCut() override;
+        bool ExpandEdgeSelection(bool ring) override;
 
         // Numeric input bus overrides
         void NumericBeginMove()         override { if (m_whiteBoxSelection) m_numericInput.Begin(NumericOpMode::Move);   }
@@ -152,6 +164,52 @@ namespace WhiteBox
         AZStd::optional<PolygonIntersection> m_polygonIntersection = AZStd::nullopt;
         AZStd::optional<EdgeIntersection> m_edgeIntersection = AZStd::nullopt;
         AZStd::optional<VertexIntersection> m_vertexIntersection = AZStd::nullopt;
+
+        void SetSelectedEdges(const Api::EdgeHandles& edges);
+        bool BeginLatchedDrag(const ModeMouseInteraction& mouse, WhiteBoxMesh& mesh, GeometryIntersection hit);
+        bool HandleLatchedDrag(const ModeMouseInteraction& mouse);
+        //! Run one amount against the live mesh, always from the pristine source so the drag is not
+        //! cumulative. False means the operation refused it and left the mesh at the source.
+        bool ApplyLatch(float amount, const AZ::Vector3& edgeOffset, AZStd::string& error);
+        //! Put the mesh back the way the drag found it.
+        void RestoreLatchSource();
+        //! Redraw the edited mesh and drop the cached hit data - what Sketch mode does per drag step.
+        //! Deliberately no serialize and no undo step: those belong to mouse up.
+        void PublishLatchMesh();
+        void ClearLatchedDrag();
+        TransformModelingLatch m_modelingLatch = TransformModelingLatch::None;
+        //! The mesh as the drag found it. Held for the whole drag, because every step re-runs the
+        //! operation from it rather than on top of the previous step's result.
+        Api::WhiteBoxMeshPtr m_latchSource;
+        Api::PolygonHandles m_latchPolygons;
+        Api::EdgeHandles m_latchEdges;
+        Api::PolygonHandles m_latchResultPolygons;
+        Api::EdgeHandles m_latchResultEdges;
+        //! How big the dragged selection is, so "barely moved" means the same on a 10cm face and a
+        //! 100m one. Anything under a thousandth of this counts as back where the drag started.
+        float m_latchExtent = 1.0f;
+        //! The last amount the operation accepted, so a refused one holds instead of snapping flat.
+        float m_latchAmount = 0.0f;
+        AZ::Vector3 m_latchEdgeOffset = AZ::Vector3::CreateZero();
+        bool m_latchApplied = false;
+        AZ::u64 m_latchLayerId = 0;
+        AZ::Vector2 m_latchStartScreen = AZ::Vector2::CreateZero();
+        AZ::Vector3 m_latchAnchor = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_latchPlaneNormal = AZ::Vector3::CreateAxisZ();
+        AZ::Vector2 m_latchScreenNormal = AZ::Vector2::CreateZero();
+        AZ::Transform m_latchWorldFromLocal = AZ::Transform::CreateIdentity();
+        float m_latchFallbackScale = 0.01f;
+        AZStd::string m_latchError;
+        bool HandleLoopCut(const ModeMouseInteraction& mouse, WhiteBoxMesh& mesh);
+        bool m_loopCutActive = false;
+        bool m_loopCutSliding = false;
+        float m_loopCutSlide = 0.0f;
+        AZ::Vector2 m_loopCutMouseAnchor = AZ::Vector2::CreateZero();
+        AZ::Vector2 m_loopCutScreenAxis = AZ::Vector2::CreateZero();
+        int m_loopCutCount = 1;
+        Api::EdgeHandle m_loopCutSeed;
+        AZStd::vector<AZ::Vector3> m_loopCutLines;
+        AZStd::string m_loopCutError;
 
         TransformType m_transformType = TransformType::Translation;
 

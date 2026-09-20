@@ -6,6 +6,7 @@
  *
  */
 
+#include <cmath>
 #include "Util/WhiteBoxMathUtil.h"
 #include "Util/WhiteBoxTextureUtil.h"
 
@@ -18,6 +19,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -1472,6 +1475,25 @@ namespace WhiteBox
             CalculatePlanarUVs(whiteBox);
         }
 
+        // Only use on a disposable candidate: a failed insertion can leave one triangle.
+        // Unlike AddPolygon this must never silently duplicate vertices to bypass a topology error.
+        static PolygonHandle AddQuadWithoutFallback(
+            WhiteBoxMesh& whiteBox, const AZStd::array<VertexHandle, 4>& vertices)
+        {
+            FaceHandlesInternal faces;
+            for (size_t i = 1; i < 3; ++i)
+            {
+                const auto face = whiteBox.mesh.add_face(om_vh(vertices[0]), om_vh(vertices[i]), om_vh(vertices[i + 1]));
+                if (!face.is_valid()) { return {}; }
+                faces.push_back(face);
+            }
+            PolygonPropertyHandle property;
+            whiteBox.mesh.get_property_handle(property, PolygonProps);
+            auto& groups = whiteBox.mesh.property(property);
+            for (const auto face : faces) { groups[face] = faces; }
+            return PolygonHandleFromInternal(faces);
+        }
+
         // Given a displacement in local space applied to an edge, find the halfedge handle that the
         // edge is most likely moving towards. We're attempting to infer the user's intention which is
         // never perfect so there's a chance we may not return the edge the user expects. On the
@@ -1484,6 +1506,11 @@ namespace WhiteBox
             // get both halfedge handles for the edge (0 and 1 just correspond to each halfedge)
             const HalfedgeHandle firstHalfedgeHandle = EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::First);
             const HalfedgeHandle secondHalfedgeHandle = EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::Second);
+
+            const auto firstFace = HalfedgeFaceHandle(whiteBox, firstHalfedgeHandle);
+            const auto secondFace = HalfedgeFaceHandle(whiteBox, secondHalfedgeHandle);
+            if (!firstFace.IsValid()) { return secondFace.IsValid() ? secondHalfedgeHandle : HalfedgeHandle{}; }
+            if (!secondFace.IsValid()) { return firstHalfedgeHandle; }
 
             // get all vertices for each face (triangle) that each halfedge corresponds to
             const auto firstFaceVertexHandles =
@@ -1528,11 +1555,13 @@ namespace WhiteBox
 
             // based on the displacement find which halfedge is a better fit (which direction did we move in)
             const HalfedgeHandle halfedgeHandle = FindBestFitHalfedge(whiteBox, edgeHandle, displacement);
+            if (!halfedgeHandle.IsValid()) { return {}; }
 
             const FaceHandle faceHandle = HalfedgeFaceHandle(whiteBox, halfedgeHandle);
 
             // find the polygon this face handle corresponds to
             const PolygonHandle polygonHandle = FacePolygonHandle(whiteBox, faceHandle);
+            if (polygonHandle.m_faceHandles.empty() || polygonHandle.m_faceHandles.size() > 2) { return {}; }
             // find all border vertex handles for this polygon
             const VertexHandlesCollection polygonBorderVertexHandlesCollection =
                 PolygonBorderVertexHandles(whiteBox, polygonHandle);
@@ -1568,6 +1597,17 @@ namespace WhiteBox
             const auto fromVertexHandlePolygonIndex =
                 AZStd::find(borderVertexHandles.begin(), borderVertexHandles.end(), fromVertexHandle) -
                 borderVertexHandles.begin();
+
+            // Empty/malformed groups and internal triangulation edges cannot be extruded.
+            // Validate before modulo/indexing, and before allocating any new vertices.
+            if ((borderVertexHandles.size() != 3 && borderVertexHandles.size() != 4) ||
+                static_cast<size_t>(toVertexHandlePolygonIndex) >= borderVertexHandles.size() ||
+                static_cast<size_t>(fromVertexHandlePolygonIndex) >= borderVertexHandles.size() ||
+                (static_cast<size_t>(fromVertexHandlePolygonIndex) + 1) % borderVertexHandles.size() !=
+                    static_cast<size_t>(toVertexHandlePolygonIndex))
+            {
+                return {};
+            }
 
             // we then want to find the vertex after the 'to' vertex, and the vertex before the 'from' vertex
             const VertexHandle afterToVertexHandle = borderVertexHandles
@@ -1690,7 +1730,7 @@ namespace WhiteBox
         static bool EdgeExtrusionAllowed(const PolygonHandle& polygonHandle)
         {
             // currently only allow edge extrusion for quad polygons
-            return polygonHandle.m_faceHandles.size() <= 2;
+            return !polygonHandle.m_faceHandles.empty() && polygonHandle.m_faceHandles.size() <= 2;
         }
 
         EdgeHandle TranslateEdgeAppend(
@@ -1699,6 +1739,48 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(), AZStd::to_string(displacement).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            if (!edgeHandle.IsValid() || static_cast<size_t>(edgeHandle.Index()) >= whiteBox.mesh.n_edges() ||
+                (whiteBox.mesh.has_edge_status() && whiteBox.mesh.status(om_eh(edgeHandle)).deleted()))
+            {
+                return edgeHandle;
+            }
+            if (EdgeIsBoundary(whiteBox, edgeHandle))
+            {
+                // Extend an open surface with one quad. The solid-edge path below replaces
+                // a neighboring polygon and is not appropriate for a missing face.
+                const auto neighbors = EdgeFaceHandles(whiteBox, edgeHandle);
+                if (neighbors.size() != 1) { return edgeHandle; }
+                auto boundary = EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::First);
+                if (!HalfedgeIsBoundary(whiteBox, boundary))
+                {
+                    boundary = HalfedgeOppositeHalfedgeHandle(whiteBox, boundary);
+                }
+                const auto from = HalfedgeVertexHandleAtTail(whiteBox, boundary);
+                const auto to = HalfedgeVertexHandleAtTip(whiteBox, boundary);
+                const auto fromPosition = VertexPosition(whiteBox, from);
+                const auto toPosition = VertexPosition(whiteBox, to);
+                if ((toPosition - fromPosition).Cross(displacement).GetLengthSq() <= 1e-12f) { return edgeHandle; }
+                auto candidate = CloneMesh(whiteBox);
+                const auto newTo = AddVertex(*candidate, toPosition + displacement);
+                const auto newFrom = AddVertex(*candidate, fromPosition + displacement);
+                const auto polygon = AddQuadWithoutFallback(*candidate, {{from, to, newTo, newFrom}});
+                if (polygon.m_faceHandles.size() != 2) { return edgeHandle; }
+                const auto material = FaceMaterial(whiteBox, neighbors[0]);
+                const auto paint = FacePaintColor(whiteBox, neighbors[0]);
+                for (const auto face : polygon.m_faceHandles)
+                {
+                    SetFaceMaterial(*candidate, face, material);
+                    SetFacePaintColor(*candidate, face, paint);
+                }
+                CalculateNormals(*candidate);
+                CalculatePlanarUVs(*candidate, polygon.m_faceHandles);
+                const auto outer = candidate->mesh.find_halfedge(om_vh(newTo), om_vh(newFrom));
+                if (!outer.is_valid()) { return edgeHandle; }
+                const EdgeHandle result{candidate->mesh.edge_handle(outer).idx()};
+                whiteBox.mesh = candidate->mesh;
+                return result;
+            }
 
             // the new and existing handles required for an edge append
             const Internal::EdgeAppendVertexHandles edgeAppendVertexHandles =
@@ -3563,6 +3645,1637 @@ namespace WhiteBox
             WhiteBoxMeshPtr newMesh(aznew WhiteBoxMesh());
             newMesh->mesh = whiteBox.mesh;
             return newMesh;
+        }
+
+        bool BridgeSelection(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const EdgeHandles& edges, AZStd::string& error)
+        {
+            error.clear();
+            const auto fail = [&error](const char* message)
+            {
+                error = message;
+                return false;
+            };
+            const bool caps = polygons.size() == 2 && edges.empty();
+            if (!caps && !(edges.size() == 2 && polygons.empty()))
+            {
+                return fail("Select exactly two polygons or two open boundary edges in Transform mode.");
+            }
+
+            VertexHandles first;
+            VertexHandles second;
+            FaceHandles removedFaces;
+            FaceHandle sourceFace;
+            if (caps)
+            {
+                const auto allPolygons = MeshPolygonHandles(whiteBox);
+                for (const auto& polygon : polygons)
+                {
+                    if (polygon.m_faceHandles.empty() ||
+                        AZStd::find(allPolygons.begin(), allPolygons.end(), polygon) == allPolygons.end())
+                    {
+                        return fail("The selection is stale. Select the polygons again.");
+                    }
+                }
+                const auto firstBorders = PolygonBorderVertexHandles(whiteBox, polygons[0]);
+                const auto secondBorders = PolygonBorderVertexHandles(whiteBox, polygons[1]);
+                if (firstBorders.size() != 1 || secondBorders.size() != 1 ||
+                    firstBorders[0].size() < 3 || secondBorders[0].size() < 3)
+                {
+                    return fail("Choose two polygons without holes, each with at least three boundary corners.");
+                }
+                first = firstBorders[0];
+                second = secondBorders[0];
+                sourceFace = polygons[0].m_faceHandles.front();
+                removedFaces = polygons[0].m_faceHandles;
+                removedFaces.insert(removedFaces.end(), polygons[1].m_faceHandles.begin(), polygons[1].m_faceHandles.end());
+            }
+            else
+            {
+                const auto allEdges = MeshEdgeHandles(whiteBox);
+                for (const auto edge : edges)
+                {
+                    if (AZStd::find(allEdges.begin(), allEdges.end(), edge) == allEdges.end() ||
+                        EdgeFaceHandles(whiteBox, edge).size() != 1)
+                    {
+                        return fail("Edge Bridge needs two open boundary edges, each belonging to one face.");
+                    }
+                }
+                // Use the empty halfedge direction, so the new quad opposes its existing neighbors.
+                for (size_t i = 0; i < edges.size(); ++i)
+                {
+                    // EdgeHalfedgeHandles deliberately returns only face-bearing halfedges.
+                    // Query both directions explicitly to find the missing-face side.
+                    for (const auto side : {EdgeHalfedge::First, EdgeHalfedge::Second})
+                    {
+                        const auto halfedge = EdgeHalfedgeHandle(whiteBox, edges[i], side);
+                        if (HalfedgeIsBoundary(whiteBox, halfedge))
+                        {
+                            auto& boundary = i == 0 ? first : second;
+                            boundary = {HalfedgeVertexHandleAtTail(whiteBox, halfedge),
+                                        HalfedgeVertexHandleAtTip(whiteBox, halfedge)};
+                            break;
+                        }
+                    }
+                }
+                if (first.size() != 2 || second.size() != 2)
+                {
+                    return fail("Could not find two open boundary edges.");
+                }
+                sourceFace = EdgeFaceHandles(whiteBox, edges[0]).front();
+            }
+            for (const auto vertex : first)
+            {
+                if (AZStd::find(second.begin(), second.end(), vertex) != second.end())
+                {
+                    return fail("Bridge needs separate selections that do not share vertices.");
+                }
+            }
+
+            if (caps)
+            {
+                AZ::Vector3 firstCenter = AZ::Vector3::CreateZero();
+                AZ::Vector3 secondCenter = AZ::Vector3::CreateZero();
+                for (const auto vertex : first) { firstCenter += VertexPosition(whiteBox, vertex); }
+                for (const auto vertex : second) { secondCenter += VertexPosition(whiteBox, vertex); }
+                const auto direction = secondCenter / static_cast<float>(second.size()) -
+                    firstCenter / static_cast<float>(first.size());
+                const auto hasOpenBoundary = [&whiteBox](const PolygonHandle& polygon)
+                {
+                    for (const auto halfedge : PolygonBorderHalfedgeHandlesFlattened(whiteBox, polygon))
+                    {
+                        if (!HalfedgeOppositeFaceHandle(whiteBox, halfedge).IsValid()) { return true; }
+                    }
+                    return false;
+                };
+                // Topology, not face orientation, decides whether these are removable caps.
+                // Facing freeform planes are still surfaces and must never be deleted.
+                if (hasOpenBoundary(polygons[0]) || hasOpenBoundary(polygons[1]))
+                {
+                    // Open, side-by-side surfaces (including freeform planes) have no caps
+                    // to remove. Connect their closest compatible boundary edges instead.
+                    struct OpenSide
+                    {
+                        EdgeHandle m_edge;
+                        AZ::Vector3 m_from;
+                        AZ::Vector3 m_to;
+                        AZ::Vector3 m_normal;
+                    };
+                    const auto openSides = [&whiteBox](const PolygonHandle& polygon)
+                    {
+                        AZStd::vector<OpenSide> sides;
+                        for (const auto inner : PolygonBorderHalfedgeHandlesFlattened(whiteBox, polygon))
+                        {
+                            const auto outer = HalfedgeOppositeHalfedgeHandle(whiteBox, inner);
+                            if (HalfedgeIsBoundary(whiteBox, outer))
+                            {
+                                sides.push_back({HalfedgeEdgeHandle(whiteBox, outer),
+                                    HalfedgeVertexPositionAtTail(whiteBox, outer),
+                                    HalfedgeVertexPositionAtTip(whiteBox, outer),
+                                    FaceNormal(whiteBox, HalfedgeFaceHandle(whiteBox, inner))});
+                            }
+                        }
+                        return sides;
+                    };
+                    const auto firstSides = openSides(polygons[0]);
+                    const auto secondSides = openSides(polygons[1]);
+                    EdgeHandles nearest;
+                    float nearestDistance = AZ::Constants::FloatMax;
+                    for (const auto& a : firstSides)
+                    {
+                        for (const auto& b : secondSides)
+                        {
+                            const auto normal0 = (a.m_to - a.m_from).Cross(b.m_from - a.m_from);
+                            const auto normal1 = (b.m_from - a.m_from).Cross(b.m_to - a.m_from);
+                            // Preserve the orientation of both source surfaces, and reject
+                            // collapsed/folded strips before choosing the shortest connection.
+                            if (normal0.GetLengthSq() <= 1e-12f || normal1.GetLengthSq() <= 1e-12f ||
+                                normal0.Dot(normal1) <= 0.0f ||
+                                normal0.Dot(a.m_normal) < -1e-6f || normal1.Dot(b.m_normal) < -1e-6f)
+                            {
+                                continue;
+                            }
+                            const float distance = (a.m_from - b.m_to).GetLengthSq() + (a.m_to - b.m_from).GetLengthSq();
+                            if (distance < nearestDistance)
+                            {
+                                nearestDistance = distance;
+                                nearest = {a.m_edge, b.m_edge};
+                            }
+                        }
+                    }
+                    if (!nearest.empty()) { return BridgeSelection(whiteBox, {}, nearest, error); }
+                    return fail("Choose facing caps, or separate open polygons with compatible boundary edges.");
+                }
+                if (PolygonNormal(whiteBox, polygons[0]).Dot(direction) <= 1e-5f ||
+                    PolygonNormal(whiteBox, polygons[1]).Dot(direction) >= -1e-5f)
+                {
+                    return fail("Choose separated solid caps that face toward each other.");
+                }
+                if (first.size() != second.size())
+                {
+                    return fail("Facing caps must have the same number of boundary corners.");
+                }
+                // Reverse the second loop and find the shortest total correspondence.
+                // Reversal ensures both removed caps are replaced with consistent winding.
+                VertexHandles aligned;
+                float bestDistance = AZ::Constants::FloatMax;
+                for (size_t offset = 0; offset < second.size(); ++offset)
+                {
+                    float distance = 0.0f;
+                    for (size_t i = 0; i < first.size(); ++i)
+                    {
+                        distance += (VertexPosition(whiteBox, first[i]) -
+                            VertexPosition(whiteBox, second[(offset + second.size() - i) % second.size()])).GetLengthSq();
+                    }
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        aligned.clear();
+                        for (size_t i = 0; i < first.size(); ++i)
+                        {
+                            aligned.push_back(second[(offset + second.size() - i) % second.size()]);
+                        }
+                    }
+                }
+                second = AZStd::move(aligned);
+            }
+            else
+            {
+                AZStd::reverse(second.begin(), second.end());
+            }
+
+            const auto material = FaceMaterial(whiteBox, sourceFace);
+            const auto paint = FacePaintColor(whiteBox, sourceFace);
+            auto candidate = CloneMesh(whiteBox);
+            if (!removedFaces.empty())
+            {
+                // RemoveFaces retains vertices, so the saved boundary vertex handles stay valid.
+                RemoveFaces(*candidate, removedFaces);
+            }
+            FaceHandles addedFaces;
+            const size_t spanCount = caps ? first.size() : 1;
+            for (size_t i = 0; i < spanCount; ++i)
+            {
+                const size_t next = (i + 1) % first.size();
+                const AZStd::array<VertexHandle, 4> quad{{first[i], first[next], second[next], second[i]}};
+                const auto a = VertexPosition(*candidate, quad[0]);
+                const auto b = VertexPosition(*candidate, quad[1]);
+                const auto c = VertexPosition(*candidate, quad[2]);
+                const auto d = VertexPosition(*candidate, quad[3]);
+                const auto normal0 = (b - a).Cross(c - a);
+                const auto normal1 = (c - a).Cross(d - a);
+                if (normal0.GetLengthSq() <= 1e-12f || normal1.GetLengthSq() <= 1e-12f ||
+                    normal0.Dot(normal1) <= 0.0f)
+                {
+                    return fail("The bridge would contain collapsed or folded faces. Reposition the selections.");
+                }
+                // Do not use AddPolygon's duplicate-vertex fallback: a bridge must actually
+                // join its neighbors. Discard the candidate if OpenMesh refuses either triangle.
+                const auto newPolygon = AddQuadWithoutFallback(*candidate, quad);
+                if (newPolygon.m_faceHandles.size() != 2)
+                {
+                    return fail("The bridge would create non-manifold geometry. Choose another pair.");
+                }
+                for (const auto face : newPolygon.m_faceHandles)
+                {
+                    addedFaces.push_back(face);
+                    SetFaceMaterial(*candidate, face, material);
+                    SetFacePaintColor(*candidate, face, paint);
+                }
+            }
+            CalculateNormals(*candidate);
+            CalculatePlanarUVs(*candidate, addedFaces);
+            RemoveIsolatedVertices(*candidate);
+            whiteBox.mesh = candidate->mesh;
+            return true;
+        }
+
+        bool WeldVertices(
+            WhiteBoxMesh& whiteBox, const VertexHandles& vertices, const bool toLastSelected, AZStd::string& error)
+        {
+            error.clear();
+            const auto fail = [&error](const char* message) { error = message; return false; };
+            const auto originalVertices = MeshVertexHandles(whiteBox);
+            AZStd::unordered_set<int> selected;
+            AZ::Vector3 target = AZ::Vector3::CreateZero();
+            for (const auto vertex : vertices)
+            {
+                if (AZStd::find(originalVertices.begin(), originalVertices.end(), vertex) == originalVertices.end())
+                {
+                    return fail("The vertex selection is stale. Select the vertices again.");
+                }
+                if (selected.insert(vertex.Index()).second) { target += VertexPosition(whiteBox, vertex); }
+            }
+            if (selected.size() < 2) { return fail("Ctrl-select at least two vertices in Transform mode."); }
+            target = toLastSelected ? VertexPosition(whiteBox, vertices.back()) : target / static_cast<float>(selected.size());
+
+            // Tell an intended corner collapse (open patches meeting at the merged vertex) from joining unrelated surfaces.
+            AZStd::unordered_set<int> connectedSelection;
+            VertexHandles selectedPending{vertices.front()};
+            while (!selectedPending.empty())
+            {
+                const auto vertex = selectedPending.back();
+                selectedPending.pop_back();
+                if (!connectedSelection.insert(vertex.Index()).second) { continue; }
+                for (const auto edge : VertexEdgeHandles(whiteBox, vertex))
+                {
+                    for (const auto neighbor : EdgeVertexHandles(whiteBox, edge))
+                    {
+                        if (selected.count(neighbor.Index()) && !connectedSelection.count(neighbor.Index()))
+                        {
+                            selectedPending.push_back(neighbor);
+                        }
+                    }
+                }
+            }
+            const bool collapsingConnectedSelection = connectedSelection.size() == selected.size();
+
+            auto candidate = CreateWhiteBoxMesh();
+            const auto welded = AddVertex(*candidate, target);
+            AZStd::vector<VertexHandle> remap(whiteBox.mesh.n_vertices());
+            for (const auto vertex : originalVertices)
+            {
+                if (selected.count(vertex.Index()))
+                {
+                    remap[vertex.Index()] = welded;
+                }
+                else
+                {
+                    const auto added = AddVertex(*candidate, VertexPosition(whiteBox, vertex));
+                    remap[vertex.Index()] = added;
+                    if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, added); }
+                }
+            }
+            const auto polygons = MeshPolygonHandles(whiteBox);
+            AZStd::vector<size_t> sourceGroups(whiteBox.mesh.n_faces(), polygons.size());
+            for (size_t group = 0; group < polygons.size(); ++group)
+            {
+                for (const auto face : polygons[group].m_faceHandles) { sourceGroups[face.Index()] = group; }
+            }
+            struct WeldFace
+            {
+                AZStd::array<VertexHandle, 3> m_vertices;
+                AZStd::array<AZ::Vector2, 3> m_uvs;
+                FaceHandle m_source;
+                FaceHandle m_result;
+                size_t m_group;
+            };
+            AZStd::vector<WeldFace> faces;
+            using EdgeKey = AZStd::pair<int, int>;
+            const auto edgeKey = [](const VertexHandle a, const VertexHandle b)
+            {
+                return EdgeKey{AZStd::min(a.Index(), b.Index()), AZStd::max(a.Index(), b.Index())};
+            };
+            AZStd::map<EdgeKey, AZStd::vector<size_t>> edgeFaces;
+            AZStd::map<AZStd::pair<int, EdgeKey>, bool> uniqueTriangles;
+            AZStd::vector<AZStd::vector<size_t>> vertexFaces(candidate->mesh.n_vertices());
+            for (const auto source : MeshFaceHandles(whiteBox))
+            {
+                WeldFace face{};
+                face.m_source = source;
+                face.m_group = sourceGroups[source.Index()];
+                if (face.m_group == polygons.size()) { return fail("Repair the mesh's polygon groups before welding."); }
+                const auto halfedges = FaceHalfedgeHandles(whiteBox, source);
+                if (halfedges.size() != 3) { return fail("Weld requires valid triangle faces."); }
+                AZStd::array<AZ::Vector3, 3> before;
+                AZStd::array<AZ::Vector3, 3> after;
+                for (size_t i = 0; i < 3; ++i)
+                {
+                    const auto original = HalfedgeVertexHandleAtTip(whiteBox, halfedges[i]);
+                    face.m_vertices[i] = remap[original.Index()];
+                    face.m_uvs[i] = HalfedgeUV(whiteBox, halfedges[i]);
+                    before[i] = VertexPosition(whiteBox, original);
+                    after[i] = VertexPosition(*candidate, face.m_vertices[i]);
+                }
+                const auto& v = face.m_vertices;
+                if (v[0] == v[1] || v[1] == v[2] || v[2] == v[0]) { continue; }
+                const auto oldNormal = (before[1] - before[0]).Cross(before[2] - before[0]);
+                const auto newNormal = (after[1] - after[0]).Cross(after[2] - after[0]);
+                if (newNormal.GetLengthSq() <= 1e-12f || oldNormal.Dot(newNormal) <= 0.0f)
+                {
+                    return fail("Weld would flatten or reverse a surviving face. Try another target or selection.");
+                }
+                AZStd::array<int, 3> sorted{{v[0].Index(), v[1].Index(), v[2].Index()}};
+                AZStd::sort(sorted.begin(), sorted.end());
+                if (!uniqueTriangles.emplace(AZStd::make_pair(sorted[0], EdgeKey{sorted[1], sorted[2]}), true).second)
+                {
+                    return fail("Weld would create duplicate faces. Choose a smaller selection.");
+                }
+                const size_t index = faces.size();
+                faces.push_back(face);
+                for (size_t i = 0; i < 3; ++i)
+                {
+                    auto& incident = edgeFaces[edgeKey(v[i], v[(i + 1) % 3])];
+                    incident.push_back(index);
+                    if (incident.size() > 2) { return fail("Weld would create an edge with more than two faces."); }
+                    vertexFaces[v[i].Index()].push_back(index);
+                }
+            }
+            if (faces.empty() || vertexFaces[welded.Index()].empty())
+            {
+                return fail("Weld would remove all faces around the selection.");
+            }
+            // One connected face fan per vertex, except separate open patches at the merged point.
+            for (size_t vertex = 0; vertex < vertexFaces.size(); ++vertex)
+            {
+                const auto& incident = vertexFaces[vertex];
+                if (incident.empty()) { continue; }
+                AZStd::unordered_set<size_t> visited;
+                AZStd::vector<size_t> pending{incident.front()};
+                while (!pending.empty())
+                {
+                    const auto index = pending.back();
+                    pending.pop_back();
+                    if (!visited.insert(index).second) { continue; }
+                    const auto& v = faces[index].m_vertices;
+                    for (size_t i = 0; i < 3; ++i)
+                    {
+                        if (static_cast<size_t>(v[i].Index()) == vertex ||
+                            static_cast<size_t>(v[(i + 1) % 3].Index()) == vertex)
+                        {
+                            for (const auto next : edgeFaces[edgeKey(v[i], v[(i + 1) % 3])])
+                            {
+                                if (!visited.count(next)) { pending.push_back(next); }
+                            }
+                        }
+                    }
+                }
+                if (visited.size() != incident.size() &&
+                    !(vertex == static_cast<size_t>(welded.Index()) && collapsingConnectedSelection))
+                {
+                    return fail("Weld would join separate surfaces at only a point. Select vertices within a connected surface.");
+                }
+            }
+            for (auto& face : faces)
+            {
+                const auto& v = face.m_vertices;
+                const auto added = candidate->mesh.add_face(om_vh(v[0]), om_vh(v[1]), om_vh(v[2]));
+                if (!added.is_valid()) { return fail("Weld would create invalid face connections. The mesh was left unchanged."); }
+                face.m_result = wb_fh(added);
+                SetFaceMaterial(*candidate, face.m_result, FaceMaterial(whiteBox, face.m_source));
+                SetFacePaintColor(*candidate, face.m_result, FacePaintColor(whiteBox, face.m_source));
+                for (size_t i = 0; i < 3; ++i)
+                {
+                    const auto halfedge = candidate->mesh.find_halfedge(om_vh(v[(i + 2) % 3]), om_vh(v[i]));
+                    candidate->mesh.set_texcoord2D(halfedge, face.m_uvs[i]);
+                }
+            }
+            // Keep original polygon boundaries, splitting a group if deleted triangles
+            // separated it into distinct patches.
+            PolygonPropertyHandle property;
+            candidate->mesh.get_property_handle(property, PolygonProps);
+            auto& groups = candidate->mesh.property(property);
+            AZStd::unordered_set<size_t> grouped;
+            for (size_t start = 0; start < faces.size(); ++start)
+            {
+                if (grouped.count(start)) { continue; }
+                FaceHandlesInternal group;
+                AZStd::vector<size_t> pending{start};
+                while (!pending.empty())
+                {
+                    const auto index = pending.back();
+                    pending.pop_back();
+                    if (!grouped.insert(index).second) { continue; }
+                    group.push_back(om_fh(faces[index].m_result));
+                    const auto& v = faces[index].m_vertices;
+                    for (size_t i = 0; i < 3; ++i)
+                    {
+                        for (const auto next : edgeFaces[edgeKey(v[i], v[(i + 1) % 3])])
+                        {
+                            if (faces[next].m_group == faces[start].m_group && !grouped.count(next)) { pending.push_back(next); }
+                        }
+                    }
+                }
+                for (const auto face : group) { groups[face] = group; }
+            }
+            CalculateNormals(*candidate);
+            whiteBox.mesh = candidate->mesh;
+            return true;
+        }
+
+        static EdgeHandles FindEdgePattern(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds, bool ring)
+        {
+            struct SelectionPolygon
+            {
+                EdgeHandles m_edges;
+                bool m_quad = false;
+            };
+            AZStd::vector<SelectionPolygon> polygons;
+            AZStd::map<int, AZStd::vector<size_t>> edgePolygons;
+            AZStd::map<int, EdgeHandles> vertexEdges;
+            // Only real polygon boundaries participate. Internal triangulation
+            // diagonals must not affect either valence or traversal direction.
+            for (const auto& polygon : MeshPolygonHandles(whiteBox))
+            {
+                const auto borders = PolygonBorderHalfedgeHandles(whiteBox, polygon);
+                SelectionPolygon data;
+                data.m_quad = borders.size() == 1 && borders.front().size() == 4;
+                const size_t index = polygons.size();
+                for (const auto& border : borders)
+                {
+                    for (const auto halfedge : border)
+                    {
+                        const auto edge = HalfedgeEdgeHandle(whiteBox, halfedge);
+                        data.m_edges.push_back(edge);
+                        auto& adjacent = edgePolygons[edge.Index()];
+                        if (AZStd::find(adjacent.begin(), adjacent.end(), index) == adjacent.end()) { adjacent.push_back(index); }
+                        if (adjacent.size() == 1)
+                        {
+                            for (const auto vertex : EdgeVertexHandles(whiteBox, edge))
+                            {
+                                auto& incident = vertexEdges[vertex.Index()];
+                                if (AZStd::find(incident.begin(), incident.end(), edge) == incident.end()) { incident.push_back(edge); }
+                            }
+                        }
+                    }
+                }
+                polygons.push_back(AZStd::move(data));
+            }
+            EdgeHandles result;
+            AZStd::unordered_set<int> seen;
+            const auto append = [&](EdgeHandle edge)
+            {
+                if (edgePolygons.count(edge.Index()) && seen.insert(edge.Index()).second) { result.push_back(edge); }
+            };
+            for (const auto seed : seeds) { append(seed); }
+            for (size_t cursor = 0; cursor < result.size(); ++cursor)
+            {
+                const auto edge = result[cursor];
+                const auto& faces = edgePolygons.find(edge.Index())->second;
+                if (faces.empty() || faces.size() > 2) { continue; }
+                if (ring)
+                {
+                    for (const auto index : faces)
+                    {
+                        const auto& polygon = polygons[index];
+                        if (!polygon.m_quad) { continue; }
+                        const auto found = AZStd::find(polygon.m_edges.begin(), polygon.m_edges.end(), edge);
+                        const size_t offset = static_cast<size_t>(found - polygon.m_edges.begin());
+                        append(polygon.m_edges[(offset + 2) % 4]);
+                    }
+                    continue;
+                }
+                for (const auto vertex : EdgeVertexHandles(whiteBox, edge))
+                {
+                    const auto& incident = vertexEdges.find(vertex.Index())->second;
+                    EdgeHandle next;
+                    bool ambiguous = false;
+                    if (faces.size() == 1)
+                    {
+                        // An open border is its own loop, including its corners.
+                        for (const auto candidate : incident)
+                        {
+                            if (candidate != edge && edgePolygons.find(candidate.Index())->second.size() == 1)
+                            {
+                                if (next.IsValid()) { ambiguous = true; break; }
+                                next = candidate;
+                            }
+                        }
+                    }
+                    else if (incident.size() == 4)
+                    {
+                        // At a regular quad junction, the continuation is the
+                        // sole edge that shares neither adjacent polygon.
+                        bool regular = true;
+                        AZStd::unordered_set<size_t> vertexPolygons;
+                        for (const auto candidate : incident)
+                        {
+                            const auto& adjacent = edgePolygons.find(candidate.Index())->second;
+                            if (adjacent.size() != 2) { regular = false; break; }
+                            bool sharesFace = false;
+                            for (const auto index : adjacent)
+                            {
+                                vertexPolygons.insert(index);
+                                regular = regular && polygons[index].m_quad;
+                                sharesFace = sharesFace || AZStd::find(faces.begin(), faces.end(), index) != faces.end();
+                            }
+                            if (!sharesFace)
+                            {
+                                if (next.IsValid()) { ambiguous = true; }
+                                next = candidate;
+                            }
+                        }
+                        ambiguous = ambiguous || !regular || vertexPolygons.size() != 4;
+                    }
+                    if (!ambiguous && next.IsValid()) { append(next); }
+                }
+            }
+            return result;
+        }
+
+        EdgeHandles FindEdgeLoop(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds)
+        {
+            return FindEdgePattern(whiteBox, seeds, false);
+        }
+
+        EdgeHandles FindEdgeRing(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds)
+        {
+            return FindEdgePattern(whiteBox, seeds, true);
+        }
+
+        void AssignMesh(WhiteBoxMesh& target, const WhiteBoxMesh& source)
+        {
+            target.mesh = source.mesh;
+        }
+
+        bool ExtrudeEdgeSelection(
+            WhiteBoxMesh& mesh, const EdgeHandles& edges, const AZ::Vector3& offset,
+            EdgeHandles& result, PolygonHandles& preview, AZStd::string& error)
+        {
+            result.clear();
+            preview.clear();
+            const auto fail = [&error](const char* message) { error = message; return false; };
+            if (edges.empty() || !offset.IsFinite() || offset.IsZero(1e-5f)) { return fail("Drag away from the edge to extrude."); }
+            const auto valid = MeshPolygonEdgeHandles(mesh);
+            bool boundary = true;
+            for (const auto edge : edges)
+            {
+                if (AZStd::find(valid.begin(), valid.end(), edge) == valid.end()) { return fail("Select polygon boundary edges."); }
+                boundary = boundary && EdgeIsBoundary(mesh, edge);
+            }
+            auto candidate = CloneMesh(mesh);
+            if (!boundary)
+            {
+                if (edges.size() != 1) { return fail("Select one solid edge, or a connected set of open boundary edges."); }
+                const auto edge = TranslateEdgeAppend(*candidate, edges.front(), offset);
+                if (!edge.IsValid() || edge == edges.front()) { return fail("This edge cannot extrude in that direction."); }
+                result.push_back(edge);
+                preview = MeshPolygonHandles(*candidate);
+            }
+            else
+            {
+                AZStd::map<int, VertexHandle> top;
+                for (const auto edge : edges)
+                {
+                    for (const auto vertex : EdgeVertexHandles(mesh, edge))
+                    {
+                        if (!top.count(vertex.Index())) { top.emplace(vertex.Index(), AddVertex(*candidate, VertexPosition(mesh, vertex) + offset)); }
+                    }
+                }
+                for (const auto edge : edges)
+                {
+                    auto halfedge = EdgeHalfedgeHandle(mesh, edge, EdgeHalfedge::First);
+                    if (!HalfedgeIsBoundary(mesh, halfedge)) { halfedge = HalfedgeOppositeHalfedgeHandle(mesh, halfedge); }
+                    const auto a = HalfedgeVertexHandleAtTail(mesh, halfedge);
+                    const auto b = HalfedgeVertexHandleAtTip(mesh, halfedge);
+                    AZ::Vector3 normal;
+                    if (!TryCalculateTriangleNormal(VertexPosition(mesh, b) - VertexPosition(mesh, a), offset, normal))
+                    {
+                        return fail("Drag across the edge, not along it.");
+                    }
+                    const auto polygon = AddQuadWithoutFallback(*candidate, {{
+                        a, b, top.find(b.Index())->second, top.find(a.Index())->second}});
+                    if (polygon.m_faceHandles.size() != 2) { return fail("These edges cannot extrude together without invalid connections."); }
+                    const auto source = EdgeFaceHandles(mesh, edge).front();
+                    for (const auto face : polygon.m_faceHandles)
+                    {
+                        SetFaceMaterial(*candidate, face, FaceMaterial(mesh, source));
+                        SetFacePaintColor(*candidate, face, FacePaintColor(mesh, source));
+                    }
+                    const auto outer = candidate->mesh.find_halfedge(
+                        om_vh(top.find(b.Index())->second), om_vh(top.find(a.Index())->second));
+                    if (!outer.is_valid()) { return fail("Could not create the extruded edge."); }
+                    result.push_back(EdgeHandle{candidate->mesh.edge_handle(outer).idx()});
+                    preview.push_back(polygon);
+                    CalculateNormals(*candidate);
+                    CalculatePlanarUVs(*candidate, polygon.m_faceHandles);
+                }
+            }
+            AssignMesh(mesh, *candidate);
+            return true;
+        }
+
+        bool ExtrudeInsetRegions(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& selection, const float amount, const bool inset,
+            PolygonHandles& result, AZStd::string& error, PolygonHandles* preview)
+        {
+            result.clear();
+            if (preview) { preview->clear(); }
+            const auto fail = [&error](const char* message) { error = message; return false; };
+            if (!AZ::IsFiniteFloat(amount) || (inset ? amount <= 0.0f || amount >= 1.0f : AZStd::abs(amount) < 1e-5f))
+            {
+                return fail(inset ? "Inset must be between 0 and 100 percent." : "Enter a nonzero extrusion distance.");
+            }
+            const auto polygons = MeshPolygonHandles(whiteBox);
+            AZStd::vector<int> sourceGroup(whiteBox.mesh.n_faces(), -1);
+            AZStd::vector<bool> selected(whiteBox.mesh.n_faces(), false);
+            for (size_t i = 0; i < polygons.size(); ++i)
+            {
+                for (const auto face : polygons[i].m_faceHandles) { sourceGroup[face.Index()] = static_cast<int>(i); }
+            }
+            for (const auto& polygon : selection)
+            {
+                if (AZStd::find(polygons.begin(), polygons.end(), polygon) == polygons.end())
+                {
+                    return fail("The polygon selection is stale. Select the faces again.");
+                }
+                for (const auto face : polygon.m_faceHandles) { selected[face.Index()] = true; }
+            }
+            if (selection.empty()) { return fail("Select one or more polygons."); }
+
+            struct Region
+            {
+                FaceHandles m_faces;
+                HalfedgeHandles m_border;
+                VertexHandles m_vertices;
+                AZ::Vector3 m_normal = AZ::Vector3::CreateZero();
+                AZ::Vector3 m_center = AZ::Vector3::CreateZero();
+                AZStd::map<int, VertexHandle> m_top;
+            };
+            AZStd::vector<Region> regions;
+            AZStd::vector<int> faceRegion(whiteBox.mesh.n_faces(), -1);
+            for (const auto seed : MeshFaceHandles(whiteBox))
+            {
+                if (!selected[seed.Index()] || faceRegion[seed.Index()] >= 0) { continue; }
+                const int regionIndex = static_cast<int>(regions.size());
+                regions.emplace_back();
+                auto& region = regions.back();
+                FaceHandles pending{seed};
+                while (!pending.empty())
+                {
+                    const auto face = pending.back();
+                    pending.pop_back();
+                    if (faceRegion[face.Index()] >= 0) { continue; }
+                    faceRegion[face.Index()] = regionIndex;
+                    region.m_faces.push_back(face);
+                    const auto vertices = FaceVertexHandles(whiteBox, face);
+                    if (vertices.size() != 3) { return fail("The selection contains invalid triangles."); }
+                    const auto points = FaceVertexPositions(whiteBox, face);
+                    region.m_normal += (points[1] - points[0]).Cross(points[2] - points[0]);
+                    for (const auto vertex : vertices)
+                    {
+                        if (AZStd::find(region.m_vertices.begin(), region.m_vertices.end(), vertex) == region.m_vertices.end())
+                        {
+                            region.m_vertices.push_back(vertex);
+                            region.m_center += VertexPosition(whiteBox, vertex);
+                        }
+                    }
+                    for (const auto halfedge : FaceHalfedgeHandles(whiteBox, face))
+                    {
+                        const auto other = HalfedgeFaceHandle(whiteBox, HalfedgeOppositeHalfedgeHandle(whiteBox, halfedge));
+                        if (other.IsValid() && selected[other.Index()]) { pending.push_back(other); }
+                        else { region.m_border.push_back(halfedge); }
+                    }
+                }
+                if (region.m_border.empty() || region.m_normal.IsZero(1e-6f))
+                {
+                    return fail("Select a surface region with an open perimeter and a clear extrusion direction.");
+                }
+                region.m_normal.Normalize();
+                region.m_center /= static_cast<float>(region.m_vertices.size());
+                if (inset)
+                {
+                    // Proportional scaling safely insets a planar convex perimeter. Refuse holes,
+                    // concave outlines and folded regions rather than producing crossing side faces.
+                    AZStd::map<int, int> next;
+                    for (const auto edge : region.m_border)
+                    {
+                        const auto a = HalfedgeVertexHandleAtTail(whiteBox, edge);
+                        const auto b = HalfedgeVertexHandleAtTip(whiteBox, edge);
+                        if (!next.emplace(a.Index(), b.Index()).second) { return fail("Inset needs a single simple perimeter."); }
+                    }
+                    int current = next.begin()->first;
+                    const int first = current;
+                    size_t visited = 0;
+                    do
+                    {
+                        const auto it = next.find(current);
+                        if (it == next.end() || visited++ >= next.size()) { return fail("Inset needs a single simple perimeter."); }
+                        const auto after = next.find(it->second);
+                        if (after == next.end()) { return fail("Inset needs a single simple perimeter."); }
+                        const auto a = VertexPosition(whiteBox, VertexHandle{current});
+                        const auto b = VertexPosition(whiteBox, VertexHandle{it->second});
+                        const auto c = VertexPosition(whiteBox, VertexHandle{after->second});
+                        if ((b - a).Cross(c - b).Dot(region.m_normal) < -1e-6f)
+                        {
+                            return fail("Inset currently supports convex regions. Select a smaller convex region.");
+                        }
+                        current = it->second;
+                    } while (current != first);
+                    if (visited != next.size()) { return fail("Inset does not yet support regions with holes."); }
+                    for (const auto vertex : region.m_vertices)
+                    {
+                        if (AZStd::abs((VertexPosition(whiteBox, vertex) - region.m_center).Dot(region.m_normal)) > 1e-4f)
+                        {
+                            return fail("Inset requires a planar region.");
+                        }
+                    }
+                }
+            }
+
+            auto candidate = CreateWhiteBoxMesh();
+            AZStd::vector<VertexHandle> original(whiteBox.mesh.n_vertices());
+            for (const auto vertex : MeshVertexHandles(whiteBox))
+            {
+                original[vertex.Index()] = AddVertex(*candidate, VertexPosition(whiteBox, vertex));
+                if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, original[vertex.Index()]); }
+            }
+            for (auto& region : regions)
+            {
+                for (const auto vertex : region.m_vertices)
+                {
+                    const auto position = VertexPosition(whiteBox, vertex);
+                    const auto moved = inset ? region.m_center + (position - region.m_center) * (1.0f - amount)
+                                             : position + region.m_normal * amount;
+                    const auto added = AddVertex(*candidate, moved);
+                    region.m_top.emplace(vertex.Index(), added);
+                    if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, added); }
+                }
+            }
+            struct RegionFace
+            {
+                AZStd::array<VertexHandle, 3> m_vertices;
+                AZStd::array<AZ::Vector2, 3> m_uvs;
+                FaceHandle m_source;
+                FaceHandle m_result;
+                size_t m_group = 0;
+                bool m_keepUv = true;
+                bool m_created = false; //!< Invented here, rather than carried over or translated.
+            };
+            AZStd::vector<RegionFace> faces;
+            for (const auto face : MeshFaceHandles(whiteBox))
+            {
+                if (sourceGroup[face.Index()] < 0) { return fail("Repair the mesh's polygon groups first."); }
+                RegionFace added{};
+                added.m_source = face;
+                added.m_group = static_cast<size_t>(sourceGroup[face.Index()]);
+                const auto halfedges = FaceHalfedgeHandles(whiteBox, face);
+                if (halfedges.size() != 3) { return fail("The mesh contains invalid triangles."); }
+                for (size_t i = 0; i < 3; ++i)
+                {
+                    const auto vertex = HalfedgeVertexHandleAtTip(whiteBox, halfedges[i]);
+                    added.m_vertices[i] = selected[face.Index()]
+                        ? regions[faceRegion[face.Index()]].m_top.find(vertex.Index())->second : original[vertex.Index()];
+                    added.m_uvs[i] = HalfedgeUV(whiteBox, halfedges[i]);
+                }
+                faces.push_back(added);
+            }
+            size_t groupCount = polygons.size();
+            for (const auto& region : regions)
+            {
+                for (const auto halfedge : region.m_border)
+                {
+                    const auto a = HalfedgeVertexHandleAtTail(whiteBox, halfedge);
+                    const auto b = HalfedgeVertexHandleAtTip(whiteBox, halfedge);
+                    const auto source = HalfedgeFaceHandle(whiteBox, halfedge);
+                    const AZStd::array<VertexHandle, 4> quad{
+                        original[a.Index()], original[b.Index()],
+                        region.m_top.find(b.Index())->second, region.m_top.find(a.Index())->second};
+                    for (size_t i = 1; i < 3; ++i)
+                    {
+                        RegionFace side{};
+                        side.m_vertices = {quad[0], quad[i], quad[i + 1]};
+                        side.m_source = source;
+                        side.m_group = groupCount;
+                        side.m_keepUv = false;
+                        side.m_created = true;
+                        faces.push_back(side);
+                    }
+                    ++groupCount;
+                }
+            }
+            // Validate only the side walls this operation creates; pre-existing slivers must not block the extrude.
+            for (const auto& face : faces)
+            {
+                if (!face.m_created)
+                {
+                    continue;
+                }
+                const auto& v = face.m_vertices;
+                const auto a = VertexPosition(*candidate, v[0]);
+                AZ::Vector3 normal;
+                if (!TryCalculateTriangleNormal(
+                        VertexPosition(*candidate, v[1]) - a, VertexPosition(*candidate, v[2]) - a, normal))
+                {
+                    return fail("The new side faces collapse at this amount. Move a little further.");
+                }
+            }
+            // Adjacent source triangles may not be listed in insertion order. Retry uninserted
+            // triangles until the connected fans are assembled; never duplicate vertices on failure.
+            size_t remaining = faces.size();
+            while (remaining)
+            {
+                const size_t before = remaining;
+                for (auto& face : faces)
+                {
+                    if (face.m_result.IsValid()) { continue; }
+                    const auto& v = face.m_vertices;
+                    const auto added = candidate->mesh.add_face(om_vh(v[0]), om_vh(v[1]), om_vh(v[2]));
+                    if (!added.is_valid()) { continue; }
+                    face.m_result = wb_fh(added);
+                    --remaining;
+                }
+                if (remaining == before) { return fail("This selection would create invalid face connections. The mesh was left unchanged."); }
+            }
+            PolygonPropertyHandle property;
+            candidate->mesh.get_property_handle(property, PolygonProps);
+            auto& mapping = candidate->mesh.property(property);
+            AZStd::vector<FaceHandlesInternal> groups(groupCount);
+            CalculateNormals(*candidate);
+            CalculatePlanarUVs(*candidate);
+            for (const auto& face : faces)
+            {
+                groups[face.m_group].push_back(om_fh(face.m_result));
+                SetFaceMaterial(*candidate, face.m_result, FaceMaterial(whiteBox, face.m_source));
+                SetFacePaintColor(*candidate, face.m_result, FacePaintColor(whiteBox, face.m_source));
+                if (face.m_keepUv)
+                {
+                    for (size_t i = 0; i < 3; ++i)
+                    {
+                        const auto& v = face.m_vertices;
+                        const auto edge = candidate->mesh.find_halfedge(om_vh(v[(i + 2) % 3]), om_vh(v[i]));
+                        candidate->mesh.set_texcoord2D(edge, face.m_uvs[i]);
+                    }
+                }
+            }
+            for (const auto& group : groups)
+            {
+                for (const auto face : group) { mapping[face] = group; }
+            }
+            for (size_t i = 0; i < polygons.size(); ++i)
+            {
+                if (selected[polygons[i].m_faceHandles.front().Index()]) { result.push_back(PolygonHandleFromInternal(groups[i])); }
+            }
+            if (preview)
+            {
+                *preview = result;
+                for (size_t i = polygons.size(); i < groups.size(); ++i)
+                {
+                    preview->push_back(PolygonHandleFromInternal(groups[i]));
+                }
+            }
+            RemoveIsolatedVertices(*candidate);
+            whiteBox.mesh = candidate->mesh;
+            return true;
+        }
+
+        bool BevelEdges(
+            WhiteBoxMesh& whiteBox, const EdgeHandles& edges, float width, int segments, AZStd::string& error, float profile)
+        {
+            error.clear();
+            const auto fail = [&error](const char* message) { error = message; return false; };
+            if (!(width > 0.0f && width < AZ::Constants::FloatMax) || segments < 1 || segments > 32 || !(profile >= 0.05f && profile <= 0.95f))
+            {
+                return fail("Use positive width, 1-32 segments, and a profile between 0.05 and 0.95.");
+            }
+            if (edges.empty()) { return fail("Select sharp edges in Transform mode."); }
+            const auto meshEdges = MeshEdgeHandles(whiteBox);
+            AZStd::unordered_set<int> selected;
+            AZStd::unordered_set<int> endpointsUsed;
+            AZStd::map<int, int> selectedAtCorner;
+            EdgeHandles orderedEdges;
+            for (const auto edge : edges)
+            {
+                if (AZStd::find(meshEdges.begin(), meshEdges.end(), edge) == meshEdges.end())
+                {
+                    return fail("The edge selection is stale. Select the edges again.");
+                }
+                if (!selected.insert(edge.Index()).second) { continue; }
+                orderedEdges.push_back(edge);
+                for (const auto vertex : EdgeVertexHandles(whiteBox, edge))
+                {
+                    endpointsUsed.insert(vertex.Index());
+                    ++selectedAtCorner[vertex.Index()];
+                }
+            }
+            struct BevelPolygon
+            {
+                PolygonHandle m_polygon;
+                VertexHandles m_border;
+                AZ::Vector3 m_normal;
+                AZ::Data::AssetId m_material;
+                AZ::u32 m_paint;
+            };
+            AZStd::map<int, BevelPolygon> polygons;
+            AZStd::map<int, PolygonHandles> incident;
+            for (const auto& polygon : MeshPolygonHandles(whiteBox))
+            {
+                for (const auto& border : PolygonBorderVertexHandles(whiteBox, polygon))
+                {
+                    for (const auto vertex : border) { incident[vertex.Index()].push_back(polygon); }
+                }
+            }
+            const auto loadPolygon = [&](const PolygonHandle& polygon) -> BevelPolygon*
+            {
+                const int key = polygon.m_faceHandles.front().Index();
+                if (const auto found = polygons.find(key); found != polygons.end()) { return &found->second; }
+                const auto borders = PolygonBorderVertexHandles(whiteBox, polygon);
+                if (borders.size() != 1 || borders[0].size() < 3)
+                {
+                    error = "Bevel requires faces without holes.";
+                    return nullptr;
+                }
+                BevelPolygon data{polygon, borders[0], PolygonNormal(whiteBox, polygon),
+                    FaceMaterial(whiteBox, polygon.m_faceHandles.front()), FacePaintColor(whiteBox, polygon.m_faceHandles.front())};
+                for (const auto face : polygon.m_faceHandles)
+                {
+                    if (FaceMaterial(whiteBox, face) != data.m_material || FacePaintColor(whiteBox, face) != data.m_paint)
+                    {
+                        error = "A face has different materials or paint on its triangles. Make them match before beveling.";
+                        return nullptr;
+                    }
+                }
+                const auto origin = VertexPosition(whiteBox, data.m_border.front());
+                float scale = 0.0f;
+                for (const auto vertex : data.m_border)
+                {
+                    scale = AZStd::max(scale, (VertexPosition(whiteBox, vertex) - origin).GetLength());
+                }
+                for (size_t i = 0; i < data.m_border.size(); ++i)
+                {
+                    const auto p = VertexPosition(whiteBox, data.m_border[i]);
+                    const auto q = VertexPosition(whiteBox, data.m_border[(i + 1) % data.m_border.size()]);
+                    const auto s = VertexPosition(whiteBox, data.m_border[(i + 2) % data.m_border.size()]);
+                    if (AZStd::abs((p - origin).Dot(data.m_normal)) > scale * 1e-5f ||
+                        (q - p).Cross(s - q).Dot(data.m_normal) <= 1e-10f)
+                    {
+                        error = "Bevel requires flat, convex neighboring faces without redundant collinear corners.";
+                        return nullptr;
+                    }
+                }
+                return &polygons.emplace(key, AZStd::move(data)).first->second;
+            };
+            auto candidate = CloneMesh(whiteBox);
+            AZStd::map<int, AZStd::map<int, VertexHandles>> replacements;
+            struct NewPolygon
+            {
+                VertexHandles m_vertices;
+                AZ::Vector3 m_normal;
+                AZ::Data::AssetId m_material;
+                AZ::u32 m_paint;
+            };
+            AZStd::vector<NewPolygon> strips;
+            // One shared vertex pool per original corner joins the ends of
+            // adjacent bevel strips instead of generating overlapping caps.
+            AZStd::map<int, VertexHandles> cornerVertices;
+            const auto cornerVertex = [&](VertexHandle original, const AZ::Vector3& point)
+            {
+                auto& pool = cornerVertices[original.Index()];
+                for (const auto vertex : pool)
+                {
+                    if (VertexPosition(*candidate, vertex).IsClose(point, 1e-6f)) { return vertex; }
+                }
+                const auto vertex = AddVertex(*candidate, point);
+                pool.push_back(vertex);
+                return vertex;
+            };
+            const auto edgeSelected = [&](VertexHandle a, VertexHandle b)
+            {
+                for (const auto edge : orderedEdges)
+                {
+                    const auto pair = EdgeVertexHandles(whiteBox, edge);
+                    if ((pair[0] == a && pair[1] == b) || (pair[1] == a && pair[0] == b)) { return true; }
+                }
+                return false;
+            };
+            for (const auto index : endpointsUsed)
+            {
+                const VertexHandle vertex{index};
+                const auto origin = VertexPosition(whiteBox, vertex);
+                const auto& around = incident[index];
+                if (around.size() < 2 || around.size() > 3)
+                {
+                    return fail("Bevel currently supports corners with two or three incident polygons.");
+                }
+                for (const auto& polygon : around)
+                {
+                    auto* data = loadPolygon(polygon);
+                    if (!data) { return false; }
+                    const auto& border = data->m_border;
+                    const auto found = AZStd::find(border.begin(), border.end(), vertex);
+                    if (found == border.end()) { return fail("Invalid bevel corner."); }
+                    const size_t i = static_cast<size_t>(found - border.begin());
+                    const auto prev = border[(i + border.size() - 1) % border.size()];
+                    const auto next = border[(i + 1) % border.size()];
+                    const bool before = edgeSelected(vertex, prev);
+                    const bool after = edgeSelected(vertex, next);
+                    if (!before && !after) { continue; }
+                    const auto u = VertexPosition(whiteBox, prev) - origin;
+                    const auto v = VertexPosition(whiteBox, next) - origin;
+                    const auto un = u.GetNormalizedSafe();
+                    const auto vn = v.GetNormalizedSafe();
+                    const float sine = un.Cross(vn).GetLength();
+                    if (sine < 1e-5f) { return fail("Cannot bevel a collapsed corner."); }
+                    const float distance = width / sine;
+                    if ((after && distance >= u.GetLength() - 1e-6f) ||
+                        (before && distance >= v.GetLength() - 1e-6f))
+                    {
+                        return fail("Bevel width reaches a neighboring vertex. Reduce the width.");
+                    }
+                    const auto point = origin + (after ? un * distance : AZ::Vector3::CreateZero()) +
+                        (before ? vn * distance : AZ::Vector3::CreateZero());
+                    replacements[polygon.m_faceHandles.front().Index()][index] = {cornerVertex(vertex, point)};
+                }
+            }
+            // At a three-edge junction all strips share one profile centre, or the corner grooves inward.
+            AZStd::map<int, AZ::Vector3> cornerCenters;
+            for (const auto& item : selectedAtCorner)
+            {
+                if (item.second != 3) { continue; }
+                const auto& around = incident[item.first];
+                if (around.size() != 3) { return fail("Unsupported three-edge bevel junction."); }
+                AZ::Vector3 sum = AZ::Vector3::CreateZero();
+                for (const auto& polygon : around)
+                {
+                    const auto& point = replacements[polygon.m_faceHandles.front().Index()][item.first];
+                    if (point.size() != 1) { return fail("Cannot construct the bevel corner profile."); }
+                    sum += VertexPosition(*candidate, point.front());
+                }
+                cornerCenters[item.first] = (sum - VertexPosition(whiteBox, VertexHandle{item.first})) * 0.5f;
+            }
+            // End arcs not used by a surviving original face become corner patches.
+            AZStd::map<int, AZStd::vector<VertexHandles>> cornerArcs;
+            for (const auto edge : orderedEdges)
+            {
+                const auto faces = EdgeFaceHandles(whiteBox, edge);
+                if (faces.size() != 2) { return fail("Bevel needs an edge between two faces, not an open boundary."); }
+                const auto side0 = FacePolygonHandle(whiteBox, faces[0]);
+                const auto side1 = FacePolygonHandle(whiteBox, faces[1]);
+                if (side0 == side1) { return fail("Select polygon edges, not internal triangle diagonals."); }
+                auto* first = loadPolygon(side0);
+                auto* second = loadPolygon(side1);
+                if (!first || !second) { return false; }
+                VertexHandle a;
+                VertexHandle b;
+                for (const auto& border : PolygonBorderHalfedgeHandles(whiteBox, side0))
+                {
+                    for (const auto halfedge : border)
+                    {
+                        if (HalfedgeEdgeHandle(whiteBox, halfedge) == edge)
+                        {
+                            a = HalfedgeVertexHandleAtTail(whiteBox, halfedge);
+                            b = HalfedgeVertexHandleAtTip(whiteBox, halfedge);
+                        }
+                    }
+                }
+                if (!a.IsValid() || !b.IsValid()) { return fail("Invalid polygon edge."); }
+                AZStd::array<VertexHandles, 2> arcs;
+                const AZStd::array<VertexHandle, 2> ends{{a, b}};
+                for (size_t end = 0; end < 2; ++end)
+                {
+                    const auto vertex = ends[end];
+                    const auto origin = VertexPosition(whiteBox, vertex);
+                    const auto p0 = replacements[side0.m_faceHandles.front().Index()][vertex.Index()];
+                    const auto p1 = replacements[side1.m_faceHandles.front().Index()][vertex.Index()];
+                    if (p0.empty() || p1.empty()) { return fail("Invalid bevel boundary."); }
+                    const auto v0 = VertexPosition(*candidate, p0.front()) - origin;
+                    const auto v1 = VertexPosition(*candidate, p1.front()) - origin;
+                    if (first->m_normal.Dot(v1) >= -1e-6f || second->m_normal.Dot(v0) >= -1e-6f)
+                    {
+                        return fail("Select convex sharp edges. Flat and inward edges are not supported.");
+                    }
+                    for (int segment = 0; segment <= segments; ++segment)
+                    {
+                        const float angle = AZ::Constants::HalfPi * static_cast<float>(segment) / segments;
+                        const float exponent = 2.0f * (1.0f - profile);
+                        const float x = segment == segments ? 0.0f : 1.0f - powf(sinf(angle), exponent);
+                        const float y = segment == 0 ? 0.0f : 1.0f - powf(AZStd::max(cosf(angle), 0.0f), exponent);
+                        auto point = origin + v0 * x + v1 * y;
+                        if (const auto center = cornerCenters.find(vertex.Index()); center != cornerCenters.end())
+                        {
+                            // Preserve the same superellipse used by the corner
+                            // grid, including its exact shared boundary vertices.
+                            point = center->second +
+                                (origin + v0 - center->second) * (1.0f - y) +
+                                (origin + v1 - center->second) * (1.0f - x);
+                        }
+                        if (segment == 0) { arcs[end].push_back(p0.front()); }
+                        else if (segment == segments) { arcs[end].push_back(p1.front()); }
+                        else { arcs[end].push_back(cornerVertex(vertex, point)); }
+                    }
+                    bool capped = false;
+                    for (const auto& cap : incident[vertex.Index()])
+                    {
+                        if (cap == side0 || cap == side1) { continue; }
+                        const int key = cap.m_faceHandles.front().Index();
+                        if (replacements[key].count(vertex.Index())) { continue; }
+                        auto* data = loadPolygon(cap);
+                        const auto& border = data->m_border;
+                        const auto found = AZStd::find(border.begin(), border.end(), vertex);
+                        const size_t i = static_cast<size_t>(found - border.begin());
+                        const auto prev = border[(i + border.size() - 1) % border.size()];
+                        const auto towardPrev = VertexPosition(whiteBox, prev) - origin;
+                        auto arc = arcs[end];
+                        if (towardPrev.Cross(v1).GetLengthSq() < towardPrev.Cross(v0).GetLengthSq())
+                        {
+                            AZStd::reverse(arc.begin(), arc.end());
+                        }
+                        replacements[key][vertex.Index()] = AZStd::move(arc);
+                        capped = true;
+                    }
+                    if (!capped && incident[vertex.Index()].size() == 3)
+                    {
+                        auto arc = arcs[end];
+                        // Reverse the strip end boundary so the patch closes it.
+                        if (end == 0) { AZStd::reverse(arc.begin(), arc.end()); }
+                        cornerArcs[vertex.Index()].push_back(AZStd::move(arc));
+                    }
+                }
+                for (int segment = 0; segment < segments; ++segment)
+                {
+                    strips.push_back({{arcs[1][segment], arcs[0][segment], arcs[0][segment + 1], arcs[1][segment + 1]},
+                        (first->m_normal + second->m_normal).GetNormalizedSafe(), first->m_material, first->m_paint});
+                }
+            }
+            AZStd::vector<NewPolygon> patches;
+            for (const auto& item : cornerArcs)
+            {
+                const auto& arcs = item.second;
+                if (arcs.size() == 2)
+                {
+                    // Two selected edges form a miter. Their end arcs must coincide.
+                    if (arcs[0].size() != arcs[1].size()) { return fail("Incompatible bevel miter."); }
+                    for (size_t i = 0; i < arcs[0].size(); ++i)
+                    {
+                        if (arcs[0][i] != arcs[1][arcs[1].size() - 1 - i])
+                        {
+                            return fail("This asymmetric corner needs a smaller selection or a different width.");
+                        }
+                    }
+                    continue;
+                }
+                if (arcs.size() != 3) { return fail("Unsupported bevel corner junction."); }
+                VertexHandles ring = arcs.front();
+                AZStd::unordered_set<size_t> used{0};
+                while (used.size() < arcs.size())
+                {
+                    bool joined = false;
+                    for (size_t i = 1; i < arcs.size(); ++i)
+                    {
+                        if (!used.count(i) && arcs[i].front() == ring.back())
+                        {
+                            ring.insert(ring.end(), arcs[i].begin() + 1, arcs[i].end());
+                            used.insert(i);
+                            joined = true;
+                            break;
+                        }
+                    }
+                    if (!joined) { return fail("Cannot join the bevel corner patch."); }
+                }
+                if (ring.front() != ring.back()) { return fail("The bevel corner patch is not closed."); }
+                ring.pop_back();
+                const auto centerIt = cornerCenters.find(item.first);
+                if (centerIt == cornerCenters.end()) { return fail("Missing bevel corner profile."); }
+                const auto center = centerIt->second;
+                const AZStd::array<AZ::Vector3, 3> axes{{
+                    VertexPosition(*candidate, ring[0]) - center,
+                    VertexPosition(*candidate, ring[segments]) - center,
+                    VertexPosition(*candidate, ring[2 * segments]) - center}};
+                AZ::Vector3 normal = AZ::Vector3::CreateZero();
+                for (const auto& polygon : incident[item.first]) { normal += PolygonNormal(whiteBox, polygon); }
+                normal = normal.GetNormalizedSafe();
+                const auto source = incident[item.first].front().m_faceHandles.front();
+                const auto material = FaceMaterial(whiteBox, source);
+                const auto paint = FacePaintColor(whiteBox, source);
+                const float exponent = 2.0f * (1.0f - profile);
+                const auto gridVertex = [&](const AZ::Vector3& barycentric)
+                {
+                    const float a = barycentric.GetX();
+                    const float b = barycentric.GetY();
+                    const float c = barycentric.GetZ();
+                    // Reuse strip boundary handles exactly: no cracks, duplicate
+                    // vertices, or T-junctions at the grid perimeter.
+                    const auto sample = [&](float value)
+                    {
+                        return AZStd::clamp(static_cast<int>(value * segments + 0.5f), 0, segments);
+                    };
+                    if (c < 1e-6f) { return ring[sample(b)]; }
+                    if (a < 1e-6f) { return ring[segments + sample(c)]; }
+                    if (b < 1e-6f) { return ring[(3 * segments - sample(c)) % (3 * segments)]; }
+                    const auto direction = AZ::Vector3(
+                        sinf(AZ::Constants::HalfPi * a), sinf(AZ::Constants::HalfPi * b),
+                        sinf(AZ::Constants::HalfPi * c)).GetNormalizedSafe();
+                    const auto point = center + axes[0] * powf(direction.GetX(), exponent) +
+                        axes[1] * powf(direction.GetY(), exponent) + axes[2] * powf(direction.GetZ(), exponent);
+                    return cornerVertex(VertexHandle{item.first}, point);
+                };
+                if (segments % 2 == 0)
+                {
+                    // Three quad grids meet at one valence-three center. Each
+                    // outer side uses half of an existing strip end arc.
+                    const int size = segments / 2;
+                    const AZStd::array<AZ::Vector3, 3> corners{{
+                        AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ()}};
+                    for (int sector = 0; sector < 3; ++sector)
+                    {
+                        const auto a = corners[sector];
+                        const auto b = (a + corners[(sector + 1) % 3]) * 0.5f;
+                        const auto c = AZ::Vector3(1.0f / 3.0f);
+                        const auto d = (a + corners[(sector + 2) % 3]) * 0.5f;
+                        AZStd::vector<VertexHandles> grid(size + 1);
+                        for (int row = 0; row <= size; ++row)
+                        {
+                            const float v = static_cast<float>(row) / size;
+                            for (int column = 0; column <= size; ++column)
+                            {
+                                const float u = static_cast<float>(column) / size;
+                                grid[row].push_back(gridVertex(
+                                    a * ((1.0f - u) * (1.0f - v)) + b * (u * (1.0f - v)) +
+                                    c * (u * v) + d * ((1.0f - u) * v)));
+                            }
+                        }
+                        for (int row = 0; row < size; ++row)
+                        {
+                            for (int column = 0; column < size; ++column)
+                            {
+                                patches.push_back({{
+                                    grid[row][column], grid[row][column + 1],
+                                    grid[row + 1][column + 1], grid[row + 1][column]}, normal, material, paint});
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Odd boundaries: two equal runs and a middle edge, so the corner stays symmetric
+                    // with a single central triangle.
+                    const int size = segments / 2;
+                    const AZStd::array<AZ::Vector3, 3> corners{{
+                        AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ()}};
+                    AZStd::array<AZ::Vector3, 3> inner;
+                    for (int sector = 0; sector < 3; ++sector)
+                    {
+                        inner[sector] = (AZ::Vector3(static_cast<float>(size)) + corners[sector]) /
+                            static_cast<float>(3 * size + 1);
+                    }
+                    if (size > 0)
+                    {
+                        const float fraction = static_cast<float>(size) / segments;
+                        for (int sector = 0; sector < 3; ++sector)
+                        {
+                            const int next = (sector + 1) % 3;
+                            const auto a = corners[sector];
+                            const auto b = a.Lerp(corners[next], fraction);
+                            const auto c = inner[sector];
+                            const auto d = a.Lerp(corners[(sector + 2) % 3], fraction);
+                            AZStd::vector<VertexHandles> grid(size + 1);
+                            for (int row = 0; row <= size; ++row)
+                            {
+                                const float v = static_cast<float>(row) / size;
+                                for (int column = 0; column <= size; ++column)
+                                {
+                                    const float u = static_cast<float>(column) / size;
+                                    grid[row].push_back(gridVertex(
+                                        a * ((1.0f - u) * (1.0f - v)) + b * (u * (1.0f - v)) +
+                                        c * (u * v) + d * ((1.0f - u) * v)));
+                                }
+                            }
+                            for (int row = 0; row < size; ++row)
+                            {
+                                for (int column = 0; column < size; ++column)
+                                {
+                                    patches.push_back({{
+                                        grid[row][column], grid[row][column + 1],
+                                        grid[row + 1][column + 1], grid[row + 1][column]}, normal, material, paint});
+                                }
+                            }
+                            const auto opposite = corners[next].Lerp(a, fraction);
+                            auto left = gridVertex(b);
+                            auto right = gridVertex(opposite);
+                            for (int row = 1; row <= size; ++row)
+                            {
+                                const float v = static_cast<float>(row) / size;
+                                const auto nextLeft = gridVertex(b.Lerp(inner[sector], v));
+                                const auto nextRight = gridVertex(opposite.Lerp(inner[next], v));
+                                patches.push_back({{left, right, nextRight, nextLeft}, normal, material, paint});
+                                left = nextLeft;
+                                right = nextRight;
+                            }
+                        }
+                    }
+                    patches.push_back({{
+                        gridVertex(inner[0]), gridVertex(inner[1]), gridVertex(inner[2])}, normal, material, paint});
+                }
+            }
+            FaceHandles removed;
+            AZStd::vector<NewPolygon> rebuilt;
+            for (const auto& item : polygons)
+            {
+                const auto& data = item.second;
+                VertexHandles border;
+                const auto& changed = replacements[item.first];
+                for (const auto vertex : data.m_border)
+                {
+                    const auto replacement = changed.find(vertex.Index());
+                    if (replacement == changed.end()) { border.push_back(vertex); }
+                    else { border.insert(border.end(), replacement->second.begin(), replacement->second.end()); }
+                }
+                rebuilt.push_back({AZStd::move(border), data.m_normal, data.m_material, data.m_paint});
+                removed.insert(removed.end(), data.m_polygon.m_faceHandles.begin(), data.m_polygon.m_faceHandles.end());
+            }
+            rebuilt.insert(rebuilt.end(), strips.begin(), strips.end());
+            rebuilt.insert(rebuilt.end(), patches.begin(), patches.end());
+            // Validate every resulting boundary before removing any faces.
+            for (const auto& polygon : rebuilt)
+            {
+                const auto& vertices = polygon.m_vertices;
+                const auto base = VertexPosition(*candidate, vertices.front());
+                for (size_t i = 0; i < vertices.size(); ++i)
+                {
+                    const auto p = VertexPosition(*candidate, vertices[i]);
+                    const auto q = VertexPosition(*candidate, vertices[(i + 1) % vertices.size()]);
+                    const auto s = VertexPosition(*candidate, vertices[(i + 2) % vertices.size()]);
+                    if ((q - p).Cross(s - q).Dot(polygon.m_normal) <= 1e-10f)
+                    {
+                        return fail("Bevel would collapse or overlap a face. Reduce the width or simplify the corner.");
+                    }
+                }
+                // Triangulate with a fan only when it preserves the face winding.
+                for (size_t i = 1; i + 1 < vertices.size(); ++i)
+                {
+                    if ((VertexPosition(*candidate, vertices[i]) - base).Cross(
+                            VertexPosition(*candidate, vertices[i + 1]) - base).Dot(polygon.m_normal) <= 1e-10f)
+                    {
+                        return fail("Bevel cannot triangulate this face safely. Reduce the width.");
+                    }
+                }
+            }
+            RemoveFaces(*candidate, removed);
+            FaceHandles added;
+            PolygonPropertyHandle property;
+            candidate->mesh.get_property_handle(property, PolygonProps);
+            auto& groups = candidate->mesh.property(property);
+            for (const auto& polygon : rebuilt)
+            {
+                FaceHandlesInternal group;
+                const auto& vertices = polygon.m_vertices;
+                for (size_t i = 1; i + 1 < vertices.size(); ++i)
+                {
+                    const auto face = candidate->mesh.add_face(om_vh(vertices[0]), om_vh(vertices[i]), om_vh(vertices[i + 1]));
+                    if (!face.is_valid()) { return fail("Bevel would create invalid face connections. The mesh was left unchanged."); }
+                    group.push_back(face);
+                    const auto handle = wb_fh(face);
+                    SetFaceMaterial(*candidate, handle, polygon.m_material);
+                    SetFacePaintColor(*candidate, handle, polygon.m_paint);
+                    added.push_back(handle);
+                }
+                for (const auto face : group) { groups[face] = group; }
+            }
+            CalculateNormals(*candidate);
+            CalculatePlanarUVs(*candidate, added);
+            RemoveIsolatedVertices(*candidate);
+            whiteBox.mesh = candidate->mesh;
+            return true;
+        }
+
+        static bool BuildEdgeLoops(
+            WhiteBoxMesh& whiteBox, const EdgeHandle seed, const float fraction, const int count, const float spacing,
+            AZStd::vector<AZ::Vector3>* preview, AZStd::string& error)
+        {
+            error.clear();
+            const auto fail = [&error](const char* message) { error = message; return false; };
+            const auto allEdges = MeshEdgeHandles(whiteBox);
+            if (AZStd::find(allEdges.begin(), allEdges.end(), seed) == allEdges.end())
+            {
+                return fail("Select one polygon boundary edge in Transform mode.");
+            }
+            if (!(fraction > 0.0f && fraction + spacing * static_cast<float>(count - 1) < 1.0f))
+            {
+                return fail("The loop position must be between 0% and 100%, excluding the endpoints.");
+            }
+            struct LoopQuad
+            {
+                PolygonHandle m_polygon;
+                AZStd::array<VertexHandle, 4> m_vertices;
+                EdgeHandle m_entry;
+                EdgeHandle m_exit;
+                AZ::Data::AssetId m_material;
+                AZ::u32 m_paint;
+            };
+            AZStd::map<int, LoopQuad> quads;
+            AZStd::map<int, float> crossings;
+            // Track orientation independently of cut position, including when a slid
+            // first cut lies exactly at the midpoint.
+            crossings[seed.Index()] = 0.25f;
+            EdgeHandles pending{seed};
+            while (!pending.empty())
+            {
+                const auto edge = pending.back();
+                pending.pop_back();
+                const auto adjacentFaces = EdgeFaceHandles(whiteBox, edge);
+                if (adjacentFaces.empty()) { return fail("The selected strip contains an edge without a face."); }
+                for (const auto face : adjacentFaces)
+                {
+                    const auto polygon = FacePolygonHandle(whiteBox, face);
+                    if (polygon.m_faceHandles.size() != 2)
+                    {
+                        return fail("Loop insertion needs a continuous quad strip. This strip reaches a triangle or n-gon.");
+                    }
+                    const int key = polygon.m_faceHandles.front().Index();
+                    if (const auto found = quads.find(key); found != quads.end())
+                    {
+                        if (edge != found->second.m_entry && edge != found->second.m_exit)
+                        {
+                            return fail("The quad strip crosses itself. Choose another edge.");
+                        }
+                        continue;
+                    }
+                    const auto borders = PolygonBorderHalfedgeHandles(whiteBox, polygon);
+                    if (borders.size() != 1 || borders[0].size() != 4)
+                    {
+                        return fail("Loop insertion requires four-corner polygons without holes.");
+                    }
+                    const auto& border = borders[0];
+                    size_t entry = 4;
+                    for (size_t i = 0; i < 4; ++i)
+                    {
+                        if (HalfedgeEdgeHandle(whiteBox, border[i]) == edge) { entry = i; break; }
+                    }
+                    if (entry == 4) { return fail("Select a polygon boundary edge, not an internal triangle diagonal."); }
+                    LoopQuad quad{};
+                    quad.m_polygon = polygon;
+                    quad.m_entry = edge;
+                    quad.m_exit = HalfedgeEdgeHandle(whiteBox, border[(entry + 2) % 4]);
+                    quad.m_material = FaceMaterial(whiteBox, polygon.m_faceHandles.front());
+                    quad.m_paint = FacePaintColor(whiteBox, polygon.m_faceHandles.front());
+                    for (const auto source : polygon.m_faceHandles)
+                    {
+                        if (FaceMaterial(whiteBox, source) != quad.m_material || FacePaintColor(whiteBox, source) != quad.m_paint)
+                        {
+                            return fail("A quad has different material or paint on its triangles. Make them match before inserting a loop.");
+                        }
+                    }
+                    AZStd::array<AZ::Vector3, 4> points;
+                    for (size_t i = 0; i < 4; ++i)
+                    {
+                        quad.m_vertices[i] = HalfedgeVertexHandleAtTail(whiteBox, border[(entry + i) % 4]);
+                        points[i] = VertexPosition(whiteBox, quad.m_vertices[i]);
+                    }
+                    const auto normal = (points[1] - points[0]).Cross(points[2] - points[0]).GetNormalizedSafe();
+                    float scale = 0.0f;
+                    for (size_t i = 0; i < 4; ++i)
+                    {
+                        scale = AZStd::max(scale, (points[(i + 1) % 4] - points[i]).GetLength());
+                        if ((points[(i + 1) % 4] - points[i]).Cross(points[(i + 2) % 4] - points[(i + 1) % 4]).Dot(normal) <= 1e-10f)
+                        {
+                            return fail("This strip contains a collapsed or concave quad.");
+                        }
+                    }
+                    if (AZStd::abs((points[3] - points[0]).Dot(normal)) > scale * 1e-5f)
+                    {
+                        return fail("This strip contains a twisted quad. Flatten it before inserting a loop.");
+                    }
+                    const auto entryVertices = EdgeVertexHandles(whiteBox, edge);
+                    const float localFraction = entryVertices[0] == quad.m_vertices[0]
+                        ? crossings[edge.Index()] : 1.0f - crossings[edge.Index()];
+                    const auto exitVertices = EdgeVertexHandles(whiteBox, quad.m_exit);
+                    const float nextFraction = exitVertices[0] == quad.m_vertices[2] ? 1.0f - localFraction : localFraction;
+                    const auto crossing = crossings.find(quad.m_exit.Index());
+                    if (crossing != crossings.end())
+                    {
+                        if (AZStd::abs(crossing->second - nextFraction) > 1e-5f && !(count == 1 && AZStd::abs(fraction - 0.5f) < 1e-5f))
+                        {
+                            return fail("The loop returns with reversed orientation. Try the midpoint (50%).");
+                        }
+                    }
+                    else
+                    {
+                        crossings[quad.m_exit.Index()] = nextFraction;
+                        pending.push_back(quad.m_exit);
+                    }
+                    quads.emplace(key, AZStd::move(quad));
+                }
+            }
+            if (quads.empty()) { return fail("No quad strip was found."); }
+            const auto crossingPoint = [&](const EdgeHandle edge, const int cut)
+            {
+                const auto endpoints = EdgeVertexPositions(whiteBox, edge);
+                const float first = crossings.find(edge.Index())->second;
+                const float position = fraction + spacing * static_cast<float>(cut);
+                const float t = first < 0.5f ? position : 1.0f - position;
+                return endpoints[0].Lerp(endpoints[1], t);
+            };
+            if (preview)
+            {
+                for (const auto& item : quads)
+                {
+                    for (int cut = 0; cut < count; ++cut)
+                    {
+                        preview->push_back(crossingPoint(item.second.m_entry, cut));
+                        preview->push_back(crossingPoint(item.second.m_exit, cut));
+                    }
+                }
+                return true;
+            }
+            auto candidate = CloneMesh(whiteBox);
+            AZStd::map<int, VertexHandles> inserted;
+            for (const auto& crossing : crossings)
+            {
+                auto& vertices = inserted[crossing.first];
+                for (int cut = 0; cut < count; ++cut)
+                {
+                    vertices.push_back(AddVertex(*candidate, crossingPoint(EdgeHandle{crossing.first}, cut)));
+                }
+            }
+            FaceHandles removed;
+            for (const auto& item : quads)
+            {
+                removed.insert(removed.end(), item.second.m_polygon.m_faceHandles.begin(), item.second.m_polygon.m_faceHandles.end());
+            }
+            RemoveFaces(*candidate, removed);
+            FaceHandles added;
+            for (const auto& item : quads)
+            {
+                const auto& quad = item.second;
+                const auto& v = quad.m_vertices;
+                auto entryCuts = inserted.find(quad.m_entry.Index())->second;
+                auto exitCuts = inserted.find(quad.m_exit.Index())->second;
+                const auto entryVertices = EdgeVertexHandles(whiteBox, quad.m_entry);
+                const float localFraction = entryVertices[0] == v[0]
+                    ? crossings.find(quad.m_entry.Index())->second : 1.0f - crossings.find(quad.m_entry.Index())->second;
+                if (localFraction > 0.5f)
+                {
+                    AZStd::reverse(entryCuts.begin(), entryCuts.end());
+                    AZStd::reverse(exitCuts.begin(), exitCuts.end());
+                }
+                VertexHandle a = v[0];
+                VertexHandle b = v[3];
+                for (int strip = 0; strip <= count; ++strip)
+                {
+                    const auto nextA = strip == count ? v[1] : entryCuts[strip];
+                    const auto nextB = strip == count ? v[2] : exitCuts[strip];
+                    const auto polygon = AddQuadWithoutFallback(*candidate, {{a, nextA, nextB, b}});
+                    a = nextA;
+                    b = nextB;
+                    if (polygon.m_faceHandles.size() != 2)
+                    {
+                        return fail("The loop could not be connected cleanly. The mesh was left unchanged.");
+                    }
+                    for (const auto face : polygon.m_faceHandles)
+                    {
+                        SetFaceMaterial(*candidate, face, quad.m_material);
+                        SetFacePaintColor(*candidate, face, quad.m_paint);
+                        added.push_back(face);
+                    }
+                }
+            }
+            CalculateNormals(*candidate);
+            CalculatePlanarUVs(*candidate, added);
+            whiteBox.mesh = candidate->mesh;
+            return true;
+        }
+
+        bool InsertEdgeLoop(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error)
+        {
+            return BuildEdgeLoops(whiteBox, edge, fraction, 1, 0.0f, nullptr, error);
+        }
+
+        bool InsertEdgeLoops(WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::string& error, float slide)
+        {
+            if (!(slide >= -1.0f && slide <= 1.0f)) { error = "Slide must be between -1 and 1."; return false; }
+            if (count < 1 || count > 64) { error = "Choose between 1 and 64 cuts."; return false; }
+            const float spacing = 1.0f / static_cast<float>(count + 1);
+            return BuildEdgeLoops(whiteBox, edge, spacing * (1.0f + slide * 0.98f), count, spacing, nullptr, error);
+        }
+
+        bool PreviewEdgeLoops(
+            WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::vector<AZ::Vector3>& lines, AZStd::string& error, float slide)
+        {
+            lines.clear();
+            if (!(slide >= -1.0f && slide <= 1.0f)) { error = "Slide must be between -1 and 1."; return false; }
+            if (count < 1 || count > 64) { error = "Choose between 1 and 64 cuts."; return false; }
+            const float spacing = 1.0f / static_cast<float>(count + 1);
+            return BuildEdgeLoops(whiteBox, edge, spacing * (1.0f + slide * 0.98f), count, spacing, &lines, error);
         }
 
         bool SaveToObj(const WhiteBoxMesh& whiteBox, const AZStd::string& filePath)

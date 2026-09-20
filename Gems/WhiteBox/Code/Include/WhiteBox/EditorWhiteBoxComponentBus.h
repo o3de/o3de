@@ -104,6 +104,9 @@ namespace WhiteBox
 
         //! Shape the draw-shape tool builds, from the component's "Draw Shape" property.
         virtual DrawShapeType GetDrawShape() { return DrawShapeType::Box; }
+        //! Pick the solid the Draw Shape tool builds. Also resets Draw Sides to that shape's default,
+        //! the same as choosing it in the pane.
+        virtual void SetDrawShapeType(DrawShapeType /*shape*/) {}
 
         //! Staircase build parameters (step count, step-height division mode, riser height and
         //! 90-degree rotation), sourced from the component's Staircase properties. Returned as a
@@ -117,9 +120,13 @@ namespace WhiteBox
         //! When true, committing a drawn shape CSG-unions it into the mesh (a clean,
         //! watertight, manifold merge) instead of adding overlapping geometry.
         virtual bool GetDrawMergeUnion() { return false; }
+        virtual bool GetDrawPolygonExtrude() { return false; }
 
         //! When true, draw mode click-stamps grid-snapped 1x1x1 cubes (CSG union, or
         //! subtract with Ctrl) instead of the click-drag-pull workflow.
+        //! Whether the latched Extrude / Inset toggles are on (see SetStickyExtrude).
+        virtual bool GetStickyExtrude() { return false; }
+        virtual bool GetStickyInset() { return false; }
         virtual bool GetDrawUnitCube() { return false; }
 
         //! World-space edge length of one stamped cube. Each stamp places a single atomic

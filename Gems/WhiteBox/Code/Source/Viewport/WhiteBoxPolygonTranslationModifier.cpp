@@ -6,6 +6,7 @@
  *
  */
 
+#include "Util/WhiteBoxEditorUtil.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "EditorWhiteBoxPolygonModifierBus.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
@@ -55,7 +56,7 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         m_translationManipulator = AzToolsFramework::LinearManipulator::MakeShared(
-            AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+            EditorSpaceFromLocal(m_entityComponentIdPair));
 
         m_translationManipulator->AddEntityComponentIdPair(m_entityComponentIdPair);
         m_translationManipulator->SetLocalPosition(Api::PolygonMidpoint(*whiteBox, m_polygonHandle));
@@ -127,14 +128,20 @@ namespace WhiteBox
                 sharedState->m_moved = sharedState->m_moved ||
                     action.LocalPositionOffset().GetLength() >= cl_whiteBoxMouseClickDeltaThreshold;
 
+                // Extrude with Ctrl held or the Sketch cluster's latched Extrude.
+                bool stickyExtrude = false;
+                EditorWhiteBoxComponentRequestBus::EventResult(
+                    stickyExtrude, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetStickyExtrude);
+                const bool extruding = action.m_modifiers.Ctrl() || stickyExtrude;
+
                 // reset append
-                if (!action.m_modifiers.Ctrl() && sharedState->m_appendStage != AppendStage::None)
+                if (!extruding && sharedState->m_appendStage != AppendStage::None)
                 {
                     sharedState->m_appendStage = AppendStage::None;
                 }
 
                 // start trying to extrude
-                if (action.m_modifiers.Ctrl() && sharedState->m_appendStage == AppendStage::None)
+                if (extruding && sharedState->m_appendStage == AppendStage::None)
                 {
                     sharedState->m_appendStage = AppendStage::Initiated;
                     sharedState->m_initiateAppendPosition = action.LocalPosition();

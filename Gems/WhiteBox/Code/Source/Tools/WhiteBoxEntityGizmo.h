@@ -36,7 +36,7 @@ namespace WhiteBox
             Scale
         };
 
-        WhiteBoxEntityGizmo() = default;
+        WhiteBoxEntityGizmo();
         ~WhiteBoxEntityGizmo();
 
         void SetTarget(AZ::EntityId entityId); //!< Rebuilds if a mode is active.

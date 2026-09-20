@@ -7,6 +7,7 @@
  */
 
 #include "WhiteBoxRenderData.h"
+#include "Util/WhiteBoxMathUtil.h"
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Trace.h>
@@ -81,10 +82,10 @@ namespace WhiteBox
             const AZ::Vector3& vertex2 = face.m_v2.m_position;
             const AZ::Vector3& vertex3 = face.m_v3.m_position;
 
-            const auto areaSquared = 0.5f * ((vertex2 - vertex1).Cross(vertex3 - vertex1)).GetLengthSq();
-
-            // only copy non-degenerate triangles (area is less than zero)
-            if (areaSquared > DegenerateTriangleAreaSquareEpsilon)
+            AZ::Vector3 normal;
+            // Small bevel triangles are valid render geometry. Test collapse
+            // and collinearity relative to their edges, not absolute world area.
+            if (TryCalculateTriangleNormal(vertex2 - vertex1, vertex3 - vertex1, normal))
             {
                 outFaces[outFaceCount] = face;
                 outFaceCount++;

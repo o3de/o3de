@@ -51,6 +51,10 @@ namespace WhiteBox
         static void BindActionsToModes(const AZStd::string& modeIdentifier);
         static void BindActionsToMenus();
 
+        //! Flip the hovered edge, the same operation right-clicking it performs. Returns false when
+        //! nothing is hovered or the flip would fold the two triangles.
+        bool FlipHoveredEdge(const AZ::EntityComponentIdPair& entityComponentIdPair);
+
         // Submode interface
         void Refresh();
         //! Handle Escape. Edge restore has no drag or numeric state of its own, so it never

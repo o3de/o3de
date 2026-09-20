@@ -6,6 +6,7 @@
  *
  */
 
+#include "Util/WhiteBoxEditorUtil.h"
 #include "EditorWhiteBoxPolygonModifierBus.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
@@ -65,7 +66,7 @@ namespace WhiteBox
             for (const auto& vertexHandle : borderVertexHandles)
             {
                 auto manipulator = AzToolsFramework::LinearManipulator::MakeShared(
-                    AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+                    EditorSpaceFromLocal(m_entityComponentIdPair));
 
                 const AZ::Vector3 vertexPosition = Api::VertexPosition(*whiteBox, vertexHandle);
                 const AZ::Vector3 axis = (vertexPosition - midpoint).GetNormalized();
@@ -128,15 +129,22 @@ namespace WhiteBox
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
+        // Inset is either Ctrl held, or the Sketch cluster's latched Inset (see the translation
+        // modifier for why both).
+        bool stickyInset = false;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            stickyInset, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetStickyInset);
+        const bool insetting = action.m_modifiers.Ctrl() || stickyInset;
+
         // reset append
-        if (!action.m_modifiers.Ctrl() && m_appendStage != AppendStage::None)
+        if (!insetting && m_appendStage != AppendStage::None)
         {
             m_appendStage = AppendStage::None;
         }
 
         // append the corners
         // start trying to extrude
-        if (action.m_modifiers.Ctrl() && m_appendStage == AppendStage::None)
+        if (insetting && m_appendStage == AppendStage::None)
         {
             m_offsetWhenExtruded = action.LocalPositionOffset().GetLength();
             m_appendStage = AppendStage::Initiated;

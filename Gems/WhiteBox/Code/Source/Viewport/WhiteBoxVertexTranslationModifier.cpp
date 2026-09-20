@@ -7,6 +7,7 @@
  */
 
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
+#include "Util/WhiteBoxEditorUtil.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Util/WhiteBoxSnapUtil.h"
@@ -88,7 +89,7 @@ namespace WhiteBox
         const AZStd::vector<AZStd::pair<AZ::Vector3, AZ::Vector3>>& edgeBeginEnds)
     {
         const auto cameraState = AzToolsFramework::GetCameraState(action.m_viewportId);
-        const auto worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityId);
+        const auto worldFromLocal = EditorSpaceFromLocal(entityId);
 
         int axisIndex = VertexTranslationModifier::InvalidAxisIndex;
         float maxLength = 0.0f;
@@ -126,7 +127,7 @@ namespace WhiteBox
 
         // create the manipulator in the local space of the entity the white box component is on
         m_translationManipulator = MultiLinearManipulator::MakeShared(
-            AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+            EditorSpaceFromLocal(m_entityComponentIdPair));
 
         m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_translationManipulator->AddEntityComponentIdPair(m_entityComponentIdPair);
@@ -412,8 +413,7 @@ namespace WhiteBox
 
         if (PerformingAction() && m_pressTime >= cl_whiteBoxVertexTranslationPressTime)
         {
-            const auto worldFromLocal =
-                AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId());
+            const auto worldFromLocal = EditorSpaceFromLocal(m_entityComponentIdPair);
 
             debugDisplay.PushMatrix(worldFromLocal);
 

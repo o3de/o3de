@@ -16,9 +16,7 @@
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
-// WorldFromLocalWithUniformScale lives in ManipulatorView.h (not TransformUtils.h or
-// EditorSelectionUtil.h, despite the name) - every other White Box file that uses it picks it up
-// transitively via a manipulator header.
+#include "Util/WhiteBoxEditorUtil.h"
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -67,7 +65,7 @@ namespace WhiteBox
 
         AZ::Vector3 MeshLocalFromWorld(const AZ::EntityId entityId, const AZ::Vector3& worldPosition)
         {
-            const AZ::Transform worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityId);
+            const AZ::Transform worldFromLocal = EditorSpaceFromLocal(entityId);
             const AZ::Vector3 scaledLocal = worldFromLocal.GetInverse().TransformPoint(worldPosition);
 
             AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
@@ -81,7 +79,7 @@ namespace WhiteBox
             AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
 
-            const AZ::Transform worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityId);
+            const AZ::Transform worldFromLocal = EditorSpaceFromLocal(entityId);
             return worldFromLocal.TransformPoint(localPosition * nonUniformScale);
         }
 

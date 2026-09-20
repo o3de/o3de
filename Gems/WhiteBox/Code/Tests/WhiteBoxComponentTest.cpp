@@ -34,6 +34,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <QMessageBox>
 
 namespace UnitTest
@@ -262,10 +263,10 @@ namespace UnitTest
 
         const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
 
-        const auto displayEntityViewport = [whiteBoxEntityId = m_whiteBoxEntityId]()
+        const auto displayEntityViewport = []()
         {
-            AzFramework::EntityDebugDisplayEventBus::Event(
-                whiteBoxEntityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportDebugDisplayEventBus::Event(
+                AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport,
                 AzFramework::ViewportInfo{0}, NullDebugDisplayRequests{});
         };
 
@@ -355,10 +356,10 @@ namespace UnitTest
 
         const auto entityComponentIdPair = AZ::EntityComponentIdPair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
 
-        const auto displayEntityViewport = [whiteBoxEntityId = m_whiteBoxEntityId]()
+        const auto displayEntityViewport = []()
         {
-            AzFramework::EntityDebugDisplayEventBus::Event(
-                whiteBoxEntityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
+            AzFramework::ViewportDebugDisplayEventBus::Event(
+                AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport,
                 AzFramework::ViewportInfo{0}, NullDebugDisplayRequests{});
         };
 
@@ -983,6 +984,186 @@ namespace UnitTest
                 AZStd::find(second.begin(), second.end(), vertices[i]) != second.end();
             const auto expected = before[i] + (selected ? AZ::Vector3::CreateAxisX() : AZ::Vector3::CreateZero());
             EXPECT_TRUE(Api::VertexPosition(*mesh, vertices[i]).IsClose(expected));
+        }
+    }
+
+    TEST_F(EditorWhiteBoxModifierTestFixture, RingSelectionRebuildsManipulatorWithoutChangingMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        namespace Viewport = AzToolsFramework::ViewportInteraction;
+        auto* mesh = m_whiteBoxComponent->GetWhiteBoxMesh();
+        ASSERT_NE(mesh, nullptr);
+        Api::InitializeAsUnitCube(*mesh);
+        const AZ::EntityComponentIdPair pair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
+        WhiteBox::TransformMode mode(pair);
+        WhiteBox::IntersectionAndRenderData data;
+        Viewport::MouseInteractionEvent event{};
+        event.m_mouseEvent = Viewport::MouseEvent::Down;
+        event.m_mouseInteraction.m_mouseButtons.m_mouseButtons = static_cast<AZ::u32>(Viewport::MouseButton::Left);
+        WhiteBox::EdgeIntersection edge;
+        edge.m_closestEdgeWithHandle.m_handle = Api::MeshPolygonEdgeHandles(*mesh).front();
+        edge.m_intersection.m_closestDistance = 1.0f;
+        mode.HandleMouseInteraction({event, pair, AZ::Transform::CreateIdentity(), data, edge, AZStd::nullopt, AZStd::nullopt});
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        ASSERT_TRUE(mode.ExpandEdgeSelection(true));
+        EXPECT_EQ(mode.GetSelectedEdges().size(), 4);
+        EXPECT_TRUE(mode.GetSelectedVertices().empty());
+        EXPECT_TRUE(mode.GetSelectedPolygons().empty());
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+        const auto vertices = Api::MeshVertexHandles(*mesh);
+        AZStd::vector<AZ::Vector3> positions;
+        for (const auto vertex : vertices) { positions.push_back(Api::VertexPosition(*mesh, vertex)); }
+        mode.NumericBeginMove();
+        mode.NumericSetAxisX();
+        mode.NumericAppendDigit('1');
+        mode.NumericConfirm();
+        for (size_t i = 0; i < vertices.size(); ++i)
+        {
+            EXPECT_TRUE(Api::VertexPosition(*mesh, vertices[i]).IsClose(positions[i] + AZ::Vector3::CreateAxisX()));
+        }
+        Api::Clear(*mesh);
+        mode.Refresh();
+        EXPECT_FALSE(mode.ExpandEdgeSelection(false));
+        EXPECT_TRUE(mode.GetSelectedEdges().empty());
+    }
+
+    TEST_F(EditorWhiteBoxModifierTestFixture, TransformRefreshDropsHoverHandlesBeforeDrawingReplacementMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        namespace Viewport = AzToolsFramework::ViewportInteraction;
+        const AZ::EntityComponentIdPair pair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
+        WhiteBox::TransformMode mode(pair);
+        WhiteBox::IntersectionAndRenderData data;
+        Viewport::MouseInteractionEvent event{};
+        event.m_mouseEvent = Viewport::MouseEvent::Move;
+        NullDebugDisplayRequests display;
+        auto* mesh = m_whiteBoxComponent->GetWhiteBoxMesh();
+        ASSERT_NE(mesh, nullptr);
+        for (int kind = 0; kind < 3; ++kind)
+        {
+            Api::InitializeAsUnitCube(*mesh);
+            AZStd::optional<WhiteBox::PolygonIntersection> polygon;
+            AZStd::optional<WhiteBox::EdgeIntersection> edge;
+            AZStd::optional<WhiteBox::VertexIntersection> vertex;
+            if (kind == 0)
+            {
+                polygon.emplace();
+                polygon->m_closestPolygonWithHandle.m_handle = Api::MeshPolygonHandles(*mesh).front();
+                polygon->m_intersection.m_closestDistance = 1.0f;
+            }
+            else if (kind == 1)
+            {
+                edge.emplace();
+                edge->m_closestEdgeWithHandle.m_handle = Api::MeshEdgeHandles(*mesh).front();
+                edge->m_intersection.m_closestDistance = 1.0f;
+            }
+            else
+            {
+                vertex.emplace();
+                vertex->m_closestVertexWithHandle.m_handle = Api::MeshVertexHandles(*mesh).front();
+                vertex->m_intersection.m_closestDistance = 1.0f;
+            }
+            mode.HandleMouseInteraction({event, pair, AZ::Transform::CreateIdentity(), data, edge, polygon, vertex});
+            // A layer swap can load an empty mesh before the next mouse event.
+            Api::Clear(*mesh);
+            mode.Refresh();
+            mode.Display(pair, AZ::Transform::CreateIdentity(), data, AzFramework::ViewportInfo{0}, display);
+            EXPECT_TRUE(mode.GetSelectedPolygons().empty());
+            EXPECT_TRUE(mode.GetSelectedEdges().empty());
+            EXPECT_TRUE(mode.GetSelectedVertices().empty());
+        }
+    }
+
+    TEST_F(EditorWhiteBoxModifierTestFixture, ParametricBevelRegeneratesFromSourceAndSurvivesLayerSwitch)
+    {
+        namespace Api = WhiteBox::Api;
+        auto* component = m_whiteBoxComponent;
+        Api::InitializeAsUnitCube(*component->GetWhiteBoxMesh());
+        component->SerializeWhiteBox();
+        const int sourceLayer = component->GetActiveLayerIndex();
+        const auto seed = Api::MeshPolygonEdgeHandles(*component->GetWhiteBoxMesh()).front();
+        AZStd::string error;
+        ASSERT_TRUE(component->SetParametricBevel({seed}, {0.1f, 1, 0.5f}, error)) << error.c_str();
+        ASSERT_TRUE(component->HasActiveBevel());
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 10);
+        ASSERT_TRUE(component->SetParametricBevel({}, {0.15f, 4, 0.7f}, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 16);
+        component->AddLayer();
+        EXPECT_FALSE(component->HasActiveBevel());
+        component->SetActiveLayer(sourceLayer);
+        ASSERT_TRUE(component->HasActiveBevel());
+        EXPECT_EQ(component->GetBevelParams().m_segments, 4);
+        EXPECT_FLOAT_EQ(component->GetBevelParams().m_profile, 0.7f);
+        ASSERT_TRUE(component->SetParametricBevel({}, {0.1f, 1, 0.5f}, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 10);
+        EXPECT_FALSE(component->SetParametricBevel({}, {4.0f, 1, 0.5f}, error));
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 10);
+        EXPECT_FLOAT_EQ(component->GetBevelParams().m_width, 0.1f);
+        component->CancelBevel();
+        EXPECT_FALSE(component->HasActiveBevel());
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 8);
+        const auto restoredSeed = Api::MeshPolygonEdgeHandles(*component->GetWhiteBoxMesh()).front();
+        ASSERT_TRUE(component->SetParametricBevel({restoredSeed}, {0.1f, 3, 0.5f}, error)) << error.c_str();
+        component->BakeBevel();
+        EXPECT_FALSE(component->HasActiveBevel());
+        EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 14);
+    }
+
+    TEST_F(EditorWhiteBoxModifierTestFixture, LoopCutPreviewCancelsOnEscapeAndMeshRefresh)
+    {
+        namespace Api = WhiteBox::Api;
+        namespace Viewport = AzToolsFramework::ViewportInteraction;
+        const AZ::EntityComponentIdPair pair(m_whiteBoxEntityId, m_whiteBoxComponent->GetId());
+        WhiteBox::TransformMode mode(pair);
+        auto* mesh = m_whiteBoxComponent->GetWhiteBoxMesh();
+        ASSERT_NE(mesh, nullptr);
+        Api::InitializeAsUnitCube(*mesh);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        WhiteBox::IntersectionAndRenderData data;
+        Viewport::MouseInteractionEvent event{};
+        event.m_mouseEvent = Viewport::MouseEvent::Move;
+        WhiteBox::EdgeIntersection edge;
+        edge.m_closestEdgeWithHandle.m_handle = Api::MeshPolygonEdgeHandles(*mesh).front();
+        edge.m_intersection.m_closestDistance = 1.0f;
+        for (int attempt = 0; attempt < 2; ++attempt)
+        {
+            event.m_mouseEvent = Viewport::MouseEvent::Move;
+            event.m_mouseInteraction.m_mouseButtons.m_mouseButtons = 0;
+            event.m_mouseInteraction.m_mousePick.m_screenCoordinates = AzFramework::ScreenPoint(200, 200);
+            mode.BeginLoopCut();
+            EXPECT_TRUE(mode.HandleMouseInteraction(
+                {event, pair, AZ::Transform::CreateIdentity(), data, edge, AZStd::nullopt, AZStd::nullopt}));
+            // First click locks the preview without changing the mesh.
+            event.m_mouseEvent = Viewport::MouseEvent::Down;
+            event.m_mouseInteraction.m_mouseButtons.m_mouseButtons = static_cast<AZ::u32>(Viewport::MouseButton::Left);
+            EXPECT_TRUE(mode.HandleMouseInteraction(
+                {event, pair, AZ::Transform::CreateIdentity(), data, edge, AZStd::nullopt, AZStd::nullopt}));
+            // Sliding remains a preview even when the pointer leaves the mesh.
+            event.m_mouseEvent = Viewport::MouseEvent::Move;
+            event.m_mouseInteraction.m_mouseButtons.m_mouseButtons = 0;
+            event.m_mouseInteraction.m_mousePick.m_screenCoordinates = AzFramework::ScreenPoint(240, 220);
+            EXPECT_TRUE(mode.HandleMouseInteraction(
+                {event, pair, AZ::Transform::CreateIdentity(), data, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt}));
+            Api::WhiteBoxMeshStream after;
+            ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+            EXPECT_EQ(before, after);
+            if (attempt == 0)
+            {
+                EXPECT_TRUE(mode.HandleEscape());
+                EXPECT_FALSE(mode.HandleEscape());
+            }
+            else
+            {
+                Api::Clear(*mesh);
+                mode.Refresh();
+                NullDebugDisplayRequests display;
+                mode.Display(pair, AZ::Transform::CreateIdentity(), data, AzFramework::ViewportInfo{0}, display);
+                EXPECT_FALSE(mode.HandleEscape());
+            }
         }
     }
 

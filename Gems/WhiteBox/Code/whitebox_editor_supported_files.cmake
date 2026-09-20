@@ -20,6 +20,8 @@ set(FILES
     Source/EditorWhiteBoxComponentSnap.cpp
     Source/Util/WhiteBoxMeshUtil.cpp
     Source/Util/WhiteBoxMeshUtil.h
+    Source/Util/WhiteBoxModelingOps.cpp
+    Source/Util/WhiteBoxModelingOps.h
     Source/Util/WhiteBoxSnapUtil.cpp
     Source/Util/WhiteBoxSnapUtil.h
     Source/Util/WhiteBoxVoxelUtil.cpp
@@ -28,6 +30,18 @@ set(FILES
     Source/Tools/WhiteBoxLayerUtil.h
     Source/Tools/WhiteBoxPaneWidget.cpp
     Source/Tools/WhiteBoxPaneWidget.h
+    Source/Tools/WhiteBoxBevelWindow.cpp
+    Source/Tools/WhiteBoxBevelWindow.h
+    Source/Tools/WhiteBoxPaintWindow.cpp
+    Source/Tools/WhiteBoxPaintWindow.h
+    Source/Tools/WhiteBoxShapeOptionsWindow.cpp
+    Source/Tools/WhiteBoxShapeOptionsWindow.h
+    Source/Tools/WhiteBoxModelingWindow.cpp
+    Source/Tools/WhiteBoxModelingWindow.h
+    Source/Tools/WhiteBoxWeldWindow.cpp
+    Source/Tools/WhiteBoxWeldWindow.h
+    Source/Tools/WhiteBoxExtrudeInsetWindow.cpp
+    Source/Tools/WhiteBoxExtrudeInsetWindow.h
     Source/Tools/WhiteBoxLayerGizmo.cpp
     Source/Tools/WhiteBoxLayerGizmo.h
     Source/Tools/WhiteBoxEntityGizmo.cpp

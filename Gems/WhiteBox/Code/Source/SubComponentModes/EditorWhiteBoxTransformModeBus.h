@@ -21,15 +21,37 @@ namespace WhiteBox
         Scale
     };
 
+    enum class TransformModelingLatch
+    {
+        None,
+        Extrude,
+        Inset
+    };
+
     //! Request bus for White Box ComponentMode operations while in 'transform' mode.
     class EditorWhiteBoxTransformModeRequests : public AZ::EntityComponentBus
     {
     public:
         //! Change the TransformType for the WhiteBox Transform sub-mode.
         virtual void ChangeTransformType(TransformType subModeType) = 0;
+        virtual void SetModelingLatch(TransformModelingLatch /*latch*/) {}
+        virtual TransformModelingLatch GetModelingLatch() const { return TransformModelingLatch::None; }
+        //! True while a latched drag is in flight, so Escape can cancel the drag rather than the window.
+        virtual bool HasLatchedDrag() const { return false; }
 
         //! Polygon selection on the active editable layer (empty for edge/vertex selection).
         virtual Api::PolygonHandles GetSelectedPolygons() const { return {}; }
+
+        virtual Api::EdgeHandles GetSelectedEdges() const { return {}; }
+        virtual Api::VertexHandles GetSelectedVertices() const { return {}; }
+        //! Drop cached topology handles after an operation replaces the mesh.
+        virtual void ClearSelection() {}
+        //! Rebuild the manipulators so they pick up a changed editing space, keeping the selection.
+        virtual void RefreshManipulatorSpace() {}
+        virtual void SetSelectedPolygons(const Api::PolygonHandles& /*polygons*/) {}
+        virtual void BeginLoopCut() {}
+        //! Expand the current edge selection. False selects loops, true selects rings.
+        virtual bool ExpandEdgeSelection(bool /*ring*/) { return false; }
 
         // ------------------------------------------------------------------ //
         // Blender-style numeric input dispatch methods                       //

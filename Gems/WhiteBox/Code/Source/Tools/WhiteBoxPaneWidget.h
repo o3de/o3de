@@ -105,14 +105,7 @@ namespace WhiteBox
         QWidget* BuildEntitySection();
         QWidget* BuildEntityTransformSection();
         QWidget* BuildModeSection();
-        QWidget* BuildShapeSection();
         QWidget* BuildLayersSection();
-        QWidget* BuildDrawSection();
-        QWidget* BuildCubeStampSection();
-        QWidget* BuildBooleanSection();
-        QWidget* BuildMaterialSection();
-        QWidget* BuildVertexPaintSection();
-        QWidget* BuildMeshOpsSection();
 
         //! The White Box component on the entity currently picked in the dropdown (null if none).
         EditorWhiteBoxComponent* CurrentComponent() const;
@@ -171,12 +164,8 @@ namespace WhiteBox
         QPushButton* m_modeTransform = nullptr;
         QPushButton* m_modeDrawShape = nullptr;
         QPushButton* m_modePaint = nullptr;
-        QComboBox* m_paintOperation = nullptr;
-        AzToolsFramework::PropertyAssetCtrl* m_paintMaterial = nullptr;
-        QPushButton* m_paintColor = nullptr;
 
         // Shape section.
-        QComboBox* m_defaultShapeCombo = nullptr;
 
         // Entity Transform section.
         QComboBox* m_entitySpaceCombo = nullptr; //!< Parent (local) or World display/edit space.
@@ -229,6 +218,7 @@ namespace WhiteBox
         QPushButton* m_gizmoScale = nullptr;
         QComboBox* m_activeLayerCombo = nullptr;
         QListWidget* m_layerList = nullptr;
+        QLabel* m_layerCountLabel = nullptr;
         QPushButton* m_layerTintButton = nullptr;
         QComboBox* m_layerCombineCombo = nullptr;
         QCheckBox* m_layerInvertNormals = nullptr;
@@ -240,55 +230,15 @@ namespace WhiteBox
         QGroupBox* m_layerMetaGroup = nullptr;
 
         // Draw Shape section.
-        QComboBox* m_drawShapeCombo = nullptr;
-        QSpinBox* m_drawSides = nullptr;
-        QDoubleSpinBox* m_drawHoleRatio = nullptr;
-        QLabel* m_drawHoleRatioLabel = nullptr;
-        QSpinBox* m_drawTubeSides = nullptr;
-        QLabel* m_drawTubeSidesLabel = nullptr;
-        QCheckBox* m_stairByHeight = nullptr;
-        QSpinBox* m_stairSteps = nullptr;
-        QDoubleSpinBox* m_stairStepHeight = nullptr;
-        QSpinBox* m_stairRotation = nullptr;
-        QGroupBox* m_stairGroup = nullptr;
-        QCheckBox* m_drawCarve = nullptr;
-        QCheckBox* m_drawMergeUnion = nullptr;
-        QLabel* m_drawSidesLabel = nullptr;
 
         // Unit Cube Stamp section.
-        QCheckBox* m_unitCube = nullptr;
-        QDoubleSpinBox* m_unitCubeSize = nullptr;
-        QCheckBox* m_unitCubeShowGrid = nullptr;
-        QPushButton* m_clearCubesButton = nullptr;
 
         // Boolean section.
-        QComboBox* m_csgSolverCombo = nullptr; //!< CSG backend (Fast/BSP vs Manifold) for all booleans.
-        QComboBox* m_booleanSourceCombo = nullptr;
-        QComboBox* m_booleanOpCombo = nullptr;
-        QCheckBox* m_booleanLive = nullptr;
-        QCheckBox* m_booleanActiveOnly = nullptr;
-        QComboBox* m_booleanSourceAfterCombo = nullptr; //!< Keep / Hide / Delete the source after Apply.
-        QPushButton* m_applyBooleanButton = nullptr;
         // Global (scene-wide) boolean controls.
-        QCheckBox* m_excludeFromBoolean = nullptr; //!< This entity is never cut by global cutters.
-        QCheckBox* m_booleanOthers = nullptr;      //!< This entity is a cutter affecting overlapping entities.
-        QComboBox* m_cutterOpCombo = nullptr;      //!< Operation this cutter applies to its targets.
-        QPushButton* m_refreshGlobalBooleansButton = nullptr; //!< Manual re-evaluate of every target.
 
         // Material section.
-        AzToolsFramework::PropertyAssetCtrl* m_defaultMaterial = nullptr;
-        AzToolsFramework::PropertyAssetCtrl* m_polygonMaterial = nullptr;
-        QLabel* m_polygonSelectionLabel = nullptr;
-        QPushButton* m_assignPolygonMaterial = nullptr;
-        QPushButton* m_resetPolygonMaterial = nullptr;
-        void RefreshPolygonMaterialSelection();
-        void AssignSelectedPolygonMaterial(bool reset);
-        QCheckBox* m_useGlobalTint = nullptr;
-        QPushButton* m_globalTintButton = nullptr;
-        QCheckBox* m_useTexture = nullptr;
         QCheckBox* m_edgesOnly = nullptr;
 
         // Mesh ops section.
-        QCheckBox* m_flipYZ = nullptr;
     };
 } // namespace WhiteBox

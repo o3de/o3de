@@ -6,11 +6,13 @@
  *
  */
 
+#include <cmath>
 #include "WhiteBoxTestFixtures.h"
 #include "WhiteBoxTestUtil.h"
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Core/WhiteBoxCsgCore.h"
+#include "Rendering/WhiteBoxRenderData.h"
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -2359,6 +2361,1040 @@ IMPLEMENT_TEST_EXECUTABLE_MAIN();
 
 namespace UnitTest
 {
+    TEST_F(WhiteBoxTestFixture, EdgePatternsFollowQuadTopologyAndIgnoreTriangleDiagonals)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        Api::VertexHandles vertices;
+        for (int y = 0; y <= 3; ++y)
+        {
+            for (int x = 0; x <= 3; ++x)
+            {
+                vertices.push_back(Api::AddVertex(*mesh, AZ::Vector3(static_cast<float>(x), static_cast<float>(y), 0)));
+            }
+        }
+        for (int y = 0; y < 3; ++y)
+        {
+            for (int x = 0; x < 3; ++x)
+            {
+                const int i = y * 4 + x;
+                Api::AddQuadPolygon(*mesh, vertices[i], vertices[i + 1], vertices[i + 5], vertices[i + 4]);
+            }
+        }
+        const auto edgeBetween = [&](int a, int b)
+        {
+            for (const auto edge : Api::MeshEdgeHandles(*mesh))
+            {
+                const auto pair = Api::EdgeVertexHandles(*mesh, edge);
+                if ((pair[0] == vertices[a] && pair[1] == vertices[b]) ||
+                    (pair[1] == vertices[a] && pair[0] == vertices[b])) { return edge; }
+            }
+            return Api::EdgeHandle{};
+        };
+        const auto seed = edgeBetween(5, 6);
+        const auto otherRow = edgeBetween(9, 10);
+        const auto border = edgeBetween(0, 1);
+        const auto diagonal = edgeBetween(0, 5);
+        ASSERT_TRUE(seed.IsValid());
+        ASSERT_TRUE(diagonal.IsValid());
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        const auto loop = Api::FindEdgeLoop(*mesh, {seed});
+        ASSERT_EQ(loop.size(), 3);
+        for (const auto edge : loop)
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            EXPECT_FLOAT_EQ(points[0].GetY(), 1);
+            EXPECT_FLOAT_EQ(points[1].GetY(), 1);
+        }
+        const auto ring = Api::FindEdgeRing(*mesh, {seed});
+        ASSERT_EQ(ring.size(), 4);
+        for (const auto edge : ring)
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            EXPECT_FLOAT_EQ(points[0].GetY(), points[1].GetY());
+            EXPECT_FLOAT_EQ(AZStd::min(points[0].GetX(), points[1].GetX()), 1);
+            EXPECT_FLOAT_EQ(AZStd::max(points[0].GetX(), points[1].GetX()), 2);
+        }
+        EXPECT_EQ(Api::FindEdgeLoop(*mesh, {border}).size(), 12);
+        EXPECT_EQ(Api::FindEdgeLoop(*mesh, {seed, otherRow, seed}).size(), 6);
+        EXPECT_EQ(Api::FindEdgeRing(*mesh, {seed, otherRow, seed}).size(), 4);
+        EXPECT_TRUE(Api::FindEdgeLoop(*mesh, {diagonal, Api::EdgeHandle{999999}}).empty());
+        EXPECT_TRUE(Api::FindEdgeRing(*mesh, {diagonal, Api::EdgeHandle{999999}}).empty());
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, EdgePatternsCloseWithoutBranchingAtPoles)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto seed = Api::MeshPolygonEdgeHandles(*m_whiteBox).front();
+        EXPECT_EQ(Api::FindEdgeRing(*m_whiteBox, {seed}).size(), 4);
+        EXPECT_EQ(Api::FindEdgeLoop(*m_whiteBox, {seed}).size(), 1); // valence-three corners
+        AZStd::string error;
+        ASSERT_TRUE(Api::InsertEdgeLoop(*m_whiteBox, seed, 0.5f, error)) << error.c_str();
+        Api::EdgeHandle cut;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            const auto pair = Api::EdgeVertexHandles(*m_whiteBox, edge);
+            if (pair[0].Index() >= 8 && pair[1].Index() >= 8) { cut = edge; break; }
+        }
+        ASSERT_TRUE(cut.IsValid());
+        EXPECT_EQ(Api::FindEdgeLoop(*m_whiteBox, {cut}).size(), 4);
+    }
+
+    TEST_F(WhiteBoxTestFixture, EdgeRingStopsAtTriangle)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 0));
+        const auto c = Api::AddVertex(*mesh, AZ::Vector3(1, 1, 0));
+        const auto d = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 0));
+        const auto e = Api::AddVertex(*mesh, AZ::Vector3(2, 0.5f, 0));
+        Api::AddQuadPolygon(*mesh, a, b, c, d);
+        Api::AddTriPolygon(*mesh, c, b, e);
+        Api::EdgeHandle seed;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if (points[0].GetX() == 0 && points[1].GetX() == 0) { seed = edge; }
+        }
+        ASSERT_TRUE(seed.IsValid());
+        const auto ring = Api::FindEdgeRing(*mesh, {seed});
+        ASSERT_EQ(ring.size(), 2);
+        for (const auto edge : ring)
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            EXPECT_FLOAT_EQ(points[0].GetX(), points[1].GetX());
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelCubeEdgesPreservesClosedMeshAndFaceProperties)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        for (const auto face : Api::MeshFaceHandles(*m_whiteBox))
+        {
+            Api::SetFaceMaterial(*m_whiteBox, face, material);
+            Api::SetFacePaintColor(*m_whiteBox, face, 0xFF00FF00u);
+        }
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            for (const int segments : {1, 3, 8})
+            {
+                auto mesh = Api::CloneMesh(*m_whiteBox);
+                AZStd::string error;
+                ASSERT_TRUE(Api::BevelEdges(*mesh, {edge}, 0.1f, segments, error)) << error.c_str();
+                EXPECT_EQ(Api::MeshVertexCount(*mesh), 8 + 2 * segments);
+                EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), static_cast<size_t>(6 + segments));
+                for (const auto resultEdge : Api::MeshEdgeHandles(*mesh))
+                {
+                    EXPECT_EQ(Api::EdgeFaceHandles(*mesh, resultEdge).size(), 2);
+                }
+                double volume = 0.0;
+                for (const auto face : Api::MeshFaceHandles(*mesh))
+                {
+                    EXPECT_EQ(Api::FaceMaterial(*mesh, face), material);
+                    EXPECT_EQ(Api::FacePaintColor(*mesh, face), 0xFF00FF00u);
+                    const auto positions = Api::FaceVertexPositions(*mesh, face);
+                    EXPECT_GT((positions[1] - positions[0]).Cross(positions[2] - positions[0]).GetLengthSq(), 1e-12f);
+                    volume += positions[0].Dot(positions[1].Cross(positions[2])) / 6.0;
+                }
+                EXPECT_LT(volume, 1.0);
+                EXPECT_GT(volume, 0.99);
+                if (segments == 1) { EXPECT_NEAR(volume, 0.995, 1e-5); }
+                Api::WhiteBoxMeshStream saved;
+                ASSERT_TRUE(Api::WriteMesh(*mesh, saved));
+                auto restored = Api::CreateWhiteBoxMesh();
+                ASSERT_EQ(Api::ReadMesh(*restored, saved), Api::ReadResult::Full);
+                EXPECT_EQ(Api::MeshPolygonHandles(*restored).size(), Api::MeshPolygonHandles(*mesh).size());
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelKeepsOpenWallBoundaryAndRejectsBoundaryEdge)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 1));
+        const auto c = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 0));
+        const auto d = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 1));
+        const auto e = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 0));
+        const auto f = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 1));
+        Api::AddQuadPolygon(*mesh, a, c, d, b);
+        Api::AddQuadPolygon(*mesh, a, b, f, e);
+        Api::CalculateNormals(*mesh);
+        Api::EdgeHandle seam;
+        Api::EdgeHandle boundary;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*mesh))
+        {
+            if (Api::EdgeIsBoundary(*mesh, edge)) { boundary = edge; }
+            else { seam = edge; }
+        }
+        ASSERT_TRUE(seam.IsValid());
+        ASSERT_TRUE(boundary.IsValid());
+        AZStd::string error;
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        EXPECT_FALSE(Api::BevelEdges(*mesh, {boundary}, 0.1f, 3, error));
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+        ASSERT_TRUE(Api::BevelEdges(*mesh, {seam}, 0.1f, 3, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 5);
+        size_t boundaryCount = 0;
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            if (Api::EdgeIsBoundary(*mesh, edge)) { ++boundaryCount; }
+            else { EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2); }
+        }
+        EXPECT_EQ(boundaryCount, 12);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelAcceptsTouchingEdgesAndRejectsExcessiveWidthWithoutChangingMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto edges = Api::MeshPolygonEdgeHandles(*m_whiteBox);
+        const auto endpoints = Api::EdgeVertexHandles(*m_whiteBox, edges.front());
+        Api::EdgeHandle touching;
+        Api::EdgeHandle separate;
+        for (const auto edge : edges)
+        {
+            if (edge == edges.front()) { continue; }
+            const auto vertices = Api::EdgeVertexHandles(*m_whiteBox, edge);
+            if (vertices[0] == endpoints[0] || vertices[1] == endpoints[0] ||
+                vertices[0] == endpoints[1] || vertices[1] == endpoints[1])
+            {
+                touching = edge;
+            }
+            else { separate = edge; }
+        }
+        ASSERT_TRUE(touching.IsValid());
+        ASSERT_TRUE(separate.IsValid());
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, before));
+        AZStd::string error;
+        auto connected = Api::CloneMesh(*m_whiteBox);
+        ASSERT_TRUE(Api::BevelEdges(*connected, {edges.front(), touching}, 0.1f, 3, error)) << error.c_str();
+        for (const auto edge : Api::MeshEdgeHandles(*connected))
+        {
+            EXPECT_EQ(Api::EdgeFaceHandles(*connected, edge).size(), 2);
+        }
+        EXPECT_FALSE(Api::BevelEdges(*m_whiteBox, {edges.front()}, 2.0f, 1, error));
+        EXPECT_FALSE(Api::BevelEdges(*m_whiteBox, {edges.front()}, 0.1f, 0, error));
+        EXPECT_FALSE(Api::BevelEdges(*m_whiteBox, {Api::EdgeHandle{999999}}, 0.1f, 1, error));
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, after));
+        EXPECT_EQ(before, after);
+        ASSERT_TRUE(Api::BevelEdges(*m_whiteBox, {edges.front(), separate}, 0.1f, 3, error)) << error.c_str();
+        for (const auto edge : Api::MeshEdgeHandles(*m_whiteBox))
+        {
+            EXPECT_EQ(Api::EdgeFaceHandles(*m_whiteBox, edge).size(), 2);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ThreeEdgeBevelCornerUsesProfileGridWithoutGrooves)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto cornerHandle = Api::MeshVertexHandles(*m_whiteBox).front();
+        const auto corner = Api::VertexPosition(*m_whiteBox, cornerHandle);
+        Api::EdgeHandles selection;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            const auto vertices = Api::EdgeVertexHandles(*m_whiteBox, edge);
+            if (vertices[0] == cornerHandle || vertices[1] == cornerHandle) { selection.push_back(edge); }
+        }
+        ASSERT_EQ(selection.size(), 3);
+        constexpr float width = 0.1f;
+        AZ::Vector3 center = corner;
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            center.SetElement(axis, corner.GetElement(axis) + (corner.GetElement(axis) > 0.0f ? -width : width));
+        }
+        for (const int segments : {1, 2, 3, 4, 5, 6, 7, 8, 9})
+        {
+            for (const float profile : {0.25f, 0.5f, 0.75f, 0.9f, 0.95f})
+            {
+                auto mesh = Api::CloneMesh(*m_whiteBox);
+                AZStd::string error;
+                ASSERT_TRUE(Api::BevelEdges(*mesh, selection, width, segments, error, profile)) << error.c_str();
+                WhiteBox::WhiteBoxFaces renderFaces;
+                for (const auto handle : Api::MeshFaceHandles(*mesh))
+                {
+                    const auto points = Api::FaceVertexPositions(*mesh, handle);
+                    WhiteBox::WhiteBoxFace face{};
+                    face.m_v1 = {points[0], AZ::Vector2(0, 0)};
+                    face.m_v2 = {points[1], AZ::Vector2(1, 0)};
+                    face.m_v3 = {points[2], AZ::Vector2(0, 1)};
+                    face.m_normal = Api::FaceNormal(*mesh, handle);
+                    renderFaces.push_back(face);
+                }
+                EXPECT_EQ(WhiteBox::BuildCulledWhiteBoxFaces(renderFaces).size(), renderFaces.size());
+                size_t patchCount = 0;
+                size_t triangleCount = 0;
+                for (const auto& polygon : Api::MeshPolygonHandles(*mesh))
+                {
+                    const auto borders = Api::PolygonBorderVertexHandles(*mesh, polygon);
+                    ASSERT_EQ(borders.size(), 1);
+                    bool inCorner = true;
+                    for (const auto vertex : borders.front())
+                    {
+                        const auto delta = Api::VertexPosition(*mesh, vertex) - corner;
+                        for (int axis = 0; axis < 3; ++axis)
+                        {
+                            inCorner = inCorner && AZStd::abs(delta.GetElement(axis)) <= width + 1e-5f;
+                        }
+                    }
+                    if (!inCorner) { continue; }
+                    ++patchCount;
+                    if (segments % 2 == 0)
+                    {
+                        EXPECT_EQ(borders.front().size(), 4);
+                        EXPECT_EQ(polygon.m_faceHandles.size(), 2);
+                    }
+                    if (borders.front().size() == 3)
+                    {
+                        ++triangleCount;
+                        // The sole odd-segment triangle belongs at the center:
+                        // its centroid must be on the corner's symmetry axis.
+                        AZ::Vector3 centroid = AZ::Vector3::CreateZero();
+                        for (const auto vertex : borders.front()) { centroid += Api::VertexPosition(*mesh, vertex); }
+                        centroid = (centroid / 3.0f - center) / width;
+                        EXPECT_NEAR(AZStd::abs(centroid.GetX()), AZStd::abs(centroid.GetY()), 1e-5f);
+                        EXPECT_NEAR(AZStd::abs(centroid.GetY()), AZStd::abs(centroid.GetZ()), 1e-5f);
+                    }
+                    else { EXPECT_EQ(borders.front().size(), 4); }
+                    // Every corner sample lies on the strips' superellipsoid (catches pulled-in borders).
+                    for (const auto vertex : borders.front())
+                    {
+                        const auto relative = (Api::VertexPosition(*mesh, vertex) - center) / width;
+                        float implicitSurface = 0.0f;
+                        for (int axis = 0; axis < 3; ++axis)
+                        {
+                            implicitSurface += powf(AZStd::abs(relative.GetElement(axis)), 1.0f / (1.0f - profile));
+                        }
+                        EXPECT_NEAR(implicitSurface, 1.0f, 1e-4f);
+                    }
+                }
+                const int expectedPatches = segments % 2 == 0
+                    ? 3 * (segments / 2) * (segments / 2) : 3 * (segments / 2) * (segments / 2 + 1) + 1;
+                EXPECT_EQ(patchCount, static_cast<size_t>(expectedPatches));
+                EXPECT_EQ(triangleCount, static_cast<size_t>(segments % 2));
+                for (const auto edge : Api::MeshEdgeHandles(*mesh))
+                {
+                    EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+                }
+                Api::WhiteBoxMeshStream saved;
+                ASSERT_TRUE(Api::WriteMesh(*mesh, saved));
+                auto restored = Api::CreateWhiteBoxMesh();
+                ASSERT_EQ(Api::ReadMesh(*restored, saved), Api::ReadResult::Full);
+                EXPECT_EQ(Api::MeshPolygonHandles(*restored).size(), Api::MeshPolygonHandles(*mesh).size());
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelPolygonPerimeterAndAllCubeEdgesBuildClosedCornerJoins)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto polygon = Api::MeshPolygonHandles(*m_whiteBox).front();
+        Api::EdgeHandles perimeter;
+        for (const auto& border : Api::PolygonBorderHalfedgeHandles(*m_whiteBox, polygon))
+        {
+            for (const auto halfedge : border) { perimeter.push_back(Api::HalfedgeEdgeHandle(*m_whiteBox, halfedge)); }
+        }
+        for (const auto& selection : {perimeter, Api::MeshPolygonEdgeHandles(*m_whiteBox)})
+        {
+            for (const float profile : {0.25f, 0.5f, 0.75f})
+            {
+                for (const int segments : {1, 3, 8})
+                {
+                    auto mesh = Api::CloneMesh(*m_whiteBox);
+                    AZStd::string error;
+                    ASSERT_TRUE(Api::BevelEdges(*mesh, selection, 0.1f, segments, error, profile)) << error.c_str();
+                    for (const auto edge : Api::MeshEdgeHandles(*mesh))
+                    {
+                        EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+                    }
+                    double volume = 0.0;
+                    for (const auto face : Api::MeshFaceHandles(*mesh))
+                    {
+                        const auto points = Api::FaceVertexPositions(*mesh, face);
+                        EXPECT_GT((points[1] - points[0]).Cross(points[2] - points[0]).GetLengthSq(), 1e-12f);
+                        volume += points[0].Dot(points[1].Cross(points[2])) / 6.0;
+                    }
+                    EXPECT_GT(volume, 0.8);
+                    EXPECT_LT(volume, 1.0);
+                }
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, InsertLoopAroundCubePreservesVolumeAndFaceProperties)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        for (const auto face : Api::MeshFaceHandles(*m_whiteBox))
+        {
+            Api::SetFaceMaterial(*m_whiteBox, face, material);
+            Api::SetFacePaintColor(*m_whiteBox, face, 0xFF00FF00u);
+        }
+        const auto seed = Api::MeshPolygonEdgeHandles(*m_whiteBox).front();
+        const auto endpoints = Api::EdgeVertexPositions(*m_whiteBox, seed);
+        const auto axis = (endpoints[1] - endpoints[0]).GetNormalized();
+        for (const float fraction : {0.25f, 0.5f, 0.75f})
+        {
+            auto mesh = Api::CloneMesh(*m_whiteBox);
+            AZStd::string error;
+            ASSERT_TRUE(Api::InsertEdgeLoop(*mesh, seed, fraction, error)) << error.c_str();
+            EXPECT_EQ(Api::MeshVertexCount(*mesh), 12);
+            EXPECT_EQ(Api::MeshFaceCount(*mesh), 20);
+            EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 10);
+            const auto cut = endpoints[0].Lerp(endpoints[1], fraction);
+            for (const auto vertex : Api::MeshVertexHandles(*mesh))
+            {
+                if (vertex.Index() >= 8)
+                {
+                    EXPECT_NEAR((Api::VertexPosition(*mesh, vertex) - cut).Dot(axis), 0.0f, 1e-5f);
+                }
+            }
+            for (const auto edge : Api::MeshEdgeHandles(*mesh))
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+            }
+            double volume = 0.0;
+            for (const auto face : Api::MeshFaceHandles(*mesh))
+            {
+                EXPECT_EQ(Api::FaceMaterial(*mesh, face), material);
+                EXPECT_EQ(Api::FacePaintColor(*mesh, face), 0xFF00FF00u);
+                const auto points = Api::FaceVertexPositions(*mesh, face);
+                volume += points[0].Dot(points[1].Cross(points[2])) / 6.0;
+            }
+            EXPECT_NEAR(volume, 1.0, 1e-5);
+            for (const auto& polygon : Api::MeshPolygonHandles(*mesh))
+            {
+                const auto borders = Api::PolygonBorderVertexHandles(*mesh, polygon);
+                ASSERT_EQ(borders.size(), 1);
+                EXPECT_EQ(borders[0].size(), 4);
+                for (const auto face : polygon.m_faceHandles) { EXPECT_EQ(Api::FacePolygonHandle(*mesh, face), polygon); }
+            }
+            ASSERT_TRUE(Api::InsertEdgeLoop(*mesh, Api::MeshPolygonEdgeHandles(*mesh).front(), 0.5f, error)) << error.c_str();
+            for (const auto edge : Api::MeshEdgeHandles(*mesh))
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, MultipleLoopPreviewMatchesInsertedEdgesAndDoesNotModifyMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, before));
+        // Exercise all seed orientations and both odd/even cut counts.
+        for (const auto seed : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            for (const int count : {1, 2, 3, 8})
+            {
+                for (const float slide : {-1.0f, 0.0f, 0.5f, 1.0f})
+                {
+                    AZStd::string error;
+                    AZStd::vector<AZ::Vector3> preview;
+                    ASSERT_TRUE(Api::PreviewEdgeLoops(*m_whiteBox, seed, count, preview, error, slide)) << error.c_str();
+                    EXPECT_EQ(preview.size(), static_cast<size_t>(8 * count));
+                    Api::WhiteBoxMeshStream afterPreview;
+                    ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, afterPreview));
+                    EXPECT_EQ(before, afterPreview);
+                    auto mesh = Api::CloneMesh(*m_whiteBox);
+                    ASSERT_TRUE(Api::InsertEdgeLoops(*mesh, seed, count, error, slide)) << error.c_str();
+                    EXPECT_EQ(Api::MeshVertexCount(*mesh), 8 + 4 * count);
+                    EXPECT_EQ(Api::MeshFaceCount(*mesh), 12 + 8 * count);
+                    EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), static_cast<size_t>(6 + 4 * count));
+                    const auto edges = Api::MeshPolygonEdgeHandles(*mesh);
+                    for (size_t i = 0; i < preview.size(); i += 2)
+                    {
+                        bool found = false;
+                        for (const auto edge : edges)
+                        {
+                            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+                            found = found || (points[0].IsClose(preview[i]) && points[1].IsClose(preview[i + 1])) ||
+                                (points[1].IsClose(preview[i]) && points[0].IsClose(preview[i + 1]));
+                        }
+                        EXPECT_TRUE(found);
+                    }
+                    for (const auto edge : Api::MeshEdgeHandles(*mesh))
+                    {
+                        EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+                    }
+                    double volume = 0.0;
+                    for (const auto face : Api::MeshFaceHandles(*mesh))
+                    {
+                        const auto points = Api::FaceVertexPositions(*mesh, face);
+                        volume += points[0].Dot(points[1].Cross(points[2])) / 6.0;
+                    }
+                    EXPECT_NEAR(volume, 1.0, 1e-5);
+                    const auto endpoints = Api::EdgeVertexPositions(*m_whiteBox, seed);
+                    const auto axis = (endpoints[1] - endpoints[0]).GetNormalized();
+                    for (int cut = 1; cut <= count; ++cut)
+                    {
+                        int verticesOnCut = 0;
+                        const auto point = endpoints[0].Lerp(endpoints[1], (static_cast<float>(cut) + slide * 0.98f) / (count + 1));
+                        for (const auto vertex : Api::MeshVertexHandles(*mesh))
+                        {
+                            if (vertex.Index() >= 8 &&
+                                AZStd::abs((Api::VertexPosition(*mesh, vertex) - point).Dot(axis)) < 1e-5f)
+                            {
+                                ++verticesOnCut;
+                            }
+                        }
+                        EXPECT_EQ(verticesOnCut, 4);
+                    }
+                }
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, InsertLoopCrossesOpenQuadStripWithoutCracks)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        Api::VertexHandles lower;
+        Api::VertexHandles upper;
+        for (int x = 0; x < 3; ++x)
+        {
+            lower.push_back(Api::AddVertex(*mesh, AZ::Vector3(static_cast<float>(x), 0, 0)));
+            upper.push_back(Api::AddVertex(*mesh, AZ::Vector3(static_cast<float>(x), 1, 0)));
+        }
+        for (size_t i = 0; i < 2; ++i)
+        {
+            Api::AddQuadPolygon(*mesh, lower[i], lower[i + 1], upper[i + 1], upper[i]);
+        }
+        Api::CalculateNormals(*mesh);
+        Api::EdgeHandle seed;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if (points[0].GetX() == 0 && points[1].GetX() == 0) { seed = edge; break; }
+        }
+        ASSERT_TRUE(seed.IsValid());
+        AZStd::string error;
+        ASSERT_TRUE(Api::InsertEdgeLoop(*mesh, seed, 0.3f, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*mesh), 9);
+        EXPECT_EQ(Api::MeshFaceCount(*mesh), 8);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 4);
+        size_t boundary = 0;
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            boundary += Api::EdgeIsBoundary(*mesh, edge) ? 1 : 0;
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if (points[0].GetX() == 1 && points[1].GetX() == 1)
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+            }
+        }
+        EXPECT_EQ(boundary, 8);
+        for (const auto face : Api::MeshFaceHandles(*mesh)) { EXPECT_GT(Api::FaceNormal(*mesh, face).GetZ(), 0.99f); }
+    }
+
+    TEST_F(WhiteBoxTestFixture, InsertLoopRejectsTriangleTerminationWithoutChangingMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 0));
+        const auto c = Api::AddVertex(*mesh, AZ::Vector3(1, 1, 0));
+        const auto d = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 0));
+        const auto e = Api::AddVertex(*mesh, AZ::Vector3(2, 0.5f, 0));
+        Api::AddQuadPolygon(*mesh, a, b, c, d);
+        Api::AddTriPolygon(*mesh, c, b, e);
+        Api::CalculateNormals(*mesh);
+        Api::CalculatePlanarUVs(*mesh);
+        Api::EdgeHandle seed;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if (points[0].GetX() == 0 && points[1].GetX() == 0) { seed = edge; break; }
+        }
+        ASSERT_TRUE(seed.IsValid());
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        AZStd::string error;
+        EXPECT_FALSE(Api::InsertEdgeLoop(*mesh, seed, 0.5f, error));
+        EXPECT_FALSE(error.empty());
+        AZStd::vector<AZ::Vector3> preview;
+        EXPECT_FALSE(Api::PreviewEdgeLoops(*mesh, seed, 3, preview, error));
+        EXPECT_TRUE(preview.empty());
+        EXPECT_FALSE(Api::InsertEdgeLoops(*mesh, seed, 3, error));
+        EXPECT_FALSE(Api::InsertEdgeLoops(*mesh, seed, 0, error));
+        EXPECT_FALSE(Api::InsertEdgeLoops(*mesh, seed, 65, error));
+        EXPECT_FALSE(Api::InsertEdgeLoop(*mesh, seed, 0.0f, error));
+        EXPECT_FALSE(Api::InsertEdgeLoop(*mesh, Api::EdgeHandle{999999}, 0.5f, error));
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, WeldSelectedVerticesSupportsCenterAndLastTargetsAndPreservesFaceData)
+    {
+        namespace Api = WhiteBox::Api;
+        auto source = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*source, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*source, AZ::Vector3(1, 0, 0));
+        const auto c = Api::AddVertex(*source, AZ::Vector3(1, 1, 0));
+        const auto d = Api::AddVertex(*source, AZ::Vector3(0, 1, 0));
+        const auto polygon = Api::AddQuadPolygon(*source, a, b, c, d);
+        Api::CalculateNormals(*source);
+        Api::CalculatePlanarUVs(*source);
+        Api::HideVertex(*source, d);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        Api::SetPolygonMaterial(*source, polygon, material);
+        for (const auto face : polygon.m_faceHandles) { Api::SetFacePaintColor(*source, face, 0xFF00FF00u); }
+        Api::FaceHandle surviving;
+        for (const auto face : polygon.m_faceHandles)
+        {
+            const auto vertices = Api::FaceVertexHandles(*source, face);
+            const bool hasA = AZStd::find(vertices.begin(), vertices.end(), a) != vertices.end();
+            const bool hasB = AZStd::find(vertices.begin(), vertices.end(), b) != vertices.end();
+            if (!(hasA && hasB)) { surviving = face; }
+        }
+        ASSERT_TRUE(surviving.IsValid());
+        for (const bool toLast : {false, true})
+        {
+            auto mesh = Api::CloneMesh(*source);
+            AZStd::string error;
+            ASSERT_TRUE(Api::WeldVertices(*mesh, {a, b}, toLast, error)) << error.c_str();
+            EXPECT_EQ(Api::MeshVertexCount(*mesh), 3);
+            EXPECT_EQ(Api::MeshFaceCount(*mesh), 1);
+            EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 1);
+            const auto target = toLast ? AZ::Vector3(1, 0, 0) : AZ::Vector3(0.5f, 0, 0);
+            size_t targetCount = 0;
+            for (const auto vertex : Api::MeshVertexHandles(*mesh))
+            {
+                const auto position = Api::VertexPosition(*mesh, vertex);
+                targetCount += position.IsClose(target) ? 1 : 0;
+                if (position.IsClose(AZ::Vector3(0, 1, 0))) { EXPECT_TRUE(Api::VertexIsHidden(*mesh, vertex)); }
+            }
+            EXPECT_EQ(targetCount, 1);
+            const auto result = Api::MeshFaceHandles(*mesh).front();
+            EXPECT_EQ(Api::FaceMaterial(*mesh, result), material);
+            EXPECT_EQ(Api::FacePaintColor(*mesh, result), 0xFF00FF00u);
+            EXPECT_GT(Api::FaceNormal(*mesh, result).GetZ(), 0.99f);
+            for (const auto oldHalfedge : Api::FaceHalfedgeHandles(*source, surviving))
+            {
+                const auto oldVertex = Api::HalfedgeVertexHandleAtTip(*source, oldHalfedge);
+                const auto expected = (oldVertex == a || oldVertex == b) ? target : Api::VertexPosition(*source, oldVertex);
+                bool found = false;
+                for (const auto halfedge : Api::FaceHalfedgeHandles(*mesh, result))
+                {
+                    if (Api::HalfedgeVertexPositionAtTip(*mesh, halfedge).IsClose(expected))
+                    {
+                        EXPECT_TRUE(Api::HalfedgeUV(*mesh, halfedge).IsClose(Api::HalfedgeUV(*source, oldHalfedge)));
+                        found = true;
+                    }
+                }
+                EXPECT_TRUE(found);
+            }
+            Api::WhiteBoxMeshStream saved;
+            ASSERT_TRUE(Api::WriteMesh(*mesh, saved));
+            auto restored = Api::CreateWhiteBoxMesh();
+            ASSERT_EQ(Api::ReadMesh(*restored, saved), Api::ReadResult::Full);
+            EXPECT_EQ(Api::MeshPolygonHandles(*restored).size(), 1);
+            EXPECT_EQ(Api::FaceMaterial(*restored, Api::MeshFaceHandles(*restored).front()), material);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, WeldCornerEdgeKeepsBothWallsAtOneMergedVertex)
+    {
+        namespace Api = WhiteBox::Api;
+        auto source = Api::CreateWhiteBoxMesh();
+        const auto bottom = Api::AddVertex(*source, AZ::Vector3(0, 0, 0));
+        const auto top = Api::AddVertex(*source, AZ::Vector3(0, 0, 2));
+        const auto leftBottom = Api::AddVertex(*source, AZ::Vector3(-2, 0, 0));
+        const auto leftTop = Api::AddVertex(*source, AZ::Vector3(-2, 0, 2));
+        const auto rightBottom = Api::AddVertex(*source, AZ::Vector3(0, 2, 0));
+        const auto rightTop = Api::AddVertex(*source, AZ::Vector3(0, 2, 2));
+        const auto left = Api::AddQuadPolygon(*source, leftBottom, bottom, top, leftTop);
+        const auto right = Api::AddQuadPolygon(*source, bottom, rightBottom, rightTop, top);
+        const auto leftMaterial = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        const auto rightMaterial = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:2");
+        Api::SetPolygonMaterial(*source, left, leftMaterial);
+        Api::SetPolygonMaterial(*source, right, rightMaterial);
+        for (const auto face : left.m_faceHandles) { Api::SetFacePaintColor(*source, face, 0xFF0000FFu); }
+        for (const auto face : right.m_faceHandles) { Api::SetFacePaintColor(*source, face, 0xFF00FF00u); }
+        Api::CalculateNormals(*source);
+        Api::CalculatePlanarUVs(*source);
+        for (const bool toLast : {false, true})
+        {
+            auto mesh = Api::CloneMesh(*source);
+            AZStd::string error;
+            ASSERT_TRUE(Api::WeldVertices(*mesh, {bottom, top}, toLast, error)) << error.c_str();
+            EXPECT_EQ(Api::MeshVertexCount(*mesh), 5);
+            EXPECT_EQ(Api::MeshFaceCount(*mesh), 2);
+            EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 2);
+            const auto target = AZ::Vector3(0, 0, toLast ? 2.0f : 1.0f);
+            Api::VertexHandle merged;
+            size_t targetCount = 0;
+            for (const auto vertex : Api::MeshVertexHandles(*mesh))
+            {
+                if (Api::VertexPosition(*mesh, vertex).IsClose(target))
+                {
+                    merged = vertex;
+                    ++targetCount;
+                }
+            }
+            ASSERT_EQ(targetCount, 1); // One shared vertex, not overlapping duplicates.
+            EXPECT_EQ(Api::VertexEdgeHandles(*mesh, merged).size(), 4);
+            size_t leftFaces = 0;
+            for (const auto face : Api::MeshFaceHandles(*mesh))
+            {
+                const auto vertices = Api::FaceVertexHandles(*mesh, face);
+                EXPECT_NE(AZStd::find(vertices.begin(), vertices.end(), merged), vertices.end());
+                const bool isLeft = Api::FaceMaterial(*mesh, face) == leftMaterial;
+                leftFaces += isLeft ? 1 : 0;
+                EXPECT_EQ(Api::FaceMaterial(*mesh, face), isLeft ? leftMaterial : rightMaterial);
+                EXPECT_EQ(Api::FacePaintColor(*mesh, face), isLeft ? 0xFF0000FFu : 0xFF00FF00u);
+                EXPECT_GT(Api::FaceNormal(*mesh, face).Dot(
+                    isLeft ? -AZ::Vector3::CreateAxisY() : AZ::Vector3::CreateAxisX()), 0.99f);
+            }
+            EXPECT_EQ(leftFaces, 1);
+            Api::WhiteBoxMeshStream saved;
+            ASSERT_TRUE(Api::WriteMesh(*mesh, saved));
+            auto restored = Api::CreateWhiteBoxMesh();
+            ASSERT_EQ(Api::ReadMesh(*restored, saved), Api::ReadResult::Full);
+            EXPECT_EQ(Api::MeshVertexCount(*restored), 5);
+            EXPECT_EQ(Api::MeshFaceCount(*restored), 2);
+            EXPECT_EQ(Api::MeshPolygonHandles(*restored).size(), 2);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, WeldRejectsPointOnlyConnectionsAndInvalidSelectionsWithoutMutation)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 0));
+        const auto c = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 0));
+        const auto d = Api::AddVertex(*mesh, AZ::Vector3(3, 0, 0));
+        const auto e = Api::AddVertex(*mesh, AZ::Vector3(4, 0, 0));
+        const auto f = Api::AddVertex(*mesh, AZ::Vector3(3, 1, 0));
+        Api::AddTriPolygon(*mesh, a, b, c);
+        Api::AddTriPolygon(*mesh, d, e, f);
+        Api::CalculateNormals(*mesh);
+        Api::CalculatePlanarUVs(*mesh);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        AZStd::string error;
+        EXPECT_FALSE(Api::WeldVertices(*mesh, {b, d}, false, error));
+        EXPECT_FALSE(error.empty());
+        EXPECT_FALSE(Api::WeldVertices(*mesh, {a, a}, false, error));
+        EXPECT_FALSE(Api::WeldVertices(*mesh, {a, Api::VertexHandle{999999}}, true, error));
+        EXPECT_FALSE(Api::WeldVertices(*mesh, {a, b, c, d, e, f}, false, error));
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, ExtrudeOpenBoundaryExtendsSurfaceAndPreservesPaint)
+    {
+        namespace Api = WhiteBox::Api;
+        auto original = Api::CreateWhiteBoxMesh();
+        const auto a = Api::AddVertex(*original, AZ::Vector3(0, 0, 0));
+        const auto b = Api::AddVertex(*original, AZ::Vector3(1, 0, 0));
+        const auto c = Api::AddVertex(*original, AZ::Vector3(1, 1, 0));
+        const auto d = Api::AddVertex(*original, AZ::Vector3(0, 1, 0));
+        const auto polygon = Api::AddQuadPolygon(*original, a, b, c, d);
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        Api::SetPolygonMaterial(*original, polygon, material);
+        for (const auto face : polygon.m_faceHandles) { Api::SetFacePaintColor(*original, face, 0xFF00FF00u); }
+        Api::CalculateNormals(*original);
+        Api::CalculatePlanarUVs(*original);
+        // Exercise all four boundary orientations, including either halfedge being empty.
+        for (const auto edge : Api::MeshEdgeHandles(*original))
+        {
+            if (!Api::EdgeIsBoundary(*original, edge)) { continue; }
+            auto mesh = Api::CloneMesh(*original);
+            const auto displacement = (Api::EdgeMidpoint(*mesh, edge) - AZ::Vector3(0.5f, 0.5f, 0)).GetNormalized();
+            const auto extended = Api::TranslateEdgeAppend(*mesh, edge, displacement);
+            EXPECT_NE(extended, edge);
+            ASSERT_TRUE(extended.IsValid());
+            EXPECT_EQ(Api::MeshVertexCount(*mesh), 6);
+            EXPECT_EQ(Api::MeshFaceCount(*mesh), 4);
+            EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 2);
+            EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+            EXPECT_EQ(Api::EdgeFaceHandles(*mesh, extended).size(), 1);
+            for (const auto face : Api::MeshFaceHandles(*mesh))
+            {
+                EXPECT_GT(Api::FaceNormal(*mesh, face).GetZ(), 0.99f);
+                EXPECT_EQ(Api::FaceMaterial(*mesh, face), material);
+                EXPECT_EQ(Api::FacePaintColor(*mesh, face), 0xFF00FF00u);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ExtrudeInternalOrInvalidEdgeDoesNotMutateMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, before));
+        for (const auto edge : Api::MeshEdgeHandles(*m_whiteBox))
+        {
+            const auto faces = Api::EdgeFaceHandles(*m_whiteBox, edge);
+            if (faces.size() == 2 &&
+                Api::FacePolygonHandle(*m_whiteBox, faces[0]) == Api::FacePolygonHandle(*m_whiteBox, faces[1]))
+            {
+                EXPECT_EQ(Api::TranslateEdgeAppend(*m_whiteBox, edge, AZ::Vector3(1, 1, 1)), edge);
+            }
+        }
+        EXPECT_EQ(Api::TranslateEdgeAppend(*m_whiteBox, Api::EdgeHandle{}, AZ::Vector3::CreateAxisX()), Api::EdgeHandle{});
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgeBoundaryEdgesSharesVerticesAndPreservesExistingUvs)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        for (const float x : {0.0f, 2.0f})
+        {
+            const auto a = Api::AddVertex(*mesh, AZ::Vector3(x, 0, 0));
+            const auto b = Api::AddVertex(*mesh, AZ::Vector3(x + 1, 0, 0));
+            const auto c = Api::AddVertex(*mesh, AZ::Vector3(x + 1, 1, 0));
+            const auto d = Api::AddVertex(*mesh, AZ::Vector3(x, 1, 0));
+            Api::AddQuadPolygon(*mesh, a, b, c, d);
+        }
+        Api::CalculateNormals(*mesh);
+        Api::CalculatePlanarUVs(*mesh);
+        Api::HalfedgeHandles oldHalfedges;
+        AZStd::vector<AZ::Vector2> oldUvs;
+        for (const auto face : Api::MeshFaceHandles(*mesh))
+        {
+            for (const auto halfedge : Api::FaceHalfedgeHandles(*mesh, face))
+            {
+                oldHalfedges.push_back(halfedge);
+                oldUvs.push_back(Api::HalfedgeUV(*mesh, halfedge));
+            }
+        }
+        Api::EdgeHandles edges;
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if ((points[0].GetX() == 1.0f && points[1].GetX() == 1.0f) ||
+                (points[0].GetX() == 2.0f && points[1].GetX() == 2.0f))
+            {
+                edges.push_back(edge);
+            }
+        }
+        ASSERT_EQ(edges.size(), 2);
+        AZStd::string error;
+        ASSERT_TRUE(Api::BridgeSelection(*mesh, {}, edges, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*mesh), 8);
+        EXPECT_EQ(Api::MeshFaceCount(*mesh), 6);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 3);
+        for (const auto edge : edges) { EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2); }
+        for (size_t i = 0; i < oldHalfedges.size(); ++i)
+        {
+            EXPECT_TRUE(Api::HalfedgeUV(*mesh, oldHalfedges[i]).IsClose(oldUvs[i]));
+        }
+        for (const auto face : Api::MeshFaceHandles(*mesh))
+        {
+            EXPECT_GT(Api::FaceNormal(*mesh, face).GetZ(), 0.99f);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgeFreeformPolygonsKeepsOriginalFacesAndConnectsNearestBoundary)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const AZStd::vector<AZ::Vector3> quad{
+            AZ::Vector3(0, 0, 0), AZ::Vector3(1, 0, 0), AZ::Vector3(1, 1, 0), AZ::Vector3(0, 1, 0)};
+        const AZStd::vector<AZ::Vector3> triangle{
+            AZ::Vector3(2, 0, 0), AZ::Vector3(3, 0.5f, 0), AZ::Vector3(2, 1, 0)};
+        ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), quad, AZ::Vector3::CreateAxisZ()));
+        ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), triangle, AZ::Vector3::CreateAxisZ()));
+        Api::CalculateNormals(*mesh);
+        const auto polygons = Api::MeshPolygonHandles(*mesh);
+        ASSERT_EQ(polygons.size(), 2);
+        AZStd::string error;
+        ASSERT_TRUE(Api::BridgeSelection(*mesh, polygons, {}, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*mesh), 7);
+        EXPECT_EQ(Api::MeshFaceCount(*mesh), 5);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 3);
+        for (const auto& polygon : polygons)
+        {
+            for (const auto face : polygon.m_faceHandles)
+            {
+                EXPECT_EQ(Api::FacePolygonHandle(*mesh, face), polygon);
+            }
+        }
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if ((points[0].GetX() == 1.0f && points[1].GetX() == 1.0f) ||
+                (points[0].GetX() == 2.0f && points[1].GetX() == 2.0f))
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgeFacingOpenPolygonsDoesNotDeleteSourceFaces)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const AZStd::vector<AZ::Vector3> lower{
+            AZ::Vector3(0, 0, 0), AZ::Vector3(1, 0, 0), AZ::Vector3(1, 1, 0), AZ::Vector3(0, 1, 0)};
+        const AZStd::vector<AZ::Vector3> upper{
+            AZ::Vector3(0, 0, 1), AZ::Vector3(0, 1, 1), AZ::Vector3(1, 1, 1), AZ::Vector3(1, 0, 1)};
+        ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), lower, AZ::Vector3::CreateAxisZ()));
+        ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), upper, -AZ::Vector3::CreateAxisZ()));
+        Api::CalculateNormals(*mesh);
+        const auto polygons = Api::MeshPolygonHandles(*mesh);
+        ASSERT_EQ(polygons.size(), 2);
+        const auto oldFaces = Api::MeshFaceHandles(*mesh);
+        const auto oldPositions = Api::FacesPositions(*mesh, oldFaces);
+        AZStd::string error;
+        ASSERT_TRUE(Api::BridgeSelection(*mesh, polygons, {}, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*mesh), 8);
+        EXPECT_EQ(Api::MeshFaceCount(*mesh), 6);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 3);
+        EXPECT_EQ(Api::FacesPositions(*mesh, oldFaces), oldPositions);
+        for (const auto& polygon : polygons)
+        {
+            for (const auto face : polygon.m_faceHandles)
+            {
+                EXPECT_EQ(Api::FacePolygonHandle(*mesh, face), polygon);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgePolygonCapsProducesClosedSolidAndPreservesFaceProperties)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        auto other = Api::CreateWhiteBoxMesh();
+        Api::InitializeAsUnitCube(*other);
+        for (const auto vertex : Api::MeshVertexHandles(*other))
+        {
+            Api::SetVertexPosition(*other, vertex, Api::VertexPosition(*other, vertex) + AZ::Vector3(3, 0, 0));
+        }
+        WhiteBox::AppendMesh(*m_whiteBox, *other);
+        Api::CalculateNormals(*m_whiteBox);
+        Api::PolygonHandles caps(2);
+        const auto bridgeMaterial = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        const auto retainedMaterial = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:2");
+        for (const auto& polygon : Api::MeshPolygonHandles(*m_whiteBox))
+        {
+            const auto normal = Api::PolygonNormal(*m_whiteBox, polygon);
+            const float x = Api::FaceVertexPositions(*m_whiteBox, polygon.m_faceHandles.front())[0].GetX();
+            if (normal.GetX() > 0.99f && x < 1.0f) { caps[0] = polygon; }
+            if (normal.GetX() < -0.99f && x > 2.0f) { caps[1] = polygon; }
+            Api::SetPolygonMaterial(*m_whiteBox, polygon, retainedMaterial);
+            for (const auto face : polygon.m_faceHandles) { Api::SetFacePaintColor(*m_whiteBox, face, 0xFFFF0000u); }
+        }
+        ASSERT_FALSE(caps[0].m_faceHandles.empty());
+        ASSERT_FALSE(caps[1].m_faceHandles.empty());
+        Api::SetPolygonMaterial(*m_whiteBox, caps[0], bridgeMaterial);
+        for (const auto face : caps[0].m_faceHandles) { Api::SetFacePaintColor(*m_whiteBox, face, 0xFF0000FFu); }
+        AZStd::string error;
+        ASSERT_TRUE(Api::BridgeSelection(*m_whiteBox, caps, {}, error)) << error.c_str();
+        EXPECT_EQ(Api::MeshVertexCount(*m_whiteBox), 16);
+        EXPECT_EQ(Api::MeshFaceCount(*m_whiteBox), 28);
+        EXPECT_EQ(Api::MeshPolygonHandles(*m_whiteBox).size(), 14);
+        for (const auto edge : Api::MeshEdgeHandles(*m_whiteBox))
+        {
+            EXPECT_EQ(Api::EdgeFaceHandles(*m_whiteBox, edge).size(), 2);
+        }
+        size_t bridgeFaces = 0;
+        double volume = 0.0;
+        for (const auto face : Api::MeshFaceHandles(*m_whiteBox))
+        {
+            const bool bridge = Api::FaceMaterial(*m_whiteBox, face) == bridgeMaterial;
+            bridgeFaces += bridge ? 1 : 0;
+            EXPECT_EQ(Api::FaceMaterial(*m_whiteBox, face), bridge ? bridgeMaterial : retainedMaterial);
+            EXPECT_EQ(Api::FacePaintColor(*m_whiteBox, face), bridge ? 0xFF0000FFu : 0xFFFF0000u);
+            const auto points = Api::FaceVertexPositions(*m_whiteBox, face);
+            volume += points[0].Dot(points[1].Cross(points[2])) / 6.0;
+        }
+        EXPECT_EQ(bridgeFaces, 8);
+        EXPECT_NEAR(volume, 4.0, 1e-5);
+        // Face groups must remain valid after removing caps and compacting face handles.
+        size_t groupedFaces = 0;
+        for (const auto& polygon : Api::MeshPolygonHandles(*m_whiteBox))
+        {
+            for (const auto face : polygon.m_faceHandles)
+            {
+                EXPECT_EQ(Api::FacePolygonHandle(*m_whiteBox, face), polygon);
+                ++groupedFaces;
+            }
+        }
+        EXPECT_EQ(groupedFaces, 28);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgeCollapsedStripDiscardsCandidateWithoutChangingInput)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        // Separate vertex handles, but coincident boundaries: topology selection is valid,
+        // while the connecting strip has zero area and must fail after candidate creation.
+        for (int copy = 0; copy < 2; ++copy)
+        {
+            const auto a = Api::AddVertex(*mesh, AZ::Vector3(0, 0, 0));
+            const auto b = Api::AddVertex(*mesh, AZ::Vector3(1, 0, 0));
+            const auto c = Api::AddVertex(*mesh, AZ::Vector3(1, 1, 0));
+            const auto d = Api::AddVertex(*mesh, AZ::Vector3(0, 1, 0));
+            Api::AddQuadPolygon(*mesh, a, b, c, d);
+        }
+        Api::EdgeHandles edges;
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            const auto points = Api::EdgeVertexPositions(*mesh, edge);
+            if (points[0].GetX() == 1.0f && points[1].GetX() == 1.0f) { edges.push_back(edge); }
+        }
+        ASSERT_EQ(edges.size(), 2);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        AZStd::string error;
+        EXPECT_FALSE(Api::BridgeSelection(*mesh, {}, edges, error));
+        EXPECT_FALSE(error.empty());
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BridgeInvalidSelectionLeavesMeshUnchanged)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, before));
+        const auto polygons = Api::MeshPolygonHandles(*m_whiteBox);
+        const auto edges = Api::MeshEdgeHandles(*m_whiteBox);
+        AZStd::string error;
+        EXPECT_FALSE(Api::BridgeSelection(*m_whiteBox, {}, {edges[0], edges[1]}, error));
+        EXPECT_FALSE(error.empty());
+        EXPECT_FALSE(Api::BridgeSelection(*m_whiteBox, {polygons[0], polygons[0]}, {}, error));
+        EXPECT_FALSE(Api::BridgeSelection(*m_whiteBox, {}, {}, error));
+        EXPECT_FALSE(Api::BridgeSelection(*m_whiteBox, {}, {Api::EdgeHandle{999999}, edges[0]}, error));
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, after));
+        EXPECT_EQ(before, after);
+    }
+
     TEST_F(WhiteBoxTestFixture, RingPrimitivesAreClosedAndPlaneHasAnOpenBoundary)
     {
         namespace Api = WhiteBox::Api;
@@ -2394,6 +3430,92 @@ namespace UnitTest
         EXPECT_EQ(boundaryEdges, 4);
     }
 
+    TEST_F(WhiteBoxTestFixture, ExtrudeAndInsetKeepAdjacentPolygonsAsOneRegion)
+    {
+        namespace Api = WhiteBox::Api;
+        for (const bool inset : {false, true})
+        {
+            auto mesh = Api::CreateWhiteBoxMesh();
+            Api::VertexHandles vertices;
+            for (int y = 0; y < 2; ++y)
+            {
+                for (int x = 0; x < 3; ++x)
+                {
+                    vertices.push_back(Api::AddVertex(*mesh, AZ::Vector3(float(x), float(y), 0)));
+                }
+            }
+            const Api::PolygonHandles selection{
+                Api::AddQuadPolygon(*mesh, vertices[0], vertices[1], vertices[4], vertices[3]),
+                Api::AddQuadPolygon(*mesh, vertices[1], vertices[2], vertices[5], vertices[4])};
+            const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:7");
+            Api::SetPolygonMaterial(*mesh, selection[0], material);
+            for (const auto face : selection[0].m_faceHandles) { Api::SetFacePaintColor(*mesh, face, 0xff443322); }
+            Api::CalculateNormals(*mesh);
+            Api::CalculatePlanarUVs(*mesh);
+            Api::PolygonHandles result;
+            AZStd::string error;
+            ASSERT_TRUE(Api::ExtrudeInsetRegions(*mesh, selection, inset ? 0.2f : 0.25f, inset, result, error))
+                << error.c_str();
+            ASSERT_EQ(result.size(), 2);
+            EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 8); // two caps + six perimeter walls, no interior wall
+            EXPECT_EQ(Api::MeshFaceHandles(*mesh).size(), 16);
+            size_t materialFaces = 0;
+            float capArea = 0.0f;
+            Api::VertexHandles capVertices;
+            for (const auto& polygon : result)
+            {
+                for (const auto vertex : Api::PolygonVertexHandles(*mesh, polygon))
+                {
+                    if (AZStd::find(capVertices.begin(), capVertices.end(), vertex) == capVertices.end())
+                    {
+                        capVertices.push_back(vertex);
+                    }
+                    EXPECT_NEAR(Api::VertexPosition(*mesh, vertex).GetZ(), inset ? 0.0f : 0.25f, 1e-5f);
+                }
+                for (const auto face : polygon.m_faceHandles)
+                {
+                    if (Api::FaceMaterial(*mesh, face) == material)
+                    {
+                        ++materialFaces;
+                        EXPECT_EQ(Api::FacePaintColor(*mesh, face), 0xff443322);
+                    }
+                    const auto points = Api::FaceVertexPositions(*mesh, face);
+                    capArea += (points[1] - points[0]).Cross(points[2] - points[0]).GetLength() * 0.5f;
+                }
+            }
+            EXPECT_EQ(capVertices.size(), 6); // shared cap edge still shares its two vertices
+            EXPECT_EQ(materialFaces, 2);
+            EXPECT_NEAR(capArea, inset ? 1.28f : 2.0f, 1e-5f);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ExtrudeRegionOnCubeIsClosedAndUnsupportedInsetLeavesMeshUnchanged)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto polygons = Api::InitializeAsUnitCube(*mesh);
+        Api::WhiteBoxMeshStream before;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        Api::PolygonHandles result;
+        AZStd::string error;
+        // The top and front form one connected, non-planar region.
+        EXPECT_FALSE(Api::ExtrudeInsetRegions(*mesh, {polygons[0], polygons[2]}, 0.2f, true, result, error));
+        EXPECT_TRUE(result.empty());
+        Api::WhiteBoxMeshStream after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+        ASSERT_TRUE(Api::ExtrudeInsetRegions(*mesh, {polygons[0]}, 0.25f, false, result, error)) << error.c_str();
+        ASSERT_EQ(result.size(), 1);
+        double volume = 0.0;
+        for (const auto edge : Api::MeshEdgeHandles(*mesh)) { EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2); }
+        for (const auto face : Api::MeshFaceHandles(*mesh))
+        {
+            const auto p = Api::FaceVertexPositions(*mesh, face);
+            volume += p[0].Dot(p[1].Cross(p[2])) / 6.0;
+        }
+        EXPECT_NEAR(volume, 1.25, 1e-5);
+    }
+
     TEST_F(WhiteBoxTestFixture, FreeformPolygonSupportsConcaveOutlinesAndRejectsCrossingsWithoutMutation)
     {
         namespace Api = WhiteBox::Api;
@@ -2419,8 +3541,99 @@ namespace UnitTest
             AZ::Vector3(0, 0, 0), AZ::Vector3(2, 2, 0), AZ::Vector3(0, 2, 0), AZ::Vector3(2, 0, 0)};
         EXPECT_FALSE(WhiteBox::Detail::BuildPolygonFace(
             *mesh, AZ::Transform::CreateIdentity(), crossing, AZ::Vector3::CreateAxisZ()));
+        EXPECT_FALSE(WhiteBox::Detail::BuildPolygonFace(
+            *mesh, AZ::Transform::CreateIdentity(), crossing, AZ::Vector3::CreateAxisZ(), 2.0f));
         EXPECT_EQ(Api::MeshVertexCount(*mesh), before);
         EXPECT_EQ(Api::MeshFaceHandles(*mesh).size(), 3);
+    }
+
+    TEST_F(WhiteBoxTestFixture, FreeformPolygonExtrusionIsClosedForConcaveOutlinesBothWindingsAndDepthSigns)
+    {
+        namespace Api = WhiteBox::Api;
+        const AZStd::vector<AZ::Vector3> outline{
+            AZ::Vector3(0, 0, 0), AZ::Vector3(2, 0, 0), AZ::Vector3(2, 2, 0),
+            AZ::Vector3(1, 1, 0), AZ::Vector3(0, 2, 0)};
+        for (const bool reverse : {false, true})
+        {
+            for (const float height : {-2.0f, 2.0f})
+            {
+                // Draw on a tilted world plane and store on a scaled entity.
+                auto planeToWorld = AZ::Transform::CreateRotationX(1.0f);
+                planeToWorld.SetTranslation(AZ::Vector3(5.0f, 7.0f, 3.0f));
+                AZStd::vector<AZ::Vector3> points;
+                for (size_t i = 0; i < outline.size(); ++i)
+                {
+                    points.push_back(planeToWorld.TransformPoint(outline[reverse ? outline.size() - 1 - i : i]));
+                }
+                auto mesh = Api::CreateWhiteBoxMesh();
+                ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+                    *mesh, AZ::Transform::CreateUniformScale(0.5f), points,
+                    planeToWorld.TransformVector(AZ::Vector3::CreateAxisZ()), height));
+                EXPECT_EQ(Api::MeshVertexCount(*mesh), 10);
+                EXPECT_EQ(Api::MeshFaceHandles(*mesh).size(), 16);
+                EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 7);
+                for (const auto edge : Api::MeshEdgeHandles(*mesh))
+                {
+                    EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2);
+                }
+                double signedVolume = 0.0;
+                for (const auto face : Api::MeshFaceHandles(*mesh))
+                {
+                    const auto positions = Api::FaceVertexPositions(*mesh, face);
+                    signedVolume += positions[0].Dot(positions[1].Cross(positions[2])) / 6.0;
+                }
+                // Concave outline area = 3; depth = 2; local uniform scale = 0.5.
+                EXPECT_NEAR(signedVolume, 0.75, 1e-4);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ExtrudedConcavePolygonCanCarveAndUnionInBothPullDirections)
+    {
+        namespace Api = WhiteBox::Api;
+        struct BooleanCase
+        {
+            Api::BooleanOperation m_operation;
+            float m_baseHeight;
+            float m_depth;
+            double m_expectedVolume;
+        };
+        const BooleanCase cases[]{
+            {Api::BooleanOperation::Subtraction, 4.01f, -2.01f, 58.0},
+            {Api::BooleanOperation::Union, 3.0f, 2.0f, 67.0},
+            {Api::BooleanOperation::Union, 1.0f, -2.0f, 67.0}};
+        for (const auto& example : cases)
+        {
+            auto target = Api::CreateWhiteBoxMesh();
+            auto cutter = Api::CreateWhiteBoxMesh();
+            ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+                *target, AZ::Transform::CreateIdentity(),
+                {AZ::Vector3(0, 0, 0), AZ::Vector3(4, 0, 0), AZ::Vector3(4, 4, 0), AZ::Vector3(0, 4, 0)},
+                AZ::Vector3::CreateAxisZ(), 4.0f));
+            const float z = example.m_baseHeight;
+            // Concave footprint area is 3. The subtraction cuts a two-unit-deep pocket;
+            // either union extends one unit beyond the target, adding volume 3.
+            ASSERT_TRUE(WhiteBox::Detail::BuildPolygonFace(
+                *cutter, AZ::Transform::CreateIdentity(),
+                {AZ::Vector3(1, 1, z), AZ::Vector3(3, 1, z), AZ::Vector3(3, 3, z),
+                 AZ::Vector3(2, 2, z), AZ::Vector3(1, 3, z)},
+                AZ::Vector3::CreateAxisZ(), example.m_depth));
+            Api::CalculateNormals(*target);
+            Api::CalculateNormals(*cutter);
+            ASSERT_TRUE(Api::ApplyMeshBoolean(
+                *target, *cutter, AZ::Transform::CreateIdentity(), example.m_operation));
+            double volume = 0.0;
+            for (const auto face : Api::MeshFaceHandles(*target))
+            {
+                const auto positions = Api::FaceVertexPositions(*target, face);
+                volume += positions[0].Dot(positions[1].Cross(positions[2])) / 6.0;
+            }
+            EXPECT_NEAR(volume, example.m_expectedVolume, 1e-3);
+            for (const auto edge : Api::MeshEdgeHandles(*target))
+            {
+                EXPECT_EQ(Api::EdgeFaceHandles(*target, edge).size(), 2);
+            }
+        }
     }
 
     TEST_F(WhiteBoxTestFixture, ParametricStairsDeriveStepCountFromTargetRiserHeight)

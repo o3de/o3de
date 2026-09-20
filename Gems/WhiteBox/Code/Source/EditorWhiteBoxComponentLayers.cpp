@@ -11,11 +11,14 @@
 
 #include "EditorWhiteBoxComponent.h"
 
+#include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
+#include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Util/WhiteBoxVoxelUtil.h"
 #include "Viewport/WhiteBoxShapeBuilders.h"
 
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -46,7 +49,7 @@ namespace WhiteBox
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxLayer>()
-                ->Version(6, &WhiteBoxLayerVersionConverter)
+                ->Version(7, &WhiteBoxLayerVersionConverter)
                 ->Field("Name", &WhiteBoxLayer::m_name)
                 ->Field("Id", &WhiteBoxLayer::m_id)
                 ->Field("Visible", &WhiteBoxLayer::m_visible)
@@ -77,6 +80,12 @@ namespace WhiteBox
                 ->Field("Position", &WhiteBoxLayer::m_position)
                 ->Field("Rotation", &WhiteBoxLayer::m_rotation)
                 ->Field("Scale", &WhiteBoxLayer::m_scale)
+                ->Field("BevelSourceParametric", &WhiteBoxLayer::m_bevelSourceParametric)
+                ->Field("BevelSource", &WhiteBoxLayer::m_bevelSource)
+                ->Field("BevelEdges", &WhiteBoxLayer::m_bevelEdges)
+                ->Field("BevelWidth", &WhiteBoxLayer::m_bevelWidth)
+                ->Field("BevelSegments", &WhiteBoxLayer::m_bevelSegments)
+                ->Field("BevelProfile", &WhiteBoxLayer::m_bevelProfile)
                 ->Field("Freeform", &WhiteBoxLayer::m_freeformData)
                 ->Field("Grid", &WhiteBoxLayer::m_gridData)
                 ->Field("GridMerged", &WhiteBoxLayer::m_gridMergedData)
@@ -143,6 +152,13 @@ namespace WhiteBox
         // The working streams are kept current by SerializeWhiteBox, so copy them (plus the
         // occupancy arrays) into the layer.
         WhiteBoxLayer& layer = m_layers[index];
+        // Direct topology/vertex/paint edits implicitly bake a live bevel. Never
+        // regenerate over hand edits from an obsolete source snapshot.
+        if (!layer.m_bevelSource.empty() && layer.m_freeformData != m_whiteBoxData)
+        {
+            layer.m_bevelSource.clear();
+            layer.m_bevelEdges.clear();
+        }
         layer.m_freeformData = m_whiteBoxData;
         layer.m_gridData = m_voxel.m_legacyGridData;
         layer.m_gridMergedData.clear(); // legacy merged-grid stream, feature removed
@@ -479,6 +495,120 @@ namespace WhiteBox
         }
     }
 
+    bool EditorWhiteBoxComponent::HasActiveBevel() const
+    {
+        return m_activeLayerIndex >= 0 && m_activeLayerIndex < GetLayerCount() &&
+            !m_layers[m_activeLayerIndex].m_bevelSource.empty();
+    }
+
+    EditorWhiteBoxComponent::BevelParams EditorWhiteBoxComponent::GetBevelParams() const
+    {
+        if (!HasActiveBevel()) { return m_pendingBevelParams; }
+        const auto& layer = m_layers[m_activeLayerIndex];
+        return {layer.m_bevelWidth, layer.m_bevelSegments, layer.m_bevelProfile};
+    }
+
+    bool EditorWhiteBoxComponent::SetParametricBevel(
+        const Api::EdgeHandles& edges, const BevelParams& params, AZStd::string& error)
+    {
+        if (!GetWhiteBoxMesh()) { error = "No active mesh."; return false; }
+        SerializeWhiteBox();
+        if (m_activeLayerIndex < 0 || m_activeLayerIndex >= GetLayerCount())
+        {
+            error = "Select a mesh layer."; return false;
+        }
+        auto& layer = m_layers[m_activeLayerIndex];
+        const bool updating = !layer.m_bevelSource.empty();
+        if (updating && !edges.empty()) { error = "Bake or cancel the current bevel before starting another."; return false; }
+        auto source = layer.m_bevelSource;
+        auto indices = layer.m_bevelEdges;
+        auto result = Api::CreateWhiteBoxMesh();
+        if (!updating)
+        {
+            if (edges.empty()) { error = "Select edges or polygons in Transform mode."; return false; }
+            if (!Api::WriteMesh(*GetWhiteBoxMesh(), source) || Api::ReadMesh(*result, source) != Api::ReadResult::Full)
+            {
+                error = "Could not save the bevel source."; return false;
+            }
+            // Resolve the selected edges on the serialized source. OpenMesh can
+            // reorder edges during a stream round trip.
+            const auto originalEdges = Api::MeshEdgeHandles(*GetWhiteBoxMesh());
+            const auto sourceEdges = Api::MeshEdgeHandles(*result);
+            for (const auto edge : edges)
+            {
+                if (AZStd::find(originalEdges.begin(), originalEdges.end(), edge) == originalEdges.end())
+                {
+                    error = "The edge selection is stale."; return false;
+                }
+                const auto points = Api::EdgeVertexPositions(*GetWhiteBoxMesh(), edge);
+                Api::EdgeHandle match;
+                for (const auto candidate : sourceEdges)
+                {
+                    const auto pair = Api::EdgeVertexPositions(*result, candidate);
+                    if ((points[0].IsClose(pair[0], 1e-6f) && points[1].IsClose(pair[1], 1e-6f)) ||
+                        (points[0].IsClose(pair[1], 1e-6f) && points[1].IsClose(pair[0], 1e-6f)))
+                    {
+                        if (match.IsValid()) { error = "Overlapping duplicate edges make this selection ambiguous."; return false; }
+                        match = candidate;
+                    }
+                }
+                if (!match.IsValid()) { error = "Could not restore the selected edge in the bevel source."; return false; }
+                indices.push_back(match.Index());
+            }
+        }
+        else if (Api::ReadMesh(*result, source) != Api::ReadResult::Full)
+        {
+            error = "Could not restore the saved bevel source."; return false;
+        }
+        Api::EdgeHandles selection;
+        for (const int index : indices) { selection.push_back(Api::EdgeHandle{index}); }
+        if (!Api::BevelEdges(*result, selection, params.m_width, params.m_segments, error, params.m_profile)) { return false; }
+        Api::WhiteBoxMeshStream output;
+        if (!Api::WriteMesh(*result, output)) { error = "Could not save the bevel result."; return false; }
+        // Everything above operated on a disposable mesh; only now commit.
+        if (Api::ReadMesh(*GetWhiteBoxMesh(), output) != Api::ReadResult::Full)
+        {
+            error = "Could not load the bevel result."; return false;
+        }
+        if (!updating) { layer.m_bevelSourceParametric = layer.m_parametric; }
+        layer.m_parametric = false;
+        layer.m_bevelSource = AZStd::move(source);
+        layer.m_bevelEdges = AZStd::move(indices);
+        layer.m_bevelWidth = params.m_width;
+        layer.m_bevelSegments = params.m_segments;
+        layer.m_bevelProfile = params.m_profile;
+        // Keep StoreLayer's direct-edit detection from baking our own update.
+        Api::WriteMesh(*GetWhiteBoxMesh(), layer.m_freeformData);
+        SerializeWhiteBox();
+        RefreshComponentMode();
+        if (updating) { RebuildWhiteBoxDeferred(); }
+        else { RebuildWhiteBox(); }
+        return true;
+    }
+
+    void EditorWhiteBoxComponent::BakeBevel()
+    {
+        if (!HasActiveBevel()) { return; }
+        auto& layer = m_layers[m_activeLayerIndex];
+        layer.m_bevelSource.clear();
+        layer.m_bevelEdges.clear();
+        SerializeWhiteBox();
+        RebuildWhiteBox();
+    }
+
+    void EditorWhiteBoxComponent::CancelBevel()
+    {
+        if (!HasActiveBevel()) { return; }
+        auto& layer = m_layers[m_activeLayerIndex];
+        if (Api::ReadMesh(*GetWhiteBoxMesh(), layer.m_bevelSource) != Api::ReadResult::Full) { return; }
+        layer.m_parametric = layer.m_bevelSourceParametric;
+        layer.m_bevelSource.clear();
+        layer.m_bevelEdges.clear();
+        SerializeWhiteBox();
+        RefreshComponentMode();
+        RebuildWhiteBox();
+    }
+
     void EditorWhiteBoxComponent::RegenerateParametricLayer(const int index, const bool commit)
     {
         if (!IsLayerParametric(index))
@@ -532,6 +662,56 @@ namespace WhiteBox
         m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
         m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
         LoadActiveLayer(); // load the new empty layer
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZStd::string EditorWhiteBoxComponent::UniqueLayerName(const AZStd::string& base) const
+    {
+        const auto taken = [this](const AZStd::string& name)
+        {
+            return AZStd::any_of(
+                m_layers.begin(), m_layers.end(),
+                [&name](const WhiteBoxLayer& layer)
+                {
+                    return layer.m_name == name;
+                });
+        };
+
+        AZStd::string candidate = base + " copy";
+        for (int suffix = 2; taken(candidate); ++suffix)
+        {
+            candidate = AZStd::string::format("%s copy %d", base.c_str(), suffix);
+        }
+        return candidate;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnDuplicateLayer()
+    {
+        if (m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Duplicate White Box Layer");
+        SerializeWhiteBox(); // the active layer's edits live in the working mesh until this runs
+
+        // Every member of a layer is a value, mesh streams included, so the copy is the whole thing -
+        // geometry, transform, combine mode, parametric shape and any live bevel.
+        WhiteBoxLayer copy = m_layers[m_activeLayerIndex];
+        copy.m_id = AllocLayerId(); // ...except the id, which has to stay unique
+        copy.m_name = UniqueLayerName(m_layers[m_activeLayerIndex].m_name);
+        m_layers.insert(m_layers.begin() + m_activeLayerIndex + 1, AZStd::move(copy));
+
+        // Leave the copy active: duplicating is nearly always the first half of "and now change this
+        // one", and the original is one click away.
+        ++m_activeLayerIndex;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        m_layerRuntime.m_loadedIndex = -1; // the working members still hold the original
+        LoadActiveLayer();
         m_layerRuntime.m_lastSignature = LayerSignature();
         RebuildWhiteBox();
         RefreshComponentMode();
@@ -611,6 +791,40 @@ namespace WhiteBox
         }
         RebuildWhiteBox();
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    AZ::Transform EditorWhiteBoxComponent::GetActiveLayerTransform() const
+    {
+        const int index = GetActiveLayerIndex();
+        if (index < 0 || index >= GetLayerCount())
+        {
+            return AZ::Transform::CreateIdentity();
+        }
+
+        const WhiteBoxLayer& layer = m_layers[index];
+        // Same order ApplyTransformToMesh uses: scale, then rotate, then translate - which is exactly
+        // how AZ::Transform composes. A non-uniform scale cannot survive the trip; see EditorSpaceFromLocal.
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateFromEulerAnglesDegrees(layer.m_rotation), layer.m_position);
+        transform.SetUniformScale(layer.m_scale.GetMaxElement());
+        return transform;
+    }
+
+    void EditorWhiteBoxComponent::RefreshManipulatorSpaces()
+    {
+        const AZ::EntityComponentIdPair pair(GetEntityId(), GetId());
+        EditorWhiteBoxDefaultModeRequestBus::Event(
+            pair, &EditorWhiteBoxDefaultModeRequestBus::Events::RefreshPolygonTranslationModifier);
+        EditorWhiteBoxDefaultModeRequestBus::Event(
+            pair, &EditorWhiteBoxDefaultModeRequestBus::Events::RefreshPolygonScaleModifier);
+        EditorWhiteBoxDefaultModeRequestBus::Event(
+            pair, &EditorWhiteBoxDefaultModeRequestBus::Events::RefreshEdgeTranslationModifier);
+        EditorWhiteBoxDefaultModeRequestBus::Event(
+            pair, &EditorWhiteBoxDefaultModeRequestBus::Events::RefreshEdgeScaleModifier);
+        EditorWhiteBoxDefaultModeRequestBus::Event(
+            pair, &EditorWhiteBoxDefaultModeRequestBus::Events::RefreshVertexSelectionModifier);
+        EditorWhiteBoxTransformModeRequestBus::Event(
+            pair, &EditorWhiteBoxTransformModeRequestBus::Events::RefreshManipulatorSpace);
     }
 
     void EditorWhiteBoxComponent::RefreshComponentMode()

@@ -6,6 +6,7 @@
  *
  */
 
+#include "Util/WhiteBoxEditorUtil.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "EditorWhiteBoxEdgeModifierBus.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
@@ -28,15 +29,22 @@ namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator)
 
-    static bool BeginningExtrude(
-        const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage)
+    //! Edges extrude on the same terms as polygons: Ctrl held, or the Sketch cluster's latched Extrude.
+    static bool ExtrudeRequested(const AzToolsFramework::PlanarManipulator::Action& action, const bool sticky)
     {
-        return action.m_modifiers.Ctrl() && appendStage == AppendStage::None;
+        return action.m_modifiers.Ctrl() || sticky;
     }
 
-    static bool EndingExtrude(const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage)
+    static bool BeginningExtrude(
+        const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage, const bool sticky)
     {
-        return !action.m_modifiers.Ctrl() && appendStage != AppendStage::None;
+        return ExtrudeRequested(action, sticky) && appendStage == AppendStage::None;
+    }
+
+    static bool EndingExtrude(
+        const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage, const bool sticky)
+    {
+        return !ExtrudeRequested(action, sticky) && appendStage != AppendStage::None;
     }
 
     static bool AppendInactive(const AppendStage appendStage)
@@ -115,7 +123,7 @@ namespace WhiteBox
         const auto axes = GetEdgeNormalAxes(vertexPositions[0], vertexPositions[1]);
 
         m_translationManipulator = AzToolsFramework::PlanarManipulator::MakeShared(
-            AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+            EditorSpaceFromLocal(m_entityComponentIdPair));
 
         m_translationManipulator->AddEntityComponentIdPair(m_entityComponentIdPair);
         m_translationManipulator->SetLocalPosition(Api::EdgeMidpoint(*whiteBox, m_hoveredEdgeHandle));
@@ -191,14 +199,18 @@ namespace WhiteBox
                 sharedState->m_moved = sharedState->m_moved ||
                     action.LocalPositionOffset().GetLength() >= cl_whiteBoxMouseClickDeltaThreshold;
 
+                bool stickyExtrude = false;
+                EditorWhiteBoxComponentRequestBus::EventResult(
+                    stickyExtrude, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetStickyExtrude);
+
                 // reset append
-                if (EndingExtrude(action, sharedState->m_appendStage))
+                if (EndingExtrude(action, sharedState->m_appendStage, stickyExtrude))
                 {
                     sharedState->m_appendStage = AppendStage::None;
                 }
 
                 // start trying to extrude
-                if (BeginningExtrude(action, sharedState->m_appendStage))
+                if (BeginningExtrude(action, sharedState->m_appendStage, stickyExtrude))
                 {
                     sharedState->m_appendStage = AppendStage::Initiated;
                     sharedState->m_initiateAppendPosition = action.LocalPosition();

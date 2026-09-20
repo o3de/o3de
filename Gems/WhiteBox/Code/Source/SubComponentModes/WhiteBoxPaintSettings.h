@@ -22,5 +22,7 @@ namespace WhiteBox
         FacePaintOperation m_operation = FacePaintOperation::Material;
         AZ::Data::AssetId m_material;
         AZ::u32 m_color = 0xFFFFFFFF; //!< Opaque RGBA, R in the low byte.
+        //! Paint every triangle of the hovered polygon, not just the one under the cursor.
+        bool m_wholePolygon = true;
     };
 }

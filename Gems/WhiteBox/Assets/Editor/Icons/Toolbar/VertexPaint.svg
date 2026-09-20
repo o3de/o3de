@@ -1,9 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <title>Vertex paint</title>
-  <path d="M3 9 10 6l7 4v8l-7 4-7-4Z" fill="none" stroke="#DADADA" stroke-width="1.5" stroke-linejoin="round"/>
-  <path d="m3 9 7 4v9l-7-4Z" fill="#67C7E8" fill-opacity=".7"/>
-  <path d="m3 9 7 4 7-3m-7 3v9M3 18l7-5" fill="none" stroke="#DADADA" stroke-width="1.25" stroke-linejoin="round"/>
-  <path d="m13 11 6.4-8a1.3 1.3 0 0 1 2 1.6L15 12.7Z" fill="#DADADA" stroke="#25282C" stroke-width="1" stroke-linejoin="round"/>
-  <path d="m13 10.5 2.7 2.2-1.6 2-2.7-2.2Z" fill="#DADADA" stroke="#25282C" stroke-width="1"/>
-  <path d="M11.4 12.5c-3-.2-2 3.9-4.1 4.8 3.2 1 6.6-.3 6.8-2.6Z" fill="#67C7E8" stroke="#25282C" stroke-width="1" stroke-linejoin="round"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="1.54 1.6 20.6 20.6"
+   version="1.1"
+   id="svg6"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <title
+     id="title1">Vertex paint</title>
+  <path
+     d="m 12.356865,20.733453 0.374267,-8.817722 8.015897,-3.5245697 -0.374266,8.8177227 z"
+     fill="#67c7e8"
+     fill-opacity="0.7"
+     id="path7"
+     style="stroke-width:1.04928" />
+  <path
+     d="M 2.5351647,6.1353625 11.782251,2.6455163 21.029338,7.2986446 V 16.604901 L 11.782251,21.258029 2.5351647,16.604901 Z"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.85946"
+     stroke-linejoin="round"
+     id="path1" />
+  <path
+     d="m 3.4206704,7.5588237 7.9212506,3.8918013 v 8.756551 l -7.9212506,-3.8918 z"
+     fill="#67c7e8"
+     fill-opacity="0.7"
+     id="path2"
+     style="stroke-width:1.04928" />
+  <path
+     d="M 3.0726223,7.1236392 11.78653,11.219558 20.500438,8.147619 m -8.713908,3.071939 v 9.215819 m -8.7139077,-4.095919 8.7139077,-5.1199"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.41128"
+     stroke-linejoin="round"
+     id="path3" />
+  <path
+     d="m 12.771996,10.159656 6.075255,-7.2765062 a 1.2340355,1.1824323 0 0 1 1.898515,1.4553006 l -6.075252,7.3674616 z"
+     fill="#dadada"
+     stroke="#25282c"
+     stroke-width="0.9292"
+     stroke-linejoin="round"
+     id="path4" />
+  <path
+     d="m 11.609688,10.334706 2.851559,2.336571 -1.689812,2.124155 -2.8515608,-2.336571 z"
+     fill="#dadada"
+     stroke="#25282c"
+     stroke-width="1.05909"
+     id="path5" />
+  <path
+     d="m 9.3870052,13.160048 c -3.009565,-0.213325 -2.0063766,4.159815 -4.1130722,5.119773 3.2102037,1.066619 6.621043,-0.319987 6.82168,-2.77321 z"
+     fill="#67c7e8"
+     stroke="#25282c"
+     stroke-width="1.03442"
+     stroke-linejoin="round"
+     id="path6" />
 </svg>

@@ -39,7 +39,7 @@ namespace WhiteBox
             Scale
         };
 
-        WhiteBoxLayerGizmo() = default;
+        WhiteBoxLayerGizmo();
         ~WhiteBoxLayerGizmo();
 
         //! Which entity/layer the gizmo edits. Rebuilds the manipulators if a mode is active.

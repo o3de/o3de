@@ -90,8 +90,9 @@ namespace WhiteBox::Detail
 
     bool BuildPolygonFace(
         WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld,
-        const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& normal)
+        const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& normal, const float extrusionHeight)
     {
+        if (!AZ::IsFiniteFloat(extrusionHeight)) { return false; }
         if (points.size() < 3 || points.size() > 256) { return false; }
         AZ::Vector3 right, forward, up;
         BasisFromNormal(normal, right, forward, up);
@@ -203,12 +204,47 @@ namespace WhiteBox::Detail
         }
         AZStd::vector<Api::VertexHandle> handles;
         for (const auto& point : points) { handles.push_back(Api::AddVertex(mesh, localFromWorld.TransformPoint(point))); }
+        const bool extrude = extrusionHeight != 0.0f;
+        const bool positive = extrusionHeight > 0.0f;
         Api::FaceVertHandlesList faces;
         for (const auto& triangle : ordered)
         {
-            faces.push_back(Api::FaceVertHandles{{handles[triangle[0]], handles[triangle[1]], handles[triangle[2]]}});
+            const auto a = handles[triangle[0]];
+            const auto b = handles[triangle[1]];
+            const auto c = handles[triangle[2]];
+            faces.push_back(extrude && positive ? Api::FaceVertHandles{{a, c, b}} : Api::FaceVertHandles{{a, b, c}});
         }
         Api::AddPolygon(mesh, faces);
+        if (extrude)
+        {
+            AZStd::vector<Api::VertexHandle> top;
+            for (const auto& point : points)
+            {
+                top.push_back(Api::AddVertex(mesh, localFromWorld.TransformPoint(point + up * extrusionHeight)));
+            }
+            faces.clear();
+            for (const auto& triangle : ordered)
+            {
+                const auto a = top[triangle[0]];
+                const auto b = top[triangle[1]];
+                const auto c = top[triangle[2]];
+                faces.push_back(positive ? Api::FaceVertHandles{{a, b, c}} : Api::FaceVertHandles{{a, c, b}});
+            }
+            Api::AddPolygon(mesh, faces);
+            for (size_t i = 0; i < count; ++i)
+            {
+                const size_t j = (i + 1) % count;
+                // Input outlines may be clockwise or counterclockwise, independently of pull direction.
+                if ((area > 0.0f) == positive)
+                {
+                    Api::AddQuadPolygon(mesh, handles[i], handles[j], top[j], top[i]);
+                }
+                else
+                {
+                    Api::AddQuadPolygon(mesh, handles[j], handles[i], top[i], top[j]);
+                }
+            }
+        }
         return true;
     }
 }

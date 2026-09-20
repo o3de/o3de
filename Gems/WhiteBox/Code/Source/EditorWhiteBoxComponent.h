@@ -102,6 +102,9 @@ namespace WhiteBox
         void DeserializeWhiteBox() override;
         void WriteAssetToComponent() override;
         void RebuildWhiteBox() override;
+        //! RebuildWhiteBox with the collider cook and bake deferred to OnTick, for streaming edits.
+        //! The caller owes a real rebuild or SerializeWhiteBox when the gesture ends.
+        void RebuildWhiteBoxDeferred();
         void SetDefaultShape(DefaultShapeType defaultShape) override;
         void SetMaterialTint(const AZ::Color& tint) override;
         AZ::Color GetMaterialTint() override;
@@ -109,12 +112,19 @@ namespace WhiteBox
         void SetMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
         AZ::Data::AssetId GetMaterialOverride() override;
         void AssignPolygonMaterial(const Api::PolygonHandles& polygons, const AZ::Data::AssetId& materialAssetId);
+        //! Latched Extrude / Inset. Dragging a polygon while one is on behaves as if Ctrl were held, so
+        //! the gesture is reachable without knowing about the modifier key. Ctrl still works either way.
+        bool GetStickyExtrude() override { return m_stickyExtrude; }
+        void SetStickyExtrude(bool sticky) { m_stickyExtrude = sticky; }
+        bool GetStickyInset() override { return m_stickyInset; }
+        void SetStickyInset(bool sticky) { m_stickyInset = sticky; }
         FacePaintSettings GetFacePaintSettings() const { return m_facePaintSettings; }
         void SetFacePaintSettings(const FacePaintSettings& settings) { m_facePaintSettings = settings; }
         int GetDrawSides() override { return m_drawShapeData.m_sides; }
         float GetDrawHoleRatio() override { return m_drawShapeData.m_holeRatio; }
         int GetDrawTubeSides() override { return m_drawShapeData.m_tubeSides; }
         DrawShapeType GetDrawShape() override { return m_drawShapeData.m_shape; }
+        void SetDrawShapeType(DrawShapeType shape) override { SetDrawShape(shape); }
         DrawStairInfo GetDrawStairInfo() override
         {
             const DrawStairData& stair = m_drawShapeData.m_stair;
@@ -122,6 +132,7 @@ namespace WhiteBox
         }
         bool GetDrawCarve() override { return m_drawShapeData.m_carve; }
         bool GetDrawMergeUnion() override { return m_drawShapeData.m_mergeUnion; }
+        bool GetDrawPolygonExtrude() override { return m_drawShapeData.m_polygonExtrude; }
         bool GetDrawUnitCube() override { return m_drawShapeData.m_unitCube; }
         //! Size of the next stamped cube; existing cubes keep their own size.
         float GetDrawUnitCubeSize() override
@@ -263,6 +274,7 @@ namespace WhiteBox
         }
         void SetDrawCarve(bool carve) { m_drawShapeData.m_carve = carve; }
         void SetDrawMergeUnion(bool mergeUnion) { m_drawShapeData.m_mergeUnion = mergeUnion; }
+        void SetDrawPolygonExtrude(bool extrude) { m_drawShapeData.m_polygonExtrude = extrude; }
 
         // Unit Cube Stamp settings.
         void SetDrawUnitCube(bool unitCube) { m_drawShapeData.m_unitCube = unitCube; }
@@ -291,7 +303,16 @@ namespace WhiteBox
         AZStd::vector<AZ::Vector3> GetLayerVertexPositionsEntityLocal(int index);
 
         int GetLayerCount() const { return static_cast<int>(m_layers.size()); }
+        //! The active layer's Position/Rotation/Scale as one transform, in the order
+        //! ApplyTransformToMesh uses it (scale, rotate, translate). Identity when there is no layer.
+        AZ::Transform GetActiveLayerTransform() const;
         int GetActiveLayerIndex() const { return m_activeLayerIndex; }
+        //! Stable identity for floating tools; an index can be reused after layer removal/reordering.
+        AZ::u64 GetActiveLayerId() const
+        {
+            return m_activeLayerIndex >= 0 && m_activeLayerIndex < GetLayerCount()
+                ? m_layers[m_activeLayerIndex].m_id : 0;
+        }
         void SetActiveLayer(int index)
         {
             if (index >= 0 && index < GetLayerCount() && index != m_activeLayerIndex)
@@ -341,7 +362,24 @@ namespace WhiteBox
         //! Freeze a parametric layer into an ordinary mesh layer (enables vertex editing;
         //! the shape parameters stop driving it).
         void BakeParametricLayer(int index);
+        struct BevelParams
+        {
+            float m_width = 0.1f;
+            int m_segments = 1;
+            float m_profile = 0.5f;
+        };
+        bool HasActiveBevel() const;
+        //! The live bevel's parameters while one is running, otherwise the ones the next bevel will
+        //! start with. Shared so the pane's spin boxes and the viewport cluster agree on the values.
+        BevelParams GetBevelParams() const;
+        void SetBevelParams(const BevelParams& params) { m_pendingBevelParams = params; }
+        //! Empty selection updates the existing modifier from its saved source mesh.
+        bool SetParametricBevel(const Api::EdgeHandles& edges, const BevelParams& params, AZStd::string& error);
+        void BakeBevel();
+        void CancelBevel();
         void DeleteActiveLayer() { OnDeleteLayer(); }
+        //! Copy the active layer, geometry and settings alike, and insert it directly above.
+        void DuplicateActiveLayer() { OnDuplicateLayer(); }
         //! Move layer @p from to index @p to; order is the order combine modes accumulate in. The edited
         //! layer stays the edit target.
         void MoveLayer(int from, int to);
@@ -373,6 +411,10 @@ namespace WhiteBox
                 return;
             }
             WhiteBoxLayer& layer = m_layers[index];
+            // The editing manipulators are built in a space that carries this transform, so they have
+            // to be rebuilt when it moves - otherwise the handles hang where the layer used to be.
+            const bool transformChanged = !layer.m_position.IsClose(meta.m_position) ||
+                !layer.m_rotation.IsClose(meta.m_rotation) || !layer.m_scale.IsClose(meta.m_scale);
             layer.m_name = meta.m_name;
             layer.m_visible = meta.m_visible;
             layer.m_collision = meta.m_collision;
@@ -387,6 +429,10 @@ namespace WhiteBox
                 AZStd::max(meta.m_scale.GetZ(), 0.001f));
             m_layerRuntime.m_meshCache.erase(layer.m_id); // this layer's cached display mesh is stale now
             OnLayersMetaChanged(); // recombine + resync
+            if (transformChanged)
+            {
+                RefreshManipulatorSpaces();
+            }
         }
 
         // Boolean.
@@ -535,6 +581,7 @@ namespace WhiteBox
             AZ::Crc32 TubeSidesVisibility() const;
             DrawStairData m_stair;  //!< Staircase-specific settings.
             bool m_carve = false;           //!< Draw acts as a CSG boolean (same as holding Ctrl).
+            bool m_polygonExtrude = false; //!< Pull a solid from a closed freeform outline before committing.
             bool m_mergeUnion = false;      //!< Committing a drawn shape CSG-unions it into the mesh.
             bool m_unitCube = false;        //!< Draw mode click-stamps grid-snapped cubes.
             float m_unitCubeSize = 1.0f;    //!< Desired world-space size of the next stamped cube.
@@ -590,6 +637,13 @@ namespace WhiteBox
             float m_paramSweepAngle = 270.0f;
             float m_paramHoleRatio = 0.5f;
             int m_paramTubeSides = DefaultTubeSides;
+
+            bool m_bevelSourceParametric = false;
+            Api::WhiteBoxMeshStream m_bevelSource;
+            AZStd::vector<int> m_bevelEdges;
+            float m_bevelWidth = 0.1f;
+            int m_bevelSegments = 1;
+            float m_bevelProfile = 0.5f;
 
             Api::WhiteBoxMeshStream m_freeformData;   //!< Serialized freeform (drawable) mesh.
             Api::WhiteBoxMeshStream m_gridData;       //!< Serialized stamped-cube grid mesh.
@@ -663,8 +717,13 @@ namespace WhiteBox
         AZ::u32 OnActiveLayerChange();       //!< Active Layer control changed: commit current, load new.
         AZ::Crc32 OnNewLayer();              //!< Append an empty layer and make it active.
         AZ::Crc32 OnDeleteLayer();           //!< Delete the active layer (keeps at least one).
+        AZ::Crc32 OnDuplicateLayer();        //!< Copy the active layer and insert it directly above.
+        //! @p base with a copy suffix, stepped until no other layer answers to it.
+        AZStd::string UniqueLayerName(const AZStd::string& base) const;
         AZ::u32 OnLayersMetaChanged();       //!< Layer name/visibility edited: recombine + resync.
-        void RefreshComponentMode();         //!< Mark the component mode intersection data dirty after a layer swap.
+        void RefreshComponentMode();
+        //! Rebuild the manipulators for a changed layer transform, keeping the selection (cheaper than a refresh).
+        void RefreshManipulatorSpaces();         //!< Mark the component mode intersection data dirty after a layer swap.
         void ClearWorkingLayer();            //!< Reset the working members to empty (used when there are zero layers).
         AZ::Crc32 OnApplyLayerTransform();   //!< Bake the active layer's transform into its geometry, then reset it.
         //! Combine every visible layer in list order per its combine mode (the active one from
@@ -702,9 +761,6 @@ namespace WhiteBox
         //! Regenerate a parametric layer from its parameters and rebuild. With @p commit false (a preview)
         //! the stream write, cook and bake are deferred.
         void RegenerateParametricLayer(int index, bool commit = true);
-        //! RebuildWhiteBox without the synchronous collider cook and game-mode bake - both are queued
-        //! on m_rebuild and run from OnTick once the edits stop arriving. For streaming edits only.
-        void RebuildWhiteBoxDeferred();
 
         //! The mesh used for RENDER / collision / bounds / selection. In live
         //! (non-destructive) boolean mode this is the evaluated result; otherwise
@@ -801,6 +857,12 @@ namespace WhiteBox
         bool m_useGlobalTint = true; //!< When set, every layer renders with the global material tint; otherwise each layer uses its own tint.
         AZ::Data::AssetId m_materialOverrideAssetId; //!< External material asset override (invalid = built-in material).
         FacePaintSettings m_facePaintSettings; //!< Transient brush settings, not scene data.
+        //! Latched Extrude / Inset, transient like the brush settings above.
+        bool m_stickyExtrude = false;
+        bool m_stickyInset = false;
+        //! What the next bevel starts with. Transient tool state like the brush settings above, not
+        //! scene data - a running bevel keeps its own values on the layer.
+        BevelParams m_pendingBevelParams;
         //! Scratch storage for the batched viewport debug lines, kept so drawing does not reallocate
         //! every frame. Never serialized; contents are meaningless between draws.
         AZStd::vector<AZ::Vector3> m_debugLineBuffer;
