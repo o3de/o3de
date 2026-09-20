@@ -26,7 +26,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(AspectRatioAwarePixmapWidget, AZ::SystemAllocator);
 
-        explicit AspectRatioAwarePixmapWidget(QWidget* parent = 0);
+        explicit AspectRatioAwarePixmapWidget(QWidget* parent = nullptr);
 
         const QPixmap* pixmap() const { return &m_pixmap; }
         void setPixmap(const QPixmap& p);

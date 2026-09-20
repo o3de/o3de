@@ -1,0 +1,14 @@
+ShaderResourceGroupSemantic sem
+{FrequencyId = 0;};
+
+ShaderResourceGroup Srg : sem
+{
+    int zero() { return 0; }
+}
+
+void F()
+{
+    enum class EC { A, B } a;
+    EC b = EC::B;
+    enum class EC2 { A, B, C } c = EC2::C, d, e, f = (EC2)(((int)EC::A) + Srg::zero());
+}

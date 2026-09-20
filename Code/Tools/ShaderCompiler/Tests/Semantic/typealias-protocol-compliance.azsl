@@ -1,0 +1,15 @@
+interface Producer
+{
+    associatedtype Tea;
+    
+    Tea makeTea();
+};
+
+struct Darjeeling{};
+
+class Srilanka : Producer
+{
+    typealias Tea = Darjeeling;
+    
+    Darjeeling makeTea();
+};

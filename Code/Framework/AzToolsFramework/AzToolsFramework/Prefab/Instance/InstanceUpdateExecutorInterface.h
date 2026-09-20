@@ -34,7 +34,10 @@ namespace AzToolsFramework
 
             //! Updates instances in the waiting queue.
             //! @return bool on whether the operation succeeds.
-            virtual bool UpdateTemplateInstancesInQueue() = 0;
+            //! @param flush (default true) - if set to true, all instances in the queue will be updated in one go.
+            //!     Otherwise, the update executor can update a limited number per call and will continue to do so each time
+            //!     this function is called until the queue is empty.
+            virtual bool UpdateTemplateInstancesInQueue(bool flush = true) = 0;
 
             //! @return bool on whether instances are currently updated in the waiting queue.
             virtual bool IsUpdatingTemplateInstancesInQueue() const = 0;

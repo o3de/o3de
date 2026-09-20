@@ -7,6 +7,8 @@
 
 import argparse
 import contextlib
+import ctypes
+import fnmatch
 import io
 import json
 import os
@@ -26,6 +28,7 @@ from command_plugin import (
     CMakeTarget, CMakeAnalyzer
 )
 from commands.exclude_conditional_files import ConditionalFileExcluder
+from wizard_logging import IN_EDITOR, wizard_log, wizard_error
 
 
 # ============================================================================
@@ -39,11 +42,17 @@ from commands.exclude_conditional_files import ConditionalFileExcluder
 # standalone tool launched through python/python.cmd cannot.
 #
 # To run standalone we locate the exact Qt-matched pyside6 and qt 3rdParty
-# packages the engine downloaded and place the PySide6 Python package plus the
-# native DLL folders on the path BEFORE importing PySide6. This reuses the
+# packages the engine downloaded, put the PySide6 Python package on sys.path and
+# make its native libraries loadable BEFORE importing PySide6. This reuses the
 # shipped, ABI-correct build: no PyPI wheel, no venv mutation, no dependence on
 # the host machine's Python. The whole step is skipped when PySide6 already
 # imports (e.g. a developer running under a system Python that provides it).
+#
+# "Make the native libraries loadable" is platform-split, because the loaders are:
+# Windows resolves a .pyd's dependencies from an in-process DLL search list that
+# os.add_dll_directory() can extend, while the ELF/Mach-O loaders have no such
+# list (LD_LIBRARY_PATH is captured at process start), so there the libraries are
+# dlopen'd by absolute path with RTLD_GLOBAL instead.
 
 
 def _pyside6_engine_root() -> Optional[Path]:
@@ -78,20 +87,95 @@ def _pyside6_packages_folder(engine_root: Path) -> Path:
             sys.path.pop(0)
 
 
-def _pyside6_newest_package(packages: Path, prefix: str, subpath: str) -> Optional[Path]:
-    """Newest downloaded package matching '<prefix>*' whose <subpath> exists.
-    'Newest' == highest folder name, which orders revisions correctly
-    (e.g. pyside6-6.10.2-py3.10-rev4 sorts above ...-rev1)."""
-    matches = sorted((p for p in packages.glob(prefix + "*") if p.is_dir()), reverse=True)
-    for pkg in matches:
-        target = pkg / subpath
-        if target.exists():
-            return target
+def _pal_platform_name() -> str:
+    """O3DE's name for this platform, as used in the cmake/ directory layout."""
+    if sys.platform.startswith("win"):
+        return "Windows"
+    if sys.platform == "darwin":
+        return "Mac"
+    return "Linux"
+
+
+def _natural_key(name: str) -> List[Any]:
+    """Sort key that compares embedded numbers numerically, so 'rev10' orders
+    above 'rev9' and '6.10' above '6.9'. A plain string sort gets both backwards."""
+    return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", name)]
+
+
+# ly_associate_package(PACKAGE_NAME <name> TARGETS <target> PACKAGE_HASH <hash>)
+_PACKAGE_PIN_RE = re.compile(
+    r"ly_associate_package\s*\(\s*PACKAGE_NAME\s+(?P<name>\S+)\s+TARGETS\s+(?P<target>\S+)",
+    re.IGNORECASE)
+
+
+def _pinned_package_names(engine_root: Path, target: str) -> List[str]:
+    """Exact 3rdParty package names this engine is built against for a target.
+
+    Two locations are searched because an installed SDK does not ship the source
+    tree's BuiltInPackages files: the install EXCLUDES them and writes a
+    generated per-permutation copy under Platform/<PAL>/<permutation>/ instead
+    (see cmake/Platform/Common/Install_common.cmake). Only this platform's
+    directory is read, so another platform's pins can never be selected."""
+    platform_dir = engine_root / "cmake" / "3rdParty" / "Platform" / _pal_platform_name()
+    if not platform_dir.is_dir():
+        return []
+
+    names = []
+    for cmake_file in sorted(platform_dir.glob("**/BuiltInPackages_*.cmake")):
+        try:
+            text = cmake_file.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for match in _PACKAGE_PIN_RE.finditer(text):
+            if match.group("target").lower() == target.lower():
+                names.append(match.group("name"))
+    return names
+
+
+def _pyside6_resolve_package(packages: Path, engine_root: Path, target: str,
+                             prefix: str, subpath: str) -> Optional[Path]:
+    """<subpath> inside the 3rdParty package this engine should be using.
+
+    The engine pins an EXACT package per platform, and that pin is honoured
+    first. Picking the newest package on disk instead is not a safe default: a
+    machine can hold several revisions (and the same engine pins different qt
+    revisions on different platforms), so the newest is not necessarily the one
+    this engine was built against -- and pointing a running editor at a
+    different Qt's plugins is a real mismatch, not a cosmetic one.
+
+    Falling back to the newest on disk only happens when no pin is readable or
+    none of the pinned packages has been downloaded."""
+    pattern = prefix + "*"
+    pinned = [packages / name for name in _pinned_package_names(engine_root, target)]
+    newest = sorted((p for p in packages.glob(pattern) if p.is_dir()),
+                    key=lambda p: _natural_key(p.name), reverse=True)
+
+    for pkg in pinned + newest:
+        if not fnmatch.fnmatch(pkg.name, pattern):
+            continue
+        candidate = pkg / subpath
+        if candidate.exists():
+            return candidate
     return None
 
 
+def _pyside6_site_packages_subpath() -> str:
+    """Where the pyside6 3rdParty package keeps its Python package. The layout is
+    platform-dependent -- see the package's own Findpyside6.cmake, which pip
+    -installs 'pyside6/lib/site-packages' on Windows but
+    'pyside6/lib/python<X.Y>/site-packages' on Linux and Mac."""
+    if sys.platform.startswith("win"):
+        return "pyside6/lib/site-packages"
+    return f"pyside6/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
+
+
 def _pyside6_add_dll_dir(path: Path) -> None:
-    """Make a native DLL folder discoverable to the dynamic loader."""
+    """Windows: make a native DLL folder discoverable to the loader. Since Python
+    3.8 a .pyd's dependent DLLs are resolved from the add_dll_directory list
+    rather than from PATH, so both are updated. The ELF and Mach-O loaders expose
+    no equivalent in-process hook -- LD_LIBRARY_PATH is read once at process
+    start and PATH means nothing to them -- so Linux and Mac use
+    _pyside6_preload_libraries() instead."""
     if not path.is_dir():
         return
     if hasattr(os, "add_dll_directory"):        # Windows, Python 3.8+
@@ -102,7 +186,53 @@ def _pyside6_add_dll_dir(path: Path) -> None:
     os.environ["PATH"] = str(path) + os.pathsep + os.environ.get("PATH", "")
 
 
-def _bootstrap_pyside6() -> None:
+# Qt libraries the o3de PySide6 build binds against, ordered so each one is
+# preloaded before anything that depends on it (Core is needed by all of them).
+_PYSIDE6_QT_PRELOAD = [
+    "libQt6Core", "libQt6DBus", "libQt6Network", "libQt6Gui", "libQt6Widgets",
+    "libQt6OpenGL", "libQt6PrintSupport", "libQt6Svg", "libQt6Xml", "libQt6Test",
+]
+
+
+def _running_executable_dir() -> Optional[Path]:
+    """Directory of the host executable. Inside the editor this is where the
+    build copied PySide6's native runtime dependencies, and that copy is the one
+    the running Qt was built against. sys.executable is unreliable under an
+    embedded interpreter -- the editor starts Python from an isolated PyConfig
+    that never sets program_name -- so Linux reads /proc/self/exe first."""
+    proc_exe = Path("/proc/self/exe")
+    try:
+        if proc_exe.exists():
+            return proc_exe.resolve().parent
+    except OSError:
+        pass
+    return Path(sys.executable).resolve().parent if sys.executable else None
+
+
+def _pyside6_preload_libraries(lib_dirs: List[Path], stems: List[str]) -> None:
+    """Linux/Mac stand-in for a DLL search directory: dlopen each library by
+    ABSOLUTE path with RTLD_GLOBAL so that a later DT_NEEDED on its SONAME
+    resolves to the copy we just loaded. This is the only in-process fix those
+    loaders allow, and it is the same mechanism the QtForPython gem uses to give
+    the editor a working PySide6 (see
+    Gems/QtForPython/Code/Source/Platform/Linux/InitializeEmbeddedPyside.h).
+    'stems' must be ordered dependencies-first; 'lib_dirs' is searched in
+    preference order and the first copy that loads wins."""
+    for stem in stems:
+        # 'libshiboken6.abi3' -> libshiboken6.abi3.so / .so.6.10 / .dylib, plus
+        # non-library siblings such as .prl. Loading by absolute path registers
+        # the object under its own SONAME whichever spelling we pick, so the
+        # first candidate that actually loads is enough.
+        candidates = [lib for d in lib_dirs if d.is_dir() for lib in sorted(d.glob(stem + ".*"))]
+        for lib in candidates:
+            try:
+                ctypes.CDLL(str(lib), mode=ctypes.RTLD_GLOBAL)
+                break
+            except OSError:
+                continue
+
+
+def _bootstrap_pyside6(embedded_editor: bool = False) -> None:
     """Put O3DE's shipped PySide6 on the path so a standalone launch can import
     it. Safe to call when PySide6 is partially available."""
     engine_root = _pyside6_engine_root()
@@ -119,24 +249,45 @@ def _bootstrap_pyside6() -> None:
     #    shiboken6.Shiboken .pyd absent -> "No module named 'shiboken6.Shiboken'"),
     #    and the engine's complete 3rdParty copy must win over that.
     py_tag = f"py{sys.version_info.major}.{sys.version_info.minor}"
-    site_packages = _pyside6_newest_package(packages, f"pyside6-*-{py_tag}-", "pyside6/lib/site-packages")
+    site_packages = _pyside6_resolve_package(packages, engine_root, "pyside6",
+                                             f"pyside6-*-{py_tag}-", _pyside6_site_packages_subpath())
     if site_packages is None or not (site_packages / "PySide6").is_dir():
         return  # No interpreter-matched engine package; leave any existing PySide6 alone.
     sys.path.insert(0, str(site_packages))
+    pyside_root = next(p for p in site_packages.parents if p.name == "pyside6")
 
-    # 2. Make PySide6's native Qt6 dependencies discoverable. This is required
-    #    even when the PySide6 package itself is already importable: the Qt6 DLLs
-    #    it links against are not on a standalone interpreter's DLL search path,
-    #    so 'import PySide6.QtCore' fails with "DLL load failed" without it. The
-    #    pyside6 and qt 3rdParty package bin folders are build-independent; the
-    #    engine's built bin/<config> is added too when present as an exact match.
-    _pyside6_add_dll_dir(site_packages.parent.parent / "bin")           # <pyside6-pkg>/pyside6/bin
-    qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
-    if qt_bin is not None:
-        _pyside6_add_dll_dir(qt_bin)
-    for built_bin in engine_root.glob("build/*/bin/*"):
-        if (built_bin / "Qt6Core.dll").exists() or (built_bin / "libQt6Core.so.6").exists():
-            _pyside6_add_dll_dir(built_bin)
+    # 2. Make PySide6's native dependencies loadable. This is required even when
+    #    the PySide6 Python package is already importable: the shiboken6/pyside6
+    #    and Qt6 shared libraries it links against are not on the interpreter's
+    #    library search path, so 'import PySide6.QtCore' fails with "DLL load
+    #    failed" (Windows) or "libshiboken6.abi3.so.6.10: cannot open shared
+    #    object file" (Linux) without it.
+    if sys.platform.startswith("win"):
+        # Search paths are enough on Windows; the engine's built bin/<config> is
+        # added too when it is an exact match for the loaded Qt.
+        _pyside6_add_dll_dir(pyside_root / "bin")
+        qt_bin = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/bin")
+        if qt_bin is not None:
+            _pyside6_add_dll_dir(qt_bin)
+        for built_bin in engine_root.glob("build/*/bin/*"):
+            if (built_bin / "Qt6Core.dll").exists():
+                _pyside6_add_dll_dir(built_bin)
+    else:
+        # Linux/Mac have no search path to extend, so the libraries are preloaded
+        # instead. Inside the editor Qt6 is already mapped into the process, and
+        # dlopening the 3rdParty package's copy on top of it would leave the
+        # process with two Qt instances -- so only shiboken6/pyside6, the pieces
+        # that are genuinely missing there, are preloaded.
+        if not embedded_editor:
+            qt_lib = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/lib")
+            if qt_lib is not None:
+                _pyside6_preload_libraries([qt_lib], _PYSIDE6_QT_PRELOAD)
+        # Prefer the copy sitting next to the running executable: in the editor
+        # that is the build's own runtime-dependency copy, already ABI-paired
+        # with the Qt in the process. The 3rdParty package it was copied from is
+        # the fallback, and the only source a standalone launch has.
+        pyside_lib_dirs = [d for d in (_running_executable_dir(), pyside_root / "lib") if d is not None]
+        _pyside6_preload_libraries(pyside_lib_dirs, ["libshiboken6.abi3", "libpyside6.abi3"])
 
     # 3. Point Qt at its platform plugins. The o3de pyside6 package does not
     #    bundle a 'platforms/' folder -- it links against the engine's Qt, whose
@@ -146,7 +297,7 @@ def _bootstrap_pyside6() -> None:
     #    editor's Gems/QtForPython/Editor/Scripts/bootstrap.py. Do not clobber a
     #    value the caller already set (e.g. when embedded in the Editor).
     if not os.environ.get("QT_PLUGIN_PATH"):
-        qt_plugins = _pyside6_newest_package(packages, "qt-", "qt/plugins")
+        qt_plugins = _pyside6_resolve_package(packages, engine_root, "Qt", "qt-", "qt/plugins")
         if qt_plugins is not None:
             os.environ["QT_PLUGIN_PATH"] = str(qt_plugins)
 
@@ -154,33 +305,34 @@ def _bootstrap_pyside6() -> None:
 # Try the NATURAL import first -- exactly as any O3DE-tied Python app would, using
 # only whatever the engine's Python environment provides. If that works, we touch
 # nothing. If it fails, engage the wizard's own PySide6 bootstrap so the tool runs
-# anywhere (terminal, VS, Rider, an extension, ...).
+# anywhere (terminal, VS, Rider, an extension, the editor, ...).
 #
-# The bootstrap is EXPECTED for a standalone launcher: a .pyd's dependent DLLs are
-# not resolved from PATH since Python 3.8, so a bare interpreter genuinely cannot
-# load Qt without an in-process os.add_dll_directory -- which only code inside the
-# process (this bootstrap) can do. So that case stays silent. Only the O3DE editor's
-# EMBEDDED interpreter is expected to hand us a fully working PySide6; a failure
-# there is unexpected and worth flagging, since it points at a broken engine Python.
-# The probe is expected to fail (and print its own diagnostic) on a bare launcher,
-# so capture its stderr; we only re-surface it in the unexpected (editor) case.
+# Falling back is NORMAL, not a fault, and is reported that way. The o3de pyside6
+# 3rdParty package keeps its native libraries in pyside6/lib and pyside6/bin, away
+# from the extension modules in site-packages that link against them, so those
+# modules cannot resolve their own dependencies: a standalone interpreter has no
+# Qt6 on its DLL search path, and on Linux nothing can be added to that path after
+# the process starts. Recovering from that in-process is this bootstrap's whole
+# job, so a recovery earns one plain line, not an error.
+#
+# The probe's own stderr is captured rather than printed: it names the library
+# that failed to load, which is the single most useful thing to show if the retry
+# ALSO fails -- and pure noise if it succeeds.
+_pyside_fallback_reason = ""     # non-empty once the natural import has failed
+_pyside_probe_diag = ""
+
 _pyside_probe_stderr = io.StringIO()
 try:
     with contextlib.redirect_stderr(_pyside_probe_stderr):
         import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
 except BaseException as _natural_pyside_err:
-    try:
-        import azlmbr  # noqa: F401  -- importable only in the editor's embedded interpreter
-        _in_embedded_editor = True
-    except Exception:
-        _in_embedded_editor = False
-
     if isinstance(_natural_pyside_err, ModuleNotFoundError):
-        _pyside_reason = "PySide6/shiboken6 native module missing from the venv"
+        _pyside_fallback_reason = "PySide6/shiboken6 not present in this interpreter"
     elif isinstance(_natural_pyside_err, ImportError):
-        _pyside_reason = "Qt6 DLLs not on the interpreter's search path"
+        _pyside_fallback_reason = "native Qt6/shiboken6 libraries not on the interpreter's search path"
     else:
-        _pyside_reason = type(_natural_pyside_err).__name__
+        _pyside_fallback_reason = type(_natural_pyside_err).__name__
+    _pyside_probe_diag = _pyside_probe_stderr.getvalue().strip()
 
     # Drop any partially-initialized modules so the retry resolves from our path.
     for _m in [m for m in list(sys.modules)
@@ -188,23 +340,9 @@ except BaseException as _natural_pyside_err:
         del sys.modules[_m]
 
     try:
-        _bootstrap_pyside6()
+        _bootstrap_pyside6(IN_EDITOR)
     except Exception:
-        pass  # Fall through: the import below raises a clear, actionable error.
-
-    if _in_embedded_editor:
-        # Unexpected: the editor's embedded interpreter should already provide
-        # PySide6. Falling back here suggests a broken engine Python environment.
-        print(
-            f"[ClassWizard] Unexpected: PySide6 was not importable from the O3DE "
-            f"editor's Python environment ({_pyside_reason}); fell back to the "
-            f"wizard's own bootstrap. This usually means the engine's Python setup "
-            f"is broken.",
-            file=sys.stderr,
-        )
-        _probe_diag = _pyside_probe_stderr.getvalue().strip()
-        if _probe_diag:
-            print(_probe_diag, file=sys.stderr)
+        pass  # Fall through: the import below reports and raises.
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
@@ -216,14 +354,25 @@ try:
     )
     from PySide6.QtGui import QIcon
 except ImportError as pyside_import_error:
+    # The bootstrap could not recover either. THIS is the failure worth raising
+    # loudly: the wizard cannot open. Lead with the probe's diagnostic, which
+    # names the library that would not load.
+    if _pyside_probe_diag:
+        wizard_error(_pyside_probe_diag)
     raise ImportError(
         "PySide6 could not be imported. O3DE ships PySide6 as a runtime "
-        "dependency of the QtForPython gem (copied next to Editor.exe), not in "
-        "the Python venv, so the standalone ClassWizard bootstraps it from the "
+        "dependency of the QtForPython gem (copied next to the editor binary), "
+        "not in the Python venv, so the ClassWizard bootstraps it from the "
         "engine's 3rdParty packages. Ensure --engine-path points at an engine "
         "whose 'pyside6' and 'qt' 3rdParty packages have been downloaded (they "
         "are fetched during the engine's CMake configure)."
     ) from pyside_import_error
+
+if _pyside_fallback_reason:
+    # Recovered. One plain line so the log says where PySide6 came from, with
+    # nothing implying the user needs to do anything about it.
+    wizard_log(f"Loaded PySide6 from the engine's 3rdParty packages "
+               f"({_pyside_fallback_reason}).")
 
 
 # ============================================================================
@@ -372,6 +521,11 @@ WINDOW_STYLESHEET = """
         border-radius: $ClassWizardControlRadius;
         padding: 8px 20px;
         font-weight: bold;
+    }
+    /* The browse button is a fixed 40px square, which the 20px horizontal
+       padding above would consume entirely -- leaving no room for its label. */
+    QPushButton[compactButton="true"] {
+        padding: 8px 0px;
     }
     QPushButton:hover {
         background-color: $ClassWizardAccentHoverColor;
@@ -794,7 +948,7 @@ class WizardTemplateScanner:
     """Discovers templates with class_wizard definitions"""
 
     def __init__(self, logger: Optional[Callable[[str], None]] = None):
-        self.logger = logger or print
+        self.logger = logger or wizard_log
 
     def log(self, message: str):
         self.logger(message)
@@ -852,8 +1006,12 @@ class WizardTemplateScanner:
         if engine_path:
             try:
                 with o3de_manifest_api(engine_path) as manifest:
+                    # The manifest seeds every gem name with a None path and only
+                    # fills in the ones it can resolve, so a single unregistered
+                    # gem in project.json leaves a None behind. Drop those rather
+                    # than letting Path(None) throw away the whole resolution.
                     mapping = manifest.get_project_enabled_gems(project_path) or {}
-                    return [Path(p) for p in mapping.values() if Path(p).is_dir()]
+                    return [Path(p) for p in mapping.values() if p and Path(p).is_dir()]
             except Exception as e:
                 self.log(f"Warning: manifest API unavailable ({e}), falling back to manual resolution")
 
@@ -1205,6 +1363,12 @@ class GemDiscovery:
                 include_dependencies=include_dependencies
             ) or {}
 
+            # O3DE registers a project as a gem of its own: <project>/Gem/gem.json
+            # carries gem_name == project_name. The caller already offers that as
+            # the "Project" target, so it is filtered out below.
+            project_name = (manifest.get_project_json_data(project_path=project_path)
+                            or {}).get("project_name", "")
+
             # Build an allowlist of user-registered gem roots using the manifest API.
             # Covers: ~/.o3de/o3de_manifest.json external_subdirectories and
             #         project.json external_subdirectories.
@@ -1260,6 +1424,14 @@ class GemDiscovery:
                 except Exception:
                     pass
 
+            # Filter 3: skip the project's own gem. It is already the "Project"
+            # target, and listing it again as an external gem resolved its CMake
+            # directory as <gem>/Code -- the layout every OTHER gem uses, but not
+            # this one, whose CMakeLists.txt sits at the gem root. That second
+            # entry could only ever report "no CMake targets found".
+            if project_name and name == project_name:
+                continue
+
             gems.append(GemInfo(name, gem_path))
 
         gems.sort(key=lambda g: g.name.lower())
@@ -1275,7 +1447,7 @@ class ComponentCreator:
 
     def __init__(self, engine_path: Path, logger=None):
         self.engine_path = engine_path
-        self.logger = logger or print
+        self.logger = logger or wizard_log
         self.template_scanner = WizardTemplateScanner(logger=self.log)
 
     def log(self, message: str):
@@ -1443,6 +1615,14 @@ class ComponentCreator:
             except Exception:
                 pass
 
+    def _log_child_output(self, label: str, *streams: Optional[str]) -> None:
+        """Echo a child process's output, tagged with the tool that produced it
+        so it is never mistaken for the wizard's own reporting."""
+        for stream in streams:
+            for line in (stream or "").splitlines():
+                if line.strip():
+                    self.log(f"{label}: {line}")
+
     def _create_staged_component(self, stage_dir: Path, namespace: str,
                                 component_name: str, component_template: str,
                                 keep_license: bool,
@@ -1490,20 +1670,16 @@ class ComponentCreator:
                 check=True
             )
             
-            if result.stdout:
-                for line in result.stdout.splitlines():
-                    if line.strip():
-                        self.log(line)
-            
+            # The child's own chatter (its version banner, progress notes) says
+            # nothing the lines below do not, and echoing it unlabelled made the
+            # o3de CLI's output read as the wizard's. Keep it for the failure
+            # path, where it is the diagnostic.
             self.log(f"Successfully created staged component: {component_name}")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             self.log(f"Failed to create component (exit code {e.returncode})")
-            if e.stdout:
-                self.log(e.stdout)
-            if e.stderr:
-                self.log(e.stderr)
+            self._log_child_output("o3de", e.stdout, e.stderr)
             return False
         except Exception as e:
             self.log(f"Error: {e}")
@@ -1800,6 +1976,14 @@ class ClassWizardWindow(QMainWindow):
     DEFAULT_WIDTH = 650
     DEFAULT_HEIGHT = 900
 
+    # Height the wizard's own stylesheet produces for a push button (its 8px
+    # vertical padding plus the label). Re-asserted after show by
+    # _assert_button_heights, which explains why.
+    BUTTON_HEIGHT = 32
+
+    # Width of the square browse button beside the path field.
+    BROWSE_BUTTON_WIDTH = 40
+
     def __init__(self, engine_path: Path, project_path: Optional[Path] = None):
         super().__init__()
 
@@ -1874,7 +2058,10 @@ class ClassWizardWindow(QMainWindow):
         path_layout = QHBoxLayout()
         self.target_path_edit = QLineEdit()
         self.browse_btn = QPushButton("...")
-        self.browse_btn.setMaximumWidth(40)
+        self.browse_btn.setProperty("compactButton", True)
+        # Fixed, not just capped: with the compact rule's zero horizontal padding
+        # the button would otherwise shrink to the width of its own label.
+        self.browse_btn.setFixedWidth(self.BROWSE_BUTTON_WIDTH)
         self.browse_btn.clicked.connect(self._browse_destination)
         path_layout.addWidget(self.target_path_edit)
         path_layout.addWidget(self.browse_btn)
@@ -2034,7 +2221,12 @@ class ClassWizardWindow(QMainWindow):
             if not CommandRegistry.list_commands():
                 tool_dir = Path(__file__).resolve().parent
                 plugin_loader = CommandPluginLoader(logger=self.log)
+                # self.gems holds EXTERNAL gems only, so the project's own gem
+                # directory is added back here: it is not a target of its own,
+                # but it can still carry command plugins.
                 gem_paths = [gem.path for gem in self.gems if hasattr(gem, 'path') and gem.path]
+                if self.project_path:
+                    gem_paths.append(self.project_path / "Gem")
                 plugin_loader.discover_and_load(tool_dir, self.project_path, gem_paths)
             else:
                 self.log(f"Command plugins already loaded ({len(CommandRegistry.list_commands())} commands)")
@@ -2504,10 +2696,36 @@ class ClassWizardWindow(QMainWindow):
         window.moveCenter(screen.center())
         self.move(window.topLeft())
 
+        # Take the buttons back from the host style, which has polished them by now.
+        self._assert_button_heights()
+
         # Embedded in the editor the window can open unpainted (black) until it
         # receives a resize event. Generate one programmatically -- the same
         # redraw the user otherwise triggers by dragging the window edge.
         QTimer.singleShot(0, self._force_initial_paint)
+
+    def _assert_button_heights(self):
+        """Restore the wizard's own button height after the host style has run.
+
+        The O3DE editor's style claims every QPushButton in the process: its
+        polish() calls setMaximumHeight(defaultFrame.height) and its
+        sizeFromContents() forces that same height, with the value coming from
+        the editor's theme (AzQtComponents::PushButton, whose .qss states
+        outright that button geometry and painting are done in code). That runs
+        after the buttons are built, so the wizard's stylesheet loses and the
+        buttons come out shorter than they do standalone -- squeezed inside a
+        row still sized for the taller button.
+
+        Applies to every button in the window, not just Create/Cancel: the host
+        style claims all of them, and the browse button sits beside a line edit
+        that is NOT capped, so it would misalign too.
+
+        Standalone this is a no-op: BUTTON_HEIGHT is the height the stylesheet
+        produces there anyway.
+        """
+        for button in self.findChildren(QPushButton):
+            button.setMinimumHeight(self.BUTTON_HEIGHT)
+            button.setMaximumHeight(self.BUTTON_HEIGHT)
 
     def _force_initial_paint(self):
         """Nudge the window size by 1px and back to emit a resize event.
@@ -2820,7 +3038,7 @@ def create_component_cli(args, template: WizardTemplate, engine_path: Path, proj
         }
 
         # Create component
-        creator = ComponentCreator(engine_path, logger=print)
+        creator = ComponentCreator(engine_path, logger=wizard_log)
         return creator.create_component(config)
 
     except Exception as e:
@@ -2870,7 +3088,7 @@ def main():
         gem_paths = []
         if project_path:
             scanner = WizardTemplateScanner()
-            gem_paths = scanner._resolve_project_gem_paths(project_path)
+            gem_paths = scanner._resolve_project_gem_paths(project_path, engine_path)
         loader.discover_and_load(tool_dir, project_path, gem_paths)
 
     # Discover templates if engine path is valid
@@ -2941,42 +3159,43 @@ def main():
         success = create_component_cli(args, template, engine_path, project_path)
         return 0 if success else 1
     else:
-        # GUI mode - check if QApplication already exists
+        # GUI mode. Standalone owns its QApplication; inside the O3DE Editor we
+        # borrow the one already running and must leave its global state alone.
         app = QApplication.instance()
-        if app is None:
-            # Create new QApplication (standalone mode)
+        standalone = app is None
+        if standalone:
             app = QApplication(sys.argv)
             app.setStyle('Fusion')
 
-            # Set application icon if available
-            icon_path = engine_path / "Assets" / "Editor" / "UI" / "Icons" / "Editor Settings Manager.png"
-            if icon_path.exists():
-                app.setWindowIcon(QIcon(str(icon_path)))
+        window = ClassWizardWindow(engine_path, project_path)
 
-            window = ClassWizardWindow(engine_path, project_path)
+        # Set the icon on the WINDOW, not the application: embedded, the
+        # application icon belongs to the editor and replacing it would rebrand
+        # the editor itself.
+        icon_path = engine_path / "Assets" / "Editor" / "UI" / "Icons" / "Editor Settings Manager.png"
+        if icon_path.exists():
+            window.setWindowIcon(QIcon(str(icon_path)))
+
+        if standalone:
             window.show()
-
             return app.exec()
-        else:
-            # Use existing QApplication (inside O3DE Editor)
-            # Use setAttribute to ensure window is deleted when closed
-            window = ClassWizardWindow(engine_path, project_path)
-            window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
-            window.show()
 
-            # Keep window alive - store reference
-            if not hasattr(app, '_o3de_wizard_windows'):
-                app._o3de_wizard_windows = []
-            app._o3de_wizard_windows.append(window)
+        # Embedded: the editor owns the event loop and this call returns
+        # immediately, so the window needs an owner to outlive it.
+        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        window.show()
 
-            # Clean up reference when window closes
-            def cleanup():
-                if window in app._o3de_wizard_windows:
-                    app._o3de_wizard_windows.remove(window)
+        if not hasattr(app, '_o3de_wizard_windows'):
+            app._o3de_wizard_windows = []
+        app._o3de_wizard_windows.append(window)
 
-            window.destroyed.connect(cleanup)
+        def cleanup():
+            if window in app._o3de_wizard_windows:
+                app._o3de_wizard_windows.remove(window)
 
-            return 0
+        window.destroyed.connect(cleanup)
+
+        return 0
 
 if __name__ == "__main__":
     try:

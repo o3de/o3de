@@ -45,7 +45,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     if (!noPrompt && status != ReturnCode::Success)
     {
-        MessageBoxA(0, GetReturnCodeString(status), "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
+        MessageBoxA(nullptr, GetReturnCodeString(status), "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
     }
 #endif // !O3DE_HEADLESS_SERVER
 

@@ -366,5 +366,13 @@ namespace O3DE::ProjectManager
 
             return AZ::Success(QObject::tr("A desktop shortcut has been successfully created.<br>You can view the file <a href=\"%1\">here</a>.").arg(desktopPath));
         }
+
+        bool DeleteDesktopShortcut(const QString& filename)
+        {
+            const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+            const QString shortcutPath = QString("%1/%2.lnk").arg(desktopPath).arg(filename);
+
+            return QFile::remove(shortcutPath);
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

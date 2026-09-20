@@ -6,7 +6,7 @@
  *
  */
 
-#include <AtomCore/std/containers/small_vector.h>
+#include <AzCore/std/containers/small_vector.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversions.h>

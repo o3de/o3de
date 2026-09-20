@@ -58,7 +58,7 @@ class CToolBoxMacro
     friend class CToolBoxManager;
 public:
     CToolBoxMacro(const QString& title)
-        : m_action(title, 0)
+        : m_action(title, nullptr)
         , m_toolbarId(INVALID_TOOLBAR_ID)
     {
         QObject::connect(&m_action, &QAction::triggered, &m_action, [this]() { Execute(); });

@@ -14,6 +14,8 @@
 #include <Window/EffectorInspector.h>
 #include <Document/ParticleDocumentBus.h>
 #include <OpenParticleSystemEditor/Window/AssetWidget.h>
+#include <Window/MaterialPropertyDialog.h>
+#include <QMessageBox>
 
 namespace OpenParticleSystemEditor
 {
@@ -55,7 +57,17 @@ namespace OpenParticleSystemEditor
 
         InitComboBox();
 
+        m_detail = detail;
+
         m_materialAssetWidget = new AssetWidget(MATERIAL_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::MaterialAsset>(), this);
+        m_materialPropertiesButton = new QPushButton(tr("Edit Material Properties..."), this);
+        m_materialPropertiesButton->setToolTip(
+            tr("Override material property values for this emitter only. Other emitters using the same "
+               "material are unaffected."));
+        connect(m_materialPropertiesButton, &QPushButton::clicked, this, &ComboBoxWidget::OpenMaterialPropertyDialog);
+        m_clearOverridesButton = new QPushButton(tr("Clear Overrides"), this);
+        m_clearOverridesButton->setToolTip(tr("Clear all material property overrides for this emitter."));
+        connect(m_clearOverridesButton, &QPushButton::clicked, this, &ComboBoxWidget::ClearMaterialOverrides);
         m_modelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), this);
         m_skeletonModelAssetWidget = new AssetWidget(MESH_DESCRIPTION.toUtf8().data(), azrtti_typeid<AZ::RPI::ModelAsset>(), this);
         
@@ -108,6 +120,10 @@ namespace OpenParticleSystemEditor
         m_layout->addLayout(hLayout);
         m_layout->addWidget(m_propertyEditor);
         m_layout->addWidget(m_materialAssetWidget);
+        QHBoxLayout* materialButtonLayout = new QHBoxLayout();
+        materialButtonLayout->addWidget(m_materialPropertiesButton, 1);
+        materialButtonLayout->addWidget(m_clearOverridesButton);
+        m_layout->addLayout(materialButtonLayout);
         m_layout->addWidget(m_modelAssetWidget);
         m_layout->addWidget(m_skeletonModelAssetWidget);
 
@@ -144,6 +160,8 @@ namespace OpenParticleSystemEditor
         m_layout->removeWidget(m_nameLabel);
         m_layout->removeWidget(m_comboBox);
         m_layout->removeWidget(m_materialAssetWidget);
+        // The two material buttons live in the nested materialButtonLayout, not in m_layout, so there is
+        // nothing to remove here - deleting them below detaches them from their own layout.
         m_layout->removeWidget(m_modelAssetWidget);
         m_layout->removeWidget(m_skeletonModelAssetWidget);
         m_propertyEditor->deleteLater();
@@ -160,6 +178,22 @@ namespace OpenParticleSystemEditor
 
         delete m_materialAssetWidget;
         m_materialAssetWidget = nullptr;
+
+        delete m_materialPropertiesButton;
+        m_materialPropertiesButton = nullptr;
+
+        delete m_clearOverridesButton;
+        m_clearOverridesButton = nullptr;
+
+        // The dialog holds a DetailInfo* owned by the source data, so it must not outlive this widget.
+        if (m_materialPropertyDialog != nullptr)
+        {
+            m_materialPropertyDialog->close();
+            delete m_materialPropertyDialog;
+            m_materialPropertyDialog = nullptr;
+        }
+
+        m_detail = nullptr;
 
         delete m_modelAssetWidget;
         m_modelAssetWidget = nullptr;
@@ -204,7 +238,10 @@ namespace OpenParticleSystemEditor
             [this, busWidgetName, materialAsset](AZ::Data::AssetId newId)
             {
                 *materialAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(newId, AZ::Data::AssetLoadBehavior::PreLoad);
+                // OnMaterialChanged syncs the detail onto the emitter and prunes overrides that the new
+                // material does not have, so the panel is rebuilt after that rather than before.
                 Q_EMIT(OnMaterialChanged());
+                RefreshMaterialProperties();
                 EBUS_EVENT_ID(busWidgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
             });
 
@@ -227,6 +264,103 @@ namespace OpenParticleSystemEditor
             });
     }
 
+    void ComboBoxWidget::RefreshMaterialProperties()
+    {
+        // Guard every pointer this touches, not just one of them: Clear() tears the widgets down one at a
+        // time, so checking a single member would leave a window where it is still set and the others are not.
+        if (m_materialPropertiesButton == nullptr || m_clearOverridesButton == nullptr || m_materialAssetWidget == nullptr)
+        {
+            return;
+        }
+
+        // Only offer property overrides where a material actually applies. isHidden rather than isVisible:
+        // this runs during construction, before the widget has a parent layout, and isVisible would report
+        // false for everything at that point.
+        const bool hasMaterial =
+            m_detail != nullptr && !m_materialAssetWidget->isHidden() && m_detail->m_material.GetId().IsValid();
+
+        m_materialPropertiesButton->setVisible(hasMaterial);
+
+        m_clearOverridesButton->setVisible(hasMaterial);
+        UpdateClearOverridesButtonState();
+
+        // Only touch the dialog if one is already open; this must not pop a window on its own.
+        if (m_materialPropertyDialog != nullptr)
+        {
+            m_materialPropertyDialog->SetDetail(hasMaterial ? m_detail : nullptr);
+        }
+    }
+
+    void ComboBoxWidget::OpenMaterialPropertyDialog()
+    {
+        if (m_detail == nullptr || !m_detail->m_material.GetId().IsValid())
+        {
+            return;
+        }
+
+        if (m_materialPropertyDialog == nullptr)
+        {
+            m_materialPropertyDialog = new MaterialPropertyDialog(this);
+            connect(
+                m_materialPropertyDialog, &MaterialPropertyDialog::OnMaterialPropertyChanged, this,
+                [this](bool editingFinished)
+                {
+                    UpdateClearOverridesButtonState();
+                    Q_EMIT OnMaterialPropertiesChanged(editingFinished);
+                });
+        }
+
+        m_materialPropertyDialog->SetDetail(m_detail);
+        m_materialPropertyDialog->show();
+        m_materialPropertyDialog->raise();
+        m_materialPropertyDialog->activateWindow();
+    }
+
+    void ComboBoxWidget::UpdateClearOverridesButtonState()
+    {
+        if (m_clearOverridesButton != nullptr)
+        {
+            m_clearOverridesButton->setEnabled(m_detail != nullptr && !m_detail->m_materialOverrides.empty());
+        }
+    }
+
+    void ComboBoxWidget::ClearMaterialOverrides()
+    {
+        if (m_detail == nullptr || m_detail->m_materialOverrides.empty())
+        {
+            return;
+        }
+
+        const int count = static_cast<int>(m_detail->m_materialOverrides.size());
+        if (QMessageBox::question(
+                this, tr("Clear Overrides"),
+                tr("Remove all %1 material property override(s) from this emitter?").arg(count),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+        {
+            return;
+        }
+
+        // QMessageBox spins a nested event loop, so the emitter panel could have been torn down while it was
+        // up. Re-check rather than trusting the pointer we validated before the prompt.
+        if (m_detail == nullptr)
+        {
+            return;
+        }
+
+        m_detail->m_materialOverrides.clear();
+
+        // Refresh the open inspector before notifying: the notification rebuilds the particle asset, and the
+        // dialog holds a DetailInfo* we want re-read while we still know it is valid.
+        if (m_materialPropertyDialog != nullptr)
+        {
+            m_materialPropertyDialog->SetDetail(m_detail);
+        }
+        UpdateClearOverridesButtonState();
+
+        // Same path a property edit takes: syncs the (now empty) map onto the emitter and marks the doc modified.
+        Q_EMIT OnMaterialPropertiesChanged(true);
+    }
+
     void ComboBoxWidget::SetAssetWidgetVisible()
     {
         m_materialAssetWidget->setVisible(false);
@@ -246,6 +380,8 @@ namespace OpenParticleSystemEditor
             m_materialAssetWidget->setVisible(true);
             m_modelAssetWidget->setVisible(true);
         }
+
+        RefreshMaterialProperties();
     }
 
     bool ComboBoxWidget::IsMeshRenderer() const

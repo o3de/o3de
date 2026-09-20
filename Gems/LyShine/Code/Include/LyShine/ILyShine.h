@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/PlatformDef.h>
 
 #include <LyShine/UiBase.h>
-#include <AtomCore/Instance/InstanceData.h>
 
 class IDraw2d;
 class ISprite;
@@ -137,4 +138,3 @@ LYSHINE_API ILyShine* CreateLyShineInterface(ISystem* system);
 #ifdef __cplusplus
 };
 #endif
-

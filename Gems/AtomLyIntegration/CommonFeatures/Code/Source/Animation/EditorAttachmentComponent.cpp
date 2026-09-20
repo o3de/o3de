@@ -73,7 +73,7 @@ namespace AZ
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
                             "https://www.o3de.org/docs/user-guide/components/reference/animation/attachment/")
-                        ->DataElement(0, &EditorAttachmentComponent::m_targetId, QT_TRANSLATE_NOOP("AtomLyIntegration", "Target entity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Attach to this entity."))
+                        ->DataElement(nullptr, &EditorAttachmentComponent::m_targetId, QT_TRANSLATE_NOOP("AtomLyIntegration", "Target entity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Attach to this entity."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(
                             AZ::Edit::UIHandlers::ComboBox, &EditorAttachmentComponent::m_targetBoneName, QT_TRANSLATE_NOOP("AtomLyIntegration", "Joint name"),
@@ -81,23 +81,23 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::StringList, &EditorAttachmentComponent::GetTargetBoneOptions)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetBoneChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_positionOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Position offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local position offset from target bone"))
+                            nullptr, &EditorAttachmentComponent::m_positionOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Position offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local position offset from target bone"))
                         ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AtomLyIntegration", "m"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_rotationOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Rotation offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local rotation offset from target bone"))
+                            nullptr, &EditorAttachmentComponent::m_rotationOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Rotation offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local rotation offset from target bone"))
                         ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AtomLyIntegration", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Min, -AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
-                        ->DataElement(0, &EditorAttachmentComponent::m_uniformScaleOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Scale offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local scale offset from target entity"))
+                        ->DataElement(nullptr, &EditorAttachmentComponent::m_uniformScaleOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Scale offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local scale offset from target entity"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_attachedInitially, QT_TRANSLATE_NOOP("AtomLyIntegration", "Attached initially"),
+                            nullptr, &EditorAttachmentComponent::m_attachedInitially, QT_TRANSLATE_NOOP("AtomLyIntegration", "Attached initially"),
                             QT_TRANSLATE_NOOP("AtomLyIntegration", "Whether to attach to target upon activation."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnAttachedInitiallyChanged)
                         ->DataElement(

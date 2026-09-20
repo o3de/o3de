@@ -14,11 +14,14 @@
 #include <RigidBodyComponent.h>
 #include <JointComponent.h>
 #include <BallJointComponent.h>
+#include <D6JointComponent.h>
 #include <FixedJointComponent.h>
 #include <HingeJointComponent.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/PhysXJointRequestsBus.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/math.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -265,6 +268,216 @@ namespace PhysX
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
         EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
+    }
+
+    // D6 drive tests
+    //
+    // The follower is a 1 DOF slider: linear X is free, everything else locked, so the drive on the X axis
+    // is the only thing that can move it. Gravity is off and the lead is heavy and stationary, which makes
+    // the follower's X displacement a direct readout of what the drive did.
+
+    namespace D6DriveTest
+    {
+        const AZ::Vector3 LeadPosition(5.0f, 0.0f, 0.0f);
+        const AZ::Vector3 FollowerPosition(-5.0f, 0.0f, 0.0f);
+        const AZ::Vector3 JointLocalPosition(5.0f, 0.0f, 0.0f);
+        const float LargeForceLimit = 1.0e6f;
+    }
+
+    AZStd::unique_ptr<AZ::Entity> AddD6FollowerEntity(
+        AzPhysics::SceneHandle sceneHandle,
+        const AZ::Vector3& position,
+        const AZ::Vector3& initialLinearVelocity,
+        AZStd::shared_ptr<JointComponentConfiguration> jointConfig,
+        const D6JointComponentConfiguration& d6Config)
+    {
+        auto entity = AZStd::make_unique<AZ::Entity>("d6TestEntity");
+
+        AZ::TransformConfig transformConfig;
+        transformConfig.m_worldTransform = AZ::Transform::CreateTranslation(position);
+        entity->CreateComponent<AzFramework::TransformComponent>()->SetConfiguration(transformConfig);
+
+        auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
+        auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>();
+        auto* boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
+        boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfiguration, boxShapeConfiguration) });
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+        rigidBodyConfig.m_initialLinearVelocity = initialLinearVelocity;
+        rigidBodyConfig.m_gravityEnabled = false;
+        entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
+
+        jointConfig->m_followerEntity = entity->GetId();
+        const JointGenericProperties genericProperties;
+        entity->CreateComponent<D6JointComponent>(*jointConfig, genericProperties, d6Config);
+
+        entity->Init();
+        entity->Activate();
+
+        return entity;
+    }
+
+    D6JointComponentConfiguration MakeLinearXDriveConfig(
+        D6JointDriveType driveType, float stiffness, float damping, float forceLimit)
+    {
+        D6JointComponentConfiguration d6Config;
+        d6Config.m_motionX = D6JointAxis::Free;
+        d6Config.m_driveX.m_driveType = driveType;
+        d6Config.m_driveX.m_stiffness = stiffness;
+        d6Config.m_driveX.m_damping = damping;
+        d6Config.m_driveX.m_forceLimit = forceLimit;
+        return d6Config;
+    }
+
+    struct D6DriveTestBodies
+    {
+        AZStd::unique_ptr<AZ::Entity> m_lead;
+        AZStd::unique_ptr<AZ::Entity> m_follower;
+    };
+
+    //! yOffset separates independent lead/follower pairs sharing one scene.
+    D6DriveTestBodies CreateD6DriveTestBodies(
+        AzPhysics::SceneHandle sceneHandle,
+        const D6JointComponentConfiguration& d6Config,
+        const AZ::Vector3& followerInitialLinearVelocity = AZ::Vector3::CreateZero(),
+        float yOffset = 0.0f)
+    {
+        const AZ::Vector3 offset(0.0f, yOffset, 0.0f);
+
+        auto lead = AddBodyColliderEntity<JointComponent>(
+            sceneHandle, D6DriveTest::LeadPosition + offset, AZ::Vector3::CreateZero());
+
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_leadEntity = lead->GetId();
+        jointConfig->m_localTransformFromFollower = AZ::Transform::CreateTranslation(D6DriveTest::JointLocalPosition);
+
+        auto follower = AddD6FollowerEntity(
+            sceneHandle, D6DriveTest::FollowerPosition + offset, followerInitialLinearVelocity, jointConfig, d6Config);
+
+        return { AZStd::move(lead), AZStd::move(follower) };
+    }
+
+    AZ::EntityComponentIdPair GetD6JointId(const AZ::Entity& followerEntity)
+    {
+        const auto* jointComponent = followerEntity.FindComponent<D6JointComponent>();
+        EXPECT_NE(jointComponent, nullptr);
+        return AZ::EntityComponentIdPair(
+            followerEntity.GetId(), jointComponent ? jointComponent->GetId() : AZ::InvalidComponentId);
+    }
+
+    void SetDriveVelocityX(const AZ::Entity& followerEntity, float velocityX)
+    {
+        PhysX::JointRequestBus::Event(
+            GetD6JointId(followerEntity),
+            &PhysX::JointRequests::SetVelocityGeneral,
+            AZ::Vector3(velocityX, 0.0f, 0.0f),
+            AZ::Vector3::CreateZero());
+    }
+
+    TEST_F(PhysXJointsTest, Joint_D6Joint_VelocityDriveMovesFollowerAlongFreeAxis)
+    {
+        auto bodies = CreateD6DriveTestBodies(
+            m_testSceneHandle, MakeLinearXDriveConfig(D6JointDriveType::Velocity, 0.0f, 1000.0f, D6DriveTest::LargeForceLimit));
+
+        SetDriveVelocityX(*bodies.m_follower, 0.5f);
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, bodies.m_follower->GetId());
+
+        const float displacement = followerEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+        EXPECT_GT(AZStd::abs(displacement), 0.5f);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_D6Joint_WithoutDriveFollowerStaysAtRest)
+    {
+        // same free axis, but no drive to act on it
+        auto bodies = CreateD6DriveTestBodies(
+            m_testSceneHandle, MakeLinearXDriveConfig(D6JointDriveType::None, 0.0f, 1000.0f, D6DriveTest::LargeForceLimit));
+
+        SetDriveVelocityX(*bodies.m_follower, 0.5f);
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, bodies.m_follower->GetId());
+
+        const float displacement = followerEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+        EXPECT_NEAR(displacement, 0.0f, 0.01f);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_D6Joint_VelocityDriveReversesWithSign)
+    {
+        const D6JointComponentConfiguration d6Config =
+            MakeLinearXDriveConfig(D6JointDriveType::Velocity, 0.0f, 1000.0f, D6DriveTest::LargeForceLimit);
+
+        auto forwardBodies = CreateD6DriveTestBodies(m_testSceneHandle, d6Config, AZ::Vector3::CreateZero(), 0.0f);
+        auto reverseBodies = CreateD6DriveTestBodies(m_testSceneHandle, d6Config, AZ::Vector3::CreateZero(), 10.0f);
+
+        SetDriveVelocityX(*forwardBodies.m_follower, 0.5f);
+        SetDriveVelocityX(*reverseBodies.m_follower, -0.5f);
+
+        const AZ::Vector3 forwardEndPosition = RunJointTest(m_defaultScene, forwardBodies.m_follower->GetId());
+
+        AZ::Vector3 reverseEndPosition = AZ::Vector3::CreateZero();
+        AZ::TransformBus::EventResult(
+            reverseEndPosition, reverseBodies.m_follower->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        const float forwardDisplacement = forwardEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+        const float reverseDisplacement = reverseEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+
+        EXPECT_LT(forwardDisplacement * reverseDisplacement, 0.0f);
+    }
+
+    // Both followers are launched away from the joint; the drives are identical apart from the force limit,
+    // so the one allowed to exert force must end up measurably less far along than the one that cannot.
+    TEST_F(PhysXJointsTest, Joint_D6Joint_PositionDriveResistsInitialVelocityUnlessForceLimited)
+    {
+        const AZ::Vector3 followerInitialLinearVelocity(-2.0f, 0.0f, 0.0f);
+
+        auto drivenBodies = CreateD6DriveTestBodies(
+            m_testSceneHandle,
+            MakeLinearXDriveConfig(D6JointDriveType::Position, 10000.0f, 1000.0f, D6DriveTest::LargeForceLimit),
+            followerInitialLinearVelocity,
+            0.0f);
+        auto forceLimitedBodies = CreateD6DriveTestBodies(
+            m_testSceneHandle,
+            MakeLinearXDriveConfig(D6JointDriveType::Position, 10000.0f, 1000.0f, 0.0001f),
+            followerInitialLinearVelocity,
+            10.0f);
+
+        const AZ::Vector3 drivenEndPosition = RunJointTest(m_defaultScene, drivenBodies.m_follower->GetId());
+
+        AZ::Vector3 forceLimitedEndPosition = AZ::Vector3::CreateZero();
+        AZ::TransformBus::EventResult(
+            forceLimitedEndPosition, forceLimitedBodies.m_follower->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        const float drivenDisplacement = drivenEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+        const float forceLimitedDisplacement = forceLimitedEndPosition.GetX() - D6DriveTest::FollowerPosition.GetX();
+
+        EXPECT_LT(forceLimitedDisplacement, -1.0f);
+        EXPECT_GT(drivenDisplacement - forceLimitedDisplacement, 1.0f);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_D6Joint_GetVelocityGeneralReturnsCommandedDriveVelocity)
+    {
+        auto bodies = CreateD6DriveTestBodies(
+            m_testSceneHandle, MakeLinearXDriveConfig(D6JointDriveType::Velocity, 0.0f, 1000.0f, D6DriveTest::LargeForceLimit));
+
+        const AZ::Vector3 commandedLinear(0.5f, 0.0f, 0.0f);
+        const AZ::Vector3 commandedAngular(0.0f, 0.0f, 0.25f);
+
+        PhysX::JointRequestBus::Event(
+            GetD6JointId(*bodies.m_follower),
+            &PhysX::JointRequests::SetVelocityGeneral,
+            commandedLinear,
+            commandedAngular);
+
+        AZStd::pair<AZ::Vector3, AZ::Vector3> readBack;
+        PhysX::JointRequestBus::EventResult(
+            readBack, GetD6JointId(*bodies.m_follower), &PhysX::JointRequests::GetVelocityGeneral);
+
+        EXPECT_NEAR(readBack.first.GetX(), commandedLinear.GetX(), 1e-3f);
+        EXPECT_NEAR(readBack.first.GetY(), commandedLinear.GetY(), 1e-3f);
+        EXPECT_NEAR(readBack.first.GetZ(), commandedLinear.GetZ(), 1e-3f);
+        EXPECT_NEAR(readBack.second.GetX(), commandedAngular.GetX(), 1e-3f);
+        EXPECT_NEAR(readBack.second.GetY(), commandedAngular.GetY(), 1e-3f);
+        EXPECT_NEAR(readBack.second.GetZ(), commandedAngular.GetZ(), 1e-3f);
     }
 
     template<class JointConfigurationType>

@@ -6,11 +6,10 @@
  *
  */
 
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector_set.h>
 #include <AzCore/std/string/conversions.h>
-
-#include <AtomCore/Instance/InstanceDatabase.h>
-#include <AtomCore/std/containers/vector_set.h>
 
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>

@@ -51,7 +51,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.125f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->DataElement(0, &ScaleModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
+                    ->DataElement(nullptr, &ScaleModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
                     ;
             }
         }

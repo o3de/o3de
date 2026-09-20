@@ -70,7 +70,6 @@ ly_add_target(
         PUBLIC
             3rdParty::mcpp
             AZ::AssetBuilderSDK
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
             AZ::AzFramework
@@ -108,7 +107,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
         3rdParty::SPIRVCross
-        3rdParty::azslc
+        AZ::Azslc
 )
 
 # Inject the gem name into the Module source file
@@ -140,7 +139,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzToolsFramework

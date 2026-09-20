@@ -1,0 +1,30 @@
+// Attribute specifier sequences are supported as defined by the C++11 standard:
+// https://en.cppreference.com/w/cpp/language/attributes
+// C++17, C++20 standard features (using, contracts) are not yet supported
+ 
+[[global::ps::output_format(0, "FMT_32_R")]]
+[[global::ps::output_format(1, "FMT_32_GR")]]
+[[global::ps::output_format(2, "FMT_32_AR")]]
+[[global::ps::output_format(3, "FMT_32_ABGR")]]
+
+[[attribute]]
+[[scope::attribute]]
+[[scope::attribute(2, "string", true, false, 1.0f)]]
+[[ps::output_format, single(5)]]
+[[scope::attribute]]
+
+
+// Attribute sequences should be supported for all type qualifiers
+struct VSInput {
+  [[vk::location(0)]] float4 pos  : POSITION;
+  [[vk::location(1)]] float3 norm : NORMAL;
+};
+
+[[vk::location(1)]]
+float4 VSMain(in  VSInput input,
+              [[vk::location(2)]]
+              in  float4  tex     : TEXCOORD,
+              out float4  pos     : SV_Position) : TEXCOORD {
+  pos = input.pos;
+  return tex;
+}

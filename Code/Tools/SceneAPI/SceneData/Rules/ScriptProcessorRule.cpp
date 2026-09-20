@@ -41,7 +41,7 @@ namespace AZ
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->DataElement(0, &ScriptProcessorRule::m_scriptFilename, "scriptFilename",
+                            ->DataElement(nullptr, &ScriptProcessorRule::m_scriptFilename, "scriptFilename",
                                 "Relative path to scene processor Python script.");
                     }
                 }

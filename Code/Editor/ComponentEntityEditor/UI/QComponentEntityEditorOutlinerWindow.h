@@ -33,7 +33,7 @@ class QEntityOutlinerWindow
     Q_OBJECT
 
 public:
-    explicit QEntityOutlinerWindow(QWidget* parent = 0);
+    explicit QEntityOutlinerWindow(QWidget* parent = nullptr);
     ~QEntityOutlinerWindow();
 
     void Init();

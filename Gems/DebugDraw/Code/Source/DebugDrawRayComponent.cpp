@@ -37,10 +37,10 @@ namespace DebugDraw
                     QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw ray element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawRayElement::m_endEntityId,
+                    ->DataElement(nullptr, &DebugDrawRayElement::m_endEntityId,
                         QT_TRANSLATE_NOOP("DebugDraw", "End Entity"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Which entity the ray is drawn to (starts on this entity)."))
-                    ->DataElement(0, &DebugDrawRayElement::m_color,
+                    ->DataElement(nullptr, &DebugDrawRayElement::m_color,
                         QT_TRANSLATE_NOOP("DebugDraw", "Color"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Display color for the line."))
                 ;

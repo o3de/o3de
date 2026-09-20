@@ -12,9 +12,9 @@
 
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/Utils/StableDynamicArray.h>
-#include <AtomCore/std/parallel/concurrency_checker.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/concurrency_checker.h>
 
 namespace AZ::Render
 {

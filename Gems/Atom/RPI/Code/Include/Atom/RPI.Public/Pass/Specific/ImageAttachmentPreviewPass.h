@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
@@ -78,7 +79,7 @@ namespace AZ
             static Ptr<ImageAttachmentPreviewPass> Create(const PassDescriptor& descriptor);
 
             ~ImageAttachmentPreviewPass();
-            
+
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
             void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline = nullptr, u32 imageArraySlice = 0);
 
@@ -145,13 +146,13 @@ namespace AZ
 
                 uint32_t m_imageCount = 0;
             };
-            
+
             // image attachment to be rendered for preview
             RHI::AttachmentId m_imageAttachmentId;
 
             // render target for the preview
             RHI::Ptr<PassAttachment> m_outputColorAttachment;
-            
+
             RHI::ShaderInputConstantIndex m_colorRangeMinMaxInput;
             float m_attachmentColorTranformRange[2] = {0.0f, 1.0f};
 
@@ -161,12 +162,12 @@ namespace AZ
             // The shader resource group for this pass
             Data::Instance<ShaderResourceGroup> m_passSrg;
             bool m_passSrgChanged = false;
-                        
+
             AZStd::array<ImageTypePreviewInfo, static_cast<uint32_t>(ImageType::ImageTypeCount)> m_imageTypePreviewInfo;
 
             // whether to update the draw data for both srg data and draw item
             bool m_updateDrawData = false;
-            
+
             bool m_needsShaderLoad = true;
 
             RHI::Viewport m_viewport;

@@ -57,9 +57,6 @@ namespace UnitTest
 
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
-        //! Creates root prefab and focus on the root prefab instance as level.
-        void CreateRootPrefab();
-
         //! Functions that internally call prefab public interface APIs to create editor entities and prefab instances.
         //! Entities and instances are updated correctly, and template DOM representations are also updated accordingly.
         //! Note:

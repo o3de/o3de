@@ -68,7 +68,7 @@ public:
         CUiAnimViewNode* m_pNode;
     };
 
-    CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialog* parent = 0);
+    CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialog* parent = nullptr);
     ~CUiAnimViewNodesCtrl();
 
     void SetUiAnimViewDialog(CUiAnimViewDialog* dlg) { m_pUiAnimViewDialog = dlg; }

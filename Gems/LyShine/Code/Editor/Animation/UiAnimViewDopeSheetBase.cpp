@@ -107,7 +107,7 @@ CUiAnimViewDopeSheetBase::CUiAnimViewDopeSheetBase(QWidget* parent)
 
     m_bFastRedraw = false;
 
-    m_pLastTrackSelectedOnSpot = NULL;
+    m_pLastTrackSelectedOnSpot = nullptr;
 
 
 #ifdef DEBUG
@@ -728,7 +728,7 @@ void CUiAnimViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifier
 
     if (!m_bCursorWasInKey)
     {
-        const bool bHasCopiedKey = (GetKeysInClickboard() != NULL);
+        const bool bHasCopiedKey = (GetKeysInClickboard() != nullptr);
 
         if (bHasCopiedKey && m_bMouseMovedAfterRButtonDown == false)    // Once moved, it means the user wanted to scroll, so no paste pop-up.
         {
@@ -1134,24 +1134,24 @@ XmlNodeRef CUiAnimViewDopeSheetBase::GetKeysInClickboard()
     CClipboard clip(this);
     if (clip.IsEmpty())
     {
-        return NULL;
+        return nullptr;
     }
 
     if (clip.GetTitle() != "Track view keys")
     {
-        return NULL;
+        return nullptr;
     }
 
     XmlNodeRef copyNode = clip.Get();
-    if (copyNode == NULL || strcmp(copyNode->getTag(), "CopyKeysNode"))
+    if (copyNode == nullptr || strcmp(copyNode->getTag(), "CopyKeysNode"))
     {
-        return NULL;
+        return nullptr;
     }
 
     int nNumTracksToPaste = copyNode->getChildCount();
     if (nNumTracksToPaste == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     return copyNode;

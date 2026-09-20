@@ -21,7 +21,7 @@ namespace Maestro
 
     void CBoolTrack::GetKeyInfo([[maybe_unused]] int keyIndex, const char*& description, float& duration) const
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
     }
 

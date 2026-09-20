@@ -8,14 +8,13 @@
 
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -43,6 +42,29 @@ namespace AZ
         class DecalTextureArray : public Data::AssetBus::MultiHandler
         {
         public:
+
+            //! Texture layout a decal material requires, per map type. Pack() applies the first
+            //! material's descriptor to every slice and discards a whole map-type array if any slice is
+            //! missing that map, so materials may only share a texture array when all of this matches.
+            //! An absent map keeps its default layout, which is deliberately part of the key.
+            struct PackingLayout
+            {
+                struct MapLayout
+                {
+                    RHI::Size m_size;
+                    RHI::Format m_format = RHI::Format::Unknown;
+                    uint16_t m_mipLevels = 0;
+
+                    bool operator==(const MapLayout&) const = default;
+                };
+
+                AZStd::array<MapLayout, DecalMapType_Num> m_maps;
+
+                bool operator==(const PackingLayout&) const = default;
+            };
+
+            //! Returns the packing layout this material requires across all decal map types.
+            static PackingLayout GetPackingLayout(RPI::MaterialAsset& materialAsset);
 
             int AddMaterial(const AZ::Data::AssetId materialAssetId);
             void RemoveMaterial(const int index);
@@ -99,7 +121,7 @@ namespace AZ
 
             IndexableList<MaterialData> m_materials;
             AZStd::array<Data::Instance<RPI::StreamingImage>, DecalMapType_Num> m_textureArrayPacked;
-             
+
             AZStd::unordered_set<AZ::Data::AssetId> m_assetsCurrentlyLoading;
         };
 

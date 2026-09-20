@@ -189,7 +189,7 @@ namespace AZ
             }
             else
             {
-                ContinueStoring(outputValue, 0, nullptr, azrtti_typeid<int32_t>(), context);
+                ContinueStoring(outputValue, nullptr, nullptr, azrtti_typeid<int32_t>(), context);
                 result.Combine(JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed));
             }
 

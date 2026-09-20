@@ -28,7 +28,7 @@ namespace AzToolsFramework
             FILETIME modificationFileTime;
             modificationFileTime = Time64BitToFiletime(modificationTime);
 
-            const HANDLE hf = CreateFileA(filename, FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+            const HANDLE hf = CreateFileA(filename, FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
             if (hf != INVALID_HANDLE_VALUE)
             {
                 if (SetFileTime(hf, nullptr, nullptr, &modificationFileTime))

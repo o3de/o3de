@@ -54,7 +54,7 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &BlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
+                    ->DataElement(nullptr, &BlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
                     ;
             }
         }

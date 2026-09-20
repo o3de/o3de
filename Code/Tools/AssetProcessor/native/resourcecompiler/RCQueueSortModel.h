@@ -40,7 +40,7 @@ namespace AssetProcessor
         Q_OBJECT
         friend class ::RCcontrollerUnitTests;
     public:
-        explicit RCQueueSortModel(QObject* parent = 0);
+        explicit RCQueueSortModel(QObject* parent = nullptr);
 
         void AttachToModel(RCJobListModel* target);
         RCJob* GetNextPendingJob();

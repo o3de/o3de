@@ -67,7 +67,7 @@ public:
     void Serialize(CArchive& ar);
 
     //! Is MemoryBlock is empty.
-    bool IsEmpty() const { return m_buffer == 0; }
+    bool IsEmpty() const { return m_buffer == nullptr; }
 
 private:
     void* m_buffer;

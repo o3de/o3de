@@ -14,8 +14,8 @@
 #include <AzCore/std/parallel/thread.h>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Instance/Instance.h>
 
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>

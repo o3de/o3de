@@ -44,7 +44,7 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(0, &TerrainHeightGradientListConfig::m_gradientEntities,
+                    ->DataElement(nullptr, &TerrainHeightGradientListConfig::m_gradientEntities,
                         QT_TRANSLATE_NOOP("Terrain", "Gradient Entities"),
                         QT_TRANSLATE_NOOP("Terrain", "Ordered list of gradients to use as height providers."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

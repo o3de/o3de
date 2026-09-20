@@ -23,7 +23,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        EntityPreviewViewportToolBar(const AZ::Crc32& toolId, QWidget* parent = 0);
+        EntityPreviewViewportToolBar(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~EntityPreviewViewportToolBar();
 
     private:

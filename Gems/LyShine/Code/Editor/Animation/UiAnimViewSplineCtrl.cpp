@@ -149,13 +149,13 @@ public:
     {
         if (!pCtrl)
         {
-            return 0;
+            return nullptr;
         }
 
         auto iter = std::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
         if (iter == s_activeCtrls.end())
         {
-            return 0;
+            return nullptr;
         }
 
         return *iter;
@@ -426,7 +426,7 @@ void CUiAnimViewSplineCtrl::AddSpline(ISplineInterpolator* pSpline, CUiAnimViewT
     }
 
     si.pSpline = pSpline;
-    si.pDetailSpline = NULL;
+    si.pDetailSpline = nullptr;
     m_splines.push_back(si);
     m_tracks.push_back(pTrack);
     m_bKeyTimesDirty = true;

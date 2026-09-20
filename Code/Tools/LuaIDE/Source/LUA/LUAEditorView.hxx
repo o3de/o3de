@@ -60,7 +60,7 @@ namespace LUAEditor
     public:
         AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator);
 
-        LUAViewWidget(QWidget *pParent = NULL);
+        LUAViewWidget(QWidget *pParent = nullptr);
         virtual ~LUAViewWidget();
 
         DocumentInfo m_Info; // last updated doc info - we will get updates to this.

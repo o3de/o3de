@@ -355,8 +355,8 @@ struct IVariable
 
     //////////////////////////////////////////////////////////////////////////
     //! Retrieve pointer to selection list used by variable.
-    virtual IVarEnumList* GetEnumList() const { return 0; }
-    virtual ISplineInterpolator* GetSpline() { return 0; }
+    virtual IVarEnumList* GetEnumList() const { return nullptr; }
+    virtual ISplineInterpolator* GetSpline() { return nullptr; }
 
     //////////////////////////////////////////////////////////////////////////
     //! Serialize variable to XML.

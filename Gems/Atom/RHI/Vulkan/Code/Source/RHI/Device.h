@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RHI.Loader/LoaderContext.h>
@@ -14,12 +15,12 @@
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ThreadLocalContext.h>
-#include <AtomCore/std/containers/lru_cache.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/lru_cache.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/lock.h>

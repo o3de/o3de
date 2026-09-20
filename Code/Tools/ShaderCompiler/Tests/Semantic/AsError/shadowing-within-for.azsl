@@ -1,0 +1,7 @@
+void f()
+{
+    for (int i;;)
+    {
+        int i;   // #EC32 ODR violation
+    }
+}

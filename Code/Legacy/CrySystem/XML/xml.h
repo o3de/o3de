@@ -224,7 +224,7 @@ public:
     bool getAttr(const char* key, bool& value) const override;
 
     bool getAttr(const char* key, XmlString& value) const override
-    {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
+    {const char*    v(nullptr); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
 
     bool getAttr(const char* key, Vec2& value) const override;
     bool getAttr(const char* key, Ang3& value) const override;
@@ -288,7 +288,7 @@ private:
                 return it->value;
             }
         }
-        return 0;
+        return nullptr;
     }
 
 protected:

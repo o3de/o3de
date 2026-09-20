@@ -105,7 +105,7 @@ struct HitContext
     {
         rect = QRect();
         b2DViewport = false;
-        view = 0;
+        view = nullptr;
         point2d = QPoint();
         axis = 0;
         distanceTolerance = 0;
@@ -115,7 +115,7 @@ struct HitContext
         weakHit = false;
         manipulatorMode = 0;
         nSubObjFlags = 0;
-        bounds = 0;
+        bounds = nullptr;
         bIgnoreAxis = false;
         bOnlyGizmo = false;
         bUseSelectionHelpers = false;

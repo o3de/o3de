@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Public/Material/MaterialShaderParameter.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ::RPI
 {

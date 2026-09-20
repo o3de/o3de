@@ -46,10 +46,10 @@ namespace AZ
         {
             Event()
                 : id(InvalidEventId)
-                , userData(NULL) {}
+                , userData(nullptr) {}
             Event(int ID)
                 : id(ID)
-                , userData(NULL) {}
+                , userData(nullptr) {}
             int     id;
             void*   userData;
         };

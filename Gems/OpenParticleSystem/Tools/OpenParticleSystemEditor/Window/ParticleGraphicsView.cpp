@@ -457,7 +457,17 @@ namespace OpenParticleSystemEditor
         }
 
         QGraphicsProxyWidget* itemProxyWidget = dynamic_cast<QGraphicsProxyWidget*>(graphicsItem);
+        if (itemProxyWidget == nullptr)
+        {
+            return;
+        }
+
         ParticleItemWidget* itemWidget = dynamic_cast<ParticleItemWidget*>(itemProxyWidget->widget());
+        if (itemWidget == nullptr || itemWidget->m_detail == nullptr)
+        {
+            return;
+        }
+
         AZStd::string emitterName = itemWidget->m_detail->m_name;
         OpenParticle::ParticleSourceData::DetailInfo* detail = nullptr;
         EBUS_EVENT_ID_RESULT(detail, m_busID, ParticleDocumentRequestBus, CopyDetail, emitterName);
@@ -479,8 +489,24 @@ namespace OpenParticleSystemEditor
 
         EBUS_EVENT_ID_RESULT(sourceDetail, widgetName, ParticleDocumentRequestBus, GetDetail);
         EBUS_EVENT_ID_RESULT(sourceEmitter, widgetName, ParticleDocumentRequestBus, GetEmitter);
+
+        // The buffer belongs to the source document. If that particle has since been closed there is no
+        // handler on its bus id, so both pointers come back null and there is nothing to paste.
+        if (sourceDetail == nullptr || sourceEmitter == nullptr)
+        {
+            AZ_Warning(
+                "Emitter", false,
+                "Nothing to paste. The emitter was copied from '%s', which is no longer open.", widgetName.c_str());
+            return;
+        }
+
         OpenParticle::ParticleSourceData::DetailInfo* destDetail = nullptr;
         EBUS_EVENT_ID_RESULT(destDetail, m_busID, ParticleDocumentRequestBus, SetEmitterAndDetail, sourceEmitter, sourceDetail);
+        if (destDetail == nullptr)
+        {
+            AZ_Warning("Emitter", false, "Failed to paste the copied emitter into this particle.");
+            return;
+        }
 
         NewItem(destDetail, false, destDetail->m_name);
         
@@ -861,29 +887,35 @@ namespace OpenParticleSystemEditor
     void ParticleGraphicsView::ShowMenu(const QPoint& pos)
     {
         QMenu* menu = new QMenu(this);
+        // The menu is shown rather than exec'd, so hand it over to Qt to clean up once it closes.
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+
+        const bool onItem = PointOnItem(pos);
+
+        // The copy buffer lives on whichever document was copied from. CopyItem broadcasts that document's
+        // id to every open particle, so a non empty name here means there is something to paste, whether it
+        // was copied from this particle or from another one that is currently open.
+        AZStd::string copyWidgetName;
+        EBUS_EVENT_RESULT(copyWidgetName, ParticleDocumentRequestBus, GetCopyWidgetName);
+
         // in order "Add,Copy,Paste,Delete"
         menu->addAction(m_pActAddItem);
-        if (PointOnItem(pos))
+        m_pActAddItem->setEnabled(true);
+
+        // Copy acts on the emitter under the cursor, so it only means anything over an item.
+        menu->addAction(m_pActCopyItem);
+        m_pActCopyItem->setEnabled(onItem);
+
+        menu->addAction(m_pActPasteItem);
+        m_pActPasteItem->setEnabled(!copyWidgetName.empty());
+
+        if (onItem)
         {
             menu->addAction(m_pActDelItem);
+            m_pActDelItem->setEnabled(true);
         }
 
         menu->move(cursor().pos());
-        if (this->scene()->selectedItems().isEmpty())
-        {
-            this->m_pActDelItem->setEnabled(true);
-            this->m_pActCopyItem->setEnabled(true);
-            AZStd::string widgetName = "";
-            EBUS_EVENT_RESULT(widgetName, ParticleDocumentRequestBus, GetCopyWidgetName);
-            if (!widgetName.empty())
-            {
-                this->m_pActPasteItem->setEnabled(true);
-            }
-        }
-        else
-        {
-            this->m_pActAddItem->setEnabled(true);
-        }
         menu->show();
     }
 } // namespace OpenParticleSystemEditor

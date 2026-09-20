@@ -41,7 +41,7 @@ public:
         SeverityRole = Qt::UserRole + 1
     };
 
-    CErrorReportTableModel(QObject* parent = 0);
+    CErrorReportTableModel(QObject* parent = nullptr);
     ~CErrorReportTableModel();
 
     void setErrorReport(CErrorReport* report);

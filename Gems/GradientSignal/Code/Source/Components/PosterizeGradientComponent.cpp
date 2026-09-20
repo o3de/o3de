@@ -43,7 +43,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PosterizeGradientConfig::m_bands, QT_TRANSLATE_NOOP("GradientSignal", "Bands"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 2)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->DataElement(0, &PosterizeGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
+                    ->DataElement(nullptr, &PosterizeGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

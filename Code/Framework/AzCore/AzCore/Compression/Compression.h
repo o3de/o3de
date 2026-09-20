@@ -24,7 +24,7 @@ namespace AZ
     class AZCORE_API ZLib
     {
     public:
-        ZLib(IAllocator* workMemAllocator = 0);
+        ZLib(IAllocator* workMemAllocator = nullptr);
         ~ZLib();
 
         enum FlushType
@@ -54,16 +54,16 @@ namespace AZ
         ///     8       ~1.4MB              827ms
         ///     9       ~1.4MB              858ms
         void StartCompressor(unsigned int compressionLevel = 9);
-        bool IsCompressorStarted() const        { return m_strDeflate != 0; }
+        bool IsCompressorStarted() const        { return m_strDeflate != nullptr; }
         void StopCompressor();
         void ResetCompressor();
 
         /// Must be called before we can decompress. Hdr is optional hdr structure that is stored at the begin of the stream and should be passed to the ResetDecompresor.
-        void StartDecompressor(Header* hdr = NULL);
-        bool IsDecompressorStarted() const      { return m_strInflate != 0; }
+        void StartDecompressor(Header* hdr = nullptr);
+        bool IsDecompressorStarted() const      { return m_strInflate != nullptr; }
         void StopDecompressor();
         /// If you will use seek/sync points we require that you pass the header since the reset will reset all states and you can't really continue (unless from the start).
-        void ResetDecompressor(Header* header = NULL);
+        void ResetDecompressor(Header* header = nullptr);
 
         //////////////////////////////////////////////////////////////////////////
         // Compressor

@@ -18,6 +18,7 @@
 #include <Serializer/DataConvertor.h>
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
+#include <OpenParticleSystem/MaterialPropertyOverride.h>
 
 namespace OpenParticle
 {
@@ -42,6 +43,8 @@ namespace OpenParticle
             AZStd::any m_config;
             AZStd::any m_renderConfig;
             AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            //! Per-emitter material property overrides, copied verbatim into the built ParticleArchive.
+            MaterialPropertyOverrideMap m_materialOverrides;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::list<AZStd::any> m_emitModules;

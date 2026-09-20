@@ -55,11 +55,11 @@ namespace StartingPointInput
                         QT_TRANSLATE_NOOP("StartingPointInput", "The name of the input you want to hold ex. space"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &InputEventMap::GetInputNamesBySelectedDevice)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &InputEventMap::m_eventValueMultiplier,
+                    ->DataElement(nullptr, &InputEventMap::m_eventValueMultiplier,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Event value multiplier"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "When the event fires, the value will be scaled by this multiplier"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &InputEventMap::m_deadZone,
+                    ->DataElement(nullptr, &InputEventMap::m_deadZone,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Dead zone"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "An event will only be sent out if the value is above this threshold"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
@@ -231,22 +231,22 @@ namespace StartingPointInput
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ThumbstickInputEventMap::GetEditorText)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_innerDeadZoneRadius,
+                    ->DataElement(nullptr, &ThumbstickInputEventMap::m_innerDeadZoneRadius,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Inner Dead Zone Radius"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "The thumbstick axes vector (x,y) will be normalized between this value and Outer Dead Zone Radius"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_outerDeadZoneRadius,
+                    ->DataElement(nullptr, &ThumbstickInputEventMap::m_outerDeadZoneRadius,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Outer Dead Zone Radius"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "The thumbstick axes vector (x,y) will be normalized between Inner Dead Zone Radius and this value"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_axisDeadZoneValue,
+                    ->DataElement(nullptr, &ThumbstickInputEventMap::m_axisDeadZoneValue,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Axis Dead Zone Value"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "The individual axis values will be normalized between this and 1.0f"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_sensitivityExponent,
+                    ->DataElement(nullptr, &ThumbstickInputEventMap::m_sensitivityExponent,
                         QT_TRANSLATE_NOOP("StartingPointInput", "Sensitivity Exponent"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "The sensitivity exponent to apply to the normalized thumbstick components"))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ThumbstickInputEventMap::m_outputAxis,

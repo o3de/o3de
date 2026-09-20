@@ -95,7 +95,7 @@ namespace AZStd
             AZ_FORCE_INLINE BaseNodePtr minimum()
             {
                 BaseNodePtr node = this;
-                while (node->m_left != 0)
+                while (node->m_left != nullptr)
                 {
                     node = node->m_left;
                 }
@@ -104,7 +104,7 @@ namespace AZStd
             AZ_FORCE_INLINE BaseNodePtr maximum()
             {
                 BaseNodePtr node = this;
-                while (node->m_right != 0)
+                while (node->m_right != nullptr)
                 {
                     node = node->m_right;
                 }
@@ -149,7 +149,7 @@ namespace AZStd
         typedef const node_type*                    const_node_ptr_type;
 
         AZ_FORCE_INLINE rbtree_const_iterator()
-            : m_node(0) {}
+            : m_node(nullptr) {}
         AZ_FORCE_INLINE rbtree_const_iterator(base_node_ptr_type baseNode)
             : m_node(static_cast<node_ptr_type>(baseNode)) {}
         AZ_FORCE_INLINE rbtree_const_iterator(node_ptr_type node)
@@ -162,7 +162,7 @@ namespace AZStd
         AZ_FORCE_INLINE pointer operator->() const  { return &(m_node->m_value); }
         inline this_type& operator++()
         {
-            if (m_node->m_right != 0)
+            if (m_node->m_right != nullptr)
             {
                 m_node = static_cast<node_ptr_type>(m_node->m_right->minimum());
             }
@@ -197,7 +197,7 @@ namespace AZStd
             {
                 m_node = static_cast<node_ptr_type>(m_node->m_right);
             }
-            else if (m_node->m_left != 0)
+            else if (m_node->m_left != nullptr)
             {
                 m_node = static_cast<node_ptr_type>(m_node->m_left->maximum());
             }
@@ -399,7 +399,7 @@ namespace AZStd
             , m_allocator(allocator_type())
         {
             m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-            m_head.set_parent(0);
+            m_head.set_parent(nullptr);
             m_head.m_left = &m_head;
             m_head.m_right = &m_head;
         }
@@ -429,7 +429,7 @@ namespace AZStd
             , m_allocator(allocator)
         {
             m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-            m_head.set_parent(0);
+            m_head.set_parent(nullptr);
             m_head.m_left = &m_head;
             m_head.m_right = &m_head;
         }
@@ -439,7 +439,7 @@ namespace AZStd
             , m_allocator(rhs.m_allocator)
         {
             m_head.set_color(AZSTD_RBTREE_RED);
-            if (rhs.m_head.get_parent() != 0)
+            if (rhs.m_head.get_parent() != nullptr)
             {
                 base_node_ptr_type parent = copy(rhs.m_head.get_parent(), &m_head);
                 m_head.set_parent(parent);
@@ -449,7 +449,7 @@ namespace AZStd
             }
             else
             {
-                m_head.set_parent(0);
+                m_head.set_parent(nullptr);
                 m_head.m_left = &m_head;
                 m_head.m_right = &m_head;
             }
@@ -460,7 +460,7 @@ namespace AZStd
             , m_allocator(allocator)
         {
             m_head.set_color(AZSTD_RBTREE_RED);
-            if (rhs.m_head.get_parent() != 0)
+            if (rhs.m_head.get_parent() != nullptr)
             {
                 base_node_ptr_type parent = copy(rhs.m_head.get_parent(), &m_head);
                 m_head.set_parent(parent);
@@ -470,7 +470,7 @@ namespace AZStd
             }
             else
             {
-                m_head.set_parent(0);
+                m_head.set_parent(nullptr);
                 m_head.m_left = &m_head;
                 m_head.m_right = &m_head;
             }
@@ -483,9 +483,9 @@ namespace AZStd
                 clear();
                 m_numElements = 0;
                 m_keyEq = rhs.m_keyEq;
-                if (rhs.m_head.get_parent() == 0)
+                if (rhs.m_head.get_parent() == nullptr)
                 {
-                    m_head.set_parent(0);
+                    m_head.set_parent(nullptr);
                     m_head.m_left = &m_head;
                     m_head.m_right = &m_head;
                 }
@@ -523,7 +523,7 @@ namespace AZStd
             , m_allocator(AZStd::move(rhs.m_allocator))
         {
             m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-            m_head.set_parent(0);
+            m_head.set_parent(nullptr);
             m_head.m_left = &m_head;
             m_head.m_right = &m_head;
             swap(rhs);
@@ -535,7 +535,7 @@ namespace AZStd
             , m_allocator(allocator)
         {
             m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-            m_head.set_parent(0);
+            m_head.set_parent(nullptr);
             m_head.m_left = &m_head;
             m_head.m_right = &m_head;
             swap(rhs);
@@ -659,7 +659,7 @@ namespace AZStd
                     rhs.rebind(&m_head);
                     // empty init
                     m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-                    m_head.set_parent(0);
+                    m_head.set_parent(nullptr);
                     m_head.m_left = &m_head;
                     m_head.m_right = &m_head;
                 }
@@ -899,7 +899,7 @@ namespace AZStd
             if (m_numElements != 0)
             {
                 erase(m_head.get_parent());
-                m_head.set_parent(0);
+                m_head.set_parent(nullptr);
                 m_head.m_left = &m_head;
                 m_head.m_right = &m_head;
                 m_numElements = 0;
@@ -914,7 +914,7 @@ namespace AZStd
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
 
-            while (x != 0)
+            while (x != nullptr)
             {
                 if (!m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(x)->m_value), key))
                 {
@@ -960,7 +960,7 @@ namespace AZStd
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
 
-            while (x != 0)
+            while (x != nullptr)
             {
                 if (!m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(x)->m_value), key))
                 {
@@ -991,7 +991,7 @@ namespace AZStd
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
 
-            while (x != 0)
+            while (x != nullptr)
             {
                 if (m_keyEq(key, Traits::key_from_value(static_cast<node_ptr_type>(x)->m_value)))
                 {
@@ -1142,7 +1142,7 @@ namespace AZStd
         inline void                     leak_and_reset()
         {
             m_head.set_color(AZSTD_RBTREE_RED); // used to distinguish header from root, in iterator.operator++
-            m_head.set_parent(0);
+            m_head.set_parent(nullptr);
             m_head.m_left = &m_head;
             m_head.m_right = &m_head;
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -1156,14 +1156,14 @@ namespace AZStd
         inline base_node_ptr_type create_node(const value_type& value)
         {
             node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
-            AZSTD_CONTAINER_ASSERT(newNode != NULL, "AZStd::rb_tree::create_node - failed to allocate node!");
+            AZSTD_CONTAINER_ASSERT(newNode != nullptr, "AZStd::rb_tree::create_node - failed to allocate node!");
 
             // copy construct
             pointer ptr = &newNode->m_value;
             Internal::construct<pointer>::single(ptr, value);
 
-            newNode->m_left = 0;
-            newNode->m_right = 0;
+            newNode->m_left = nullptr;
+            newNode->m_right = nullptr;
             return newNode;
         }
 
@@ -1176,8 +1176,8 @@ namespace AZStd
             pointer ptr = &newNode->m_value;
             Internal::construct<pointer>::single(ptr, AZStd::forward<InputArguments>(arguments) ...);
 
-            newNode->m_left = 0;
-            newNode->m_right = 0;
+            newNode->m_left = nullptr;
+            newNode->m_right = nullptr;
             return newNode;
         }
 
@@ -1195,7 +1195,7 @@ namespace AZStd
             return tmp;
         }
 
-        iterator insert_node(base_node_ptr_type parent, base_node_ptr_type newNode, base_node_ptr_type on_left = 0, base_node_ptr_type on_right = 0)
+        iterator insert_node(base_node_ptr_type parent, base_node_ptr_type newNode, base_node_ptr_type on_left = nullptr, base_node_ptr_type on_right = nullptr)
         {
             if (parent == &m_head)
             {
@@ -1203,8 +1203,8 @@ namespace AZStd
                 m_head.set_parent(newNode);
                 m_head.m_right = newNode;
             }
-            else if (on_right == 0 &&      // If __on_right != 0, the remainder fails to false
-                     (on_left != 0 || // If __on_left != 0, the remainder succeeds to true
+            else if (on_right == nullptr &&      // If __on_right != 0, the remainder fails to false
+                     (on_left != nullptr || // If __on_left != 0, the remainder succeeds to true
                       m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(parent)->m_value))))
             {
                 parent->m_left = newNode;
@@ -1234,7 +1234,7 @@ namespace AZStd
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
             bool comp = true;
-            while (x != 0)
+            while (x != nullptr)
             {
                 y = x;
                 comp = m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(x)->m_value));
@@ -1266,7 +1266,7 @@ namespace AZStd
         {
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
-            while (x != 0)
+            while (x != nullptr)
             {
                 y = x;
                 if (m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(x)->m_value)))
@@ -1327,7 +1327,7 @@ namespace AZStd
                         // Check guarantees exactly one member, so comparison was already
                         // performed and we know the result; skip repeating it in insert
                         // by specifying a non-zero fourth argument.
-                        return insert_node(insertNode, newNode, 0, insertNode);
+                        return insert_node(insertNode, newNode, nullptr, insertNode);
                     }
 
                     // All other cases:
@@ -1336,9 +1336,9 @@ namespace AZStd
                     // and we get this for free.
                     if (m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(afterNode)->m_value)))
                     {
-                        if (insertNode->m_right == 0)
+                        if (insertNode->m_right == nullptr)
                         {
-                            return insert_node(insertNode, newNode, 0, insertNode);
+                            return insert_node(insertNode, newNode, nullptr, insertNode);
                         }
                         else
                         {
@@ -1357,7 +1357,7 @@ namespace AZStd
                 {
                     // pass along to insert that it can skip comparing
                     // v, Key ; since compare Key, v was true, compare v, Key must be false.
-                    return insert_node(m_head.m_right, newNode, 0, m_head.m_right); // Last argument only needs to be non-null
+                    return insert_node(m_head.m_right, newNode, nullptr, m_head.m_right); // Last argument only needs to be non-null
                 }
                 else
                 {
@@ -1377,9 +1377,9 @@ namespace AZStd
 
                 if (comp_v_pos && m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(beforeNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value)))
                 {
-                    if (beforeNode->m_right == 0)
+                    if (beforeNode->m_right == nullptr)
                     {
-                        return insert_node(beforeNode, newNode, 0, beforeNode); // Last argument only needs to be non-null
+                        return insert_node(beforeNode, newNode, nullptr, beforeNode); // Last argument only needs to be non-null
                     }
                     else
                     {
@@ -1413,9 +1413,9 @@ namespace AZStd
                         && (afterNode == &m_head ||
                             m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(afterNode)->m_value))))
                     {
-                        if (insertNode->m_right == 0)
+                        if (insertNode->m_right == nullptr)
                         {
-                            return insert_node(insertNode, newNode, 0, insertNode);
+                            return insert_node(insertNode, newNode, nullptr, insertNode);
                         }
                         else
                         {
@@ -1481,9 +1481,9 @@ namespace AZStd
                     // If not, invalid hint.
                     if (afterNode == &m_head || !m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(afterNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value)))
                     {
-                        if (insertNode->m_right == 0)
+                        if (insertNode->m_right == nullptr)
                         {
-                            return insert_node(insertNode, newNode, 0, insertNode);
+                            return insert_node(insertNode, newNode, nullptr, insertNode);
                         }
                         else
                         {
@@ -1500,7 +1500,7 @@ namespace AZStd
             {
                 if (!m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(m_head.m_right)->m_value)))
                 {
-                    return insert_node(m_head.m_right, newNode, 0, insertNode); // Last argument only needs to be non-null
+                    return insert_node(m_head.m_right, newNode, nullptr, insertNode); // Last argument only needs to be non-null
                 }
                 else
                 {
@@ -1524,9 +1524,9 @@ namespace AZStd
                 bool comp_pos_v = m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(insertNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value));
                 if (!comp_pos_v && !m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(beforeNode)->m_value)))
                 {
-                    if (beforeNode->m_right == 0)
+                    if (beforeNode->m_right == nullptr)
                     {
-                        return insert_node(beforeNode, newNode, 0, beforeNode); // Last argument only needs to be non-null
+                        return insert_node(beforeNode, newNode, nullptr, beforeNode); // Last argument only needs to be non-null
                     }
                     else
                     {
@@ -1546,9 +1546,9 @@ namespace AZStd
 #endif
                     if (comp_pos_v && (afterNode == &m_head || !m_keyEq(Traits::key_from_value(static_cast<node_ptr_type>(afterNode)->m_value), Traits::key_from_value(static_cast<node_ptr_type>(newNode)->m_value))))
                     {
-                        if (insertNode->m_right == 0)
+                        if (insertNode->m_right == nullptr)
                         {
-                            return insert_node(insertNode, newNode, 0, insertNode);
+                            return insert_node(insertNode, newNode, nullptr, insertNode);
                         }
                         else
                         {
@@ -1576,7 +1576,7 @@ namespace AZStd
             parent = top;
             node = node->m_left;
 
-            while (node != 0)
+            while (node != nullptr)
             {
                 base_node_ptr_type y = clone_node(node);
                 parent->m_left = y;
@@ -1622,7 +1622,7 @@ namespace AZStd
         void erase(base_node_ptr_type node)
         {
             // erase without rebalancing
-            while (node != 0)
+            while (node != nullptr)
             {
                 erase(node->m_right);
                 base_node_ptr_type y = node->m_left;
@@ -1640,7 +1640,7 @@ namespace AZStd
         void rebind(base_node_ptr_type node)
         {
             base_node_ptr_type parent = m_head.get_parent();
-            if (parent != 0)
+            if (parent != nullptr)
             {
                 parent->set_parent(&m_head);
             }
@@ -1663,7 +1663,7 @@ namespace AZStd
         {
             base_node_ptr_type y = x->m_right;
             x->m_right = y->m_left;
-            if (y->m_left != 0)
+            if (y->m_left != nullptr)
             {
                 y->m_left->set_parent(x);
             }
@@ -1692,7 +1692,7 @@ namespace AZStd
         {
             base_node_ptr_type y = x->m_left;
             x->m_left = y->m_right;
-            if (y->m_right != 0)
+            if (y->m_right != nullptr)
             {
                 y->m_right->set_parent(x);
             }
@@ -1784,15 +1784,15 @@ namespace AZStd
             base_node_ptr_type x;
             base_node_ptr_type xParent;
 
-            if (y->m_left == 0)     // z has at most one non-null child. y == z.
+            if (y->m_left == nullptr) // z has at most one non-null child. y == z.
             {
-                x = y->m_right;     // x might be null.
+                x = y->m_right;       // x might be null.
             }
             else
             {
-                if (y->m_right == 0)  // z has exactly one non-null child. y == z.
+                if (y->m_right == nullptr) // z has exactly one non-null child. y == z.
                 {
-                    x = y->m_left;    // x is not null.
+                    x = y->m_left;         // x is not null.
                 }
                 else                     // z has two non-null children.  Set y to
                 {
@@ -1865,7 +1865,7 @@ namespace AZStd
 
                 if (leftmost == z)
                 {
-                    if (z->m_right == 0)        // z->m_left must be null also
+                    if (z->m_right == nullptr)  // z->m_left must be null also
                     {
                         leftmost = zParent;     // makes __leftmost == header if z == root
                     }
@@ -1876,7 +1876,7 @@ namespace AZStd
                 }
                 if (rightmost == z)
                 {
-                    if (z->m_left == 0)         // z->m_right must be null also
+                    if (z->m_left == nullptr)   // z->m_right must be null also
                     {
                         rightmost = zParent;
                     }
@@ -1890,7 +1890,7 @@ namespace AZStd
 
             if (y->get_color() != AZSTD_RBTREE_RED)
             {
-                while (x != m_head.get_parent() && (x == 0 || x->get_color() == AZSTD_RBTREE_BLACK))
+                while (x != m_head.get_parent() && (x == nullptr || x->get_color() == AZSTD_RBTREE_BLACK))
                 {
                     if (x == xParent->m_left)
                     {
@@ -1902,8 +1902,8 @@ namespace AZStd
                             rotate_left(xParent);
                             w = xParent->m_right;
                         }
-                        if ((w->m_left == 0 || w->m_left->get_color() == AZSTD_RBTREE_BLACK) &&
-                            (w->m_right == 0 || w->m_right->get_color() == AZSTD_RBTREE_BLACK))
+                        if ((w->m_left == nullptr || w->m_left->get_color() == AZSTD_RBTREE_BLACK) &&
+                            (w->m_right == nullptr || w->m_right->get_color() == AZSTD_RBTREE_BLACK))
                         {
                             w->set_color(AZSTD_RBTREE_RED);
                             x = xParent;
@@ -1911,7 +1911,7 @@ namespace AZStd
                         }
                         else
                         {
-                            if (w->m_right == 0 || w->m_right->get_color() == AZSTD_RBTREE_BLACK)
+                            if (w->m_right == nullptr || w->m_right->get_color() == AZSTD_RBTREE_BLACK)
                             {
                                 if (w->m_left)
                                 {
@@ -1942,8 +1942,8 @@ namespace AZStd
                             rotate_right(xParent);
                             w = xParent->m_left;
                         }
-                        if ((w->m_right == 0 || w->m_right->get_color() == AZSTD_RBTREE_BLACK) &&
-                            (w->m_left == 0 ||  w->m_left->get_color() == AZSTD_RBTREE_BLACK))
+                        if ((w->m_right == nullptr || w->m_right->get_color() == AZSTD_RBTREE_BLACK) &&
+                            (w->m_left == nullptr ||  w->m_left->get_color() == AZSTD_RBTREE_BLACK))
                         {
                             w->set_color(AZSTD_RBTREE_RED);
                             x = xParent;
@@ -1951,7 +1951,7 @@ namespace AZStd
                         }
                         else
                         {
-                            if (w->m_left == 0 || w->m_left->get_color() == AZSTD_RBTREE_BLACK)
+                            if (w->m_left == nullptr || w->m_left->get_color() == AZSTD_RBTREE_BLACK)
                             {
                                 if (w->m_right)
                                 {

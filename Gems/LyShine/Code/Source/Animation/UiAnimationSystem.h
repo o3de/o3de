@@ -81,9 +81,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Sequence playback.
     //////////////////////////////////////////////////////////////////////////
-    void PlaySequence(const char* sequence, IUiAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(const char* sequence, IUiAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
-    void PlaySequence(IUiAnimSequence* seq, IUiAnimSequence* parentSeq = NULL, bool bResetFX = true,
+    void PlaySequence(IUiAnimSequence* seq, IUiAnimSequence* parentSeq = nullptr, bool bResetFX = true,
         bool bTrackedSequence = false, float startTime = -FLT_MAX, float endTime = -FLT_MAX) override;
     void PlayOnLoadSequences() override;
 

@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -42,6 +43,7 @@ namespace AzToolsFramework
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
         {
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+            ToolsApplicationNotificationBus::Handler::BusConnect();
 
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
@@ -60,15 +62,26 @@ namespace AzToolsFramework
                 "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
                 "Instance Dom Generator Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            AZ_Assert(
+                m_instanceEntityMapperInterface != nullptr,
+                "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
+                "Instance Entity Mapper Interface could not be found. "
+                "Check that it is being correctly initialized.");
+
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+
             m_GameModeEventHandler.Disconnect();
 
             m_instanceDomGeneratorInterface = nullptr;
             m_templateInstanceMapperInterface = nullptr;
             m_prefabSystemComponentInterface = nullptr;
+            m_instanceEntityMapperInterface = nullptr;
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
@@ -150,7 +163,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
+        bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue(bool flush)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -162,8 +175,12 @@ namespace AzToolsFramework
             {
                 m_updatingTemplateInstancesInQueue = true;
 
-                const int instanceCountToUpdateInBatch =
-                    m_instanceCountToUpdateInBatch == 0 ? static_cast<int>(m_instancesUpdateQueue.size()) : m_instanceCountToUpdateInBatch;
+                const bool shouldLimitQueueSize = !flush && m_instanceCountToUpdateInBatch > 0;
+
+                const int instanceCountToUpdateInBatch = shouldLimitQueueSize ?
+                     AZStd::min(aznumeric_cast<int>(m_instancesUpdateQueue.size()), m_instanceCountToUpdateInBatch)
+                    : aznumeric_cast<int>(m_instancesUpdateQueue.size());
+
                 TemplateId currentTemplateId = InvalidTemplateId;
                 TemplateReference currentTemplateReference = AZStd::nullopt;
 
@@ -174,6 +191,28 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+
+                    // Turn the list of EntityIDs into actual entity alias paths so that we can check if any of the
+                    // selected entities were replaced (their EntityId would change but their alias would remain the same)
+
+                    // map of "alias" -> "old entity id" for all selected entities
+                    AZStd::unordered_map<AliasPath, AZ::EntityId> selectedEntityAliasPaths; 
+
+                    selectedEntityAliasPaths.reserve(selectedEntityIds.size());
+                    for (const auto& selectedEntityId : selectedEntityIds)
+                    {
+                        auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(selectedEntityId);
+                        if (owningInstance.has_value())
+                        {
+                            auto entityAlias = owningInstance->get().GetEntityAlias(selectedEntityId);
+                            if (entityAlias.has_value())
+                            {
+                                AliasPath absoluteEntityPath = owningInstance->get().GetAbsoluteInstanceAliasPath();
+                                absoluteEntityPath.Append(entityAlias.value());
+                                selectedEntityAliasPaths[absoluteEntityPath] = selectedEntityId;
+                            }
+                        }
+                    }
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -267,6 +306,36 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
 
+                            if (!selectedEntityAliasPaths.empty())
+                            {
+                                // was anything in the instance that updated selected?
+                                AliasPath instancePath = instanceToUpdate->GetAbsoluteInstanceAliasPath();
+
+                                // Loop over all new entities and check if their alias path matches
+                                // any of the selected entity alias paths.  If it does, update the entityId
+                                // in the seelcted entity list to the new entityId:
+                                auto updateSelectionCallback = [&](const AZ::Entity& entity)
+                                {
+                                    AliasPath entityPath = instancePath;
+                                    auto alias = instanceToUpdate->GetEntityAlias(entity.GetId());
+                                    if (alias.has_value())
+                                    {
+                                        // The alias always has a value, because we just created one:
+                                        entityPath.Append(alias.value());
+
+                                        if (auto found = selectedEntityAliasPaths.find(entityPath); found != selectedEntityAliasPaths.end())
+                                        {
+                                            const AZ::EntityId& oldEntityId = found->second;
+                                            AZStd::replace(selectedEntityIds.begin(), selectedEntityIds.end(), oldEntityId, entity.GetId());
+                                            found->second = entity.GetId();
+                                        }
+                                    }
+                                    return true; // returning true in this callback means keep iterating.
+                                };
+
+                                instanceToUpdate->GetConstEntities(updateSelectionCallback);
+                            }
+
                             if (!m_isRootPrefabInstanceLoaded &&
                                 instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
                             {
@@ -275,19 +344,12 @@ namespace AzToolsFramework
                             }
                         }
                     }
-                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
-                    {
-                        // Since entities get recreated during propagation, we need to check whether the entities
-                        // corresponding to the list of selected entity ids are present or not.
-                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
-                        if (entity == nullptr)
-                        {
-                            selectedEntityIds.erase(entityIdIterator--);
-                        }
-                    }
 
                     // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
+
+                    // eliminate any dead entity Ids and then reselect the entities that were replaced during propagation.
+                    AZStd::erase_if(selectedEntityIds, [](const AZ::EntityId& entityId) { return !GetEntityById(entityId); });
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
@@ -323,6 +385,19 @@ namespace AzToolsFramework
         void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)
         {
             m_shouldPausePropagation = shouldPausePropagation;
+        }
+
+        void InstanceUpdateExecutor::AfterUndoRedo()
+        {
+            // After undo/redo, the instance update queue may have been populated.  Make sure that the queue is processed,
+            // so that deletions/creations are complete before control returns to the application.
+            // Note that this signal only comes from when a user actually initiates an undo or redo (or a test script does
+            // on behalf of simulating a user), and not from when undo or redo operations are being performed as part of
+            // building the undo stack during an op.  If this ever causes a perf issue, we can relax this requirement.
+            if (!m_shouldPausePropagation)
+            {
+                UpdateTemplateInstancesInQueue(true);
+            }
         }
     }
 }

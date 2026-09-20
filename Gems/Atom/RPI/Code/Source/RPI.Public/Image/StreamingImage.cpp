@@ -15,7 +15,7 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 // Enable this define to debug output streaming image initialization and expanding process.
 //#define AZ_RPI_STREAMING_IMAGE_DEBUG_LOG

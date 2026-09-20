@@ -40,13 +40,13 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Shape bounds override min/max altitude if specified."))
+                    ->DataElement(nullptr, &SurfaceAltitudeGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Shape bounds override min/max altitude if specified."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMin, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum acceptable surface altitude."))
+                    ->DataElement(nullptr, &SurfaceAltitudeGradientConfig::m_altitudeMin, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeGradientConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMax, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum acceptable surface altitude."))
+                    ->DataElement(nullptr, &SurfaceAltitudeGradientConfig::m_altitudeMax, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeGradientConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
+                    ->DataElement(nullptr, &SurfaceAltitudeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
                     ;
             }
         }

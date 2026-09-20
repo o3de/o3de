@@ -467,7 +467,7 @@ namespace AZ
                     barrierState = &image.GetDescriptor().m_multisampleState;
                 }
 
-                D3D12_RESOURCE_TRANSITION_BARRIER transition = { 0 };
+                D3D12_RESOURCE_TRANSITION_BARRIER transition = { nullptr };
                 transition.pResource = image.GetMemoryView().GetMemory();
 
                 // Apply appropriate pre-discard transition

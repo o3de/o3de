@@ -80,8 +80,8 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PositionModifierConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
 
-                    ->DataElement(0, &PositionModifierConfig::m_autoSnapToSurface, QT_TRANSLATE_NOOP("Vegetation", "Auto Snap To Surface"), QT_TRANSLATE_NOOP("Vegetation", "Automatically snap to the surface closest to the new position using Surface Tags To Snap To plus the initial surface tags."))
-                    ->DataElement(0, &PositionModifierConfig::m_surfaceTagsToSnapTo, QT_TRANSLATE_NOOP("Vegetation", "Surface Tags To Snap To"), QT_TRANSLATE_NOOP("Vegetation", "Additional surface tags to snap to if auto snap is enabled."))
+                    ->DataElement(nullptr, &PositionModifierConfig::m_autoSnapToSurface, QT_TRANSLATE_NOOP("Vegetation", "Auto Snap To Surface"), QT_TRANSLATE_NOOP("Vegetation", "Automatically snap to the surface closest to the new position using Surface Tags To Snap To plus the initial surface tags."))
+                    ->DataElement(nullptr, &PositionModifierConfig::m_surfaceTagsToSnapTo, QT_TRANSLATE_NOOP("Vegetation", "Surface Tags To Snap To"), QT_TRANSLATE_NOOP("Vegetation", "Additional surface tags to snap to if auto snap is enabled."))
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position X"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -95,7 +95,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
+                    ->DataElement(nullptr, &PositionModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position Y"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -109,7 +109,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
+                    ->DataElement(nullptr, &PositionModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position Z"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -123,7 +123,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
+                    ->DataElement(nullptr, &PositionModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
                     ;
             }
         }

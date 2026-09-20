@@ -116,7 +116,7 @@ namespace ImageProcessingAtom
                 rows[p] = (DataType**)((char*)(rows + planes) + rowblocksize * p) + excess;
 
                 /* "excess" empty pointers on negative offsets ----------------------------- */
-                buffer = (char*)NULL;
+                buffer = (char*)nullptr;
                 AZ_Assert((reinterpret_cast<AZ::u64>(buffer) % 16) == 0, "%s: Unexpected buffer size!", __FUNCTION__);
 
 

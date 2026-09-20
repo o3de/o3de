@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
 {

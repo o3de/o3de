@@ -32,7 +32,7 @@ struct UiAnimUndoObject
     virtual void Redo() = 0;
 
     // Returns the name of undo object
-    virtual const char* GetObjectName() { return 0; };
+    virtual const char* GetObjectName() { return nullptr; };
 
     virtual bool IsChanged([[maybe_unused]] unsigned int& compareValue) const { return false; }
 };

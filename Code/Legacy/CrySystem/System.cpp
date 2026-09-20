@@ -60,7 +60,7 @@ AZ_DEFINE_BUDGET(CrySystem);
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CSystem* pSystem = 0;
+    CSystem* pSystem = nullptr;
     if (gEnv)
     {
         pSystem = static_cast<CSystem*>(gEnv->pSystem);
@@ -199,17 +199,17 @@ CSystem::CSystem()
 
     //////////////////////////////////////////////////////////////////////////
 
-    m_sysNoUpdate = NULL;
-    m_pCmdLine = NULL;
-    m_pLevelSystem = NULL;
-    m_pLocalizationManager = NULL;
+    m_sysNoUpdate = nullptr;
+    m_pCmdLine = nullptr;
+    m_pLevelSystem = nullptr;
+    m_pLocalizationManager = nullptr;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
 
-    m_pUserCallback = NULL;
-    m_sys_firstlaunch = NULL;
+    m_pUserCallback = nullptr;
+    m_sys_firstlaunch = nullptr;
 
     m_bInitializedSuccessfully = false;
     m_bRelaunch = false;
@@ -260,8 +260,8 @@ CSystem::~CSystem()
 
     AZCoreLogSink::Disconnect();
 
-    m_env.pSystem = 0;
-    gEnv = 0;
+    m_env.pSystem = nullptr;
+    gEnv = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ void CSystem::ShutDown()
     }
 
     // Dispatch the full-shutdown event in case this is not a fast-shutdown.
-    if (m_pSystemEventDispatcher != NULL)
+    if (m_pSystemEventDispatcher != nullptr)
     {
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
@@ -388,7 +388,7 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_pLocalizationManager);
 
     delete m_pCmdLine;
-    m_pCmdLine = 0;
+    m_pCmdLine = nullptr;
 
     // Audio System Shutdown!
     // Shut down audio as late as possible but before the streaming system and console get released!
@@ -610,14 +610,14 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //limit frame rate if vsync is turned off
     //for consoles this is done inside renderthread to be vsync dependent
     {
-        static ICVar* pSysMaxFPS = NULL;
-        static ICVar* pVSync = NULL;
+        static ICVar* pSysMaxFPS = nullptr;
+        static ICVar* pVSync = nullptr;
 
-        if (pSysMaxFPS == NULL && gEnv && gEnv->pConsole)
+        if (pSysMaxFPS == nullptr && gEnv && gEnv->pConsole)
         {
             pSysMaxFPS = gEnv->pConsole->GetCVar("sys_MaxFPS");
         }
-        if (pVSync == NULL && gEnv && gEnv->pConsole)
+        if (pVSync == nullptr && gEnv && gEnv->pConsole)
         {
             pVSync = gEnv->pConsole->GetCVar("vsync_interval");
         }
@@ -892,7 +892,7 @@ inline const char* ValidatorModuleToString(EValidatorModule module)
 void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int flags, const char* file, const char* format, va_list args)
 {
     // Fran: No logging in a testing environment
-    if (m_env.pLog == 0)
+    if (m_env.pLog == nullptr)
     {
         return;
     }
@@ -1109,7 +1109,7 @@ void CSystem::OnLocalizationFolderCVarChanged(ICVar* const pLocalizationFolder)
     {
         CSystem* const pSystem = static_cast<CSystem* const>(gEnv->pSystem);
 
-        if (pSystem != NULL && gEnv->pCryPak != NULL)
+        if (pSystem != nullptr && gEnv->pCryPak != nullptr)
         {
             CLocalizedStringsManager* const pLocalizationManager = static_cast<CLocalizedStringsManager* const>(pSystem->GetLocalizationManager());
 
@@ -1336,7 +1336,7 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         {
             // Check if screen saver is allowed
             IConsole* const pConsole = gEnv->pConsole;
-            const ICVar* const pVar = pConsole ? pConsole->GetCVar("sys_screensaver_allowed") : 0;
+            const ICVar* const pVar = pConsole ? pConsole->GetCVar("sys_screensaver_allowed") : nullptr;
             return pVar && pVar->GetIVal() == 0;
         }
         return false;
@@ -1386,7 +1386,7 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     {
         UINT rawInputSize;
         const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-        GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
+        GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
 
         AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
         LPBYTE rawInputBytes = rawInputBytesArray.data();

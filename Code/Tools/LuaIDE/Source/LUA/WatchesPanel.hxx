@@ -111,7 +111,7 @@ class DHWatchesWidget
 
 public:
 
-    DHWatchesWidget( QWidget * parent = 0 );
+    DHWatchesWidget( QWidget * parent = nullptr );
     virtual ~DHWatchesWidget();
 
     void SetOperatingMode( WatchesOperatingMode newMode );

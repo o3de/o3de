@@ -130,7 +130,7 @@ namespace AZ
             const size_type oldAllocatedSize = get_allocated_size(ptr, 1);
             AllocateAddress newAddress = AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
             // The reallocation might have clamped the newSize to be at least the minimum allocation size
-            // used by the parent schema. For example the HphaSchemaBase has a minimum allocation size of 8 bytes
+            // used by the parent schema.
             AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, newAddress.GetAllocatedBytes(), newAlignment));
             m_totalAllocatedBytes += newAddress.GetAllocatedBytes() - oldAllocatedSize;
             return newAddress;

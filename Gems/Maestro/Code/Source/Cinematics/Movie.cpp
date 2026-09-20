@@ -696,7 +696,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     // 'NULL' ones are listeners interested in every sequence. Do not send "update" here
     if (event != IMovieListener::eMovieEvent_Updated)
     {
-        TMovieListenerMap::iterator found2 (m_movieListenerMap.find((IAnimSequence*)0));
+        TMovieListenerMap::iterator found2 (m_movieListenerMap.find((IAnimSequence*)nullptr));
         if (found2 != m_movieListenerMap.end())
         {
             TMovieListenerVec listForSeq = (*found2).second;

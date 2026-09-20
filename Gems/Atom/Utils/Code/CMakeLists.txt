@@ -43,7 +43,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework

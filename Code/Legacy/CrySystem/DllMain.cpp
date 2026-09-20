@@ -31,7 +31,7 @@
 //#include <malloc.h>
 
 #if !defined(AZ_MONOLITHIC_BUILD) && defined(AZ_HAS_DLL_SUPPORT) && AZ_TRAIT_LEGACY_CRYSYSTEM_DEFINE_DLLMAIN
-HMODULE gDLLHandle = NULL;
+HMODULE gDLLHandle = nullptr;
 AZ_PUSH_DISABLE_WARNING(4447, "-Wunknown-warning-option")
 BOOL APIENTRY DllMain(HANDLE hModule,
     DWORD  ul_reason_for_call,
@@ -65,7 +65,7 @@ CRYSYSTEM_API
 #endif
 ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
 {
-    CSystem* pSystem = NULL;
+    CSystem* pSystem = nullptr;
 
     pSystem = new CSystem();
     ModuleInitISystem(pSystem, "CrySystem");
@@ -105,7 +105,7 @@ ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
         delete pSystem;
         gEnv = nullptr;
 
-        return 0;
+        return nullptr;
     }
 
     return pSystem;

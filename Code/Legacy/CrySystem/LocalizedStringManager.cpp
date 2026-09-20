@@ -219,7 +219,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     m_pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
     m_languages.reserve(4);
-    m_pLanguage = 0;
+    m_pLanguage = nullptr;
 
 #if !defined(_RELEASE)
     m_haveWarnedAboutAtLeastOneLabel = false;
@@ -246,7 +246,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
 #endif //#if !defined(_RELEASE)
 
     //Check that someone hasn't added a language ID without a language name
-    assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != 0);
+    assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != nullptr);
 
     // Populate available languages by scanning the localization directory for paks
     // Default to US English if language is not supported
@@ -338,7 +338,7 @@ void CLocalizedStringsManager::FreeData()
     m_languages.resize(0);
     m_loadedTables.clear();
 
-    m_pLanguage = 0;
+    m_pLanguage = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -398,7 +398,7 @@ void CLocalizedStringsManager::SetAvailableLocalizationsBitfield(const ILocaliza
 //////////////////////////////////////////////////////////////////////
 const char* CLocalizedStringsManager::GetLanguage()
 {
-    if (m_pLanguage == 0)
+    if (m_pLanguage == nullptr)
     {
         return "";
     }
@@ -504,7 +504,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
     for (;; )
     {
         int nCellIndex = 0;
-        const char* pContent = 0;
+        const char* pContent = nullptr;
         size_t contentSize = 0;
         if (!pXmlTableReader->ReadCell(nCellIndex, pContent, contentSize))
         {
@@ -527,7 +527,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
         for (int i = 0; i < sizeof(sLocalizedColumnNames) / sizeof(sLocalizedColumnNames[0]); ++i)
         {
             const char* pFind = strstr(sCellContent.c_str(), sLocalizedColumnNames[i]);
-            if (pFind != 0)
+            if (pFind != nullptr)
             {
                 nCellIndexToType[nCellIndex] = static_cast<char>(i);
 
@@ -832,7 +832,7 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
                     if (entry->huffmanTreeIndex != -1)
                     {
                         HuffmanCoder* pCoder = m_pLanguage->m_vEncoders[entry->huffmanTreeIndex];
-                        if (pCoder != NULL)
+                        if (pCoder != nullptr)
                         {
                             pCoder->DecRef();
                             if (pCoder->RefCount() == 0)
@@ -975,7 +975,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     INDENT_LOG_DURING_SCOPE();
 
     //Create a huffman coding table for these strings - if they're going to be encoded or compressed
-    HuffmanCoder* pEncoder = NULL;
+    HuffmanCoder* pEncoder = nullptr;
     uint8 iEncoder = 0;
     size_t startOfStringsToCompress = 0;
     if (m_cvarLocalizationEncode == 1)
@@ -983,7 +983,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         {
             for (iEncoder = 0; iEncoder < m_pLanguage->m_vEncoders.size(); iEncoder++)
             {
-                if (m_pLanguage->m_vEncoders[iEncoder] == NULL)
+                if (m_pLanguage->m_vEncoders[iEncoder] == nullptr)
                 {
                     m_pLanguage->m_vEncoders[iEncoder] = pEncoder = new HuffmanCoder();
                     break;
@@ -1541,7 +1541,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             for (size_t stringToCompress = startOfStringsToCompress; stringToCompress < m_pLanguage->m_vLocalizedStrings.size(); stringToCompress++)
             {
                 SLocalizedStringEntry* pStringToCompress = m_pLanguage->m_vLocalizedStrings[stringToCompress];
-                if (pStringToCompress->TranslatedText.szCompressed != NULL)
+                if (pStringToCompress->TranslatedText.szCompressed != nullptr)
                 {
                     size_t compBufSize = COMPRESSION_FIXED_BUFFER_LENGTH;
                     memset(compressionBuffer, 0, COMPRESSION_FIXED_BUFFER_LENGTH);
@@ -1880,7 +1880,7 @@ void CLocalizedStringsManager::LocalizeAndSubstituteInternal(AZStd::string& locS
 }
 #if defined(LOG_DECOMP_TIMES)
 static double g_fSecondsPerTick = 0.0;
-static FILE* pDecompLog = NULL;
+static FILE* pDecompLog = nullptr;
 // engine independent game timer since gEnv/pSystem isn't available yet
 static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nAllocTicks)
 {
@@ -1921,7 +1921,7 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif  //LOG_DECOMP_TIMES
 
         AZStd::string outputString;
-        if (TranslatedText.szCompressed != NULL)
+        if (TranslatedText.szCompressed != nullptr)
         {
             uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
             HuffmanCoder* pEncoder = pLanguage->m_vEncoders[huffmanTreeIndex];
@@ -1959,7 +1959,7 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
     }
     else
     {
-        if (TranslatedText.psUtf8Uncompressed != NULL)
+        if (TranslatedText.psUtf8Uncompressed != nullptr)
         {
             return *TranslatedText.psUtf8Uncompressed;
         }
@@ -2017,12 +2017,12 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
         uint32 labelCRC32 = AZ::Crc32(sLabel + 1);   // skip @ character.
         {
             AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, labelCRC32, NULL);
+            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, labelCRC32, nullptr);
 
-            if (entry != NULL)
+            if (entry != nullptr)
             {
                 AZStd::string translatedText = entry->GetTranslatedText(m_pLanguage);
-                if ((bEnglish || translatedText.empty()) && entry->pEditorExtension != NULL)
+                if ((bEnglish || translatedText.empty()) && entry->pEditorExtension != nullptr)
                 {
                     //assert(!"No Localization Text available!");
                     outLocalString.assign(entry->pEditorExtension->sOriginalText);
@@ -2066,8 +2066,8 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string&
         uint32 keyCRC32 = AZ::Crc32(sKey + 1);
         {
             AutoLock lock(m_cs); // Lock here, to prevent strings etc being modified underneath this lookup
-            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL); // skip @ character.
-            if (entry != NULL && entry->pEditorExtension != NULL)
+            SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr); // skip @ character.
+            if (entry != nullptr && entry->pEditorExtension != nullptr)
             {
                 sLocalizedString = entry->pEditorExtension->sOriginalText;
                 return true;
@@ -2075,8 +2075,8 @@ bool CLocalizedStringsManager::GetEnglishString(const char* sKey, AZStd::string&
             else
             {
                 keyCRC32 = AZ::Crc32(sKey);
-                entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
-                if (entry != NULL && entry->pEditorExtension != NULL)
+                entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr);
+                if (entry != nullptr && entry->pEditorExtension != nullptr)
                 {
                     sLocalizedString = entry->pEditorExtension->sOriginalText;
                     return true;
@@ -2109,8 +2109,8 @@ bool CLocalizedStringsManager::IsLocalizedInfoFound(const char* sKey)
     uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-        const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
-        return (entry != NULL);
+        const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr);
+        return (entry != nullptr);
     }
 }
 
@@ -2125,8 +2125,8 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
     uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-        const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
-        if (entry != NULL)
+        const SLocalizedStringEntry* entry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr);
+        if (entry != nullptr)
         {
             outGameInfo.szCharacterName = entry->sCharacterName.c_str();
             outGameInfo.sUtf8TranslatedText = entry->GetTranslatedText(m_pLanguage);
@@ -2156,8 +2156,8 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
     uint32 keyCRC32 = AZ::Crc32(sKey);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-        const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
-        if (pEntry != NULL)
+        const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr);
+        if (pEntry != nullptr)
         {
             bResult = true;
 
@@ -2198,7 +2198,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
             {
                 // not enough memory, say what is needed
                 pOutSoundInfo->nNumSoundMoods = pEntry->SoundMoods.size();
-                bResult = (pOutSoundInfo->pSoundMoods == NULL); // only report error if memory was provided but is too small
+                bResult = (pOutSoundInfo->pSoundMoods == nullptr); // only report error if memory was provided but is too small
             }
 
             //EventParameters
@@ -2223,7 +2223,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByKey(const char* sKey, SLocalize
             {
                 // not enough memory, say what is needed
                 pOutSoundInfo->nNumEventParameters = pEntry->EventParameters.size();
-                bResult = (pOutSoundInfo->pSoundMoods == NULL); // only report error if memory was provided but is too small
+                bResult = (pOutSoundInfo->pSoundMoods == nullptr); // only report error if memory was provided but is too small
             }
         }
     }
@@ -2278,7 +2278,7 @@ bool CLocalizedStringsManager::GetLocalizedInfoByIndex(int nIndex, SLocalizedInf
     outEditorInfo.szCharacterName = pEntry->sCharacterName.c_str();
     outEditorInfo.sUtf8TranslatedText = pEntry->GetTranslatedText(m_pLanguage);
 
-    assert(pEntry->pEditorExtension != NULL);
+    assert(pEntry->pEditorExtension != nullptr);
 
     outEditorInfo.sKey = pEntry->pEditorExtension->sKey.c_str();
 
@@ -2309,8 +2309,8 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, AZStd::strin
     uint32 keyCRC32 = AZ::Crc32(sKeyOrLabel);
     {
         AutoLock lock(m_cs);    //Lock here, to prevent strings etc being modified underneath this lookup
-        const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, NULL);
-        if (pEntry != NULL)
+        const SLocalizedStringEntry* pEntry = stl::find_in_map(m_pLanguage->m_keysMap, keyCRC32, nullptr);
+        if (pEntry != nullptr)
         {
             if ((pEntry->flags & SLocalizedStringEntry::USE_SUBTITLE) == false && !bForceSubtitle)
             {
@@ -2323,15 +2323,15 @@ bool CLocalizedStringsManager::GetSubtitle(const char* sKeyOrLabel, AZStd::strin
 
             if (outSubtitle.empty() == true)
             {
-                if (pEntry->pEditorExtension != NULL && pEntry->pEditorExtension->sUtf8TranslatedActorLine.empty() == false)
+                if (pEntry->pEditorExtension != nullptr && pEntry->pEditorExtension->sUtf8TranslatedActorLine.empty() == false)
                 {
                     outSubtitle = pEntry->pEditorExtension->sUtf8TranslatedActorLine;
                 }
-                else if (pEntry->pEditorExtension != NULL && pEntry->pEditorExtension->sOriginalText.empty() == false)
+                else if (pEntry->pEditorExtension != nullptr && pEntry->pEditorExtension->sOriginalText.empty() == false)
                 {
                     outSubtitle = pEntry->pEditorExtension->sOriginalText;
                 }
-                else if (pEntry->pEditorExtension != NULL && pEntry->pEditorExtension->sOriginalActorLine.empty() == false)
+                else if (pEntry->pEditorExtension != nullptr && pEntry->pEditorExtension->sOriginalActorLine.empty() == false)
                 {
                     outSubtitle = pEntry->pEditorExtension->sOriginalActorLine;
                 }
@@ -2403,7 +2403,7 @@ void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& 
     }
 }
 
-void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0)
+void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = nullptr, const char* param3 = nullptr, const char* param4 = nullptr)
 {
     static const int MAX_PARAMS = 4;
     const char* params[MAX_PARAMS] = { param1, param2, param3, param4 };
@@ -2482,7 +2482,7 @@ namespace
         return defaultLanguage;
     }
 
-    LanguageID g_currentLanguageID = { 0, 0 };
+    LanguageID g_currentLanguageID = { nullptr, 0 };
 };
 #endif
 
@@ -2490,13 +2490,13 @@ void CLocalizedStringsManager::InternalSetCurrentLanguage(CLocalizedStringsManag
 {
     m_pLanguage = pLanguage;
 #if defined (WIN32) || defined(WIN64)
-    if (m_pLanguage != 0)
+    if (m_pLanguage != nullptr)
     {
         g_currentLanguageID = GetLanguageID(m_pLanguage->sLanguage.c_str());
     }
     else
     {
-        g_currentLanguageID.language = 0;
+        g_currentLanguageID.language = nullptr;
         g_currentLanguageID.lcID = 0;
     }
 #endif
@@ -2664,13 +2664,13 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     DWORD flags = bShowSeconds == false ? TIME_NOSECONDS : 0;
     SYSTEMTIME systemTime;
     UnixTimeToSystemTime(t, &systemTime);
-    int len = ::GetTimeFormatW(lcID, flags, &systemTime, 0, 0, 0);
+    int len = ::GetTimeFormatW(lcID, flags, &systemTime, nullptr, nullptr, 0);
     if (len > 0)
     {
         // len includes terminating null!
         AZStd::fixed_wstring<256> tmpString;
         tmpString.resize(len);
-        ::GetTimeFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
+        ::GetTimeFormatW(lcID, flags, &systemTime, nullptr, (wchar_t*) tmpString.c_str(), len);
         AZStd::to_string(outTimeString, tmpString.data());
     }
 }
@@ -2694,7 +2694,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     if (bIncludeWeekday)
     {
         // Get name of day
-        int len = ::GetDateFormatW(lcID, 0, &systemTime, L"ddd", 0, 0);
+        int len = ::GetDateFormatW(lcID, 0, &systemTime, L"ddd", nullptr, 0);
         if (len > 0)
         {
             // len includes terminating null!
@@ -2707,12 +2707,12 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
         }
     }
     DWORD flags = bShort ? DATE_SHORTDATE : DATE_LONGDATE;
-    int len = ::GetDateFormatW(lcID, flags, &systemTime, 0, 0, 0);
+    int len = ::GetDateFormatW(lcID, flags, &systemTime, nullptr, nullptr, 0);
     if (len > 0)
     {
         // len includes terminating null!
         tmpString.resize(len);
-        ::GetDateFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
+        ::GetDateFormatW(lcID, flags, &systemTime, nullptr, (wchar_t*) tmpString.c_str(), len);
         AZStd::string utf8;
         AZStd::to_string(utf8, tmpString.data());
         outDateString.append(utf8);

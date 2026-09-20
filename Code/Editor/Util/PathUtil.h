@@ -322,7 +322,7 @@ namespace Path
         }
         else
         {
-            gEnv->pSystem->Warning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, VALIDATOR_FLAG_AUDIO, 0, "The localization folder is not set! Please make sure it is by checking the setting of cvar \"sys_localization_folder\"!");
+            gEnv->pSystem->Warning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, VALIDATOR_FLAG_AUDIO, nullptr, "The localization folder is not set! Please make sure it is by checking the setting of cvar \"sys_localization_folder\"!");
         }
 
         return sLocalizationFolder;

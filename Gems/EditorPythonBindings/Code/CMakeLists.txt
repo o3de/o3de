@@ -61,6 +61,19 @@ ly_add_source_properties(
             O3DE_GEM_NAME=${gem_name}
             O3DE_GEM_VERSION=${gem_version})
 
+if (PAL_PLATFORM_NAME STREQUAL "Linux")
+    # The Linux module preloads the python shared library by name (see
+    # Source/Platform/Linux/InitializePython.h); wire the name from the build's
+    # single source of truth so it always matches the configured python.
+    ly_add_source_properties(
+        SOURCES
+            Source/EditorPythonBindingsModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_PYTHON_SHARED_LIBRARY_NAME="${LY_PYTHON_SHARED_LIB}"
+    )
+endif()
+
 # builders and tools use EditorPythonBindings.Editor
 ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS ${gem_name}.Editor)
 ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS ${gem_name}.Editor)

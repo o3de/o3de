@@ -22,6 +22,7 @@ namespace EditorIdentifiers
     inline constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
     inline constexpr AZStd::string_view EditModifyMenuIdentifier = "o3de.menu.editor.edit.modify";
     inline constexpr AZStd::string_view EditModifySnapMenuIdentifier = "o3de.menu.editor.edit.modify.snap";
+    inline constexpr AZStd::string_view EditModifySnapToMenuIdentifier = "o3de.menu.editor.edit.modify.snap.snapTo";
     inline constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
     inline constexpr AZStd::string_view EditSettingsMenuIdentifier = "o3de.menu.editor.edit.settings";
     inline constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";

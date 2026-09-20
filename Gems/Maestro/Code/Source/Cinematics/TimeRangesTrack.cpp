@@ -72,7 +72,7 @@ namespace Maestro
     void CTimeRangesTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
         duration = GetKeyDuration(keyIndex);
-        description = 0;
+        description = nullptr;
     }
 
     int CTimeRangesTrack::GetActiveKeyIndexForTime(const float time)

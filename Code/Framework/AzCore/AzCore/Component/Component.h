@@ -586,7 +586,7 @@ namespace AZ
          * It also deactivates the dependent services after it deactivates this component.
          * If a dependent service is missing before this component is activated, the system
          * does not return an error and still activates this component.
-         * @param provided Array of dependent services.
+         * @param dependent Array of dependent services.
          * @param instance Optional parameter with which you can refine services for each instance. This value is null if no instance exists.
          */
         virtual void GetDependentServices(DependencyArrayType& dependent, const Component* instance) const  { (void)dependent;  (void)instance; }
@@ -597,7 +597,7 @@ namespace AZ
          * It also deactivates the required services after it deactivates this component.
          * If a required service is missing before this component is activated, the system
          * returns an error and does not activate this component.
-         * @param provided Array of required services.
+         * @param required Array of required services.
          * @param instance Optional parameter with which you can refine services for each instance. This value is null if no instance exists.
          */
         virtual void GetRequiredServices(DependencyArrayType& required, const Component* instance) const    { (void)required;  (void)instance; }
@@ -606,7 +606,7 @@ namespace AZ
          * Specifies the services that the component cannot operate with.
          * For example, if two components provide a similar service and the system cannot use the services simultaneously,
          * each of those components would specify the other component as an incompatible service.
-         * @param provided Array to fill with incompatible services.
+         * @param incompatible Array to fill with incompatible services.
          * @param instance Optional parameter with which you can refine services for each instance. This value is null if no instance exists.
          */
         virtual void GetIncompatibleServices(DependencyArrayType& incompatible, const Component* instance) const    { (void)incompatible;  (void)instance; }
@@ -754,7 +754,7 @@ namespace AZ
 
         /**
          * Calls the static function AZ::ComponentDescriptor::GetDependentServices, if the user provided it.
-         * @param provided Array of dependent services.
+         * @param dependent Array of dependent services.
          * @param instance Optional parameter with which you can refine services for each instance. This value is null if no instance exists.
          */
         void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent, const Component* instance) const override
@@ -765,7 +765,7 @@ namespace AZ
 
         /**
          * Calls the static function AZ::ComponentDescriptor::GetRequiredServices, if the user provided it.
-         * @param provided Array of required services.
+         * @param required Array of required services.
          * @param instance Optional parameter with which you can refine services for each instance. This value is null if no instance exists.
          */
         void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required, const Component* instance) const override

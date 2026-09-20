@@ -220,29 +220,29 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_framerate, QT_TRANSLATE_NOOP("LyShine", "Framerate"), QT_TRANSLATE_NOOP("LyShine", "Determines transition speed between frames"))
+            editInfo->DataElement(nullptr, &UiFlipbookAnimationComponent::m_framerate, QT_TRANSLATE_NOOP("LyShine", "Framerate"), QT_TRANSLATE_NOOP("LyShine", "Determines transition speed between frames"))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_startDelay, QT_TRANSLATE_NOOP("LyShine", "Start delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to wait before playing the flipbook (applied only once)."))
+            editInfo->DataElement(nullptr, &UiFlipbookAnimationComponent::m_startDelay, QT_TRANSLATE_NOOP("LyShine", "Start delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to wait before playing the flipbook (applied only once)."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_loopDelay, QT_TRANSLATE_NOOP("LyShine", "Loop delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the loop sequence plays"))
+            editInfo->DataElement(nullptr, &UiFlipbookAnimationComponent::m_loopDelay, QT_TRANSLATE_NOOP("LyShine", "Loop delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the loop sequence plays"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiFlipbookAnimationComponent::IsLoopingType)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_reverseDelay, QT_TRANSLATE_NOOP("LyShine", "Reverse delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the reverse sequence plays (PingPong loop types only)"))
+            editInfo->DataElement(nullptr, &UiFlipbookAnimationComponent::m_reverseDelay, QT_TRANSLATE_NOOP("LyShine", "Reverse delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the reverse sequence plays (PingPong loop types only)"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiFlipbookAnimationComponent::IsPingPongLoopType)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_isAutoPlay, QT_TRANSLATE_NOOP("LyShine", "Auto Play"), QT_TRANSLATE_NOOP("LyShine", "Automatically starts playing the animation"))
+            editInfo->DataElement(nullptr, &UiFlipbookAnimationComponent::m_isAutoPlay, QT_TRANSLATE_NOOP("LyShine", "Auto Play"), QT_TRANSLATE_NOOP("LyShine", "Automatically starts playing the animation"))
             ;
         }
     }

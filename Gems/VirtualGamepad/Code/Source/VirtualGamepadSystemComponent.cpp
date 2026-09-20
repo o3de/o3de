@@ -58,10 +58,10 @@ namespace VirtualGamepad
                     QT_TRANSLATE_NOOP("VirtualGamepad", "Provides an example of a virtual gamepad that can be used by mobile devices with touch screens in place of a physical gamepad."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &VirtualGamepadSystemComponent::m_buttonNames,
+                    ->DataElement(nullptr, &VirtualGamepadSystemComponent::m_buttonNames,
                         QT_TRANSLATE_NOOP("VirtualGamepad", "Button Names"),
                         QT_TRANSLATE_NOOP("VirtualGamepad", "The button names made available by the virtual gamepad."))
-                    ->DataElement(0, &VirtualGamepadSystemComponent::m_thumbStickNames,
+                    ->DataElement(nullptr, &VirtualGamepadSystemComponent::m_thumbStickNames,
                         QT_TRANSLATE_NOOP("VirtualGamepad", "Thumb-Stick Names"),
                         QT_TRANSLATE_NOOP("VirtualGamepad", "The thumb-stick names made available by the virtual gamepad."))
                 ;

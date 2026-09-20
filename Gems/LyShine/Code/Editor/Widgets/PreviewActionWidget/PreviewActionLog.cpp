@@ -24,6 +24,8 @@ PreviewActionLog::PreviewActionLog([[maybe_unused]] EditorWindow* editorWindow)
     // turn off line wrap, this allows the user to dock on the left and make narrow and just see the
     // start of the message (the action name)
     setLineWrapMode(QTextEdit::NoWrap);
+
+    setStyleSheet("background-color: #222222;");
 }
 
 PreviewActionLog::~PreviewActionLog()

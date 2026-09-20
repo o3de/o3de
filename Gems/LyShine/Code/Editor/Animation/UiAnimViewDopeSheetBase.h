@@ -56,7 +56,7 @@ class CUiAnimViewDopeSheetBase
     , public IUiAnimViewSequenceListener
 {
 public:
-    CUiAnimViewDopeSheetBase(QWidget* parent = 0);
+    CUiAnimViewDopeSheetBase(QWidget* parent = nullptr);
     virtual ~CUiAnimViewDopeSheetBase();
 
     void SetNodesCtrl(CUiAnimViewNodesCtrl* pNodesCtrl) { m_pNodesCtrl = pNodesCtrl; }

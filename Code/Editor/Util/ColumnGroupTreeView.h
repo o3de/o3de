@@ -20,7 +20,7 @@ class ColumnGroupTreeView
     Q_OBJECT
 
 public:
-    ColumnGroupTreeView(QWidget* parent = 0);
+    ColumnGroupTreeView(QWidget* parent = nullptr);
 
     void setModel(QAbstractItemModel* model) override;
 

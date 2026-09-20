@@ -1,0 +1,11 @@
+struct A {};
+struct B {};
+
+A make(int);
+B make(uint, bool);
+
+void main()
+{
+    float x = 0.5;
+    A a = make(floor(x) + 1, false);  // usage of 2 arguments makes it trivial
+}

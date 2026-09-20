@@ -1887,7 +1887,7 @@ namespace AZ::StringFunc
             //is this full path longer than AZ::IO::MaxPathLength (The longest a path with all components can possibly be)?
             if (walk - in > AZ::IO::MaxPathLength)
             {
-                if (errors != 0)
+                if (errors != nullptr)
                 {
                     *errors += "The path [";
                     *errors += in;

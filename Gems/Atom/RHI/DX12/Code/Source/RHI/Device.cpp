@@ -594,7 +594,7 @@ namespace AZ
                 &allocDesc,
                 &resourceDesc,
                 initialState,
-                NULL,
+                nullptr,
                 &allocation,
                 IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
 

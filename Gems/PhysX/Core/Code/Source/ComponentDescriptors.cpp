@@ -12,6 +12,7 @@
 #include <Source/BaseColliderComponent.h>
 #include <Source/BoxColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
+#include <Source/D6JointComponent.h>
 #include <Source/FixedJointComponent.h>
 #include <Source/ForceRegionComponent.h>
 #include <Source/HeightfieldColliderComponent.h>
@@ -50,6 +51,7 @@ namespace PhysX
             RagdollComponent::CreateDescriptor(),
             JointComponent::CreateDescriptor(),
             BallJointComponent::CreateDescriptor(),
+            D6JointComponent::CreateDescriptor(),
             FixedJointComponent::CreateDescriptor(),
             HingeJointComponent::CreateDescriptor(),
             PrismaticJointComponent::CreateDescriptor(),

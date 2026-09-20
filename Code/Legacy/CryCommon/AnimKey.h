@@ -395,12 +395,12 @@ struct ICaptureKey
         , once(false)
     {
         ICVar* pCaptureFolderCVar = gEnv->pConsole->GetCVar("capture_folder");
-        if (pCaptureFolderCVar != NULL  && pCaptureFolderCVar->GetString())
+        if (pCaptureFolderCVar != nullptr  && pCaptureFolderCVar->GetString())
         {
             folder = pCaptureFolderCVar->GetString();
         }
         ICVar* pCaptureFilePrefixCVar = gEnv->pConsole->GetCVar("capture_file_prefix");
-        if (pCaptureFilePrefixCVar != NULL  && pCaptureFilePrefixCVar->GetString())
+        if (pCaptureFilePrefixCVar != nullptr  && pCaptureFilePrefixCVar->GetString())
         {
             prefix = pCaptureFilePrefixCVar->GetString();
         }

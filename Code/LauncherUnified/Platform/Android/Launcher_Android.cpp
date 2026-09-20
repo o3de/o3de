@@ -397,7 +397,7 @@ void android_main(android_app* appState)
             jstring keyObject = static_cast<jstring>(AZ::Android::JNI::GetEnv()->GetObjectArrayElement(extrasKeySetArray, x));
             AZ::OSString value = intentObject.InvokeStringMethod("getStringExtra", keyObject);
 
-            const char* keyChars = AZ::Android::JNI::GetEnv()->GetStringUTFChars(keyObject, 0);
+            const char* keyChars = AZ::Android::JNI::GetEnv()->GetStringUTFChars(keyObject, nullptr);
 
             char argName[AZ_COMMAND_LINE_LEN] = { 0 };
             azsprintf(argName, "-%s", keyChars);

@@ -19,7 +19,7 @@ class ColumnGroupHeaderView
     Q_OBJECT
 
 public:
-    ColumnGroupHeaderView(QWidget* parent = 0);
+    ColumnGroupHeaderView(QWidget* parent = nullptr);
 
     void setModel(QAbstractItemModel* model) override;
 

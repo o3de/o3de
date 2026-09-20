@@ -148,7 +148,7 @@ Q_SIGNALS:
     void UpdateConnectionMetrics();
 
 public:
-    explicit FileServer(QObject* parent = 0);
+    explicit FileServer(QObject* parent = nullptr);
     virtual ~FileServer();
 
     void SetSystemRoot(const QDir& systemRoot);

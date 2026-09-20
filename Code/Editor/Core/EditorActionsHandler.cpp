@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportSnapping.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerRequestBus.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
@@ -155,6 +156,7 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
     AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+    AzToolsFramework::ViewportSnapping::ViewportSnappingNotificationBus::Handler::BusConnect();
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(editorEntityContextId);
     AzToolsFramework::ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
 
@@ -170,6 +172,7 @@ EditorActionsHandler::~EditorActionsHandler()
         AzToolsFramework::ContainerEntityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportSnapping::ViewportSnappingNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
@@ -232,6 +235,7 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GridSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GeometrySnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::RecentFilesChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::UndoRedoUpdaterIdentifier);
@@ -753,6 +757,153 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
+    // Geometry Snapping
+    //
+    // Grid and angle snapping quantise a value in isolation; these snap to geometry that is
+    // actually in the level, which needs a mode rather than a toggle - there is no single sensible
+    // answer to "snap to what". One mode is active at a time, the way a DCC tool's snap-target
+    // selector works, and choosing the active mode again switches snapping off, so one click both
+    // picks a mode and clears it.
+    {
+        struct SnapModeAction
+        {
+            AZStd::string_view m_identifier;
+            const char* m_name;
+            const char* m_description;
+            AzToolsFramework::ViewportSnapping::SnapMode m_mode;
+        };
+
+        using AzToolsFramework::ViewportSnapping::SnapMode;
+
+        static constexpr SnapModeAction SnapModeActions[] = {
+            { "o3de.action.edit.snap.snapToVertex", "Vertex", "Snap to the nearest mesh vertex under the cursor.",
+              SnapMode::Vertex },
+            { "o3de.action.edit.snap.snapToEdge", "Edge", "Snap to the closest point along the nearest edge under the cursor.",
+              SnapMode::Edge },
+            { "o3de.action.edit.snap.snapToEdgeMidpoint", "Edge Midpoint", "Snap to the centre of the nearest edge under the cursor.",
+              SnapMode::EdgeMidpoint },
+            { "o3de.action.edit.snap.snapToFace", "Face", "Snap to the surface under the cursor.", SnapMode::Face },
+            { "o3de.action.edit.snap.snapToFaceCenter", "Face Centre", "Snap to the centre of the nearest face under the cursor.",
+              SnapMode::FaceCenter },
+        };
+
+        for (const SnapModeAction& snapModeAction : SnapModeActions)
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = snapModeAction.m_name;
+            actionProperties.m_description = snapModeAction.m_description;
+            actionProperties.m_category = "Edit";
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+            const SnapMode mode = snapModeAction.m_mode;
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                snapModeAction.m_identifier,
+                actionProperties,
+                [mode]
+                {
+                    // Only the mode is captured. Actions outlive any particular object, so the
+                    // service itself is reached through the interface each time, and the action
+                    // does nothing rather than crashing if no implementation is registered.
+                    if (auto* snapping = AzToolsFramework::ViewportSnapping::ViewportSnappingRequests::Get())
+                    {
+                        snapping->SetSnapMode(snapping->GetSnapMode() == mode ? SnapMode::Off : mode);
+                    }
+
+                    // Every mode's check state depends on the one shared mode, so refresh them all
+                    // - otherwise the previously active entry stays ticked.
+                    if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+                    {
+                        for (const SnapModeAction& other : SnapModeActions)
+                        {
+                            actionManager->UpdateAction(other.m_identifier);
+                        }
+                    }
+                },
+                [mode]() -> bool
+                {
+                    const auto* snapping = AzToolsFramework::ViewportSnapping::ViewportSnappingRequests::Get();
+                    return snapping != nullptr && snapping->GetSnapMode() == mode;
+                });
+
+            // These are only accessible outside of Component Modes, which do their own sub-element
+            // snapping and bind most of the keyboard for it.
+            m_actionManagerInterface->AssignModeToAction(
+                AzToolsFramework::DefaultActionContextModeIdentifier, snapModeAction.m_identifier);
+
+            m_actionManagerInterface->AddActionToUpdater(
+                EditorIdentifiers::GeometrySnappingStateChangedUpdaterIdentifier, snapModeAction.m_identifier);
+        }
+
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.snapToNone";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "None";
+            actionProperties.m_description = "Disable geometry snapping.";
+            actionProperties.m_category = "Edit";
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    if (auto* snapping = AzToolsFramework::ViewportSnapping::ViewportSnappingRequests::Get())
+                    {
+                        snapping->SetSnapMode(SnapMode::Off);
+                    }
+                },
+                []() -> bool
+                {
+                    return AzToolsFramework::ViewportSnapping::GetSnapMode() == SnapMode::Off;
+                });
+
+            m_actionManagerInterface->AddActionToUpdater(
+                EditorIdentifiers::GeometrySnappingStateChangedUpdaterIdentifier, actionIdentifier);
+        }
+
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.geometrySnapping";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Geometry Snapping";
+        actionProperties.m_description = "Toggle geometry snapping.";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Vertex_snapping.svg";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                if (auto* snapping = AzToolsFramework::ViewportSnapping::ViewportSnappingRequests::Get())
+                {
+                    using AzToolsFramework::ViewportSnapping::SnapMode;
+                    snapping->SetSnapMode(
+                        snapping->IsSnappingEnabled() ? SnapMode::Off : SnapMode::Face);
+                }
+            },
+            []() -> bool
+            {
+                return AzToolsFramework::ViewportSnapping::IsSnappingEnabled();
+            });
+
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorIdentifiers::GeometrySnappingStateChangedUpdaterIdentifier, actionIdentifier);
+
+        UpdateGeometrySnappingAction();
+
+        // Ctrl+Shift+V for vertex, the mode this is most often wanted in. Single letters are
+        // claimed by component modes, so a plain "V" is not available.
+        if (m_hotKeyManagerInterface)
+        {
+            m_hotKeyManagerInterface->SetActionHotKey(SnapModeActions[0].m_identifier, "Ctrl+Shift+V");
+        }
     }
 
     // Show Grid
@@ -1733,6 +1884,11 @@ void EditorActionsHandler::OnMenuRegistrationHook()
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Snap To";
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifySnapToMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
             menuProperties.m_name = "Transform Mode";
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, menuProperties);
         }
@@ -1883,6 +2039,24 @@ void EditorActionsHandler::OnMenuBindingHook()
             {
                 m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 100);
                 m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 200);
+                // Geometry snapping modes live in their own sub-menu, hung off this one and off the
+                // viewport Options dropdown - one entry in each rather than five.
+                m_menuManagerInterface->AddSubMenuToMenu(
+                    EditorIdentifiers::EditModifySnapMenuIdentifier, EditorIdentifiers::EditModifySnapToMenuIdentifier, 300);
+                {
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToVertex", 100);
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToEdge", 200);
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToEdgeMidpoint", 300);
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToFace", 400);
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToFaceCenter", 500);
+                    m_menuManagerInterface->AddActionToMenu(
+                        EditorIdentifiers::EditModifySnapToMenuIdentifier, "o3de.action.edit.snap.snapToNone", 600);
+                }
             }
             m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::EditModifyMenuIdentifier, EditorIdentifiers::EditModifyModesMenuIdentifier, 200);
         }
@@ -2238,6 +2412,43 @@ void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnSnapModeChanged([[maybe_unused]] AzToolsFramework::ViewportSnapping::SnapMode mode)
+{
+    UpdateGeometrySnappingAction();
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::GeometrySnappingStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::UpdateGeometrySnappingAction()
+{
+    constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.geometrySnapping";
+    const AzToolsFramework::ViewportSnapping::SnapMode mode = AzToolsFramework::ViewportSnapping::GetSnapMode();
+
+    const char* modeName = nullptr;
+    switch (mode)
+    {
+    case AzToolsFramework::ViewportSnapping::SnapMode::Vertex:
+        modeName = "Vertex";
+        break;
+    case AzToolsFramework::ViewportSnapping::SnapMode::Edge:
+        modeName = "Edge";
+        break;
+    case AzToolsFramework::ViewportSnapping::SnapMode::EdgeMidpoint:
+        modeName = "Edge Midpoint";
+        break;
+    case AzToolsFramework::ViewportSnapping::SnapMode::Face:
+        modeName = "Face";
+        break;
+    case AzToolsFramework::ViewportSnapping::SnapMode::FaceCenter:
+        modeName = "Face Center";
+        break;
+    case AzToolsFramework::ViewportSnapping::SnapMode::Off:
+        break;
+    }
+
+    m_actionManagerInterface->SetActionName(
+        actionIdentifier, modeName ? AZStd::string::format("Geometry Snapping: %s", modeName) : "Geometry Snapping");
 }
 
 void EditorActionsHandler::OnEntityPickModeStarted()

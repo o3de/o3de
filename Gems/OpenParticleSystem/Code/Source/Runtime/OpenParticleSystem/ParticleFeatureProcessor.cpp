@@ -8,9 +8,9 @@
 
 #include "ParticleConstant.h"
 
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/Factory.h>

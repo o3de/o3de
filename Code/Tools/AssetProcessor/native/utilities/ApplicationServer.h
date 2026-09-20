@@ -20,7 +20,7 @@ class ApplicationServer
 {
     Q_OBJECT
 public:
-    explicit ApplicationServer(QObject* parent = 0);
+    explicit ApplicationServer(QObject* parent = nullptr);
     virtual ~ApplicationServer();
     void incomingConnection(qintptr socketDescriptor) override;
     virtual bool startListening(unsigned short port = 0) = 0;

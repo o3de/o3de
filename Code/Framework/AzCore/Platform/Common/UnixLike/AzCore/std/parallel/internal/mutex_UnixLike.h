@@ -17,12 +17,12 @@ namespace AZStd
     // mutex
     inline mutex::mutex()
     {
-        pthread_mutex_init(&m_mutex, NULL);
+        pthread_mutex_init(&m_mutex, nullptr);
     }
     inline mutex::mutex(const char* name)
     {
         (void)name;
-        pthread_mutex_init(&m_mutex, NULL);
+        pthread_mutex_init(&m_mutex, nullptr);
     }
 
     inline mutex::~mutex()

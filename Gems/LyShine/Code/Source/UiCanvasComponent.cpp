@@ -2785,7 +2785,7 @@ bool UiCanvasComponent::HandleKeyInputEvent(const AzFramework::InputChannel::Sna
                 // If there is any active or hover interactable then we consider this event handled.
                 // Otherwise we can end up sending events to underlying canvases even though there
                 // is an interactable in this canvas that should block the events
-                if (m_activeInteractable.IsValid() || m_hoverInteractable.IsValid())
+                if ((m_activeInteractable.IsValid() || m_hoverInteractable.IsValid()) && m_isConsumingAllInputEvents)
                 {
                     result = true;
                 }

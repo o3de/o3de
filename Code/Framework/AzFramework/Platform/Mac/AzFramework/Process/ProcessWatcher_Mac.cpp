@@ -388,7 +388,7 @@ namespace AzFramework
         }
 
         bool isProcessDone = false;
-        time_t startTime = time(0);
+        time_t startTime = time(nullptr);
         time_t currentTime = startTime;
         AZ_Assert(currentTime != -1, "time(0) returned an invalid time");
         while (((currentTime - startTime) < waitTimeInSeconds) && !isProcessDone)
@@ -405,7 +405,7 @@ namespace AzFramework
                     *outExitCode = static_cast<AZ::u32>(WEXITSTATUS(wait_status));
                 }
             }
-            currentTime = time(0);
+            currentTime = time(nullptr);
         }
         //returns false if process is still running after time
         return isProcessDone;
@@ -425,7 +425,7 @@ namespace AzFramework
         }
 
         kill(m_pWatcherData->m_childProcessId, SIGKILL);
-        waitpid(m_pWatcherData->m_childProcessId, NULL, 0);
+        waitpid(m_pWatcherData->m_childProcessId, nullptr, 0);
     }
 
     AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const

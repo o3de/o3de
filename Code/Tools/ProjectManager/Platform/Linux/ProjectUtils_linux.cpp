@@ -253,5 +253,10 @@ namespace O3DE::ProjectManager
         {
             return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));
         }
+
+        bool DeleteDesktopShortcut(const QString& filename)
+        {
+            return false;
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -496,15 +496,15 @@ struct SSystemInitParams
     //  Initialization defaults.
     SSystemInitParams()
     {
-        hInstance = NULL;
-        hWnd = NULL;
+        hInstance = nullptr;
+        hWnd = nullptr;
 
-        pLog = NULL;
-        pLogCallback = NULL;
-        pUserCallback = NULL;
-        sLogFileName = NULL;
+        pLog = nullptr;
+        pLogCallback = nullptr;
+        pUserCallback = nullptr;
+        sLogFileName = nullptr;
         autoBackupLogs = true;
-        pPrintSync = NULL;
+        pPrintSync = nullptr;
         memset(szSystemCmdLine, 0, sizeof(szSystemCmdLine));
 
         bEditor = false;
@@ -516,7 +516,7 @@ struct SSystemInitParams
         bSkipMovie = false;
         bToolMode = false;
 
-        pSystem = NULL;
+        pSystem = nullptr;
     }
 };
 
@@ -861,7 +861,7 @@ struct ISystem
     //   Loads system configuration
     // Arguments:
     //   pCallback - 0 means normal LoadConfigVar behaviour is used
-    virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true) = 0;
+    virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = nullptr, bool warnIfMissing = true) = 0;
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -1082,7 +1082,7 @@ inline void CryWarning(EValidatorModule module, EValidatorSeverity severity, con
 
     va_list args;
     va_start(args, format);
-    GetISystem()->WarningV(module, severity, 0, 0, format, args);
+    GetISystem()->WarningV(module, severity, 0, nullptr, format, args);
     va_end(args);
 }
 
@@ -1198,14 +1198,14 @@ namespace Detail
         int GetFlags() const { return VF_CONST_CVAR | VF_READONLY; }
         int SetFlags([[maybe_unused]] int flags) { return 0; }
         int GetType() { return SQueryTypeEnum<T>::type; }
-        const char* GetHelp() { return NULL; }
+        const char* GetHelp() { return nullptr; }
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
         bool AddOnChangeFunctor(AZ::Name, const AZStd::function<void()>&)
         {
             return false;
         }
-        ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
+        ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return nullptr; }
         int GetRealIVal() const { return GetIVal(); }
         void SetLimits([[maybe_unused]] float min, [[maybe_unused]] float max) { return; }
         void GetLimits([[maybe_unused]] float& min, [[maybe_unused]] float& max) { return; }

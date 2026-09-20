@@ -8,16 +8,14 @@
 
 #pragma once
 
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/ImageView.h>
 
-
 #include <Atom/RPI.Reflect/Configuration.h>
-
-#include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -54,7 +52,7 @@ namespace AZ
 
             //! Returns the number of mip levels of this image
             uint16_t GetMipLevelCount();
-                        
+
             //! Updates content of a single sub-resource in the image from the CPU.
             virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
 

@@ -74,7 +74,7 @@ UiAnimationSystem::UiAnimationSystem()
 {
     m_pSystem = (gEnv) ? gEnv->pSystem : nullptr;
     m_bRecording = false;
-    m_pCallback = NULL;
+    m_pCallback = nullptr;
     m_bPaused = false;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
     m_lastUpdateTime = AZ::Time::ZeroTimeUs;
@@ -96,7 +96,7 @@ bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
         return false;
     }
 
-    XmlNodeRef Node = NULL;
+    XmlNodeRef Node = nullptr;
 
     for (int i = 0; i < rootNode->getChildCount(); i++)
     {
@@ -139,7 +139,7 @@ IUiAnimTrack* UiAnimationSystem::CreateTrack([[maybe_unused]] EUiAnimCurveType t
     ;
 #endif
     assert(0);
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ IUiAnimSequence* UiAnimationSystem::LoadSequence(const char* pszFilePath)
         return LoadSequence(sequenceNode);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ IUiAnimSequence* UiAnimationSystem::FindSequence(const char* pSequenceName) cons
     assert(pSequenceName);
     if (!pSequenceName)
     {
-        return NULL;
+        return nullptr;
     }
 
     for (Sequences::const_iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
@@ -207,7 +207,7 @@ IUiAnimSequence* UiAnimationSystem::FindSequence(const char* pSequenceName) cons
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ IUiAnimSequence* UiAnimationSystem::FindSequenceById(uint32 id) const
 {
     if (id == 0 || id >= m_nextSequenceId)
     {
-        return NULL;
+        return nullptr;
     }
 
     for (Sequences::const_iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
@@ -227,7 +227,7 @@ IUiAnimSequence* UiAnimationSystem::FindSequenceById(uint32 id) const
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -269,7 +269,7 @@ IUiAnimSequence* UiAnimationSystem::GetSequence(int i) const
 
     if (i < 0 || i >= GetNumSequences())
     {
-        return NULL;
+        return nullptr;
     }
 
     return m_sequences[i].get();
@@ -288,7 +288,7 @@ IUiAnimSequence* UiAnimationSystem::GetPlayingSequence(int i) const
 
     if (i < 0 || i >= GetNumPlayingSequences())
     {
-        return NULL;
+        return nullptr;
     }
 
     return m_playingSequences[i].sequence.get();
@@ -325,11 +325,11 @@ bool UiAnimationSystem::IsCutScenePlaying() const
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::RemoveSequence(IUiAnimSequence* pSequence)
 {
-    assert(pSequence != 0);
+    assert(pSequence != nullptr);
     if (pSequence)
     {
         IUiAnimationCallback* pCallback = GetCallback();
-        SetCallback(NULL);
+        SetCallback(nullptr);
         StopSequence(pSequence);
 
         for (Sequences::iterator it = m_sequences.begin(); it != m_sequences.end(); ++it)
@@ -349,7 +349,7 @@ void UiAnimationSystem::RemoveSequence(IUiAnimSequence* pSequence)
 int UiAnimationSystem::OnSequenceRenamed(const char* before, const char* after)
 {
     assert(before && after);
-    if (before == NULL || after == NULL)
+    if (before == nullptr || after == nullptr)
     {
         return 0;
     }
@@ -376,7 +376,7 @@ int UiAnimationSystem::OnCameraRenamed([[maybe_unused]] const char* before, [[ma
 void UiAnimationSystem::RemoveAllSequences()
 {
     IUiAnimationCallback* pCallback = GetCallback();
-    SetCallback(NULL);
+    SetCallback(nullptr);
     InternalStopAllSequences(true, false);
 
     stl::free_container(m_sequences);
@@ -413,7 +413,7 @@ void UiAnimationSystem::PlaySequence(const char* pSequenceName, IUiAnimSequence*
 void UiAnimationSystem::PlaySequence(IUiAnimSequence* pSequence, IUiAnimSequence* parentSeq,
     [[maybe_unused]] bool bResetFx, bool bTrackedSequence, float startTime, float endTime)
 {
-    assert(pSequence != 0);
+    assert(pSequence != nullptr);
     if (!pSequence || IsPlaying(pSequence))
     {
         return;
@@ -464,7 +464,7 @@ void UiAnimationSystem::NotifyListeners(IUiAnimSequence* pSequence, IUiAnimation
     // 'NULL' ones are listeners interested in every sequence. Do not send "update" here
     if (event != IUiAnimationListener::eUiAnimationEvent_Updated)
     {
-        TUiAnimationListenerMap::iterator found2 (m_animationListenerMap.find((IUiAnimSequence*)0));
+        TUiAnimationListenerMap::iterator found2 (m_animationListenerMap.find((IUiAnimSequence*)nullptr));
         if (found2 != m_animationListenerMap.end())
         {
             TUiAnimationListenerVec listForSeq = (*found2).second;
@@ -539,7 +539,7 @@ void UiAnimationSystem::InternalStopAllSequences(bool bAbort, bool bAnimate)
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::InternalStopSequence(IUiAnimSequence* pSequence, bool bAbort, bool bAnimate)
 {
-    assert(pSequence != 0);
+    assert(pSequence != nullptr);
 
     bool bRet = false;
     PlayingSequences::iterator it;
@@ -1061,8 +1061,8 @@ IUiAnimationSystem::ESequenceStopBehavior UiAnimationSystem::GetSequenceStopBeha
 
 bool UiAnimationSystem::AddUiAnimationListener(IUiAnimSequence* pSequence, IUiAnimationListener* pListener)
 {
-    assert (pListener != 0);
-    if (pSequence != NULL && std::find(m_sequences.begin(), m_sequences.end(), pSequence) == m_sequences.end())
+    assert (pListener != nullptr);
+    if (pSequence != nullptr && std::find(m_sequences.begin(), m_sequences.end(), pSequence) == m_sequences.end())
     {
         gEnv->pLog->Log ("UiAnimationSystem::AddUiAnimationListener: Sequence %p unknown to UiAnimationSystem", pSequence);
         return false;
@@ -1073,8 +1073,8 @@ bool UiAnimationSystem::AddUiAnimationListener(IUiAnimSequence* pSequence, IUiAn
 
 bool UiAnimationSystem::RemoveUiAnimationListener(IUiAnimSequence* pSequence, IUiAnimationListener* pListener)
 {
-    assert (pListener != 0);
-    if (pSequence != NULL
+    assert (pListener != nullptr);
+    if (pSequence != nullptr
         && std::find(m_sequences.begin(), m_sequences.end(), pSequence) == m_sequences.end())
     {
         gEnv->pLog->Log ("UiAnimationSystem::AddUiAnimationListener: Sequence %p unknown to UiAnimationSystem", pSequence);
@@ -1085,7 +1085,7 @@ bool UiAnimationSystem::RemoveUiAnimationListener(IUiAnimSequence* pSequence, IU
 
 void UiAnimationSystem::GoToFrame(const char* seqName, float targetFrame)
 {
-    assert(seqName != NULL);
+    assert(seqName != nullptr);
 
     for (PlayingSequences::iterator it = m_playingSequences.begin();
          it != m_playingSequences.end(); ++it)

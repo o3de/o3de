@@ -205,14 +205,14 @@ namespace AZStd
             AZ_FORCE_INLINE pointer operator->() const  { return m_node; }
             AZ_FORCE_INLINE this_type& operator++()
             {
-                AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::intrusive_list::const_iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::intrusive_list::const_iterator_impl invalid node!");
                 m_node = PredOrSucc(m_node, AZSTD_RBTREE_RIGHT);
                 return *this;
             }
 
             AZ_FORCE_INLINE this_type operator++(int)
             {
-                AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::intrusive_list::const_iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::intrusive_list::const_iterator_impl invalid node!");
                 this_type temp = *this;
                 m_node = PredOrSucc(m_node, AZSTD_RBTREE_RIGHT);
                 return temp;
@@ -292,14 +292,14 @@ namespace AZStd
             AZ_FORCE_INLINE pointer operator->() const { return base_type::m_node; }
             AZ_FORCE_INLINE this_type& operator++()
             {
-                AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::intrusive_list::iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(base_type::m_node != nullptr, "AZSTD::intrusive_list::iterator_impl invalid node!");
                 base_type::m_node = base_type::PredOrSucc(base_type::m_node, AZSTD_RBTREE_RIGHT);
                 return *this;
             }
 
             AZ_FORCE_INLINE this_type operator++(int)
             {
-                AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::intrusive_list::iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(base_type::m_node != nullptr, "AZSTD::intrusive_list::iterator_impl invalid node!");
                 this_type temp = *this;
                 base_type::m_node = base_type::PredOrSucc(base_type::m_node, AZSTD_RBTREE_RIGHT);
                 return temp;
@@ -307,7 +307,7 @@ namespace AZStd
 
             AZ_FORCE_INLINE this_type& operator--()
             {
-                AZSTD_CONTAINER_ASSERT(base_type::m_node != 0, "AZSTD::intrusive_list::iterator_impl invalid node!");
+                AZSTD_CONTAINER_ASSERT(base_type::m_node != nullptr, "AZSTD::intrusive_list::iterator_impl invalid node!");
                 base_type::m_node = base_type::PredOrSucc(base_type::m_node, AZSTD_RBTREE_LEFT);
                 return *this;
             }

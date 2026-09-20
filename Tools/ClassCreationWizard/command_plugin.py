@@ -27,6 +27,7 @@ import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Callable, Type
+from wizard_logging import wizard_log
 
 
 # ============================================================================
@@ -321,7 +322,7 @@ class CommandPluginLoader:
     ENGINE_COMMANDS_DIR = "commands"
 
     def __init__(self, logger: Optional[Callable[[str], None]] = None):
-        self.logger = logger or print
+        self.logger = logger or wizard_log
         self._loaded_modules: Dict[str, Any] = {}
 
     def log(self, message: str):

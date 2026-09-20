@@ -20,8 +20,7 @@
 #include <Atom/Utils/StableDynamicArray.h>
 
 #include <AzCore/base.h>
-
-#include <AtomCore/std/parallel/concurrency_checker.h>
+#include <AzCore/std/parallel/concurrency_checker.h>
 
 namespace AZ
 {

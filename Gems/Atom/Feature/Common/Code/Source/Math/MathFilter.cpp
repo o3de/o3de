@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Math/GaussianMathFilter.h>
 #include <Math/MathFilter.h>

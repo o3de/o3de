@@ -22,7 +22,7 @@ namespace AZ::Locale
         // try to avoid doing so is probably not worth the time it costs to actually do so. If this ever shows up in a profiler,
         // then it might be better to see if there's a way to avoid calling this object at all or call it fewer times, 
         // rather than to try to optimize the innards of this actual call.
-        m_createdLocale = newlocale(LC_ALL_MASK, "C", (locale_t)0);
+        m_createdLocale = newlocale(LC_ALL_MASK, "C", (locale_t)nullptr);
         uselocale(m_createdLocale);
         m_isActive = true;
     }

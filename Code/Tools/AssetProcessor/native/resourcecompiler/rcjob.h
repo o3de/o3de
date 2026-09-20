@@ -161,7 +161,7 @@ namespace AssetProcessor
             failed,
         };
 
-        explicit RCJob(QObject* parent = 0);
+        explicit RCJob(QObject* parent = nullptr);
 
         virtual ~RCJob();
 

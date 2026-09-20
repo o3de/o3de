@@ -59,13 +59,13 @@ namespace TestImpact
         AZStd::wstring argsW;
         AZStd::to_wstring(argsW, args.c_str());
         if (!CreateProcessW(
-            NULL,
+            nullptr,
             argsW.data(),
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
             IsPiping(),
             CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW,
-            NULL, NULL,
+            nullptr, nullptr,
             &si, &pi))
         {
             throw ProcessException(AZStd::string::format("Couldn't create process with args: %s", args.c_str()));

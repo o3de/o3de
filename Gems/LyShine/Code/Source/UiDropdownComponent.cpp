@@ -549,7 +549,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_expandOnHover, QT_TRANSLATE_NOOP("LyShine", "Expand on Hover"), QT_TRANSLATE_NOOP("LyShine", "Whether this dropdown should be expanded upon hover, and collapse upon exit."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_waitTime, QT_TRANSLATE_NOOP("LyShine", "Wait Time"), QT_TRANSLATE_NOOP("LyShine", "How long the dropdown should wait before expanding on hover or collapsing on exit."))
+                editInfo->DataElement(nullptr, &UiDropdownComponent::m_waitTime, QT_TRANSLATE_NOOP("LyShine", "Wait Time"), QT_TRANSLATE_NOOP("LyShine", "How long the dropdown should wait before expanding on hover or collapsing on exit."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiDropdownComponent::GetExpandOnHover);
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_collapseOnOutsideClick, QT_TRANSLATE_NOOP("LyShine", "Collapse on Outside Click"), QT_TRANSLATE_NOOP("LyShine", "Whether this dropdown should be collapsed upon clicking outside the menu."));
@@ -560,7 +560,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Dropdown States"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_expandedStateActions, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The expanded state actions."))
+                editInfo->DataElement(nullptr, &UiDropdownComponent::m_expandedStateActions, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The expanded state actions."))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDropdownComponent::OnExpandedStateActionsChanged);
             }
 
@@ -569,9 +569,9 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_expandedActionName, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is expanded."));
-                editInfo->DataElement(0, &UiDropdownComponent::m_collapsedActionName, QT_TRANSLATE_NOOP("LyShine", "Collapsed"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is collapsed."));
-                editInfo->DataElement(0, &UiDropdownComponent::m_optionSelectedActionName, QT_TRANSLATE_NOOP("LyShine", "Option Selected"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when an option is selected."));
+                editInfo->DataElement(nullptr, &UiDropdownComponent::m_expandedActionName, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is expanded."));
+                editInfo->DataElement(nullptr, &UiDropdownComponent::m_collapsedActionName, QT_TRANSLATE_NOOP("LyShine", "Collapsed"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is collapsed."));
+                editInfo->DataElement(nullptr, &UiDropdownComponent::m_optionSelectedActionName, QT_TRANSLATE_NOOP("LyShine", "Option Selected"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when an option is selected."));
             }
         }
     }

@@ -580,7 +580,7 @@ namespace PhysX
             return;
         }
 
-        physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
+        physx::PxArticulationLink* links[MaxArticulationLinks] = { nullptr };
         m_articulation->getLinks(links, MaxArticulationLinks);
 
         const physx::PxU32 linksNum = m_articulation->getNbLinks();

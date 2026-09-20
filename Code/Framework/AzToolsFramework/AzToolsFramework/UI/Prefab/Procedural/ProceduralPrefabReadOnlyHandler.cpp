@@ -31,13 +31,6 @@ namespace AzToolsFramework
 
             EditorEntityContextRequestBus::BroadcastResult(m_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
             ReadOnlyEntityQueryRequestBus::Handler::BusConnect(m_editorEntityContextId);
-
-             // Refresh the whole read-only cache
-            if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
-            {
-                readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
-            }
-
             PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
         }
 

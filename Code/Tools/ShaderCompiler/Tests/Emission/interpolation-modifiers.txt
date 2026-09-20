@@ -1,0 +1,5 @@
+" linear float4 color0 : COLOR0 ; "
+" centroid float4 color1 : COLOR1 ; "
+" nointerpolation float4 color2 : COLOR2 ; "
+" noperspective float4 color3 : COLOR3 ; "
+" sample float4 color4 : COLOR4 ; "

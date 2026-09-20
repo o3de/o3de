@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #ifndef _RELEASE
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/Instance.h>
 #endif
 
 #include <CryCommon/ISystem.h>

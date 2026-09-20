@@ -1,0 +1,5 @@
+void F(float a, int, bool b);
+
+void G(float a, int)
+{
+}

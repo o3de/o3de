@@ -26,7 +26,7 @@ namespace LUA
     public:
         AZ_CLASS_ALLOCATOR(TargetContextButton, AZ::SystemAllocator);
 
-        TargetContextButton(QWidget *pParent = 0);
+        TargetContextButton(QWidget *pParent = nullptr);
         virtual ~TargetContextButton();
 
         // These come from the CONTEXT

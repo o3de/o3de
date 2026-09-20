@@ -66,7 +66,7 @@ namespace LegacyFramework
             }
 
             RegisteredIPCHandler()
-                : m_handler(NULL) {}
+                : m_handler(nullptr) {}
         };
 
         struct WaitingIPCCommand

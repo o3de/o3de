@@ -28,7 +28,7 @@ namespace AssetProcessor
         Q_OBJECT
 
     public:
-        explicit ConnectionWorker(qintptr socketDescriptor = -1, QObject* parent = 0);
+        explicit ConnectionWorker(qintptr socketDescriptor = -1, QObject* parent = nullptr);
         virtual ~ConnectionWorker();
         QTcpSocket& GetSocket();
         void Reset();

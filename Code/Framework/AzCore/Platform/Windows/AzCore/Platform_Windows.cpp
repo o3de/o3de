@@ -37,7 +37,7 @@ namespace AZ
                 {
                     DWORD dataType = REG_SZ;
                     DWORD dataSize = sizeof(machineInfo);
-                    ret = RegQueryValueExW(key, L"MachineGuid", 0, &dataType, (LPBYTE)machineInfo, &dataSize);
+                    ret = RegQueryValueExW(key, L"MachineGuid", nullptr, &dataType, (LPBYTE)machineInfo, &dataSize);
                     RegCloseKey(key);
                 }
                 else

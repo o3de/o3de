@@ -44,7 +44,7 @@ void ConnectionManagerUnitTest::TearDown()
     }
 
     // Process all the pending events
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCoreApplication::processEvents();
 
     UnitTest::AssetProcessorUnitTestBase::TearDown();
@@ -105,7 +105,7 @@ TEST_F(ConnectionManagerUnitTest, RemoveConnection_FeedConnectionId_Success)
 
     m_connectionManager->removeConnection(connId);
     // Process all the pending events
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCoreApplication::processEvents();
 
     count = m_connectionManager->getCount();

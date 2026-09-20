@@ -126,7 +126,7 @@ namespace AZ
             size = static_cast<unsigned int>(st.st_size);
         }
         int dwDesiredAccess = (mode == ReadOnly ? PROT_READ : PROT_READ | PROT_WRITE);
-        m_mappedBase = mmap(0, size, dwDesiredAccess, MAP_SHARED, m_mapHandle, 0);
+        m_mappedBase = mmap(nullptr, size, dwDesiredAccess, MAP_SHARED, m_mapHandle, 0);
         m_mappedBase = (m_mappedBase == MAP_FAILED) ? nullptr : m_mappedBase;
 
         if (m_mappedBase == nullptr)

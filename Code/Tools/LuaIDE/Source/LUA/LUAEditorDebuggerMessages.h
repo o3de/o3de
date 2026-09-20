@@ -24,7 +24,7 @@ namespace LUAEditor
         // we do not allow debugging of all contexts - sometimes we can execute script but not debug.
         // for example, the "local" in-process editor can not debug or else we deadlock, but if its remote, we can debug.
         bool m_allowDebug;
-        TargetInfo(const char* displayName = NULL, AZ::u32 identifier = 0, bool allowDebug = false)
+        TargetInfo(const char* displayName = nullptr, AZ::u32 identifier = 0, bool allowDebug = false)
             : m_displayName(displayName)
             , m_identifier(identifier)
             , m_allowDebug(allowDebug) {}

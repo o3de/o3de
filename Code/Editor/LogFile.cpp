@@ -239,7 +239,7 @@ namespace LogFileInternal
 
         // Obtain the initial locator to Windows Management on a particular host computer.
         IWbemLocator* locator = nullptr;
-        hResult = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&locator);
+        hResult = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&locator);
         if (FAILED(hResult))
         {
             return AZ::Failure(
@@ -248,7 +248,7 @@ namespace LogFileInternal
         // Connect to the root\cimv2 namespace with the current user and obtain pointer pSvc to make IWbemServices calls.
         IWbemServices* services = nullptr;
         auto serverPath = SysAllocString(TEXT(R"(ROOT\CIMV2)"));
-        hResult = locator->ConnectServer(serverPath, nullptr, nullptr, 0, 0, nullptr, nullptr, &services);
+        hResult = locator->ConnectServer(serverPath, nullptr, nullptr, nullptr, 0, nullptr, nullptr, &services);
         SysFreeString(serverPath);
 
         if (FAILED(hResult))

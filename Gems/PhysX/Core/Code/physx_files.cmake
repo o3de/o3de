@@ -62,6 +62,8 @@ set(FILES
     Source/StaticRigidBodyComponent.h
     Source/BallJointComponent.cpp
     Source/BallJointComponent.h
+    Source/D6JointComponent.cpp
+    Source/D6JointComponent.h
     Source/FixedJointComponent.cpp
     Source/FixedJointComponent.h
     Source/HingeJointComponent.cpp

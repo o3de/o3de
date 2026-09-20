@@ -146,8 +146,8 @@ namespace AZ {
 
     bool                        g_dbgHelpLoaded = false;
     AZStd::mutex                g_dbgLoadingMutex;
-    HANDLE                      g_currentProcess = 0;   /// We deal with only one process for now.
-    CRITICAL_SECTION            g_csDbgHelpDll;         /// All dbg help functions are single threaded, so we need to control the access.
+    HANDLE                      g_currentProcess = nullptr;   /// We deal with only one process for now.
+    CRITICAL_SECTION            g_csDbgHelpDll;               /// All dbg help functions are single threaded, so we need to control the access.
     AZStd::fixed_vector<SymbolStorage::ModuleInfo, 2048> g_moduleInfo;
     
     // reserve 4k of scratch space so that we can get some callstack information without any allocations and as little stack frame usage as possible.
@@ -306,7 +306,7 @@ namespace AZ {
 
             if (m_LdrRegisterDllNotification)
             {
-                NTSTATUS status = m_LdrRegisterDllNotification(0, LdrDllNotification, 0, &m_dllListenerCookie);
+                NTSTATUS status = m_LdrRegisterDllNotification(0, LdrDllNotification, nullptr, &m_dllListenerCookie);
                 if (status == 0)
                 {
                     m_dllListenersRegistered = true;
@@ -565,7 +565,7 @@ namespace AZ {
     private:
         BOOL GetModuleInfo(HANDLE hProcess, DWORD64 baseAddr, IMAGEHLP_MODULE64* pModuleInfo)
         {
-            if (g_SymGetModuleInfo64 == NULL)
+            if (g_SymGetModuleInfo64 == nullptr)
             {
                 return FALSE;
             }
@@ -591,7 +591,7 @@ namespace AZ {
             azstrcpy(szImg, AZ_ARRAY_SIZE(szImg), img);
             azstrcpy(szMod, AZ_ARRAY_SIZE(szMod), mod);
 
-            if (g_SymLoadModule64(hProcess, 0, szImg, szMod, baseAddr, size) == 0)
+            if (g_SymLoadModule64(hProcess, nullptr, szImg, szMod, baseAddr, size) == 0)
             {
                 result = GetLastError();
             }
@@ -599,13 +599,13 @@ namespace AZ {
             if (szImg[0]) // !szImg.empty()
             {
                 // try to retrieve the file-version:
-                VS_FIXEDFILEINFO* fInfo = NULL;
+                VS_FIXEDFILEINFO* fInfo = nullptr;
                 DWORD dwHandle;
                 DWORD dwSize = GetFileVersionInfoSizeA(szImg, &dwHandle);
                 if (dwSize > 0)
                 {
                     LPVOID vData = malloc(dwSize);
-                    if (vData != NULL)
+                    if (vData != nullptr)
                     {
                         if (GetFileVersionInfoA(szImg, dwHandle, dwSize, vData) != 0)
                         {
@@ -613,7 +613,7 @@ namespace AZ {
                             TCHAR szSubBlock[] = L"\\";
                             if (VerQueryValueW(vData, szSubBlock, (LPVOID*) &fInfo, &len) == 0)
                             {
-                                fInfo = NULL;
+                                fInfo = nullptr;
                             }
                             else
                             {
@@ -675,10 +675,10 @@ namespace AZ {
 
             // try both dlls...
             const TCHAR* dllname[] = { L"kernel32.dll", L"tlhelp32.dll" };
-            HINSTANCE hToolhelp = NULL;
-            tCT32S pCT32S = NULL;
-            tM32F pM32F = NULL;
-            tM32N pM32N = NULL;
+            HINSTANCE hToolhelp = nullptr;
+            tCT32S pCT32S = nullptr;
+            tM32F pM32F = nullptr;
+            tM32N pM32N = nullptr;
 
             HANDLE hSnap;
             MODULEENTRY32 me;
@@ -689,22 +689,22 @@ namespace AZ {
             for (i = 0; i < (sizeof(dllname) / sizeof(dllname[0])); i++)
             {
                 hToolhelp = LoadLibrary(dllname[i]);
-                if (hToolhelp == NULL)
+                if (hToolhelp == nullptr)
                 {
                     continue;
                 }
                 pCT32S = (tCT32S)GetProcAddress(hToolhelp, "CreateToolhelp32Snapshot");
                 pM32F = (tM32F)GetProcAddress(hToolhelp, "Module32First");
                 pM32N = (tM32N)GetProcAddress(hToolhelp, "Module32Next");
-                if ((pCT32S != NULL) && (pM32F != NULL) && (pM32N != NULL))
+                if ((pCT32S != nullptr) && (pM32F != nullptr) && (pM32N != nullptr))
                 {
                     break; // found the functions!
                 }
                 FreeLibrary(hToolhelp);
-                hToolhelp = NULL;
+                hToolhelp = nullptr;
             }
 
-            if (hToolhelp == NULL)
+            if (hToolhelp == nullptr)
             {
                 return FALSE;
             }
@@ -779,14 +779,14 @@ namespace AZ {
             //ModuleEntry e;
             DWORD cbNeeded;
             MODULEINFO mi;
-            HMODULE* hMods = 0;
-            char* tt = NULL;
-            char* tt2 = NULL;
+            HMODULE* hMods = nullptr;
+            char* tt = nullptr;
+            char* tt2 = nullptr;
             const SIZE_T TTBUFLEN = 8096;
             int cnt = 0;
 
             hPsapi = LoadLibraryW(L"psapi.dll");
-            if (hPsapi == NULL)
+            if (hPsapi == nullptr)
             {
                 return FALSE;
             }
@@ -795,7 +795,7 @@ namespace AZ {
             pGMFNE = (tGMFNE) GetProcAddress(hPsapi, "GetModuleFileNameExA");
             pGMBN = (tGMFNE) GetProcAddress(hPsapi, "GetModuleBaseNameA");
             pGMI = (tGMI) GetProcAddress(hPsapi, "GetModuleInformation");
-            if ((pEPM == NULL) || (pGMFNE == NULL) || (pGMBN == NULL) || (pGMI == NULL))
+            if ((pEPM == nullptr) || (pGMFNE == nullptr) || (pGMBN == nullptr) || (pGMI == nullptr))
             {
                 // we couldn't find all functions
                 FreeLibrary(hPsapi);
@@ -805,7 +805,7 @@ namespace AZ {
             hMods = (HMODULE*) malloc(sizeof(HMODULE) * (TTBUFLEN / sizeof(HMODULE)));
             tt = (char*) malloc(sizeof(char) * TTBUFLEN);
             tt2 = (char*) malloc(sizeof(char) * TTBUFLEN);
-            if ((hMods == NULL) || (tt == NULL) || (tt2 == NULL))
+            if ((hMods == nullptr) || (tt == nullptr) || (tt2 == nullptr))
             {
                 goto cleanup;
             }
@@ -863,19 +863,19 @@ namespace AZ {
             }
 
 cleanup:
-            if (hPsapi != NULL)
+            if (hPsapi != nullptr)
             {
                 FreeLibrary(hPsapi);
             }
-            if (tt2 != NULL)
+            if (tt2 != nullptr)
             {
                 free(tt2);
             }
-            if (tt != NULL)
+            if (tt != nullptr)
             {
                 free(tt);
             }
-            if (hMods != NULL)
+            if (hMods != nullptr)
             {
                 free(hMods);
             }
@@ -913,19 +913,19 @@ cleanup:
 
         if (!g_dbgHelpLoaded)
         {
-            if (g_dbgHelpDll == NULL) // if not already loaded, try to load a default-one
+            if (g_dbgHelpDll == nullptr) // if not already loaded, try to load a default-one
             {
                 // In some scenarios we may have built on a machine that is < Win10 but targetting Win10
                 // In that scenario, we may try to load and older dbghelp.dll which could cause issues
                 // To overcome this, we try to load dbghelp.dll from the Win 10 SDK folder, if that doesn't
                 // work, load the default.
                 g_dbgHelpDll = LoadLibraryW(LR"(C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbghelp.dll)");
-                if (g_dbgHelpDll == NULL)
+                if (g_dbgHelpDll == nullptr)
                 {
                     g_dbgHelpDll = LoadLibrary(L"dbghelp.dll");
                 }
             }
-            if (g_dbgHelpDll == NULL)
+            if (g_dbgHelpDll == nullptr)
             {
                 return;
             }
@@ -969,23 +969,23 @@ cleanup:
             GetSymbols().CleanUpSymbols();
 
             FreeLibrary(g_dbgHelpDll);
-            g_dbgHelpDll = 0;
+            g_dbgHelpDll = nullptr;
 
-            g_SymInitialize = 0;
-            g_SymCleanup = 0;
-            g_SymFunctionTableAccess64 = 0;
-            g_SymGetLineFromAddr64 = 0;
-            g_SymGetModuleBase64 = 0;
-            g_SymGetModuleInfo64 = 0;
-            g_SymGetOptions = 0;
-            g_SymGetSymFromAddr64 = 0;
-            g_SymLoadModule64 = 0;
-            g_SymSetOptions = 0;
-            g_StackWalk64 = 0;
-            g_UnDecorateSymbolName = 0;
-            g_SymGetSearchPath = 0;
+            g_SymInitialize = nullptr;
+            g_SymCleanup = nullptr;
+            g_SymFunctionTableAccess64 = nullptr;
+            g_SymGetLineFromAddr64 = nullptr;
+            g_SymGetModuleBase64 = nullptr;
+            g_SymGetModuleInfo64 = nullptr;
+            g_SymGetOptions = nullptr;
+            g_SymGetSymFromAddr64 = nullptr;
+            g_SymLoadModule64 = nullptr;
+            g_SymSetOptions = nullptr;
+            g_StackWalk64 = nullptr;
+            g_UnDecorateSymbolName = nullptr;
+            g_SymGetSearchPath = nullptr;
 
-            g_currentProcess = 0;
+            g_currentProcess = nullptr;
 
             DeleteCriticalSection(&g_csDbgHelpDll);
 
@@ -1013,7 +1013,7 @@ cleanup:
         unsigned int numFrames = 0;
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-        if (nativeThread == NULL)
+        if (nativeThread == nullptr)
         {
             ++suppressCount; // Skip current call
             PVOID myFrames[50] = { nullptr };
@@ -1021,7 +1021,7 @@ cleanup:
             static_assert(AZ_ARRAY_SIZE(myFrames) <= 0xffff, "RtlCaptureStackBackTrace only supports a maximum of MAXUSHORT (0xffff) frames captured.");
             AZ_Assert(maxNumOfFrames <= AZ_ARRAY_SIZE(myFrames), "You need to increase the size of myFrames array %u (needed %zu)!", maxNumOfFrames, AZ_ARRAY_SIZE(myFrames));
             
-            numFrames = RtlCaptureStackBackTrace(suppressCount, maxNumOfFrames, myFrames, NULL);
+            numFrames = RtlCaptureStackBackTrace(suppressCount, maxNumOfFrames, myFrames, nullptr);
             for (unsigned int frame = 0; frame < numFrames; ++frame)
             {
                 frames[frame].m_programCounter = (uintptr_t)myFrames[frame];
@@ -1053,7 +1053,7 @@ cleanup:
             EnterCriticalSection(&g_csDbgHelpDll);
             for (s32 frame = -static_cast<s32>(suppressCount); frame < static_cast<s32>(maxNumOfFrames); ++frame)
             {
-                if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, &context, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
+                if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, &context, nullptr, g_SymFunctionTableAccess64, g_SymGetModuleBase64, nullptr))
                 {
                     break;
                 }
@@ -1111,7 +1111,7 @@ cleanup:
         EnterCriticalSection(&g_csDbgHelpDll);
         for (unsigned int frame = 0; frame < maxNumOfFrames; ++frame)
         {
-            if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, nativeContext, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
+            if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, nativeContext, nullptr, g_SymFunctionTableAccess64, g_SymGetModuleBase64, nullptr))
             {
                 break;
             }
@@ -1235,7 +1235,7 @@ cleanup:
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
         return GetSymbols().GetSymbolPath();
 #else
-        return NULL;
+        return nullptr;
 #endif
     }
 

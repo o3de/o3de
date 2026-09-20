@@ -6,8 +6,8 @@
  *
  */
 
-#include <Prefab/PrefabTestFixture.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
 {
@@ -108,5 +108,81 @@ namespace UnitTest
 
         ValidateEntityNotUnderInstance(GetRootContainerEntityId(), parentEntityAlias);
         ValidateNestedInstanceNotUnderInstance(GetRootContainerEntityId(), childPrefabName);
+    }
+
+    TEST_F(PrefabDeleteTests, DeleteSelectedEntity_UndoRedoRestoresSelectionBeforeNextTick)
+    {
+        const AZ::EntityId entityId = CreateEditorEntityUnderRoot("SelectedEntity");
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
+
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ entityId });
+        ASSERT_TRUE(result.IsSuccess());
+        ProcessDeferredUpdates();
+
+        EXPECT_EQ(AzToolsFramework::GetEntityById(entityId), nullptr);
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::UndoPressed);
+
+        EXPECT_NE(AzToolsFramework::GetEntityById(entityId), nullptr);
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selectedEntities.size(), 1);
+        EXPECT_EQ(selectedEntities.front(), entityId);
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::RedoPressed);
+
+        selectedEntities.clear();
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_TRUE(selectedEntities.empty());
+
+        ProcessDeferredUpdates();
+        EXPECT_EQ(AzToolsFramework::GetEntityById(entityId), nullptr);
+    }
+
+    TEST_F(PrefabDeleteTests, DeleteOneOfTwoSelectedEntities_UndoRedoRestoresTheCompleteSelection)
+    {
+        const AZ::EntityId entityToDeleteId = CreateEditorEntityUnderRoot("EntityToDelete");
+        const AZ::EntityId entityToKeepId = CreateEditorEntityUnderRoot("EntityToKeep");
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
+            AzToolsFramework::EntityIdList{ entityToDeleteId, entityToKeepId });
+
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ entityToDeleteId });
+        ASSERT_TRUE(result.IsSuccess());
+        ProcessDeferredUpdates();
+
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selectedEntities.size(), 1);
+        EXPECT_EQ(selectedEntities.front(), entityToKeepId);
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::UndoPressed);
+        ProcessDeferredUpdates();
+
+        EXPECT_NE(AzToolsFramework::GetEntityById(entityToDeleteId), nullptr);
+        selectedEntities.clear();
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selectedEntities.size(), 2);
+        EXPECT_NE(AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityToDeleteId), selectedEntities.end());
+        EXPECT_NE(AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityToKeepId), selectedEntities.end());
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::RedoPressed);
+
+        EXPECT_EQ(AzToolsFramework::GetEntityById(entityToDeleteId), nullptr);
+        selectedEntities.clear();
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selectedEntities.size(), 1);
+        EXPECT_EQ(selectedEntities.front(), entityToKeepId);
+
+        ProcessDeferredUpdates();
+        EXPECT_EQ(AzToolsFramework::GetEntityById(entityToDeleteId), nullptr);
     }
 } // namespace UnitTest

@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AtomCore/Instance/Instance.h>
-#include <AtomCore/Instance/InstanceData.h>
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/containers/deque.h>
 
 namespace AZ
@@ -131,7 +132,7 @@ namespace AZ
         //! An attachment binding points to a PassAttachment and specifies how the pass uses that attachment.
         //! In data driven usages, a PassAttachmentBinding is constructed from a PassSlot (specifies how to
         //! use the attachment) and a PassConnection (specifies which attachment to use).
-        //! 
+        //!
         //! A attachment binding can point to another attachment binding, which means it is connected to
         //! that binding. In this case, the attachment pointed to by the connected binding will be used.
         //! Example: an input binding can point to another Pass's output binding, in which case the

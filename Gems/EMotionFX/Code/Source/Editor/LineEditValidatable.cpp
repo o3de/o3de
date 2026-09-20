@@ -18,7 +18,7 @@ namespace EMStudio
     LineEditValidatable::LineEditValidatable(QWidget* parent, const QRegularExpression& regExp)
         : QLineEdit(parent)
         , m_validationExp(regExp)
-        , m_lineValidator(m_validationExp, 0)
+        , m_lineValidator(m_validationExp, nullptr)
     {
         setValidator(&m_lineValidator);
         connect(this, &QLineEdit::textChanged, this, &LineEditValidatable::OnTextChanged);

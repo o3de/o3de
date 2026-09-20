@@ -37,13 +37,13 @@ namespace DebugDraw
                     QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw sphere element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawObbElement::m_color,
+                    ->DataElement(nullptr, &DebugDrawObbElement::m_color,
                         QT_TRANSLATE_NOOP("DebugDraw", "Color"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Display color for the line."))
-                    ->DataElement(0, &DebugDrawObbElement::m_scale,
+                    ->DataElement(nullptr, &DebugDrawObbElement::m_scale,
                         QT_TRANSLATE_NOOP("DebugDraw", "Scale"),
                         QT_TRANSLATE_NOOP("DebugDraw", "The scale of the box."))
-                    ->DataElement(0, &DebugDrawObbElement::m_isRayTracingEnabled,
+                    ->DataElement(nullptr, &DebugDrawObbElement::m_isRayTracingEnabled,
                         QT_TRANSLATE_NOOP("DebugDraw", "Use ray tracing"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Includes this object in ray tracing calculations."))
                     ;

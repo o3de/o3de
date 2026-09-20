@@ -87,6 +87,9 @@ namespace PhysX
         AZ::Quaternion GetOrientation() const override;
         AZ::Aabb GetAabb() const override;
 
+        AZ::Vector3 GetLinearVelocity() const;
+        AZ::Vector3 GetAngularVelocity() const;
+
     private:
         void AddCollisionShape(const ArticulationLinkData& thisLinkData);
 

@@ -78,7 +78,7 @@ void UiCanvasProxyRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-proxy-ref/")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
-            editInfo->DataElement(0, &UiCanvasProxyRefComponent::m_canvasAssetRefEntityId,
+            editInfo->DataElement(nullptr, &UiCanvasProxyRefComponent::m_canvasAssetRefEntityId,
                 QT_TRANSLATE_NOOP("LyShine", "Canvas Asset Ref entity"), QT_TRANSLATE_NOOP("LyShine", "The entity that holds the UI Canvas Asset Ref component."));
         }
     }

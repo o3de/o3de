@@ -93,6 +93,7 @@ namespace O3DE::ProjectManager
         m_defaultProjectTemplates->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
         connect(m_defaultProjectTemplates->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
         layout->addWidget(m_defaultProjectTemplates);
+        layout->addSpacing(24);
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);

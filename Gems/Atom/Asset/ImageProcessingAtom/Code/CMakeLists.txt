@@ -72,7 +72,6 @@ ly_add_target(
             AZ::AzToolsFramework
             AZ::AzQtComponents
             AZ::AssetBuilderSDK
-            AZ::AtomCore
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
             Gem::Atom_Utils.Static

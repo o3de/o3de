@@ -167,7 +167,7 @@ namespace Maestro
 
         IAnimNode* GetTarget() const
         {
-            return 0;
+            return nullptr;
         }
 
         void StillUpdate() override

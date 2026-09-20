@@ -73,7 +73,7 @@ public:
         UserConnectionRole = Qt::UserRole + 1,
     };
 
-    explicit ConnectionManager(QObject* parent = 0);
+    explicit ConnectionManager(QObject* parent = nullptr);
     virtual ~ConnectionManager();
     // Singleton pattern:
     static ConnectionManager* Get();

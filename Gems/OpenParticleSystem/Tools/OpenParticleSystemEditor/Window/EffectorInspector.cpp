@@ -202,6 +202,9 @@ namespace OpenParticleSystemEditor
                 m_comboBoxWidget = new ComboBoxWidget(className, m_detail, m_serializeContext, this, this);
                 m_ui->verticalLayout->addWidget(m_comboBoxWidget);
                 QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnMaterialChanged, this, &EffectorInspector::OnComboBoxMaterialChanged);
+                QObject::connect(
+                    m_comboBoxWidget, &ComboBoxWidget::OnMaterialPropertiesChanged, this,
+                    &EffectorInspector::OnComboBoxMaterialPropertiesChanged);
                 QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnModelChanged, this, &EffectorInspector::OnComboBoxModelChanged);
                 QObject::connect(m_comboBoxWidget, &ComboBoxWidget::OnSkeletonModelChanged, this, &EffectorInspector::OnComboBoxSkeletonModelChanged);
                 break;
@@ -657,6 +660,23 @@ namespace OpenParticleSystemEditor
         AZStd::string modifiedEffect = m_ui->particleName->text().toUtf8().constData();
         // This will have modified the assets listed in the "Detail" object, but not the actual emitter, so sync them.
         m_sourceData->UpdateEmitterAsset(modifiedEffect, OpenParticle::ParticleSourceData::DetailConstant::ASSET_MATERIAL);
+    }
+
+    void EffectorInspector::OnComboBoxMaterialPropertiesChanged(bool editingFinished)
+    {
+        AZStd::string modifiedEffect = m_ui->particleName->text().toUtf8().constData();
+        // The property widget edited the "Detail" copy of the override map, so push it onto the emitter.
+        // ASSET_MATERIAL covers both the asset and its overrides.
+        m_sourceData->UpdateEmitterAsset(modifiedEffect, OpenParticle::ParticleSourceData::DetailConstant::ASSET_MATERIAL);
+
+        // Intermediate values from a slider or colour-picker drag are recorded in the source data but do not
+        // trigger a document update. NotifyParticleSourceDataModified rebuilds the whole particle asset and
+        // respawns the preview system, which is far too heavy to run on every mouse move, so the viewport
+        // catches up when the user releases.
+        if (editingFinished)
+        {
+            EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+        }
     }
 
     void EffectorInspector::OnComboBoxModelChanged()

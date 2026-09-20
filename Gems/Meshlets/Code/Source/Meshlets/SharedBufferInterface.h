@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include <AzCore/std/smart_ptr/intrusive_base.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/intrusive_base.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
-#include <AtomCore/Instance/Instance.h>
 #include <Atom/RHI/Allocator.h>
 
 namespace AZ

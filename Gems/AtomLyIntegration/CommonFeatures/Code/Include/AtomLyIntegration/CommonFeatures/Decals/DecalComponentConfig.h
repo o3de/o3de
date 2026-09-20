@@ -33,6 +33,8 @@ namespace AZ
 
             AZ::Vector3 m_decalColor = AZ::Vector3::CreateOne();
             float m_decalColorFactor = 1.0f;
+            // Zero means unlimited, and is the default so existing content isn't affected.
+            float m_maxDrawDistance = 0.0f;
         };
     }
 }

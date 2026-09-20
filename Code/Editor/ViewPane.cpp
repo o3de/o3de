@@ -508,6 +508,13 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
         m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
+
+        // Geometry snapping, after the grid and angle entries it belongs alongside. A separator
+        // first because the entries above quantise a value, while this snaps to what is in the
+        // level - related enough to share the menu, different enough not to read as one group.
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 850);
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.geometrySnapping", 875);
     }
 }
 
@@ -524,6 +531,11 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier,
+        "o3de.action.edit.snap.geometrySnapping",
+        EditorIdentifiers::EditModifySnapToMenuIdentifier,
+        850);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }

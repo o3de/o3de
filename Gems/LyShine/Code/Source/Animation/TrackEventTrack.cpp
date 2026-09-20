@@ -15,7 +15,7 @@ CUiAnimStringTable::CUiAnimStringTable()
     : m_refCount(0)
 {
     m_pLastPage = new Page;
-    m_pLastPage->pPrev = NULL;
+    m_pLastPage->pPrev = nullptr;
     m_pEnd = m_pLastPage->mem;
 }
 
@@ -141,7 +141,7 @@ void CUiTrackEventTrack::GetKeyInfo(int key, const char*& description, float& du
 
     assert(key >= 0 && key < (int)m_keys.size());
     CheckValid();
-    description = 0;
+    description = nullptr;
     duration = 0;
     azstrcpy(desc, AZ_ARRAY_SIZE(desc), m_keys[key].event.c_str());
     if (!m_keys[key].eventValue.empty())

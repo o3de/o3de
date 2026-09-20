@@ -15,6 +15,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportSnapping.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 class CCryEditApp;
@@ -41,6 +42,7 @@ class EditorActionsHandler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
+    , private AzToolsFramework::ViewportSnapping::ViewportSnappingNotificationBus::Handler
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private AzToolsFramework::ContainerEntityNotificationBus::Handler
 {
@@ -87,6 +89,9 @@ private:
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
 
+    // ViewportSnappingNotificationBus overrides ...
+    void OnSnapModeChanged(AzToolsFramework::ViewportSnapping::SnapMode mode) override;
+
     // EditorPickModeNotificationBus overrides ...
     void OnEntityPickModeStarted() override;
     void OnEntityPickModeStopped() override;
@@ -114,6 +119,8 @@ private:
     // View Bookmarks
     int m_defaultBookmarkCount = 12;
     void InitializeViewBookmarkActions();
+
+    void UpdateGeometrySnappingAction();
 
     bool m_initialized = false;
 

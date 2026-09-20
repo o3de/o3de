@@ -42,7 +42,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator);
 
-        PropertyEntityIdCtrl(QWidget *pParent = NULL);
+        PropertyEntityIdCtrl(QWidget *pParent = nullptr);
         virtual ~PropertyEntityIdCtrl();
 
         AZ::EntityId GetEntityId() const;

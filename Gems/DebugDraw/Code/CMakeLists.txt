@@ -32,7 +32,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AtomCore
             Gem::Atom_RPI.Public
             Gem::Atom_Bootstrap.Headers
             Gem::Atom_Feature_Common.Public
@@ -85,7 +84,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 Gem::Atom_RPI.Public
                 Gem::Atom_Bootstrap.Headers
                 Gem::Atom_Feature_Common.Public

@@ -286,7 +286,7 @@ AZ::u32 Sleep(AZ::u32 dwMilliseconds)
     memset(&tv, 0, sizeof tv);
     memset(&start, 0, sizeof start);
     memset(&now, 0, sizeof now);
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     start = now;
     tStart = (uint64)start.tv_sec * 1000000 + start.tv_usec;
     while (true)
@@ -301,8 +301,8 @@ AZ::u32 Sleep(AZ::u32 dwMilliseconds)
         timeRemaining = dwMilliseconds * 1000 - timePassed;
         tv.tv_sec = timeRemaining / 1000000;
         tv.tv_usec = timeRemaining % 1000000;
-        select(1, NULL, NULL, NULL, &tv);
-        gettimeofday(&now, NULL);
+        select(1, nullptr, nullptr, nullptr, &tv);
+        gettimeofday(&now, nullptr);
     }
     return 0;
 #endif
@@ -324,8 +324,8 @@ void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] u
 #ifdef WIN32
 #   error WIN32 is defined in WinBase.cpp (it is a non-Windows file)
 #elif defined(MAC)
-    CFStringRef strText = CFStringCreateWithCString(NULL, lpText, kCFStringEncodingMacRoman);
-    CFStringRef strCaption = CFStringCreateWithCString(NULL, lpCaption, kCFStringEncodingMacRoman);
+    CFStringRef strText = CFStringCreateWithCString(nullptr, lpText, kCFStringEncodingMacRoman);
+    CFStringRef strCaption = CFStringCreateWithCString(nullptr, lpCaption, kCFStringEncodingMacRoman);
 
     CFStringRef strOk = CFSTR("OK");
     CFStringRef strCancel = CFSTR("Cancel");
@@ -380,9 +380,9 @@ void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] u
     CFUserNotificationDisplayAlert(
         0,                                 // no timeout
         kCFUserNotificationNoteAlertLevel, //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
-        NULL,                              //icon url, use default, you can change it depending message_type flags
-        NULL,                              //not used
-        NULL,                              //localization of strings
+        nullptr,                           //icon url, use default, you can change it depending message_type flags
+        nullptr,                           //not used
+        nullptr,                           //localization of strings
         strText,                           //header text
         strCaption,                        //message text
         defaultButton,                     //default "ok" text in button

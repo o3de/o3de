@@ -73,8 +73,8 @@ static SLevelNameAutoComplete g_LevelNameAutoComplete;
 //------------------------------------------------------------------------
 CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     : m_pSystem(pSystem)
-    , m_pCurrentLevel(0)
-    , m_pLoadingLevelInfo(0)
+    , m_pCurrentLevel(nullptr)
+    , m_pLoadingLevelInfo(nullptr)
 {
     AZ_Assert(pSystem, "pSystem is null");
 
@@ -141,7 +141,7 @@ void CLevelSystem::Rescan(const char* levelsFolder)
     AZ_Assert(!m_levelsFolder.empty(), "m_levelsFolder cannot be empty");
     m_levelInfos.clear();
     m_levelInfos.reserve(64);
-    ScanFolder(0, false);
+    ScanFolder(nullptr, false);
 
     g_LevelNameAutoComplete.levels.clear();
     for (const CLevelInfo& levelInfo : m_levelInfos)
@@ -293,7 +293,7 @@ void CLevelSystem::PopulateLevels(
             CLevelInfo* pExistingInfo = GetLevelInfoInternal(levelInfo.m_levelName);
 
             // Don't add the level if it is already in the list
-            if (pExistingInfo == NULL)
+            if (pExistingInfo == nullptr)
             {
                 m_levelInfos.push_back(levelInfo);
             }
@@ -331,7 +331,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(int level)
         return &m_levelInfos[level];
     }
 
-    return 0;
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -376,7 +376,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
         return GetLevelInfoInternal(sLevelName.c_str());
     }
 
-    return 0;
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -453,7 +453,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             // alert the listener
             OnLevelNotFound(levelName);
 
-            return 0;
+            return nullptr;
         }
 
         m_bLevelLoaded = false;
@@ -470,7 +470,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         if (!pLevelInfo->ReadInfo())
         {
             OnLoadingError(levelName, "Failed to read level info (level.pak might be corrupted)!");
-            return 0;
+            return nullptr;
         }
         //[AlexMcC|19.04.10]: Update the level's LevelInfo
         pLevel->m_levelInfo = *pLevelInfo;
@@ -792,7 +792,7 @@ void CLevelSystem::UnloadLevel()
     if (m_pLoadingLevelInfo)
     {
         ((CLevelInfo*)m_pLoadingLevelInfo)->CloseLevelPak();
-        m_pLoadingLevelInfo = NULL;
+        m_pLoadingLevelInfo = nullptr;
     }
 
     m_lastLevelName.clear();

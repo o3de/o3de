@@ -33,7 +33,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon

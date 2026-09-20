@@ -87,6 +87,7 @@ namespace OpenParticle
             newEmitter->m_config = emitter->m_config;
             newEmitter->m_renderConfig = emitter->m_renderConfig;
             newEmitter->m_material = emitter->m_material;
+            newEmitter->m_materialOverrides = emitter->m_materialOverrides;
             newEmitter->m_model = emitter->m_model;
             newEmitter->m_skeletonModel = emitter->m_skeletonModel;
             newEmitter->m_emitModules.assign(emitter->m_emitModules.begin(), emitter->m_emitModules.end());
@@ -122,6 +123,7 @@ namespace OpenParticle
             newEmitter->m_config = emitter->m_config;
             newEmitter->m_renderConfig = emitter->m_renderConfig;
             newEmitter->m_material = emitter->m_material;
+            newEmitter->m_materialOverrides = emitter->m_materialOverrides;
             newEmitter->m_model = emitter->m_model;
             newEmitter->m_skeletonModel = emitter->m_skeletonModel;
             newEmitter->m_emitModules.assign(emitter->m_emitModules.begin(), emitter->m_emitModules.end());
@@ -290,6 +292,7 @@ namespace OpenParticle
             auto emitter = aznew ParticleAssetData::EmitterInfo();
             emitter->m_name = editEmitter->m_name;
             emitter->m_material = editEmitter->m_material;
+            emitter->m_materialOverrides = editEmitter->m_materialOverrides;
             emitter->m_model = editEmitter->m_model;
             emitter->m_skeletonModel = editEmitter->m_skeletonModel;
             emitter->m_config = DataConvertor::ToRuntime(editEmitter->m_config);
@@ -588,6 +591,7 @@ namespace OpenParticle
 
         detailInfo->m_name = emitterInfo->m_name;
         detailInfo->m_material = emitterInfo->m_material;
+        detailInfo->m_materialOverrides = emitterInfo->m_materialOverrides;
         detailInfo->m_model =  emitterInfo->m_model;
         detailInfo->m_skeletonModel = emitterInfo->m_skeletonModel;
         detailInfo->m_isUse = true;
@@ -639,7 +643,7 @@ namespace OpenParticle
         auto emitter = AddEmitter(str);
         m_details.emplace_back(aznew ParticleSourceData::DetailInfo());
         EmitterInfoToDetailInfo(m_details.back(), emitter);
-        SetDefaultModules(m_details.back());
+        SetDefaultModules(m_details.back(), emitter);
         return m_details.back();
     }
 
@@ -670,6 +674,8 @@ namespace OpenParticle
         detailInfo->m_name = emitterInfo->m_name;
         emitterInfo->m_material = detailInfo->m_material;
         detailInfo->m_material = emitterInfo->m_material;
+        emitterInfo->m_materialOverrides = detailInfo->m_materialOverrides;
+        detailInfo->m_materialOverrides = emitterInfo->m_materialOverrides;
         emitterInfo->m_model = detailInfo->m_model;
         detailInfo->m_model = emitterInfo->m_model;
         emitterInfo->m_skeletonModel = detailInfo->m_skeletonModel;
@@ -696,8 +702,21 @@ namespace OpenParticle
         switch (index)
         {
             case DetailConstant::ASSET_MATERIAL:
+            {
+                // emitter->m_material still holds the previous asset at this point, so this tells us whether
+                // the user actually swapped materials or just re-picked the same one.
+                const bool materialChanged = emitter->m_material.GetId() != detailInfo->m_material.GetId();
                 emitter->m_material = detailInfo->m_material;
+                if (materialChanged)
+                {
+                    // A different material can mean a different property layout. Drop overrides that no
+                    // longer resolve but keep the ones that do, which is what you want when swapping
+                    // between two materials built from the same material type.
+                    PruneMaterialPropertyOverrides(emitter->m_material, detailInfo->m_materialOverrides);
+                }
+                emitter->m_materialOverrides = detailInfo->m_materialOverrides;
                 break;
+            }
             case DetailConstant::ASSET_MODEL:
                 emitter->m_model = detailInfo->m_model;
                 break;
@@ -1208,7 +1227,7 @@ namespace OpenParticle
         return used;
     }
 
-    void ParticleSourceData::SetDefaultModules(DetailInfo* detailInfo)
+    void ParticleSourceData::SetDefaultModules(DetailInfo* detailInfo, EmitterInfo* emitterInfo)
     {
         SelectModule(detailInfo, "Emitter", "Emitter");
         SelectModule(detailInfo, "Spawn", "Spawn Rate");
@@ -1224,8 +1243,22 @@ namespace OpenParticle
 
         if (defaultSpriteEmitMaterialId.IsValid())
         {
+            // PreLoad to match ConvertSourceFileNameToAsset, which is what the load path uses. When these two
+            // disagree the builder records the product dependency with one behaviour while the runtime asset
+            // carries the other, which is what produces "expected to load, but the Asset Catalog has no
+            // dependency recorded" warnings.
             detailInfo->m_material =
-                AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehaviorNamespace::NoLoad);
+                AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(defaultSpriteEmitMaterialId, AZ::Data::AssetLoadBehavior::PreLoad);
+
+            // The emitter needs it too. Only the detail used to be assigned here, so a freshly added emitter
+            // carried an invalid material until the user happened to touch the material picker, and
+            // CreateParticleAsset would fail with "no material assigned to render in emitter <name>".
+            // The save path hid this by substituting the default material on write, so the file on disk
+            // looked correct while the in memory emitter did not.
+            if (emitterInfo != nullptr)
+            {
+                emitterInfo->m_material = detailInfo->m_material;
+            }
         }
     }
 
@@ -1643,6 +1676,7 @@ namespace OpenParticle
         destEmitter->m_config = sourceEmitter->m_config;
         destEmitter->m_renderConfig = sourceEmitter->m_renderConfig;
         destEmitter->m_material = sourceEmitter->m_material;
+        destEmitter->m_materialOverrides = sourceEmitter->m_materialOverrides;
         destEmitter->m_model = sourceEmitter->m_model;
         destEmitter->m_skeletonModel = sourceEmitter->m_skeletonModel;
         destEmitter->m_emitModules.assign(sourceEmitter->m_emitModules.begin(), sourceEmitter->m_emitModules.end());
@@ -1676,6 +1710,7 @@ namespace OpenParticle
     void ParticleSourceData::CopyDetailFromDetail(DetailInfo* sourceDetail, EmitterInfo* destEmitter, DetailInfo* destDetail)
     {
         destEmitter->m_material = sourceDetail->m_material;
+        destEmitter->m_materialOverrides = sourceDetail->m_materialOverrides;
         destEmitter->m_model = sourceDetail->m_model;
         destEmitter->m_skeletonModel = sourceDetail->m_skeletonModel;
         // copy modules

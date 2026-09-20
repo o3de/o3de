@@ -88,7 +88,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
+                    ->DataElement(nullptr, &RotationModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Rotation Y"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -102,7 +102,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
+                    ->DataElement(nullptr, &RotationModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Rotation Z"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -116,7 +116,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
+                    ->DataElement(nullptr, &RotationModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
                     ;
             }
 

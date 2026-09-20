@@ -81,6 +81,7 @@
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportSnappingSystemComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 #include <Entity/EntityUtilityComponent.h>
@@ -230,6 +231,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent>(),
                 azrtti_typeid<Components::EditorEntityModelComponent>(),
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ViewportSnapping::ViewportSnappingSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
@@ -679,16 +681,29 @@ namespace AzToolsFramework
         // * Filter out any unselectable entities
         // * Calculate selection/deselection delta so we can notify specific entities only on change.
         // * Filter any duplicates.
-
-        // Filter out any invalid or non-selectable entities
         EntityIdList selectedEntitiesFiltered;
         selectedEntitiesFiltered.reserve(selectedEntities.size());
 
+        // Filter out any invalid or non-selectable entities
         // if the new viewport interaction model is enabled we do not want to
         // filter out locked entities as this breaks with the logic of being
         // able to select locked entities in the entity outliner
-        selectedEntitiesFiltered.insert(
-            selectedEntitiesFiltered.begin(), selectedEntities.begin(), selectedEntities.end());
+
+        std::copy_if(
+            selectedEntities.begin(),
+            selectedEntities.end(),
+            std::back_inserter(selectedEntitiesFiltered),
+            [this](const AZ::EntityId& entityId)
+            {
+                if (AZ::Entity* resultEntity = FindEntity(entityId);resultEntity)
+                {
+                    if (resultEntity->GetState() == AZ::Entity::State::Active)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
 
         EntityIdList newlySelectedIds;
         EntityIdList newlyDeselectedIds;

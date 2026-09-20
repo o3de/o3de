@@ -29,7 +29,7 @@ namespace AssetProcessor
     {
         Q_OBJECT
     public:
-        explicit AssetScannerWorker(PlatformConfiguration* config, QObject* parent = 0);
+        explicit AssetScannerWorker(PlatformConfiguration* config, QObject* parent = nullptr);
 
 Q_SIGNALS:
         void ScanningStateChanged(AssetProcessor::AssetScanningStatus status);

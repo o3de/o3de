@@ -25,7 +25,7 @@ const char* const IDebugCallStack::s_szFatalErrorCode = "FATAL_ERROR";
 
 IDebugCallStack::IDebugCallStack()
     : m_bIsFatalError(false)
-    , m_postBackupProcess(0)
+    , m_postBackupProcess(nullptr)
     , m_memAllocFileHandle(AZ::IO::InvalidHandle)
 {
 }
@@ -226,7 +226,7 @@ void IDebugCallStack::FatalError(const char* description)
 #endif
 
 #if defined(WIN32) || !defined(_RELEASE)
-    int* p = 0x0;
+    int* p = nullptr;
     *p = 1; // we're intentionally crashing here
 #endif
 }

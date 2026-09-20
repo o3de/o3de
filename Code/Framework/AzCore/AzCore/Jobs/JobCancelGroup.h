@@ -73,14 +73,14 @@ namespace AZ
     //=============================================================================================================
 
     inline JobCancelGroup::JobCancelGroup()
-        : m_firstChildGroup(NULL)
-        , m_siblingGroup(NULL)
+        : m_firstChildGroup(nullptr)
+        , m_siblingGroup(nullptr)
         , m_isCancelled(false)
     {
     }
 
     inline JobCancelGroup::JobCancelGroup(JobCancelGroup* parentGroup)
-        : m_firstChildGroup(NULL)
+        : m_firstChildGroup(nullptr)
         , m_isCancelled(false)
     {
         if (parentGroup)
@@ -90,7 +90,7 @@ namespace AZ
         }
         else
         {
-            m_siblingGroup = NULL;
+            m_siblingGroup = nullptr;
         }
     }
 

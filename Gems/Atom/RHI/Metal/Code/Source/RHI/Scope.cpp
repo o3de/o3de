@@ -185,7 +185,7 @@ namespace AZ
                 needsEncoder |= NeedsEncoder(m_renderPassContext.m_renderPassDescriptor.depthAttachment);
                 needsEncoder |= NeedsEncoder(m_renderPassContext.m_renderPassDescriptor.stencilAttachment);
 
-                for(uint32_t i = 0; i < RHI::Limits::Pipeline::AttachmentColorCountMax && needsEncoder; ++i)
+                for(uint32_t i = 0; i < RHI::Limits::Pipeline::AttachmentColorCountMax && !needsEncoder; ++i)
                 {
                     MTLRenderPassColorAttachmentDescriptor* colorDescriptor = [m_renderPassContext.m_renderPassDescriptor.colorAttachments objectAtIndexedSubscript:i];
                     needsEncoder |= NeedsEncoder(colorDescriptor);

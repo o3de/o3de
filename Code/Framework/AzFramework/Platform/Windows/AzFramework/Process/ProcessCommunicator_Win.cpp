@@ -59,7 +59,7 @@ namespace AzFramework
         BOOL result;
         if (handle->IsPipe())
         {
-            result = PeekNamedPipe(handle->GetHandle(), NULL, 0, NULL, &bytesAvailable, NULL);
+            result = PeekNamedPipe(handle->GetHandle(), nullptr, 0, nullptr, &bytesAvailable, nullptr);
         }
         else
         {
@@ -89,7 +89,7 @@ namespace AzFramework
         }
 
         DWORD bytesRead = 0;
-        BOOL result = ReadFile(handle->GetHandle(), readBuffer, bufferSize, &bytesRead, NULL);
+        BOOL result = ReadFile(handle->GetHandle(), readBuffer, bufferSize, &bytesRead, nullptr);
         DWORD error = 0;
         if (!result)
         {
@@ -148,7 +148,7 @@ namespace AzFramework
         // Set the bInheritHandle flag so pipe handles are inherited.
         securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
         securityAttributes.bInheritHandle = TRUE;
-        securityAttributes.lpSecurityDescriptor = NULL;
+        securityAttributes.lpSecurityDescriptor = nullptr;
 
         BOOL Result;
 

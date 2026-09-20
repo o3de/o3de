@@ -84,7 +84,7 @@ namespace AZStd
             "allocations, use lock_free_stamped_queue to relax this restriction");
 
         node_type* sentinel = create_node();
-        sentinel->m_next.store(NULL, memory_order_release);
+        sentinel->m_next.store(nullptr, memory_order_release);
         m_head.store(sentinel, memory_order_release);
         m_tail.store(sentinel, memory_order_release);
     }
@@ -106,7 +106,7 @@ namespace AZStd
     {
         node_type* node = create_node();
         node->m_value = value;
-        node->m_next.store(NULL, memory_order_release);
+        node->m_next.store(nullptr, memory_order_release);
         exponential_backoff backoff;
         while (true)
         {
@@ -114,7 +114,7 @@ namespace AZStd
             node_type* next = last->m_next.load(memory_order_acquire);
             if (last == m_tail.load(memory_order_acquire))
             {
-                if (next == NULL)
+                if (next == nullptr)
                 {
                     if (last->m_next.compare_exchange_weak(next, node, memory_order_acq_rel, memory_order_acquire))
                     {
@@ -144,7 +144,7 @@ namespace AZStd
             {
                 if (first == last)
                 {
-                    if (next == NULL)
+                    if (next == nullptr)
                     {
                         return false;
                     }
@@ -167,7 +167,7 @@ namespace AZStd
     template<typename T, typename Allocator>
     inline bool lock_free_queue<T, Allocator>::empty() const
     {
-        return (m_head.load(memory_order_acquire)->m_next.load(memory_order_acquire) == NULL);
+        return (m_head.load(memory_order_acquire)->m_next.load(memory_order_acquire) == nullptr);
     }
 
     template<typename T, typename Allocator>

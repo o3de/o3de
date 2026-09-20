@@ -33,7 +33,7 @@ namespace Vegetation
             {
                 edit->Class<DescriptorListAsset>(
                     QT_TRANSLATE_NOOP("Vegetation", "Vegetation Descriptor List"), QT_TRANSLATE_NOOP("Vegetation", "Contains an ordered list of vegetation descriptors used to create instances"))
-                    ->DataElement(0, &DescriptorListAsset::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
+                    ->DataElement(nullptr, &DescriptorListAsset::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, &Descriptor::GetDescriptorName)

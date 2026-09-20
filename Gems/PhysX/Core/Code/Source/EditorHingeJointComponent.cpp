@@ -42,8 +42,8 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/hinge-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, QT_TRANSLATE_NOOP("PhysX", "Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "The rotation angle limit around the joint's axis."))
-                    ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
+                    ->DataElement(nullptr, &EditorHingeJointComponent::m_angularLimit, QT_TRANSLATE_NOOP("PhysX", "Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "The rotation angle limit around the joint's axis."))
+                    ->DataElement(nullptr, &EditorHingeJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, QT_TRANSLATE_NOOP("PhysX", "Component Mode"), QT_TRANSLATE_NOOP("PhysX", "Hinge Joint Component Mode."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;

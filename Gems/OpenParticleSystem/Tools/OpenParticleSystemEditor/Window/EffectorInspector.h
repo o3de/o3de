@@ -104,6 +104,7 @@ namespace OpenParticleSystemEditor
 
     private Q_SLOTS:
         void OnComboBoxMaterialChanged();
+        void OnComboBoxMaterialPropertiesChanged(bool editingFinished);
         void OnComboBoxModelChanged();
         void OnComboBoxSkeletonModelChanged();
     };

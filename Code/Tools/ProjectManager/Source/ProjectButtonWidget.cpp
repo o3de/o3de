@@ -382,7 +382,7 @@ namespace O3DE::ProjectManager
         {
             AZ::IO::FixedMaxPath editorExecutablePath = ProjectUtils::GetEditorExecutablePath(m_projectInfo.m_path.toUtf8().constData());
 
-            const QString shortcutName = QString("%1 Editor").arg(m_projectInfo.m_displayName); 
+            const QString shortcutName = QString(ProjectUtils::EditorShortcutFilenameFormat.data()).arg(m_projectInfo.m_displayName); 
             const QString arg = QString("--regset=\"/Amazon/AzCore/Bootstrap/project_path=%1\"").arg(m_projectInfo.m_path);
 
             auto result = ProjectUtils::CreateDesktopShortcut(shortcutName, editorExecutablePath.c_str(), { arg });

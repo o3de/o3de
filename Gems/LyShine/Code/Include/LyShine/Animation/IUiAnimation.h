@@ -340,7 +340,7 @@ struct SUiAnimContext
         time = 0;
         dt = 0;
         fps = 0;
-        pSequence = NULL;
+        pSequence = nullptr;
         trackMask = 0;
         startTime = 0;
     }
@@ -557,7 +557,7 @@ struct IUiAnimTrack
     virtual void Animate([[maybe_unused]] SUiAnimContext& ec) {};
 
     // Get access to the internal spline of the track.
-    virtual ISplineInterpolator* GetSpline() const { return 0; };
+    virtual ISplineInterpolator* GetSpline() const { return nullptr; };
 
     virtual bool IsKeySelected([[maybe_unused]] int key) const { return false; }
 
@@ -1034,7 +1034,7 @@ struct IUiAnimSequence
 
     // Summary:
     //   Called to trigger a track event.
-    virtual void TriggerTrackEvent(const char* event, const char* param = NULL) = 0;
+    virtual void TriggerTrackEvent(const char* event, const char* param = nullptr) = 0;
 
     //! Track event listener
     virtual void AddTrackEventListener(IUiTrackEventListener* pListener) = 0;

@@ -37,7 +37,7 @@ namespace AssetBundler
 
     public:
 
-        explicit MainWindow(AssetBundler::GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
+        explicit MainWindow(AssetBundler::GUIApplicationManager* guiApplicationManager, QWidget* parent = nullptr);
         virtual ~MainWindow();
 
         void Activate();

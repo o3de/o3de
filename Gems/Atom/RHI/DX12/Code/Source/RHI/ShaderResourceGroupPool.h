@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/FrameEventBus.h>
-#include <AtomCore/std/containers/small_vector.h>
+#include <AzCore/std/containers/small_vector.h>
 #include <RHI/Descriptor.h>
 #include <RHI/MemorySubAllocator.h>
 #include <RHI/ShaderResourceGroup.h>
@@ -87,7 +88,7 @@ namespace AZ
 
             //Cache all the gpu handles for the Descriptor tables related to all the views
             void CacheGpuHandlesForViews(ShaderResourceGroup& group);
-            
+
             DescriptorTable GetBufferTable(DescriptorTable descriptorTable, RHI::ShaderInputBufferIndex bufferIndex) const;
             DescriptorTable GetImageTable(DescriptorTable descriptorTable, RHI::ShaderInputImageIndex imageIndex) const;
             DescriptorTable GetSamplerTable(DescriptorTable descriptorTable, RHI::ShaderInputSamplerIndex samplerInputIndex) const;

@@ -1,0 +1,4 @@
+/*
+   In the past, functions without definition blocks would crash the Output Merger emission.
+   Cmdargs: ['--om']
+*/

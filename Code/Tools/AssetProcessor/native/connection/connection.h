@@ -74,8 +74,8 @@ class Connection
     Q_PROPERTY(qint64 numOpenFiles MEMBER m_numOpenFiles NOTIFY NumOpenFilesChanged)
 
 public:
-    explicit Connection(qintptr socketDescriptor = -1, QObject* parent = 0);
-    explicit Connection(bool isUserCreatedConnection, qintptr socketDescriptor = -1, QObject* parent = 0);
+    explicit Connection(qintptr socketDescriptor = -1, QObject* parent = nullptr);
+    explicit Connection(bool isUserCreatedConnection, qintptr socketDescriptor = -1, QObject* parent = nullptr);
     virtual ~Connection();
 
     enum ConnectionStatus

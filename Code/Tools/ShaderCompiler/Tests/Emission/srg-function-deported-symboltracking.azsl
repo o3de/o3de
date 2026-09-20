@@ -1,0 +1,14 @@
+ShaderResourceGroupSemantic sem { FrequencyId = 0; };
+
+ShaderResourceGroup SRG : sem
+{
+    struct I { int i; } i;
+    int get(I);
+    float4 f;
+};
+
+int SRG::get(I i2)
+{
+    float4 f0 = f;
+    return i.i + i2.i;
+}

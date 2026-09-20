@@ -66,6 +66,19 @@ ly_add_source_properties(
             O3DE_GEM_NAME=${gem_name}
             O3DE_GEM_VERSION=${gem_version})
 
+if (PAL_PLATFORM_NAME STREQUAL "Linux")
+    # The Linux module preloads the python shared library by name (see
+    # Source/Platform/Linux/InitializeEmbeddedPyside.h); wire the name from the build's
+    # single source of truth so it always matches the configured python.
+    ly_add_source_properties(
+        SOURCES
+            Source/QtForPythonModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_PYTHON_SHARED_LIBRARY_NAME="${LY_PYTHON_SHARED_LIB}"
+    )
+endif()
+
 # the above target is used in both builders like AssetProcessor and Tools like the Editor
 # but is not used in clients or servers
 ly_create_alias(NAME ${gem_name}.Tools     NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)

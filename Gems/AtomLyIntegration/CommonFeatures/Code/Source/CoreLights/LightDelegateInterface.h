@@ -10,9 +10,8 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AzCore/Component/TransformBus.h>
-
+#include <AzCore/Instance/Instance.h>
 
 namespace AzFramework
 {
@@ -29,7 +28,7 @@ namespace AZ
     {
         class Image;
     }
-    
+
     namespace Render
     {
         //! Delegate for managing light shape specific functionality in the AreaLightComponentController.

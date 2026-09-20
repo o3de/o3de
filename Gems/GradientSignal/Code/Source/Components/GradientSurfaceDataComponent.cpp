@@ -47,7 +47,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMax, QT_TRANSLATE_NOOP("GradientSignal", "Threshold Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum value accepted from input gradient that allows tags to be applied."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &GradientSurfaceDataConfig::m_modifierTags, QT_TRANSLATE_NOOP("GradientSignal", "Extended Tags"), QT_TRANSLATE_NOOP("GradientSignal", "Surface tags to add to contained points"))
+                    ->DataElement(nullptr, &GradientSurfaceDataConfig::m_modifierTags, QT_TRANSLATE_NOOP("GradientSignal", "Extended Tags"), QT_TRANSLATE_NOOP("GradientSignal", "Surface tags to add to contained points"))
                     ;
             }
         }

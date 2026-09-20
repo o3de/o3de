@@ -250,7 +250,7 @@ namespace AZStd
                 ti->~thread_info();
                 AZStd::allocator a;
                 a.deallocate(ti, 0, 0);
-                ti = 0;
+                ti = nullptr;
             }
         }
     }

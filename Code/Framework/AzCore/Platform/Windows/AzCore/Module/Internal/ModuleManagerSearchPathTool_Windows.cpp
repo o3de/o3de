@@ -19,7 +19,7 @@ namespace AZ
 
         ModuleManagerSearchPathTool::~ModuleManagerSearchPathTool()
         {
-            ::SetDllDirectoryA(NULL);
+            ::SetDllDirectoryA(nullptr);
         }
 
         void ModuleManagerSearchPathTool::SetModuleSearchPath(const AZ::DynamicModuleDescriptor& moduleDesc)

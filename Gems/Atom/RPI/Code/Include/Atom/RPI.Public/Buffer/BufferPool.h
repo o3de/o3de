@@ -12,7 +12,7 @@
 
 #include <Atom/RHI/BufferPool.h>
 
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {

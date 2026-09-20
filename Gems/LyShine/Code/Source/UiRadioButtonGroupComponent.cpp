@@ -213,7 +213,7 @@ void UiRadioButtonGroupComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Settings"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_allowUncheck, QT_TRANSLATE_NOOP("LyShine", "Allow uncheck"), QT_TRANSLATE_NOOP("LyShine", "Allow clicking on the selected radio button to uncheck it."));
+                editInfo->DataElement(nullptr, &UiRadioButtonGroupComponent::m_allowUncheck, QT_TRANSLATE_NOOP("LyShine", "Allow uncheck"), QT_TRANSLATE_NOOP("LyShine", "Allow clicking on the selected radio button to uncheck it."));
             }
 
             // Actions group
@@ -221,7 +221,7 @@ void UiRadioButtonGroupComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiRadioButtonGroupComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes."));
+                editInfo->DataElement(nullptr, &UiRadioButtonGroupComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes."));
             }
         }
     }

@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 #include <Debug/RenderDebugSettings.h>
 
 namespace AZ::Render

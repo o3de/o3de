@@ -54,7 +54,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::ContainerCanBeModified, false)
-                    ->DataElement(0, &VertexContainer<Vertex>::m_vertices, "Vertices", "List of vertices.")
+                    ->DataElement(nullptr, &VertexContainer<Vertex>::m_vertices, "Vertices", "List of vertices.")
                         ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::Hide) // Temporarily hidden for performance reasons.
                         ->Attribute(Edit::Attributes::AddNotify, &VertexContainer<Vertex>::AddNotify)
                         ->Attribute(Edit::Attributes::RemoveNotify, &VertexContainer<Vertex>::RemoveNotify)

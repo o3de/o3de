@@ -46,7 +46,7 @@ namespace LmbrCentral
             editContext->Class<SplineAttribute<AttributeType>>("SplineAttribute", "Attribute of a spline")
                 // The dynamic edit data provider allows us to have different UI edit controls for each instance of a SplineAttribute.
                 ->SetDynamicEditDataProvider(&SplineAttribute<AttributeType>::GetElementDynamicEditData)
-                ->DataElement(0, &SplineAttribute<AttributeType>::m_elements, "Elements", "Elements in the attribute")
+                ->DataElement(nullptr, &SplineAttribute<AttributeType>::m_elements, "Elements", "Elements in the attribute")
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ;
         }

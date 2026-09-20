@@ -35,6 +35,8 @@ set(FILES
         Source/Runtime/OpenParticleSystem/ParticleSystem.cpp
         Source/Runtime/OpenParticleSystem/ParticlePipelineState.h
         Source/Runtime/OpenParticleSystem/ParticlePipelineState.cpp
+        Source/Runtime/OpenParticleSystem/MaterialPropertyOverride.h
+        Source/Runtime/OpenParticleSystem/MaterialPropertyOverride.cpp
         Source/Runtime/OpenParticleSystem/ParticleModel.h
         Source/Runtime/OpenParticleSystem/ParticleModel.cpp
         Source/Runtime/OpenParticleSystem/Asset/ParticleAssetHandler.h

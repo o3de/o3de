@@ -10,8 +10,8 @@
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Material/MaterialComponentController.h>
 

@@ -90,7 +90,7 @@ namespace AZ
             const int byteCodeLength = static_cast<int>(shaderFunction->GetByteCode().size());
             if(byteCodeLength > 0 && loadFromByteCode)
             {
-                dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
+                dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, nullptr, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
                 lib = [mtlDevice newLibraryWithData:dispatchByteCodeData error:&error];
                 dispatch_release(dispatchByteCodeData);
             }
@@ -126,7 +126,7 @@ namespace AZ
                 // The documentation indicates that if the lib is nil there is a compile error, otherwise anything
                 // in the error is really a warning. Therefore, we check the lib instead of the error code
                 AZ_Assert(lib, "HLSLcc compiler should generate valid code.");
-                error = 0;
+                error = nullptr;
             }
             
             if (lib)
@@ -150,7 +150,7 @@ namespace AZ
                                                     const RHI::PipelineStateDescriptorForDraw& descriptor,
                                                     RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
-            NSError* error = 0;
+            NSError* error = nullptr;
             Device& device = static_cast<Device&>(deviceBase);
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             AZ_Assert(pipelineLayout, "PipelineLayout can not be null");
@@ -298,7 +298,7 @@ namespace AZ
                                                     RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
-            NSError* error = 0;
+            NSError* error = nullptr;
             m_computePipelineDesc = [[MTLComputePipelineDescriptor alloc] init];
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             AZ_Assert(pipelineLayout, "PipelineLayout can not be null");

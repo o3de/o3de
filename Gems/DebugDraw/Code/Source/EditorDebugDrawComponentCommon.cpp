@@ -40,10 +40,10 @@ namespace DebugDraw
                     QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &EditorDebugDrawComponentSettings::m_visibleInGame,
+                    ->DataElement(nullptr, &EditorDebugDrawComponentSettings::m_visibleInGame,
                         QT_TRANSLATE_NOOP("DebugDraw", "Visible In Game"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Whether this DebugDraw component is visible in game."))
-                    ->DataElement(0, &EditorDebugDrawComponentSettings::m_visibleInEditor,
+                    ->DataElement(nullptr, &EditorDebugDrawComponentSettings::m_visibleInEditor,
                         QT_TRANSLATE_NOOP("DebugDraw", "Visible In Editor"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Whether this DebugDraw component is visible in editor."))
                     ;

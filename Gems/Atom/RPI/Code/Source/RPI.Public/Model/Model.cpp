@@ -11,8 +11,8 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
 

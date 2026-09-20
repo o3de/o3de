@@ -2133,10 +2133,6 @@ namespace AzToolsFramework
             // tick can happen first.
             QTimer::singleShot(0, this, &EntityPropertyEditor::UpdateContents);
 
-            //saving state any time refresh gets queued because requires valid components
-            //attempting to call directly anywhere state needed to be preserved always occurred with QueuePropertyRefresh
-            SaveComponentEditorState();
-
             QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
             QScrollBar* horizontalScroll = m_gui->m_componentList->horizontalScrollBar();
             m_savedVerticalScroll = verticalScroll->value();
@@ -3663,7 +3659,6 @@ namespace AzToolsFramework
         {
             componentEditor->SetSelected(false);
         }
-        SaveComponentEditorState();
         UpdateInternalState();
     }
 
@@ -3704,15 +3699,21 @@ namespace AzToolsFramework
             // only want to allow selection when component editor is enabled
             if (componentEditor->isEnabled())
             {
-                componentEditor->SetSelected(true);
-                m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
-                selectedChanged = true;
+                if (!componentEditor->isSelected())
+                {
+                    componentEditor->SetSelected(true);
+                    m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
+                    selectedChanged = true;
+                }
             }
         }
-        SaveComponentEditorState();
-        UpdateInternalState();
-        NotifySelectionChanges();
 
+        if (selectedChanged)
+        {
+            SaveComponentEditorState();
+            UpdateInternalState();
+            NotifySelectionChanges();
+        }
         return selectedChanged;
     }
 

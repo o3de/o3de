@@ -8,14 +8,13 @@
 
 #undef RC_INVOKED
 
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
-
-#include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>

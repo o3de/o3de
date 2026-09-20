@@ -676,7 +676,7 @@ namespace Maestro
     void CCompoundSplineTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
         duration = 0;
-        description = 0;
+        description = nullptr;
 
         if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {

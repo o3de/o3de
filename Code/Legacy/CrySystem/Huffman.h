@@ -89,9 +89,9 @@ private:
 
 public:
     HuffmanCoder()
-        : m_TreeNodes(NULL)
-        , m_Codes(NULL)
-        , m_Counts(NULL)
+        : m_TreeNodes(nullptr)
+        , m_Codes(nullptr)
+        , m_Counts(nullptr)
         , m_State(eHCS_NEW)
         , m_RootNode(0)
         , m_RefCount(0) {}

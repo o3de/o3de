@@ -42,7 +42,7 @@ namespace AZ::Debug
             else
             {
                 ::SetUnhandledExceptionFilter(g_previousExceptionHandler);
-                g_previousExceptionHandler = NULL;
+                g_previousExceptionHandler = nullptr;
             }
         }
 
@@ -59,19 +59,19 @@ namespace AZ::Debug
 
             STARTUPINFOW startupInfo = {0};
             startupInfo.cb = sizeof(startupInfo);
-            PROCESS_INFORMATION processInfo = {0};
+            PROCESS_INFORMATION processInfo = {nullptr};
 
             wchar_t cmdline[MAX_PATH];
             swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
             bool success = ::CreateProcessW(
-                NULL,           // No module name (use command line)
+                nullptr,        // No module name (use command line)
                 cmdline,        // Command line
-                NULL,           // Process handle not inheritable
-                NULL,           // Thread handle not inheritable
+                nullptr,        // Process handle not inheritable
+                nullptr,        // Thread handle not inheritable
                 FALSE,          // No handle inheritance
                 0,              // No creation flags
-                NULL,           // Use parent's environment block
-                NULL,           // Use parent's starting directory
+                nullptr,        // Use parent's environment block
+                nullptr,        // Use parent's starting directory
                 &startupInfo,   // Pointer to STARTUPINFO structure
                 &processInfo);  // Pointer to PROCESS_INFORMATION structure
 
@@ -212,7 +212,7 @@ namespace AZ::Debug
         if (result)
         {
             Debug::Trace::Instance().Output(AZ::Debug::Trace::GetDefaultSystemWindow(), "==================================================================\n");
-            g_exceptionInfo = NULL;
+            g_exceptionInfo = nullptr;
             // if someone ever returns TRUE we assume that they somehow handled this exception and continue.
             return EXCEPTION_CONTINUE_EXECUTION;
         }
@@ -224,7 +224,7 @@ namespace AZ::Debug
         // default behavior - this code is used in automated build systems and UI applications alike.
         LONG lReturn = EXCEPTION_CONTINUE_SEARCH;
         isInExeption = false;
-        g_exceptionInfo = NULL;
+        g_exceptionInfo = nullptr;
         return lReturn;
     }
 

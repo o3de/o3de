@@ -144,10 +144,10 @@ void CSystem::QueryVersionInfo()
 
         UINT count = 0;
         wchar_t path[256];
-        char* version = NULL;
+        char* version = nullptr;
 
         VerQueryValueW(ver, L"\\VarFileInfo\\Translation", (LPVOID*)&lpTranslate, &count);
-        if (lpTranslate != NULL)
+        if (lpTranslate != nullptr)
         {
             azsnwprintf(path, sizeof(path), L"\\StringFileInfo\\%04x%04x\\InternalName", lpTranslate[0].wLanguage, lpTranslate[0].wCodePage);
             VerQueryValueW(ver, path, (LPVOID*)&version, &count);

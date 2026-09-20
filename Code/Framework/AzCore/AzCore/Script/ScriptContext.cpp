@@ -1472,7 +1472,7 @@ namespace AZ
 #define AZ_DBG_NAME_FIXER(_varName, _maxLength, _dbgNameSrc)                  \
     const char* _varName;                                                     \
     char  _varNameData[_maxLength];                                           \
-    if ((_dbgNameSrc) != NULL) {                                              \
+    if ((_dbgNameSrc) != nullptr) {                                           \
         size_t len = strlen(_dbgNameSrc);                                     \
         if (len > _maxLength - 1) {                                           \
             _varName = _varNameData;                                          \
@@ -1705,8 +1705,8 @@ LUA_API const Node* lua_getDummyNode()
         {
             s_luaDummyNodeVariable = AZ::Environment::CreateVariable<Node>(luaDummyNodeVariableID);
             *s_luaDummyNodeVariable = {
-                { { NULL }, LUA_TNIL },  /* value */
-                { { { NULL }, LUA_TNIL, NULL } }  /* key */
+                { { nullptr }, LUA_TNIL },  /* value */
+                { { { nullptr }, LUA_TNIL, nullptr } }  /* key */
             };
         }
     }

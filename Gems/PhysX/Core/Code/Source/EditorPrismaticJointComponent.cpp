@@ -39,9 +39,9 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorPrismaticJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
+                    ->DataElement(nullptr, &EditorPrismaticJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
                     ->DataElement(
-                        0,
+                        nullptr,
                         &EditorPrismaticJointComponent::m_linearLimit,
                         QT_TRANSLATE_NOOP("PhysX", "Linear Limit"),
                         QT_TRANSLATE_NOOP("PhysX", "The limit of linear motion along the joint's axis."));

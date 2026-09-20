@@ -144,17 +144,17 @@ public:
     CLogIndenter(ILog* log)
         : m_log(log)
         , m_enabled(false)
-        , m_nextIndenter(NULL)
+        , m_nextIndenter(nullptr)
         , m_needToPrintSectionText(false)
     {
     }
 
-    void Enable(bool enable = true, const char* sectionTextFormat = NULL, ...)
+    void Enable(bool enable = true, const char* sectionTextFormat = nullptr, ...)
     {
         va_list args;
         va_start (args, sectionTextFormat);
 
-        enable &= (m_log != NULL);
+        enable &= (m_log != nullptr);
 
         if (enable != m_enabled)
         {
@@ -246,7 +246,7 @@ public:
 
 #define ILOG_CONCAT_IMPL(x, y) x##y
 #define ILOG_CONCAT_MACRO(x, y) ILOG_CONCAT_IMPL(x, y)
-#define INDENT_LOG_DURING_SCOPE(...) CLogIndenter ILOG_CONCAT_MACRO(indentMe, __LINE__) ((AZStd::this_thread::get_id() == gEnv->mMainThreadId) ? gEnv->pLog : NULL); ILOG_CONCAT_MACRO(indentMe, __LINE__).Enable(__VA_ARGS__)
+#define INDENT_LOG_DURING_SCOPE(...) CLogIndenter ILOG_CONCAT_MACRO(indentMe, __LINE__) ((AZStd::this_thread::get_id() == gEnv->mMainThreadId) ? gEnv->pLog : nullptr); ILOG_CONCAT_MACRO(indentMe, __LINE__).Enable(__VA_ARGS__)
 
 #define CRY_DEFINE_ASSET_SCOPE(sAssetType, sAssetName) CLogAssetScopeName __asset_scope_name(gEnv->pLog, sAssetType, sAssetName);
 #endif

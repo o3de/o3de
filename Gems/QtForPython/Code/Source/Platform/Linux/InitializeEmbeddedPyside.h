@@ -12,12 +12,26 @@
 
 namespace QtForPython
 {
-    // #QT6_TODO lib names might need adjustments
-    // s_libPythonLibraryFile must match the library name listed in (O3DE Engine Root)/python/runtime/.../python-config.cmake
-    // in the set(${MY}_LIBRARY_xxxx sections.
-    const char* s_libPythonLibraryFile = "libpython3.10.so.1.0"; 
+    // The python shared library name is provided by the build from the
+    // LY_PYTHON_SHARED_LIB cmake variable (see the gem CMakeLists.txt), so it
+    // always matches the python the engine is configured against. The
+    // pyside6/shiboken6 names default to the 3rdParty package layout and can
+    // be overridden by builds that provide those libraries differently; there
+    // is no in-repo source of truth for the packaged names to wire them from.
+#if !defined(O3DE_PYTHON_SHARED_LIBRARY_NAME)
+    #error O3DE_PYTHON_SHARED_LIBRARY_NAME must be defined; it is wired from LY_PYTHON_SHARED_LIB in the gem CMakeLists.txt
+#endif
+    const char* s_libPythonLibraryFile = O3DE_PYTHON_SHARED_LIBRARY_NAME;
+#if defined(O3DE_PYSIDE6_SHARED_LIBRARY_NAME)
+    const char* s_libPysideLibraryFile = O3DE_PYSIDE6_SHARED_LIBRARY_NAME;
+#else
     const char* s_libPysideLibraryFile = "libpyside6.abi3.so.6.10";
+#endif
+#if defined(O3DE_SHIBOKEN6_SHARED_LIBRARY_NAME)
+    const char* s_libShibokenLibraryFile = O3DE_SHIBOKEN6_SHARED_LIBRARY_NAME;
+#else
     const char* s_libShibokenLibraryFile = "libshiboken6.abi3.so.6.10";
+#endif
     const char* s_libQtTestLibraryFile = "libQt6Test.so.6";
 
     class InitializeEmbeddedPyside

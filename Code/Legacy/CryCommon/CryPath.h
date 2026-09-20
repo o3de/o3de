@@ -353,7 +353,7 @@ namespace PathUtil
     inline stack_string ReplaceExtension(const stack_string& filepath, const char* ext)
     {
         stack_string str = filepath;
-        if (ext != 0)
+        if (ext != nullptr)
         {
             RemoveExtension(str);
             if (ext[0] != 0 && ext[0] != '.')
@@ -369,7 +369,7 @@ namespace PathUtil
     inline AZStd::string ReplaceExtension(const AZStd::string& filepath, const char* ext)
     {
         AZStd::string str = filepath;
-        if (ext != 0)
+        if (ext != nullptr)
         {
             RemoveExtension(str);
             if (ext[0] != 0 && ext[0] != '.')

@@ -45,7 +45,6 @@ ly_add_target(
             AZ::AzFramework
             3rdParty::meshoptimizer
         PUBLIC
-            AZ::AtomCore
             Gem::Atom_RHI.Public
 )
 
@@ -65,7 +64,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
             Gem::${gem_name}.Public
@@ -101,7 +99,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzToolsFramework
                 Gem::Atom_RHI.Edit
                 Gem::${gem_name}.Public
@@ -122,7 +119,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 RPI_EDITOR # Compile RPI Editor module
         BUILD_DEPENDENCIES
             PUBLIC
-                AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
                 Gem::Atom_RHI.Public
@@ -173,7 +169,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzTest
                 AZ::AzTestShared
                 AZ::AzFramework
@@ -194,7 +189,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
                 AZ::AzTest
                 AZ::AzTestShared
                 AZ::AzFramework
@@ -269,7 +263,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::SceneCore

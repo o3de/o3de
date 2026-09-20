@@ -140,7 +140,7 @@ namespace AZ::IO
         {
         }
 
-        bool        IsOpen() const override { return m_buffer != NULL; }
+        bool        IsOpen() const override { return m_buffer != nullptr; }
         bool        CanSeek() const override { return true; }
         bool        CanRead() const override { return true; }
         bool        CanWrite() const override { return true; }

@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Interface/Interface.h>
 
 namespace AZ

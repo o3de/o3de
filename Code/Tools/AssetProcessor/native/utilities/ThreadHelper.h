@@ -44,7 +44,7 @@ namespace AssetProcessor
 
     public:
         AZ_CLASS_ALLOCATOR(ThreadWorker, AZ::SystemAllocator)
-        explicit ThreadWorker(QObject* parent = 0)
+        explicit ThreadWorker(QObject* parent = nullptr)
             : QObject(parent)
         {
             m_runningThread = new QThread();

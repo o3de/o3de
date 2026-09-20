@@ -41,7 +41,7 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceSlopeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
+                    ->DataElement(nullptr, &SurfaceSlopeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeGradientConfig::m_slopeMin, QT_TRANSLATE_NOOP("GradientSignal", "Slope Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum surface slope angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 90.0f)

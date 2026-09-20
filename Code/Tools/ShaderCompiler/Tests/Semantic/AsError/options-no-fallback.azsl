@@ -1,0 +1,16 @@
+// Booleans are also currently supported:
+option bool UseGI = true;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// IR Error 36:  'If you have non-static options, one SRG must be designated as the default ShaderVariantFallback'
+// #EC 129
+// ShaderVariantFallback = 64;

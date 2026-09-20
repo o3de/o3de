@@ -408,7 +408,7 @@ namespace AZStd
             }
 
             char_class_type mask = Ch_none;
-            if (GetNames()[index].m_element != 0)
+            if (GetNames()[index].m_element != nullptr)
             {
                 mask = (char_class_type)GetNames()[index].m_type;
             }
@@ -947,7 +947,7 @@ namespace AZStd
         RegExBuffer()
             : m_capacity(0)
             , m_size(0)
-            , m_chars(0)
+            , m_chars(nullptr)
         {
         }
         ~RegExBuffer()
@@ -1062,8 +1062,8 @@ namespace AZStd
         NodeBase(NodeType _Ty, NodeFlags flags = NFLG_none)
             : m_kind(_Ty)
             , m_flags(flags)
-            , m_next(0)
-            , m_previous(0)
+            , m_next(nullptr)
+            , m_previous(nullptr)
         {
         }
 
@@ -1077,11 +1077,11 @@ namespace AZStd
 
     inline void DestroyNode(NodeBase* node, NodeBase* end = nullptr)
     {   // destroy sublist of nodes
-        while (node != end && node != 0)
+        while (node != end && node != nullptr)
         {
             NodeBase* tmp = node;
             node = node->m_next;
-            tmp->m_next = 0;
+            tmp->m_next = nullptr;
             delete tmp;
         }
     }
@@ -1126,7 +1126,7 @@ namespace AZStd
         AZ_CLASS_ALLOCATOR(NodeAssert, AZ::SystemAllocator);
         NodeAssert(NodeType type, NodeFlags flags = NFLG_none)
             : NodeBase(type, flags)
-            , m_child(0)
+            , m_child(nullptr)
         {
         }
 
@@ -1188,12 +1188,12 @@ namespace AZStd
         AZ_CLASS_ALLOCATOR(NodeClass, AZ::SystemAllocator);
         NodeClass(NodeType type = NT_class, NodeFlags flags = NFLG_none)
             : NodeBase(type, flags)
-            , m_coll(0)
-            , m_small(0)
-            , m_large(0)
-            , m_ranges(0)
+            , m_coll(nullptr)
+            , m_small(nullptr)
+            , m_large(nullptr)
+            , m_ranges(nullptr)
             , _Classes((typename RegExTraits::char_class_type) 0)
-            , m_equiv(0)
+            , m_equiv(nullptr)
         {
         }
 
@@ -1243,7 +1243,7 @@ namespace AZStd
         NodeIf(NodeBase* m_end)
             : NodeBase(NT_if, NFLG_none)
             , _Endif((NodeEndif*)m_end)
-            , m_child(0)
+            , m_child(nullptr)
         {
         }
 
@@ -1254,7 +1254,7 @@ namespace AZStd
             {   // destroy branch
                 NodeIf* tmp = current;
                 current = current->m_child;
-                tmp->m_child = 0;
+                tmp->m_child = nullptr;
                 DestroyNode(tmp, _Endif);
             }
         }
@@ -1273,7 +1273,7 @@ namespace AZStd
         AZ_CLASS_ALLOCATOR(NodeEndRepetition, AZ::SystemAllocator);
         NodeEndRepetition()
             : NodeBase(NT_end_rep)
-            , _Begin_rep(0)
+            , _Begin_rep(nullptr)
         {
         }
 
@@ -1439,7 +1439,7 @@ namespace AZStd
             m_tgtState.m_current = m_first;
             m_tgtState.m_groupValid.resize(_Ncap);
             m_tgtState.m_groups.resize(_Ncap);
-            _Cap = matches != 0;
+            _Cap = matches != nullptr;
             m_isFull = isFullMatch;
             _Max_complexity_count = AZ_REGEX_MAX_COMPLEXITY_COUNT;
             _Max_stack_count = AZ_REGEX_MAX_STACK_COUNT;
@@ -1494,7 +1494,7 @@ namespace AZStd
             return true;
         }
 
-        BidirectionalIterator Skip(BidirectionalIterator, BidirectionalIterator, NodeBase * = 0);
+        BidirectionalIterator Skip(BidirectionalIterator, BidirectionalIterator, NodeBase * = nullptr);
 
     private:
         bool _Do_if(NodeIf*);
@@ -1741,7 +1741,7 @@ namespace AZStd
                 Clear();
 
                 m_rootNode = right.m_rootNode;
-                right.m_rootNode = 0;
+                right.m_rootNode = nullptr;
             }
         }
 
@@ -1781,9 +1781,9 @@ namespace AZStd
         }
 
         // return number of loops
-        unsigned int _Loop_count() const        { return (m_rootNode != 0 ? m_rootNode->m_loops : 0); }
+        unsigned int _Loop_count() const        { return (m_rootNode != nullptr ? m_rootNode->m_loops : 0); }
         // return number of capture groups
-        unsigned int mark_count() const         { return (m_rootNode != 0 ? m_rootNode->m_marks - 1 : 0); }
+        unsigned int mark_count() const         { return (m_rootNode != nullptr ? m_rootNode->m_marks - 1 : 0); }
 
         this_type& assign(const this_type& right)           { Reset(right.m_rootNode); return (*this); }
 
@@ -1859,7 +1859,7 @@ namespace AZStd
 
         void Clear()
         {   // free all storage
-            if (m_rootNode != 0 && --m_rootNode->m_refs == 0)
+            if (m_rootNode != nullptr && --m_rootNode->m_refs == 0)
             {
                 DestroyNode(m_rootNode);
             }
@@ -1895,7 +1895,7 @@ namespace AZStd
 
         void Reset(RootNode* rootNode)
         {   // build regular expression holding root node rootNode
-            if (rootNode != 0)
+            if (rootNode != nullptr)
             {
                 ++rootNode->m_refs;
             }
@@ -2048,7 +2048,7 @@ namespace AZStd
     template<class BidirectionalIterator, class Element, class RegExTraits>
     inline  bool regex_match(BidirectionalIterator first, BidirectionalIterator last, const basic_regex<Element, RegExTraits>& regEx, regex_constants::match_flag_type flags = regex_constants::match_default)
     {
-        return (RegexMatch(first, last, (match_results<BidirectionalIterator>*) 0, regEx, flags | regex_constants::match_any, true));
+        return (RegexMatch(first, last, (match_results<BidirectionalIterator>*) nullptr, regEx, flags | regex_constants::match_any, true));
     }
 
     // try to match regular expression to target text
@@ -2056,7 +2056,7 @@ namespace AZStd
     inline bool regex_match(const Element* string, const basic_regex<Element, RegExTraits>& regEx, regex_constants::match_flag_type flags = regex_constants::match_default)
     {
         const Element* last = string + char_traits<Element>::length(string);
-        return (RegexMatch(string, last, (match_results<const Element*>*) 0, regEx, flags | regex_constants::match_any, true));
+        return (RegexMatch(string, last, (match_results<const Element*>*) nullptr, regEx, flags | regex_constants::match_any, true));
     }
 
     // try to match regular expression to target text
@@ -2080,7 +2080,7 @@ namespace AZStd
     inline bool regex_match(const basic_string<Element, _StTraits, _StAlloc>& string, const basic_regex<Element, RegExTraits>& regEx, regex_constants::match_flag_type flags = regex_constants::match_default)
     {
         typedef typename basic_string<Element, _StTraits, _StAlloc>::const_iterator Iterator;
-        return (RegexMatch(string.begin(), string.end(), (match_results<Iterator>*) 0, regEx, flags | regex_constants::match_any, true));
+        return (RegexMatch(string.begin(), string.end(), (match_results<Iterator>*) nullptr, regEx, flags | regex_constants::match_any, true));
     }
 
     // search for regular expression match in target text
@@ -2173,7 +2173,7 @@ namespace AZStd
 
         const Element* first = string.c_str();
         const Element* last = first + string.size();
-        return (_Regex_search(first, last, (match_results<Iterator>*) 0, regEx, flags | regex_constants::match_any, first));
+        return (_Regex_search(first, last, (match_results<Iterator>*) nullptr, regEx, flags | regex_constants::match_any, first));
     }
 
     // search and replace
@@ -2982,10 +2982,10 @@ namespace AZStd
     {   // add else node
         NodeIf* parent = (NodeIf*)_Start->m_next;
         NodeBase* first = end->m_next;
-        end->m_next = 0;
+        end->m_next = nullptr;
         NodeBase* last = m_current;
         m_current = end;
-        end->m_next = 0;
+        end->m_next = nullptr;
         last->m_next = end;
         while (parent->m_child)
         {
@@ -3030,7 +3030,7 @@ namespace AZStd
     inline void Builder<ForwardIterator, Element, RegExTraits>::DiscardPattern()
     {   // free memory
         DestroyNode(m_root);
-        m_root = 0;
+        m_root = nullptr;
     }
 
     // IMPLEMENTATION OF Matcher
@@ -3240,7 +3240,7 @@ namespace AZStd
             Element ch = (offset ? *--_Ch0 : *_Ch0);
 
             // assume L'x' == 'x'
-            return (ch == (char)ch && strchr("abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_", ch) != 0);
+            return (ch == (char)ch && strchr("abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_", ch) != nullptr);
         }
     }
 
@@ -3437,7 +3437,7 @@ namespace AZStd
         }
 
         bool isFailed = false;
-        while (_Nx != 0)
+        while (_Nx != nullptr)
         {       // match current node
             switch (_Nx->m_kind)
             {       // handle current node's type
@@ -3548,7 +3548,7 @@ namespace AZStd
             }
 
             case NT_end_assert:
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             case NT_capture:
@@ -3604,7 +3604,7 @@ namespace AZStd
                 {
                     isFailed = true;
                 }
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             case NT_endif:
@@ -3616,7 +3616,7 @@ namespace AZStd
                 {
                     isFailed = true;
                 }
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             case NT_end_rep:
@@ -3629,7 +3629,7 @@ namespace AZStd
                 {
                     isFailed = true;        // recurse only if loop contains if/do
                 }
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
             }
 
@@ -3646,7 +3646,7 @@ namespace AZStd
                     m_result = m_tgtState;
                     m_isMatched = true;
                 }
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             default:
@@ -3656,7 +3656,7 @@ namespace AZStd
 
             if (isFailed)
             {
-                _Nx = 0;
+                _Nx = nullptr;
             }
             else if (_Nx)
             {
@@ -3674,9 +3674,9 @@ namespace AZStd
     template<class BidirectionalIterator, class Element, class RegExTraits, class Iterator>
     inline BidirectionalIterator Matcher<BidirectionalIterator, Element, RegExTraits, Iterator>::Skip(BidirectionalIterator first, BidirectionalIterator last, NodeBase* _Node_arg)
     {   // skip until possible match
-        NodeBase* _Nx = _Node_arg != 0 ? _Node_arg : m_rootNode;
+        NodeBase* _Nx = _Node_arg != nullptr ? _Node_arg : m_rootNode;
 
-        while (first != last && _Nx != 0)
+        while (first != last && _Nx != nullptr)
         {   // check current node
             switch (_Nx->m_kind)
             {   // handle current node's type
@@ -3807,7 +3807,7 @@ namespace AZStd
             //          case NT_assert:
 
             case NT_end_assert:
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             case NT_capture:
@@ -3822,7 +3822,7 @@ namespace AZStd
             {       // check for soonest string match
                 NodeIf* node = (NodeIf*)_Nx;
 
-                for (; first != last && node != 0; node = node->m_child)
+                for (; first != last && node != nullptr; node = node->m_child)
                 {
                     last = Skip(first, last, node->m_next);
                 }
@@ -3837,7 +3837,7 @@ namespace AZStd
                 break;
 
             case NT_end:
-                _Nx = 0;
+                _Nx = nullptr;
                 break;
 
             default:
@@ -3912,7 +3912,7 @@ namespace AZStd
         else
         {   // map current character
             m_char = *m_pat;
-            m_metaChar = strchr(Meta_map, m_char) != 0 ? (MetaType)m_char : Meta_chr;
+            m_metaChar = strchr(Meta_map, m_char) != nullptr ? (MetaType)m_char : Meta_chr;
         }
         switch (m_char)
         {   // handle special cases
@@ -4711,7 +4711,7 @@ namespace AZStd
     template<class ForwardIterator, class Element, class RegExTraits>
     inline RootNode* Parser<ForwardIterator, Element, RegExTraits>::Compile()
     {   // compile regular expression
-        RootNode* result = 0;
+        RootNode* result = nullptr;
         NodeBase* _Pos1 = m_builder.BeginCaptureGroup(0);
         _Disjunction();
         if (m_pat != m_end)

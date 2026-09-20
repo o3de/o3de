@@ -82,7 +82,7 @@ namespace AssetBundler
          */
         static Config defaultConfig();
 
-        explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+        explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
         virtual ~GUIApplicationManager();
 
         bool Init() override;

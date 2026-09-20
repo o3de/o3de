@@ -20,7 +20,7 @@ class CUndoVariableChange
     : public IUndoObject
 {
 public:
-    CUndoVariableChange(IVariable* var, const char* undoDescription, const char* editorObjfullname = 0)
+    CUndoVariableChange(IVariable* var, const char* undoDescription, const char* editorObjfullname = nullptr)
     {
         // Stores the current state of this object.
         assert(var != 0);
@@ -96,7 +96,7 @@ class CUndoQTUIVariableChange
     : public CUndoVariableChange
 {
 public:
-    CUndoQTUIVariableChange(IVariable* var, CAttributeItem* widget, const char* undoDescription, const char* editorObjfullname = 0)
+    CUndoQTUIVariableChange(IVariable* var, CAttributeItem* widget, const char* undoDescription, const char* editorObjfullname = nullptr)
         : CUndoVariableChange(var, undoDescription, editorObjfullname)
     {
         // Stores the current state of this object.
