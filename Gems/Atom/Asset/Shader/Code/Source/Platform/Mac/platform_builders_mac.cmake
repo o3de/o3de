@@ -6,6 +6,12 @@
 #
 #
 
+# AzslCompiler resolves azslc from @exefolder@, so stage it inside the Mac app bundles.
+ly_add_target_files(
+   TARGETS ${gem_name}.Builders
+   FILES $<TARGET_FILE:Azslc>
+)
+
 # Shader Headers
 ly_add_target_files(
    TARGETS ${gem_name}.Builders
