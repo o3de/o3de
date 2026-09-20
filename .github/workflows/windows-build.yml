@@ -244,7 +244,7 @@ jobs:
         timeout-minutes: 330
         run: |
           $env:LY_3RDPARTY_PATH = "${{ env.DEV_DRIVE_WORKSPACE }}\3rdParty"
-          $env:LY_PACKAGE_SERVER_URLS = "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
+          $env:LY_PACKAGE_SERVER_URLS = "https://dev.packages.o3debinaries.org;https://prod.packages.o3debinaries.org"
           $env:TEMP = "${{ env.DEV_DRIVE }}\temp"
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
