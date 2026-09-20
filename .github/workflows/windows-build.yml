@@ -240,6 +240,7 @@ jobs:
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Windows/build_config.json
         # Set temp folders to the workspace drive as the boot drive is slow
+        id: build
         working-directory: "${{ env.DEV_DRIVE_WORKSPACE }}"
         timeout-minutes: 330
         run: |
@@ -257,6 +258,12 @@ jobs:
         continue-on-error: true
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
+          if ("${{ steps.build.outcome }}" -ne "success") {
+            Write-Output "::warning::Build step did not succeed. Clearing AutomatedTesting/Cache"
+            if (Test-Path AutomatedTesting\Cache) {
+              Remove-Item -Path AutomatedTesting\Cache -Recurse -Force -ErrorAction Stop
+            }
+          }
           New-Item -ItemType Directory -Force .ccache, .o3de\python\downloaded_packages, 3rdParty\downloaded_packages, AutomatedTesting\Cache | Out-Null
           tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
             .ccache `
