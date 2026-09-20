@@ -152,6 +152,7 @@ jobs:
 
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Mac/build_config.json
+        id: build
         timeout-minutes: 330
         env:
           CMAKE_C_COMPILER_LAUNCHER: ccache
@@ -168,6 +169,10 @@ jobs:
         continue-on-error: true
         run: |
           ccache --cleanup
+          if [[ "${{ steps.build.outcome }}" != "success" ]]; then
+            echo "::warning::Build step did not succeed. Clearing AutomatedTesting/Cache"
+            rm -rf AutomatedTesting/Cache
+          fi
           mkdir -p .ccache .o3de/python/downloaded_packages 3rdParty/downloaded_packages AutomatedTesting/Cache
           gtar --format=posix -cpf ${{ github.workspace }}/cache.tar \
             .ccache \
