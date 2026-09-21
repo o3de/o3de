@@ -9,8 +9,9 @@
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
-#include <AzFramework/Input/Events/InputTextEventListener.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Input/Events/InputTextEventListener.h>
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -182,7 +183,44 @@ namespace UnitTest
         bool m_captureTextEvents{ false };
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    TEST_F(QtEventToAzInputMapperFixture, DisablingRestoresTheSystemCursor)
+    {
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
+        m_inputChannelMapper->SetEnabled(false);
+
+        AzFramework::SystemCursorState cursorState = AzFramework::SystemCursorState::Unknown;
+        AzFramework::InputSystemCursorRequestBus::EventResult(
+            cursorState,
+            AzToolsFramework::GetSyntheticMouseDeviceId(TestDeviceIdSeed),
+            &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+        EXPECT_EQ(cursorState, AzFramework::SystemCursorState::UnconstrainedAndVisible);
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseMovementChannelsUseLogicalPixels)
+    {
+        AZStd::vector<float> movementValues;
+        QObject::connect(
+            m_inputChannelMapper.get(),
+            &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated,
+            m_rootWidget.get(),
+            [&movementValues](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                const auto& inputChannelId = inputChannel->GetInputChannelId();
+                if (inputChannelId == AzFramework::InputDeviceMouse::Movement::X ||
+                    inputChannelId == AzFramework::InputDeviceMouse::Movement::Y)
+                {
+                    movementValues.push_back(inputChannel->GetValue());
+                }
+            });
+
+        const QPoint initialPosition(100, 100);
+        MouseMove(m_rootWidget.get(), initialPosition, QPoint());
+        movementValues.clear();
+        MouseMove(m_rootWidget.get(), initialPosition, QPoint(5, -7));
+
+        EXPECT_THAT(movementValues, ::testing::ElementsAre(5.0f, -7.0f));
+    }
 
     // Qt event forwarding through the internal signal handler test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
@@ -346,7 +384,6 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    // trackpads keep sending wheel events with the momentum phase after the fingers were lifted, those are ignored
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_MomentumPhase_ReceivedZeroAzChannelEvents)
     {
         // setup
@@ -367,7 +404,6 @@ namespace UnitTest
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
     }
 
-    // trackpads report both axes for a two finger scroll that is not perfectly vertical, the dominant one is used
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_BothAxes_DominantAxisIsUsed)
     {
         // setup
@@ -378,11 +414,11 @@ namespace UnitTest
         const QPoint globalEventPos = m_rootWidget->mapToGlobal(mouseEventPos);
         const QPoint zero = QPoint();
 
-        QWheelEvent mostlyVertical(globalEventPos, zero, zero, QPoint(3, -10), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
-        QApplication::sendEvent(m_rootWidget.get(), &mostlyVertical);
+        QWheelEvent mostlyVerticalEvent(globalEventPos, zero, zero, QPoint(3, -10), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+        QApplication::sendEvent(m_rootWidget.get(), &mostlyVerticalEvent);
 
-        QWheelEvent mostlyHorizontal(globalEventPos, zero, zero, QPoint(-12, 4), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
-        QApplication::sendEvent(m_rootWidget.get(), &mostlyHorizontal);
+        QWheelEvent mostlyHorizontalEvent(globalEventPos, zero, zero, QPoint(-12, 4), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+        QApplication::sendEvent(m_rootWidget.get(), &mostlyHorizontalEvent);
 
         // az validation
         ASSERT_EQ(m_azChannelEvents.size(), 2);

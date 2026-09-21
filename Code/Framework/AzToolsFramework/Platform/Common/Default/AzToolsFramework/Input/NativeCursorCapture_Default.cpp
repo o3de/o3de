@@ -10,7 +10,7 @@
 
 namespace AzToolsFramework
 {
-    // No native relative mouse mode on this platform, QtEventToAzInputMapper will warp the cursor itself.
+    // This platform uses QtEventToAzInputMapper's cursor-warp fallback.
     AZStd::unique_ptr<NativeCursorCapture> NativeCursorCapture::Create([[maybe_unused]] MotionDeltaFn motionDeltaFn)
     {
         return nullptr;

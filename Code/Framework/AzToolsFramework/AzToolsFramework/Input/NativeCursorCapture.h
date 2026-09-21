@@ -16,29 +16,26 @@
 
 namespace AzToolsFramework
 {
-    //! Platform specific 'relative mouse mode' used while the viewport cursor is captured (e.g. camera look).
-    //! While active, the platform keeps the system cursor pinned in place and reports the raw motion deltas it
-    //! receives through the supplied callback. This avoids having to warp the cursor back after every move
-    //! event, which on some platforms (macOS) is asynchronous and produces bogus (double counted) deltas.
-    //! Not every platform provides an implementation, in which case Create returns nullptr and the caller
-    //! must fall back to warping the cursor itself.
+    //! Platform relative-mouse mode for captured viewport cursors.
+    //! Implementations keep the cursor stationary and report relative movement.
+    //! Unsupported platforms return nullptr and the caller falls back to cursor warping.
     class AZTF_API NativeCursorCapture
     {
     public:
-        //! Callback invoked (on the main thread) with the raw cursor motion delta in logical pixels.
+        //! Callback invoked on the main thread with relative cursor movement in logical pixels.
         using MotionDeltaFn = AZStd::function<void(const QPoint& delta)>;
 
-        //! Create the platform implementation, or nullptr if the platform (or the current Qt platform plugin, e.g. the
-        //! offscreen one used by tests) does not support it.
+        //! Create the platform implementation, or nullptr when unsupported.
         static AZStd::unique_ptr<NativeCursorCapture> Create(MotionDeltaFn motionDeltaFn);
 
         virtual ~NativeCursorCapture() = default;
 
-        //! Pin the cursor in place and start reporting motion deltas.
-        virtual void Begin() = 0;
+        //! Keep the cursor stationary and start reporting relative movement.
+        //! Returns false when capture cannot begin.
+        virtual bool Begin() = 0;
         //! Release the cursor and stop reporting motion deltas.
         virtual void End() = 0;
-        //! Is the capture currently active.
+        //! Is capture active.
         virtual bool IsActive() const = 0;
     };
 } // namespace AzToolsFramework
