@@ -76,7 +76,6 @@ namespace AzToolsFramework
         void timerEvent(QTimerEvent* event) override;
     private:
         void ClearQueuedMouseEvent();
-        //! Discard the queued press and any drag selection in progress.
         void ResetDragState();
         void ProcessQueuedMousePressedEvent(QMouseEvent* event);
 
