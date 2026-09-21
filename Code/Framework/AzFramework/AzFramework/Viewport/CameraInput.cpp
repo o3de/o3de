@@ -1023,12 +1023,18 @@ namespace AzFramework
             }
             else if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                const auto x = inputChannel.GetValue();
+                const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
+
+                const auto x = position->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(windowSize.m_width);
                 return InputState{ HorizontalMotionEvent{ aznumeric_cast<int>(AZStd::lround(x)) }, modifiers };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Y)
             {
-                const auto y = inputChannel.GetValue();
+                const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
+
+                const auto y = position->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(windowSize.m_height);
                 return InputState{ VerticalMotionEvent{ aznumeric_cast<int>(AZStd::lround(y)) }, modifiers };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
