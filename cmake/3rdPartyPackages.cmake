@@ -813,9 +813,7 @@ function(o3de_fetch_content arg_NAME)
     # Keeping the archive's own timestamps makes a newly extracted version look older than the
     # object files built from the previous one, so a version bump silently links stale objects
     # against the new headers instead of recompiling.
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
-        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP FALSE)
-    endif()
+    list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP FALSE)
 
     # Forward any extra arguments we don't explicitly handle
     if(arg_UNPARSED_ARGUMENTS)
