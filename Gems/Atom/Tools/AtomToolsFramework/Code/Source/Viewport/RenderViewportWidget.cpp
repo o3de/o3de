@@ -375,14 +375,11 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    // Hover mouse moves (and the matching enter/leave events) do not reach this widget on every platform, on macOS Qt
-    // delivers them to the top level window because the viewport is not painted by Qt (see QtEventToAzInputMapper),
-    // so the cached mouse position can be stale. Prefer the live cursor position whenever the cursor is over the widget.
+    // Native render viewports may not receive Qt hover or leave events, so query the cursor directly.
     AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::LiveMousePosition() const
     {
         const QPoint globalCursorPosition = QCursor::pos();
         const QPoint localCursorPosition = mapFromGlobal(globalCursorPosition);
-        // cheap bounds check before the full hit test
         if (isVisible() && rect().contains(localCursorPosition) && QApplication::widgetAt(globalCursorPosition) == this)
         {
             return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(localCursorPosition * devicePixelRatioF());
@@ -393,9 +390,7 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::IsMouseOver() const
     {
-        // the cached position is only trustworthy while a button is held (the implicit mouse grab keeps delivering
-        // moves to this widget), a leave event that would reset it might never arrive otherwise
-        return LiveMousePosition().has_value() || (QApplication::mouseButtons() != Qt::NoButton && m_mousePosition.has_value());
+        return MousePosition().has_value();
     }
 
     AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
@@ -405,7 +400,12 @@ namespace AtomToolsFramework
             return liveMousePosition;
         }
 
-        return m_mousePosition;
+        if (QApplication::mouseButtons() != Qt::NoButton && rect().contains(mapFromGlobal(QCursor::pos())))
+        {
+            return m_mousePosition;
+        }
+
+        return AZStd::nullopt;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
