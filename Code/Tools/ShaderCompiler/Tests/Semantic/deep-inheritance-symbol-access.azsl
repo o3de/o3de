@@ -1,0 +1,18 @@
+class A0
+{
+    int16_t a;
+};
+
+class A1 : A0
+{
+};
+
+class A2 : A1
+{
+};
+
+static A2 g;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(g.a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'int16_t'\n");

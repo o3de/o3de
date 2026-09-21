@@ -1,0 +1,30 @@
+void func(int i);   // hlslFunctionDeclaration
+
+// function DECLARATIONS do not introduce their parameters as symbols. they are ignored.
+// neither in the global scope
+//   --> May-2019 update: actually this is not true anymore. to fix the emission of lone declared functions.
+//                        redeclarations/redefinition of functions previously declared will now erase the previously introduced argument symbols before reintroducing new ones.
+//   --> Novemeber-2019 update: this is back to being the observable behavior. the May's comment is still true but these parameters appear under the concrete symbol's identity.
+//                              which is /func(?int)/i and is not expressible for now. it will be accessible through typeof(func(0))::i in the future.
+
+// global scope
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(::i, __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == <not_found>\n");
+
+// function scope
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(func::i, __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == <not_found>\n");  // since 1.5x this is not_found for a different reason: the func symbol is a hidden symbol with no member. (the overload-set)
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(func)::i, __azslc_prtsym_fully_qualified);  // since 1.5.0.20: new syntax possible: the qualified typeof. an overload-set will be reified to its unique concrete member.
+__azslc_print_message(" == ?int\n");
+
+void func(int i)    // hlslFunctionDefinition
+{                   // block
+    // however function definitions DO introduce them, in the same scope of the function
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(i, __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == /func(?int)/i\n");
+}

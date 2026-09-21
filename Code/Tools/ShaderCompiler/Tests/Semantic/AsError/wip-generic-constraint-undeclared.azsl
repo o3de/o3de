@@ -1,0 +1,1 @@
+void func<T : ILight>();  // Sema error: ILight undeclared.

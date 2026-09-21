@@ -1,0 +1,50 @@
+// padding to 252, causes the full test coverage
+// of the three phases of padding as done in StructPadToMutator::InsertPaddingVariables(...)
+// 1- The first variable will be added if @startingOffset is not 16-bytes aligned. It will be a float, float2 or float3.
+// 2- If more bytes are still needed, then We'll add ONE float4[N] array, Until (N * 16) bytes fit within the bytes that are left to add.
+// 3- Finally, if there are more remaining bytes to the be added, a third float, float2 or float3 will be added.
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStructA
+{
+    float m_data;
+    [[pad_to(16)]]
+};
+
+struct MyStructB
+{
+    int m_data;
+    [[pad_to(16)]]
+    MyStructA m_a;
+    float2 m_b;
+    [[pad_to(64)]]
+};
+
+struct MyStruct
+{
+    MyStructA m_a;
+    MyStructB m_b;
+    float m_color_red;
+    [[pad_to(16)]]
+    uint m_uint;
+    [[pad_to(252)]]
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyStruct m_myStruct;
+    StructuredBuffer<MyStruct> m_mySB;
+};
+
+float4 PSMain() : SV_Target0
+{
+    // Inside func
+    float4 color = float4(0, 0, 0, 0);
+    color.r = DemoSrg::m_myStruct.m_color_red;
+    color.r += DemoSrg::m_mySB[0].m_color_red;
+    return color;
+}

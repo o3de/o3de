@@ -1,0 +1,16 @@
+ShaderResourceGroupSemantic slot1
+{
+  FrequencyId = 1;
+  ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup SRG : slot1
+{
+};
+
+rootconstant float sunheight;
+
+float4 MainPS(float2 uv) : SV_Target0
+{
+  return sunheight;
+}

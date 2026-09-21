@@ -1,0 +1,11 @@
+ShaderResourceGroupSemantic sem0 {FrequencyId = 0;};
+ShaderResourceGroup SRG : sem0
+{
+    StructuredBuffer<struct S {float4 albedo;}> m_buf;
+};
+
+void Thingie()
+{
+    struct S { int i; } s;
+    s.i++;
+}

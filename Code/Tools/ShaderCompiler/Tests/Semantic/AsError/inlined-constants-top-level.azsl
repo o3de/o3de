@@ -1,0 +1,16 @@
+// Top level uniforms, including inlined constants, are not supported.
+// You must use ShaderResourceGroup for all resources and uniforms
+
+ShaderResourceGroupSemantic UpdatePerEmpty
+{
+    FrequencyId = 0u;
+};
+
+ShaderResourceGroup PerMaterial : UpdatePerEmpty
+{
+    inline int  shadowCascade;
+    inline bool calculateShadows;
+};
+
+// Semantic Error 9: line 3::12 'inlined qualifier is only valid for SRG constants!'
+// #EC 9

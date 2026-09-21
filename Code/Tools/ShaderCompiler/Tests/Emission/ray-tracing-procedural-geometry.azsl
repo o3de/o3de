@@ -1,0 +1,1360 @@
+// AZSL version of the example raytracing shader found here:
+// https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/Desktop/D3D12Raytracing/src/D3D12RaytracingProceduralGeometry/Raytracing.hlsl
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ List of intrinsic declarations used in this shader:
+
+struct RayDesc
+{
+    float3 Origin;
+    float  TMin;
+    float3 Direction;
+    float  TMax;
+};
+
+uint3 DispatchRaysIndex();
+
+uint3 DispatchRaysDimensions();
+
+Template<payload_t>
+void TraceRay(RaytracingAccelerationStructure AccelerationStructure,
+              uint RayFlags,
+              uint InstanceInclusionMask,
+              uint RayContributionToHitGroupIndex,
+              uint MultiplierForGeometryContributionToHitGroupIndex,
+              uint MissShaderIndex,
+              RayDesc Ray,
+              inout payload_t Payload);
+
+struct BuiltInTriangleIntersectionAttributes
+{
+    float2 barycentrics;
+};
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+struct ProceduralPrimitiveAttributes
+{
+    float3 normal;
+};
+
+struct RayPayload
+{
+    float4 color;
+    uint recursionDepth;
+};
+
+struct ShadowRayPayload
+{
+    bool hit;
+};
+
+struct SceneConstantBuffer
+{
+    float4x4 projectionToWorld;
+    float4 cameraPosition;
+    float4 lightPosition;
+    float4 lightAmbientColor;
+    float4 lightDiffuseColor;
+    float reflectance;
+    float elapsedTime;
+};
+
+
+struct PrimitiveConstantBuffer
+{
+    float4 albedo;
+    float reflectanceCoef;
+    float diffuseCoef;
+    float specularCoef;
+    float specularPower;
+    float stepScale;
+
+
+    float3 padding;
+};
+
+
+struct PrimitiveInstanceConstantBuffer
+{
+    uint instanceIndex;
+    uint primitiveType;
+};
+
+
+struct PrimitiveInstancePerFrameBuffer
+{
+    float4x4 localSpaceToBottomLevelAS;
+    float4x4 bottomLevelASToLocalSpace;
+};
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+};
+
+
+
+    enum class RayType_Enum {
+        Radiance = 0,
+        Shadow,
+        Count
+    };
+
+static const uint TraceRayParameters_InstanceMask = ~0;
+static const uint TraceRayParameters_HitGroup_Offset[RayType_Enum::Count] =
+{
+    0,
+    1
+};
+static const uint GeometryStride = RayType_Enum::Count;
+
+static const uint Offset[RayType_Enum::Count] =
+{
+    0,
+    1
+};
+
+
+static const float4 ChromiumReflectance = float4(0.549f, 0.556f, 0.554f, 1.0f);
+static const float4 BackgroundColor = float4(0.8f, 0.9f, 1.0f, 1.0f);
+static const float InShadowRadiance = 0.35f;
+
+enum class AnalyticPrimitive_Enum {
+    AABB = 0,
+    Spheres,
+    Count
+};
+
+enum class VolumetricPrimitive_Enum {
+    Metaballs = 0,
+    Count
+};
+
+enum class SignedDistancePrimitive_Enum {
+    MiniSpheres = 0,
+    IntersectedRoundCube,
+    SquareTorus,
+    TwistedTorus,
+    Cog,
+    Cylinder,
+    FractalPyramid,
+    Count
+};
+
+struct Ray
+{
+    float3 origin;
+    float3 direction;
+};
+
+// [Atom-541] TODO Support argument overload
+//float length_toPow2(float2 p)
+//{
+//    return dot(p, p);
+//}
+
+float length_toPow2(float3 p)
+{
+    return dot(p, p);
+}
+
+
+float CalculateAnimationInterpolant(in float elapsedTime, in float cycleDuration)
+{
+    float curLinearCycleTime = fmod(elapsedTime, cycleDuration) / cycleDuration;
+    curLinearCycleTime = (curLinearCycleTime <= 0.5f) ? 2 * curLinearCycleTime : 1 - 2 * (curLinearCycleTime - 0.5f);
+    return smoothstep(0, 1, curLinearCycleTime);
+}
+
+void swap(inout float a, inout float b)
+{
+    float temp = a;
+    a = b;
+    b = temp;
+}
+
+bool IsInRange(in float val, in float min, in float max)
+{
+    return (val >= min && val <= max);
+}
+
+static uint3 Load3x16BitIndices(uint offsetBytes, ByteAddressBuffer Indices)
+{
+    uint3 indices_;
+    const uint dwordAlignedOffset = offsetBytes & ~3;
+    const uint2 four16BitIndices = Indices.Load2(dwordAlignedOffset);
+
+
+    if (dwordAlignedOffset == offsetBytes)
+    {
+        indices_.x = four16BitIndices.x & 0xffff;
+        indices_.y = (four16BitIndices.x >> 16) & 0xffff;
+        indices_.z = four16BitIndices.y & 0xffff;
+    }
+    else
+    {
+        indices_.x = (four16BitIndices.x >> 16) & 0xffff;
+        indices_.y = four16BitIndices.y & 0xffff;
+        indices_.z = (four16BitIndices.y >> 16) & 0xffff;
+    }
+
+    return indices_;
+}
+
+
+float3 HitWorldPosition()
+{
+    return WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+}
+
+
+float3 HitAttribute(float3 vertexAttribute[3], float2 barycentrics)
+{
+    return vertexAttribute[0] +
+        barycentrics.x * (vertexAttribute[1] - vertexAttribute[0]) +
+        barycentrics.y * (vertexAttribute[2] - vertexAttribute[0]);
+}
+
+// TODO Support the inline keyword
+// Can functions *not* be inlined?
+// inline 
+Ray GenerateCameraRay(uint2 index, in float3 cameraPosition, in float4x4 projectionToWorld)
+{
+    float2 xy = index + 0.5f;
+    float2 screenPos = xy / DispatchRaysDimensions().xy * 2.0 - 1.0;
+
+
+    screenPos.y = -screenPos.y;
+
+
+    float4 world = mul(float4(screenPos, 0, 1), projectionToWorld);
+    world.xyz /= world.w;
+
+    Ray ray;
+    ray.origin = cameraPosition;
+    ray.direction = normalize(world.xyz - ray.origin);
+
+    return ray;
+}
+
+
+bool IsCulled(in Ray ray, in float3 hitSurfaceNormal)
+{
+    float rayDirectionNormalDot = dot(ray.direction, hitSurfaceNormal);
+
+    bool isCulled =
+        ((RayFlags() & RAY_FLAG_CULL_BACK_FACING_TRIANGLES) && (rayDirectionNormalDot > 0))
+        ||
+        ((RayFlags() & RAY_FLAG_CULL_FRONT_FACING_TRIANGLES) && (rayDirectionNormalDot < 0));
+
+    return isCulled;
+}
+
+
+bool IsAValidHit(in Ray ray, in float thit, in float3 hitSurfaceNormal)
+{
+    return IsInRange(thit, RayTMin(), RayTCurrent()) && !IsCulled(ray, hitSurfaceNormal);
+}
+
+
+float2 TexCoords(in float3 position)
+{
+    return position.xz;
+}
+
+
+void CalculateRayDifferentials(out float2 ddx_uv, out float2 ddy_uv, in float2 uv, in float3 hitPosition, in float3 surfaceNormal, in float3 cameraPosition, in float4x4 projectionToWorld)
+{
+
+    Ray ddx = GenerateCameraRay(DispatchRaysIndex().xy + uint2(1, 0), cameraPosition, projectionToWorld);
+    Ray ddy = GenerateCameraRay(DispatchRaysIndex().xy + uint2(0, 1), cameraPosition, projectionToWorld);
+
+
+    float3 ddx_pos = ddx.origin - ddx.direction * dot(ddx.origin - hitPosition, surfaceNormal) / dot(ddx.direction, surfaceNormal);
+    float3 ddy_pos = ddy.origin - ddy.direction * dot(ddy.origin - hitPosition, surfaceNormal) / dot(ddy.direction, surfaceNormal);
+
+
+    ddx_uv = TexCoords(ddx_pos) - uv;
+    ddy_uv = TexCoords(ddy_pos) - uv;
+}
+
+
+float CheckersTextureBoxFilter(in float2 uv, in float2 dpdx, in float2 dpdy, in uint ratio);
+
+
+float AnalyticalCheckersTexture(in float3 hitPosition, in float3 surfaceNormal, in float3 cameraPosition, in float4x4 projectionToWorld)
+{
+    float2 ddx_uv;
+    float2 ddy_uv;
+    float2 uv = TexCoords(hitPosition);
+
+    CalculateRayDifferentials(ddx_uv, ddy_uv, uv, hitPosition, surfaceNormal, cameraPosition, projectionToWorld);
+    return CheckersTextureBoxFilter(uv, ddx_uv, ddy_uv, 50);
+}
+
+
+float3 FresnelReflectanceSchlick(in float3 I, in float3 N, in float3 f0)
+{
+    float cosi = saturate(dot(-I, N));
+    return f0 + (1 - f0)*pow(1 - cosi, 5);
+}
+
+bool SolveQuadraticEqn(float a, float b, float c, out float x0, out float x1)
+{
+    float discr = b * b - 4 * a * c;
+    if (discr < 0) return false;
+    else if (discr == 0) x0 = x1 = -0.5 * b / a;
+    else {
+        float q = (b > 0) ?
+            -0.5 * (b + sqrt(discr)) :
+            -0.5 * (b - sqrt(discr));
+        x0 = q / a;
+        x1 = c / q;
+    }
+    if (x0 > x1) swap(x0, x1);
+
+    return true;
+}
+
+
+float3 CalculateNormalForARaySphereHit(in Ray ray, in float thit, float3 a_center)
+{
+    float3 hitPosition = ray.origin + thit * ray.direction;
+    return normalize(hitPosition - a_center);
+}
+
+
+
+bool SolveRaySphereIntersectionEquation(in Ray ray, out float tmin, out float tmax, in float3 a_center, in float radius)
+{
+    float3 L = ray.origin - a_center;
+    float a = dot(ray.direction, ray.direction);
+    float b = 2 * dot(ray.direction, L);
+    float c = dot(L, L) - radius * radius;
+    return SolveQuadraticEqn(a, b, c, tmin, tmax);
+}
+
+
+bool RaySphereIntersectionTest(in Ray ray, out float thit, out float tmax, in ProceduralPrimitiveAttributes attr, in float3 a_center = float3(0, 0, 0), in float radius = 1)
+{
+    float t0, t1;
+
+    if (!SolveRaySphereIntersectionEquation(ray, t0, t1, a_center, radius)) return false;
+    tmax = t1;
+
+    if (t0 < RayTMin())
+    {
+
+        if (t1 < RayTMin()) return false;
+
+        attr.normal = CalculateNormalForARaySphereHit(ray, t1, a_center);
+        if (IsAValidHit(ray, t1, attr.normal))
+        {
+            thit = t1;
+            return true;
+        }
+    }
+    else
+    {
+        attr.normal = CalculateNormalForARaySphereHit(ray, t0, a_center);
+        if (IsAValidHit(ray, t0, attr.normal))
+        {
+            thit = t0;
+            return true;
+        }
+
+        attr.normal = CalculateNormalForARaySphereHit(ray, t1, a_center);
+        if (IsAValidHit(ray, t1, attr.normal))
+        {
+            thit = t1;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+bool RaySolidSphereIntersectionTest(in Ray ray, out float thit, out float tmax, in float3 a_center = float3(0, 0, 0), in float radius = 1)
+{
+    float t0, t1;
+
+    if (!SolveRaySphereIntersectionEquation(ray, t0, t1, a_center, radius))
+        return false;
+
+
+    thit = max(t0, RayTMin());
+    tmax = min(t1, RayTCurrent());
+
+    return true;
+}
+
+
+bool RaySpheresIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr)
+{
+    const int N = 3;
+    float3 centers[N] =
+    {
+        float3(-0.3, -0.3, -0.3),
+        float3(0.1, 0.1, 0.4),
+        float3(0.35,0.35, 0.0)
+    };
+    float radii[N] = { 0.6, 0.3, 0.15 };
+    bool hitFound = false;
+
+
+
+
+    thit = RayTCurrent();
+
+
+    for (int i = 0; i < N; i++)
+    {
+        float _thit;
+        float _tmax;
+        ProceduralPrimitiveAttributes _attr;
+        if (RaySphereIntersectionTest(ray, _thit, _tmax, _attr, centers[i], radii[i]))
+        {
+            if (_thit < thit)
+            {
+                thit = _thit;
+                attr = _attr;
+                hitFound = true;
+            }
+        }
+    }
+    return hitFound;
+}
+
+
+
+// [Atom-541] TODO Support function argument overload
+bool RayAABBIntersectionTestS(Ray ray, float3 aabb[2], out float tmin, out float tmax)
+{
+    float3 tmin3, tmax3;
+    int3 sign3 = ray.direction > 0;
+    tmin3.x = (aabb[1 - sign3.x].x - ray.origin.x) / ray.direction.x;
+    tmax3.x = (aabb[sign3.x].x - ray.origin.x) / ray.direction.x;
+
+    tmin3.y = (aabb[1 - sign3.y].y - ray.origin.y) / ray.direction.y;
+    tmax3.y = (aabb[sign3.y].y - ray.origin.y) / ray.direction.y;
+
+    tmin3.z = (aabb[1 - sign3.z].z - ray.origin.z) / ray.direction.z;
+    tmax3.z = (aabb[sign3.z].z - ray.origin.z) / ray.direction.z;
+
+    tmin = max(max(tmin3.x, tmin3.y), tmin3.z);
+    tmax = min(min(tmax3.x, tmax3.z), tmax3.z);
+
+    return tmax > tmin && tmax >= RayTMin() && tmin <= RayTCurrent();
+}
+
+
+bool RayAABBIntersectionTest(Ray ray, float3 aabb[2], out float thit, out ProceduralPrimitiveAttributes attr)
+{
+    float tmin, tmax;
+    if (RayAABBIntersectionTestS(ray, aabb, tmin, tmax))
+    {
+        thit = tmin >= RayTMin() ? tmin : tmax;
+
+
+        float3 hitPosition = ray.origin + thit * ray.direction;
+        float3 distanceToBounds[2] = {
+            abs(aabb[0] - hitPosition),
+            abs(aabb[1] - hitPosition)
+        };
+        const float eps = 0.0001;
+        if (distanceToBounds[0].x < eps) attr.normal = float3(-1, 0, 0);
+        else if (distanceToBounds[0].y < eps) attr.normal = float3(0, -1, 0);
+        else if (distanceToBounds[0].z < eps) attr.normal = float3(0, 0, -1);
+        else if (distanceToBounds[1].x < eps) attr.normal = float3(1, 0, 0);
+        else if (distanceToBounds[1].y < eps) attr.normal = float3(0, 1, 0);
+        else if (distanceToBounds[1].z < eps) attr.normal = float3(0, 0, 1);
+
+        return IsAValidHit(ray, thit, attr.normal);
+    }
+    return false;
+}
+
+struct Metaball
+{
+    float3 m_center;
+    float radius;
+};
+
+
+
+
+float CalculateMetaballPotential(in float3 position, in Metaball blob, out float distance)
+{
+    distance = length(position - blob.m_center);
+
+    if (distance <= blob.radius)
+    {
+        float d = distance;
+
+
+
+
+
+
+        d = blob.radius - d;
+
+        float r = blob.radius;
+        return 6 * (d*d*d*d*d) / (r*r*r*r*r)
+            - 15 * (d*d*d*d) / (r*r*r*r)
+            + 10 * (d*d*d) / (r*r*r);
+    }
+    return 0;
+}
+
+
+float CalculateMetaballsPotential(in float3 position, in Metaball blobs[3], in uint nActiveMetaballs)
+{
+    float sumFieldPotential = 0;
+
+
+
+    for (uint j = 0; j < 3; j++)
+
+    {
+        float dummy;
+        sumFieldPotential += CalculateMetaballPotential(position, blobs[j], dummy);
+    }
+    return sumFieldPotential;
+}
+
+
+float3 CalculateMetaballsNormal(in float3 position, in Metaball blobs[3], in uint nActiveMetaballs)
+{
+    float e = 0.5773 * 0.00001;
+    return normalize(float3(
+        CalculateMetaballsPotential(position + float3(-e, 0, 0), blobs, nActiveMetaballs) -
+        CalculateMetaballsPotential(position + float3(e, 0, 0), blobs, nActiveMetaballs),
+        CalculateMetaballsPotential(position + float3(0, -e, 0), blobs, nActiveMetaballs) -
+        CalculateMetaballsPotential(position + float3(0, e, 0), blobs, nActiveMetaballs),
+        CalculateMetaballsPotential(position + float3(0, 0, -e), blobs, nActiveMetaballs) -
+        CalculateMetaballsPotential(position + float3(0, 0, e), blobs, nActiveMetaballs)));
+}
+
+void InitializeAnimatedMetaballs(out Metaball blobs[3], in float elapsedTime, in float cycleDuration)
+{
+    float3 keyFrameCenters[3][2] =
+    {
+        { float3(-0.3, -0.3, -0.4),float3(0.3,-0.3,-0.0) },
+        { float3(0.0, -0.2, 0.5), float3(0.0, 0.4, 0.5) },
+        { float3(0.4,0.4, 0.4), float3(-0.4, 0.2, -0.4) }
+    };
+
+    float radii[3] = { 0.45, 0.55, 0.45 };
+
+
+
+    float tAnimate = CalculateAnimationInterpolant(elapsedTime, cycleDuration);
+    for (uint j = 0; j < 3; j++)
+    {
+        blobs[j].m_center = lerp(keyFrameCenters[j][0], keyFrameCenters[j][1], tAnimate);
+        blobs[j].radius = radii[j];
+    }
+}
+
+
+
+void FindIntersectingMetaballs(in Ray ray, out float tmin, out float tmax, inout Metaball blobs[3], out uint nActiveMetaballs)
+{
+
+    tmin = (1.0/0.0);
+    tmax = -(1.0/0.0);
+
+    nActiveMetaballs = 0;
+    for (uint i = 0; i < 3; i++)
+    {
+        float _thit, _tmax;
+        if (RaySolidSphereIntersectionTest(ray, _thit, _tmax, blobs[i].m_center, blobs[i].radius))
+        {
+            tmin = min(_thit, tmin);
+            tmax = max(_tmax, tmax);
+
+
+
+            nActiveMetaballs = 3;
+
+        }
+    }
+    tmin = max(tmin, RayTMin());
+    tmax = min(tmax, RayTCurrent());
+}
+
+
+
+bool RayMetaballsIntersectionTest(in Ray ray, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
+{
+    Metaball blobs[3];
+    InitializeAnimatedMetaballs(blobs, elapsedTime, 12.0f);
+
+    float tmin, tmax;
+    uint nActiveMetaballs = 0;
+    FindIntersectingMetaballs(ray, tmin, tmax, blobs, nActiveMetaballs);
+
+    uint MAX_STEPS = 128;
+    float t = tmin;
+    float minTStep = (tmax - tmin) / (MAX_STEPS / 1);
+    uint iStep = 0;
+
+    while (iStep++ < MAX_STEPS)
+    {
+        float3 position = ray.origin + t * ray.direction;
+        float fieldPotentials[3];
+        float sumFieldPotential = 0;
+
+
+
+
+
+        for (uint j = 0; j < 3; j++)
+
+        {
+            float distance;
+            fieldPotentials[j] = CalculateMetaballPotential(position, blobs[j], distance);
+            sumFieldPotential += fieldPotentials[j];
+         }
+
+
+
+        const float Threshold = 0.25f;
+
+
+        if (sumFieldPotential >= Threshold)
+        {
+            float3 normal = CalculateMetaballsNormal(position, blobs, nActiveMetaballs);
+            if (IsAValidHit(ray, t, normal))
+            {
+                thit = t;
+                attr.normal = normal;
+                return true;
+            }
+        }
+        t += minTStep;
+    }
+
+    return false;
+}
+
+float GetDistanceFromSignedDistancePrimitive(in float3 position, in SignedDistancePrimitive_Enum sdPrimitive);
+
+
+
+
+float opS(float d1, float d2)
+{
+    return max(d1, -d2);
+}
+
+
+float opU(float d1, float d2)
+{
+    return min(d1, d2);
+}
+
+
+float opI(float d1, float d2)
+{
+    return max(d1, d2);
+}
+
+
+float3 opRep(float3 p, float3 c)
+{
+    return fmod(p, c) - 0.5 * c;
+}
+
+
+
+float smin(float a, float b, float k)
+{
+    float h = clamp(0.5 + 0.5*(b - a) / k, 0.0, 1.0);
+    return lerp(b, a, h) - k * h*(1.0 - h);
+}
+
+
+
+float smax(float a, float b, float k)
+{
+    float h = clamp(0.5 + 0.5*(b - a) / k, 0.0, 1.0);
+    return lerp(a, b, h) + k * h*(1.0 - h);
+}
+
+
+float opBlendU(float d1, float d2)
+{
+    return smin(d1, d2, 0.1);
+}
+
+
+float opBlendI(float d1, float d2)
+{
+    return smax(d1, d2, 0.1);
+}
+
+
+
+float3 opTwist(float3 p)
+{
+    float c = cos(3.0 * p.y);
+    float s = sin(3.0 * p.y);
+    float2x2 m = float2x2(c, -s, s, c);
+    return float3(mul(m, p.xz), p.y);
+}
+
+
+
+
+float sdPlane(float3 p)
+{
+    return p.y;
+}
+
+float sdSphere(float3 p, float s)
+{
+    return length(p) - s;
+}
+
+
+float sdBox(float3 p, float3 b)
+{
+    float3 d = abs(p) - b;
+    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+}
+
+float sdEllipsoid(in float3 p, in float3 r)
+{
+    return (length(p / r) - 1.0) * min(min(r.x, r.y), r.z);
+}
+
+float udRoundBox(float3 p, float3 b, float r)
+{
+    return length(max(abs(p) - b, 0.0)) - r;
+}
+
+
+float sdTorus(float3 p, float2 t)
+{
+    float2 q = float2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
+float sdHexPrism(float3 p, float2 h)
+{
+    float3 q = abs(p);
+    float d1 = q.z - h.y;
+    float d2 = max((q.x * 0.866025 + q.y * 0.5), q.y) - h.x;
+    return length(max(float2(d1, d2), 0.0)) + min(max(d1, d2), 0.);
+}
+
+float sdCapsule(float3 p, float3 a, float3 b, float r)
+{
+    float3 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h) - r;
+}
+
+float sdEquilateralTriangle(in float2 p)
+{
+    const float k = 1.73205;
+    p.x = abs(p.x) - 1.0;
+    p.y = p.y + 1.0 / k;
+    if (p.x + k * p.y > 0.0) p = float2(p.x - k * p.y, -k * p.x - p.y) / 2.0;
+    p.x += 2.0 - 2.0 * clamp((p.x + 2.0) / 2.0, 0.0, 1.0);
+    return -length(p) * sign(p.y);
+}
+
+float sdTriPrism(float3 p, float2 h)
+{
+    float3 q = abs(p);
+    float d1 = q.z - h.y;
+
+
+    float d2 = max(q.x * 0.866025 + p.y * 0.5, -p.y) - h.x * 0.5;
+
+
+
+
+
+    return length(max(float2(d1, d2), 0.0)) + min(max(d1, d2), 0.);
+}
+
+float sdCylinder(float3 p, float2 h)
+{
+    float2 d = abs(float2(length(p.xz), p.y)) - h;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+}
+
+float sdCone(in float3 p, in float3 c)
+{
+    float2 q = float2(length(p.xz), p.y);
+    float d1 = -q.y - c.z;
+    float d2 = max(dot(q, c.xy), q.y);
+    return length(max(float2(d1, d2), 0.0)) + min(max(d1, d2), 0.);
+}
+
+float sdConeSection(in float3 p, in float h, in float r1, in float r2)
+{
+    float d1 = -p.y - h;
+    float q = p.y - h;
+    float si = 0.5 * (r1 - r2) / h;
+    float d2 = max(sqrt(dot(p.xz, p.xz) * (1.0 - si * si)) + q * si - r2, q);
+    return length(max(float2(d1, d2), 0.0)) + min(max(d1, d2), 0.);
+}
+
+
+
+
+
+float sdOctahedron(float3 p, float3 h)
+{
+    float d = 0.0;
+
+
+
+    d = dot(float2(max(abs(p.x), abs(p.z)), abs(p.y)),
+            float2(h.x, h.y));
+
+
+    return d - h.y * h.z;
+}
+
+
+
+
+float sdPyramid(float3 p, float3 h)
+{
+    float octa = sdOctahedron(p, h);
+
+
+    return opS(octa, p.y);
+}
+
+
+float length_toPowNegative6(float2 p)
+{
+    p = p * p * p;
+    p = p * p;
+    return pow(p.x + p.y, 1.0 / 6.0);
+}
+
+float length_toPowNegative8(float2 p)
+{
+    p = p * p; p = p * p; p = p * p;
+    return pow(p.x + p.y, 1.0 / 8.0);
+}
+
+float sdTorus82(float3 p, float2 t)
+{
+    float2 q = float2(length(p.xz) - t.x, p.y);
+    return length_toPowNegative8(q) - t.y;
+}
+
+float sdTorus88(float3 p, float2 t)
+{
+    float2 q = float2(length_toPowNegative8(p.xz) - t.x, p.y);
+    return length_toPowNegative8(q) - t.y;
+}
+
+float sdCylinder6(float3 p, float2 h)
+{
+    return max(length_toPowNegative6(p.xz) - h.x, abs(p.y) - h.y);
+}
+
+float3 sdCalculateNormal(in float3 pos, in SignedDistancePrimitive_Enum sdPrimitive)
+{
+    float2 e = float2(1.0, -1.0) * 0.5773 * 0.0001;
+    return normalize(
+        e.xyy * GetDistanceFromSignedDistancePrimitive(pos + e.xyy, sdPrimitive) +
+        e.yyx * GetDistanceFromSignedDistancePrimitive(pos + e.yyx, sdPrimitive) +
+        e.yxy * GetDistanceFromSignedDistancePrimitive(pos + e.yxy, sdPrimitive) +
+        e.xxx * GetDistanceFromSignedDistancePrimitive(pos + e.xxx, sdPrimitive));
+}
+
+
+
+bool RaySignedDistancePrimitiveTest(in Ray ray, in SignedDistancePrimitive_Enum sdPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float stepScale = 1.0f)
+{
+    const float threshold = 0.0001;
+    float t = RayTMin();
+    const uint MaxSteps = 512;
+
+
+    uint i = 0;
+    while (i++ < MaxSteps && t <= RayTCurrent())
+    {
+        float3 position = ray.origin + t * ray.direction;
+        float distance = GetDistanceFromSignedDistancePrimitive(position, sdPrimitive);
+
+
+        if (distance <= threshold * t)
+        {
+            float3 hitSurfaceNormal = sdCalculateNormal(position, sdPrimitive);
+            if (IsAValidHit(ray, t, hitSurfaceNormal))
+            {
+                thit = t;
+                attr.normal = hitSurfaceNormal;
+                return true;
+            }
+        }
+
+
+
+
+
+        t += stepScale * distance;
+    }
+    return false;
+}
+
+
+
+
+float CheckersTextureBoxFilter(in float2 uv, in float2 dpdx, in float2 dpdy, in uint ratio)
+{
+    float2 w = max(abs(dpdx), abs(dpdy));
+    float2 a = uv + 0.5*w;
+    float2 b = uv - 0.5*w;
+
+
+    float2 i = (floor(a) + min(frac(a)*ratio, 1.0) -
+        floor(b) - min(frac(b)*ratio, 1.0)) / (ratio*w);
+    return (1.0 - i.x)*(1.0 - i.y);
+}
+
+float sdFractalPyramid(in float3 position, float3 h, in float Scale = 2.0f)
+{
+
+    float a = h.z * h.y / h.x;
+    float3 v1 = float3(0, h.z, 0);
+    float3 v2 = float3(-a, 0, a);
+    float3 v3 = float3(a, 0, -a);
+    float3 v4 = float3(a, 0, a);
+    float3 v5 = float3(-a, 0, -a);
+
+    int n = 0;
+    for (n = 0; n < 4; n++)
+    {
+
+        float dist, d;
+        float3 v;
+        v = v1; dist = length_toPow2(position - v1);
+        d = length_toPow2(position - v2); if (d < dist) { v = v2; dist = d; }
+        d = length_toPow2(position - v3); if (d < dist) { v = v3; dist = d; }
+        d = length_toPow2(position - v4); if (d < dist) { v = v4; dist = d; }
+        d = length_toPow2(position - v5); if (d < dist) { v = v5; dist = d; }
+
+
+        position = Scale * position - v * (Scale - 1.0);
+    }
+    float distance = sdPyramid(position, h);
+
+
+    return distance * pow(Scale, float(-n));
+}
+
+
+
+
+bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive_Enum analyticPrimitive, out float thit, out ProceduralPrimitiveAttributes attr)
+{
+    float3 aabb[2] = {
+        float3(-1,-1,-1),
+        float3(1,1,1)
+    };
+    float tmax;
+
+    switch (analyticPrimitive)
+    {
+    case AnalyticPrimitive::AABB: return RayAABBIntersectionTest(ray, aabb, thit, attr);
+    case AnalyticPrimitive::Spheres: return RaySpheresIntersectionTest(ray, thit, attr);
+    default: return false;
+    }
+}
+
+
+
+bool RayVolumetricGeometryIntersectionTest(in Ray ray, in VolumetricPrimitive_Enum volumetricPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
+{
+    switch (volumetricPrimitive)
+    {
+    case VolumetricPrimitive_Metaballs: return RayMetaballsIntersectionTest(ray, thit, attr, elapsedTime);
+    default: return false;
+    }
+}
+
+
+
+
+
+float GetDistanceFromSignedDistancePrimitive(in float3 position, in SignedDistancePrimitive_Enum signedDistancePrimitive)
+{
+    switch (signedDistancePrimitive)
+    {
+    case SignedDistancePrimitive::MiniSpheres:
+        return opI(sdSphere(opRep(position + 1, (float3) 2/4), 0.65 / 4), sdBox(position, (float3)1));
+
+    case SignedDistancePrimitive::IntersectedRoundCube:
+        return opS(opS(udRoundBox(position, (float3) 0.75, 0.2), sdSphere(position, 1.20)), -sdSphere(position, 1.32));
+
+    case SignedDistancePrimitive::SquareTorus:
+        return sdTorus82(position, float2(0.75, 0.15));
+
+    case SignedDistancePrimitive::TwistedTorus:
+        return sdTorus(opTwist(position), float2(0.6, 0.2));
+
+    case SignedDistancePrimitive::Cog:
+        return opS( sdTorus82(position, float2(0.60, 0.3)),
+                    sdCylinder(opRep(float3(atan2(position.z, position.x) / 6.2831,
+                                            1,
+                                            0.015 + 0.25 * length(position)) + 1,
+                                     float3(0.05, 1, 0.075)),
+                               float2(0.02, 0.8)));
+
+    case SignedDistancePrimitive::Cylinder:
+        return opI(sdCylinder(opRep(position + float3(1, 1, 1), float3(1, 2, 1)), float2(0.3, 2)),
+                   sdBox(position + float3(1, 1, 1), float3(2, 2, 2)));
+
+    case SignedDistancePrimitive::FractalPyramid:
+
+
+         return sdFractalPyramid(position + float3(0, 1, 0), float3(0.894, 0.447, 2.0), 2.0f);
+
+    default: return 0;
+    }
+}
+
+// ShaderResourceGroup
+
+ShaderResourceGroupSemantic RaySemantic
+{
+    FrequencyId = 0u;
+};
+
+ShaderResourceGroup RaySRG : RaySemantic
+{
+    RaytracingAccelerationStructure g_scene;                                      // : register(t0, space0);
+    RWTexture2D<float4> g_renderTarget;                                           // : register(u0);
+    ConstantBuffer<SceneConstantBuffer> g_sceneCB;                                // : register(b0);
+    ByteAddressBuffer g_indices;                                                  // : register(t1, space0);
+    StructuredBuffer<Vertex> g_vertices;                                          // : register(t2, space0);
+    StructuredBuffer<PrimitiveInstancePerFrameBuffer> g_AABBPrimitiveAttributes;  // : register(t3, space0);
+    ConstantBuffer<PrimitiveConstantBuffer> l_materialCB;                         // : register(b1);
+    ConstantBuffer<PrimitiveInstanceConstantBuffer> l_aabbCB;                     // : register(b2);
+};
+
+
+
+
+float CalculateDiffuseCoefficient(in float3 hitPosition, in float3 incidentLightRay, in float3 normal)
+{
+    float fNDotL = saturate(dot(-incidentLightRay, normal));
+    return fNDotL;
+}
+
+
+float4 CalculateSpecularCoefficient(in float3 hitPosition, in float3 incidentLightRay, in float3 normal, in float specularPower)
+{
+    float3 reflectedLightRay = normalize(reflect(incidentLightRay, normal));
+    return pow(saturate(dot(reflectedLightRay, normalize (-WorldRayDirection()))), specularPower);
+}
+
+
+
+float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow, in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
+{
+    float3 hitPosition = HitWorldPosition();
+    float3 lightPosition = g_sceneCB.lightPosition.xyz;
+    float shadowFactor = isInShadow ? InShadowRadiance : 1.0;
+    float3 incidentLightRay = normalize(hitPosition - lightPosition);
+
+
+    float4 lightDiffuseColor = g_sceneCB.lightDiffuseColor;
+    float Kd = CalculateDiffuseCoefficient(hitPosition, incidentLightRay, normal);
+    float4 diffuseColor = shadowFactor * diffuseCoef * Kd * lightDiffuseColor * albedo;
+
+
+    float4 specularColor = float4(0, 0, 0, 0);
+    if (!isInShadow)
+    {
+        float4 lightSpecularColor = float4(1, 1, 1, 1);
+        float4 Ks = CalculateSpecularCoefficient(hitPosition, incidentLightRay, normal, specularPower);
+        specularColor = specularCoef * Ks * lightSpecularColor;
+    }
+
+
+
+    float4 ambientColor = g_sceneCB.lightAmbientColor;
+    float4 ambientColorMin = g_sceneCB.lightAmbientColor - 0.1;
+    float4 ambientColorMax = g_sceneCB.lightAmbientColor;
+    float a = 1 - saturate(dot(normal, float3(0, -1, 0)));
+    ambientColor = albedo * lerp(ambientColorMin, ambientColorMax, a);
+
+    return ambientColor + diffuseColor + specularColor;
+}
+
+
+
+
+
+
+float4 TraceRadianceRay(in Ray ray, in uint currentRayRecursionDepth)
+{
+    if (currentRayRecursionDepth >= 3)
+    {
+        return float4(0, 0, 0, 0);
+    }
+
+
+    RayDesc rayDesc;
+    rayDesc.Origin = ray.origin;
+    rayDesc.Direction = ray.direction;
+
+
+    rayDesc.TMin = 0;
+    rayDesc.TMax = 10000;
+    RayPayload rayPayload = { float4(0, 0, 0, 0), currentRayRecursionDepth + 1 };
+    TraceRay(g_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+        TraceRayParameters_InstanceMask,
+        TraceRayParameters_HitGroup_Offset[RayType_Radiance],
+        TraceRayParameters_HitGroup_GeometryStride,
+        TraceRayParameters_MissShader_Offset[RayType_Radiance],
+        rayDesc, rayPayload);
+
+    return rayPayload.color;
+}
+
+
+bool TraceShadowRayAndReportIfHit(in Ray ray, in uint currentRayRecursionDepth)
+{
+    if (currentRayRecursionDepth >= 3)
+    {
+        return false;
+    }
+
+
+    RayDesc rayDesc;
+    rayDesc.Origin = ray.origin;
+    rayDesc.Direction = ray.direction;
+
+
+    rayDesc.TMin = 0;
+    rayDesc.TMax = 10000;
+
+
+
+
+    ShadowRayPayload shadowPayload = { true };
+    TraceRay(g_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES
+        | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH
+        | RAY_FLAG_FORCE_OPAQUE
+        | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+        TraceRayParameters_InstanceMask,
+        TraceRayParameters_HitGroup_Offset[RayType_Shadow],
+        TraceRayParameters_HitGroup_GeometryStride,
+        TraceRayParameters_MissShader_Offset[RayType_Shadow],
+        rayDesc, shadowPayload);
+
+    return shadowPayload.hit;
+}
+
+
+
+
+
+[shader("raygeneration")]
+void MyRaygenShader()
+{
+
+    Ray ray = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+
+
+    uint currentRecursionDepth = 0;
+    float4 color = TraceRadianceRay(ray, currentRecursionDepth);
+
+
+    g_renderTarget[DispatchRaysIndex().xy] = color;
+}
+
+
+
+
+
+[shader("closesthit")]
+void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangleIntersectionAttributes attr)
+{
+
+    uint indexSizeInBytes = 2;
+    uint indicesPerTriangle = 3;
+    uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
+    uint baseIndex = PrimitiveIndex() * triangleIndexStride;
+
+
+    const uint3 indices_ = Load3x16BitIndices(baseIndex, g_indices);
+
+
+    float3 triangleNormal = g_vertices[indices_[0]].normal;
+
+
+
+
+
+
+    float3 hitPosition = HitWorldPosition();
+    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+    float checkers = AnalyticalCheckersTexture(HitWorldPosition(), triangleNormal, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+
+
+    float4 reflectedColor = float4(0, 0, 0, 0);
+    if (l_materialCB.reflectanceCoef > 0.001 )
+    {
+
+        Ray reflectionRay = { HitWorldPosition(), reflect(WorldRayDirection(), triangleNormal) };
+        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), triangleNormal, l_materialCB.albedo.xyz);
+        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+    }
+
+
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, triangleNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 color = checkers * (phongColor + reflectedColor);
+
+
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*t*t*t));
+
+    rayPayload.color = color;
+}
+
+[shader("closesthit")]
+void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
+{
+
+
+
+
+
+    float3 hitPosition = HitWorldPosition();
+    Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
+    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+
+
+    float4 reflectedColor = float4(0, 0, 0, 0);
+    if (l_materialCB.reflectanceCoef > 0.001)
+    {
+
+        Ray reflectionRay = { HitWorldPosition(), reflect(WorldRayDirection(), attr.normal) };
+        float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+        reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
+    }
+
+
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 color = phongColor + reflectedColor;
+
+
+    float t = RayTCurrent();
+    color = lerp(color, BackgroundColor, 1.0 - exp(-0.000002*t*t*t));
+
+    rayPayload.color = color;
+}
+
+
+
+
+
+[shader("miss")]
+void MyMissShader(inout RayPayload rayPayload)
+{
+    float4 backgroundColor = float4(BackgroundColor);
+    rayPayload.color = backgroundColor;
+}
+
+[shader("miss")]
+void MyMissShader_ShadowRay(inout ShadowRayPayload rayPayload)
+{
+    rayPayload.hit = false;
+}
+
+
+
+
+
+
+Ray GetRayInAABBPrimitiveLocalSpace()
+{
+    PrimitiveInstancePerFrameBuffer attr = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+
+
+
+    Ray ray;
+    ray.origin = mul(float4(ObjectRayOrigin(), 1), attr.bottomLevelASToLocalSpace).xyz;
+    ray.direction = mul(ObjectRayDirection(), (float3x3) attr.bottomLevelASToLocalSpace);
+    return ray;
+}
+
+[shader("intersection")]
+void MyIntersectionShader_AnalyticPrimitive()
+{
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    AnalyticPrimitive_Enum primitiveType = (AnalyticPrimitive_Enum) l_aabbCB.primitiveType;
+
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RayAnalyticGeometryIntersectionTest(localRay, primitiveType, thit, attr))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+        ReportHit(thit, 0, attr);
+    }
+}
+
+[shader("intersection")]
+void MyIntersectionShader_VolumetricPrimitive()
+{
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    VolumetricPrimitive_Enum primitiveType = (VolumetricPrimitive_Enum) l_aabbCB.primitiveType;
+
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+        ReportHit(thit, 0, attr);
+    }
+}
+
+[shader("intersection")]
+void MyIntersectionShader_SignedDistancePrimitive()
+{
+    Ray localRay = GetRayInAABBPrimitiveLocalSpace();
+    SignedDistancePrimitive_Enum primitiveType = (SignedDistancePrimitive_Enum) l_aabbCB.primitiveType;
+
+    float thit;
+    ProceduralPrimitiveAttributes attr;
+    if (RaySignedDistancePrimitiveTest(localRay, primitiveType, thit, attr, l_materialCB.stepScale))
+    {
+        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+        attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
+        attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
+
+        ReportHit(thit, 0, attr);
+    }
+}

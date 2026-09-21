@@ -1,0 +1,17 @@
+// Error: Option (Samples) must specify a numeric const minimum for its range maximum!
+[[range(1, "8")]]
+option int Samples = 5;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Emitter Error 262: Option (optionName) must specify a numeric const for its range's maximum!
+// #EC 262

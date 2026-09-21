@@ -1,0 +1,8 @@
+
+float3 main() : COLOR0
+{
+   {
+      ;
+   }
+   return (float3)0;
+}

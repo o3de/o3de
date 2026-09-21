@@ -1,0 +1,117 @@
+ShaderResourceGroupSemantic F1{FrequencyId = 1;};
+ShaderResourceGroupSemantic F2{FrequencyId = 2;};
+
+ShaderResourceGroup Srg1 : F1
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+        //enum class SpecMode { Gloss, Rough } m_spec;
+    };
+    
+    TextureCube m_environmentMap;
+    Sampler     m_sampler1 {};
+    Sampler     m_sampler2 {AddressU = Mirror;};
+    ConstantBuffer<InnerStruct> m_materialConstants;
+	float4      m_meshDisplacement;
+    StructuredBuffer<InnerStruct> m_extendedMaterials;
+};
+
+static const sampler s1samp = Srg1::m_sampler1;
+static const TextureCube s1env = Srg1::m_environmentMap;
+
+ShaderResourceGroup Srg2 : F2
+{
+    TextureCube  m_diffuseIBL;
+    Sampler      m_IBLsampler {};
+    column_major float3x3 m_inverseTranspose;
+                 float3x3 m_world;
+};
+
+////////// VS //////////
+struct Vertex
+{ 
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float2 m_uv : TEXCOORD0;
+};
+
+float AccessSeed()
+{
+    return Srg1::m_extendedMaterials[0].m_diffuseColor.r;
+}
+
+class Random
+{
+    float cur;
+    void Next();
+    void Init() { cur = AccessSeed(); Next(); }
+    void Next()
+    {
+        //Init(); // recursion cycle
+        Srg2::m_world[0][0];
+        cur += 1;
+    }
+};
+
+float WaveNoise(float seed = AccessSeed())
+{
+    return seed * 356;
+}
+
+/// uncomment to activate a recursion cycle.
+//void ApplyDisplacementManualSeed(inout float3 pos, float seed);
+
+void ApplyDisplacement(inout float3 pos)
+{
+    pos += WaveNoise();  // adds a dependency on m_extendedMaterials
+    pos += Srg1::m_meshDisplacement.xyz;
+    //ApplyDisplacementManualSeed(pos, pos.x);
+}
+
+void ApplyDisplacementManualSeed(inout float3 pos, float seed)
+{
+    pos += WaveNoise(seed);  // ?
+    pos += Srg1::m_meshDisplacement.xyz;
+    //ApplyDisplacement(pos);
+}
+
+// VERTEX ENTRY
+Vertex MainVS(Vertex input, uint vtxIndex : SV_VertexID)
+{
+    Vertex o     = input;
+    o.m_position = mul(Srg2::m_world,            o.m_position);
+    o.m_normal   = mul(Srg2::m_inverseTranspose, o.m_normal);
+    ApplyDisplacement(o.m_position);
+    Random r;
+    r.Init();
+    return input;
+}
+
+////////// PS //////////
+
+float4 GetDiffuseIBL(float3 dir)
+{
+    return Srg2::m_diffuseIBL.Sample(Srg2::m_IBLsampler, dir);
+}
+
+// PIXEL ENTRY
+float4 MainPS(Vertex fromVS) : SV_Target0
+{
+    float3 pos = fromVS.m_position;
+    float3 doubledisplaced = pos;
+    ApplyDisplacementManualSeed(doubledisplaced, 1.0);
+    float3 normal = normalize(fromVS.m_normal);
+    float4 ibl = GetDiffuseIBL(normal);
+    return ibl * Srg1::m_materialConstants.m_diffuseColor + s1env.Sample(s1samp, fromVS.m_normal);
+}
+
+// overloads can't be candidate:
+void over(int)
+{
+    Srg1::m_materialConstants.m_diffuseColor;
+}
+void over(half)
+{
+    Srg1::m_materialConstants.m_diffuseColor;
+}

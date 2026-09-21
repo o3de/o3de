@@ -1,0 +1,24 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+    };
+    
+    ConstantBuffer<GlobalStruct> m_materialConstants; 
+};
+
+struct GlobalStruct
+{
+    float4 m_diffuseColor;
+};
+
+// (13): Warning: unidentified name GlobalStruct in type expression
+// (13): Warning: variable type ConstantBuffer<GlobalStruct> not understood. (for variable m_materialConstants)
+// Semantic Error 26: line 13::33 'ConstantBuffer<T>'s generic type GlobalStruct must be user defined, but seen as IsNotType'
+// #EC 26

@@ -1,0 +1,2 @@
+// some commented code
+void SomeFunc(sometype someparam /* inline comment */ );

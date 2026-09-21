@@ -1,0 +1,13 @@
+ShaderResourceGroupSemantic UpdateFrequency
+{
+    FrequencyId = 0;
+};
+
+// [Atom-614]
+ShaderResourceGroup ThatHasSRGConstants : UpdateFrequency
+{
+    int      m_srgConstInteger;
+	float4   m_srgConstFloat4;
+	int32_t  m_srgConstInteger32;
+	uint64_t m_srgConstUnsignedInteger64;
+};

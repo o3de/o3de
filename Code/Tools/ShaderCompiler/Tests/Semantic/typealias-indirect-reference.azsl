@@ -1,0 +1,35 @@
+class Scope
+{
+    typealias Bateau = float;
+
+    Bateau m_intensity;
+};
+
+void Func()
+{
+    typealias Barque = Scope::Bateau;
+
+    //vector<Barque,3> color;  // [TODO-GFX][ATOM-2228] syntax fail for now
+    Barque r,g,b;
+}
+
+typedef typeof(Func)::Barque Raft;   // check out README.md for the change incurred here by release 1.5
+
+class C
+{
+    typedef Raft Flottant;
+
+    void M()
+    {
+        //matrix<Flottant,1,2> mm;  // [TODO-GFX][ATOM-2228]
+        Flottant mm11,mm12;
+
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(typeof(Flottant), __azslc_prtsym_fully_qualified);
+        __azslc_print_message(" == '?float'\n");
+
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(typeof(mm11), __azslc_prtsym_fully_qualified);
+        __azslc_print_message(" == '?float'\n");
+    }
+};

@@ -1,0 +1,9 @@
+ShaderResourceGroupSemantic sem { FrequencyId = 0; };
+ShaderResourceGroup SRG : sem
+{
+    int Get();
+};
+
+int SRG::Get()
+{
+}

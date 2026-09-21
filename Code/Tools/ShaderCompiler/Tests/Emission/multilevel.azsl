@@ -1,0 +1,25 @@
+static const int global_;
+
+struct S
+{
+    struct Sub
+    {
+        float4 multilevel;
+    };
+};   // jump 2 levels down without intermediary symbols.  /S/Sub/multilevel -> /F
+
+void F()
+{}
+void G()
+{}
+
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup SRG : freq
+{
+    static const int MaxCount = 2;
+    struct S2
+    {
+        Texture2D cascades[MaxCount];  // if the stack system is broken during dependency declaration, this wouldn't emit in the right order
+    };
+}

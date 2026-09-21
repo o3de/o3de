@@ -1,0 +1,14 @@
+interface I
+{
+};
+
+class A : I
+{
+};
+
+class B : A, I
+{
+};
+
+// DXC complains with warning: direct base '::I' is inaccessible due to ambiguity: B -> ::A -> ::I
+// but azslc tolerates that input

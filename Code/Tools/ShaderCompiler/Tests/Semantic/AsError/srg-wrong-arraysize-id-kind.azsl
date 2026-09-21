@@ -1,0 +1,12 @@
+int func();
+
+ShaderResourceGroupSemantic freq1
+{
+    FrequencyId = 1;
+};
+ShaderResourceGroup MySRG : freq1
+{
+    Buffer<float4> stuff[func];  // (6): in array dimension specifier: did not refer to a variable but to a Function
+};
+
+// TODO
