@@ -56,13 +56,6 @@ function(o3de_register_3rdparty_root)
     return(PROPAGATE O3DE_3RDPARTY_ROOTS CMAKE_MODULE_PATH CMAKE_PREFIX_PATH)
 endfunction()
 
-#! Map a compatibility target name to the package folder that exports it.
-# The target name omits the implicit 3rdParty:: prefix. Components are preserved.
-# This only registers the lookup. The recipe creates the actual target alias.
-function(o3de_register_3rdparty_alias target package)
-    set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_PACKAGE_3rdParty::${target}" "${package}")
-endfunction()
-
 # A local Find module owns its acquisition strategy.
 # Associations are the fallback for modules outside the registered source roots.
 function(o3de_find_3rdparty_package package)
@@ -605,8 +598,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
-# Keep source-provider discovery with third-party search-path initialization.
-include(${CMAKE_CURRENT_LIST_DIR}/3rdParty/LegacyAliases.cmake)
 o3de_register_3rdparty_root("${LY_ROOT_FOLDER}/Code/3rdParty")
 
 if(NOT INSTALLED_ENGINE)
