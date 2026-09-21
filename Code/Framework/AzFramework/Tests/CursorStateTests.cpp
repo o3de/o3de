@@ -48,14 +48,15 @@ namespace UnitTest
 
         EXPECT_THAT(m_cursorState.CursorDelta(), Eq(ScreenVector(5, 12)));
     }
-    TEST_F(CursorStateFixture, CursorStateCapturedRoundTrips)
+
+    TEST_F(CursorStateFixture, CursorStateTracksCapturedState)
     {
-        EXPECT_THAT(m_cursorState.Captured(), ::testing::IsFalse());
+        EXPECT_THAT(m_cursorState.IsCaptured(), ::testing::IsFalse());
 
         m_cursorState.SetCaptured(true);
-        EXPECT_THAT(m_cursorState.Captured(), ::testing::IsTrue());
+        EXPECT_THAT(m_cursorState.IsCaptured(), ::testing::IsTrue());
 
         m_cursorState.SetCaptured(false);
-        EXPECT_THAT(m_cursorState.Captured(), ::testing::IsFalse());
+        EXPECT_THAT(m_cursorState.IsCaptured(), ::testing::IsFalse());
     }
 } // namespace UnitTest

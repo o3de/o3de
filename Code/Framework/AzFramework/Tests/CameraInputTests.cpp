@@ -657,7 +657,6 @@ namespace UnitTest
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
             AzFramework::ModifierKeyStates{} });
 
-        // several motion events arrive before the camera steps (high polling rate devices), none may be dropped
         const int halfDelta = PixelMotionDelta90Degrees / 2;
         HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
         HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
@@ -671,14 +670,12 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, MotionDeltasAreUsedInsteadOfCursorPositionWhileCursorIsCaptured)
     {
-        // cursor positions are preferred (default), but not while the cursor is captured as it is then pinned in place
         AzFramework::ed_cameraSystemUseCursor = true;
 
         HandleEventAndUpdate(AzFramework::InputState{
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
             AzFramework::ModifierKeyStates{} });
 
-        // the cursor reports the same (captured) position every frame while the motion deltas carry the movement
         HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 }, true },
                                              AzFramework::ModifierKeyStates{} });
         HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ PixelMotionDelta90Degrees },
