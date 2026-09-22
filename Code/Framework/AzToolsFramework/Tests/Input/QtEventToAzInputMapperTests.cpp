@@ -222,6 +222,39 @@ namespace UnitTest
         EXPECT_THAT(movementValues, ::testing::ElementsAre(5.0f, -7.0f));
     }
 
+    TEST_F(QtEventToAzInputMapperFixture, MouseMoveFromAnotherWidgetIsForwardedWhenSourceWidgetIsHit)
+    {
+        m_rootWidget->show();
+        QApplication::processEvents();
+
+        QWidget otherWidget;
+        const QPoint localPosition(100, 100);
+        const QPoint globalPosition = m_rootWidget->mapToGlobal(localPosition);
+        ASSERT_EQ(QApplication::widgetAt(globalPosition), m_rootWidget.get());
+
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+
+        QMouseEvent mouseMoveEvent(
+            QEvent::MouseMove,
+            QPointF(localPosition),
+            QPointF(globalPosition),
+            Qt::NoButton,
+            Qt::NoButton,
+            Qt::NoModifier);
+
+        m_inputChannelMapper->eventFilter(&otherWidget, &mouseMoveEvent);
+
+        EXPECT_EQ(m_azCursorPositions.size(), 1);
+        if (m_azCursorPositions.size() == 1)
+        {
+            EXPECT_TRUE(m_azCursorPositions[0].m_normalizedPosition.IsClose(AZ::Vector2(
+                aznumeric_cast<float>(localPosition.x()) / aznumeric_cast<float>(WidgetSize.width()),
+                aznumeric_cast<float>(localPosition.y()) / aznumeric_cast<float>(WidgetSize.height()))));
+        }
+
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
     // Qt event forwarding through the internal signal handler test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
     {

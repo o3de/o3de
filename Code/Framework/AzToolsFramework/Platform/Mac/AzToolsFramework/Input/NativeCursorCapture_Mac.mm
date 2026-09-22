@@ -39,6 +39,12 @@ namespace AzToolsFramework
         ~NativeCursorCaptureMac() override
         {
             End();
+
+            // Retry a failed restoration before the last recovery opportunity is lost.
+            if (!s_activeCapture)
+            {
+                SetCursorAssociated(true);
+            }
         }
 
         bool Begin() override
@@ -73,21 +79,16 @@ namespace AzToolsFramework
 
         void End() override
         {
-            if (!m_active)
+            if (m_active)
             {
-                return;
+                ClearActiveCapture();
             }
 
-            m_active = false;
-
-            if (auto* dispatcher = QAbstractEventDispatcher::instance())
+            // Inactive owners may retry a restoration that failed during an earlier End call.
+            if (!s_activeCapture)
             {
-                dispatcher->removeNativeEventFilter(this);
+                SetCursorAssociated(true);
             }
-
-            AZ_Assert(s_activeCapture == this, "The active native cursor capture owner changed unexpectedly");
-            s_activeCapture = nullptr;
-            SetCursorAssociated(true);
         }
 
         bool IsActive() const override
@@ -135,9 +136,10 @@ namespace AzToolsFramework
                     {
                         SetCursorAssociated(true);
                     }
-                    else if (nsEvent.subtype == NSEventSubtypeApplicationActivated && s_activeCapture)
+                    else if (nsEvent.subtype == NSEventSubtypeApplicationActivated && !SetCursorAssociated(false))
                     {
-                        SetCursorAssociated(false);
+                        // Fall back to cursor warping if native capture cannot be restored.
+                        ClearActiveCapture();
                     }
                 }
                 break;
@@ -149,6 +151,19 @@ namespace AzToolsFramework
         }
 
     private:
+        void ClearActiveCapture()
+        {
+            m_active = false;
+
+            if (auto* dispatcher = QAbstractEventDispatcher::instance())
+            {
+                dispatcher->removeNativeEventFilter(this);
+            }
+
+            AZ_Assert(s_activeCapture == this, "The active native cursor capture owner changed unexpectedly");
+            s_activeCapture = nullptr;
+        }
+
         static bool SetCursorAssociated(const bool associated)
         {
             if (associated == s_cursorAssociated)

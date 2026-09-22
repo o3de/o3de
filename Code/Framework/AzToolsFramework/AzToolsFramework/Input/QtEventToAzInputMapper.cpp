@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 
-#include <AzCore/PlatformDef.h>
 #include <AzCore/std/math.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -269,9 +268,10 @@ namespace AzToolsFramework
     {
         if (mode != m_cursorMode)
         {
-            if (mode == CursorInputMode::CursorModeCaptured && m_nativeCursorCapture && !m_nativeCursorCapture->Begin())
+            if (mode == CursorInputMode::CursorModeCaptured && m_nativeCursorCapture)
             {
-                return;
+                // Begin failure leaves native capture inactive, so mouse moves use cursor warping.
+                m_nativeCursorCapture->Begin();
             }
 
             m_cursorMode = mode;
@@ -341,8 +341,7 @@ namespace AzToolsFramework
                 });
         }
 
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-        // Qt may deliver hover moves over a native viewport to another QWidget on macOS.
+        // Qt may deliver hover moves over a native viewport to another QWidget.
         // Forward them when hit testing still resolves to the source widget.
         if (eventType == QEvent::Type::MouseMove && object != m_sourceWidget)
         {
@@ -360,8 +359,6 @@ namespace AzToolsFramework
 
             return false;
         }
-#endif // AZ_TRAIT_OS_PLATFORM_APPLE
-
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
