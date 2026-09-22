@@ -16,12 +16,10 @@
 namespace ${GemName}
 {
     /*
-     * AZ_COMPONENT_IMPL provides the static type information and UUID registration for
-     * the editor component. This UUID must differ from the runtime component's UUID.
-     * The editor component and runtime component are separate types with separate identities
-     * in the serialization system.
+     * Unlike the base component, we only need the AZ_EDITOR_COMPONENT in the header for
+     * Editor Components. The editor component's UUID (set in the header) must differ from
+     * the runtime component's UUID.
      */
-    AZ_COMPONENT_IMPL(Editor${SanitizedCppName}SystemComponent, "Editor${SanitizedCppName}SystemComponent", "{${Random_Uuid}}");
 
     /*
      * Reflect registers the editor component with O3DE's reflection contexts.
