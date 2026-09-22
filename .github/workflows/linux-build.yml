@@ -232,7 +232,7 @@ jobs:
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
           LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
-          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
+          LY_PACKAGE_SERVER_URLS: "https://dev.packages.o3debinaries.org;https://prod.packages.o3debinaries.org"
         run: |
           export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
           export DISPLAY=:0
