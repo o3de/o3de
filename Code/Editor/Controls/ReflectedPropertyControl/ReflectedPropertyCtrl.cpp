@@ -601,9 +601,9 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
         SCustomPopupMenu* pMenuInfo = &m_customPopupMenuPopups[j];
         QMenu* pSubMenu = menu.addMenu(pMenuInfo->m_text);
 
-        for (UINT k = 0; k < static_cast<UINT>(pMenuInfo->m_subMenuText.size()); ++k)
+        for (unsigned int k = 0; k < static_cast<unsigned int>(pMenuInfo->m_subMenuText.size()); ++k)
         {
-            const UINT uID = ePPA_CustomPopupBase + ePPA_CustomPopupBase * j + k;
+            const unsigned int uID = ePPA_CustomPopupBase + ePPA_CustomPopupBase * j + k;
             QAction *action = pSubMenu->addAction(pMenuInfo->m_subMenuText[k]);
             action->setData(uID);
         }

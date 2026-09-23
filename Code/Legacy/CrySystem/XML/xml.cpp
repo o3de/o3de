@@ -31,7 +31,7 @@
 size_t CSimpleStringPool::g_nTotalAllocInXmlStringPools = 0;
 
 //////////////////////////////////////////////////////////////////////////
-static int __cdecl ascii_stricmp(const char* dst, const char* src)
+static int AZ_CDECL ascii_stricmp(const char* dst, const char* src)
 {
     int f, l;
     do

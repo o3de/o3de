@@ -41,58 +41,9 @@
 
 #include <AzCore/base.h>
 
-typedef void*                               LPVOID;
-#define VOID                    void
-#define PVOID                               void*
-
-typedef unsigned int UINT;
-typedef char CHAR;
-typedef float FLOAT;
-
 #define PHYSICS_EXPORTS
-// MSVC compiler-specific keywords
-#define __forceinline inline
-#define _inline inline
-#define __cdecl
-#define _cdecl
-#define __stdcall
-#define _stdcall
-#define __fastcall
-#define _fastcall
-#define IN
-#define OUT
-
-#ifdef AZ_MONOLITHIC_BUILD
-#if !defined(USE_STATIC_NAME_TABLE)
-#define USE_STATIC_NAME_TABLE 1
-#endif
-#endif // AZ_MONOLITHIC_BUILD
-
-#if !defined(_STLP_HASH_MAP) && !defined(USING_STLPORT)
-#define _STLP_HASH_MAP 1
-#endif
-
-// Enable memory address tracing code.
-#if !defined(MM_TRACE_ADDRS) // && !defined(NDEBUG)
-#define MM_TRACE_ADDRS 1
-#endif
-
-#ifndef STDMETHODCALLTYPE_DEFINED
-#define STDMETHODCALLTYPE_DEFINED
-#define STDMETHODCALLTYPE
-#endif
 
 #define _PACK __attribute__ ((packed))
-
-#define MAKEWORD(a, b)      ((AZ::u16)(((AZ::u8)((AZ::u64)(a) & 0xff)) | ((AZ::u16)((AZ::u8)((AZ::u64)(b) & 0xff))) << 8))
-#define MAKELONG(a, b)      ((AZ::s32)(((AZ::u16)((AZ::u64)(a) & 0xffff)) | ((AZ::u32)((AZ::u16)((AZ::u64)(b) & 0xffff))) << 16))
-#define LOWORD(l)           ((AZ::u16)((AZ::u64)(l) & 0xffff))
-#define HIWORD(l)           ((AZ::u16)((AZ::u64)(l) >> 16))
-#define LOBYTE(w)           ((AZ::u8)((AZ::u64)(w) & 0xff))
-#define HIBYTE(w)           ((AZ::u8)((AZ::u64)(w) >> 8))
-
-#define CALLBACK
-#define WINAPI
 
 #ifndef __cplusplus
 #ifndef _WCHAR_T_DEFINED
@@ -101,27 +52,12 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif
 #endif
-typedef wchar_t WCHAR;    // wc,   16-bit UNICODE character
-typedef WCHAR* PWCHAR;
-typedef WCHAR* LPWCH, * PWCH;
-typedef const WCHAR* LPCWCH, * PCWCH;
-typedef WCHAR* NWPSTR;
-typedef WCHAR* LPWSTR, * PWSTR;
-typedef WCHAR* LPUWSTR, * PUWSTR;
-
-typedef const WCHAR* LPCWSTR, * PCWSTR;
-typedef const WCHAR* LPCUWSTR, * PCUWSTR;
-
-typedef LPCWSTR LPCTSTR;
-typedef LPWSTR LPTSTR;
-typedef char TCHAR;
-
 typedef AZ::u32 COLORREF;
 #define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((AZ::u16)((BYTE)(g))<<8))|(((AZ::u32)(BYTE)(b))<<16)))
 
-#define GetRValue(rgb)  (LOBYTE(rgb))
-#define GetGValue(rgb)  (LOBYTE(((AZ::u16)(rgb)) >> 8))
-#define GetBValue(rgb)  (LOBYTE((rgb)>>16))
+#define GetRValue(rgb)  ((AZ::u8)((AZ::u64)(rgb) & 0xff))
+#define GetGValue(rgb)  ((AZ::u8)((AZ::u64)(((AZ::u16)(rgb)) >> 8) & 0xff))
+#define GetBValue(rgb)  ((AZ::u8)((AZ::u64)(rgb) & 0xff))
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                \
     ((AZ::u32)(BYTE)(ch0) | ((AZ::u32)(BYTE)(ch1) << 8) | \

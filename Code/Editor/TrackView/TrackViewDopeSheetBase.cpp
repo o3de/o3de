@@ -3292,7 +3292,7 @@ void CTrackViewDopeSheetBase::SetTickDisplayMode(ETVTickMode mode)
     SetTimeScale(GetTimeScale(), 0); // for refresh
 }
 
-void CTrackViewDopeSheetBase::SetSnapFPS(UINT fps)
+void CTrackViewDopeSheetBase::SetSnapFPS(unsigned int fps)
 {
     m_snapFrameTime = (fps == 0) ? 0.033333f : (1.0f / float(fps));
 }

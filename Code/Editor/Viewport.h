@@ -474,8 +474,8 @@ protected:
     virtual void OnMButtonUp(Qt::KeyboardModifiers, const QPoint&) {}
     virtual void OnLButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
     virtual void OnRButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
-    virtual void OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
-    virtual void OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
+    virtual void OnKeyDown([[maybe_unused]] unsigned int nChar, [[maybe_unused]] unsigned int nRepCnt, [[maybe_unused]] unsigned int nFlags) {}
+    virtual void OnKeyUp([[maybe_unused]] unsigned int nChar, [[maybe_unused]] unsigned int nRepCnt, [[maybe_unused]] unsigned int nFlags) {}
     void OnSetCursor();
 
     virtual void BuildDragDropContext(

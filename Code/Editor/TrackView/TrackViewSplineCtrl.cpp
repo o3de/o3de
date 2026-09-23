@@ -866,7 +866,7 @@ void CTrackViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float 
     update();
 }
 
-void CTrackViewSplineCtrl::OnUserCommand(UINT cmd)
+void CTrackViewSplineCtrl::OnUserCommand(unsigned int cmd)
 {
     if (cmd == ID_TANGENT_UNIFY)
     {

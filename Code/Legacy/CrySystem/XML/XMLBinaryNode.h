@@ -12,7 +12,7 @@
 #include "XMLBinaryHeaders.h"
 
 // Compare function for string comparison, can be strcmp or _stricmp
-typedef int (__cdecl * XmlStrCmpFunc)(const char* str1, const char* str2);
+typedef int (AZ_CDECL * XmlStrCmpFunc)(const char* str1, const char* str2);
 extern XmlStrCmpFunc g_pXmlStrCmp;
 
 class CBinaryXmlNode;
