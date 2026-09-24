@@ -24,10 +24,10 @@
 
 AZ_CVAR(
     bool, bg_octreeRuntimeDebugDraw, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, DebugDrawOctreeComponent draws the visibility octree node bounds (orange) every frame");
+    "Draws the visibility octree node bounds (orange) every frame");
 AZ_CVAR(
     bool, bg_octreeRuntimeDebugDrawEntries, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, DebugDrawOctreeComponent also draws the bounding volume of every visibility entry (cyan)");
+    "Draws the bounding volume of every visibility entry (cyan) every frame");
 
 namespace DebugDraw
 {
@@ -74,14 +74,10 @@ namespace DebugDraw
             if (auto* editContext = serialize->GetEditContext())
             {
                 editContext->Class<DebugDrawOctreeComponent>(
-                               QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Octree"),
-                               QT_TRANSLATE_NOOP(
-                                   "DebugDraw",
-                                   "Draws the visibility octree node bounds (orange) and the bounding volume of every visibility "
-                                   "entry (cyan) every frame, also while the game is running. Toggle with the "
-                                   "bg_octreeRuntimeDebugDraw console variable."))
-                           ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                           ->Attribute(AZ::Edit::Attributes::Category, "Debugging");
+                        QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Octree"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Draws the visibility octree node bounds (orange) and the bounding volume of every visibility entry (cyan) every frame, also while the game is running."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Debugging");
             }
         }
     }
@@ -176,9 +172,7 @@ namespace DebugDraw
         }
         DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawLineBatchLocationToLocation, lines);
 
-        const auto statsText =
-            AZStd::string::format("OctreeDebug Visibility Octree Entries: %u", entryCount);
-        DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawTextOnScreen, statsText, AZ::Colors::White,
-                                       0.0f);
+        const auto statsText = AZStd::string::format("OctreeDebug Visibility Octree Entries: %u", entryCount);
+        DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawTextOnScreen, statsText, AZ::Colors::White, 0.0f);
     }
 } // namespace DebugDraw
