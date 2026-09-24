@@ -770,7 +770,11 @@ function(ly_setup_cmake_install)
     unset(find_subdirectories)
     foreach(root IN LISTS registered_roots)
         o3de_get_3rdparty_root_install_path("${root}" installed_root)
-        string(APPEND find_subdirectories "o3de_register_3rdparty_root(\"\${LY_ROOT_FOLDER}/${installed_root}\")\n")
+        string(APPEND find_subdirectories
+            "if(IS_DIRECTORY \"\${LY_ROOT_FOLDER}/${installed_root}\")\n"
+            "    o3de_register_3rdparty_root(\"\${LY_ROOT_FOLDER}/${installed_root}\")\n"
+            "endif()\n"
+        )
     endforeach()
     # Add to find_subdirectories all directories in which ly_add_target were called in
     get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
