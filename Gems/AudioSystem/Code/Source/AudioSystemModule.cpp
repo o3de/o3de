@@ -9,21 +9,20 @@
 #include <AzCore/PlatformDef.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 
 #include "AudioSystemGemSystemComponent.h"
 
 namespace AudioSystemGem
 {
     class AudioSystemModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(AudioSystemModule, "{BE8CD7ED-AEB9-4617-B069-D848EA986ED3}", CryHooksModule);
+        AZ_RTTI(AudioSystemModule, "{BE8CD7ED-AEB9-4617-B069-D848EA986ED3}", AZ::Module);
         AZ_CLASS_ALLOCATOR(AudioSystemModule, AZ::SystemAllocator);
 
         AudioSystemModule()
-            : CryHooksModule()
         {
             m_descriptors.insert(m_descriptors.end(), {
                 AudioSystemGemSystemComponent::CreateDescriptor(),

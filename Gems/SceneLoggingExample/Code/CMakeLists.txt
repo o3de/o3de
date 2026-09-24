@@ -19,10 +19,11 @@ ly_add_target(
         PRIVATE
             .
     BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzFramework
         PUBLIC
             AZ::AzCore
             AZ::SceneCore
-            Legacy::CryCommon
 )
 
 ly_add_target(

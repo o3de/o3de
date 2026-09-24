@@ -16,7 +16,6 @@ namespace WhiteBox
     AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator)
 
     WhiteBoxModule::WhiteBoxModule()
-        : CryHooksModule()
     {
         // push results of [MyComponent]::CreateDescriptor() into m_descriptors here
         m_descriptors.insert(
