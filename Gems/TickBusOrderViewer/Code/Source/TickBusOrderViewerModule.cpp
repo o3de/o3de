@@ -146,7 +146,7 @@ namespace TickBusOrderViewer
         PrintTickbusHandlers(&entityId);
     }
 
-    AZ_CONSOLEFREEFUNC("print_tickbus_handlers", PrintTickbusHandlerOrder, AZ::ConsoleFunctorFlags::Null,
+    AZ_CONSOLEFREEFUNC("print_tickbus_handlers", PrintTickbusHandlerOrder, AZ::ConsoleFunctorFlags::DontReplicate,
         "Prints out the handlers for the tickbus in tick order. With zero parameters, prints all handlers. "
         "With one parameter, it converts that to an entity ID and only prints components for that entity.");
 
