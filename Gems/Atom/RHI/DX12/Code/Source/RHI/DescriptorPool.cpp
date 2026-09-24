@@ -76,9 +76,7 @@ namespace AZ
         void DescriptorPool::InitPooledRange(DescriptorPool& parent, uint32_t offset, uint32_t count)
         {
             m_desc = parent.m_desc;
-            // The subrange shares the parent's heap; retain its own COM reference.
-            // Attach would adopt the same reference and release it twice at shutdown.
-            m_descriptorHeap = parent.GetPlatformHeap();
+            m_descriptorHeap = parent.m_descriptorHeap;
             m_stride = parent.m_stride;
             m_cpuStart = parent.m_cpuStart;
             m_cpuStart.ptr += m_stride * offset;
