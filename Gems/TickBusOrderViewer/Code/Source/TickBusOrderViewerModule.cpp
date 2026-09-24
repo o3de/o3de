@@ -7,11 +7,11 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 #include "TickBusOrderViewerSystemComponent.h"
 
-#include <IGem.h>
-#include <CryCommon/IConsole.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
@@ -123,19 +123,18 @@ namespace TickBusOrderViewer
     /**
     * Console command to print the handlers for the tickbus, in the order they are ticked.
     */
-    void PrintTickbusHandlerOrder(IConsoleCmdArgs* args)
+    void PrintTickbusHandlerOrder(const AZ::ConsoleCommandContainer& arguments)
     {
         // If only the command was supplied with no entity ID, then print out information for
         // all tickbus handlers.
-        if (args == nullptr || args->GetArgCount() == 1)
+        if (arguments.empty())
         {
             PrintTickbusHandlers(nullptr);
             return;
         }
         // If the passed in argument was not valid, print a warning and then the information for
         // all tickbus handlers.
-        const char* entityIdString = args->GetArg(1);
-        if (entityIdString == nullptr)
+        if (arguments[0].empty())
         {
             AZ_Warning("TickBusOrderViewer", false, "print_tickbus_handlers was called with an invalid parameter, printing out all handlers.");
             PrintTickbusHandlers(nullptr);
@@ -143,19 +142,22 @@ namespace TickBusOrderViewer
         }
         // Convert the passed in string to an entity ID. If this fails, then the user will need
         // to run the command again with a better formatted entity ID.
-        AZ::EntityId entityId(AZStd::stoull(AZStd::string(entityIdString)));
+        AZ::EntityId entityId(AZStd::stoull(AZStd::string(arguments[0])));
         PrintTickbusHandlers(&entityId);
     }
 
+    AZ_CONSOLEFREEFUNC("print_tickbus_handlers", PrintTickbusHandlerOrder, AZ::ConsoleFunctorFlags::Null,
+        "Prints out the handlers for the tickbus in tick order. With zero parameters, prints all handlers. "
+        "With one parameter, it converts that to an entity ID and only prints components for that entity.");
+
     class TickBusOrderViewerModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(TickBusOrderViewerModule, "{DAE8B6D3-23ED-4547-9D0C-9F42CA812A06}", CryHooksModule);
+        AZ_RTTI(TickBusOrderViewerModule, "{DAE8B6D3-23ED-4547-9D0C-9F42CA812A06}", AZ::Module);
         AZ_CLASS_ALLOCATOR(TickBusOrderViewerModule, AZ::SystemAllocator);
 
         TickBusOrderViewerModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
@@ -171,18 +173,6 @@ namespace TickBusOrderViewer
             return AZ::ComponentTypeList{
                 azrtti_typeid<TickBusOrderViewerSystemComponent>(),
             };
-        }
-        /**
-        * Override for CryHooksModule::OnCrySystemInitialized to add the console commands
-        * to print out tick bus information.
-        */
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& initParams) override
-        {
-            CryHooksModule::OnCrySystemInitialized(system, initParams);
-
-            // Register the command to print the tickbus handlers out.
-            REGISTER_COMMAND("print_tickbus_handlers", &PrintTickbusHandlerOrder, 0, "Prints out the handlers for the tickbus in tick order. "
-            "With zero parameters, prints all handlers. With one parameter, it converts that to an entity ID and only prints components for that entity.");
         }
     };
 }
