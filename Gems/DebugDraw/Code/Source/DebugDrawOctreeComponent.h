@@ -47,9 +47,5 @@ namespace DebugDraw
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-    private:
-        //! Draws the 12 edges of the given Aabb as world-space lines for one frame.
-        static void DrawWireAabb(const AZ::Aabb& aabb, const AZ::Color& color);
     };
 }

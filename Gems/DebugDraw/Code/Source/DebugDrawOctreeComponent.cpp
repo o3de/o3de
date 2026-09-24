@@ -10,8 +10,13 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Translation/TranslationDef.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
@@ -26,10 +31,39 @@ AZ_CVAR(
 
 namespace DebugDraw
 {
-    static constexpr AZ::u8 BoxEdgeIndices[12][2] = {
+    static constexpr AZStd::array<AZStd::array<AZ::u8, 2>, 12> BoxEdgeIndices = {{
         {0, 1}, {1, 3}, {3, 2}, {2, 0}, {4, 5}, {5, 7},
-        {7, 6}, {6, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}
-    };
+        {7, 6}, {6, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+    }};
+
+    static void AppendWireAabb(const AZ::Aabb& aabb, const AZ::Color& color, AZStd::vector<DebugDrawLineElement>& lines)
+    {
+        if (!aabb.IsValid())
+        {
+            return;
+        }
+
+        const AZ::Vector3 min = aabb.GetMin();
+        const AZ::Vector3 max = aabb.GetMax();
+        const AZStd::array<AZ::Vector3, 8> corners = {
+            min,
+            AZ::Vector3(max.GetX(), min.GetY(), min.GetZ()),
+            AZ::Vector3(min.GetX(), max.GetY(), min.GetZ()),
+            AZ::Vector3(max.GetX(), max.GetY(), min.GetZ()),
+            AZ::Vector3(min.GetX(), min.GetY(), max.GetZ()),
+            AZ::Vector3(max.GetX(), min.GetY(), max.GetZ()),
+            AZ::Vector3(min.GetX(), max.GetY(), max.GetZ()),
+            max,
+        };
+
+        for (const auto& edge : BoxEdgeIndices)
+        {
+            DebugDrawLineElement& line = lines.emplace_back();
+            line.m_startWorldLocation = corners[edge[0]];
+            line.m_endWorldLocation = corners[edge[1]];
+            line.m_color = color;
+        }
+    }
 
     void DebugDrawOctreeComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -110,55 +144,41 @@ namespace DebugDraw
             return;
         }
 
-        visibilityScene->EnumerateNoCull(
-            [](const AzFramework::IVisibilityScene::NodeData& nodeData)
-            {
-                DrawWireAabb(nodeData.m_bounds, AZ::Colors::Orange);
-
-                if (bg_octreeRuntimeDebugDrawEntries)
-                {
-                    for (const auto* visibilityEntry : nodeData.m_entries)
-                    {
-                        DrawWireAabb(visibilityEntry->m_boundingVolume, AZ::Colors::Cyan);
-                    }
-                }
-            });
-
-        const auto statsText =
-            AZStd::string::format("OctreeDebug Visibility Octree Entries: %u",
-                                  visibilityScene->GetEntryCount());
-        DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawTextOnScreen, statsText, AZ::Colors::White,
-                                       0.0f);
-    }
-
-    void DebugDrawOctreeComponent::DrawWireAabb(const AZ::Aabb& aabb, const AZ::Color& color)
-    {
-        if (!aabb.IsValid())
+        AZStd::vector<AZ::Aabb> nodeBounds;
+        AZStd::vector<AZ::Aabb> entryBounds;
+        AZ::u32 entryCount = 0;
+        const bool drawEntries = bg_octreeRuntimeDebugDrawEntries;
+        const auto appendNode = [&](const AzFramework::IVisibilityScene::NodeData& nodeData)
         {
-            return;
-        }
+            nodeBounds.push_back(nodeData.m_bounds);
+            entryCount += static_cast<AZ::u32>(nodeData.m_entries.size());
 
-        const AZ::Vector3 min = aabb.GetMin();
-        const AZ::Vector3 max = aabb.GetMax();
-        const AZ::Vector3 corners[8] = {
-            min,
-            AZ::Vector3(max.GetX(), min.GetY(), min.GetZ()),
-            AZ::Vector3(min.GetX(), max.GetY(), min.GetZ()),
-            AZ::Vector3(max.GetX(), max.GetY(), min.GetZ()),
-            AZ::Vector3(min.GetX(), min.GetY(), max.GetZ()),
-            AZ::Vector3(max.GetX(), min.GetY(), max.GetZ()),
-            AZ::Vector3(min.GetX(), max.GetY(), max.GetZ()),
-            max
+            if (drawEntries)
+            {
+                for (const auto* visibilityEntry : nodeData.m_entries)
+                {
+                    entryBounds.push_back(visibilityEntry->m_boundingVolume);
+                }
+            }
         };
 
-        for (const AZ::u8 (&edge)[2] : BoxEdgeIndices)
+        visibilityScene->Enumerate(appendNode);
+
+        AZStd::vector<DebugDrawLineElement> lines;
+        lines.reserve(BoxEdgeIndices.size() * (nodeBounds.size() + entryBounds.size()));
+        for (const AZ::Aabb& bounds : nodeBounds)
         {
-            DebugDrawRequestBus::Broadcast(
-                &DebugDrawRequestBus::Events::DrawLineLocationToLocation,
-                corners[edge[0]],
-                corners[edge[1]],
-                color,
-                0.0f);
+            AppendWireAabb(bounds, AZ::Colors::Orange, lines);
         }
+        for (const AZ::Aabb& bounds : entryBounds)
+        {
+            AppendWireAabb(bounds, AZ::Colors::Cyan, lines);
+        }
+        DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawLineBatchLocationToLocation, lines);
+
+        const auto statsText =
+            AZStd::string::format("OctreeDebug Visibility Octree Entries: %u", entryCount);
+        DebugDrawRequestBus::Broadcast(&DebugDrawRequestBus::Events::DrawTextOnScreen, statsText, AZ::Colors::White,
+                                       0.0f);
     }
 } // namespace DebugDraw
