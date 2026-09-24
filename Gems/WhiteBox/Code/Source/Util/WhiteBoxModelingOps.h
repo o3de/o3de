@@ -89,6 +89,14 @@ namespace WhiteBox
         Result ApplyUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair, const Api::UvProjection& projection);
         //! Keep each selected polygon's mode and rotation, and scale and offset its texture to span it once.
         Result FitUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        //! Mean tiling of the selected polygons, or none without a polygon.
+        AZStd::optional<float> SelectedTexelDensity(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        //! Give every selected polygon the same repeats per metre so textures read at one scale across them.
+        Result NormalizeTexelDensity(const AZ::EntityComponentIdPair& entityComponentIdPair, float repeatsPerMetre);
+        //! Remember the first selected polygon's projection; Paste applies it to whatever is selected then, on any White Box.
+        Result CopyUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        Result PasteUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        bool HasCopiedUvProjection();
         //! Split each selected polygon into quads meeting at its centre, and select them.
         Result Subdivide(const AZ::EntityComponentIdPair& entityComponentIdPair);
         //! Selection only: add every element like the selected ones; polygons compare by similarBy, edges by length, vertices by edge count.

@@ -513,6 +513,8 @@ namespace WhiteBox
         void FixNonManifold() { FixNonManifoldMesh(); }
         void SaveMeshAsAsset() { SaveAsAsset(); }
         void ExportToFile();
+        //! Export what is rendered (every layer, paint, materials and smoothing) as .gltf or .glb.
+        void ExportToGltf();
         void ExportDescendantsToFile();
         bool GetFlipYZForExport() const { return m_flipYZForExport; }
         void SetFlipYZForExport(bool flip) { m_flipYZForExport = flip; }

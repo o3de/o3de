@@ -154,6 +154,7 @@ namespace WhiteBox
         // Entity section.
         QComboBox* m_entityCombo = nullptr;
         QPushButton* m_newEntityButton = nullptr;
+        QPushButton* m_convertMeshButton = nullptr;
         QPushButton* m_newChildButton = nullptr;
         QPushButton* m_editButton = nullptr;
         QPushButton* m_doneButton = nullptr;

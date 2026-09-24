@@ -31,8 +31,10 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxColliderComponent, AZ::Component>()
-                ->Version(4)
+                ->Version(5)
                 ->Field("MeshData", &WhiteBoxColliderComponent::m_shapeConfiguration)
+                ->Field("PartData", &WhiteBoxColliderComponent::m_partShapeConfigurations)
+                ->Field("BooleanPartData", &WhiteBoxColliderComponent::m_booleanPartShapeConfigurations)
                 ->Field("BooleanMeshData", &WhiteBoxColliderComponent::m_booleanShapeConfiguration)
                 ->Field("HasBooleanMesh", &WhiteBoxColliderComponent::m_hasBooleanMesh)
                 ->Field("UseBooleanMesh", &WhiteBoxColliderComponent::m_useBooleanMesh)
@@ -144,7 +146,27 @@ namespace WhiteBox
         m_builtNonUniformScale = nonUniformScale;
         shapeConfiguration.m_scale = AZ::Vector3(m_builtScale) * nonUniformScale;
 
-        if (shapeConfiguration.GetCookedMeshData().empty())
+        // Convex Parts become one shape each; otherwise the single cooked mesh is the shape.
+        const auto& parts = (m_useBooleanMesh && m_hasBooleanMesh) ? m_booleanPartShapeConfigurations : m_partShapeConfigurations;
+        AzPhysics::ShapeVariantData shape;
+        if (!parts.empty())
+        {
+            AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+            for (const auto& part : parts)
+            {
+                Physics::CookedMeshShapeConfiguration scaledPart = part;
+                scaledPart.m_scale = shapeConfiguration.m_scale;
+                AZStd::shared_ptr<Physics::Shape> partShape;
+                Physics::SystemRequestBus::BroadcastResult(
+                    partShape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, scaledPart);
+                if (partShape)
+                {
+                    shapes.push_back(AZStd::move(partShape));
+                }
+            }
+            shape = AZStd::move(shapes);
+        }
+        else if (shapeConfiguration.GetCookedMeshData().empty())
         {
             // nothing cooked for the selected variant - skip creating a shape rather than
             // letting PhysX fail on an empty buffer.
@@ -154,11 +176,14 @@ namespace WhiteBox
                 m_useBooleanMesh ? "boolean" : "base");
             return;
         }
-
-        // create shape from the currently selected (base or boolean-evaluated) cooked mesh
-        AZStd::shared_ptr<Physics::Shape> shape;
-        Physics::SystemRequestBus::BroadcastResult(
-            shape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, shapeConfiguration);
+        else
+        {
+            // create shape from the currently selected (base or boolean-evaluated) cooked mesh
+            AZStd::shared_ptr<Physics::Shape> single;
+            Physics::SystemRequestBus::BroadcastResult(
+                single, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, shapeConfiguration);
+            shape = AZStd::move(single);
+        }
 
         // create rigid body
         switch (m_whiteBoxColliderConfiguration.m_bodyType)

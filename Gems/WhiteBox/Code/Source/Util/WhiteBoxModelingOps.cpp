@@ -800,6 +800,63 @@ namespace WhiteBox::ModelingOps
             });
     }
 
+    AZStd::optional<float> SelectedTexelDensity(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        EditorWhiteBoxComponent* component = EditableComponentFor(entityComponentIdPair);
+        if (component == nullptr)
+        {
+            return AZStd::nullopt;
+        }
+        const auto polygons = LivePolygons(*component->GetWhiteBoxMesh(), SelectedPolygons(entityComponentIdPair));
+        if (polygons.empty())
+        {
+            return AZStd::nullopt;
+        }
+        return Api::PolygonTexelDensity(*component->GetWhiteBoxMesh(), polygons);
+    }
+
+    Result NormalizeTexelDensity(const AZ::EntityComponentIdPair& entityComponentIdPair, const float repeatsPerMetre)
+    {
+        return EditSelectedPolygons(
+            entityComponentIdPair, "White Box Normalize Texel Density", "Texel density",
+            [repeatsPerMetre](WhiteBoxMesh& mesh, const Api::PolygonHandles& polygons)
+            {
+                Api::NormalizePolygonTexelDensity(mesh, polygons, repeatsPerMetre);
+            });
+    }
+
+    // One clipboard for the editor session, so a projection can move between entities.
+    static AZStd::optional<Api::UvProjection>& UvClipboard()
+    {
+        static AZStd::optional<Api::UvProjection> clipboard;
+        return clipboard;
+    }
+
+    Result CopyUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        const auto projection = SelectedUvProjection(entityComponentIdPair);
+        if (!projection)
+        {
+            return { false, "Select a polygon to copy its UV projection from." };
+        }
+        UvClipboard() = projection;
+        return { true, "UV projection copied." };
+    }
+
+    Result PasteUvProjection(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        if (!UvClipboard())
+        {
+            return { false, "Copy a UV projection first." };
+        }
+        return ApplyUvProjection(entityComponentIdPair, *UvClipboard());
+    }
+
+    bool HasCopiedUvProjection()
+    {
+        return UvClipboard().has_value();
+    }
+
     Result Subdivide(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         EditorWhiteBoxComponent* component = EditableComponentFor(entityComponentIdPair);

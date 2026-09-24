@@ -3914,6 +3914,42 @@ namespace WhiteBox
             CalculatePlanarUVs(whiteBox, faces);
         }
 
+        void NormalizePolygonTexelDensity(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const float repeatsPerMetre)
+        {
+            const float density = AZ::GetMax(repeatsPerMetre, 1e-4f);
+            FaceHandles faces;
+            for (const auto& polygon : polygons)
+            {
+                for (const FaceHandle face : polygon.m_faceHandles)
+                {
+                    UvProjection projection = FaceUvProjection(whiteBox, face);
+                    // Offset scales with the tiling so the point at UV zero stays put; the default mapping is one per metre.
+                    const AZ::Vector2 ratio(density / AZ::GetMax(projection.m_scale.GetX(), 1e-6f), density / AZ::GetMax(projection.m_scale.GetY(), 1e-6f));
+                    projection.m_offset = projection.m_offset * ratio;
+                    projection.m_scale = AZ::Vector2(density, density);
+                    SetFaceUvProjection(whiteBox, face, projection);
+                    faces.push_back(face);
+                }
+            }
+            CalculatePlanarUVs(whiteBox, faces);
+        }
+
+        float PolygonTexelDensity(const WhiteBoxMesh& whiteBox, const PolygonHandles& polygons)
+        {
+            float total = 0.0f;
+            size_t count = 0;
+            for (const auto& polygon : polygons)
+            {
+                for (const FaceHandle face : polygon.m_faceHandles)
+                {
+                    const UvProjection projection = FaceUvProjection(whiteBox, face);
+                    total += (projection.m_scale.GetX() + projection.m_scale.GetY()) * 0.5f;
+                    ++count;
+                }
+            }
+            return count > 0 ? total / static_cast<float>(count) : 1.0f;
+        }
+
         // Raw per-face attribute storage resolved once, so copies skip the name lookups and the asset id round trip.
         struct FaceAttributeProperties
         {

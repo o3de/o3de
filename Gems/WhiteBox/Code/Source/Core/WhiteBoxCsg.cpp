@@ -923,6 +923,43 @@ namespace WhiteBox
             return true;
         }
 
+        bool BuildFromTriangles(
+            WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<AZ::u32>& indices,
+            const AZStd::vector<AZ::Data::AssetId>& triangleMaterials)
+        {
+            Csg::TriangleMesh soup;
+            soup.m_positions.reserve(positions.size() * 3);
+            for (const AZ::Vector3& position : positions)
+            {
+                soup.m_positions.push_back(position.GetX());
+                soup.m_positions.push_back(position.GetY());
+                soup.m_positions.push_back(position.GetZ());
+            }
+            const size_t triangleCount = indices.size() / 3;
+            soup.m_indices.reserve(triangleCount * 3);
+            for (size_t triangle = 0; triangle < triangleCount; ++triangle)
+            {
+                const AZ::u32 a = indices[triangle * 3 + 0];
+                const AZ::u32 b = indices[triangle * 3 + 1];
+                const AZ::u32 c = indices[triangle * 3 + 2];
+                if (a >= positions.size() || b >= positions.size() || c >= positions.size() || a == b || b == c || a == c)
+                {
+                    continue;
+                }
+                soup.m_indices.insert(soup.m_indices.end(), { a, b, c });
+                const AZ::Data::AssetId material = triangle < triangleMaterials.size() ? triangleMaterials[triangle] : AZ::Data::AssetId{};
+                soup.m_materials.emplace_back(EncodeFaceKey(material, UvProjection{}, 0));
+            }
+            // Seams split for UVs or normals in the source weld back into one surface.
+            Csg::WeldVertices(soup, WeldTolerance);
+            if (soup.m_indices.empty())
+            {
+                return false;
+            }
+            Detail::RebuildFromTriangleMesh(whiteBox, soup);
+            return true;
+        }
+
         bool BuildColliderTriangles(
             const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
         {

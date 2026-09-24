@@ -9,7 +9,9 @@
 #include "EditorWhiteBoxColliderComponent.h"
 #include "EditorWhiteBoxComponent.h"
 #include "WhiteBoxColliderComponent.h"
+#include "WhiteBoxMeshSimplify.h"
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MathUtils.h>
@@ -34,8 +36,10 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorWhiteBoxColliderComponent, EditorComponentBase>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Configuration", &EditorWhiteBoxColliderComponent::m_physicsColliderConfiguration)
+                ->Field("PartData", &EditorWhiteBoxColliderComponent::m_partShapeConfigurations)
+                ->Field("BooleanPartData", &EditorWhiteBoxColliderComponent::m_booleanPartShapeConfigurations)
                 ->Field("MeshData", &EditorWhiteBoxColliderComponent::m_meshShapeConfiguration)
                 ->Field("BooleanMeshData", &EditorWhiteBoxColliderComponent::m_booleanMeshShapeConfiguration)
                 ->Field("HasBooleanMesh", &EditorWhiteBoxColliderComponent::m_hasBooleanMesh)
@@ -63,12 +67,14 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Configuration"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Collider configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxColliderComponent::OnColliderSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorWhiteBoxColliderComponent::m_whiteBoxColliderConfiguration,
                         QT_TRANSLATE_NOOP("WhiteBox", "White Box Collider Configuration"),
                         QT_TRANSLATE_NOOP("WhiteBox", "White Box collider configuration properties"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxColliderComponent::OnColliderSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxColliderComponent::m_drawCollider,
                         QT_TRANSLATE_NOOP("WhiteBox", "Draw Collider"),
@@ -105,9 +111,8 @@ namespace WhiteBox
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
 
-        // hide collider properties we do not care about for white box
+        // hide collider properties we do not care about for white box; Trigger stays, it cooks a convex hull
         m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
-        m_physicsColliderConfiguration.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
 
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
@@ -144,11 +149,27 @@ namespace WhiteBox
         // The boolean variant must come from the edit-time cook: its source entity cannot be resolved
         // during the game build. The base is re-cooked here to pick up the latest edits.
         Physics::CookedMeshShapeConfiguration baseConfiguration = m_meshShapeConfiguration;
+        AZStd::vector<Physics::CookedMeshShapeConfiguration> baseParts = m_partShapeConfigurations;
+        AZStd::vector<Physics::CookedMeshShapeConfiguration> booleanParts = m_booleanPartShapeConfigurations;
         bool liveBoolean = false;
 
         if (auto* whiteBoxComponent = GetEntity()->FindComponent<WhiteBox::EditorWhiteBoxComponent>())
         {
             liveBoolean = whiteBoxComponent->GetLiveBoolean();
+
+            // The edit-time boolean parts may still hold background stand-ins; finish them here from the cached display mesh.
+            if (UseConvexParts())
+            {
+                if (auto* displayMesh = whiteBoxComponent->GetPhysicsFilteredBooleanMesh();
+                    displayMesh != nullptr && Api::MeshFaceCount(*displayMesh) > 0)
+                {
+                    AZStd::vector<Physics::CookedMeshShapeConfiguration> freshParts;
+                    if (CookConvexParts(*displayMesh, freshParts, DecomposeWait::Block))
+                    {
+                        booleanParts = AZStd::move(freshParts);
+                    }
+                }
+            }
 
             // Re-cook the base from the strict collision-filtered mesh (null rather than unfiltered on a
             // clone). With the live boolean on keep the edit-time base; an empty mesh means no collider.
@@ -159,11 +180,20 @@ namespace WhiteBox
                     if (Api::MeshFaceCount(*baseMesh) == 0)
                     {
                         baseConfiguration = Physics::CookedMeshShapeConfiguration{}; // collision disabled
+                        baseParts.clear();
+                    }
+                    else if (UseConvexParts())
+                    {
+                        AZStd::vector<Physics::CookedMeshShapeConfiguration> freshParts;
+                        if (CookConvexParts(*baseMesh, freshParts, DecomposeWait::Block))
+                        {
+                            baseParts = AZStd::move(freshParts);
+                        }
                     }
                     else
                     {
                         Physics::CookedMeshShapeConfiguration freshBase;
-                        if (CookToConfiguration(*baseMesh, freshBase, whiteBoxComponent))
+                        if (CookToConfiguration(*baseMesh, freshBase, whiteBoxComponent, UseConvex(), KeepFraction()))
                         {
                             baseConfiguration = freshBase;
                         }
@@ -182,10 +212,25 @@ namespace WhiteBox
         if (collider != nullptr)
         {
             collider->SetDrawCollider(m_drawCollider);
+            if (UseConvexParts())
+            {
+                collider->SetConvexParts(baseParts, booleanParts);
+            }
 
             // Bake the cooked collider geometry for the runtime "Draw Collider" overlay, from the strict
             // collision-filtered mesh only; without it the runtime uses the serialized physics render data.
-            if (auto* whiteBoxComponent = GetEntity()->FindComponent<WhiteBox::EditorWhiteBoxComponent>())
+            AZStd::vector<AZ::Vector3> hullVertices;
+            AZStd::vector<AZ::u32> hullIndices;
+            if (UseConvexParts())
+            {
+                AppendPartsDebugMesh(baseParts, hullVertices, hullIndices);
+                collider->SetDebugMesh(hullVertices, hullIndices);
+            }
+            else if ((UseConvex() || KeepFraction() < 1.0f) && ConvexDebugMesh(baseConfiguration, hullVertices, hullIndices))
+            {
+                collider->SetDebugMesh(hullVertices, hullIndices);
+            }
+            else if (auto* whiteBoxComponent = GetEntity()->FindComponent<WhiteBox::EditorWhiteBoxComponent>())
             {
                 if (auto* mesh = whiteBoxComponent->GetPhysicsCombinedMeshStrict();
                     mesh != nullptr && Api::MeshFaceCount(*mesh) > 0)
@@ -258,6 +303,8 @@ namespace WhiteBox
     {
         m_meshShapeConfiguration = Physics::CookedMeshShapeConfiguration{};
         m_booleanMeshShapeConfiguration = Physics::CookedMeshShapeConfiguration{};
+        m_partShapeConfigurations.clear();
+        m_booleanPartShapeConfigurations.clear();
         m_hasBooleanMesh = false;
 
         auto* whiteBoxComponent = GetEntity()->FindComponent<EditorWhiteBoxComponent>();
@@ -283,7 +330,14 @@ namespace WhiteBox
         // the filtered mesh is empty, leaving m_meshShapeConfiguration empty -> no base collider.
         if (baseMesh != nullptr && Api::MeshFaceCount(*baseMesh) > 0)
         {
-            CookToConfiguration(*baseMesh, m_meshShapeConfiguration, whiteBoxComponent);
+            if (UseConvexParts())
+            {
+                CookConvexParts(*baseMesh, m_partShapeConfigurations);
+            }
+            else
+            {
+                CookToConfiguration(*baseMesh, m_meshShapeConfiguration, whiteBoxComponent, UseConvex(), KeepFraction());
+            }
         }
 
         // Boolean variant: the cached collision-filtered display mesh (no source lookup needed).
@@ -292,8 +346,9 @@ namespace WhiteBox
             // Pass the component so stamped cubes use the greedy voxel collider here too.
             if (Api::MeshFaceCount(*displayMesh) > 0)
             {
-                m_hasBooleanMesh =
-                    CookToConfiguration(*displayMesh, m_booleanMeshShapeConfiguration, whiteBoxComponent);
+                m_hasBooleanMesh = UseConvexParts()
+                    ? CookConvexParts(*displayMesh, m_booleanPartShapeConfigurations)
+                    : CookToConfiguration(*displayMesh, m_booleanMeshShapeConfiguration, whiteBoxComponent, UseConvex(), KeepFraction());
             }
         }
     }
@@ -308,6 +363,8 @@ namespace WhiteBox
             m_debugIndices.clear();
             m_meshShapeConfiguration = Physics::CookedMeshShapeConfiguration{};
             m_booleanMeshShapeConfiguration = Physics::CookedMeshShapeConfiguration{};
+            m_partShapeConfigurations.clear();
+            m_booleanPartShapeConfigurations.clear();
             m_hasBooleanMesh = false;
             return;
         }
@@ -331,8 +388,26 @@ namespace WhiteBox
         }
         const Physics::CookedMeshShapeConfiguration& viewportConfiguration =
             (m_hasBooleanMesh && live) ? m_booleanMeshShapeConfiguration : m_meshShapeConfiguration;
+        const auto& viewportParts = (m_hasBooleanMesh && live) ? m_booleanPartShapeConfigurations : m_partShapeConfigurations;
+        const bool parts = UseConvexParts();
+        if (parts)
+        {
+            m_debugVertices.clear();
+            m_debugIndices.clear();
+            AppendPartsDebugMesh(viewportParts, m_debugVertices, m_debugIndices);
+        }
+        else if (UseConvex() || KeepFraction() < 1.0f)
+        {
+            AZStd::vector<AZ::Vector3> hullVertices;
+            AZStd::vector<AZ::u32> hullIndices;
+            if (ConvexDebugMesh(viewportConfiguration, hullVertices, hullIndices))
+            {
+                m_debugVertices = AZStd::move(hullVertices);
+                m_debugIndices = AZStd::move(hullIndices);
+            }
+        }
 
-        if (viewportConfiguration.GetCookedMeshData().empty())
+        if (parts ? viewportParts.empty() : viewportConfiguration.GetCookedMeshData().empty())
         {
             // Nothing cooked - either the physics backend was not ready, or the selected variant
             // has no collidable geometry. Remove any stale body so the collider does not linger.
@@ -352,9 +427,23 @@ namespace WhiteBox
         bodyConfiguration.m_entityId = GetEntityId();
         bodyConfiguration.m_orientation = GetTransform()->GetWorldRotationQuaternion();
         bodyConfiguration.m_position = GetTransform()->GetWorldTranslation();
-        bodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
-            AZStd::make_shared<Physics::ColliderConfiguration>(m_physicsColliderConfiguration),
-            AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledConfiguration));
+        const auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>(m_physicsColliderConfiguration);
+        if (parts)
+        {
+            AzPhysics::ShapeColliderPairList pairs;
+            for (const auto& part : viewportParts)
+            {
+                auto scaledPart = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(part);
+                scaledPart->m_scale = AZ::Vector3(m_editorBuiltScale);
+                pairs.emplace_back(colliderConfiguration, scaledPart);
+            }
+            bodyConfiguration.m_colliderAndShapeData = AZStd::move(pairs);
+        }
+        else
+        {
+            bodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                colliderConfiguration, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledConfiguration));
+        }
 
         if (m_sceneInterface)
         {
@@ -431,12 +520,193 @@ namespace WhiteBox
         return !indices.empty();
     }
 
+    bool EditorWhiteBoxColliderComponent::UseConvex() const
+    {
+        const WhiteBoxColliderShape shape = m_whiteBoxColliderConfiguration.m_shape;
+        return shape == WhiteBoxColliderShape::ConvexHull ||
+            ((shape == WhiteBoxColliderShape::TriangleMesh || shape == WhiteBoxColliderShape::SimplifiedMesh) &&
+             m_physicsColliderConfiguration.m_isTrigger);
+    }
+
+    float EditorWhiteBoxColliderComponent::KeepFraction() const
+    {
+        return m_whiteBoxColliderConfiguration.m_shape == WhiteBoxColliderShape::SimplifiedMesh
+            ? AZ::GetClamp(static_cast<float>(m_whiteBoxColliderConfiguration.m_meshResolution) / 100.0f, 0.01f, 1.0f)
+            : 1.0f;
+    }
+
+    bool EditorWhiteBoxColliderComponent::UseConvexParts() const
+    {
+        return m_whiteBoxColliderConfiguration.m_shape == WhiteBoxColliderShape::ConvexParts;
+    }
+
+    bool EditorWhiteBoxColliderComponent::CookConvexParts(
+        const WhiteBoxMesh& whiteBox, AZStd::vector<Physics::CookedMeshShapeConfiguration>& outParts, const DecomposeWait wait)
+    {
+        outParts.clear();
+        AZStd::vector<AZ::Vector3> vertices;
+        AZStd::vector<AZ::u32> indices;
+        if (!ConvertToTriangles(whiteBox, vertices, indices))
+        {
+            return false;
+        }
+        auto* physicsSystem = AZ::Interface<Physics::System>::Get();
+        if (physicsSystem == nullptr)
+        {
+            AZ_Warning("EditorWhiteBoxColliderComponent", false, "No physics backend enabled - please ensure one is provided");
+            return false;
+        }
+        size_t failed = 0;
+        // Rebuilt through the bus, from whatever the mesh is by then; a deleted or deactivated entity simply is not there.
+        const AZ::EntityId entityId = GetEntityId();
+        const auto rebuild = [entityId]()
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            auto* whiteBoxComponent = entity != nullptr ? entity->FindComponent<EditorWhiteBoxComponent>() : nullptr;
+            if (auto* mesh = whiteBoxComponent != nullptr ? whiteBoxComponent->GetPhysicsFilteredMesh() : nullptr)
+            {
+                EditorWhiteBoxColliderRequestBus::Event(entityId, &EditorWhiteBoxColliderRequests::CreatePhysics, *mesh);
+            }
+        };
+        bool pending = false;
+        const auto hulls = ConvexDecomposer::Decompose(vertices, indices, m_whiteBoxColliderConfiguration, wait, entityId, rebuild, &pending);
+        if (pending)
+        {
+            AZ_TracePrintf("WhiteBox", "Convex Parts: splitting concave shells in the background; single hulls stand in until then.\n");
+        }
+        for (const HullPoints& hull : hulls)
+        {
+            AZStd::vector<AZ::u8> bytes;
+            if (hull.size() < 4 || !physicsSystem->CookConvexMeshToMemory(hull.data(), static_cast<AZ::u32>(hull.size()), bytes))
+            {
+                ++failed;
+                continue;
+            }
+            Physics::CookedMeshShapeConfiguration part;
+            part.SetCookedMeshData(bytes.data(), bytes.size(), Physics::CookedMeshShapeConfiguration::MeshType::Convex);
+            outParts.push_back(AZStd::move(part));
+        }
+        AZ_Warning(
+            "EditorWhiteBoxColliderComponent", failed == 0, "%zu convex part(s) could not be cooked and were left out", failed);
+        return !outParts.empty();
+    }
+
+    void EditorWhiteBoxColliderComponent::AppendPartsDebugMesh(
+        const AZStd::vector<Physics::CookedMeshShapeConfiguration>& parts, AZStd::vector<AZ::Vector3>& vertices,
+        AZStd::vector<AZ::u32>& indices) const
+    {
+        for (const auto& part : parts)
+        {
+            AZStd::vector<AZ::Vector3> partVertices;
+            AZStd::vector<AZ::u32> partIndices;
+            if (!ConvexDebugMesh(part, partVertices, partIndices))
+            {
+                continue;
+            }
+            const auto base = static_cast<AZ::u32>(vertices.size());
+            vertices.insert(vertices.end(), partVertices.begin(), partVertices.end());
+            for (const AZ::u32 index : partIndices)
+            {
+                indices.push_back(base + index);
+            }
+        }
+    }
+
+    AZ::Crc32 EditorWhiteBoxColliderComponent::OnColliderSettingsChanged()
+    {
+        if (auto* whiteBoxComponent = GetEntity()->FindComponent<EditorWhiteBoxComponent>())
+        {
+            if (auto* mesh = whiteBoxComponent->GetPhysicsFilteredMesh())
+            {
+                CreatePhysics(*mesh);
+            }
+        }
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    bool EditorWhiteBoxColliderComponent::ConvexDebugMesh(
+        const Physics::CookedMeshShapeConfiguration& configuration, AZStd::vector<AZ::Vector3>& vertices,
+        AZStd::vector<AZ::u32>& indices) const
+    {
+        if (configuration.GetCookedMeshData().empty())
+        {
+            return false;
+        }
+        // A loose shape (never added to a scene) is enough to read the cooked hull back.
+        AZStd::shared_ptr<Physics::Shape> shape;
+        Physics::SystemRequestBus::BroadcastResult(
+            shape, &Physics::SystemRequests::CreateShape, m_physicsColliderConfiguration, configuration);
+        if (!shape)
+        {
+            return false;
+        }
+        vertices.clear();
+        indices.clear();
+        shape->GetGeometry(vertices, indices);
+        if (indices.empty())
+        {
+            // Vertices alone are a triangle list.
+            for (AZ::u32 i = 0; i + 2 < static_cast<AZ::u32>(vertices.size()); i += 3)
+            {
+                indices.insert(indices.end(), { i, i + 1, i + 2 });
+            }
+        }
+        return !indices.empty();
+    }
+
     bool EditorWhiteBoxColliderComponent::CookToConfiguration(
         const WhiteBoxMesh& whiteBox, Physics::CookedMeshShapeConfiguration& outConfiguration,
-        [[maybe_unused]] EditorWhiteBoxComponent* voxelComponent)
+        [[maybe_unused]] EditorWhiteBoxComponent* voxelComponent, const bool convex, const float keepFraction)
     {
         AZStd::vector<AZ::Vector3> vertices;
         AZStd::vector<AZ::u32> indices;
+
+        if (convex)
+        {
+            // Only the points matter to a hull; PhysX computes it (and caps it at 255 vertices) itself.
+            if (!ConvertToTriangles(whiteBox, vertices, indices) || vertices.size() < 4)
+            {
+                return false;
+            }
+            auto* convexPhysicsSystem = AZ::Interface<Physics::System>::Get();
+            if (convexPhysicsSystem == nullptr)
+            {
+                AZ_Warning("EditorWhiteBoxColliderComponent", false, "No physics backend enabled - please ensure one is provided");
+                return false;
+            }
+            AZStd::vector<AZ::u8> hullBytes;
+            if (!convexPhysicsSystem->CookConvexMeshToMemory(vertices.data(), static_cast<AZ::u32>(vertices.size()), hullBytes))
+            {
+                AZ_Warning("EditorWhiteBoxColliderComponent", false, "Failed to cook a convex hull (verts=%zu)", vertices.size());
+                return false;
+            }
+            outConfiguration.SetCookedMeshData(
+                hullBytes.data(), hullBytes.size(), Physics::CookedMeshShapeConfiguration::MeshType::Convex);
+            return true;
+        }
+
+        if (keepFraction < 1.0f)
+        {
+            // Simplify the per-face triangulation, not the coplanar-merged one: its long slivers give quadrics little to work with.
+            if (ConvertToTriangles(whiteBox, vertices, indices) && SimplifyTriangles(vertices, indices, keepFraction))
+            {
+                auto* simplifyPhysicsSystem = AZ::Interface<Physics::System>::Get();
+                AZStd::vector<AZ::u8> simplifiedBytes;
+                if (simplifyPhysicsSystem != nullptr &&
+                    simplifyPhysicsSystem->CookTriangleMeshToMemory(
+                        vertices.data(), static_cast<AZ::u32>(vertices.size()), indices.data(), static_cast<AZ::u32>(indices.size()),
+                        simplifiedBytes))
+                {
+                    outConfiguration.SetCookedMeshData(
+                        simplifiedBytes.data(), simplifiedBytes.size(), Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh);
+                    return true;
+                }
+                AZ_Warning("EditorWhiteBoxColliderComponent", false, "The simplified collider did not cook; using the full mesh");
+            }
+            vertices.clear();
+            indices.clear();
+        }
 
         // Coplanar-merge the actual mesh into a light collider; fall back to per-face triangles.
         const bool merged = Api::BuildColliderTriangles(whiteBox, vertices, indices);

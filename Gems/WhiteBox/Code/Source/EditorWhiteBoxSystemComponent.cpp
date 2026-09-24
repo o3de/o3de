@@ -10,6 +10,7 @@
 #include "Asset/WhiteBoxMeshAssetHandler.h"
 #include "EditorWhiteBoxSystemComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
+#include "Components/WhiteBoxConvexDecomposition.h"
 #include "Tools/WhiteBoxPaneWidget.h"
 #include "WhiteBoxToolApiReflection.h"
 
@@ -88,6 +89,7 @@ namespace WhiteBox
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::UnregisterViewPane(WhiteBoxPaneWidget::PaneName);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        ConvexDecomposer::Shutdown(); // no V-HACD thread may outlive the module
         WhiteBoxSystemComponent::Deactivate();
     }
 

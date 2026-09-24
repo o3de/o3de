@@ -45,6 +45,10 @@ namespace WhiteBox
         QDoubleSpinBox* m_rotation = nullptr;
         QPushButton* m_fit = nullptr;
         QPushButton* m_reset = nullptr;
+        QDoubleSpinBox* m_density = nullptr;
+        QPushButton* m_normalize = nullptr;
+        QPushButton* m_copy = nullptr;
+        QPushButton* m_paste = nullptr;
         QLabel* m_selection = nullptr;
         QLabel* m_status = nullptr;
     };

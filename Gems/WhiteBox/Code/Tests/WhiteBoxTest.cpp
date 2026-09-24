@@ -7,8 +7,13 @@
  */
 
 #include <cmath>
+#include <cstring>
 #include "WhiteBoxTestFixtures.h"
 #include "WhiteBoxTestUtil.h"
+#include "Components/WhiteBoxColliderConfiguration.h"
+#include "Components/WhiteBoxConvexDecomposition.h"
+#include "Components/WhiteBoxMeshSimplify.h"
+#include "Util/WhiteBoxGltfExport.h"
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Core/WhiteBoxCsgCore.h"
@@ -5030,6 +5035,246 @@ namespace UnitTest
         const auto edges = Api::MeshPolygonEdgeHandles(*mesh);
         EXPECT_EQ(Api::FindSimilarEdges(*mesh, { edges.front() }).size(), 12u);
         EXPECT_EQ(Api::FindSimilarVertices(*mesh, { Api::MeshVertexHandles(*mesh).front() }).size(), 8u);
+    }
+
+    TEST_F(WhiteBoxTestFixture, NormalizeTexelDensityKeepsTheTextureAnchor)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto polygons = Api::InitializeAsUnitCube(*mesh);
+        Api::UvProjection projection;
+        projection.m_mode = Api::UvProjectionMode::Planar;
+        projection.m_scale = AZ::Vector2(2.0f, 4.0f);
+        projection.m_offset = AZ::Vector2(1.0f, 1.0f);
+        projection.m_rotationDegrees = 30.0f;
+        Api::SetPolygonUvProjection(*mesh, { polygons[0] }, projection);
+        EXPECT_NEAR(Api::PolygonTexelDensity(*mesh, { polygons[0] }), 3.0f, 1e-5f);
+        EXPECT_NEAR(Api::PolygonTexelDensity(*mesh, polygons), (3.0f + 5.0f) / 6.0f, 1e-5f);
+
+        Api::NormalizePolygonTexelDensity(*mesh, polygons, 0.5f);
+        const auto top = Api::FaceUvProjection(*mesh, polygons[0].m_faceHandles.front());
+        EXPECT_EQ(top.m_mode, Api::UvProjectionMode::Planar);
+        EXPECT_NEAR(top.m_rotationDegrees, 30.0f, 1e-5f);
+        EXPECT_TRUE(top.m_scale.IsClose(AZ::Vector2(0.5f, 0.5f), 1e-5f));
+        // Offset scales with the tiling, so the point that mapped to UV zero still does.
+        EXPECT_TRUE(top.m_offset.IsClose(AZ::Vector2(0.25f, 0.125f), 1e-5f));
+        EXPECT_NEAR(Api::PolygonTexelDensity(*mesh, polygons), 0.5f, 1e-5f);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BuildFromTrianglesWeldsASoupIntoAClosedMeshWithMaterials)
+    {
+        namespace Api = WhiteBox::Api;
+        // A model-style cube: every face has its own four vertices, as UV seams leave them.
+        const auto corner = [](const int i)
+        {
+            return AZ::Vector3(float(i & 1) - 0.5f, float((i >> 1) & 1) - 0.5f, float((i >> 2) & 1) - 0.5f);
+        };
+        const int quads[6][4] = { { 0, 2, 3, 1 }, { 4, 5, 7, 6 }, { 0, 1, 5, 4 }, { 2, 6, 7, 3 }, { 0, 4, 6, 2 }, { 1, 3, 7, 5 } };
+        AZStd::vector<AZ::Vector3> positions;
+        AZStd::vector<AZ::u32> indices;
+        AZStd::vector<AZ::Data::AssetId> materials;
+        const AZ::Data::AssetId topMaterial(AZ::Uuid::CreateRandom(), 0);
+        for (int face = 0; face < 6; ++face)
+        {
+            const auto base = static_cast<AZ::u32>(positions.size());
+            for (const int c : quads[face])
+            {
+                positions.push_back(corner(c));
+            }
+            indices.insert(indices.end(), { base, base + 1, base + 2, base, base + 2, base + 3 });
+            materials.insert(materials.end(), 2, face == 1 ? topMaterial : AZ::Data::AssetId{});
+        }
+
+        auto mesh = Api::CreateWhiteBoxMesh();
+        ASSERT_TRUE(Api::BuildFromTriangles(*mesh, positions, indices, materials));
+        EXPECT_EQ(Api::MeshVertexHandles(*mesh).size(), 8u);
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 6u);
+        for (const auto edge : Api::MeshEdgeHandles(*mesh))
+        {
+            EXPECT_EQ(Api::EdgeFaceHandles(*mesh, edge).size(), 2u);
+        }
+        size_t topFaces = 0;
+        for (const auto face : Api::MeshFaceHandles(*mesh))
+        {
+            const bool top = Api::FaceNormal(*mesh, face).GetZ() > 0.9f;
+            EXPECT_EQ(Api::FaceMaterial(*mesh, face) == topMaterial, top);
+            topFaces += top ? 1 : 0;
+        }
+        EXPECT_EQ(topFaces, 2u);
+
+        // Nothing but degenerate triangles is refused and leaves the mesh alone.
+        EXPECT_FALSE(Api::BuildFromTriangles(*mesh, positions, { 0, 0, 1 }));
+        EXPECT_EQ(Api::MeshPolygonHandles(*mesh).size(), 6u);
+    }
+
+    TEST_F(WhiteBoxTestFixture, GltfExportWritesAValidBinaryAndEmbeddedFile)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto polygons = Api::InitializeAsUnitCube(*mesh);
+        Api::SetPolygonSmoothingGroups(*mesh, polygons, 1u);
+        const WhiteBox::WhiteBoxRenderData renderData = WhiteBox::CreateWhiteBoxRenderData(*mesh, WhiteBox::WhiteBoxMaterial{});
+
+        const auto glb = WhiteBox::BuildGltf(renderData, "Cube", true);
+        ASSERT_GT(glb.size(), 20u);
+        EXPECT_EQ(AZStd::string(reinterpret_cast<const char*>(glb.data()), 4), "glTF");
+        AZ::u32 length = 0;
+        std::memcpy(&length, glb.data() + 8, sizeof(length));
+        EXPECT_EQ(length, glb.size());
+        EXPECT_EQ(glb.size() % 4, 0u);
+
+        const auto gltf = WhiteBox::BuildGltf(renderData, "Cube", false);
+        const AZStd::string json(reinterpret_cast<const char*>(gltf.data()), gltf.size());
+        EXPECT_NE(json.find("\"POSITION\""), AZStd::string::npos);
+        EXPECT_NE(json.find("\"NORMAL\""), AZStd::string::npos);
+        EXPECT_NE(json.find("data:application/octet-stream;base64,"), AZStd::string::npos);
+        // Corners weld within each face; the UV seams keep the six faces apart.
+        EXPECT_NE(json.find("\"count\":24,"), AZStd::string::npos);
+        EXPECT_NE(json.find("\"count\":36,"), AZStd::string::npos);
+    }
+
+    // Welded triangle list of a White Box mesh, the form the collider hands the decomposer.
+    static void WeldedTriangles(
+        const WhiteBox::WhiteBoxMesh& mesh, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+        const AZ::Vector3& offset = AZ::Vector3::CreateZero())
+    {
+        namespace Api = WhiteBox::Api;
+        const auto base = static_cast<AZ::u32>(vertices.size());
+        for (const auto vertex : Api::MeshVertexHandles(mesh))
+        {
+            vertices.push_back(Api::VertexPosition(mesh, vertex) + offset);
+        }
+        for (const auto face : Api::MeshFaceHandles(mesh))
+        {
+            for (const auto vertex : Api::FaceVertexHandles(mesh, face))
+            {
+                indices.push_back(base + static_cast<AZ::u32>(vertex.Index()));
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ConvexPartsKeepConvexShellsExactAndSplitConcaveOnes)
+    {
+        namespace Api = WhiteBox::Api;
+        WhiteBox::WhiteBoxColliderConfiguration configuration;
+        configuration.m_shape = WhiteBox::WhiteBoxColliderShape::ConvexParts;
+        configuration.m_decompositionResolution = 20000;
+
+        // Two separate cubes are two shells, each kept as its own exact eight-point hull.
+        auto cube = Api::CreateWhiteBoxMesh();
+        Api::InitializeAsUnitCube(*cube);
+        AZStd::vector<AZ::Vector3> vertices;
+        AZStd::vector<AZ::u32> indices;
+        WeldedTriangles(*cube, vertices, indices);
+        WeldedTriangles(*cube, vertices, indices, AZ::Vector3(5.0f, 0.0f, 0.0f));
+        const auto cubes = WhiteBox::ConvexDecomposer::Decompose(vertices, indices, configuration);
+        ASSERT_EQ(cubes.size(), 2u);
+        EXPECT_EQ(cubes[0].size(), 8u);
+        EXPECT_EQ(cubes[1].size(), 8u);
+
+        // A lone quad has no volume, so it gains a thin backing behind its face.
+        auto plane = Api::CreateWhiteBoxMesh();
+        const auto p0 = Api::AddVertex(*plane, AZ::Vector3(0.0f, 0.0f, 0.0f));
+        const auto p1 = Api::AddVertex(*plane, AZ::Vector3(4.0f, 0.0f, 0.0f));
+        const auto p2 = Api::AddVertex(*plane, AZ::Vector3(4.0f, 4.0f, 0.0f));
+        const auto p3 = Api::AddVertex(*plane, AZ::Vector3(0.0f, 4.0f, 0.0f));
+        Api::AddQuadPolygon(*plane, p0, p1, p2, p3);
+        Api::CalculateNormals(*plane);
+        vertices.clear();
+        indices.clear();
+        WeldedTriangles(*plane, vertices, indices);
+        const auto flat = WhiteBox::ConvexDecomposer::Decompose(vertices, indices, configuration);
+        ASSERT_EQ(flat.size(), 1u);
+        EXPECT_EQ(flat[0].size(), 8u);
+        float lowest = 0.0f;
+        for (const auto& point : flat[0])
+        {
+            lowest = AZStd::min(lowest, point.GetZ());
+            EXPECT_LE(point.GetZ(), 1e-5f); // the top surface stays where it was
+        }
+        EXPECT_LT(lowest, -1e-3f);
+
+        // A cube with a pit sunk into its top is concave; it is cut along its own faces into a few clean pieces inside the cube.
+        auto pit = Api::CreateWhiteBoxMesh();
+        const auto polygons = Api::InitializeAsUnitCube(*pit);
+        Api::PolygonHandle top;
+        for (const auto& polygon : polygons)
+        {
+            if (Api::PolygonNormal(*pit, polygon).GetZ() > 0.9f)
+            {
+                top = polygon;
+            }
+        }
+        AZStd::string error;
+        Api::PolygonHandles inset;
+        ASSERT_TRUE(Api::ExtrudeInsetRegions(*pit, { top }, 0.5f, true, inset, error)) << error.c_str();
+        Api::PolygonHandles sunk;
+        ASSERT_TRUE(Api::ExtrudeInsetRegions(*pit, inset, -0.6f, false, sunk, error)) << error.c_str();
+        vertices.clear();
+        indices.clear();
+        WeldedTriangles(*pit, vertices, indices);
+        const auto parts = WhiteBox::ConvexDecomposer::Decompose(vertices, indices, configuration);
+        EXPECT_GE(parts.size(), 2u);
+        EXPECT_LE(parts.size(), 8u); // the rim around the pit, not a cloud of voxel hulls
+        for (const auto& hull : parts)
+        {
+            EXPECT_GE(hull.size(), 4u);
+            for (const auto& point : hull)
+            {
+                EXPECT_LE(point.GetAbs().GetMaxElement(), 0.5f + 0.05f);
+            }
+        }
+        // The second run hits the cache and gives the same parts.
+        EXPECT_EQ(WhiteBox::ConvexDecomposer::Decompose(vertices, indices, configuration).size(), parts.size());
+
+        // A budget of one hull defeats the exact cuts, so V-HACD is queued: one stand-in hull, reported pending.
+        configuration.m_maxHullsPerShell = 1;
+        bool pending = false;
+        const auto standIn = WhiteBox::ConvexDecomposer::Decompose(
+            vertices, indices, configuration, WhiteBox::DecomposeWait::Background, AZ::EntityId(1234), {}, &pending);
+        EXPECT_TRUE(pending);
+        EXPECT_EQ(standIn.size(), 1u);
+        WhiteBox::ConvexDecomposer::Shutdown(); // cancels the queued work and joins the worker
+    }
+
+    TEST_F(WhiteBoxTestFixture, SimplifyTrianglesHitsTheBudgetAndKeepsAFlatGridFlat)
+    {
+        // A 10 x 10 grid of quads: 200 triangles, all in the z = 0 plane.
+        AZStd::vector<AZ::Vector3> vertices;
+        AZStd::vector<AZ::u32> indices;
+        for (int y = 0; y <= 10; ++y)
+        {
+            for (int x = 0; x <= 10; ++x)
+            {
+                vertices.emplace_back(float(x), float(y), 0.0f);
+            }
+        }
+        for (AZ::u32 y = 0; y < 10; ++y)
+        {
+            for (AZ::u32 x = 0; x < 10; ++x)
+            {
+                const AZ::u32 a = y * 11 + x;
+                indices.insert(indices.end(), { a, a + 1, a + 12, a, a + 12, a + 11 });
+            }
+        }
+
+        auto untouchedVertices = vertices;
+        auto untouchedIndices = indices;
+        EXPECT_FALSE(WhiteBox::SimplifyTriangles(untouchedVertices, untouchedIndices, 1.0f));
+        EXPECT_EQ(untouchedIndices.size(), indices.size());
+
+        ASSERT_TRUE(WhiteBox::SimplifyTriangles(vertices, indices, 0.1f));
+        const size_t triangles = indices.size() / 3;
+        EXPECT_GE(triangles, 2u);
+        EXPECT_LE(triangles, 40u);
+        for (const AZ::u32 index : indices)
+        {
+            ASSERT_LT(index, vertices.size());
+        }
+        for (const auto& vertex : vertices)
+        {
+            EXPECT_NEAR(vertex.GetZ(), 0.0f, 1e-5f);
+        }
     }
 
     TEST_F(WhiteBoxTestFixture, RoomWithSlabsIsOneClosedShellThatCarvesCleanly)

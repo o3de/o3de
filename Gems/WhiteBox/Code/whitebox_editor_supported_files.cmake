@@ -21,6 +21,10 @@ set(FILES
     Source/Util/WhiteBoxMeshUtil.cpp
     Source/Util/WhiteBoxMeshUtil.h
     Source/Util/WhiteBoxModelingOps.cpp
+    Source/Util/WhiteBoxGltfExport.cpp
+    Source/Util/WhiteBoxGltfExport.h
+    Source/Util/WhiteBoxModelConvert.cpp
+    Source/Util/WhiteBoxModelConvert.h
     Source/Util/WhiteBoxModelingOps.h
     Source/Util/WhiteBoxSnapUtil.cpp
     Source/Util/WhiteBoxSnapUtil.h
@@ -73,6 +77,10 @@ set(FILES
     Source/Core/WhiteBoxCsgBsp.cpp
     Source/Components/EditorWhiteBoxColliderComponent.cpp
     Source/Components/EditorWhiteBoxColliderComponent.h
+    Source/Components/WhiteBoxConvexDecomposition.cpp
+    Source/Components/WhiteBoxConvexDecomposition.h
+    Source/Components/WhiteBoxMeshSimplify.cpp
+    Source/Components/WhiteBoxMeshSimplify.h
     Source/Util/WhiteBoxTextureUtil.cpp
     Source/Util/WhiteBoxTextureUtil.h
     Source/Util/WhiteBoxEditorUtil.cpp

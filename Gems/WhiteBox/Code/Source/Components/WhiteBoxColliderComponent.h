@@ -60,6 +60,15 @@ namespace WhiteBox
             m_debugIndices = indices;
         }
 
+        //! Cooked Convex Parts; when present they replace the single shape, one PhysX shape per part.
+        void SetConvexParts(
+            const AZStd::vector<Physics::CookedMeshShapeConfiguration>& parts,
+            const AZStd::vector<Physics::CookedMeshShapeConfiguration>& booleanParts)
+        {
+            m_partShapeConfigurations = parts;
+            m_booleanPartShapeConfigurations = booleanParts;
+        }
+
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -92,6 +101,8 @@ namespace WhiteBox
             m_booleanShapeConfiguration; //!< The boolean-evaluated physics representation (pre-baked at build time).
         bool m_hasBooleanMesh = false; //!< Whether a boolean-evaluated cooked mesh was baked.
         bool m_useBooleanMesh = false; //!< Whether the boolean-evaluated mesh is currently in use.
+        AZStd::vector<Physics::CookedMeshShapeConfiguration> m_partShapeConfigurations; //!< Convex Parts of the base mesh.
+        AZStd::vector<Physics::CookedMeshShapeConfiguration> m_booleanPartShapeConfigurations; //!< Convex Parts of the boolean mesh.
         bool m_drawCollider = false; //!< Draw the collision shape as a wireframe at runtime (opt-in).
         AZStd::vector<AZ::Vector3> m_debugVertices; //!< Cooked collider geometry for the runtime wireframe overlay.
         AZStd::vector<AZ::u32> m_debugIndices; //!< Triangle indices into m_debugVertices for the wireframe overlay.

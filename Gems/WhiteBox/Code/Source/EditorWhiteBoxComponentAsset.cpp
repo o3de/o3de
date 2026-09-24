@@ -14,6 +14,7 @@
 #include "EditorWhiteBoxComponent.h"
 
 #include "Util/WhiteBoxEditorUtil.h"
+#include "Util/WhiteBoxGltfExport.h"
 #include "Util/WhiteBoxMeshUtil.h"
 
 #include <AzCore/Serialization/EditContext.h>
@@ -224,23 +225,29 @@ namespace WhiteBox
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
         const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
+        if (absoluteSaveFilePath.isEmpty() || GetWhiteBoxMesh() == nullptr)
+        {
+            return; // dialog cancelled
+        }
 
+        // The flip goes on a copy; flipping the live mesh used to rotate the White Box itself on every export.
+        Api::WhiteBoxMeshPtr exported = Api::CloneMesh(*GetWhiteBoxMesh());
         if (m_flipYZForExport)
         {
-            Api::VertexHandles vHandles = Api::MeshVertexHandles(*GetWhiteBoxMesh());
-            for (auto& handle : vHandles)
+            for (const auto& handle : Api::MeshVertexHandles(*exported))
             {
-                AZ::Vector3 p = Api::VertexPosition(*GetWhiteBoxMesh(), handle);
-                float temp = p.GetY();
+                AZ::Vector3 p = Api::VertexPosition(*exported, handle);
+                const float temp = p.GetY();
                 p.SetY(p.GetZ());
                 p.SetZ(-temp);
-                Api::SetVertexPosition(*GetWhiteBoxMesh(), handle, p);
+                Api::SetVertexPosition(*exported, handle, p);
             }
+            Api::CalculateNormals(*exported);
         }
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
-        if (WhiteBox::Api::SaveToObj(*GetWhiteBoxMesh(), absoluteSaveFilePathCstr))
+        if (WhiteBox::Api::SaveToObj(*exported, absoluteSaveFilePathCstr))
         {
             AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
             RequestEditSourceControl(absoluteSaveFilePathCstr);
@@ -249,6 +256,32 @@ namespace WhiteBox
         {
             AZ_Warning(
                 "EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
+        }
+    }
+
+    void EditorWhiteBoxComponent::ExportToGltf()
+    {
+        const AZStd::string initialPath = WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), "glb");
+        const QString path = AzQtComponents::FileDialog::GetSaveFileName(
+            nullptr, "Export glTF...", QString(initialPath.c_str()), "glTF (*.glb *.gltf)");
+        if (path.isEmpty())
+        {
+            return;
+        }
+        // The cached render data is exactly what is on screen; build it when nothing has rendered yet.
+        const WhiteBoxRenderData renderData = m_renderData.m_faces.empty() && EvaluatedMesh() != nullptr
+            ? CreateWhiteBoxRenderData(*EvaluatedMesh(), m_material)
+            : m_renderData;
+        const AZStd::string filePath = path.toUtf8().constData();
+        AZStd::string error;
+        if (SaveToGltf(renderData, GetEntity()->GetName(), filePath, error))
+        {
+            AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", filePath.c_str());
+            RequestEditSourceControl(filePath.c_str());
+        }
+        else
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "%s", error.c_str());
         }
     }
 
@@ -269,6 +302,10 @@ namespace WhiteBox
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
         const QString absoluteSaveFilePath =
             AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
+        if (absoluteSaveFilePath.isEmpty())
+        {
+            return; // dialog cancelled
+        }
 
         // Create a new empty white box mesh
         Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();

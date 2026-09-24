@@ -667,6 +667,11 @@ namespace WhiteBox
                     QT_TRANSLATE_NOOP("WhiteBox", "Export this mesh to an obj file."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export"))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Export the rendered mesh (all layers, materials, paint and smoothing) as glTF 2.0; a .glb name writes binary. Always Y-up."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToGltf)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export glTF..."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_flipYZForExport,
                         QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z"),

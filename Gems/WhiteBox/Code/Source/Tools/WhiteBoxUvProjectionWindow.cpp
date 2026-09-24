@@ -79,6 +79,14 @@ namespace WhiteBox
         controls->addWidget(m_offsetV, 2, 2);
         controls->addWidget(new QLabel(tr("Rotation"), this), 3, 0);
         controls->addWidget(m_rotation, 3, 1, 1, 2);
+        // Density is not a live control: it only applies when Normalize is pressed.
+        m_density = makeSpin(0.0001, 1000.0, 0.1, 4);
+        m_density->setToolTip(tr("Repeats per metre that Normalize gives every selected polygon. Starts at their average."));
+        m_normalize = new QPushButton(tr("Normalize"), this);
+        m_normalize->setToolTip(tr("Give every selected polygon this tiling on both axes, so the texture reads at one scale across them."));
+        controls->addWidget(new QLabel(tr("Density"), this), 4, 0);
+        controls->addWidget(m_density, 4, 1);
+        controls->addWidget(m_normalize, 4, 2);
         layout->addLayout(controls);
 
         m_selection = new QLabel(this);
@@ -94,12 +102,20 @@ namespace WhiteBox
         m_reset = new QPushButton(tr("Reset"), this);
         m_reset->setToolTip(tr("Back to the default World mapping."));
         auto* close = new QPushButton(tr("Close  [Esc]"), this);
+        m_copy = new QPushButton(tr("Copy"), this);
+        m_copy->setToolTip(tr("Remember the first selected polygon's projection."));
+        m_paste = new QPushButton(tr("Paste"), this);
+        m_paste->setToolTip(tr("Apply the copied projection to the selected polygons, on this or any other White Box."));
         // Enter commits a typed value; with no default button it never closes the window as well.
-        for (auto* button : { m_fit, m_reset, close })
+        for (auto* button : { m_fit, m_reset, close, m_normalize, m_copy, m_paste })
         {
             button->setAutoDefault(false);
             button->setDefault(false);
         }
+        auto* clipboard = new QHBoxLayout();
+        clipboard->addWidget(m_copy);
+        clipboard->addWidget(m_paste);
+        layout->addLayout(clipboard);
         actions->addWidget(m_fit);
         actions->addWidget(m_reset);
         actions->addWidget(close);
@@ -119,6 +135,23 @@ namespace WhiteBox
         connect(m_reset, &QPushButton::clicked, this, [this]()
         {
             const auto result = ModelingOps::ApplyUvProjection(m_pair, Api::UvProjection{});
+            ShowResult(result.m_success, result.m_message);
+            RefreshSelection(true);
+        });
+        connect(m_normalize, &QPushButton::clicked, this, [this]()
+        {
+            const auto result = ModelingOps::NormalizeTexelDensity(m_pair, static_cast<float>(m_density->value()));
+            ShowResult(result.m_success, result.m_message);
+            RefreshSelection(true);
+        });
+        connect(m_copy, &QPushButton::clicked, this, [this]()
+        {
+            const auto result = ModelingOps::CopyUvProjection(m_pair);
+            ShowResult(result.m_success, result.m_message);
+        });
+        connect(m_paste, &QPushButton::clicked, this, [this]()
+        {
+            const auto result = ModelingOps::PasteUvProjection(m_pair);
             ShowResult(result.m_success, result.m_message);
             RefreshSelection(true);
         });
@@ -149,10 +182,12 @@ namespace WhiteBox
         m_selection->setText(polygons.empty() ? tr("Select polygons in Transform mode.")
                                               : tr("%n polygon(s) selected", nullptr, static_cast<int>(polygons.size())));
         const bool usable = !polygons.empty();
-        for (QWidget* control : std::initializer_list<QWidget*>{ m_mode, m_tilingU, m_tilingV, m_offsetU, m_offsetV, m_rotation, m_fit, m_reset })
+        for (QWidget* control : std::initializer_list<QWidget*>{
+                 m_mode, m_tilingU, m_tilingV, m_offsetU, m_offsetV, m_rotation, m_fit, m_reset, m_density, m_normalize, m_copy })
         {
             control->setEnabled(usable);
         }
+        m_paste->setEnabled(usable && ModelingOps::HasCopiedUvProjection());
         // Follows selection changes and undo, but never overwrites a value while it is being typed.
         const bool editing = m_tilingU->hasFocus() || m_tilingV->hasFocus() || m_offsetU->hasFocus() || m_offsetV->hasFocus() ||
             m_rotation->hasFocus();
@@ -161,6 +196,14 @@ namespace WhiteBox
             if (const auto projection = ModelingOps::SelectedUvProjection(m_pair))
             {
                 LoadValues(*projection);
+            }
+        }
+        if ((force || !m_density->hasFocus()) && usable)
+        {
+            if (const auto density = ModelingOps::SelectedTexelDensity(m_pair))
+            {
+                const QSignalBlocker densityBlock(m_density);
+                m_density->setValue(*density);
             }
         }
     }

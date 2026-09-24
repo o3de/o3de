@@ -12,6 +12,7 @@
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "Tools/WhiteBoxLayerUtil.h"
+#include "Util/WhiteBoxModelConvert.h"
 #include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
@@ -40,6 +41,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QMessageBox>
 #include <QIcon>
 #include <QMouseEvent>
 #include <QPainter>
@@ -542,6 +544,11 @@ namespace WhiteBox
         buttonRow->addWidget(m_editButton);
         buttonRow->addWidget(m_doneButton);
         layout->addLayout(buttonRow);
+        m_convertMeshButton = new QPushButton(tr("Convert Selected Mesh"));
+        m_convertMeshButton->setToolTip(
+            tr("Replace the selected entity's Mesh component with a White Box built from its model, keeping each slot's "
+               "material and smoothing curved areas. One undo step."));
+        layout->addWidget(m_convertMeshButton);
 
         connect(
             m_entityCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -554,6 +561,28 @@ namespace WhiteBox
             });
         connect(m_newEntityButton, &QPushButton::clicked, this, [this]() { CreateWhiteBoxEntity(false); });
         connect(m_newChildButton, &QPushButton::clicked, this, [this]() { CreateWhiteBoxEntity(true); });
+        connect(m_convertMeshButton, &QPushButton::clicked, this,
+            [this]()
+            {
+                AzToolsFramework::EntityIdList selected;
+                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                    selected, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+                if (selected.size() != 1)
+                {
+                    QMessageBox::information(this, tr("Convert Mesh"), tr("Select one entity with a Mesh component."));
+                    return;
+                }
+                AZStd::string message;
+                if (!ConvertMeshEntityToWhiteBox(selected.front(), message))
+                {
+                    QMessageBox::warning(this, tr("Convert Mesh"), QString::fromUtf8(message.c_str()));
+                    return;
+                }
+                AZ_Printf("White Box", "%s", message.c_str());
+                RefreshEntityList();
+                SetCurrentEntity(selected.front());
+                RefreshFromComponent();
+            });
         connect(m_editButton, &QPushButton::clicked, this,
             [this]()
             {

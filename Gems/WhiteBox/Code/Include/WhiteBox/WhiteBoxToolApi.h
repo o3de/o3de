@@ -880,6 +880,16 @@ namespace WhiteBox
         void SetPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const UvProjection& projection);
         //! Keep each polygon's mode and rotation but pick scale and offset so the texture spans it exactly once.
         void FitPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+        //! Give every polygon the same tiling (repeats per metre on both axes), keeping its mode, rotation and texture anchor.
+        void NormalizePolygonTexelDensity(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, float repeatsPerMetre);
+        //! Mean tiling over the polygons' faces (both axes), or one when there are none.
+        float PolygonTexelDensity(const WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+
+        //! Rebuild the mesh from a triangle soup: coincident vertices weld, coplanar neighbours with one material become polygons.
+        //! triangleMaterials is optional (one per triangle). Returns false and leaves the mesh untouched when nothing usable is left.
+        bool BuildFromTriangles(
+            WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<AZ::u32>& indices,
+            const AZStd::vector<AZ::Data::AssetId>& triangleMaterials = {});
         //! Copy material, paint and UV projection from one face to another, possibly in another mesh.
         void CopyFaceAttributes(WhiteBoxMesh& target, FaceHandle targetFace, const WhiteBoxMesh& source, FaceHandle sourceFace);
         //! Pairwise copy for many faces at once, looking each property up only once.

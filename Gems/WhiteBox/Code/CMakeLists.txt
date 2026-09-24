@@ -103,6 +103,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Static
                 3rdParty::OpenMesh # Needs to be public, so that the below .Editor gem module includes the lib.
                 3rdParty::Manifold # CSG boolean operations (Api::ApplyMeshBoolean). Public for the same reason as OpenMesh.
+            PRIVATE
+                3rdParty::WhiteBox.v-hacd # Header-only convex decomposition for the Convex Parts collider.
+                3rdParty::OpenMeshTools # Decimater for the Triangle Mesh (Simplified) collider.
     )
 
     target_compile_options(${gem_name}.Editor.Static ${O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION})
