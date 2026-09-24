@@ -20,7 +20,7 @@ namespace WhiteBox
 
         // mesh vertex attribute data in host memory format
         AZStd::vector<AZ::Vector3> positions(vertCount);
-        AZStd::vector<AZ::Vector3> normals(vertCount);
+        AZStd::vector<AZ::Vector3> normals(vertCount, AZ::Vector3::CreateZero()); // smoothed corners only
         AZStd::vector<AZ::Vector2> uvs(vertCount);
 
         m_indices.resize_no_construct(vertCount);
@@ -41,14 +41,17 @@ namespace WhiteBox
             // v1
             positions[idxFace * 3 + 0] = face.m_v1.m_position;
             uvs[idxFace * 3 + 0] = face.m_v1.m_uv;
+            normals[idxFace * 3 + 0] = face.m_v1.m_normal;
 
             // v2
             positions[idxFace * 3 + 1] = face.m_v2.m_position;
             uvs[idxFace * 3 + 1] = face.m_v2.m_uv;
+            normals[idxFace * 3 + 1] = face.m_v2.m_normal;
 
             // v3
             positions[idxFace * 3 + 2] = face.m_v3.m_position;
             uvs[idxFace * 3 + 2] = face.m_v3.m_uv;
+            normals[idxFace * 3 + 2] = face.m_v3.m_normal;
 
             // per-face tint (per-layer colour) -> per-vertex COLOR0
             m_colors[idxFace * 3 + 0] = face.m_color;
@@ -62,9 +65,16 @@ namespace WhiteBox
 
         for (size_t i = 0; i < vertCount; i++)
         {
-            const auto normal = tangentSpaceCalculation.GetNormal(static_cast<AZ::u32>(i));
-            const auto tangent = tangentSpaceCalculation.GetTangent(static_cast<AZ::u32>(i));
-            const auto bitangent = tangentSpaceCalculation.GetBitangent(static_cast<AZ::u32>(i));
+            AZ::Vector3 normal = tangentSpaceCalculation.GetNormal(static_cast<AZ::u32>(i));
+            AZ::Vector3 tangent = tangentSpaceCalculation.GetTangent(static_cast<AZ::u32>(i));
+            AZ::Vector3 bitangent = tangentSpaceCalculation.GetBitangent(static_cast<AZ::u32>(i));
+            // A smoothed corner replaces the flat normal; the UV tangents are re-projected onto its plane.
+            if (!normals[i].IsZero())
+            {
+                normal = normals[i];
+                tangent = (tangent - normal * normal.Dot(tangent)).GetNormalizedSafe();
+                bitangent = (bitangent - normal * normal.Dot(bitangent)).GetNormalizedSafe();
+            }
 
             m_aabb.AddPoint(positions[i]);
 

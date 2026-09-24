@@ -669,7 +669,7 @@ namespace WhiteBox
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-    AZStd::string EditorWhiteBoxComponent::UniqueLayerName(const AZStd::string& base) const
+    AZStd::string EditorWhiteBoxComponent::UniqueLayerName(const AZStd::string& base, const char* suffix) const
     {
         const auto taken = [this](const AZStd::string& name)
         {
@@ -681,12 +681,62 @@ namespace WhiteBox
                 });
         };
 
-        AZStd::string candidate = base + " copy";
-        for (int suffix = 2; taken(candidate); ++suffix)
+        AZStd::string candidate = base + suffix;
+        for (int number = 2; taken(candidate); ++number)
         {
-            candidate = AZStd::string::format("%s copy %d", base.c_str(), suffix);
+            candidate = AZStd::string::format("%s%s %d", base.c_str(), suffix, number);
         }
         return candidate;
+    }
+
+    bool EditorWhiteBoxComponent::DetachPolygonsToLayer(const Api::PolygonHandles& polygons, AZStd::string& error)
+    {
+        if (m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()) || !m_whiteBox)
+        {
+            error = "There is no active layer to detach from.";
+            return false;
+        }
+        if (AssetInUse())
+        {
+            error = "This mesh lives in a shared White Box asset, which has no layers. Detach needs a component-stored mesh.";
+            return false;
+        }
+        Api::WhiteBoxMeshPtr detached = Api::CreateWhiteBoxMesh();
+        if (!Api::DetachPolygons(*m_whiteBox, polygons, *detached, error))
+        {
+            return false;
+        }
+        // The source lost faces, so its shape parameters no longer describe it.
+        BakeParametricLayer(m_activeLayerIndex);
+        SerializeWhiteBox(); // commit the reduced source layer
+
+        // Same placement and look as the source, so nothing moves on screen; only the geometry is new.
+        const WhiteBoxLayer& source = m_layers[m_activeLayerIndex];
+        WhiteBoxLayer layer;
+        layer.m_name = UniqueLayerName(source.m_name, " detached");
+        layer.m_id = AllocLayerId();
+        layer.m_visible = source.m_visible;
+        layer.m_collision = source.m_collision;
+        layer.m_tint = source.m_tint;
+        layer.m_combineMode = source.m_combineMode;
+        layer.m_invertNormals = source.m_invertNormals;
+        layer.m_edgesOnly = source.m_edgesOnly;
+        layer.m_position = source.m_position;
+        layer.m_rotation = source.m_rotation;
+        layer.m_scale = source.m_scale;
+        Api::WriteMesh(*detached, layer.m_freeformData);
+        m_layers.insert(m_layers.begin() + m_activeLayerIndex + 1, AZStd::move(layer));
+
+        ++m_activeLayerIndex;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        m_layerRuntime.m_loadedIndex = -1; // the working members still hold the source
+        LoadActiveLayer();
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        EditorWhiteBoxComponentNotificationBus::Event(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()), &EditorWhiteBoxComponentNotificationBus::Events::OnLayerStructureChanged);
+        return true;
     }
 
     AZ::Crc32 EditorWhiteBoxComponent::OnDuplicateLayer()

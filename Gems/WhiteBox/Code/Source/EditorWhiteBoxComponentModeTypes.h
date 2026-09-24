@@ -13,6 +13,7 @@
 #include <AzCore/std/optional.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <Viewport/WhiteBoxManipulatorBounds.h>
+#include <Viewport/WhiteBoxModifierUtil.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 
 namespace AZ
@@ -128,6 +129,10 @@ namespace WhiteBox
         AZStd::optional<EdgeIntersection> m_edgeIntersection;
         AZStd::optional<PolygonIntersection> m_polygonIntersection;
         AZStd::optional<VertexIntersection> m_vertexIntersection;
+        //! The selection tool the viewport cluster has armed, if any.
+        SelectionTool m_selectionTool = SelectionTool::None;
+        //! What the filter buttons allow. Box select reads it to know what to gather.
+        SelectionFilter m_selectionFilter = SelectionFilter::None;
     };
 
     //! Draw all edge handles except @p excludedEdgeHandles, batched into one DrawLines call.

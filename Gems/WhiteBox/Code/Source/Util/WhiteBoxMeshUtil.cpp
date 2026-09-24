@@ -52,12 +52,7 @@ namespace WhiteBox
             }
             if (!faceVertHandles.empty())
             {
-                const Api::PolygonHandle added = Api::AddPolygon(dest, faceVertHandles);
-                for (size_t face = 0; face < added.m_faceHandles.size() && face < polygon.m_faceHandles.size(); ++face)
-                {
-                    Api::SetFaceMaterial(dest, added.m_faceHandles[face], Api::FaceMaterial(src, polygon.m_faceHandles[face]));
-                    Api::SetFacePaintColor(dest, added.m_faceHandles[face], Api::FacePaintColor(src, polygon.m_faceHandles[face]));
-                }
+                Api::CopyFaceAttributes(dest, Api::AddPolygon(dest, faceVertHandles).m_faceHandles, src, polygon.m_faceHandles);
             }
         }
     }
@@ -143,12 +138,7 @@ namespace WhiteBox
             }
             if (!faceVertHandles.empty())
             {
-                const Api::PolygonHandle added = Api::AddPolygon(*dest, faceVertHandles);
-                for (size_t face = 0; face < added.m_faceHandles.size() && face < polygon.m_faceHandles.size(); ++face)
-                {
-                    Api::SetFaceMaterial(*dest, added.m_faceHandles[face], Api::FaceMaterial(src, polygon.m_faceHandles[face]));
-                    Api::SetFacePaintColor(*dest, added.m_faceHandles[face], Api::FacePaintColor(src, polygon.m_faceHandles[face]));
-                }
+                Api::CopyFaceAttributes(*dest, Api::AddPolygon(*dest, faceVertHandles).m_faceHandles, src, polygon.m_faceHandles);
             }
         }
 
@@ -177,6 +167,10 @@ namespace WhiteBox
             Api::FaceMaterial(whiteBox, faceHandle), azrtti_typeid<AZ::RPI::MaterialAsset>());
         face.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
+        // Flat faces leave the corner normals zero, so the blob and the renderer skip them.
+        const bool smooth = Api::FaceSmoothingGroups(whiteBox, faceHandle) != 0;
+        const auto cornerNormals = smooth ? Api::FaceCornerNormals(whiteBox, faceHandle)
+                                          : AZStd::array<AZ::Vector3, 3>{ { AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero() } };
 
         if (flipWinding)
         {
@@ -185,12 +179,18 @@ namespace WhiteBox
             copyVertex(faceHalfedgeHandles[1], face.m_v2);
             copyVertex(faceHalfedgeHandles[2], face.m_v1);
             face.m_normal = -face.m_normal;
+            face.m_v3.m_normal = -cornerNormals[0];
+            face.m_v2.m_normal = -cornerNormals[1];
+            face.m_v1.m_normal = -cornerNormals[2];
         }
         else
         {
             copyVertex(faceHalfedgeHandles[0], face.m_v1);
             copyVertex(faceHalfedgeHandles[1], face.m_v2);
             copyVertex(faceHalfedgeHandles[2], face.m_v3);
+            face.m_v1.m_normal = cornerNormals[0];
+            face.m_v2.m_normal = cornerNormals[1];
+            face.m_v3.m_normal = cornerNormals[2];
         }
 
         return face;

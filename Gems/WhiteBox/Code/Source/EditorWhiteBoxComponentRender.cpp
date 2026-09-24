@@ -343,6 +343,11 @@ namespace WhiteBox
         OnMaterialChange();
     }
 
+    void EditorWhiteBoxComponent::OnDefaultMaterialChange()
+    {
+        SetMaterialOverride(m_defaultMaterialAsset.GetId());
+    }
+
     void EditorWhiteBoxComponent::SetMaterialOverride(const AZ::Data::AssetId& materialAssetId)
     {
         if (m_materialOverrideAssetId == materialAssetId)
@@ -353,6 +358,7 @@ namespace WhiteBox
         m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
             materialAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
         m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        m_defaultMaterialAsset = m_material.m_materialAsset; // the card follows changes made elsewhere
         // The material asset is baked into the model when it is created, so force the render mesh to
         // be recreated (drop to a null render mesh first) with the new material.
         if (m_renderMesh.has_value())

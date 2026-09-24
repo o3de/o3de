@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg4"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <title
+     id="title1">Delete Polygon</title>
+  <path
+     d="M 4.133891,4.1231845 H 20.449126 V 20.493798 H 4.133891 Z"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.66929"
+     stroke-linejoin="round"
+     stroke-dasharray="2.6, 2.2"
+     id="path1" />
+  <ellipse
+     cx="4.1338911"
+     cy="4.1231847"
+     fill="#dadada"
+     id="circle1"
+     rx="1.8490601"
+     ry="1.8553362"
+     style="stroke-width:1.08952" />
+  <ellipse
+     cx="20.449125"
+     cy="4.1231847"
+     fill="#dadada"
+     id="circle2"
+     rx="1.8490601"
+     ry="1.8553362"
+     style="stroke-width:1.08952" />
+  <ellipse
+     cx="4.1338911"
+     cy="20.493797"
+     fill="#dadada"
+     id="circle3"
+     rx="1.8490601"
+     ry="1.8553362"
+     style="stroke-width:1.08952" />
+  <ellipse
+     cx="20.449125"
+     cy="20.493797"
+     fill="#dadada"
+     id="circle4"
+     rx="1.8490601"
+     ry="1.8553362"
+     style="stroke-width:1.08952" />
+  <path
+     d="m 8.5933886,8.5978189 7.3962404,7.4213441 m 0,-7.4213441 -7.3962404,7.4213441"
+     fill="none"
+     stroke="#67c7e8"
+     stroke-width="2.29527"
+     stroke-linecap="round"
+     id="path4" />
+</svg>

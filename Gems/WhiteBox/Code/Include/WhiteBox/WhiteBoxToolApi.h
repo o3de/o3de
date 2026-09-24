@@ -817,6 +817,75 @@ namespace WhiteBox
         void SetFaceMaterial(WhiteBoxMesh& whiteBox, FaceHandle face, const AZ::Data::AssetId& material);
         void SetPolygonMaterial(WhiteBoxMesh& whiteBox, const PolygonHandle& polygon, const AZ::Data::AssetId& material);
 
+        //! Smoothing group bitmask (bit n = group n + 1); faces sharing a bit smooth across shared vertices, zero is flat.
+        AZ::u32 FaceSmoothingGroups(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFaceSmoothingGroups(WhiteBoxMesh& whiteBox, FaceHandle face, AZ::u32 groups);
+        //! Set, add (combine) or remove the bits on every face of the polygons.
+        enum class SmoothingEdit
+        {
+            Set,
+            Add,
+            Remove
+        };
+        void SetPolygonSmoothingGroups(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZ::u32 groups, SmoothingEdit edit = SmoothingEdit::Set);
+        //! Assign groups so neighbours within angleDegrees smooth together and sharper creases stay hard.
+        void AutoSmoothPolygons(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, float angleDegrees);
+        //! Per-corner normals in FaceHalfedgeHandles order: angle-weighted over faces sharing a smoothing group, else the face normal.
+        AZStd::array<AZ::Vector3, 3> FaceCornerNormals(const WhiteBoxMesh& whiteBox, FaceHandle face);
+
+        //! Which property Select Similar compares against the seed polygons.
+        enum class SimilarBy
+        {
+            Material,
+            Normal,
+            Area,
+            Sides,
+            SmoothingGroups
+        };
+        //! Every polygon matching any seed on the chosen property (normal within toleranceDegrees, area within 5 percent). Seeds stay first.
+        PolygonHandles FindSimilarPolygons(
+            const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds, SimilarBy similarBy, float toleranceDegrees = 1.0f);
+        //! Edges matching any seed's length within 5 percent; vertices matching any seed's visible edge count.
+        EdgeHandles FindSimilarEdges(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles FindSimilarVertices(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+
+        //! Split each polygon into quads (one per corner, meeting at its centre); shared borders split once. Transactional.
+        bool SubdividePolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error, PolygonHandles* created = nullptr);
+
+        //! How a face's texture coordinates are generated each time UVs are recalculated.
+        enum class UvProjectionMode : AZ::u32
+        {
+            World = 0, //!< The original mapping: project along the face normal's dominant local axis.
+            Planar = 1 //!< Project onto the face's own plane, so sloped faces do not stretch.
+        };
+
+        //! Per-face texture placement applied after projection (rotate, scale, offset); the default is the original mapping.
+        struct UvProjection
+        {
+            UvProjectionMode m_mode = UvProjectionMode::World;
+            AZ::Vector2 m_scale = AZ::Vector2(1.0f, 1.0f); //!< Texture repeats per metre along U and V.
+            AZ::Vector2 m_offset = AZ::Vector2(0.0f, 0.0f);
+            float m_rotationDegrees = 0.0f;
+
+            bool IsDefault() const;
+            bool operator==(const UvProjection& other) const;
+            bool operator!=(const UvProjection& other) const { return !operator==(other); }
+        };
+
+        //! Persistent per-face projection, honoured by every CalculatePlanarUVs call.
+        UvProjection FaceUvProjection(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFaceUvProjection(WhiteBoxMesh& whiteBox, FaceHandle face, const UvProjection& projection);
+        //! Set the projection on every face of the polygons and recalculate their UVs.
+        void SetPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const UvProjection& projection);
+        //! Keep each polygon's mode and rotation but pick scale and offset so the texture spans it exactly once.
+        void FitPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+        //! Copy material, paint and UV projection from one face to another, possibly in another mesh.
+        void CopyFaceAttributes(WhiteBoxMesh& target, FaceHandle targetFace, const WhiteBoxMesh& source, FaceHandle sourceFace);
+        //! Pairwise copy for many faces at once, looking each property up only once.
+        void CopyFaceAttributes(
+            WhiteBoxMesh& target, const FaceHandles& targetFaces, const WhiteBoxMesh& source, const FaceHandles& sourceFaces);
+
         bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output);
 
         //! Clones the white box mesh object into a new mesh.
@@ -829,8 +898,7 @@ namespace WhiteBox
             WhiteBoxMesh& mesh, const EdgeHandles& edges, const AZ::Vector3& offset,
             EdgeHandles& result, PolygonHandles& preview, AZStd::string& error);
 
-        //! Extrude connected selected regions along their area-weighted normals, or inset planar
-        //! convex regions by a fraction (0, 1), matching Sketch's proportional inset.
+        //! Extrude regions along their normals, or inset by a fraction (0, 1): convex planar regions scale, others get an even border.
         //! Preserves polygon divisions, face materials/paint and existing UVs. Transactional on failure.
         bool ExtrudeInsetRegions(
             WhiteBoxMesh& whiteBox, const PolygonHandles& selection, float amount, bool inset,
@@ -840,6 +908,32 @@ namespace WhiteBox
         //! Transactional: a failure returns a message and leaves the mesh unchanged.
         bool BridgeSelection(
             WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const EdgeHandles& edges, AZStd::string& error);
+
+        //! Fill the planar hole bordered by the selected open edges with one polygon (concave allowed).
+        //! Transactional: a failure returns a message and leaves the mesh unchanged.
+        bool FillHole(
+            WhiteBoxMesh& whiteBox, const EdgeHandles& edges, AZStd::string& error, PolygonHandle* filled = nullptr);
+
+        //! Delete the selected polygons, keeping their vertices. Transactional.
+        bool DeletePolygons(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error);
+
+        //! As DeletePolygons, but at triangle granularity, so one triangle of a quad can go while
+        //! its partner stays. Duplicate handles in the selection are ignored.
+        bool DeleteFaces(WhiteBoxMesh& whiteBox, const FaceHandles& selection, AZStd::string& error);
+
+        //! Merge a connected run of polygons into one by hiding every border they share. Transactional.
+        bool MergePolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error,
+            PolygonHandle* merged = nullptr);
+
+        //! Grow a polygon selection over neighbours facing the same way. Does not modify the mesh.
+        PolygonHandles FindCoplanarRegion(
+            const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds, float toleranceDegrees = 1.0f);
+
+        //! Grow a selection to the whole connected shell, crossing shared edges but not lone vertices.
+        PolygonHandles FindLinkedPolygons(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles FindLinkedEdges(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles FindLinkedVertices(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
 
         //! Merge selected vertices at their average or the last selected one. Failure leaves the mesh unchanged.
         bool WeldVertices(WhiteBoxMesh& whiteBox, const VertexHandles& vertices, bool toLastSelected, AZStd::string& error);
@@ -852,6 +946,48 @@ namespace WhiteBox
         //! Expand across opposite quad edges, stopping at non-quads and ambiguous topology.
         EdgeHandles FindEdgeRing(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
 
+        //! Expand quads into the face strip through them; loop and ring are the two directions.
+        PolygonHandles FindPolygonLoop(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        PolygonHandles FindPolygonRing(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+
+        //! Grow one step (polygons sharing a corner, edges sharing an end, vertices one edge away); seeds stay first.
+        PolygonHandles GrowPolygonSelection(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles GrowEdgeSelection(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles GrowVertexSelection(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+        //! The inverse of grow: drop every seed that touches an unselected neighbour. May return empty.
+        PolygonHandles ShrinkPolygonSelection(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles ShrinkEdgeSelection(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles ShrinkVertexSelection(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+
+        //! One element type's worth of selection; conversion reads whichever member is filled.
+        struct ElementSelection
+        {
+            PolygonHandles m_polygons;
+            EdgeHandles m_edges;
+            VertexHandles m_vertices;
+        };
+        //! Which element type a selection converts to.
+        enum class SelectionElement
+        {
+            Vertex,
+            Edge,
+            Polygon
+        };
+        //! Convert to another element type: down takes every part, up takes what is enclosed (or touched when touching).
+        ElementSelection ConvertSelection(
+            const WhiteBoxMesh& whiteBox, const ElementSelection& source, SelectionElement target, bool touching);
+
+        //! Move polygons into detached with all face attributes and UVs; refuses every face. Transactional.
+        bool DetachPolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, WhiteBoxMesh& detached, AZStd::string& error);
+
+        //! Split polygons along straight cuts: a path in selection order, else polygons with two selected corners. Transactional.
+        bool ConnectVertices(
+            WhiteBoxMesh& whiteBox, const VertexHandles& vertices, AZStd::string& error, EdgeHandles* created = nullptr);
+
+        //! Add a visible corner on a polygon border edge at fraction (0, 1) from its first endpoint; invalid on failure.
+        VertexHandle InsertVertexOnEdge(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error);
+
         //! Bevel convex edges, including connected selections at simple corners. Width is the face offset.
         //! Segments (1-32) controls the rounded profile. Failure leaves the mesh unchanged.
         bool BevelEdges(WhiteBoxMesh& whiteBox, const EdgeHandles& edges, float width, int segments, AZStd::string& error, float profile = 0.5f);
@@ -861,6 +997,19 @@ namespace WhiteBox
         //! Read-only preview: pairs of local-space endpoints, using the same strip validation as insertion.
         bool PreviewEdgeLoops(
             WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::vector<AZ::Vector3>& lines, AZStd::string& error, float slide = 0.0f);
+
+        //! A surface anchor in mesh-local coordinates. The face disambiguates overlapping surfaces.
+        struct KnifePoint
+        {
+            FaceHandle m_face;
+            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        };
+
+        //! Cut the surface along the plane through two anchors and the view direction. Transactional;
+        //! on success @p end references a resulting face, ready for the next segment.
+        bool KnifeCut(
+            WhiteBoxMesh& mesh, const KnifePoint& start, KnifePoint& end, const AZ::Vector3& viewDirection,
+            AZStd::vector<AZ::Vector3>& lines, AZStd::string& error);
 
         //! Writes the white box mesh to an obj file at the specified path.
         //! @return Will return false if any error was encountered during serialization, true otherwise.

@@ -16,7 +16,10 @@
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzFramework/Viewport/ScreenGeometry.h> // ScreenPoint, held by value below
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <QPointer>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -48,6 +51,7 @@ namespace AzToolsFramework
 namespace WhiteBox
 {
     struct IntersectionAndRenderData;
+    class WhiteBoxToolStatus;
 
     class TransformMode
         : public EditorWhiteBoxTransformModeRequestBus::Handler
@@ -89,9 +93,15 @@ namespace WhiteBox
         Api::EdgeHandles GetSelectedEdges() const override;
         Api::VertexHandles GetSelectedVertices() const override;
         void ClearSelection() override;
-        void RefreshManipulatorSpace() override { RefreshManipulator(); }
+        void RefreshManipulatorSpace() override { if (m_knifeActive) { Refresh(); } else { RefreshManipulator(); } }
         void SetSelectedPolygons(const Api::PolygonHandles& polygons) override;
+        void SetSelectedEdges(const Api::EdgeHandles& edges) override;
+        void SetSelectedVertices(const Api::VertexHandles& vertices) override;
         void BeginLoopCut() override;
+        void BeginKnife() override;
+        bool IsKnifeActive() const override { return m_knifeActive; }
+        void BeginInsertVertex() override;
+        bool IsInsertVertexActive() const override { return m_insertVertexActive; }
         bool ExpandEdgeSelection(bool ring) override;
 
         // Numeric input bus overrides
@@ -101,7 +111,7 @@ namespace WhiteBox
         void NumericSetAxisX()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::X); }
         void NumericSetAxisY()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Y); }
         void NumericSetAxisZ()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Z); }
-        void NumericConfirm()           override { ApplyNumericTransform(); }
+        void NumericConfirm()           override { if (m_knifeActive) { ConfirmKnife(); } else { ApplyNumericTransform(); } }
         //! @note Escape is NOT routed here - see the note on DefaultMode::NumericMoveCancel.
         //! The real handler is HandleEscape, dispatched from the back-action override.
         void NumericCancel() override { m_numericInput.Reset(); }
@@ -152,6 +162,9 @@ namespace WhiteBox
         void UpdateTransformHandles(WhiteBoxMesh* mesh);
         void RefreshManipulator();
         void DestroyManipulators();
+        void UpdateToolStatus(int viewportId);
+        void HideToolStatus();
+        AZStd::unordered_map<int, QPointer<WhiteBoxToolStatus>> m_toolStatus;
 
         //! Apply the current numeric input state to the selected geometry, then reset the state.
         void ApplyNumericTransform();
@@ -165,7 +178,15 @@ namespace WhiteBox
         AZStd::optional<EdgeIntersection> m_edgeIntersection = AZStd::nullopt;
         AZStd::optional<VertexIntersection> m_vertexIntersection = AZStd::nullopt;
 
-        void SetSelectedEdges(const Api::EdgeHandles& edges);
+        //! Run the finished marquee against the mesh and take what falls inside it.
+        void ApplyBoxSelection(const ModeMouseInteraction& mouse);
+        //! Armed on mouse down; only becomes a real marquee once the cursor actually travels.
+        bool m_boxSelectPending = false;
+        bool m_boxSelectActive = false;
+        AzFramework::ScreenPoint m_boxSelectAnchor;
+        AzFramework::ScreenPoint m_boxSelectCursor;
+        //! Add whatever the cursor is over to the selection, never removing. True if it grew.
+        bool AddHitToSelection(const ModeMouseInteraction& mouse, GeometryIntersection hit);
         bool BeginLatchedDrag(const ModeMouseInteraction& mouse, WhiteBoxMesh& mesh, GeometryIntersection hit);
         bool HandleLatchedDrag(const ModeMouseInteraction& mouse);
         //! Run one amount against the live mesh, always from the pristine source so the drag is not
@@ -200,7 +221,30 @@ namespace WhiteBox
         AZ::Transform m_latchWorldFromLocal = AZ::Transform::CreateIdentity();
         float m_latchFallbackScale = 0.01f;
         AZStd::string m_latchError;
+        void ConfirmKnife();
+        bool HandleKnife(const ModeMouseInteraction& mouse);
+        bool m_knifeActive = false;
+        AZ::u64 m_knifeLayerId = 0;
+        Api::WhiteBoxMeshPtr m_knifeMesh;
+        Api::WhiteBoxMeshPtr m_knifeHoverMesh;
+        Api::WhiteBoxMeshStream m_knifeSourceBytes;
+        AZStd::optional<Api::KnifePoint> m_knifeAnchor;
+        AZStd::optional<Api::KnifePoint> m_knifeHover;
+        AZStd::vector<AZ::Vector3> m_knifeLines;
+        AZStd::vector<AZ::Vector3> m_knifeHoverLines;
+        AZStd::string m_knifeError;
+
         bool HandleLoopCut(const ModeMouseInteraction& mouse, WhiteBoxMesh& mesh);
+        bool HandleInsertVertex(const ModeMouseInteraction& mouse, WhiteBoxMesh& mesh);
+        //! Leave Insert Vertex with everything it added selected, ready for Connect.
+        void FinishInsertVertex();
+        bool m_insertVertexActive = false;
+        Api::EdgeHandle m_insertVertexEdge; //!< Hovered border edge; invalid when the cursor is over nothing usable.
+        float m_insertVertexFraction = 0.5f;
+        AZ::Vector3 m_insertVertexPoint = AZ::Vector3::CreateZero();
+        AZStd::array<AZ::Vector3, 2> m_insertVertexLine = { AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero() };
+        Api::VertexHandles m_insertedVertices;
+        AZStd::string m_insertVertexError;
         bool m_loopCutActive = false;
         bool m_loopCutSliding = false;
         float m_loopCutSlide = 0.0f;

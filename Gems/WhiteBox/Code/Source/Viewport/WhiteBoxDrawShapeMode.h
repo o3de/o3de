@@ -177,6 +177,13 @@ namespace WhiteBox
         bool UnitCubeShowGrid() const;
         //! The snappable vertex under the cursor (nothing excluded: the drawn shape is new geometry).
         AZStd::optional<AZ::Vector3> SnapTargetUnderCursor(int viewportId) const;
+        //! Round a point to the viewport grid when grid snapping is on, then return it to the drawing plane through @p planePoint.
+        AZ::Vector3 SnapToGrid(const AZ::Vector3& world, const AZ::Vector3& planePoint, int viewportId) const;
+        //! Round a pull height to whole grid steps when grid snapping is on.
+        float SnapHeightToGrid(float height, int viewportId) const;
+        //! Next freeform outline point: with angle snapping the edge from the last point turns in angle steps (and grows in
+        //! grid steps when grid snapping is also on); otherwise the point snaps to the grid.
+        AZ::Vector3 SnapPolygonPoint(const AZ::Vector3& onPlane, int viewportId) const;
 
         //! @param snapTargetWorld When set, the cell is derived from this vertex instead of from
         //! @p hitWorld, so the stamp lands on an existing corner rather than wherever the ray hit.

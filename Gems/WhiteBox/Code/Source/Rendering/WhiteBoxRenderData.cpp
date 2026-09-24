@@ -39,9 +39,10 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxVertex>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Position", &WhiteBoxVertex::m_position)
-                ->Field("UV", &WhiteBoxVertex::m_uv);
+                ->Field("UV", &WhiteBoxVertex::m_uv)
+                ->Field("Normal", &WhiteBoxVertex::m_normal);
         }
     }
 
@@ -113,6 +114,7 @@ namespace
         FaceFlag_Color = 1 << 0,
         FaceFlag_PaintColor = 1 << 1,
         FaceFlag_MaterialAsset = 1 << 2,
+        FaceFlag_CornerNormals = 1 << 3,
     };
 
     template<typename T>
@@ -377,6 +379,10 @@ namespace WhiteBox
                 {
                     flags |= FaceFlag_MaterialAsset;
                 }
+                if (!face.m_v1.m_normal.IsZero())
+                {
+                    flags |= FaceFlag_CornerNormals;
+                }
                 BlobWrite(blob, flags);
 
                 BlobWriteVector3(blob, face.m_v1.m_position);
@@ -398,6 +404,12 @@ namespace WhiteBox
                 if (flags & FaceFlag_MaterialAsset)
                 {
                     BlobWrite(blob, faceMaterials[faceIndex]);
+                }
+                if (flags & FaceFlag_CornerNormals)
+                {
+                    BlobWriteVector3(blob, face.m_v1.m_normal);
+                    BlobWriteVector3(blob, face.m_v2.m_normal);
+                    BlobWriteVector3(blob, face.m_v3.m_normal);
                 }
             }
         }
@@ -499,6 +511,13 @@ namespace WhiteBox
                         return false;
                     }
                     face.m_materialAsset = faceAssets[materialIndex];
+                }
+                if ((flags & FaceFlag_CornerNormals) != 0 &&
+                    (!BlobReadVector3(blob, offset, face.m_v1.m_normal) || !BlobReadVector3(blob, offset, face.m_v2.m_normal) ||
+                     !BlobReadVector3(blob, offset, face.m_v3.m_normal)))
+                {
+                    clearAll();
+                    return false;
                 }
                 set.m_faces.push_back(AZStd::move(face));
             }

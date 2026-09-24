@@ -54,7 +54,8 @@ namespace WhiteBox
         m_amount->setValue(inset ? 10.0 : 0.1);
         if (inset) { m_amount->setSuffix(tr(" %")); }
         m_amount->setToolTip(inset
-            ? tr("Shrink each connected planar convex region toward its center, keeping its internal polygon divisions.")
+            ? tr("Inset each connected region, keeping its internal polygon divisions. Flat convex regions shrink toward "
+                 "their centre; concave, holed or bent ones get an even border, where 100% is as deep as it can go.")
             : tr("Move each connected region along its average normal. Negative values extrude inward."));
         row->addWidget(m_amount);
         layout->addLayout(row);

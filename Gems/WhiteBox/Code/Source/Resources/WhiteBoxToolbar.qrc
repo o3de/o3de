@@ -4,7 +4,24 @@
     <file alias="VertexPaint.svg">../../../Assets/Editor/Icons/Toolbar/VertexPaint.svg</file>
     <file alias="Bridge.svg">../../../Assets/Editor/Icons/Toolbar/Bridge.svg</file>
     <file alias="Weld.svg">../../../Assets/Editor/Icons/Toolbar/Weld.svg</file>
+    <file alias="FillHole.svg">../../../Assets/Editor/Icons/Toolbar/FillHole.svg</file>
+    <file alias="DeletePolygon.svg">../../../Assets/Editor/Icons/Toolbar/DeletePolygon.svg</file>
+    <file alias="SelectVertices.svg">../../../Assets/Editor/Icons/Toolbar/SelectVertices.svg</file>
+    <file alias="SelectEdges.svg">../../../Assets/Editor/Icons/Toolbar/SelectEdges.svg</file>
+    <file alias="SelectPolygons.svg">../../../Assets/Editor/Icons/Toolbar/SelectPolygons.svg</file>
+    <file alias="MergePolygons.svg">../../../Assets/Editor/Icons/Toolbar/MergePolygons.svg</file>
+    <file alias="SelectCoplanar.svg">../../../Assets/Editor/Icons/Toolbar/SelectCoplanar.svg</file>
+    <file alias="SelectLinked.svg">../../../Assets/Editor/Icons/Toolbar/SelectLinked.svg</file>
+    <file alias="GrowSelection.svg">../../../Assets/Editor/Icons/Toolbar/GrowSelection.svg</file>
+    <file alias="ShrinkSelection.svg">../../../Assets/Editor/Icons/Toolbar/ShrinkSelection.svg</file>
+    <file alias="DetachToLayer.svg">../../../Assets/Editor/Icons/Toolbar/DetachToLayer.svg</file>
+    <file alias="ConnectVertices.svg">../../../Assets/Editor/Icons/Toolbar/ConnectVertices.svg</file>
+    <file alias="InsertVertex.svg">../../../Assets/Editor/Icons/Toolbar/InsertVertex.svg</file>
+    <file alias="UvProjection.svg">../../../Assets/Editor/Icons/Toolbar/UvProjection.svg</file>
+    <file alias="StickySelect.svg">../../../Assets/Editor/Icons/Toolbar/StickySelect.svg</file>
+    <file alias="BoxSelect.svg">../../../Assets/Editor/Icons/Toolbar/BoxSelect.svg</file>
     <file alias="LoopCut.svg">../../../Assets/Editor/Icons/Toolbar/LoopCut.svg</file>
+    <file alias="Knife.svg">../../../Assets/Editor/Icons/Toolbar/Knife.svg</file>
     <file alias="Bevel.svg">../../../Assets/Editor/Icons/Toolbar/Bevel.svg</file>
     <file alias="ShapeBox.svg">../../../Assets/Editor/Icons/Toolbar/ShapeBox.svg</file>
     <file alias="ShapeCylinder.svg">../../../Assets/Editor/Icons/Toolbar/ShapeCylinder.svg</file>
@@ -31,5 +48,8 @@
     <file alias="ResetColor.svg">../../../Assets/Editor/Icons/Toolbar/ResetColor.svg</file>
     <file alias="EdgeLoop.svg">../../../Assets/Editor/Icons/Toolbar/EdgeLoop.svg</file>
     <file alias="EdgeRing.svg">../../../Assets/Editor/Icons/Toolbar/EdgeRing.svg</file>
+    <file alias="Subdivide.svg">../../../Assets/Editor/Icons/Toolbar/Subdivide.svg</file>
+    <file alias="SelectSimilar.svg">../../../Assets/Editor/Icons/Toolbar/SelectSimilar.svg</file>
+    <file alias="Smoothing.svg">../../../Assets/Editor/Icons/Toolbar/Smoothing.svg</file>
   </qresource>
 </RCC>

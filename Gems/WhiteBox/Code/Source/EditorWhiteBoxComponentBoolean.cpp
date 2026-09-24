@@ -500,6 +500,13 @@ namespace WhiteBox
         }
     }
 
+    AZ::u32 EditorWhiteBoxComponent::OnCsgSolverChange()
+    {
+        m_layerRuntime.m_meshCache.clear();
+        RebuildWhiteBox(); // re-evaluate every layer combine and the entity boolean with the new solver
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
     AZ::u32 EditorWhiteBoxComponent::OnLiveBooleanChange()
     {
         UpdateBooleanSourceListener();

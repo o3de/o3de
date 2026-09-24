@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -63,7 +64,11 @@ namespace WhiteBox
     // Helper: build a right-handed basis with `up` as the Z-equivalent (the normal).
     void Detail::BasisFromNormal(const AZ::Vector3& n, AZ::Vector3& right, AZ::Vector3& fwd, AZ::Vector3& up)
     {
-        up = n.GetNormalized();
+        up = n.GetNormalizedSafe();
+        if (up.IsZero())
+        {
+            up = AZ::Vector3::CreateAxisZ(); // a degenerate surface normal falls back to drawing on the ground
+        }
 
         const AZ::Vector3 ref = (AZStd::abs(up.GetZ()) < 0.99f)
             ? AZ::Vector3::CreateAxisZ()
@@ -197,11 +202,7 @@ namespace WhiteBox
         Api::AddPolygon(whiteBox, faces);
     }
 
-    // Build a parametric hollow room with double (cavity) walls. Emitted as several closed,
-    // outward-wound solids appended into the mesh: two concentric rectangular wall tubes (the
-    // inner and outer leaves) plus optional floor / ceiling slabs. No CSG is used - a room is a
-    // shell, and shells are exactly where volumetric booleans misbehave, so the geometry is built
-    // directly. The room sits on z in [0, interiorHeight] and is centred at the XY origin.
+    // Build a parametric hollow room with double (cavity) walls and optional slabs as one watertight shell, without CSG.
     void Detail::BuildRoomSolid(
         WhiteBoxMesh& mesh, const float interiorWidth, const float interiorDepth, const float interiorHeight,
         const float wallThicknessIn, const float cavityGapIn, const bool floor, const bool ceiling)
@@ -215,113 +216,162 @@ namespace WhiteBox
         const float ihx = iw * 0.5f; // interior half-extent along X
         const float ihy = id * 0.5f; // interior half-extent along Y
 
-        // Add an axis-aligned closed box [mn, mx] as 6 outward-wound quads on shared vertices.
-        const auto addBox = [&mesh](const AZ::Vector3& mn, const AZ::Vector3& mx)
-        {
-            const AZStd::vector<AZ::Vector3> pos = {
-                AZ::Vector3(mn.GetX(), mn.GetY(), mn.GetZ()), AZ::Vector3(mx.GetX(), mn.GetY(), mn.GetZ()),
-                AZ::Vector3(mx.GetX(), mx.GetY(), mn.GetZ()), AZ::Vector3(mn.GetX(), mx.GetY(), mn.GetZ()),
-                AZ::Vector3(mn.GetX(), mn.GetY(), mx.GetZ()), AZ::Vector3(mx.GetX(), mn.GetY(), mx.GetZ()),
-                AZ::Vector3(mx.GetX(), mx.GetY(), mx.GetZ()), AZ::Vector3(mn.GetX(), mx.GetY(), mx.GetZ()),
-            };
-            AZStd::vector<Api::VertexHandle> h(pos.size());
-            for (size_t i = 0; i < pos.size(); ++i)
-            {
-                h[i] = Api::AddVertex(mesh, pos[i]);
-            }
-            const AZ::Vector3 center = (mn + mx) * 0.5f;
-            const AZStd::vector<AZStd::vector<AZ::u32>> loops = {
-                { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 0, 1, 5, 4 }, { 1, 2, 6, 5 }, { 2, 3, 7, 6 }, { 3, 0, 4, 7 }
-            };
-            for (const AZStd::vector<AZ::u32>& loop : loops)
-            {
-                Detail::AddOutwardFace(mesh, h, pos, loop, center);
-            }
-        };
-
-        // Add a rectangular tube (extruded rectangular frame) between inner half-extents (hxi, hyi)
-        // and outer half-extents (hxo, hyo), spanning [zMin, zMax]. Inner faces point INTO the hole,
-        // outer faces point out, and the open top/bottom are closed by frame (annulus) rings.
-        const auto addTube =
-            [&mesh](float hxi, float hyi, float hxo, float hyo, float zMin, float zMax)
-        {
-            const float sx[4] = { -1.0f, 1.0f, 1.0f, -1.0f };
-            const float sy[4] = { -1.0f, -1.0f, 1.0f, 1.0f };
-            AZStd::vector<AZ::Vector3> pos;
-            pos.reserve(16);
-            for (int k = 0; k < 4; ++k) // 0-3 inner bottom
-                pos.push_back(AZ::Vector3(sx[k] * hxi, sy[k] * hyi, zMin));
-            for (int k = 0; k < 4; ++k) // 4-7 inner top
-                pos.push_back(AZ::Vector3(sx[k] * hxi, sy[k] * hyi, zMax));
-            for (int k = 0; k < 4; ++k) // 8-11 outer bottom
-                pos.push_back(AZ::Vector3(sx[k] * hxo, sy[k] * hyo, zMin));
-            for (int k = 0; k < 4; ++k) // 12-15 outer top
-                pos.push_back(AZ::Vector3(sx[k] * hxo, sy[k] * hyo, zMax));
-            AZStd::vector<Api::VertexHandle> h(pos.size());
-            for (size_t i = 0; i < pos.size(); ++i)
-            {
-                h[i] = Api::AddVertex(mesh, pos[i]);
-            }
-
-            // Add one quad (a,b,c,d in ring order), fan-triangulated and wound so its normal aligns
-            // with @p outward.
-            const auto quad = [&mesh, &pos, &h](AZ::u32 a, AZ::u32 b, AZ::u32 c, AZ::u32 d, const AZ::Vector3& outward)
-            {
-                const AZ::Vector3 n = (pos[b] - pos[a]).Cross(pos[c] - pos[a]);
-                const bool flip = n.Dot(outward) < 0.0f;
-                Api::FaceVertHandlesList faces;
-                if (!flip)
-                {
-                    faces.push_back(Api::FaceVertHandles{ { h[a], h[b], h[c] } });
-                    faces.push_back(Api::FaceVertHandles{ { h[a], h[c], h[d] } });
-                }
-                else
-                {
-                    faces.push_back(Api::FaceVertHandles{ { h[a], h[c], h[b] } });
-                    faces.push_back(Api::FaceVertHandles{ { h[a], h[d], h[c] } });
-                }
-                Api::AddPolygon(mesh, faces);
-            };
-
-            const AZ::Vector3 sideOut[4] = {
-                AZ::Vector3(0.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f),
-                AZ::Vector3(-1.0f, 0.0f, 0.0f)
-            };
-            for (AZ::u32 k = 0; k < 4; ++k)
-            {
-                const AZ::u32 k1 = (k + 1) % 4;
-                quad(8 + k, 8 + k1, 12 + k1, 12 + k, sideOut[k]);                  // outer wall
-                quad(0 + k, 0 + k1, 4 + k1, 4 + k, -sideOut[k]);                   // inner wall (into the hole)
-                quad(4 + k, 4 + k1, 12 + k1, 12 + k, AZ::Vector3::CreateAxisZ());  // top frame ring
-                quad(0 + k, 0 + k1, 8 + k1, 8 + k, -AZ::Vector3::CreateAxisZ());   // bottom frame ring
-            }
-        };
-
-        // A zero cavity gap means a solid wall, not two leaves pressed together. Emitting both
-        // tubes anyway would leave a pair of coincident faces buried inside the wall and make it
-        // 2t thick instead of t - so below the threshold the room is built as a single leaf.
-        const bool singleLeaf = gap < 1e-4f;
-
-        // Inner wall leaf: interior boundary out by one wall thickness.
-        addTube(ihx, ihy, ihx + t, ihy + t, 0.0f, ih);
-
+        // Nested rectangles, innermost first: the interior, then each wall leaf and the cavity between them.
+        const bool singleLeaf = gap < 1e-4f; // a zero gap is one solid wall, not two leaves pressed together
+        AZStd::vector<float> offsets = { 0.0f, t };
         if (!singleLeaf)
         {
-            // Outer wall leaf: past the cavity gap, out by another wall thickness.
-            addTube(ihx + t + gap, ihy + t + gap, ihx + 2.0f * t + gap, ihy + 2.0f * t + gap, 0.0f, ih);
+            offsets.push_back(t + gap);
+            offsets.push_back(2.0f * t + gap);
         }
+        const size_t boundaries = offsets.size();
 
-        // Full outer half-extents (used by floor/ceiling) - one leaf or two.
-        const float wallSpan = singleLeaf ? t : (2.0f * t + gap);
-        const float ox = ihx + wallSpan;
-        const float oy = ihy + wallSpan;
+        // Heights shared by every region, so faces meeting at a level meet on the same vertices.
+        const float levels[4] = { -t, 0.0f, ih, ih + t };
+        // Region r lies inside boundary r (and outside boundary r - 1); each is solid over some level ranges.
+        using Span = AZStd::pair<int, int>;
+        AZStd::vector<Span> slabs;
         if (floor)
         {
-            addBox(AZ::Vector3(-ox, -oy, -t), AZ::Vector3(ox, oy, 0.0f));
+            slabs.emplace_back(0, 1);
         }
         if (ceiling)
         {
-            addBox(AZ::Vector3(-ox, -oy, ih), AZ::Vector3(ox, oy, ih + t));
+            slabs.emplace_back(2, 3);
+        }
+        const Span leaf(floor ? 0 : 1, ceiling ? 3 : 2); // a leaf runs through the slabs it stands between
+        AZStd::vector<AZStd::vector<Span>> regions;
+        for (size_t region = 0; region < boundaries; ++region)
+        {
+            // Even regions are open space (interior, cavity) holding only the slabs; odd ones are wall leaves.
+            regions.push_back(region % 2 == 0 ? slabs : AZStd::vector<Span>{ leaf });
+        }
+        const auto solid = [&regions](const size_t region, const int level)
+        {
+            if (region >= regions.size())
+            {
+                return false; // outside the room
+            }
+            for (const Span& span : regions[region])
+            {
+                if (span.first <= level && level < span.second)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        const float sx[4] = { -1.0f, 1.0f, 1.0f, -1.0f };
+        const float sy[4] = { -1.0f, -1.0f, 1.0f, 1.0f };
+        AZStd::vector<Api::VertexHandle> cache(boundaries * 4 * 4);
+        const auto corner = [&](const size_t boundary, const int k, const int level)
+        {
+            Api::VertexHandle& handle = cache[(boundary * 4 + static_cast<size_t>(k)) * 4 + static_cast<size_t>(level)];
+            if (!handle.IsValid())
+            {
+                handle = Api::AddVertex(
+                    mesh, AZ::Vector3(sx[k] * (ihx + offsets[boundary]), sy[k] * (ihy + offsets[boundary]), levels[level]));
+            }
+            return handle;
+        };
+        // Two triangles for a quad in ring order, wound so the normal follows outward.
+        const auto quad = [&mesh](Api::FaceVertHandlesList& faces, const AZStd::array<Api::VertexHandle, 4>& v, const AZ::Vector3& outward)
+        {
+            const AZ::Vector3 a = Api::VertexPosition(mesh, v[0]);
+            const bool flip = (Api::VertexPosition(mesh, v[1]) - a).Cross(Api::VertexPosition(mesh, v[2]) - a).Dot(outward) < 0.0f;
+            faces.push_back(flip ? Api::FaceVertHandles{ { v[0], v[2], v[1] } } : Api::FaceVertHandles{ { v[0], v[1], v[2] } });
+            faces.push_back(flip ? Api::FaceVertHandles{ { v[0], v[3], v[2] } } : Api::FaceVertHandles{ { v[0], v[2], v[3] } });
+        };
+
+        // Horizontal faces: a region's span ends at a level. Neighbouring regions ending at the same level form one polygon.
+        const auto horizontal = [&](const int level, const bool up)
+        {
+            const auto ends = [&](const size_t region)
+            {
+                return solid(region, up ? level - 1 : level) && !solid(region, up ? level : level - 1);
+            };
+            const AZ::Vector3 outward = up ? AZ::Vector3::CreateAxisZ() : -AZ::Vector3::CreateAxisZ();
+            Api::FaceVertHandlesList faces;
+            const auto flush = [&mesh, &faces]()
+            {
+                if (!faces.empty())
+                {
+                    Api::AddPolygon(mesh, faces);
+                    faces.clear();
+                }
+            };
+            for (size_t region = 0; region < boundaries; ++region)
+            {
+                if (!ends(region))
+                {
+                    flush();
+                    continue;
+                }
+                if (region == 0)
+                {
+                    quad(faces, { corner(0, 0, level), corner(0, 1, level), corner(0, 2, level), corner(0, 3, level) }, outward);
+                    continue;
+                }
+                for (int k = 0; k < 4; ++k)
+                {
+                    const int k1 = (k + 1) % 4;
+                    quad(faces,
+                        { corner(region - 1, k, level), corner(region - 1, k1, level), corner(region, k1, level),
+                          corner(region, k, level) },
+                        outward);
+                }
+            }
+            flush();
+        };
+
+        // Vertical faces: wherever the regions either side of a boundary differ, one quad per side per run of levels.
+        const AZ::Vector3 sideOut[4] = {
+            AZ::Vector3(0.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(-1.0f, 0.0f, 0.0f)
+        };
+        const auto vertical = [&](const size_t boundary)
+        {
+            int level = 0;
+            while (level < 3)
+            {
+                const bool inside = solid(boundary, level);
+                if (inside == solid(boundary + 1, level))
+                {
+                    ++level;
+                    continue;
+                }
+                // A run never passes a level where either side's span ends, so no horizontal edge meets it midway.
+                int end = level + 1;
+                while (end < 3 && solid(boundary, end) == inside && solid(boundary + 1, end) != inside)
+                {
+                    ++end;
+                }
+                for (int k = 0; k < 4; ++k)
+                {
+                    const int k1 = (k + 1) % 4;
+                    Api::FaceVertHandlesList faces;
+                    quad(faces,
+                        { corner(boundary, k, level), corner(boundary, k1, level), corner(boundary, k1, end),
+                          corner(boundary, k, end) },
+                        inside ? sideOut[k] : -sideOut[k]);
+                    Api::AddPolygon(mesh, faces);
+                }
+                level = end;
+            }
+        };
+
+        // Bottom up, so each face lands against ones already in and the shell grows as one piece.
+        for (int level = 0; level < 4; ++level)
+        {
+            horizontal(level, false);
+        }
+        for (size_t boundary = 0; boundary < boundaries; ++boundary)
+        {
+            vertical(boundary);
+        }
+        for (int level = 0; level < 4; ++level)
+        {
+            horizontal(level, true);
         }
     }
 
@@ -752,6 +802,10 @@ namespace WhiteBox
             bestDist = d;
             bestHit = worldHit;
             worldNormal = worldNormal.GetNormalizedSafe();
+            if (worldNormal.IsZero())
+            {
+                worldNormal = -rayDirWorld; // a degenerate triangle has no normal of its own
+            }
             if (worldNormal.Dot(rayDirWorld) > 0.0f) // face back toward the camera
             {
                 worldNormal = -worldNormal;
@@ -1011,7 +1065,8 @@ namespace WhiteBox
                 AZ::Vector3 normal;
                 const auto hit = RaycastToSurface(mi, worldFromLocal, intersectionData, normal);
                 m_surfaceNormal = normal.IsZero() ? AZ::Vector3::CreateAxisZ() : normal.GetNormalized();
-                m_worldP0 = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId).value_or(hit);
+                const auto firstSnap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
+                m_worldP0 = firstSnap.has_value() ? *firstSnap : SnapToGrid(hit, hit, mi.m_interactionId.m_viewportId);
                 m_worldP1 = m_worldP0;
                 auto* component = FindWhiteBoxComponent(m_entityComponentIdPair);
                 if (!component) { return false; }
@@ -1048,9 +1103,17 @@ namespace WhiteBox
                 {
                     const float distance = (m_worldP0 - pick.m_rayOrigin).Dot(m_surfaceNormal) / denominator;
                     if (distance < 0.0f) { return true; }
+                    // A vertex under the cursor wins; otherwise the angle and grid settings shape the point.
                     const auto snap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
-                    const auto point = snap.value_or(pick.m_rayOrigin + pick.m_rayDirection * distance);
-                    m_worldP1 = point - m_surfaceNormal * (point - m_worldP0).Dot(m_surfaceNormal);
+                    const AZ::Vector3 point = snap.has_value()
+                        ? *snap
+                        : SnapPolygonPoint(pick.m_rayOrigin + pick.m_rayDirection * distance, mi.m_interactionId.m_viewportId);
+                    const AZ::Vector3 onPlane = point - m_surfaceNormal * (point - m_worldP0).Dot(m_surfaceNormal);
+                    if (!onPlane.IsFinite())
+                    {
+                        return true; // keep the last good point rather than feed the preview a broken one
+                    }
+                    m_worldP1 = onPlane;
                     SnapUtil::SetActiveSnapTarget(snap);
                     if (leftDown)
                     {
@@ -1067,7 +1130,12 @@ namespace WhiteBox
             {
                 if (moved && !m_numericInput.IsActive())
                 {
-                    m_height = RaycastToHeightPlane(mi, worldFromLocal, m_polygonHeightAnchor);
+                    const float height = SnapHeightToGrid(
+                        RaycastToHeightPlane(mi, worldFromLocal, m_polygonHeightAnchor), mi.m_interactionId.m_viewportId);
+                    if (AZ::IsFiniteFloat(height))
+                    {
+                        m_height = height;
+                    }
                     m_polygonBooleanFailed = false;
                 }
                 if (leftDown && AZStd::abs(m_height) >= 0.0001f)
@@ -1286,7 +1354,8 @@ namespace WhiteBox
 
                 // Snap the anchor onto a vertex under the cursor; the orientation still comes from the hit surface.
                 const auto anchorSnap = SnapTargetUnderCursor(mi.m_interactionId.m_viewportId);
-                const AZ::Vector3 anchorWorld = anchorSnap.value_or(hitWorld);
+                const AZ::Vector3 anchorWorld =
+                    anchorSnap.has_value() ? *anchorSnap : SnapToGrid(hitWorld, hitWorld, mi.m_interactionId.m_viewportId);
                 SnapUtil::SetActiveSnapTarget(anchorSnap);
 
                 m_groundZ = anchorWorld.GetZ();
@@ -1313,9 +1382,14 @@ namespace WhiteBox
                 // Project the raw hit onto the anchor's surface plane so the base rectangle
                 // always lies flat on that surface -- works for horizontal, vertical, or tilted.
                 const AZ::Vector3 up = m_surfaceNormal.GetNormalized();
-                const AZ::Vector3 cornerWorld = cornerSnap.value_or(rawHit);
+                const AZ::Vector3 cornerWorld =
+                    cornerSnap.has_value() ? *cornerSnap : SnapToGrid(rawHit, m_worldP0, mi.m_interactionId.m_viewportId);
                 const float distFromPlane = (cornerWorld - m_worldP0).Dot(up);
-                m_worldP1 = cornerWorld - up * distFromPlane;
+                const AZ::Vector3 corner = cornerWorld - up * distFromPlane;
+                if (corner.IsFinite())
+                {
+                    m_worldP1 = corner; // a ray grazing the plane keeps the last good corner
+                }
 
                 return true;
             }
@@ -1352,7 +1426,12 @@ namespace WhiteBox
                 if (!m_numericInput.IsActive())
                 {
                     const AZ::Vector3 baseCenterWorld = (m_worldP0 + m_worldP1) * 0.5f;
-                    m_height = RaycastToHeightPlane(mi, worldFromLocal, baseCenterWorld);
+                    const float height =
+                        SnapHeightToGrid(RaycastToHeightPlane(mi, worldFromLocal, baseCenterWorld), mi.m_interactionId.m_viewportId);
+                    if (AZ::IsFiniteFloat(height))
+                    {
+                        m_height = height;
+                    }
                 }
                 return true;
             }
@@ -1823,8 +1902,25 @@ namespace WhiteBox
         return AZStd::clamp(tubeSides, MinTubeSides, MaxTubeSides);
     }
 
+    // The font projects labels itself and asserts on a point it cannot place, so broken or behind-camera positions are skipped.
+    static void DrawLabel(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position,
+        const float size, const char* text)
+    {
+        if (!position.IsFinite())
+        {
+            return;
+        }
+        const AzFramework::CameraState camera = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        if ((position - camera.m_position).Dot(camera.m_forward) <= camera.m_nearClip)
+        {
+            return;
+        }
+        debugDisplay.DrawTextLabel(position, size, text, true, 0, 0);
+    }
+
     void DrawShapeMode::DisplayViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if ((m_state == DrawState::DrawingPolygon || m_state == DrawState::PullingPolygonHeight) &&
@@ -1854,7 +1950,7 @@ namespace WhiteBox
             const auto label = m_polygonBooleanFailed
                 ? AZStd::string("Boolean not applied: check overlap / closed target mesh, adjust depth or Esc to cancel")
                 : AZStd::string::format("%s | %s | Click / Enter finish | Esc cancel", operation, depthText.c_str());
-            debugDisplay.DrawTextLabel(m_polygonHeightAnchor + offset, 1.0f, label.c_str(), true, 0, 0);
+            DrawLabel(viewportInfo, debugDisplay, m_polygonHeightAnchor + offset, 1.0f, label.c_str());
             debugDisplay.DepthTestOn();
             return;
         }
@@ -1874,10 +1970,10 @@ namespace WhiteBox
             debugDisplay.SetColor(m_polygonCloseHovered
                 ? AZ::Color(1.0f, 0.85f, 0.15f, 1.0f) : AZ::Color(0.3f, 1.0f, 0.5f, 1.0f));
             debugDisplay.DrawBall(m_worldP0, markerRadius);
-            debugDisplay.DrawTextLabel(m_worldP0, 1.0f, m_polygonInvalid
+            DrawLabel(viewportInfo, debugDisplay, m_worldP0, 1.0f, m_polygonInvalid
                 ? "Invalid outline: remove crossing/duplicate corners with Backspace"
                 : (m_polygonCloseHovered ? "Click to close polygon"
-                    : "Click corners | Enter or click first corner to finish | Backspace undo | Esc cancel"), true, 0, 0);
+                    : "Click corners | Enter or click first corner to finish | Backspace undo | Esc cancel"));
             debugDisplay.DepthTestOn();
             return;
         }
@@ -2024,7 +2120,7 @@ namespace WhiteBox
             }
             if (m_numericInput.IsActive())
             {
-                debugDisplay.DrawTextLabel(center + up * m_height, 1.0f, m_numericInput.GetStatusText().c_str(), true, 0, 0);
+                DrawLabel(viewportInfo, debugDisplay, center + up * m_height, 1.0f, m_numericInput.GetStatusText().c_str());
             }
             debugDisplay.DepthTestOn();
             return;
@@ -2197,18 +2293,18 @@ namespace WhiteBox
             const float gap = 0.4f + 0.06f * AZ::GetMax(width, AZ::GetMax(length, height));
 
             debugDisplay.SetColor(widthColor);
-            debugDisplay.DrawTextLabel(center - rv - vHat * gap, 1.1f, AZStd::string::format("%.3f", width).c_str(), true, 0, 0);
+            DrawLabel(viewportInfo, debugDisplay, center - rv - vHat * gap, 1.1f, AZStd::string::format("%.3f", width).c_str());
             debugDisplay.SetColor(lengthColor);
-            debugDisplay.DrawTextLabel(center - ru - uHat * gap, 1.1f, AZStd::string::format("%.3f", length).c_str(), true, 0, 0);
+            DrawLabel(viewportInfo, debugDisplay, center - ru - uHat * gap, 1.1f, AZStd::string::format("%.3f", length).c_str());
 
             if (pullingHeight)
             {
                 const AZ::Vector3 hBase = center + ru + rv;    // far corner rises with the pull
                 debugDisplay.SetColor(heightColor);
                 debugDisplay.DrawLine(hBase, hBase + ext);     // height edge
-                debugDisplay.DrawTextLabel(
+                DrawLabel(viewportInfo, debugDisplay,
                     hBase + ext * 0.5f + (uHat + vHat) * (gap * 0.5f), 1.1f,
-                    AZStd::string::format("%.3f", height).c_str(), true, 0, 0);
+                    AZStd::string::format("%.3f", height).c_str());
             }
             debugDisplay.SetLineWidth(static_cast<float>(cl_whiteBoxEdgeVisualWidth));
         }
@@ -2223,7 +2319,7 @@ namespace WhiteBox
                 ? (AZStd::string("[Ctrl] ") + m_numericInput.GetStatusText())
                 : m_numericInput.GetStatusText();
             debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, 1.0f));
-            debugDisplay.DrawTextLabel(labelPos, 1.3f, status.c_str(), true, 0, 0);
+            DrawLabel(viewportInfo, debugDisplay, labelPos, 1.3f, status.c_str());
         }
     }
 
@@ -2333,6 +2429,68 @@ namespace WhiteBox
         // Nothing is excluded: the stamp is new geometry, so every existing vertex - including
         // this mesh's own - is a legitimate target.
         return SnapUtil::FindSnapTargetWorld(m_entityComponentIdPair.GetEntityId(), viewportId, {});
+    }
+
+    AZ::Vector3 DrawShapeMode::SnapToGrid(const AZ::Vector3& world, const AZ::Vector3& planePoint, const int viewportId) const
+    {
+        const AzToolsFramework::GridSnapParameters grid = AzToolsFramework::GridSnapSettings(viewportId);
+        if (!grid.m_gridSnap || grid.m_gridSize <= AZ::Constants::FloatEpsilon)
+        {
+            return world;
+        }
+        const float size = grid.m_gridSize;
+        const auto round = [size](const float value)
+        {
+            return std::round(value / size) * size;
+        };
+        // The world grid the viewport draws, so shapes line up with it and with each other.
+        AZ::Vector3 snapped(round(world.GetX()), round(world.GetY()), round(world.GetZ()));
+        // Back onto the drawing plane: on a floor or a wall only the in-plane coordinates change.
+        const AZ::Vector3 normal = m_surfaceNormal.GetNormalizedSafe();
+        if (!normal.IsZero())
+        {
+            snapped -= normal * (snapped - planePoint).Dot(normal);
+        }
+        return snapped;
+    }
+
+    float DrawShapeMode::SnapHeightToGrid(const float height, const int viewportId) const
+    {
+        const AzToolsFramework::GridSnapParameters grid = AzToolsFramework::GridSnapSettings(viewportId);
+        if (!grid.m_gridSnap || grid.m_gridSize <= AZ::Constants::FloatEpsilon)
+        {
+            return height;
+        }
+        return std::round(height / grid.m_gridSize) * grid.m_gridSize;
+    }
+
+    AZ::Vector3 DrawShapeMode::SnapPolygonPoint(const AZ::Vector3& onPlane, const int viewportId) const
+    {
+        const float step = AzToolsFramework::AngleStep(viewportId);
+        if (m_polygonPoints.empty() || !AzToolsFramework::AngleSnapping(viewportId) || step < 0.01f)
+        {
+            return SnapToGrid(onPlane, m_worldP0, viewportId);
+        }
+        // Angles are measured in the drawing plane from its own right axis, the same basis the other shapes use.
+        AZ::Vector3 right, fwd, up;
+        Detail::BasisFromNormal(m_surfaceNormal, right, fwd, up);
+        const AZ::Vector3& previous = m_polygonPoints.back();
+        const AZ::Vector3 delta = onPlane - previous;
+        const float across = delta.Dot(right);
+        const float along = delta.Dot(fwd);
+        float length = std::sqrt(across * across + along * along);
+        if (length < 1e-6f)
+        {
+            return onPlane;
+        }
+        const float stepRadians = AZ::DegToRad(step);
+        const float angle = std::round(std::atan2(along, across) / stepRadians) * stepRadians;
+        const AzToolsFramework::GridSnapParameters grid = AzToolsFramework::GridSnapSettings(viewportId);
+        if (grid.m_gridSnap && grid.m_gridSize > AZ::Constants::FloatEpsilon)
+        {
+            length = std::round(length / grid.m_gridSize) * grid.m_gridSize;
+        }
+        return previous + (right * std::cos(angle) + fwd * std::sin(angle)) * length;
     }
 
     bool DrawShapeMode::UnitCubeCell(

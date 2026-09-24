@@ -559,6 +559,7 @@ namespace WhiteBox
                 ->Field("EdgesOnly", &EditorWhiteBoxComponent::m_edgesOnly)
                 ->Field("UseGlobalTint", &EditorWhiteBoxComponent::m_useGlobalTint)
                 ->Field("MaterialOverride", &EditorWhiteBoxComponent::m_materialOverrideAssetId)
+                ->Field("DefaultMaterialAsset", &EditorWhiteBoxComponent::m_defaultMaterialAsset)
                 ->Field("Voxel", &EditorWhiteBoxComponent::m_voxel)
                 ->Field("Boolean", &EditorWhiteBoxComponent::m_boolean)
                 // Whether this entity is an active global-boolean target (show the composed result by default).
@@ -605,6 +606,11 @@ namespace WhiteBox
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Material / Display")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_defaultMaterialAsset,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default material for this entity. Clear to use the built-in White Box material."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultMaterialChange)
+                    ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_useGlobalTint,
                         QT_TRANSLATE_NOOP("WhiteBox", "Use Global Tint"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Render every layer with the material tint below. Turn off to let each layer use its own."))
@@ -628,6 +634,16 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's mesh."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_csgSolver,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Solver"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "CSG solver for every boolean on this component: the layer Combine modes and the entity boolean. "
+                        "Fast (BSP) is brush-style and face-based; it handles inward-facing rooms, inverted normals and "
+                        "open or non-manifold meshes, and suits blocky level geometry. Manifold is volumetric and precise, "
+                        "but needs closed watertight meshes and treats inverted normals as the shape's complement."))
+                    ->EnumAttribute(Api::CsgSolver::Manifold, QT_TRANSLATE_NOOP("WhiteBox", "Manifold"))
+                    ->EnumAttribute(Api::CsgSolver::Fast, QT_TRANSLATE_NOOP("WhiteBox", "Fast (BSP)"))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnCsgSolverChange)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Mesh / Asset")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -738,6 +754,9 @@ namespace WhiteBox
         m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
             m_materialOverrideAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
         m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        // Data saved before the card carried this control has no mirror stored, so derive it here
+        // rather than trusting what was serialized.
+        m_defaultMaterialAsset = m_material.m_materialAsset;
         const AZ::EntityId entityId = GetEntityId();
         const AZ::EntityComponentIdPair entityComponentIdPair{entityId, GetId()};
 

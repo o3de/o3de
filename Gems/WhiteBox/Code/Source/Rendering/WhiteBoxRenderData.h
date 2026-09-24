@@ -48,6 +48,7 @@ namespace WhiteBox
 
         AZ::Vector3 m_position;
         AZ::Vector2 m_uv;
+        AZ::Vector3 m_normal = AZ::Vector3::CreateZero(); //!< Smoothed corner normal; zero uses the flat face normal.
     };
 
     //! Triangle primitive with face normals
