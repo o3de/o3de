@@ -5,18 +5,29 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-import re
-from pathlib import Path
+from typing import Optional
 
-from command_plugin import WizardCommand, CommandContext, CommandRegistry
+from gem_dependency import apply_to_target
+from command_plugin import WizardCommand, CommandContext, CommandRegistry, CMakeAnalyzer, CMakeTarget
 
 
 @CommandRegistry.register("add_gem_dependency")
 class AddGemDependencyCommand(WizardCommand):
-    """Add gem dependency to BUILD_DEPENDENCIES"""
+    """Add a gem dependency to the PRIVATE list of a target's BUILD_DEPENDENCIES.
 
-    def __init__(self, dependency: str):
+    By default edits the target the wizard's dropdown selected (ctx.build_target). Pass `target`
+    (a name suffix, e.g. "DataAsset.Builder") to edit a different, explicitly named target instead.
+
+    For the common case of "the editor counterpart of whatever target got selected" -- e.g. an
+    editor component's Source/Tools/Editor*.cpp needs AZ::AzToolsFramework on the EDITOR target,
+    not whichever runtime target the dropdown happens to have selected -- use
+    add_editor_gem_dependency instead, which derives that target name reactively rather than
+    hardcoding a suffix that only holds for one particular target selection.
+    """
+
+    def __init__(self, dependency: str, target: Optional[str] = None):
         self.dependency = dependency
+        self.target_suffix = target
 
     @property
     def name(self) -> str:
@@ -36,88 +47,30 @@ class AddGemDependencyCommand(WizardCommand):
             ctx.log(f"Skipping self-dependency: {self.dependency} (target gem is {ctx.namespace})")
             return True
 
-        if not ctx.build_target:
+        build_target = ctx.build_target
+        if self.target_suffix:
+            build_target = self._resolve_named_target(ctx)
+            if build_target is None:
+                ctx.log(f"Warning: could not find a target ending in '.{self.target_suffix}', "
+                        f"skipping dependency '{self.dependency}'")
+                return True
+        elif not build_target:
             ctx.log("Warning: No build target selected")
             return True
 
-        ctx.log(f"Adding dependency '{self.dependency}' to target '{ctx.build_target.name}'...")
+        ctx.log(f"Adding dependency '{self.dependency}' to target '{build_target.name}'...")
+        return apply_to_target(ctx, build_target, self.dependency)
 
-        cmake_path = ctx.build_target.file
-        if not cmake_path.is_file():
-            ctx.log(f"Warning: CMake file not found: {cmake_path}")
-            return True
+    def _resolve_named_target(self, ctx: CommandContext) -> Optional[CMakeTarget]:
+        """Find the target named '<namespace>.<target_suffix>', scanning from ctx.build_target's CMake dir.
 
-        text = cmake_path.read_text(encoding="utf-8")
+        Used when self.target_suffix asks to edit a target OTHER than the one the wizard selected.
+        """
+        if not ctx.build_target:
+            return None
 
-        macro_pat = r'(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*'
-
-        for match in re.finditer(macro_pat, text, flags=re.S | re.M):
-            body = match.group('body')
-
-            name_match = re.search(r'\bNAME\s+([^\s\)]+)', body)
-            if not name_match:
-                continue
-
-            name_in_cmake = name_match.group(1).strip('"\'')
-
-            is_match = False
-            if name_in_cmake == ctx.build_target.raw_name:
-                is_match = True
-            elif '${' in name_in_cmake and '.' in ctx.build_target.name:
-                if '.' in name_in_cmake:
-                    cmake_suffix = name_in_cmake.split('.', 1)[1]
-                    target_suffix = ctx.build_target.name.split('.', 1)[1] if '.' in ctx.build_target.name else ''
-                    if cmake_suffix == target_suffix:
-                        is_match = True
-
-            if not is_match:
-                continue
-
-            if self.dependency in body:
-                ctx.log(f"Dependency already present: {self.dependency}")
-                return True
-
-            lines = body.splitlines()
-
-            deps_idx = None
-            for i, line in enumerate(lines):
-                if re.match(r'^\s*BUILD_DEPENDENCIES\b', line):
-                    deps_idx = i
-                    break
-
-            base_indent = '    '
-            for line in lines:
-                if line.strip() and not line.strip().startswith('#'):
-                    base_indent = re.match(r'(\s*)', line).group(1)
-                    break
-
-            if deps_idx is None:
-                lines.append('')
-                lines.append(f'{base_indent}BUILD_DEPENDENCIES')
-                lines.append(f'{base_indent}    PRIVATE')
-                lines.append(f'{base_indent}        {self.dependency}')
-            else:
-                private_idx = None
-                for i in range(deps_idx + 1, len(lines)):
-                    if re.match(r'^\s*PRIVATE\b', lines[i]):
-                        private_idx = i
-                    if re.match(r'^\s*[A-Z_]+\b', lines[i]) and not re.match(r'^\s*(PRIVATE|PUBLIC|INTERFACE)\b', lines[i]):
-                        break
-
-                if private_idx is None:
-                    indent = re.match(r'(\s*)', lines[deps_idx]).group(1)
-                    lines.insert(deps_idx + 1, f'{indent}    PRIVATE')
-                    lines.insert(deps_idx + 2, f'{indent}        {self.dependency}')
-                else:
-                    indent = re.match(r'(\s*)', lines[private_idx]).group(1)
-                    lines.insert(private_idx + 1, f'{indent}    {self.dependency}')
-
-            new_body = '\n'.join(lines) + '\n'
-            new_text = text[:match.start()] + match.group(0).replace(body, new_body) + text[match.end():]
-
-            cmake_path.write_text(new_text, encoding='utf-8', newline='\n')
-            ctx.log(f"Added dependency {self.dependency} to {ctx.build_target.name}")
-            return True
-
-        ctx.log(f"Warning: Could not find target block for {ctx.build_target.name}")
-        return True
+        wanted = f"{ctx.namespace}.{self.target_suffix}"
+        for candidate in CMakeAnalyzer.scan_targets(ctx.build_target.file.parent, ctx.namespace):
+            if candidate.name == wanted:
+                return candidate
+        return None
