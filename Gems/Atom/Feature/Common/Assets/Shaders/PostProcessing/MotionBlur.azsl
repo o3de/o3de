@@ -157,11 +157,6 @@ void MainCS(
             break;
     }
 
-    if (o_sampleQuality == 3){
-        PassSrg::m_outputColor[pixelCoord].rgb = float3(0, 1, 0);
-        return;
-    }
-    
     const float invIterationCount = 1 / (float)iterationCount;
     const float2 sampleStep = tileVelocity * invIterationCount;
     const float pixelToSampleUnitsScale = rsqrt(dot(sampleStep, sampleStep));
