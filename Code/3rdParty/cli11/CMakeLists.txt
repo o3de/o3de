@@ -12,7 +12,7 @@ o3de_fetch_content(cli11
     URL_HASH "c6ea6b2e5608b3ea8617999bd5f47420c71b2ebdb8dc4767c1034d1da5785711"
     GIT "https://github.com/CLIUtils/CLI11.git"
     GIT_HASH "37bb6edc5317e99af72ef48405e65d9ca5218861"
-    SOURCE_SUBDIR "no-add-subdir"
+    NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(cli11)
 
