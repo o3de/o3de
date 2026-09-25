@@ -1327,6 +1327,11 @@ namespace WhiteBox
         return false;
     }
 
+    Api::FaceHandles TransformMode::GetHoveredFaces() const
+    {
+        return m_polygonIntersection.has_value() ? m_polygonIntersection->GetHandle().m_faceHandles : Api::FaceHandles{};
+    }
+
     Api::PolygonHandles TransformMode::GetSelectedPolygons() const
     {
         return m_whiteBoxSelection ? m_whiteBoxSelection->m_polygons : Api::PolygonHandles{};

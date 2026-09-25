@@ -13,7 +13,9 @@
 #include "Components/WhiteBoxColliderConfiguration.h"
 #include "Components/WhiteBoxConvexDecomposition.h"
 #include "Components/WhiteBoxMeshSimplify.h"
+#include "Tools/WhiteBoxUvCanvas.h"
 #include "Util/WhiteBoxGltfExport.h"
+#include "Util/WhiteBoxUvOps.h"
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Viewport/WhiteBoxShapeBuilders.h"
 #include "Core/WhiteBoxCsgCore.h"
@@ -24,6 +26,9 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/hash.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -5275,6 +5280,221 @@ namespace UnitTest
         {
             EXPECT_NEAR(vertex.GetZ(), 0.0f, 1e-5f);
         }
+    }
+
+    TEST_F(WhiteBoxTestFixture, ManualUvsSurviveEditsAndContinueOntoNewFaces)
+    {
+        namespace Api = WhiteBox::Api;
+        const auto topOf = [](const WhiteBox::WhiteBoxMesh& mesh, const Api::PolygonHandles& polygons)
+        {
+            for (const auto& polygon : polygons)
+            {
+                if (Api::PolygonNormal(mesh, polygon).GetZ() > 0.9f)
+                {
+                    return polygon;
+                }
+            }
+            return Api::PolygonHandle{};
+        };
+        // Every corner of the faces holds the UV the map gives its position.
+        const auto followsMap = [](const WhiteBox::WhiteBoxMesh& mesh, const Api::FaceHandles& faces, const Api::ManualUvMap& map)
+        {
+            for (const auto face : faces)
+            {
+                if (Api::FaceUvProjection(mesh, face).m_mode != Api::UvProjectionMode::Manual)
+                {
+                    return false;
+                }
+                for (const auto halfedge : Api::FaceHalfedgeHandles(mesh, face))
+                {
+                    const auto position = Api::VertexPosition(mesh, Api::HalfedgeVertexHandleAtTip(mesh, halfedge));
+                    if (!Api::HalfedgeUV(mesh, halfedge).IsClose(map.Evaluate(position), 1e-4f))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
+        // An authored corner outlives recalculation and a save and load.
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto top = topOf(*mesh, Api::InitializeAsUnitCube(*mesh));
+        Api::MakePolygonUvsManual(*mesh, { top });
+        EXPECT_EQ(Api::FaceUvProjection(*mesh, top.m_faceHandles.front()).m_mode, Api::UvProjectionMode::Manual);
+        const auto corner = Api::FaceHalfedgeHandles(*mesh, top.m_faceHandles.front()).front();
+        Api::SetHalfedgeManualUv(*mesh, corner, AZ::Vector2(5.0f, 5.0f));
+        Api::CalculatePlanarUVs(*mesh);
+        EXPECT_TRUE(Api::HalfedgeUV(*mesh, corner).IsClose(AZ::Vector2(5.0f, 5.0f)));
+        EXPECT_TRUE(Api::HalfedgeUvAuthored(*mesh, corner));
+        Api::WhiteBoxMeshStream stream;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, stream));
+        auto loaded = Api::CreateWhiteBoxMesh();
+        ASSERT_EQ(Api::ReadMesh(*loaded, stream), Api::ReadResult::Full);
+        Api::CalculatePlanarUVs(*loaded);
+        EXPECT_TRUE(Api::HalfedgeUV(*loaded, corner).IsClose(AZ::Vector2(5.0f, 5.0f)));
+        EXPECT_EQ(Api::FaceUvProjection(*loaded, top.m_faceHandles.front()).m_mode, Api::UvProjectionMode::Manual);
+
+        // Subdividing a frozen face gives every new corner the UV the frozen mapping has there.
+        auto split = Api::CreateWhiteBoxMesh();
+        const auto splitTop = topOf(*split, Api::InitializeAsUnitCube(*split));
+        Api::MakePolygonUvsManual(*split, { splitTop });
+        const Api::ManualUvMap map = Api::FaceUvProjection(*split, splitTop.m_faceHandles.front()).m_manual;
+        ASSERT_TRUE(map.IsValid());
+        AZStd::string error;
+        Api::PolygonHandles created;
+        ASSERT_TRUE(Api::SubdividePolygons(*split, { splitTop }, error, &created)) << error.c_str();
+        Api::FaceHandles createdFaces;
+        for (const auto& polygon : created)
+        {
+            createdFaces.insert(createdFaces.end(), polygon.m_faceHandles.begin(), polygon.m_faceHandles.end());
+        }
+        EXPECT_TRUE(followsMap(*split, createdFaces, map));
+
+        // Fix Non-Manifold rebuilds the mesh through the boolean path; the frozen UVs come back unchanged.
+        auto repaired = Api::CreateWhiteBoxMesh();
+        const auto repairedTop = topOf(*repaired, Api::InitializeAsUnitCube(*repaired));
+        Api::MakePolygonUvsManual(*repaired, { repairedTop });
+        const Api::ManualUvMap repairedMap = Api::FaceUvProjection(*repaired, repairedTop.m_faceHandles.front()).m_manual;
+        ASSERT_TRUE(Api::RepairMesh(*repaired));
+        Api::FaceHandles upward;
+        for (const auto face : Api::MeshFaceHandles(*repaired))
+        {
+            if (Api::FaceNormal(*repaired, face).GetZ() > 0.9f)
+            {
+                upward.push_back(face);
+            }
+        }
+        ASSERT_FALSE(upward.empty());
+        EXPECT_TRUE(followsMap(*repaired, upward, repairedMap));
+    }
+
+    TEST_F(WhiteBoxTestFixture, UvModelGroupsCornersIntoPointsAndSplitsSeams)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        const auto polygons = Api::InitializeAsUnitCube(*mesh);
+        Api::PolygonHandle top;
+        Api::PolygonHandle side;
+        for (const auto& polygon : polygons)
+        {
+            const auto normal = Api::PolygonNormal(*mesh, polygon);
+            if (normal.GetZ() > 0.9f)
+            {
+                top = polygon;
+            }
+            else if (normal.GetX() > 0.9f)
+            {
+                side = polygon;
+            }
+        }
+
+        // One quad: four points (two shared by both triangles), four polygon edges and the hidden diagonal.
+        const WhiteBox::UvModel quad = WhiteBox::BuildUvModel(*mesh, { top });
+        EXPECT_EQ(quad.m_vertices.size(), 4u);
+        EXPECT_EQ(quad.m_triangles.size(), 2u);
+        ASSERT_EQ(quad.m_edges.size(), 5u);
+        size_t borders = 0;
+        size_t corners = 0;
+        for (const auto& edge : quad.m_edges)
+        {
+            borders += edge.m_border ? 1 : 0;
+        }
+        for (const auto& vertex : quad.m_vertices)
+        {
+            corners += vertex.m_corners.size();
+        }
+        EXPECT_EQ(borders, 4u);
+        EXPECT_EQ(corners, 6u);
+
+        // World projection runs on unbroken across the top/+X edge, so the two corners there are shared points.
+        const WhiteBox::UvModel stitched = WhiteBox::BuildUvModel(*mesh, { top, side });
+        EXPECT_EQ(stitched.m_vertices.size(), 6u);
+        EXPECT_NE(stitched.m_signature, quad.m_signature);
+
+        // Moving the side's UVs away opens a seam: the shared mesh corners become separate points.
+        for (const auto face : side.m_faceHandles)
+        {
+            for (const auto halfedge : Api::FaceHalfedgeHandles(*mesh, face))
+            {
+                Api::SetHalfedgeManualUv(*mesh, halfedge, Api::HalfedgeUV(*mesh, halfedge) + AZ::Vector2(10.0f, 0.0f));
+            }
+        }
+        const WhiteBox::UvModel seam = WhiteBox::BuildUvModel(*mesh, { top, side });
+        EXPECT_EQ(seam.m_vertices.size(), 8u);
+        EXPECT_EQ(seam.m_signature, stitched.m_signature); // same faces, so the view keeps its selection
+    }
+
+    TEST_F(WhiteBoxTestFixture, UnwrapUnfoldsACubeWithoutStretchOrMirroringAndPackKeepsScale)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = Api::CreateWhiteBoxMesh();
+        Api::InitializeAsUnitCube(*mesh);
+        const Api::FaceHandles faces = Api::MeshFaceHandles(*mesh);
+
+        // Checks a layout: all corners placed inside the square and one UV-per-metre ratio everywhere; optionally that no
+        // face is mirrored against another and that neighbours share edge points.
+        const auto check = [&mesh, &faces](const AZStd::vector<WhiteBox::UvChange>& changes, const bool fromUnwrap)
+        {
+            ASSERT_EQ(changes.size(), faces.size() * 3);
+            AZStd::unordered_map<int, AZ::Vector2> uvOf;
+            for (const auto& change : changes)
+            {
+                uvOf[change.first.Index()] = change.second;
+                EXPECT_GE(change.second.GetX(), -1e-4f);
+                EXPECT_GE(change.second.GetY(), -1e-4f);
+                EXPECT_LE(change.second.GetX(), 1.0f + 1e-4f);
+                EXPECT_LE(change.second.GetY(), 1.0f + 1e-4f);
+            }
+            float ratio = -1.0f;
+            float winding = 0.0f;
+            AZStd::unordered_set<size_t> points;
+            for (const auto face : faces)
+            {
+                const auto h = Api::FaceHalfedgeHandles(*mesh, face);
+                AZ::Vector3 p[3];
+                AZ::Vector2 t[3];
+                for (size_t c = 0; c < 3; ++c)
+                {
+                    const auto vertex = Api::HalfedgeVertexHandleAtTip(*mesh, h[c]);
+                    p[c] = Api::VertexPosition(*mesh, vertex);
+                    t[c] = uvOf[h[c].Index()];
+                    size_t key = 0;
+                    AZStd::hash_combine(key, vertex.Index());
+                    AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(t[c].GetX() * 1e4)));
+                    AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(t[c].GetY() * 1e4)));
+                    points.insert(key);
+                }
+                for (size_t c = 0; c < 3; ++c)
+                {
+                    const float edgeRatio = (t[(c + 1) % 3] - t[c]).GetLength() / (p[(c + 1) % 3] - p[c]).GetLength();
+                    if (ratio < 0.0f)
+                    {
+                        ratio = edgeRatio;
+                    }
+                    EXPECT_NEAR(edgeRatio, ratio, ratio * 1e-3f);
+                }
+                const AZ::Vector2 e1 = t[1] - t[0];
+                const AZ::Vector2 e2 = t[2] - t[0];
+                const float signedArea = e1.GetX() * e2.GetY() - e1.GetY() * e2.GetX();
+                if (winding == 0.0f)
+                {
+                    winding = signedArea;
+                }
+                if (fromUnwrap)
+                {
+                    EXPECT_GT(signedArea * winding, 0.0f);
+                }
+            }
+            if (fromUnwrap)
+            {
+                EXPECT_LT(points.size(), 24u); // neighbours unfolded onto each other share their edge points
+            }
+        };
+
+        check(WhiteBox::UvOps::Unwrap(*mesh, faces), true);
+        // World projection maps opposite faces mirrored; Pack only moves and turns islands, so it keeps that.
+        check(WhiteBox::UvOps::Pack(*mesh, faces), false);
     }
 
     TEST_F(WhiteBoxTestFixture, RoomWithSlabsIsOneClosedShellThatCarvesCleanly)

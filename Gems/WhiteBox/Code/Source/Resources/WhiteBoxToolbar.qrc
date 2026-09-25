@@ -51,5 +51,17 @@
     <file alias="Subdivide.svg">../../../Assets/Editor/Icons/Toolbar/Subdivide.svg</file>
     <file alias="SelectSimilar.svg">../../../Assets/Editor/Icons/Toolbar/SelectSimilar.svg</file>
     <file alias="Smoothing.svg">../../../Assets/Editor/Icons/Toolbar/Smoothing.svg</file>
+    <file alias="UvFlipU.svg">../../../Assets/Editor/Icons/Toolbar/UvFlipU.svg</file>
+    <file alias="UvFlipV.svg">../../../Assets/Editor/Icons/Toolbar/UvFlipV.svg</file>
+    <file alias="UvRotate90.svg">../../../Assets/Editor/Icons/Toolbar/UvRotate90.svg</file>
+    <file alias="UvFit.svg">../../../Assets/Editor/Icons/Toolbar/UvFit.svg</file>
+    <file alias="UvSplit.svg">../../../Assets/Editor/Icons/Toolbar/UvSplit.svg</file>
+    <file alias="UvSew.svg">../../../Assets/Editor/Icons/Toolbar/UvSew.svg</file>
+    <file alias="UvUnwrap.svg">../../../Assets/Editor/Icons/Toolbar/UvUnwrap.svg</file>
+    <file alias="UvPack.svg">../../../Assets/Editor/Icons/Toolbar/UvPack.svg</file>
+    <file alias="UvSelectAll.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectAll.svg</file>
+    <file alias="UvSelectNone.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectNone.svg</file>
+    <file alias="UvSelectInvert.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectInvert.svg</file>
+    <file alias="UvSelectBorder.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectBorder.svg</file>
   </qresource>
 </RCC>

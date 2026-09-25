@@ -25,6 +25,8 @@ set(FILES
     Source/Util/WhiteBoxGltfExport.h
     Source/Util/WhiteBoxModelConvert.cpp
     Source/Util/WhiteBoxModelConvert.h
+    Source/Util/WhiteBoxUvOps.cpp
+    Source/Util/WhiteBoxUvOps.h
     Source/Util/WhiteBoxModelingOps.h
     Source/Util/WhiteBoxSnapUtil.cpp
     Source/Util/WhiteBoxSnapUtil.h
@@ -50,6 +52,12 @@ set(FILES
     Source/Tools/WhiteBoxUvProjectionWindow.h
     Source/Tools/WhiteBoxSmoothingWindow.cpp
     Source/Tools/WhiteBoxSmoothingWindow.h
+    Source/Tools/WhiteBoxUvCanvas.cpp
+    Source/Tools/WhiteBoxUvCanvas.h
+    Source/Tools/WhiteBoxUvEditorPane.cpp
+    Source/Tools/WhiteBoxUvEditorPane.h
+    Source/Tools/WhiteBoxUvTexture.cpp
+    Source/Tools/WhiteBoxUvTexture.h
     Source/Tools/WhiteBoxExtrudeInsetWindow.cpp
     Source/Tools/WhiteBoxExtrudeInsetWindow.h
     Source/Tools/WhiteBoxLayerGizmo.cpp

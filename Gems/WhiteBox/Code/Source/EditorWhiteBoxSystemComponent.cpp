@@ -12,6 +12,7 @@
 #include "EditorWhiteBoxComponentMode.h"
 #include "Components/WhiteBoxConvexDecomposition.h"
 #include "Tools/WhiteBoxPaneWidget.h"
+#include "Tools/WhiteBoxUvEditorPane.h"
 #include "WhiteBoxToolApiReflection.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -74,6 +75,10 @@ namespace WhiteBox
         options.preferedDockingArea = Qt::RightDockWidgetArea;
         options.showInMenu = true;
         AzToolsFramework::RegisterViewPane<WhiteBoxPaneWidget>(WhiteBoxPaneWidget::PaneName, "Tools", options);
+        AzToolsFramework::ViewPaneOptions uvOptions;
+        uvOptions.preferedDockingArea = Qt::BottomDockWidgetArea;
+        uvOptions.showInMenu = true;
+        AzToolsFramework::RegisterViewPane<WhiteBoxUvEditorPane>(WhiteBoxUvEditorPane::PaneName, "Tools", uvOptions);
     }
 
     void EditorWhiteBoxSystemComponent::Activate()
@@ -88,6 +93,7 @@ namespace WhiteBox
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::UnregisterViewPane(WhiteBoxPaneWidget::PaneName);
+        AzToolsFramework::UnregisterViewPane(WhiteBoxUvEditorPane::PaneName);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         ConvexDecomposer::Shutdown(); // no V-HACD thread may outlive the module
         WhiteBoxSystemComponent::Deactivate();

@@ -296,6 +296,11 @@ namespace WhiteBox
             OnGlobalTintChange();
         }
         bool GetMaterialUseTexture() const { return m_material.m_useTexture; }
+        //! The entity's default material, or invalid when it uses the built-in White Box material.
+        AZ::Data::AssetId GetDefaultMaterialAssetId() const
+        {
+            return m_defaultMaterialAsset.GetId().IsValid() ? m_defaultMaterialAsset.GetId() : m_materialOverrideAssetId;
+        }
 
         // Layers.
         //! Layer @p index's vertex positions in entity-local space (layer transform applied), for the layer

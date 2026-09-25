@@ -41,6 +41,8 @@ namespace WhiteBox
 
         //! Polygon selection on the active editable layer (empty for edge/vertex selection).
         virtual Api::PolygonHandles GetSelectedPolygons() const { return {}; }
+        //! Faces of the polygon under the cursor, or none; the UV editor highlights them.
+        virtual Api::FaceHandles GetHoveredFaces() const { return {}; }
 
         virtual Api::EdgeHandles GetSelectedEdges() const { return {}; }
         virtual Api::VertexHandles GetSelectedVertices() const { return {}; }

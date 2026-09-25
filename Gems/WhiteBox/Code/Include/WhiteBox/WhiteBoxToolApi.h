@@ -856,8 +856,23 @@ namespace WhiteBox
         //! How a face's texture coordinates are generated each time UVs are recalculated.
         enum class UvProjectionMode : AZ::u32
         {
-            World = 0, //!< The original mapping: project along the face normal's dominant local axis.
-            Planar = 1 //!< Project onto the face's own plane, so sloped faces do not stretch.
+            World = 0,  //!< The original mapping: project along the face normal's dominant local axis.
+            Planar = 1, //!< Project onto the face's own plane, so sloped faces do not stretch.
+            Manual = 2  //!< Corner UVs are authored and kept through every edit; corners an edit creates follow the face's UV map.
+        };
+
+        //! The affine map a Manual face's UVs follow: uv = originUv + ((p - origin).uGradient, (p - origin).vGradient).
+        //! It travels with the face's projection, so faces an edit creates from it get UVs that line up.
+        struct ManualUvMap
+        {
+            AZ::Vector3 m_origin = AZ::Vector3::CreateZero();
+            AZ::Vector2 m_originUv = AZ::Vector2::CreateZero();
+            AZ::Vector3 m_uGradient = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_vGradient = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_normal = AZ::Vector3::CreateZero(); //!< Plane the map was taken on; zero when there is no map.
+
+            bool IsValid() const { return !m_normal.IsZero(); }
+            AZ::Vector2 Evaluate(const AZ::Vector3& position) const;
         };
 
         //! Per-face texture placement applied after projection (rotate, scale, offset); the default is the original mapping.
@@ -867,20 +882,30 @@ namespace WhiteBox
             AZ::Vector2 m_scale = AZ::Vector2(1.0f, 1.0f); //!< Texture repeats per metre along U and V.
             AZ::Vector2 m_offset = AZ::Vector2(0.0f, 0.0f);
             float m_rotationDegrees = 0.0f;
+            ManualUvMap m_manual; //!< Manual mode only; not part of equality.
 
             bool IsDefault() const;
             bool operator==(const UvProjection& other) const;
             bool operator!=(const UvProjection& other) const { return !operator==(other); }
         };
 
+        //! Freeze the polygons' current UVs as authored and switch them to Manual.
+        void MakePolygonUvsManual(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+        //! Author one corner's UV; its face becomes Manual first (keeping its other corners) if it was not.
+        void SetHalfedgeManualUv(WhiteBoxMesh& whiteBox, HalfedgeHandle halfedge, const AZ::Vector2& uv);
+        //! Whether a Manual face's corner holds an authored UV rather than waiting for one from the face's map.
+        bool HalfedgeUvAuthored(const WhiteBoxMesh& whiteBox, HalfedgeHandle halfedge);
+
         //! Persistent per-face projection, honoured by every CalculatePlanarUVs call.
         UvProjection FaceUvProjection(const WhiteBoxMesh& whiteBox, FaceHandle face);
         void SetFaceUvProjection(WhiteBoxMesh& whiteBox, FaceHandle face, const UvProjection& projection);
-        //! Set the projection on every face of the polygons and recalculate their UVs.
+        //! Set the projection on every face of the polygons and recalculate their UVs. Manual with a valid map transfers
+        //! that map's UVs onto the polygons (paste); Manual without one freezes their current UVs.
         void SetPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const UvProjection& projection);
-        //! Keep each polygon's mode and rotation but pick scale and offset so the texture spans it exactly once.
+        //! Keep each polygon's mode and rotation but pick scale and offset so the texture spans it exactly once. Skips Manual faces.
         void FitPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
         //! Give every polygon the same tiling (repeats per metre on both axes), keeping its mode, rotation and texture anchor.
+        //! Skips Manual faces.
         void NormalizePolygonTexelDensity(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, float repeatsPerMetre);
         //! Mean tiling over the polygons' faces (both axes), or one when there are none.
         float PolygonTexelDensity(const WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);

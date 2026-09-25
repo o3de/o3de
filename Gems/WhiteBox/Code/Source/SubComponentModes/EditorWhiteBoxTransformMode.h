@@ -90,6 +90,7 @@ namespace WhiteBox
         TransformModelingLatch GetModelingLatch() const override { return m_modelingLatch; }
         bool HasLatchedDrag() const override { return m_latchSource != nullptr; }
         Api::PolygonHandles GetSelectedPolygons() const override;
+        Api::FaceHandles GetHoveredFaces() const override;
         Api::EdgeHandles GetSelectedEdges() const override;
         Api::VertexHandles GetSelectedVertices() const override;
         void ClearSelection() override;

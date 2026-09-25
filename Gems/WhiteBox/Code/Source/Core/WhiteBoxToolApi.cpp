@@ -268,6 +268,16 @@ namespace WhiteBox
     static const char* const FaceUvProjectionProp = "WhiteBoxFaceUvProjection";
     // per-face smoothing group bitmask; new faces value-initialise to zero (flat)
     static const char* const FaceSmoothingProp = "WhiteBoxFaceSmoothingGroups";
+    // stored form of Api::ManualUvMap: origin xyz, origin uv, u gradient xyz, v gradient xyz, normal xyz; zeros mean no map
+    struct FaceManualUvInternal
+    {
+        float m_values[14] = {};
+    };
+    using FaceManualUvPropertyHandle = OpenMesh::FPropHandleT<FaceManualUvInternal>;
+    static const char* const FaceManualUvProp = "WhiteBoxFaceManualUv";
+    // per-corner flag: a Manual face's UV here is authored; false (the default for new corners) means fill it from the map
+    using HalfedgeBoolPropertyHandle = OpenMesh::HPropHandleT<bool>;
+    static const char* const HalfedgeUvAuthoredProp = "WhiteBoxHalfedgeUvAuthored";
 } // namespace WhiteBox
 
 namespace OpenMesh::IO
@@ -458,6 +468,45 @@ namespace OpenMesh::IO
             for (float* value : { &_v.m_scaleU, &_v.m_scaleV, &_v.m_offsetU, &_v.m_offsetV, &_v.m_rotation })
             {
                 bytes += IO::restore(_is, *value, _swap);
+            }
+            return _is.good() ? bytes : 0;
+        }
+    };
+
+    template<>
+    struct binary<WhiteBox::FaceManualUvInternal>
+    {
+        using value_type = WhiteBox::FaceManualUvInternal;
+        static const bool is_streamable = true;
+
+        static std::string type_identifier(void) { return "WhiteBox::FaceManualUv"; }
+
+        static size_t size_of()
+        {
+            return UnknownSize;
+        }
+
+        static size_t size_of(const value_type& /*_v*/)
+        {
+            return 14 * sizeof(float);
+        }
+
+        static size_t store(std::ostream& _os, const value_type& _v, bool _swap = false)
+        {
+            size_t bytes = 0;
+            for (const float value : _v.m_values)
+            {
+                bytes += IO::store(_os, value, _swap);
+            }
+            return _os.good() ? bytes : 0;
+        }
+
+        static size_t restore(std::istream& _is, value_type& _v, bool _swap = false)
+        {
+            size_t bytes = 0;
+            for (float& value : _v.m_values)
+            {
+                bytes += IO::restore(_is, value, _swap);
             }
             return _is.good() ? bytes : 0;
         }
@@ -667,6 +716,20 @@ namespace WhiteBox
                 whiteBox.mesh.add_property(smoothingProperty, FaceSmoothingProp);
             }
             whiteBox.mesh.property(smoothingProperty).set_persistent(true);
+
+            FaceManualUvPropertyHandle manualUvProperty;
+            if (!whiteBox.mesh.get_property_handle(manualUvProperty, FaceManualUvProp))
+            {
+                whiteBox.mesh.add_property(manualUvProperty, FaceManualUvProp);
+            }
+            whiteBox.mesh.property(manualUvProperty).set_persistent(true);
+
+            HalfedgeBoolPropertyHandle authoredProperty;
+            if (!whiteBox.mesh.get_property_handle(authoredProperty, HalfedgeUvAuthoredProp))
+            {
+                whiteBox.mesh.add_property(authoredProperty, HalfedgeUvAuthoredProp);
+            }
+            whiteBox.mesh.property(authoredProperty).set_persistent(true);
 
             // request default properties required for all white box meshes
             whiteBox.mesh.request_face_normals();
@@ -2168,8 +2231,9 @@ namespace WhiteBox
         static UvProjection ToUvProjection(const FaceUvProjectionInternal& stored)
         {
             UvProjection projection;
-            projection.m_mode = stored.m_mode == static_cast<AZ::u32>(UvProjectionMode::Planar) ? UvProjectionMode::Planar
-                                                                                                : UvProjectionMode::World;
+            projection.m_mode = stored.m_mode == static_cast<AZ::u32>(UvProjectionMode::Planar)   ? UvProjectionMode::Planar
+                : stored.m_mode == static_cast<AZ::u32>(UvProjectionMode::Manual) ? UvProjectionMode::Manual
+                                                                                  : UvProjectionMode::World;
             projection.m_scale = AZ::Vector2(stored.m_scaleU, stored.m_scaleV);
             projection.m_offset = AZ::Vector2(stored.m_offsetU, stored.m_offsetV);
             projection.m_rotationDegrees = stored.m_rotation;
@@ -2186,6 +2250,72 @@ namespace WhiteBox
             stored.m_offsetV = projection.m_offset.GetY();
             stored.m_rotation = projection.m_rotationDegrees;
             return stored;
+        }
+
+        static ManualUvMap ToManualUvMap(const FaceManualUvInternal& stored)
+        {
+            const float* v = stored.m_values;
+            ManualUvMap map;
+            map.m_origin = AZ::Vector3(v[0], v[1], v[2]);
+            map.m_originUv = AZ::Vector2(v[3], v[4]);
+            map.m_uGradient = AZ::Vector3(v[5], v[6], v[7]);
+            map.m_vGradient = AZ::Vector3(v[8], v[9], v[10]);
+            map.m_normal = AZ::Vector3(v[11], v[12], v[13]);
+            return map;
+        }
+
+        static FaceManualUvInternal ToFaceManualUvInternal(const ManualUvMap& map)
+        {
+            FaceManualUvInternal stored;
+            const float values[14] = { map.m_origin.GetX(),    map.m_origin.GetY(),    map.m_origin.GetZ(),    map.m_originUv.GetX(),
+                                       map.m_originUv.GetY(),  map.m_uGradient.GetX(), map.m_uGradient.GetY(), map.m_uGradient.GetZ(),
+                                       map.m_vGradient.GetX(), map.m_vGradient.GetY(), map.m_vGradient.GetZ(), map.m_normal.GetX(),
+                                       map.m_normal.GetY(),    map.m_normal.GetZ() };
+            for (size_t i = 0; i < 14; ++i)
+            {
+                stored.m_values[i] = values[i];
+            }
+            return stored;
+        }
+
+        AZ::Vector2 ManualUvMap::Evaluate(const AZ::Vector3& position) const
+        {
+            const AZ::Vector3 local = position - m_origin;
+            return m_originUv + AZ::Vector2(local.Dot(m_uGradient), local.Dot(m_vGradient));
+        }
+
+        // The affine map a triangle's corner UVs define; invalid for a collapsed triangle.
+        static ManualUvMap ManualUvMapFromTriangle(
+            const AZ::Vector3& p0, const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector2& t0, const AZ::Vector2& t1,
+            const AZ::Vector2& t2)
+        {
+            ManualUvMap map;
+            const AZ::Vector3 e1 = p1 - p0;
+            const AZ::Vector3 e2 = p2 - p0;
+            const AZ::Vector3 normal = e1.Cross(e2);
+            // The gradients lie in the triangle's plane: solve the 2x2 Gram system for each of U and V.
+            const float a = e1.Dot(e1);
+            const float b = e1.Dot(e2);
+            const float c = e2.Dot(e2);
+            const float determinant = a * c - b * b;
+            if (normal.GetLengthSq() <= 1e-16f || AZStd::abs(determinant) <= 1e-20f)
+            {
+                return map;
+            }
+            const AZ::Vector2 d1 = t1 - t0;
+            const AZ::Vector2 d2 = t2 - t0;
+            const auto gradient = [&](const float g1, const float g2)
+            {
+                const float x = (c * g1 - b * g2) / determinant;
+                const float y = (a * g2 - b * g1) / determinant;
+                return e1 * x + e2 * y;
+            };
+            map.m_origin = p0;
+            map.m_originUv = t0;
+            map.m_uGradient = gradient(d1.GetX(), d2.GetX());
+            map.m_vGradient = gradient(d1.GetY(), d2.GetY());
+            map.m_normal = normal.GetNormalized();
+            return map;
         }
 
         // Exact field test, cheap enough for every face of every recalculation.
@@ -2258,11 +2388,63 @@ namespace WhiteBox
             auto& mesh = whiteBox.mesh;
             FaceUvProjectionPropertyHandle projectionProperty;
             const bool hasProjections = mesh.get_property_handle(projectionProperty, FaceUvProjectionProp);
+            FaceManualUvPropertyHandle manualProperty;
+            HalfedgeBoolPropertyHandle authoredProperty;
+            const bool hasManual = mesh.get_property_handle(manualProperty, FaceManualUvProp) &&
+                mesh.get_property_handle(authoredProperty, HalfedgeUvAuthoredProp);
             for (const auto& faceHandle : faceHandles)
             {
                 const AZ::Vector3 normal = FaceNormal(whiteBox, faceHandle);
-                const FaceUvProjectionInternal* stored =
-                    hasProjections ? &mesh.property(projectionProperty, om_fh(faceHandle)) : nullptr;
+                FaceUvProjectionInternal* stored = hasProjections ? &mesh.property(projectionProperty, om_fh(faceHandle)) : nullptr;
+                if (stored != nullptr && hasManual && stored->m_mode == static_cast<AZ::u32>(UvProjectionMode::Manual))
+                {
+                    FaceManualUvInternal& storedMap = mesh.property(manualProperty, om_fh(faceHandle));
+                    const ManualUvMap map = ToManualUvMap(storedMap);
+                    bool missing = false;
+                    for (auto it = mesh.fh_ccwiter(om_fh(faceHandle)); it.is_valid() && !missing; ++it)
+                    {
+                        missing = !mesh.property(authoredProperty, *it);
+                    }
+                    // A new face well off the map's plane (an extruded wall) would smear, so it is projected instead.
+                    if (missing && (!map.IsValid() || AZStd::abs(map.m_normal.Dot(normal)) < 0.5f))
+                    {
+                        *stored = FaceUvProjectionInternal{};
+                        stored->m_mode = static_cast<AZ::u32>(UvProjectionMode::Planar);
+                        storedMap = FaceManualUvInternal{};
+                    }
+                    else
+                    {
+                        AZStd::array<AZ::Vector3, 3> corners;
+                        AZStd::array<AZ::Vector2, 3> uvs;
+                        size_t corner = 0;
+                        for (auto it = mesh.fh_ccwiter(om_fh(faceHandle)); it.is_valid(); ++it)
+                        {
+                            const Mesh::HalfedgeHandle heh = *it;
+                            const AZ::Vector3 position = mesh.point(mesh.to_vertex_handle(heh));
+                            if (!mesh.property(authoredProperty, heh))
+                            {
+                                mesh.set_texcoord2D(heh, map.Evaluate(position));
+                                mesh.property(authoredProperty, heh) = true;
+                            }
+                            if (corner < 3)
+                            {
+                                corners[corner] = position;
+                                uvs[corner] = mesh.texcoord2D(heh);
+                                ++corner;
+                            }
+                        }
+                        // The map follows the face as it moves, so a copy taken later still lines up with it.
+                        if (corner == 3)
+                        {
+                            if (const ManualUvMap refreshed = ManualUvMapFromTriangle(corners[0], corners[1], corners[2], uvs[0], uvs[1], uvs[2]);
+                                refreshed.IsValid())
+                            {
+                                storedMap = ToFaceManualUvInternal(refreshed);
+                            }
+                        }
+                        continue;
+                    }
+                }
                 // Nearly every face uses the default, so it skips the mapper and its trigonometry entirely.
                 if (stored == nullptr || IsDefaultFaceUvProjection(*stored))
                 {
@@ -2637,6 +2819,14 @@ namespace WhiteBox
             const auto omEdgeHandle = om_eh(edgeHandle);
             const auto omVertexHandle = whiteBox.mesh.add_vertex(position);
             whiteBox.mesh.split_copy(omEdgeHandle, omVertexHandle);
+            // The split re-points an existing corner at the new vertex; its authored UV belonged to the far end, so refill it.
+            if (HalfedgeBoolPropertyHandle authored; whiteBox.mesh.get_property_handle(authored, HalfedgeUvAuthoredProp))
+            {
+                for (auto incoming = whiteBox.mesh.vih_iter(omVertexHandle); incoming.is_valid(); ++incoming)
+                {
+                    whiteBox.mesh.property(authored, *incoming) = false;
+                }
+            }
 
             const VertexHandle splitVertexHandle = wb_vh(omVertexHandle);
 
@@ -2709,6 +2899,21 @@ namespace WhiteBox
             if (canFlip)
             {
                 whiteBox.mesh.flip(omEdgeHandle);
+                // Both halves of the flipped edge now end at other vertices, so their corners take fresh UVs.
+                FaceHandles faces;
+                for (int side = 0; side < 2; ++side)
+                {
+                    const auto halfedge = whiteBox.mesh.halfedge_handle(omEdgeHandle, side);
+                    if (HalfedgeBoolPropertyHandle authored; whiteBox.mesh.get_property_handle(authored, HalfedgeUvAuthoredProp))
+                    {
+                        whiteBox.mesh.property(authored, halfedge) = false;
+                    }
+                    if (const auto face = whiteBox.mesh.face_handle(halfedge); face.is_valid())
+                    {
+                        faces.push_back(wb_fh(face));
+                    }
+                }
+                CalculatePlanarUVs(whiteBox, faces);
             }
 
             return canFlip;
@@ -3846,8 +4051,14 @@ namespace WhiteBox
         UvProjection FaceUvProjection(const WhiteBoxMesh& whiteBox, const FaceHandle face)
         {
             FaceUvProjectionPropertyHandle property;
-            return whiteBox.mesh.get_property_handle(property, FaceUvProjectionProp)
+            UvProjection projection = whiteBox.mesh.get_property_handle(property, FaceUvProjectionProp)
                 ? ToUvProjection(whiteBox.mesh.property(property, om_fh(face))) : UvProjection{};
+            FaceManualUvPropertyHandle manualProperty;
+            if (projection.m_mode == UvProjectionMode::Manual && whiteBox.mesh.get_property_handle(manualProperty, FaceManualUvProp))
+            {
+                projection.m_manual = ToManualUvMap(whiteBox.mesh.property(manualProperty, om_fh(face)));
+            }
+            return projection;
         }
 
         void SetFaceUvProjection(WhiteBoxMesh& whiteBox, const FaceHandle face, const UvProjection& projection)
@@ -3859,10 +4070,100 @@ namespace WhiteBox
             }
             whiteBox.mesh.property(property).set_persistent(true);
             whiteBox.mesh.property(property, om_fh(face)) = ToFaceUvProjectionInternal(projection);
+            FaceManualUvPropertyHandle manualProperty;
+            if (!whiteBox.mesh.get_property_handle(manualProperty, FaceManualUvProp))
+            {
+                whiteBox.mesh.add_property(manualProperty, FaceManualUvProp);
+                whiteBox.mesh.property(manualProperty).set_persistent(true);
+            }
+            whiteBox.mesh.property(manualProperty, om_fh(face)) =
+                projection.m_mode == UvProjectionMode::Manual ? ToFaceManualUvInternal(projection.m_manual) : FaceManualUvInternal{};
+        }
+
+        static HalfedgeBoolPropertyHandle AuthoredProperty(WhiteBoxMesh& whiteBox)
+        {
+            HalfedgeBoolPropertyHandle property;
+            if (!whiteBox.mesh.get_property_handle(property, HalfedgeUvAuthoredProp))
+            {
+                whiteBox.mesh.add_property(property, HalfedgeUvAuthoredProp);
+                whiteBox.mesh.property(property).set_persistent(true);
+            }
+            return property;
+        }
+
+        // Every corner of the faces is marked authored as it stands, and each face takes the map its UVs define.
+        static void FreezeFaceUvs(WhiteBoxMesh& whiteBox, const FaceHandles& faces)
+        {
+            const HalfedgeBoolPropertyHandle authored = AuthoredProperty(whiteBox);
+            for (const FaceHandle face : faces)
+            {
+                UvProjection projection;
+                projection.m_mode = UvProjectionMode::Manual;
+                const auto halfedges = FaceHalfedgeHandles(whiteBox, face);
+                if (halfedges.size() >= 3)
+                {
+                    const auto point = [&whiteBox](const HalfedgeHandle h) { return VertexPosition(whiteBox, HalfedgeVertexHandleAtTip(whiteBox, h)); };
+                    projection.m_manual = ManualUvMapFromTriangle(
+                        point(halfedges[0]), point(halfedges[1]), point(halfedges[2]), HalfedgeUV(whiteBox, halfedges[0]),
+                        HalfedgeUV(whiteBox, halfedges[1]), HalfedgeUV(whiteBox, halfedges[2]));
+                }
+                SetFaceUvProjection(whiteBox, face, projection);
+                for (const HalfedgeHandle halfedge : halfedges)
+                {
+                    whiteBox.mesh.property(authored, om_heh(halfedge)) = true;
+                }
+            }
+        }
+
+        void MakePolygonUvsManual(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons)
+        {
+            FaceHandles faces;
+            for (const auto& polygon : polygons)
+            {
+                for (const FaceHandle face : polygon.m_faceHandles)
+                {
+                    if (FaceUvProjection(whiteBox, face).m_mode != UvProjectionMode::Manual)
+                    {
+                        faces.push_back(face);
+                    }
+                }
+            }
+            FreezeFaceUvs(whiteBox, faces);
+        }
+
+        void SetHalfedgeManualUv(WhiteBoxMesh& whiteBox, const HalfedgeHandle halfedge, const AZ::Vector2& uv)
+        {
+            const FaceHandle face = HalfedgeFaceHandle(whiteBox, halfedge);
+            if (!face.IsValid())
+            {
+                return;
+            }
+            if (FaceUvProjection(whiteBox, face).m_mode != UvProjectionMode::Manual)
+            {
+                FreezeFaceUvs(whiteBox, { face });
+            }
+            whiteBox.mesh.set_texcoord2D(om_heh(halfedge), uv);
+            whiteBox.mesh.property(AuthoredProperty(whiteBox), om_heh(halfedge)) = true;
+            CalculatePlanarUVs(whiteBox, { face }); // refreshes the face's map from its corners
+        }
+
+        bool HalfedgeUvAuthored(const WhiteBoxMesh& whiteBox, const HalfedgeHandle halfedge)
+        {
+            HalfedgeBoolPropertyHandle property;
+            return whiteBox.mesh.get_property_handle(property, HalfedgeUvAuthoredProp) &&
+                whiteBox.mesh.property(property, om_heh(halfedge));
         }
 
         void SetPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const UvProjection& projection)
         {
+            if (projection.m_mode == UvProjectionMode::Manual && !projection.m_manual.IsValid())
+            {
+                MakePolygonUvsManual(whiteBox, polygons);
+                return;
+            }
+            // A pasted Manual map: every corner is refilled from it, so the pasted UVs line up across the polygons.
+            const bool pasted = projection.m_mode == UvProjectionMode::Manual;
+            const HalfedgeBoolPropertyHandle authored = AuthoredProperty(whiteBox);
             FaceHandles faces;
             for (const auto& polygon : polygons)
             {
@@ -3870,6 +4171,10 @@ namespace WhiteBox
                 {
                     SetFaceUvProjection(whiteBox, face, projection);
                     faces.push_back(face);
+                    for (const HalfedgeHandle halfedge : FaceHalfedgeHandles(whiteBox, face))
+                    {
+                        whiteBox.mesh.property(authored, om_heh(halfedge)) = !pasted && whiteBox.mesh.property(authored, om_heh(halfedge));
+                    }
                 }
             }
             CalculatePlanarUVs(whiteBox, faces);
@@ -3886,6 +4191,10 @@ namespace WhiteBox
                 }
                 // Mode and rotation come from the polygon; only the placement is fitted.
                 UvProjection projection = FaceUvProjection(whiteBox, polygon.m_faceHandles.front());
+                if (projection.m_mode == UvProjectionMode::Manual)
+                {
+                    continue; // authored UVs are not refitted
+                }
                 projection.m_scale = AZ::Vector2(1.0f, 1.0f);
                 projection.m_offset = AZ::Vector2::CreateZero();
                 AZ::Vector2 low(AZ::Constants::FloatMax, AZ::Constants::FloatMax);
@@ -3923,6 +4232,10 @@ namespace WhiteBox
                 for (const FaceHandle face : polygon.m_faceHandles)
                 {
                     UvProjection projection = FaceUvProjection(whiteBox, face);
+                    if (projection.m_mode == UvProjectionMode::Manual)
+                    {
+                        continue; // authored UVs keep their own density
+                    }
                     // Offset scales with the tiling so the point at UV zero stays put; the default mapping is one per metre.
                     const AZ::Vector2 ratio(density / AZ::GetMax(projection.m_scale.GetX(), 1e-6f), density / AZ::GetMax(projection.m_scale.GetY(), 1e-6f));
                     projection.m_offset = projection.m_offset * ratio;
@@ -3957,6 +4270,8 @@ namespace WhiteBox
             OpenMesh::FPropHandleT<unsigned int> m_paint;
             FaceUvProjectionPropertyHandle m_uvProjection;
             OpenMesh::FPropHandleT<unsigned int> m_smoothing;
+            FaceManualUvPropertyHandle m_manualUv;
+            bool m_hasManualUv = false;
             bool m_hasMaterial = false;
             bool m_hasPaint = false;
             bool m_hasUvProjection = false;
@@ -3968,6 +4283,7 @@ namespace WhiteBox
                 m_hasPaint = whiteBox.mesh.get_property_handle(m_paint, "WhiteBoxFacePaintColor");
                 m_hasUvProjection = whiteBox.mesh.get_property_handle(m_uvProjection, FaceUvProjectionProp);
                 m_hasSmoothing = whiteBox.mesh.get_property_handle(m_smoothing, FaceSmoothingProp);
+                m_hasManualUv = whiteBox.mesh.get_property_handle(m_manualUv, FaceManualUvProp);
             }
 
             // Target side: every property exists and persists, as the Set functions would leave it.
@@ -3994,7 +4310,12 @@ namespace WhiteBox
                     whiteBox.mesh.add_property(m_smoothing, FaceSmoothingProp);
                     whiteBox.mesh.property(m_smoothing).set_persistent(true);
                 }
-                m_hasMaterial = m_hasPaint = m_hasUvProjection = m_hasSmoothing = true;
+                if (!m_hasManualUv)
+                {
+                    whiteBox.mesh.add_property(m_manualUv, FaceManualUvProp);
+                    whiteBox.mesh.property(m_manualUv).set_persistent(true);
+                }
+                m_hasMaterial = m_hasPaint = m_hasUvProjection = m_hasSmoothing = m_hasManualUv = true;
             }
         };
 
@@ -4010,6 +4331,8 @@ namespace WhiteBox
             target.mesh.property(to.m_uvProjection, targetHandle) =
                 from.m_hasUvProjection ? source.mesh.property(from.m_uvProjection, sourceHandle) : FaceUvProjectionInternal{};
             target.mesh.property(to.m_smoothing, targetHandle) = from.m_hasSmoothing ? source.mesh.property(from.m_smoothing, sourceHandle) : 0u;
+            target.mesh.property(to.m_manualUv, targetHandle) =
+                from.m_hasManualUv ? source.mesh.property(from.m_manualUv, sourceHandle) : FaceManualUvInternal{};
         }
 
         void CopyFaceAttributes(

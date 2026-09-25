@@ -50,6 +50,18 @@ namespace WhiteBox
                                projection.m_scale.GetX(), projection.m_scale.GetY(), projection.m_offset.GetX(),
                                projection.m_offset.GetY(), projection.m_rotationDegrees)
                                .c_str();
+                    // A Manual map is anchored at the origin and rounded, so the triangles of one flat polygon share a key.
+                    if (projection.m_mode == UvProjectionMode::Manual && projection.m_manual.IsValid())
+                    {
+                        const ManualUvMap& map = projection.m_manual;
+                        const AZ::Vector2 atOrigin = map.Evaluate(AZ::Vector3::CreateZero());
+                        key += AZStd::string::format(
+                                   " %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g", atOrigin.GetX(), atOrigin.GetY(),
+                                   map.m_uGradient.GetX(), map.m_uGradient.GetY(), map.m_uGradient.GetZ(), map.m_vGradient.GetX(),
+                                   map.m_vGradient.GetY(), map.m_vGradient.GetZ(), map.m_normal.GetX(), map.m_normal.GetY(),
+                                   map.m_normal.GetZ())
+                                   .c_str();
+                    }
                 }
                 if (smoothing != 0)
                 {
@@ -80,11 +92,44 @@ namespace WhiteBox
                     const char* cursor = end;
                     value = std::strtof(cursor, &end);
                 }
-                projection.m_mode = mode == static_cast<unsigned long>(UvProjectionMode::Planar) ? UvProjectionMode::Planar
-                                                                                                : UvProjectionMode::World;
+                projection.m_mode = mode == static_cast<unsigned long>(UvProjectionMode::Planar)   ? UvProjectionMode::Planar
+                    : mode == static_cast<unsigned long>(UvProjectionMode::Manual) ? UvProjectionMode::Manual
+                                                                                   : UvProjectionMode::World;
                 projection.m_scale = AZ::Vector2(values[0], values[1]);
                 projection.m_offset = AZ::Vector2(values[2], values[3]);
                 projection.m_rotationDegrees = values[4];
+                if (projection.m_mode == UvProjectionMode::Manual)
+                {
+                    float map[11] = {};
+                    for (float& value : map)
+                    {
+                        const char* cursor = end;
+                        value = std::strtof(cursor, &end);
+                    }
+                    projection.m_manual.m_origin = AZ::Vector3::CreateZero();
+                    projection.m_manual.m_originUv = AZ::Vector2(map[0], map[1]);
+                    projection.m_manual.m_uGradient = AZ::Vector3(map[2], map[3], map[4]);
+                    projection.m_manual.m_vGradient = AZ::Vector3(map[5], map[6], map[7]);
+                    projection.m_manual.m_normal = AZ::Vector3(map[8], map[9], map[10]);
+                }
+            }
+
+            // A Manual map moved into the space the solver works in, so a cutter's authored UVs land where its faces do.
+            UvProjection TransformedProjection(UvProjection projection, const AZ::Transform& transform)
+            {
+                if (projection.m_mode != UvProjectionMode::Manual || !projection.m_manual.IsValid() || transform.IsClose(AZ::Transform::CreateIdentity()))
+                {
+                    return projection;
+                }
+                // For p' = sRp + t the gradient becomes Rg / s, which is TransformVector(g) / s^2.
+                const float scale = transform.GetUniformScale();
+                const float inverseScaleSq = scale > 0.0f ? 1.0f / (scale * scale) : 1.0f;
+                ManualUvMap& map = projection.m_manual;
+                map.m_origin = transform.TransformPoint(map.m_origin);
+                map.m_uGradient = transform.TransformVector(map.m_uGradient) * inverseScaleSq;
+                map.m_vGradient = transform.TransformVector(map.m_vGradient) * inverseScaleSq;
+                map.m_normal = transform.TransformVector(map.m_normal).GetNormalizedSafe();
+                return projection;
             }
         } // namespace
 
@@ -107,7 +152,8 @@ namespace WhiteBox
                 {
                     triangleMesh.m_colors.push_back(FacePaintColor(whiteBox, faceHandles[faceIndex]));
                     triangleMesh.m_materials.emplace_back(EncodeFaceKey(
-                        FaceMaterial(whiteBox, faceHandles[faceIndex]), FaceUvProjection(whiteBox, faceHandles[faceIndex]),
+                        FaceMaterial(whiteBox, faceHandles[faceIndex]),
+                        TransformedProjection(FaceUvProjection(whiteBox, faceHandles[faceIndex]), transform),
                         FaceSmoothingGroups(whiteBox, faceHandles[faceIndex])));
                     ++faceIndex;
                     for (const AZ::Vector3& position : face)

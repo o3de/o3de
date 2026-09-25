@@ -7,6 +7,7 @@
  */
 
 #include "Tools/WhiteBoxUvProjectionWindow.h"
+#include "Tools/WhiteBoxUvEditorPane.h"
 #include "EditorWhiteBoxComponent.h"
 #include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
 #include "Util/WhiteBoxEditorUtil.h"
@@ -21,6 +22,8 @@
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace WhiteBox
 {
@@ -47,9 +50,11 @@ namespace WhiteBox
         m_mode = new QComboBox(this);
         m_mode->addItem(tr("World (box)"), static_cast<int>(Api::UvProjectionMode::World));
         m_mode->addItem(tr("Planar (face)"), static_cast<int>(Api::UvProjectionMode::Planar));
+        m_mode->addItem(tr("Manual (keep UVs)"), static_cast<int>(Api::UvProjectionMode::Manual));
         m_mode->setToolTip(
             tr("World projects along each face's main axis, as White Box always has. Planar follows the face itself, so "
-               "slopes do not stretch."));
+               "slopes do not stretch. Manual freezes the current UVs: edits keep them, and faces an edit creates continue "
+               "them. Pasting a Manual projection carries its UVs across."));
         const auto makeSpin = [this](const double minimum, const double maximum, const double step, const int decimals)
         {
             auto* spin = new QDoubleSpinBox(this);
@@ -112,10 +117,16 @@ namespace WhiteBox
             button->setAutoDefault(false);
             button->setDefault(false);
         }
+        auto* editor = new QPushButton(tr("Open UV Editor"), this);
+        editor->setToolTip(tr("Edit the selected polygons' UVs point by point. Edited faces switch to Manual."));
+        editor->setAutoDefault(false);
+        editor->setDefault(false);
         auto* clipboard = new QHBoxLayout();
         clipboard->addWidget(m_copy);
         clipboard->addWidget(m_paste);
+        clipboard->addWidget(editor);
         layout->addLayout(clipboard);
+        connect(editor, &QPushButton::clicked, this, []() { AzToolsFramework::OpenViewPane(WhiteBoxUvEditorPane::PaneName); });
         actions->addWidget(m_fit);
         actions->addWidget(m_reset);
         actions->addWidget(close);
@@ -182,21 +193,25 @@ namespace WhiteBox
         m_selection->setText(polygons.empty() ? tr("Select polygons in Transform mode.")
                                               : tr("%n polygon(s) selected", nullptr, static_cast<int>(polygons.size())));
         const bool usable = !polygons.empty();
-        for (QWidget* control : std::initializer_list<QWidget*>{
-                 m_mode, m_tilingU, m_tilingV, m_offsetU, m_offsetV, m_rotation, m_fit, m_reset, m_density, m_normalize, m_copy })
+        // Tiling, offset, rotation, Fit and density shape a projection; Manual UVs have none to shape.
+        const auto projection = ModelingOps::SelectedUvProjection(m_pair);
+        const bool manual = projection && projection->m_mode == Api::UvProjectionMode::Manual;
+        for (QWidget* control : std::initializer_list<QWidget*>{ m_mode, m_reset, m_copy })
         {
             control->setEnabled(usable);
+        }
+        for (QWidget* control : std::initializer_list<QWidget*>{
+                 m_tilingU, m_tilingV, m_offsetU, m_offsetV, m_rotation, m_fit, m_density, m_normalize })
+        {
+            control->setEnabled(usable && !manual);
         }
         m_paste->setEnabled(usable && ModelingOps::HasCopiedUvProjection());
         // Follows selection changes and undo, but never overwrites a value while it is being typed.
         const bool editing = m_tilingU->hasFocus() || m_tilingV->hasFocus() || m_offsetU->hasFocus() || m_offsetV->hasFocus() ||
             m_rotation->hasFocus();
-        if (force || !editing)
+        if ((force || !editing) && projection)
         {
-            if (const auto projection = ModelingOps::SelectedUvProjection(m_pair))
-            {
-                LoadValues(*projection);
-            }
+            LoadValues(*projection);
         }
         if ((force || !m_density->hasFocus()) && usable)
         {
