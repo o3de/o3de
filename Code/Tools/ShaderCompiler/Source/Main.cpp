@@ -172,10 +172,10 @@ namespace AZ::ShaderCompiler
     }
 
     //! iterates on tokens and build the line number mapping (from preprocessor line directives)
-    void ConstructLineMap(vector<std::unique_ptr<Token>>* allTokens, PreprocessorLineDirectiveFinder* lineFinder)
+    void ConstructLineMap(const vector<Token*>& allTokens, PreprocessorLineDirectiveFinder* lineFinder)
     {
         string lastNonEmptyFileName = lineFinder->m_physicalSourceFileName;
-        for (auto& token : *allTokens) // auto& because each element is a unique_ptr we can't copy
+        for (const Token* token : allTokens)
         {
             if (token->getType() == azslLexer::LineDirective)
             {
@@ -187,7 +187,7 @@ namespace AZ::ShaderCompiler
                 //                        | |     |       decimal
                 // custom raw string      | |     |          |  optional filename between quotes
                 //         delimiter --+  | |     |          |        |
-                std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
+                static const std::regex lineRegex(R"__(#\s*(line\s+)?\s*(\d+)\s*("(.*)")?)__");
                 auto matchBegin = std::sregex_iterator(lineText.begin(), lineText.end(), lineRegex);
                 // there can be only 1 match, and it HAS to match since AntlR lexer already matched.
                 auto& groups = *matchBegin; // 4 groups: [0] is the whole line. [1] is the first parenthesized group, [2] the 2nd etc
@@ -514,19 +514,33 @@ int main(int argc, const char* argv[])
         azslLexer lexer(&input);
         CommonTokenStream tokens(&lexer);
         IntermediateRepresentation ir(&lexer);
-        auto allTokens = lexer.getAllTokens();
+        // Buffer all tokens, including off-channel line directives needed by the line map.
+        tokens.fill();
+        tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
             throw std::runtime_error("syntax errors present");
         }
-        ConstructLineMap(&allTokens, &lineFinder);
-        lexer.reset();
+        ConstructLineMap(tokens.getTokens(), &lineFinder);
         AzslParserEventListener azslParserEventListener;
         azslParser parser(&tokens);
         parser.removeErrorListeners();
         azslParserEventListener.m_isKeywordPredicate = IsKeyword;
+
+        // Avoid full-context prediction on the common path, then retry in LL mode if SLL reports an error.
+        auto* simulator = parser.getInterpreter<atn::ParserATNSimulator>();
+
+        simulator->setPredictionMode(atn::PredictionMode::SLL);
+        tree::ParseTree* tree = parser.compilationUnit();
+
+        if (parser.getNumberOfSyntaxErrors() > 0)
+        {
+            parser.reset();
+            simulator->setPredictionMode(atn::PredictionMode::LL);
+            tree = parser.compilationUnit();
+        }
+
         parser.addErrorListener(&azslParserEventListener);
-        tree::ParseTree *tree = parser.compilationUnit();
 
         if (ast)
         {
