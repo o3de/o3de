@@ -38,18 +38,36 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool GraphTemplateFileData::Save(const AZStd::string& path) const
+    bool GraphTemplateFileData::Save(const AZStd::string& path, bool* wroteFile) const
     {
         AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file: %s\n", path.c_str());
+
+        if (wroteFile)
+        {
+            *wroteFile = false;
+        }
 
         AZStd::string templateOutputText;
         AZ::StringFunc::Join(templateOutputText, m_lines, '\n');
         templateOutputText += '\n';
 
+        // Preserve the timestamp of identical files so the Asset Processor does not rebuild their dependents.
+        if (const auto existingText = AZ::Utils::ReadFile(path);
+            existingText.IsSuccess() && existingText.GetValue() == templateOutputText)
+        {
+            AZ_TracePrintf_IfTrue(
+                "GraphTemplateFileData", IsLoggingEnabled(), "Generated file is unchanged, skipping write: %s\n", path.c_str());
+            return true;
+        }
+
         // Save the file generated from the template to the same folder as the graph.
         if (AZ::Utils::WriteFile(templateOutputText, path).IsSuccess())
         {
             AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file succeeded: %s\n", path.c_str());
+            if (wroteFile)
+            {
+                *wroteFile = true;
+            }
             return true;
         }
 
