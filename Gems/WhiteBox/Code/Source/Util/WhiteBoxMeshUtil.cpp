@@ -14,6 +14,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <cmath>
@@ -31,6 +32,7 @@ namespace WhiteBox
                 return it->second;
             }
             const Api::VertexHandle dh = Api::AddVertex(dest, Api::VertexPosition(src, srcVertex));
+            Api::CopyVertexBlend(dest, dh, src, srcVertex); // layer merges keep painted blends
             vmap.emplace(srcVertex.Index(), dh);
             return dh;
         };
@@ -55,6 +57,113 @@ namespace WhiteBox
                 Api::CopyFaceAttributes(dest, Api::AddPolygon(dest, faceVertHandles).m_faceHandles, src, polygon.m_faceHandles);
             }
         }
+    }
+
+    namespace
+    {
+        // AppendMesh with the positions mapped, the winding optionally reversed and some polygons left out.
+        void AppendMapped(
+            WhiteBoxMesh& dest, const WhiteBoxMesh& src, const AZStd::function<AZ::Vector3(const AZ::Vector3&)>& map, const bool reverse,
+            const AZStd::function<bool(const Api::PolygonHandle&)>& skip)
+        {
+            AZStd::unordered_map<int, Api::VertexHandle> vmap;
+            const auto destVertex = [&](const Api::VertexHandle& srcVertex) -> Api::VertexHandle
+            {
+                const auto it = vmap.find(srcVertex.Index());
+                if (it != vmap.end())
+                {
+                    return it->second;
+                }
+                const Api::VertexHandle dh = Api::AddVertex(dest, map(Api::VertexPosition(src, srcVertex)));
+                Api::CopyVertexBlend(dest, dh, src, srcVertex);
+                vmap.emplace(srcVertex.Index(), dh);
+                return dh;
+            };
+            for (const Api::PolygonHandle& polygon : Api::MeshPolygonHandles(src))
+            {
+                if (skip && skip(polygon))
+                {
+                    continue;
+                }
+                Api::FaceVertHandlesList faceVertHandles;
+                faceVertHandles.reserve(polygon.m_faceHandles.size());
+                for (const Api::FaceHandle& faceHandle : polygon.m_faceHandles)
+                {
+                    const auto halfedges = Api::FaceHalfedgeHandles(src, faceHandle);
+                    if (halfedges.size() >= 3)
+                    {
+                        const int first = reverse ? 2 : 0;
+                        const int last = reverse ? 0 : 2;
+                        faceVertHandles.push_back(Api::FaceVertHandles{
+                            { destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[first])),
+                              destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[1])),
+                              destVertex(Api::HalfedgeVertexHandleAtTip(src, halfedges[last])) } });
+                    }
+                }
+                if (!faceVertHandles.empty())
+                {
+                    Api::CopyFaceAttributes(dest, Api::AddPolygon(dest, faceVertHandles).m_faceHandles, src, polygon.m_faceHandles);
+                }
+            }
+        }
+    } // namespace
+
+    Api::WhiteBoxMeshPtr MirrorMesh(const WhiteBoxMesh& src, const int axis)
+    {
+        const int a = AZ::GetClamp(axis, 0, 2);
+        constexpr float OnPlane = 1e-4f;
+        // The origin plane, unless the mesh straddles it (a centred parametric shape would land on itself): then its low side.
+        float low = AZ::Constants::FloatMax;
+        float high = -AZ::Constants::FloatMax;
+        for (const Api::VertexHandle vertex : Api::MeshVertexHandles(src))
+        {
+            const float value = Api::VertexPosition(src, vertex).GetElement(a);
+            low = AZStd::min(low, value);
+            high = AZStd::max(high, value);
+        }
+        const float plane = (low < -OnPlane && high > OnPlane) ? low : 0.0f;
+        const auto onPlane = [&src, a, plane](const Api::PolygonHandle& polygon)
+        {
+            for (const Api::FaceHandle& face : polygon.m_faceHandles)
+            {
+                for (const AZ::Vector3& position : Api::FaceVertexPositions(src, face))
+                {
+                    if (AZStd::abs(position.GetElement(a) - plane) > OnPlane)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        Api::WhiteBoxMeshPtr result = Api::CreateWhiteBoxMesh();
+        AppendMapped(*result, src, [](const AZ::Vector3& p) { return p; }, false, onPlane);
+        // A reflection turns the surface inside out, so the copy's winding is reversed to face outwards again.
+        AppendMapped(
+            *result, src,
+            [a, plane](const AZ::Vector3& p)
+            {
+                AZ::Vector3 mirrored = p;
+                mirrored.SetElement(a, 2.0f * plane - p.GetElement(a));
+                return mirrored;
+            },
+            true, onPlane);
+        Api::CalculateNormals(*result);
+        Api::CalculatePlanarUVs(*result);
+        return result;
+    }
+
+    Api::WhiteBoxMeshPtr ArrayMesh(const WhiteBoxMesh& src, const int count, const AZ::Vector3& offset)
+    {
+        Api::WhiteBoxMeshPtr result = Api::CreateWhiteBoxMesh();
+        for (int i = 0; i < AZStd::max(count, 1); ++i)
+        {
+            const AZ::Vector3 shift = offset * static_cast<float>(i);
+            AppendMapped(*result, src, [shift](const AZ::Vector3& p) { return p + shift; }, false, {});
+        }
+        Api::CalculateNormals(*result);
+        Api::CalculatePlanarUVs(*result);
+        return result;
     }
 
     Api::WhiteBoxMeshPtr CombineFreeformAndGrids(WhiteBoxMesh* freeform, WhiteBoxMesh* grid)
@@ -116,6 +225,7 @@ namespace WhiteBox
                 return it->second;
             }
             const Api::VertexHandle dh = Api::AddVertex(*dest, Api::VertexPosition(src, srcVertex));
+            Api::CopyVertexBlend(*dest, dh, src, srcVertex);
             vmap.emplace(srcVertex.Index(), dh);
             return dh;
         };
@@ -151,13 +261,14 @@ namespace WhiteBox
     }
 
     WhiteBoxFace BuildWhiteBoxFace(
-        const WhiteBoxMesh& whiteBox, const Api::FaceHandle& faceHandle, const bool flipWinding)
+        const WhiteBoxMesh& whiteBox, const Api::FaceHandle& faceHandle, const bool flipWinding, const bool withBlend)
     {
-        const auto copyVertex = [&whiteBox](const Api::HalfedgeHandle& in, WhiteBoxVertex& out)
+        const auto copyVertex = [&whiteBox, withBlend](const Api::HalfedgeHandle& in, WhiteBoxVertex& out)
         {
             const auto vh = Api::HalfedgeVertexHandleAtTip(whiteBox, in);
             out.m_position = Api::VertexPosition(whiteBox, vh);
             out.m_uv = Api::HalfedgeUV(whiteBox, in);
+            out.m_blend = withBlend ? Api::VertexBlend(whiteBox, vh) : AZ::Vector3::CreateZero();
         };
 
         WhiteBoxFace face;
@@ -208,9 +319,10 @@ namespace WhiteBox
         faceData.reserve(faceCount);
 
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
+        const bool withBlend = Api::MeshHasVertexBlend(whiteBox);
         for (const auto& faceHandle : faceHandles)
         {
-            faceData.push_back(BuildWhiteBoxFace(whiteBox, faceHandle, flipWinding));
+            faceData.push_back(BuildWhiteBoxFace(whiteBox, faceHandle, flipWinding, withBlend));
         }
 
         renderData.m_material = material;

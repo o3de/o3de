@@ -40,9 +40,17 @@ namespace WhiteBox
     //! keeps render, physics (single-sided) and selection in agreement.
     Api::WhiteBoxMeshPtr FlippedMeshWinding(const WhiteBoxMesh& src);
 
-    //! Build a single render face from a white box face handle, optionally reversing the
-    //! winding (and flipping the normal) so the face renders inside-out.
-    WhiteBoxFace BuildWhiteBoxFace(const WhiteBoxMesh& whiteBox, const Api::FaceHandle& faceHandle, bool flipWinding);
+    //! @p src plus its reflection across the plane normal to @p axis (0 X, 1 Y, 2 Z) through the origin, or the
+    //! mesh's low side when it straddles the origin. Polygons on the plane are dropped; the halves are not welded.
+    Api::WhiteBoxMeshPtr MirrorMesh(const WhiteBoxMesh& src, int axis);
+
+    //! @p count copies of @p src, each @p offset further along than the last (the first stays in place).
+    Api::WhiteBoxMeshPtr ArrayMesh(const WhiteBoxMesh& src, int count, const AZ::Vector3& offset);
+
+    //! Build a render face from a face handle, optionally reversed to render inside-out.
+    //! @param withBlend read the corners' vertex-blend weights.
+    WhiteBoxFace BuildWhiteBoxFace(
+        const WhiteBoxMesh& whiteBox, const Api::FaceHandle& faceHandle, bool flipWinding, bool withBlend = true);
 
     //! Build intermediate render data (faces + material) passed to WhiteBoxRenderMeshInterface
     //! to generate the concrete render mesh.

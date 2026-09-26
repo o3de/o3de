@@ -40,6 +40,11 @@ namespace WhiteBox
         //! color must be white. Not user-editable; set by the component when building render data.
         bool m_useVertexColor = false;
 
+        //! Generate lightmap UVs (UV1) when the render mesh is built; set from the component, not edited here.
+        bool m_lightmapUvs = false;
+        //! Gap between lightmap charts, in UV units.
+        float m_lightmapMargin = 0.005f;
+
         //! Entity default material. An empty asset uses the built-in WhiteBox material.
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset{AZ::Data::AssetLoadBehavior::PreLoad};
     };

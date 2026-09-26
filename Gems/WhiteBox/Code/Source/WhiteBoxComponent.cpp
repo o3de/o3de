@@ -55,6 +55,17 @@ namespace WhiteBox
         }
     }
 
+    void WhiteBoxComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        // The game Material component requires a consumer, as the editor one does.
+        provided.push_back(AZ_CRC_CE("MaterialConsumerService"));
+    }
+
+    void WhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("MaterialConsumerService"));
+    }
+
     WhiteBoxComponent::WhiteBoxComponent() = default;
     WhiteBoxComponent::~WhiteBoxComponent() = default;
 

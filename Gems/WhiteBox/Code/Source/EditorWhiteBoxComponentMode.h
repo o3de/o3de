@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utility/pair.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/ViewportSnapping/ViewportDragCancelBus.h>
@@ -38,6 +39,7 @@ namespace WhiteBox
     class WhiteBoxSmoothingWindow;
     class WhiteBoxShapeOptionsWindow;
     class WhiteBoxPaintWindow;
+    class WhiteBoxMaterialUiUnlock;
 
     //! The type of edge selection the component mode is in (either normal selection of
     //! 'user' edges or selection of all edges ('mesh') in restoration mode).
@@ -191,6 +193,8 @@ namespace WhiteBox
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;
+        //! Keeps the Material and Collider cards and the Material Instance Editor usable during this mode.
+        AZStd::unique_ptr<WhiteBoxMaterialUiUnlock> m_materialUiUnlock;
 
         //! Lets deferred work (EnterDefaultMode) detect that this mode was destroyed in the meantime.
         AZStd::shared_ptr<bool> m_deferredWorkToken;

@@ -7,12 +7,16 @@
  */
 
 #include "Tools/WhiteBoxUvEditorPane.h"
+#include "Rendering/WhiteBoxMaterialSlot.h"
+
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include "EditorWhiteBoxComponent.h"
 #include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
 #include "Util/WhiteBoxEditorUtil.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -26,7 +30,15 @@
 #include <QEvent>
 #include <QGraphicsEffect>
 #include <QHBoxLayout>
+#include <QComboBox>
 #include <QLabel>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QSpinBox>
+#include <QStringList>
+#include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -194,6 +206,20 @@ namespace WhiteBox
         auto* spacer = new QWidget(toolbar);
         spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         toolbar->addWidget(spacer);
+        m_textureLayer = new QComboBox(toolbar);
+        m_textureLayer->setToolTip(tr("Which layer's base colour texture to draw behind the UVs."));
+        m_textureLayer->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        connect(m_textureLayer, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() { Refresh(); });
+        m_textureLayerAction = toolbar->addWidget(m_textureLayer);
+        m_textureLayerAction->setVisible(false);
+        m_trimToggle = addAction(whiteBoxIcons + QStringLiteral("UvTrim.svg"), tr("Trim Sheet"),
+            tr("Show the viewed material's trim bands and the panel to set them up and fit selected islands into a band."));
+        m_trimToggle->setCheckable(true);
+        connect(m_trimToggle, &QAction::toggled, this, [this](const bool on)
+        {
+            m_trimPanel->setVisible(on);
+            RefreshTrim();
+        });
         m_showTexture = addAction(editorIcons + QStringLiteral("Material.svg"), tr("Show Texture"),
             tr("Draw the faces' base colour texture behind the UVs, repeating outside the unit square as it does on the mesh."));
         m_showTexture->setCheckable(true);
@@ -201,6 +227,83 @@ namespace WhiteBox
         connect(m_showTexture, &QAction::toggled, this, [this]() { Refresh(); });
         connect(addAction(editorIcons + QStringLiteral("AutoFit.svg"), tr("Frame"), tr("Frame the selection, or everything when nothing is selected. [F]")),
             &QAction::triggered, this, [this]() { m_canvas->FrameSelection(); });
+
+        // Trim sheet panel, under the toolbar while the toggle is on.
+        m_trimPanel = new QWidget(this);
+        auto* trimLayout = new QHBoxLayout(m_trimPanel);
+        trimLayout->setContentsMargins(6, 3, 6, 3);
+        trimLayout->addWidget(new QLabel(tr("Bands"), m_trimPanel));
+        m_trimEdges = new QLineEdit(m_trimPanel);
+        m_trimEdges->setPlaceholderText(tr("V edges, top to bottom: 0, 0.25, 0.5, 1"));
+        m_trimEdges->setToolTip(tr("Where the trim sheet's bands start and end, from 0 at the top of the texture to 1 at the bottom."));
+        trimLayout->addWidget(m_trimEdges, 1);
+        connect(m_trimEdges, &QLineEdit::editingFinished, this, [this]()
+        {
+            AZStd::vector<float> edges;
+            for (const QString& part : m_trimEdges->text().split(QRegularExpression(QStringLiteral("[,;\\s]+")), Qt::SkipEmptyParts))
+            {
+                bool number = false;
+                const float value = part.toFloat(&number);
+                if (number)
+                {
+                    edges.push_back(value);
+                }
+            }
+            SetTrimEdges(edges);
+        });
+        m_trimEvenCount = new QSpinBox(m_trimPanel);
+        m_trimEvenCount->setRange(1, 64);
+        m_trimEvenCount->setValue(4);
+        m_trimEvenCount->setToolTip(tr("How many equal bands Even makes."));
+        trimLayout->addWidget(m_trimEvenCount);
+        auto* even = new QPushButton(tr("Even"), m_trimPanel);
+        even->setToolTip(tr("Split the texture into equal bands."));
+        connect(even, &QPushButton::clicked, this, [this]()
+        {
+            AZStd::vector<float> edges;
+            const int count = m_trimEvenCount->value();
+            for (int i = 0; i <= count; ++i)
+            {
+                edges.push_back(static_cast<float>(i) / static_cast<float>(count));
+            }
+            SetTrimEdges(edges);
+        });
+        trimLayout->addWidget(even);
+        m_trimBand = new QComboBox(m_trimPanel);
+        m_trimBand->setToolTip(tr("The band Fit puts the selection into."));
+        connect(m_trimBand, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() { RefreshTrim(); });
+        trimLayout->addWidget(m_trimBand);
+        trimLayout->addWidget(new QLabel(tr("Inset"), m_trimPanel));
+        m_trimInset = new QDoubleSpinBox(m_trimPanel);
+        m_trimInset->setRange(0.0, 0.05);
+        m_trimInset->setSingleStep(0.001);
+        m_trimInset->setDecimals(3);
+        m_trimInset->setValue(0.002);
+        m_trimInset->setToolTip(tr("Keep this far inside the band's top and bottom, so neighbouring trims do not bleed in."));
+        trimLayout->addWidget(m_trimInset);
+        auto* fit = new QPushButton(tr("Fit"), m_trimPanel);
+        fit->setToolTip(tr("Fit each selected island (or all in view) into the band: long side along U, height filling the band."));
+        connect(fit, &QPushButton::clicked, this, [this]()
+        {
+            auto* component = FindWhiteBoxComponent(m_pair);
+            const AZStd::vector<float> edges =
+                component != nullptr && m_viewMaterialKnown ? component->GetTrimEdges(m_viewMaterial) : AZStd::vector<float>{};
+            const int band = m_trimBand->currentIndex();
+            if (band < 0 || band + 1 >= static_cast<int>(edges.size()))
+            {
+                m_message->setText(tr("Set up the trim bands first."));
+                return;
+            }
+            if (const WhiteBoxMesh* mesh = component != nullptr ? component->GetWhiteBoxMesh() : nullptr)
+            {
+                ApplyLayout(
+                    UvOps::FitToBand(*mesh, m_canvas->TargetFaces(), edges[band], edges[band + 1], static_cast<float>(m_trimInset->value())),
+                    tr("Fitted to band %1.").arg(band + 1));
+            }
+        });
+        trimLayout->addWidget(fit);
+        m_trimPanel->setVisible(false);
+        layout->addWidget(m_trimPanel);
 
         layout->addWidget(m_canvas, 1);
 
@@ -254,29 +357,141 @@ namespace WhiteBox
     {
         const Api::FaceHandles& faces = m_canvas->Model().m_faces;
         auto* component = FindWhiteBoxComponent(m_pair);
-        if (!m_showTexture->isChecked() || faces.empty() || component == nullptr)
+        if (faces.empty() || component == nullptr)
         {
             m_canvas->SetBackground(QImage());
+            m_textureLayerAction->setVisible(false);
+            m_viewMaterialKnown = false;
+            RefreshTrim();
             return;
         }
-        // The first viewed face's material: its own override, else the entity's, else the built-in one.
+        // The first viewed face's material: its own, else the entity's, else the built-in one.
         AZ::Data::AssetId material = Api::FaceMaterial(mesh, faces.front());
         if (!material.IsValid())
         {
             material = component->GetDefaultMaterialAssetId();
-            if (!material.IsValid() && !component->GetMaterialUseTexture())
-            {
-                m_canvas->SetBackground(QImage()); // the built-in material with its texture switched off
-                return;
-            }
         }
-        const UvTextureCache::Result texture = m_textures.Find(material);
-        if (!texture.m_pending)
+        // A Material component on the entity may swap that slot's material or override its textures, as the renderer does:
+        // the most specific entry that yields an instance wins (this LOD's slot, the slot, then the whole model).
+        const AZ::u32 slot = MaterialSlotStableId(material, Api::FacePaintColor(mesh, faces.front()));
+        AZ::Render::MaterialAssignmentMap assignments;
+        AZ::Render::MaterialComponentRequestBus::EventResult(
+            assignments, m_pair.GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialMapCopy);
+        const UvTextureCache::PropertyOverrides* overrides = nullptr;
+        for (const AZ::Render::MaterialAssignmentId& id :
+             { AZ::Render::MaterialAssignmentId::CreateFromLodAndStableId(0, slot), AZ::Render::MaterialAssignmentId::CreateFromStableIdOnly(slot),
+               AZ::Render::MaterialAssignmentId::CreateDefault() })
         {
-            m_canvas->SetBackground(texture.m_image);
-            m_showTexture->setToolTip(
-                QStringLiteral("<b>%1</b><br>%2").arg(tr("Show Texture"), texture.m_image.isNull() ? tr("This material has no base colour texture to show.") : texture.m_name));
+            const auto it = assignments.find(id);
+            if (it == assignments.end())
+            {
+                continue;
+            }
+            const bool swapsAsset = it->second.m_materialAsset.GetId().IsValid();
+            // A whole-model entry without an asset has nothing to build an instance from.
+            if (!swapsAsset && (id.IsDefault() || it->second.m_propertyOverrides.empty()))
+            {
+                continue;
+            }
+            if (swapsAsset)
+            {
+                material = it->second.m_materialAsset.GetId();
+            }
+            overrides = &it->second.m_propertyOverrides;
+            break;
         }
+        m_viewMaterial = material;
+        m_viewMaterialKnown = true;
+        RefreshTrim();
+        if (!m_showTexture->isChecked())
+        {
+            m_canvas->SetBackground(QImage());
+            m_textureLayerAction->setVisible(false);
+            return;
+        }
+        if (!material.IsValid() && !component->GetMaterialUseTexture())
+        {
+            m_canvas->SetBackground(QImage()); // the built-in material with its texture switched off
+            m_textureLayerAction->setVisible(false);
+            return;
+        }
+        const UvTextureCache::Result found = m_textures.Find(material, overrides);
+        if (found.m_pending)
+        {
+            return;
+        }
+        // Refill the layer list only when it changes, keeping the chosen layer by name across materials.
+        QStringList names;
+        for (const UvTextureCache::Texture& texture : found.m_textures)
+        {
+            names.append(texture.m_layer);
+        }
+        if (names != m_textureLayerNames)
+        {
+            const QString chosen = m_textureLayer->currentText();
+            const QSignalBlocker block(m_textureLayer);
+            m_textureLayer->clear();
+            m_textureLayer->addItems(names);
+            m_textureLayer->setCurrentIndex(AZStd::max(0, names.indexOf(chosen)));
+            m_textureLayerNames = names;
+        }
+        m_textureLayerAction->setVisible(names.size() > 1);
+        const int index = m_textureLayer->currentIndex();
+        const UvTextureCache::Texture* texture =
+            index >= 0 && index < static_cast<int>(found.m_textures.size()) ? &found.m_textures[index] : nullptr;
+        m_canvas->SetBackground(texture != nullptr ? texture->m_image : QImage());
+        m_showTexture->setToolTip(QStringLiteral("<b>%1</b><br>%2").arg(
+            tr("Show Texture"), texture == nullptr ? tr("This material has no base colour texture to show.") : texture->m_name));
+    }
+
+    void WhiteBoxUvEditorPane::RefreshTrim()
+    {
+        auto* component = FindWhiteBoxComponent(m_pair);
+        const AZStd::vector<float> edges =
+            component != nullptr && m_viewMaterialKnown ? component->GetTrimEdges(m_viewMaterial) : AZStd::vector<float>{};
+        // The text follows the stored edges unless it is being typed in.
+        QStringList parts;
+        for (const float edge : edges)
+        {
+            parts.append(QString::number(edge, 'g', 4));
+        }
+        if (!m_trimEdges->hasFocus())
+        {
+            m_trimEdges->setText(parts.join(QStringLiteral(", ")));
+        }
+        QStringList bands;
+        for (size_t band = 0; band + 1 < edges.size(); ++band)
+        {
+            bands.append(tr("Band %1  (%2 - %3)").arg(band + 1).arg(edges[band], 0, 'g', 3).arg(edges[band + 1], 0, 'g', 3));
+        }
+        QStringList shown;
+        for (int i = 0; i < m_trimBand->count(); ++i)
+        {
+            shown.append(m_trimBand->itemText(i));
+        }
+        if (bands != shown)
+        {
+            const int kept = m_trimBand->currentIndex();
+            const QSignalBlocker block(m_trimBand);
+            m_trimBand->clear();
+            m_trimBand->addItems(bands);
+            m_trimBand->setCurrentIndex(bands.isEmpty() ? -1 : AZ::GetClamp(kept, 0, static_cast<int>(bands.size()) - 1));
+        }
+        m_canvas->SetTrimBands(m_trimToggle->isChecked() ? edges : AZStd::vector<float>{}, m_trimBand->currentIndex());
+    }
+
+    void WhiteBoxUvEditorPane::SetTrimEdges(const AZStd::vector<float>& edges)
+    {
+        auto* component = FindWhiteBoxComponent(m_pair);
+        if (component == nullptr || !m_viewMaterialKnown)
+        {
+            m_message->setText(tr("Select polygons in Transform mode first; the bands belong to their material."));
+            return;
+        }
+        component->SetTrimEdges(m_viewMaterial, edges);
+        m_trimEdges->clearFocus();
+        RefreshTrim();
+        m_message->setText(edges.size() >= 2 ? tr("Trim bands set.") : tr("Trim bands cleared."));
     }
 
     void WhiteBoxUvEditorPane::DisplayViewport(

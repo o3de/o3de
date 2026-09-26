@@ -833,6 +833,18 @@ namespace WhiteBox
         //! Per-corner normals in FaceHalfedgeHandles order: angle-weighted over faces sharing a smoothing group, else the face normal.
         AZStd::array<AZ::Vector3, 3> FaceCornerNormals(const WhiteBoxMesh& whiteBox, FaceHandle face);
 
+        //! Vertex-blend layer weights (x: layer 2, y: layer 3). Unpainted vertices average their painted neighbours.
+        AZ::Vector3 VertexBlend(const WhiteBoxMesh& whiteBox, VertexHandle vertex);
+        bool VertexBlendPainted(const WhiteBoxMesh& whiteBox, VertexHandle vertex);
+        void SetVertexBlend(WhiteBoxMesh& whiteBox, VertexHandle vertex, const AZ::Vector3& weights);
+        //! Store every unpainted vertex's current (borrowed) weights as its own, so painting one vertex no longer spreads
+        //! to unpainted neighbours through the averaging; a fresh mesh bakes to the base layer everywhere.
+        void BakeVertexBlend(WhiteBoxMesh& whiteBox);
+        //! Carry a vertex's painted weights to its copy in another mesh (an unpainted vertex stays unpainted).
+        void CopyVertexBlend(WhiteBoxMesh& target, VertexHandle to, const WhiteBoxMesh& source, VertexHandle from);
+        //! Whether any vertex has been painted, so callers can skip blend work on meshes that never used it.
+        bool MeshHasVertexBlend(const WhiteBoxMesh& whiteBox);
+
         //! Which property Select Similar compares against the seed polygons.
         enum class SimilarBy
         {

@@ -22,6 +22,9 @@ set(FILES
     Source/Rendering/WhiteBoxRenderMeshInterface.h
     Source/Rendering/WhiteBoxRenderData.cpp
     Source/Rendering/WhiteBoxRenderData.h
+    Source/Rendering/WhiteBoxMaterialSlot.h
+    Source/Rendering/WhiteBoxLightmapUv.cpp
+    Source/Rendering/WhiteBoxLightmapUv.h
     Source/Rendering/WhiteBoxRenderDataUtil.cpp
     Source/Rendering/WhiteBoxRenderDataUtil.h
     Source/Rendering/WhiteBoxMaterial.cpp

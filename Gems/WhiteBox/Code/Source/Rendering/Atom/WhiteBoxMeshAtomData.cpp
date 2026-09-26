@@ -30,6 +30,7 @@ namespace WhiteBox
         m_bitangents.resize_no_construct(vertCount);
         m_uvs.resize_no_construct(vertCount);
         m_colors.resize(vertCount, AZ::Vector4::CreateOne());
+        m_lightmapUvs.resize_no_construct(vertCount);
 
         // populate the index vector with a [0, vertCount) sequence
         std::iota(std::begin(m_indices), std::end(m_indices), 0);
@@ -53,10 +54,27 @@ namespace WhiteBox
             uvs[idxFace * 3 + 2] = face.m_v3.m_uv;
             normals[idxFace * 3 + 2] = face.m_v3.m_normal;
 
-            // per-face tint (per-layer colour) -> per-vertex COLOR0
-            m_colors[idxFace * 3 + 0] = face.m_color;
-            m_colors[idxFace * 3 + 1] = face.m_color;
-            m_colors[idxFace * 3 + 2] = face.m_color;
+            // UV1: the lightmap chart, else the texture UVs so a material reading UV1 sees what it did before.
+            const WhiteBoxVertex* corners[3] = { &face.m_v1, &face.m_v2, &face.m_v3 };
+            for (size_t c = 0; c < 3; ++c)
+            {
+                const AZ::Vector2 uv1 = face.m_hasLightmapUv ? corners[c]->m_lightmapUv : corners[c]->m_uv;
+                m_lightmapUvs[idxFace * 3 + c] = { uv1.GetX(), uv1.GetY() };
+            }
+
+            // COLOR0: the per-face tint (per-layer colour), or the corners' vertex-blend weights for a custom material
+            if (face.m_colorFromBlend)
+            {
+                m_colors[idxFace * 3 + 0] = AZ::Vector4::CreateFromVector3AndFloat(face.m_v1.m_blend, 1.0f);
+                m_colors[idxFace * 3 + 1] = AZ::Vector4::CreateFromVector3AndFloat(face.m_v2.m_blend, 1.0f);
+                m_colors[idxFace * 3 + 2] = AZ::Vector4::CreateFromVector3AndFloat(face.m_v3.m_blend, 1.0f);
+            }
+            else
+            {
+                m_colors[idxFace * 3 + 0] = face.m_color;
+                m_colors[idxFace * 3 + 1] = face.m_color;
+                m_colors[idxFace * 3 + 2] = face.m_color;
+            }
         }
 
         // calculate the basis vectors for the TBN matrices
@@ -125,6 +143,11 @@ namespace WhiteBox
     const AZStd::vector<AZ::Vector4>& WhiteBoxMeshAtomData::GetColors() const
     {
         return m_colors;
+    }
+
+    const AZStd::vector<PackedFloat2>& WhiteBoxMeshAtomData::GetLightmapUVs() const
+    {
+        return m_lightmapUvs;
     }
 
     AZ::Aabb WhiteBoxMeshAtomData::GetAabb() const

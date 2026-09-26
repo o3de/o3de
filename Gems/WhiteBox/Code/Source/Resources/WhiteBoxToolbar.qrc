@@ -63,5 +63,9 @@
     <file alias="UvSelectNone.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectNone.svg</file>
     <file alias="UvSelectInvert.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectInvert.svg</file>
     <file alias="UvSelectBorder.svg">../../../Assets/Editor/Icons/Toolbar/UvSelectBorder.svg</file>
+    <file alias="BlendLayer2.svg">../../../Assets/Editor/Icons/Toolbar/BlendLayer2.svg</file>
+    <file alias="BlendLayer3.svg">../../../Assets/Editor/Icons/Toolbar/BlendLayer3.svg</file>
+    <file alias="BlendBase.svg">../../../Assets/Editor/Icons/Toolbar/BlendBase.svg</file>
+    <file alias="UvTrim.svg">../../../Assets/Editor/Icons/Toolbar/UvTrim.svg</file>
   </qresource>
 </RCC>

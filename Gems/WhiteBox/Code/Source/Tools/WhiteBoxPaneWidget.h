@@ -228,6 +228,9 @@ namespace WhiteBox
         QDoubleSpinBox* m_layerPos[3] = {};
         QDoubleSpinBox* m_layerRot[3] = {};
         QDoubleSpinBox* m_layerScale[3] = {};
+        QCheckBox* m_layerMirror[3] = {};         //!< Mirror across the layer's X / Y / Z plane.
+        QSpinBox* m_layerArrayCount = nullptr;     //!< Array copies (1 = off).
+        QDoubleSpinBox* m_layerArrayOffset[3] = {}; //!< Step between array copies.
         QGroupBox* m_layerMetaGroup = nullptr;
 
         // Draw Shape section.

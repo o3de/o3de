@@ -75,6 +75,10 @@ namespace WhiteBox
         // which layer was active when "New Layer" was pressed.
         const AZ::EntityId rootId = FindRootWhiteBoxEntity(currentEntityId);
 
+        // Leave edit mode before creating, so the viewport switcher and inspector see the new entity outside component mode.
+        namespace Cmf = AzToolsFramework::ComponentModeFramework;
+        Cmf::ComponentModeSystemRequestBus::Broadcast(&Cmf::ComponentModeSystemRequests::EndComponentMode);
+
         // Group the whole operation (create entity + add component) into one undo step.
         AzToolsFramework::ScopedUndoBatch undoBatch("Create White Box Layer");
 
@@ -137,13 +141,6 @@ namespace WhiteBox
         AZ::TickBus::QueueFunction(
             [childId, sourceSubMode]()
             {
-                // Leave the parent White Box's component (edit) mode first. Without this the parent
-                // stays in edit mode and its manipulators/overlay mix with the child's, producing
-                // the broken, overlapping state.
-                namespace Cmf = AzToolsFramework::ComponentModeFramework;
-                Cmf::ComponentModeSystemRequestBus::Broadcast(
-                    &Cmf::ComponentModeSystemRequests::EndComponentMode);
-
                 // Select the child so its component-mode delegate is active.
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,

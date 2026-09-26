@@ -101,6 +101,8 @@ namespace WhiteBox
 
         //! Drawn tiled behind the UVs, full strength on the unit square; a null image shows the checker.
         void SetBackground(const QImage& image);
+        //! Trim sheet band edges in V to draw over the unit square, with one band picked out (-1 for none).
+        void SetTrimBands(const AZStd::vector<float>& edges, int highlighted);
         //! Faces to highlight because the viewport cursor is over them.
         void SetHoveredFaces(const Api::FaceHandles& faces);
         //! The selected faces, or every face in view when none is.
@@ -167,6 +169,8 @@ namespace WhiteBox
         AZStd::unordered_set<int> m_selectedCorners; //!< Halfedge indices; a point is selected when any of its corners is.
         AZStd::unordered_set<int> m_detached; //!< Halfedge indices split off by SplitSelectedFaces.
         QImage m_background;
+        AZStd::vector<float> m_trimEdges;
+        int m_trimHighlight = -1;
         AZStd::unordered_set<int> m_hoveredFaces; //!< Face indices under the viewport cursor.
 
         QPointF m_originOnScreen = QPointF(40.0, 40.0); //!< Where UV (0, 0) is drawn.

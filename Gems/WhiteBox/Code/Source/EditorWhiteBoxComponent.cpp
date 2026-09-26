@@ -41,6 +41,11 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <Components/EditorWhiteBoxColliderComponent.h>
+#include <SubComponentModes/EditorWhiteBoxDefaultModeBus.h>
+#include <SubComponentModes/EditorWhiteBoxTransformModeBus.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace WhiteBox
 {
@@ -539,6 +544,7 @@ namespace WhiteBox
         EditorWhiteBoxMeshAsset::Reflect(context);
         DrawShapeData::Reflect(context);
         WhiteBoxLayer::Reflect(context);
+        TrimSheet::Reflect(context);
         VoxelData::Reflect(context);
         BooleanSettings::Reflect(context);
 
@@ -560,6 +566,11 @@ namespace WhiteBox
                 ->Field("UseGlobalTint", &EditorWhiteBoxComponent::m_useGlobalTint)
                 ->Field("MaterialOverride", &EditorWhiteBoxComponent::m_materialOverrideAssetId)
                 ->Field("DefaultMaterialAsset", &EditorWhiteBoxComponent::m_defaultMaterialAsset)
+                ->Field("MaterialPalette", &EditorWhiteBoxComponent::m_materialPalette)
+                ->Field("PaletteChoice", &EditorWhiteBoxComponent::m_paletteChoice)
+                ->Field("TrimSheets", &EditorWhiteBoxComponent::m_trimSheets)
+                ->Field("LightmapUvs", &EditorWhiteBoxComponent::m_lightmapUvs)
+                ->Field("LightmapMargin", &EditorWhiteBoxComponent::m_lightmapMargin)
                 ->Field("Voxel", &EditorWhiteBoxComponent::m_voxel)
                 ->Field("Boolean", &EditorWhiteBoxComponent::m_boolean)
                 // Whether this entity is an active global-boolean target (show the composed result by default).
@@ -603,13 +614,48 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Material / Display")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Material")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Add a Material component to this entity: swap any slot's material or edit this entity's own material instance."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAddMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Add Material"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_defaultMaterialAsset,
                         QT_TRANSLATE_NOOP("WhiteBox", "Default Material"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Default material for this entity. Clear to use the built-in White Box material."))
+                        QT_TRANSLATE_NOOP("WhiteBox", "Older default material for this entity; clear it and use the Material component instead."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::LegacyDefaultMaterialVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultMaterialChange)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Polygon Materials")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_materialPalette,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Materials"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The materials to pick from when assigning to polygons."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialPaletteChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_paletteChoice,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The material Assign puts on the selected polygons."))
+                    ->Attribute(AZ::Edit::Attributes::StringList, &EditorWhiteBoxComponent::GetPaletteChoices)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnPaletteChoiceChange)
+                    // Buttons open their own group: the inspector only places a button at a group's start, not after a field.
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Assign to Selected Polygons")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Put the chosen material on the polygons selected in edit mode. Parametric layers become editable meshes."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAssignPaletteMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Assign"))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Return the polygons selected in edit mode to the entity's default material."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnResetPolygonMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Reset to Default"))
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Display")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_useGlobalTint,
                         QT_TRANSLATE_NOOP("WhiteBox", "Use Global Tint"),
@@ -626,6 +672,23 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Edges Only"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Hide the solid render mesh and draw only the mesh edges."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnEdgesOnlyChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_lightmapUvs,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Lightmap UVs"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Give the mesh a second, non-overlapping UV set (UV1, exported as glTF TEXCOORD_1) for baked lighting. "
+                        "Flat regions become charts packed into the unit square in proportion to their size. Without it, "
+                        "UV1 repeats the texture UVs."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLightmapChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_lightmapMargin,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Lightmap Margin"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Gap between lightmap charts in UV units; about 2 / lightmap resolution keeps bleeding apart."))
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
+                    ->Attribute(AZ::Edit::Attributes::Decimals, 4)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::LightmapMarginVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLightmapChange)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -692,6 +755,254 @@ namespace WhiteBox
         }
     }
 
+    AZ::Crc32 EditorWhiteBoxComponent::OnAddMaterial()
+    {
+        AZ::Entity* entity = GetEntity();
+        if (entity == nullptr || entity->FindComponent(AZ::Render::EditorMaterialComponentTypeId) != nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None; // already has one
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Add White Box Material");
+        AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+            AZ::Failure(AZStd::string("uninitialized"));
+        AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+            outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ GetEntityId() }, AZ::ComponentTypeList{ AZ::Render::EditorMaterialComponentTypeId });
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    void EditorWhiteBoxComponent::TrimSheet::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TrimSheet>()
+                ->Version(1)
+                ->Field("Material", &TrimSheet::m_material)
+                ->Field("Edges", &TrimSheet::m_edges);
+        }
+    }
+
+    AZStd::vector<float> EditorWhiteBoxComponent::GetTrimEdges(const AZ::Data::AssetId& material) const
+    {
+        for (const TrimSheet& sheet : m_trimSheets)
+        {
+            if (sheet.m_material == material)
+            {
+                return sheet.m_edges;
+            }
+        }
+        return {};
+    }
+
+    void EditorWhiteBoxComponent::SetTrimEdges(const AZ::Data::AssetId& material, AZStd::vector<float> edges)
+    {
+        for (float& edge : edges)
+        {
+            edge = AZ::GetClamp(edge, 0.0f, 1.0f);
+        }
+        AZStd::sort(edges.begin(), edges.end());
+        edges.erase(AZStd::unique(edges.begin(), edges.end(), [](float a, float b) { return AZStd::abs(a - b) < 1e-5f; }), edges.end());
+        if (edges.size() < 2)
+        {
+            edges.clear(); // one edge makes no band
+        }
+        if (GetTrimEdges(material) == edges)
+        {
+            return;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("White Box Trim Sheet");
+        auto sheet = AZStd::find_if(
+            m_trimSheets.begin(), m_trimSheets.end(), [&material](const TrimSheet& entry) { return entry.m_material == material; });
+        if (edges.empty())
+        {
+            if (sheet != m_trimSheets.end())
+            {
+                m_trimSheets.erase(sheet);
+            }
+        }
+        else if (sheet != m_trimSheets.end())
+        {
+            sheet->m_edges = AZStd::move(edges);
+        }
+        else
+        {
+            TrimSheet added;
+            added.m_material = material;
+            added.m_edges = AZStd::move(edges);
+            m_trimSheets.push_back(AZStd::move(added));
+        }
+        undoBatch.MarkEntityDirty(GetEntityId());
+    }
+
+    AZStd::string EditorWhiteBoxComponent::MaterialDisplayName(const AZ::Data::AssetId& material)
+    {
+        AZStd::string path;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(path, &AZ::Data::AssetCatalogRequests::GetAssetPathById, material);
+        return path.empty() ? material.ToString<AZStd::string>() : AZStd::string(AZ::IO::PathView(path).Stem().Native());
+    }
+
+    AZStd::vector<AZStd::pair<AZStd::string, AZ::Data::AssetId>> EditorWhiteBoxComponent::GetPaletteEntries() const
+    {
+        // Numbered, so two materials with the same file name stay apart.
+        AZStd::vector<AZStd::pair<AZStd::string, AZ::Data::AssetId>> entries;
+        for (size_t i = 0; i < m_materialPalette.size(); ++i)
+        {
+            const AZ::Data::AssetId id = m_materialPalette[i].GetId();
+            if (id.IsValid())
+            {
+                entries.emplace_back(AZStd::string::format("%zu. %s", i + 1, MaterialDisplayName(id).c_str()), id);
+            }
+        }
+        return entries;
+    }
+
+    AZStd::vector<AZStd::string> EditorWhiteBoxComponent::GetPaletteChoices() const
+    {
+        AZStd::vector<AZStd::string> choices;
+        for (const auto& entry : GetPaletteEntries())
+        {
+            choices.push_back(entry.first);
+        }
+        return choices;
+    }
+
+    AZ::Data::AssetId EditorWhiteBoxComponent::PaletteChoiceAsset() const
+    {
+        for (const auto& entry : GetPaletteEntries())
+        {
+            if (entry.first == m_paletteChoice)
+            {
+                return entry.second;
+            }
+        }
+        return {};
+    }
+
+    void EditorWhiteBoxComponent::SetPaletteChoice(const AZ::Data::AssetId& material)
+    {
+        for (const auto& entry : GetPaletteEntries())
+        {
+            if (entry.second == material && entry.first != m_paletteChoice)
+            {
+                m_paletteChoice = entry.first;
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
+                return;
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::AddToMaterialPalette(const AZ::Data::AssetId& material)
+    {
+        if (!material.IsValid())
+        {
+            return;
+        }
+        const bool listed = AZStd::any_of(
+            m_materialPalette.begin(), m_materialPalette.end(),
+            [&material](const AZ::Data::Asset<AZ::RPI::MaterialAsset>& entry) { return entry.GetId() == material; });
+        if (!listed)
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("White Box Add Material To List");
+            // NoLoad: the list only names materials; the render mesh loads whichever faces use.
+            m_materialPalette.emplace_back(material, azrtti_typeid<AZ::RPI::MaterialAsset>());
+            m_materialPalette.back().SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::NoLoad);
+            SetPaletteChoice(material);
+            undoBatch.MarkEntityDirty(GetEntityId());
+        }
+        else
+        {
+            SetPaletteChoice(material);
+        }
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnMaterialPaletteChange()
+    {
+        // Keep the choice pointing at a listed material, and pick up a newly added one straight away.
+        const AZStd::vector<AZStd::string> choices = GetPaletteChoices();
+        if (AZStd::find(choices.begin(), choices.end(), m_paletteChoice) == choices.end())
+        {
+            m_paletteChoice = choices.empty() ? AZStd::string() : choices.back();
+        }
+        OnPaletteChoiceChange();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnPaletteChoiceChange()
+    {
+        // The Paint Material brush follows the card's choice, as the card follows the brush.
+        if (const AZ::Data::AssetId chosen = PaletteChoiceAsset(); chosen.IsValid())
+        {
+            m_facePaintSettings.m_material = chosen;
+        }
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    Api::PolygonHandles EditorWhiteBoxComponent::SelectedPolygonsInEditMode() const
+    {
+        // Transform mode keeps its own polygon selection; the default mode has another.
+        const AZ::EntityComponentIdPair pair{ GetEntityId(), GetId() };
+        Api::PolygonHandles polygons;
+        EditorWhiteBoxTransformModeRequestBus::EventResult(polygons, pair, &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
+        if (polygons.empty())
+        {
+            EditorWhiteBoxDefaultModeRequestBus::EventResult(polygons, pair, &EditorWhiteBoxDefaultModeRequests::SelectedPolygonHandles);
+        }
+        return polygons;
+    }
+
+    void EditorWhiteBoxComponent::AssignMaterialToSelection(const AZ::Data::AssetId& material, const char* undoLabel)
+    {
+        const Api::PolygonHandles polygons = SelectedPolygonsInEditMode();
+        if (polygons.empty())
+        {
+            AZ_Warning("WhiteBox", false, "Select polygons in White Box edit mode first.");
+            return;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch(undoLabel);
+        AssignPolygonMaterial(polygons, material);
+        undoBatch.MarkEntityDirty(GetEntityId());
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnAssignPaletteMaterial()
+    {
+        const AZ::Data::AssetId material = PaletteChoiceAsset();
+        if (!material.IsValid())
+        {
+            AZ_Warning("WhiteBox", false, "Add a material to the list and choose it first.");
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        AssignMaterialToSelection(material, "White Box Assign Polygon Material");
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnResetPolygonMaterial()
+    {
+        AssignMaterialToSelection({}, "White Box Reset Polygon Material");
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnLightmapChange()
+    {
+        // The settings ride on the material so they reach the render mesh, the baked game data and the exporter.
+        m_material.m_lightmapUvs = m_lightmapUvs;
+        m_material.m_lightmapMargin = m_lightmapMargin;
+        RebuildWhiteBox();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::LightmapMarginVisibility() const
+    {
+        return m_lightmapUvs ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::LegacyDefaultMaterialVisibility() const
+    {
+        // Only shown while an older entity still carries one, so it can be cleared.
+        return m_defaultMaterialAsset.GetId().IsValid() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
     AZ::Crc32 EditorWhiteBoxComponent::OnAddCollision()
     {
         AZ::Entity* entity = GetEntity();
@@ -722,6 +1033,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("WhiteBoxService"));
+        provided.push_back(AZ_CRC_CE("MaterialConsumerService")); // lets a Material component override slots
     }
 
     void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -730,6 +1042,7 @@ namespace WhiteBox
         // Non-Uniform Scale component (render, collider and bounds all honour it via the bus).
         incompatible.push_back(AZ_CRC_CE("MeshService"));
         incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
+        incompatible.push_back(AZ_CRC_CE("MaterialConsumerService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
@@ -759,6 +1072,8 @@ namespace WhiteBox
         m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
             m_materialOverrideAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
         m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        m_material.m_lightmapUvs = m_lightmapUvs;
+        m_material.m_lightmapMargin = m_lightmapMargin;
         // Data saved before the card carried this control has no mirror stored, so derive it here
         // rather than trusting what was serialized.
         m_defaultMaterialAsset = m_material.m_materialAsset;

@@ -17,9 +17,12 @@
 #include <Rendering/WhiteBoxRenderMeshInterface.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::RPI
 {
@@ -32,10 +35,13 @@ namespace WhiteBox
 {
     class WhiteBoxMeshAtomData;
 
-    //! A concrete implementation of RenderMeshInterface to support Atom rendering for the White Box Tool.
+    //! Atom RenderMeshInterface for White Box. The primary mesh is a material consumer, so a Material
+    //! component can override its slots as for the Mesh component.
     class AtomRenderMesh
         : public RenderMeshInterface
         , private AZ::Render::MeshHandleStateRequestBus::Handler
+        , private AZ::Render::MaterialConsumerRequestBus::Handler
+        , private AZ::Render::MaterialComponentNotificationBus::Handler
         , private AZ::TickBus::Handler
     {
     public:
@@ -79,6 +85,28 @@ namespace WhiteBox
         // MeshHandleStateRequestBus overrides ...
         const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
+        // MaterialConsumerRequestBus overrides ...
+        AZ::Render::MaterialAssignmentId FindMaterialAssignmentId(
+            const AZ::Render::MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+        AZ::Render::MaterialAssignmentLabelMap GetMaterialLabels() const override;
+        AZ::Render::MaterialAssignmentMap GetDefaultMaterialMap() const override;
+        AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
+
+        // MaterialComponentNotificationBus overrides ...
+        void OnMaterialsUpdated(const AZ::Render::MaterialAssignmentMap& materials) override;
+        void OnMaterialPropertiesUpdated(const AZ::Render::MaterialAssignmentMap& materials) override;
+
+        //! Per slot: the Material component's override (slot, then whole model) or else our own instance.
+        AZ::Render::CustomMaterialMap BuildCustomMaterials(const AZ::Render::MaterialAssignmentMap& overrides) const;
+        //! Hand the Material component's instances to the mesh, skipping the rebind when every slot already draws with them.
+        void BindCustomMaterials(const AZ::Render::MaterialAssignmentMap& overrides, bool force);
+        //! Remember which instance each slot draws with, so a later notification can tell whether anything changed.
+        void RememberBoundMaterials(const AZ::Render::CustomMaterialMap& materials);
+        //! An override made before its slot's default asset was known has no instance; ask the Material component to reload.
+        void ReloadOverridesWithoutInstance(const AZ::Render::MaterialAssignmentMap& overrides);
+        //! Tells a Material component the slot list changed, when it did since the last call.
+        void PublishMaterialSlots();
+
         bool CreateMeshBuffers(const WhiteBoxMeshAtomData& meshData);
         bool UpdateMeshBuffers(const WhiteBoxMeshAtomData& meshData);
         bool MeshRequiresFullRebuild(const WhiteBoxMeshAtomData& meshData) const;
@@ -107,15 +135,19 @@ namespace WhiteBox
             uint32_t m_indexCount = 0;
             AZ::Data::Instance<AZ::RPI::Material> m_instance;
             bool m_customMaterial = false;
+            AZ::u32 m_stableId = 0; //!< Model slot id, hashed from material and paint colour so overrides survive edits.
         };
         AZStd::vector<MaterialGroup> m_materialGroups;
+        AZStd::vector<AZ::u32> m_publishedSlots; //!< Sorted slot ids a Material component was last told about.
+        AZStd::unordered_map<AZ::u32, const AZ::RPI::Material*> m_boundMaterials; //!< Instance each slot draws with.
+        AZStd::unordered_set<AZ::u32> m_reloadRequested; //!< Slots already sent for a reload, so it is asked once.
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<
             AZStd::variant<
                 AZStd::unique_ptr<PositionAttribute>, AZStd::unique_ptr<NormalAttribute>,
                 AZStd::unique_ptr<TangentAttribute>, AZStd::unique_ptr<BitangentAttribute>,
-                AZStd::unique_ptr<UVAttribute>, AZStd::unique_ptr<ColorAttribute>>,
+                AZStd::unique_ptr<UVAttribute>, AZStd::unique_ptr<ColorAttribute>, AZStd::unique_ptr<LightmapUVAttribute>>,
             NumAttributes>
             m_attributes;
         bool m_visible = true;

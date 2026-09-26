@@ -476,6 +476,16 @@ namespace WhiteBox
         }
     }
 
+    void WhiteBoxUvCanvas::SetTrimBands(const AZStd::vector<float>& edges, const int highlighted)
+    {
+        if (edges != m_trimEdges || highlighted != m_trimHighlight)
+        {
+            m_trimEdges = edges;
+            m_trimHighlight = highlighted;
+            update();
+        }
+    }
+
     void WhiteBoxUvCanvas::SetHoveredFaces(const Api::FaceHandles& faces)
     {
         AZStd::unordered_set<int> hovered;
@@ -1046,6 +1056,34 @@ namespace WhiteBox
         }
         painter.setPen(QPen(QColor(150, 150, 160), 1.5));
         painter.drawRect(QRectF(squareTopLeft, QSizeF(m_pixelsPerUnit, m_pixelsPerUnit)));
+
+        // Trim sheet bands across the square: the picked band tinted, every edge drawn, numbers down the left.
+        if (m_trimEdges.size() >= 2)
+        {
+            const double left = squareTopLeft.x();
+            const double right = left + m_pixelsPerUnit;
+            if (m_trimHighlight >= 0 && m_trimHighlight + 1 < static_cast<int>(m_trimEdges.size()))
+            {
+                const double top = ToScreen(AZ::Vector2(0.0f, m_trimEdges[m_trimHighlight])).y();
+                const double bottom = ToScreen(AZ::Vector2(0.0f, m_trimEdges[m_trimHighlight + 1])).y();
+                painter.fillRect(QRectF(QPointF(left, top), QPointF(right, bottom)), QColor(103, 199, 232, 60));
+            }
+            painter.setPen(QPen(QColor(232, 170, 70), 1.2, Qt::DashLine));
+            for (const float edge : m_trimEdges)
+            {
+                const double y = ToScreen(AZ::Vector2(0.0f, edge)).y();
+                painter.drawLine(QPointF(left, y), QPointF(right, y));
+            }
+            painter.setPen(QColor(232, 170, 70));
+            for (size_t band = 0; band + 1 < m_trimEdges.size(); ++band)
+            {
+                const double top = ToScreen(AZ::Vector2(0.0f, m_trimEdges[band])).y();
+                const double bottom = ToScreen(AZ::Vector2(0.0f, m_trimEdges[band + 1])).y();
+                painter.drawText(
+                    QRectF(QPointF(left - 28.0, top), QPointF(left - 4.0, bottom)), Qt::AlignRight | Qt::AlignVCenter,
+                    QString::number(band + 1));
+            }
+        }
 
         // Faces, then the diagonals inside polygons faintly, then polygon edges.
         painter.setPen(Qt::NoPen);

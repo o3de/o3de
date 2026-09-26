@@ -7,6 +7,7 @@
  */
 
 #include "Util/WhiteBoxGltfExport.h"
+#include "Rendering/WhiteBoxLightmapUv.h"
 #include "Rendering/WhiteBoxRenderData.h"
 
 #include <AzCore/IO/SystemFile.h>
@@ -21,8 +22,8 @@ namespace WhiteBox
 {
     namespace
     {
-        // position xyz, normal xyz, uv, colour rgba: the full identity of a glTF vertex
-        using VertexKey = std::array<float, 12>;
+        // position xyz, normal xyz, uv, lightmap uv, colour rgba: the full identity of a glTF vertex
+        using VertexKey = std::array<float, 14>;
 
         struct Primitive
         {
@@ -111,7 +112,13 @@ namespace WhiteBox
         // One primitive per material, vertices welded where every attribute matches.
         AZStd::vector<Primitive> primitives;
         bool hasColors = false;
-        for (const WhiteBoxFace& face : BuildCulledWhiteBoxFaces(renderData.m_faces))
+        WhiteBoxFaces faces = BuildCulledWhiteBoxFaces(renderData.m_faces);
+        const bool hasLightmap = renderData.m_material.m_lightmapUvs;
+        if (hasLightmap)
+        {
+            GenerateLightmapUvs(faces, renderData.m_material.m_lightmapMargin); // the same layout the renderer makes
+        }
+        for (const WhiteBoxFace& face : faces)
         {
             const AZ::Data::AssetId materialId = face.m_materialAsset.GetId();
             auto primitive = AZStd::find_if(
@@ -130,7 +137,8 @@ namespace WhiteBox
                 const AZ::Vector3 position = ToYUp(vertex->m_position);
                 const AZ::Vector3 normal = ToYUp((vertex->m_normal.IsZero() ? face.m_normal : vertex->m_normal).GetNormalizedSafe());
                 const VertexKey key{ { position.GetX(), position.GetY(), position.GetZ(), normal.GetX(), normal.GetY(), normal.GetZ(),
-                                       vertex->m_uv.GetX(), vertex->m_uv.GetY(), color.GetX(), color.GetY(), color.GetZ(), color.GetW() } };
+                                       vertex->m_uv.GetX(), vertex->m_uv.GetY(), vertex->m_lightmapUv.GetX(), vertex->m_lightmapUv.GetY(),
+                                       color.GetX(), color.GetY(), color.GetZ(), color.GetW() } };
                 const auto found = primitive->m_lookup.find(key);
                 if (found != primitive->m_lookup.end())
                 {
@@ -175,7 +183,8 @@ namespace WhiteBox
             const char* m_type;
         };
         const Attribute attributes[] = {
-            { "POSITION", 0, 3, "VEC3" }, { "NORMAL", 3, 3, "VEC3" }, { "TEXCOORD_0", 6, 2, "VEC2" }, { "COLOR_0", 8, 4, "VEC4" }
+            { "POSITION", 0, 3, "VEC3" }, { "NORMAL", 3, 3, "VEC3" }, { "TEXCOORD_0", 6, 2, "VEC2" }, { "TEXCOORD_1", 8, 2, "VEC2" },
+            { "COLOR_0", 10, 4, "VEC4" }
         };
 
         for (size_t p = 0; p < primitives.size(); ++p)
@@ -184,7 +193,8 @@ namespace WhiteBox
             AZStd::string attributeJson;
             for (const Attribute& attribute : attributes)
             {
-                if (AZStd::string_view(attribute.m_name) == "COLOR_0" && !hasColors)
+                if ((AZStd::string_view(attribute.m_name) == "COLOR_0" && !hasColors) ||
+                    (AZStd::string_view(attribute.m_name) == "TEXCOORD_1" && !hasLightmap))
                 {
                     continue;
                 }

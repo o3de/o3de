@@ -1,0 +1,21 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 4,
+    "propertyValues": {
+        "blend.blendSource": "BlendMaskVertexColors",
+        "blend.enableLayer2": true,
+        "blend.enableLayer3": true,
+        "layer2.baseColor.color": [
+            0.46000000834465027,
+            0.30000001192092896,
+            0.17000000178813934,
+            1.0
+        ],
+        "layer3.baseColor.color": [
+            0.23999999463558197,
+            0.44999998807907104,
+            0.17000000178813934,
+            1.0
+        ]
+    }
+}

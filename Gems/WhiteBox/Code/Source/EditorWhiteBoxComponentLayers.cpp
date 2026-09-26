@@ -76,6 +76,11 @@ namespace WhiteBox
                 ->Field("Tint", &WhiteBoxLayer::m_tint)
                 ->Field("Combine", &WhiteBoxLayer::m_combineMode)
                 ->Field("InvertNormals", &WhiteBoxLayer::m_invertNormals)
+                ->Field("MirrorX", &WhiteBoxLayer::m_mirrorX)
+                ->Field("MirrorY", &WhiteBoxLayer::m_mirrorY)
+                ->Field("MirrorZ", &WhiteBoxLayer::m_mirrorZ)
+                ->Field("ArrayCount", &WhiteBoxLayer::m_arrayCount)
+                ->Field("ArrayOffset", &WhiteBoxLayer::m_arrayOffset)
                 ->Field("EdgesOnly", &WhiteBoxLayer::m_edgesOnly)
                 ->Field("Position", &WhiteBoxLayer::m_position)
                 ->Field("Rotation", &WhiteBoxLayer::m_rotation)
@@ -274,7 +279,7 @@ namespace WhiteBox
                 AppendMesh(*grid, *gridMerged);
             }
         }
-        Api::WhiteBoxMeshPtr combined = CombineFreeformAndGrids(freeform.get(), grid.get());
+        Api::WhiteBoxMeshPtr combined = ApplyLayerModifiers(CombineFreeformAndGrids(freeform.get(), grid.get()), layer);
         if (combined)
         {
             ApplyTransformToMesh(*combined, layer.m_position, layer.m_rotation, layer.m_scale);
@@ -902,6 +907,73 @@ namespace WhiteBox
         m_layerRuntime.m_loadedId = 0;
     }
 
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::ApplyLayerModifiers(Api::WhiteBoxMeshPtr mesh, const WhiteBoxLayer& layer)
+    {
+        if (!mesh || !HasLayerModifiers(layer))
+        {
+            return mesh;
+        }
+        const bool mirror[3] = { layer.m_mirrorX, layer.m_mirrorY, layer.m_mirrorZ };
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            if (mirror[axis])
+            {
+                mesh = MirrorMesh(*mesh, axis);
+            }
+        }
+        if (layer.m_arrayCount > 1)
+        {
+            mesh = ArrayMesh(*mesh, layer.m_arrayCount, layer.m_arrayOffset);
+        }
+        return mesh;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnApplyLayerModifiers()
+    {
+        if (m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()) ||
+            !HasLayerModifiers(m_layers[m_activeLayerIndex]))
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        AzToolsFramework::ScopedUndoBatch undoBatch("Apply White Box Layer Modifiers");
+        const bool isActive = m_activeLayerIndex == m_layerRuntime.m_loadedIndex;
+        if (isActive)
+        {
+            SerializeWhiteBox(); // flush the working members into this layer's streams first
+        }
+        // As Apply Transform: fold the grids in (stamped cubes cannot stay voxels once copied), then bake.
+        Api::WhiteBoxMeshPtr freeform = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*freeform, layer.m_freeformData);
+        Api::WhiteBoxMeshPtr grid = Api::CreateWhiteBoxMesh();
+        Api::ReadMesh(*grid, layer.m_gridData);
+        if (!Api::MeshFaceHandles(*grid).empty())
+        {
+            AppendMesh(*freeform, *grid);
+        }
+        freeform = ApplyLayerModifiers(AZStd::move(freeform), layer);
+        Api::WriteMesh(*freeform, layer.m_freeformData);
+        layer.m_gridData.clear();
+        layer.m_gridMergedData.clear();
+        layer.m_voxelCells.clear();
+        layer.m_voxelCellSizes.clear();
+        layer.m_voxelMerged.clear();
+        layer.m_mirrorX = layer.m_mirrorY = layer.m_mirrorZ = false;
+        layer.m_arrayCount = 1;
+        layer.m_parametric = false; // the copies are hand geometry now
+        layer.m_bevelSource.clear(); // a live bevel would regenerate from the single, unmodified source
+        layer.m_bevelEdges.clear();
+        m_layerRuntime.m_meshCache.erase(layer.m_id);
+        if (isActive)
+        {
+            m_layerRuntime.m_loadedIndex = -1; // reload the working members from the baked streams
+            LoadActiveLayer();
+        }
+        OnLayersMetaChanged();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
     AZ::Crc32 EditorWhiteBoxComponent::OnApplyLayerTransform()
     {
         if (m_layers.empty() || m_activeLayerIndex < 0 || m_activeLayerIndex >= static_cast<int>(m_layers.size()))
@@ -1141,11 +1213,12 @@ namespace WhiteBox
             m_layers[activeIdx].m_scale.IsClose(AZ::Vector3::CreateOne(), 1e-6f);
         const bool activeNoGrid = !(m_gridMesh && !Api::MeshFaceHandles(*m_gridMesh).empty());
         const bool activeInverted = activeIdx >= 0 && activeIdx < count && m_layers[activeIdx].m_invertNormals;
+        const bool activeModified = activeIdx >= 0 && activeIdx < count && HasLayerModifiers(m_layers[activeIdx]);
 
         // Fast path: a single visible identity layer without grid, inversion or modifiers uses the raw
         // working mesh. Never on the physics pass, where filtered-out layers would sneak back in.
         if (!physicsPass && visible.size() == 1 && visible[0] == activeIdx && activeIdentity && activeNoGrid &&
-            !activeInverted)
+            !activeInverted && !activeModified)
         {
             return nullptr;
         }
@@ -1163,6 +1236,7 @@ namespace WhiteBox
                 {
                     ownedMesh = Api::CloneMesh(*activeFreeform);
                 }
+                ownedMesh = ApplyLayerModifiers(AZStd::move(ownedMesh), m_layers[activeIdx]);
                 if (ownedMesh && !activeIdentity)
                 {
                     ApplyTransformToMesh(

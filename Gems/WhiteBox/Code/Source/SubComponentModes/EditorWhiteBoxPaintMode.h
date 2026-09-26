@@ -44,13 +44,20 @@ namespace WhiteBox
     private:
         EditorWhiteBoxComponent* Component() const;
         AZ::Vector3 WorldPoint(EditorWhiteBoxComponent& component, const AZ::Vector3& point) const;
-        Api::FaceHandle PickFace(EditorWhiteBoxComponent& component, const ModeMouseInteraction& mouse) const;
+        //! The face under the cursor; the hit point and face normal (world space) go to the optional outputs.
+        Api::FaceHandle PickFace(
+            EditorWhiteBoxComponent& component, const ModeMouseInteraction& mouse, AZ::Vector3* hitPoint = nullptr,
+            AZ::Vector3* hitNormal = nullptr) const;
+        //! One dab of the blend brush at a world point: every vertex in reach moves towards the chosen layer.
+        void PaintBlend(EditorWhiteBoxComponent& component, const AZ::Vector3& worldPoint);
         void Paint(EditorWhiteBoxComponent& component, Api::FaceHandle face);
         void FinishStroke(bool commit);
         void NotifyMeshChanged() const;
 
         AZ::EntityComponentIdPair m_entityComponentIdPair;
         Api::FaceHandle m_hover;
+        AZ::Vector3 m_hoverPoint = AZ::Vector3::CreateZero();  //!< World hit under the cursor, for the brush circle.
+        AZ::Vector3 m_hoverNormal = AZ::Vector3::CreateAxisZ();
         FacePaintSettings m_settings;
         Api::WhiteBoxMeshPtr m_snapshot;
         WhiteBoxMesh* m_strokeMesh = nullptr;

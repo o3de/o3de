@@ -278,6 +278,9 @@ namespace WhiteBox
     // per-corner flag: a Manual face's UV here is authored; false (the default for new corners) means fill it from the map
     using HalfedgeBoolPropertyHandle = OpenMesh::HPropHandleT<bool>;
     static const char* const HalfedgeUvAuthoredProp = "WhiteBoxHalfedgeUvAuthored";
+    // per-vertex blend weights packed as RGB bytes (R low) with the top byte set once painted; zero means never painted
+    using VertexUintPropertyHandle = OpenMesh::VPropHandleT<unsigned int>;
+    static const char* const VertexBlendProp = "WhiteBoxVertexBlend";
 } // namespace WhiteBox
 
 namespace OpenMesh::IO
@@ -730,6 +733,13 @@ namespace WhiteBox
                 whiteBox.mesh.add_property(authoredProperty, HalfedgeUvAuthoredProp);
             }
             whiteBox.mesh.property(authoredProperty).set_persistent(true);
+
+            VertexUintPropertyHandle blendProperty;
+            if (!whiteBox.mesh.get_property_handle(blendProperty, VertexBlendProp))
+            {
+                whiteBox.mesh.add_property(blendProperty, VertexBlendProp);
+            }
+            whiteBox.mesh.property(blendProperty).set_persistent(true);
 
             // request default properties required for all white box meshes
             whiteBox.mesh.request_face_normals();
@@ -3989,6 +3999,121 @@ namespace WhiteBox
             }
         }
 
+        namespace
+        {
+            constexpr unsigned int BlendPaintedBit = 0x01000000u;
+
+            AZ::Vector3 UnpackBlend(const unsigned int packed)
+            {
+                return AZ::Vector3(float(packed & 255u), float((packed >> 8) & 255u), float((packed >> 16) & 255u)) / 255.0f;
+            }
+        } // namespace
+
+        bool MeshHasVertexBlend(const WhiteBoxMesh& whiteBox)
+        {
+            VertexUintPropertyHandle property;
+            if (!whiteBox.mesh.get_property_handle(property, VertexBlendProp))
+            {
+                return false;
+            }
+            for (const auto vertex : whiteBox.mesh.vertices())
+            {
+                if (whiteBox.mesh.property(property, vertex) != 0u)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool VertexBlendPainted(const WhiteBoxMesh& whiteBox, const VertexHandle vertex)
+        {
+            VertexUintPropertyHandle property;
+            return whiteBox.mesh.get_property_handle(property, VertexBlendProp) && vertex.IsValid() &&
+                whiteBox.mesh.property(property, om_vh(vertex)) != 0u;
+        }
+
+        AZ::Vector3 VertexBlend(const WhiteBoxMesh& whiteBox, const VertexHandle vertex)
+        {
+            VertexUintPropertyHandle property;
+            if (!whiteBox.mesh.get_property_handle(property, VertexBlendProp) || !vertex.IsValid())
+            {
+                return AZ::Vector3::CreateZero();
+            }
+            const unsigned int packed = whiteBox.mesh.property(property, om_vh(vertex));
+            if (packed != 0u)
+            {
+                return UnpackBlend(packed);
+            }
+            // Never painted (often a vertex an edit just added): blend in from whatever painted vertices it joins.
+            AZ::Vector3 sum = AZ::Vector3::CreateZero();
+            int count = 0;
+            for (auto neighbour = whiteBox.mesh.cvv_iter(om_vh(vertex)); neighbour.is_valid(); ++neighbour)
+            {
+                const unsigned int value = whiteBox.mesh.property(property, *neighbour);
+                if (value != 0u)
+                {
+                    sum += UnpackBlend(value);
+                    ++count;
+                }
+            }
+            return count > 0 ? sum / static_cast<float>(count) : AZ::Vector3::CreateZero();
+        }
+
+        void SetVertexBlend(WhiteBoxMesh& whiteBox, const VertexHandle vertex, const AZ::Vector3& weights)
+        {
+            VertexUintPropertyHandle property;
+            if (!whiteBox.mesh.get_property_handle(property, VertexBlendProp))
+            {
+                whiteBox.mesh.add_property(property, VertexBlendProp);
+                whiteBox.mesh.property(property).set_persistent(true);
+            }
+            const auto channel = [](const float value)
+            {
+                return static_cast<unsigned int>(AZ::GetClamp(value, 0.0f, 1.0f) * 255.0f + 0.5f);
+            };
+            whiteBox.mesh.property(property, om_vh(vertex)) =
+                BlendPaintedBit | channel(weights.GetX()) | (channel(weights.GetY()) << 8) | (channel(weights.GetZ()) << 16);
+        }
+
+        void BakeVertexBlend(WhiteBoxMesh& whiteBox)
+        {
+            // Read every borrowed value before writing any, or baked vertices would feed their neighbours' averages.
+            AZStd::vector<AZStd::pair<VertexHandle, AZ::Vector3>> baked;
+            for (const auto vertex : MeshVertexHandles(whiteBox))
+            {
+                if (!VertexBlendPainted(whiteBox, vertex))
+                {
+                    baked.emplace_back(vertex, VertexBlend(whiteBox, vertex));
+                }
+            }
+            for (const auto& [vertex, weights] : baked)
+            {
+                SetVertexBlend(whiteBox, vertex, weights);
+            }
+        }
+
+        void CopyVertexBlend(WhiteBoxMesh& target, const VertexHandle to, const WhiteBoxMesh& source, const VertexHandle from)
+        {
+            VertexUintPropertyHandle sourceProperty;
+            if (!to.IsValid() || !from.IsValid() || !source.mesh.get_property_handle(sourceProperty, VertexBlendProp))
+            {
+                return;
+            }
+            const unsigned int packed = source.mesh.property(sourceProperty, om_vh(from));
+            if (packed == 0u)
+            {
+                return;
+            }
+            VertexUintPropertyHandle targetProperty;
+            if (!target.mesh.get_property_handle(targetProperty, VertexBlendProp))
+            {
+                target.mesh.add_property(targetProperty, VertexBlendProp);
+                target.mesh.property(targetProperty).set_persistent(true);
+            }
+            target.mesh.property(targetProperty, om_vh(to)) = packed;
+        }
+
         AZStd::array<AZ::Vector3, 3> FaceCornerNormals(const WhiteBoxMesh& whiteBox, const FaceHandle face)
         {
             const AZ::Vector3 flat = FaceNormal(whiteBox, face);
@@ -5314,6 +5439,7 @@ namespace WhiteBox
                     const auto added = AddVertex(*candidate, VertexPosition(whiteBox, vertex));
                     remap[vertex.Index()] = added;
                     if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, added); }
+                    CopyVertexBlend(*candidate, added, whiteBox, vertex);
                 }
             }
             const auto polygons = MeshPolygonHandles(whiteBox);
@@ -6428,6 +6554,7 @@ namespace WhiteBox
                 {
                     HideVertex(*part, added);
                 }
+                CopyVertexBlend(*part, added, whiteBox, vertex);
                 copies.emplace(vertex.Index(), added);
                 return added;
             };
@@ -7555,6 +7682,7 @@ namespace WhiteBox
             {
                 original[vertex.Index()] = AddVertex(*candidate, VertexPosition(whiteBox, vertex));
                 if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, original[vertex.Index()]); }
+                CopyVertexBlend(*candidate, original[vertex.Index()], whiteBox, vertex);
             }
             for (auto& region : regions)
             {
@@ -7574,6 +7702,7 @@ namespace WhiteBox
                     const auto added = AddVertex(*candidate, moved);
                     region.m_top.emplace(vertex.Index(), added);
                     if (VertexIsHidden(whiteBox, vertex)) { HideVertex(*candidate, added); }
+                    CopyVertexBlend(*candidate, added, whiteBox, vertex);
                 }
             }
             struct RegionFace

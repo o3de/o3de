@@ -22,6 +22,7 @@
 #include "Tools/WhiteBoxExtrudeInsetWindow.h"
 #include "Tools/WhiteBoxUvProjectionWindow.h"
 #include "Tools/WhiteBoxSmoothingWindow.h"
+#include "Tools/WhiteBoxMaterialUiUnlock.h"
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include "Util/WhiteBoxSnapUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
@@ -112,6 +113,10 @@ namespace WhiteBox
         CreateSubModeSelectionCluster();
         // start with DefaultMode
         EnterDefaultMode();
+        if (qApp != nullptr)
+        {
+            m_materialUiUnlock = AZStd::make_unique<WhiteBoxMaterialUiUnlock>();
+        }
     }
 
     EditorWhiteBoxComponentMode::~EditorWhiteBoxComponentMode()
@@ -1074,6 +1079,11 @@ namespace WhiteBox
             { FacePaintOperation::Color, { "PaintColor", "Paint Color - assign the chosen colour to faces" } },
             { FacePaintOperation::ResetMaterial, { "ResetMaterial", "Reset Material - drop a face's material override" } },
             { FacePaintOperation::ResetColor, { "ResetColor", "Reset Color - drop a face's painted colour" } },
+            { FacePaintOperation::BlendLayer2,
+              { "BlendLayer2", "Blend Layer 2 - brush vertices towards layer 2 of a vertex-blend material" } },
+            { FacePaintOperation::BlendLayer3,
+              { "BlendLayer3", "Blend Layer 3 - brush vertices towards layer 3 of a vertex-blend material" } },
+            { FacePaintOperation::BlendBase, { "BlendBase", "Blend Base - brush vertices back to the base layer" } },
         };
 
         m_paintButtons.clear();

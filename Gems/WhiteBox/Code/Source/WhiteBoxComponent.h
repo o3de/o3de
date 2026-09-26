@@ -31,6 +31,8 @@ namespace WhiteBox
     public:
         AZ_COMPONENT(WhiteBoxComponent, "{6CFD4D82-FA68-4C18-BE67-43FC2B755B64}", AZ::Component)
         static void Reflect(AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         WhiteBoxComponent();
         WhiteBoxComponent(const WhiteBoxComponent&) = delete;

@@ -418,9 +418,63 @@ namespace WhiteBox::UvOps
         return ToChanges(islands);
     }
 
+    namespace
+    {
+        // The faces' current UV islands: faces meeting at a corner with the same vertex and UV are one island.
+        AZStd::vector<Island> CurrentIslands(const WhiteBoxMesh& whiteBox, const Api::FaceHandles& faces);
+    } // namespace
+
     AZStd::vector<UvChange> Pack(const WhiteBoxMesh& whiteBox, const Api::FaceHandles& inputFaces, const float margin)
     {
-        const Api::FaceHandles faces = LiveFaces(whiteBox, inputFaces);
+        AZStd::vector<Island> islands = CurrentIslands(whiteBox, LiveFaces(whiteBox, inputFaces));
+        PackIslands(islands, margin);
+        return ToChanges(islands);
+    }
+
+    AZStd::vector<UvChange> FitToBand(
+        const WhiteBoxMesh& whiteBox, const Api::FaceHandles& inputFaces, const float v0, const float v1, const float inset)
+    {
+        const float top = AZStd::min(v0, v1) + inset;
+        const float height = AZStd::abs(v1 - v0) - 2.0f * inset;
+        if (height <= 1e-6f)
+        {
+            return {};
+        }
+        AZStd::vector<Island> islands = CurrentIslands(whiteBox, LiveFaces(whiteBox, inputFaces));
+        for (Island& island : islands)
+        {
+            AZ::Vector2 low(AZ::Constants::FloatMax);
+            AZ::Vector2 high(-AZ::Constants::FloatMax);
+            for (const Corner& corner : island)
+            {
+                low = low.GetMin(corner.m_uv);
+                high = high.GetMax(corner.m_uv);
+            }
+            AZ::Vector2 size = high - low;
+            // Trims are horizontal strips: a tall island is turned a quarter so its long side follows U.
+            if (size.GetY() > size.GetX())
+            {
+                for (Corner& corner : island)
+                {
+                    const AZ::Vector2 local = corner.m_uv - low;
+                    corner.m_uv = AZ::Vector2(size.GetY() - local.GetY(), local.GetX());
+                }
+                low = AZ::Vector2::CreateZero();
+                size = AZ::Vector2(size.GetY(), size.GetX());
+            }
+            const float scale = size.GetY() > 1e-6f ? height / size.GetY() : 1.0f;
+            for (Corner& corner : island)
+            {
+                corner.m_uv = (corner.m_uv - low) * scale + AZ::Vector2(0.0f, top);
+            }
+        }
+        return ToChanges(islands);
+    }
+
+    namespace
+    {
+    AZStd::vector<Island> CurrentIslands(const WhiteBoxMesh& whiteBox, const Api::FaceHandles& faces)
+    {
         // Faces meeting at a corner with the same vertex and UV are one island.
         AZStd::vector<size_t> parent(faces.size());
         std::iota(parent.begin(), parent.end(), size_t(0));
@@ -464,7 +518,7 @@ namespace WhiteBox::UvOps
                 islands[slot->second].push_back({ h, Api::HalfedgeUV(whiteBox, h) });
             }
         }
-        PackIslands(islands, margin);
-        return ToChanges(islands);
+        return islands;
     }
+    } // namespace
 } // namespace WhiteBox::UvOps

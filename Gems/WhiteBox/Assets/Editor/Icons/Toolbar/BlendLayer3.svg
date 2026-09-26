@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <title>Blend Layer 3</title>
+  <defs><radialGradient id="dab" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#6cc04a" stop-opacity="1" />
+      <stop offset="0.65" stop-color="#6cc04a" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#6cc04a" stop-opacity="0" />
+    </radialGradient></defs>
+  <circle cx="9.8" cy="14.8" r="7.8" fill="url(#dab)" />
+  <path d="M 20.8,3.8 13.2,11.4" stroke="#dadada" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M 14.6,10.9 11.2,14.3 9.4,12.5 12.8,9.1 Z" fill="#67c7e8" stroke="#67c7e8" stroke-width="0.8" stroke-linejoin="round" />
+</svg>

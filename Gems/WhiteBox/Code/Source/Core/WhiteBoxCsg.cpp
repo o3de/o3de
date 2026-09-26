@@ -915,6 +915,52 @@ namespace WhiteBox
             }
         } // namespace Detail
 
+        namespace
+        {
+            // Painted vertex-blend weights keyed by position, so a rebuild can hand them back to the vertices that survive it.
+            using BlendByPosition = AZStd::unordered_map<size_t, AZ::Vector3>;
+
+            size_t PositionKey(const AZ::Vector3& position)
+            {
+                size_t key = 0;
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetX() * 1e4)));
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetY() * 1e4)));
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetZ() * 1e4)));
+                return key;
+            }
+
+            void CaptureBlend(const WhiteBoxMesh& whiteBox, const AZ::Transform& transform, BlendByPosition& blend)
+            {
+                if (!MeshHasVertexBlend(whiteBox))
+                {
+                    return;
+                }
+                for (const auto vertex : MeshVertexHandles(whiteBox))
+                {
+                    if (VertexBlendPainted(whiteBox, vertex))
+                    {
+                        blend[PositionKey(transform.TransformPoint(VertexPosition(whiteBox, vertex)))] = VertexBlend(whiteBox, vertex);
+                    }
+                }
+            }
+
+            // Vertices a cut created find nothing here, and blend in from their painted neighbours when drawn.
+            void RestoreBlend(WhiteBoxMesh& whiteBox, const BlendByPosition& blend)
+            {
+                if (blend.empty())
+                {
+                    return;
+                }
+                for (const auto vertex : MeshVertexHandles(whiteBox))
+                {
+                    if (const auto found = blend.find(PositionKey(VertexPosition(whiteBox, vertex))); found != blend.end())
+                    {
+                        SetVertexBlend(whiteBox, vertex, found->second);
+                    }
+                }
+            }
+        } // namespace
+
         bool ApplyMeshBoolean(
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
             const BooleanOperation operation, const CsgSolver solver)
@@ -935,6 +981,9 @@ namespace WhiteBox
 
             const Csg::TriangleMesh meshA = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
             const Csg::TriangleMesh meshB = Detail::ToTriangleMesh(operand, operandTransform);
+            BlendByPosition blend;
+            CaptureBlend(operand, operandTransform, blend);
+            CaptureBlend(whiteBox, AZ::Transform::CreateIdentity(), blend); // the target's own paint wins where both meet
 
             Csg::TriangleMesh result;
 
@@ -953,6 +1002,7 @@ namespace WhiteBox
                 }
             }
             Detail::RebuildFromTriangleMesh(whiteBox, result);
+            RestoreBlend(whiteBox, blend);
 
             return true;
         }
@@ -965,7 +1015,10 @@ namespace WhiteBox
             {
                 return false;
             }
+            BlendByPosition blend;
+            CaptureBlend(whiteBox, AZ::Transform::CreateIdentity(), blend);
             Detail::RebuildFromTriangleMesh(whiteBox, soup);
+            RestoreBlend(whiteBox, blend);
             return true;
         }
 

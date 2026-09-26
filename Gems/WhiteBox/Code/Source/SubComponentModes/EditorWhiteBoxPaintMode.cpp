@@ -16,6 +16,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <cmath>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -57,7 +58,8 @@ namespace WhiteBox
         return world.TransformPoint(result * scale);
     }
 
-    Api::FaceHandle PaintMode::PickFace(EditorWhiteBoxComponent& component, const ModeMouseInteraction& mouse) const
+    Api::FaceHandle PaintMode::PickFace(
+        EditorWhiteBoxComponent& component, const ModeMouseInteraction& mouse, AZ::Vector3* hitPoint, AZ::Vector3* hitNormal) const
     {
         WhiteBoxMesh* mesh = component.GetWhiteBoxMesh();
         if (!mesh || (component.GetLayerCount() > 0 &&
@@ -98,9 +100,54 @@ namespace WhiteBox
             {
                 nearest = distance;
                 hit = face;
+                if (hitNormal != nullptr)
+                {
+                    *hitNormal = (b - a).Cross(c - a).GetNormalizedSafe();
+                }
             }
         }
+        if (hit.IsValid() && hitPoint != nullptr)
+        {
+            *hitPoint = pick.m_rayOrigin + pick.m_rayDirection * 100000.0f * nearest;
+        }
         return hit;
+    }
+
+    void PaintMode::PaintBlend(EditorWhiteBoxComponent& component, const AZ::Vector3& worldPoint)
+    {
+        if (component.GetWhiteBoxMesh() != m_strokeMesh)
+        {
+            return;
+        }
+        const float radius = AZ::GetMax(m_settings.m_brushRadius, 1e-3f);
+        const float strength = AZ::GetClamp(m_settings.m_brushStrength, 0.0f, 1.0f);
+        const float hardness = AZ::GetClamp(m_settings.m_brushHardness, 0.0f, 0.99f);
+        for (const Api::VertexHandle vertex : Api::MeshVertexHandles(*m_strokeMesh))
+        {
+            const float distance = (WorldPoint(component, Api::VertexPosition(*m_strokeMesh, vertex)) - worldPoint).GetLength();
+            if (distance >= radius)
+            {
+                continue;
+            }
+            // Full strength inside the hard core, then a smooth fall to nothing at the rim.
+            const float t = AZ::GetClamp((distance / radius - hardness) / (1.0f - hardness), 0.0f, 1.0f);
+            const float weight = strength * (1.0f - t * t) * (1.0f - t * t);
+            if (weight <= 0.0f)
+            {
+                continue;
+            }
+            AZ::Vector3 blend = Api::VertexBlend(*m_strokeMesh, vertex);
+            const AZ::Vector3 target = m_settings.m_operation == FacePaintOperation::BlendLayer2 ? AZ::Vector3(1.0f, 0.0f, 0.0f)
+                : m_settings.m_operation == FacePaintOperation::BlendLayer3                     ? AZ::Vector3(blend.GetX(), 1.0f, 0.0f)
+                                                                                                 : AZ::Vector3::CreateZero();
+            blend = blend.Lerp(target, weight);
+            Api::SetVertexBlend(*m_strokeMesh, vertex, blend);
+            m_changed = true;
+        }
+        if (m_changed)
+        {
+            NotifyMeshChanged();
+        }
     }
 
     bool PaintMode::HandleMouseInteraction(const ModeMouseInteraction& mouse)
@@ -122,7 +169,7 @@ namespace WhiteBox
         {
             return false;
         }
-        m_hover = PickFace(*component, mouse);
+        m_hover = PickFace(*component, mouse, &m_hoverPoint, &m_hoverNormal);
         if (event.m_mouseInteraction.m_keyboardModifiers.Alt())
         {
             return false; // viewport camera navigation
@@ -143,8 +190,16 @@ namespace WhiteBox
                 return true;
             }
             m_undo = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("White Box Vertex Paint");
+            if (IsBlendOperation(m_settings.m_operation))
+            {
+                Api::BakeVertexBlend(*m_strokeMesh); // after the snapshot, so undo drops the bake with the stroke
+            }
         }
-        if (m_snapshot && m_hover.IsValid())
+        if (m_snapshot && m_hover.IsValid() && IsBlendOperation(m_settings.m_operation))
+        {
+            PaintBlend(*component, m_hoverPoint);
+        }
+        else if (m_snapshot && m_hover.IsValid())
         {
             if (m_settings.m_wholePolygon)
             {
@@ -269,7 +324,31 @@ namespace WhiteBox
         // Outline what the next click affects (the whole polygon with Whole Polygon on). Read live so
         // toggling updates the hover at once.
         AZStd::vector<AZ::Vector3> outline;
-        if (component->GetFacePaintSettings().m_wholePolygon)
+        const FacePaintSettings& live = component->GetFacePaintSettings();
+        if (IsBlendOperation(live.m_operation))
+        {
+            // The brush: a circle of the brush radius lying on the surface, and a smaller one for the hard core.
+            const AZ::Vector3 normal = m_hoverNormal.GetNormalizedSafe();
+            const AZ::Vector3 side = (AZStd::abs(normal.GetZ()) < 0.9f ? AZ::Vector3::CreateAxisZ() : AZ::Vector3::CreateAxisX()).Cross(normal).GetNormalizedSafe();
+            const AZ::Vector3 up = normal.Cross(side);
+            const AZ::Vector3 centre = m_hoverPoint + normal * 0.005f;
+            for (const float ring : { live.m_brushRadius, live.m_brushRadius * AZ::GetClamp(live.m_brushHardness, 0.0f, 1.0f) })
+            {
+                if (ring <= 1e-3f)
+                {
+                    continue;
+                }
+                constexpr int Segments = 48;
+                for (int i = 0; i < Segments; ++i)
+                {
+                    const float a0 = AZ::Constants::TwoPi * float(i) / float(Segments);
+                    const float a1 = AZ::Constants::TwoPi * float(i + 1) / float(Segments);
+                    outline.push_back(centre + (side * std::cos(a0) + up * std::sin(a0)) * ring);
+                    outline.push_back(centre + (side * std::cos(a1) + up * std::sin(a1)) * ring);
+                }
+            }
+        }
+        else if (live.m_wholePolygon)
         {
             const Api::PolygonHandle polygon = Api::FacePolygonHandle(*mesh, m_hover);
             for (const Api::EdgeHandle edgeHandle : Api::PolygonBorderEdgeHandlesFlattened(*mesh, polygon))

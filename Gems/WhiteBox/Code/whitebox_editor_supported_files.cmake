@@ -58,6 +58,8 @@ set(FILES
     Source/Tools/WhiteBoxUvEditorPane.h
     Source/Tools/WhiteBoxUvTexture.cpp
     Source/Tools/WhiteBoxUvTexture.h
+    Source/Tools/WhiteBoxMaterialUiUnlock.cpp
+    Source/Tools/WhiteBoxMaterialUiUnlock.h
     Source/Tools/WhiteBoxExtrudeInsetWindow.cpp
     Source/Tools/WhiteBoxExtrudeInsetWindow.h
     Source/Tools/WhiteBoxLayerGizmo.cpp

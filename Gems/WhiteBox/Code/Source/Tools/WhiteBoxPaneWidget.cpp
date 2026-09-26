@@ -953,6 +953,40 @@ namespace WhiteBox
         metaLayout->addRow(tr("Position"), MakeVec3Row(m_layerPos, -100000.0, 100000.0, 0.1));
         metaLayout->addRow(tr("Rotation"), MakeVec3Row(m_layerRot, -3600.0, 3600.0, 1.0));
         metaLayout->addRow(tr("Scale"), MakeVec3Row(m_layerScale, 0.001, 1000.0, 0.1));
+
+        // Modifiers: live copies of the layer, in layer space before the transform. Edit one side; the rest follows.
+        auto* mirrorRow = new QWidget();
+        auto* mirrorLayout = new QHBoxLayout(mirrorRow);
+        mirrorLayout->setContentsMargins(0, 0, 0, 0);
+        const char* mirrorAxes[3] = { "X", "Y", "Z" };
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            m_layerMirror[axis] = new QCheckBox(QString::fromLatin1(mirrorAxes[axis]));
+            m_layerMirror[axis]->setToolTip(
+                tr("Mirror the layer across its %1 = 0 plane, or across its low side when it straddles that plane (a centred "
+                   "shape). Faces on the plane are dropped so the halves close into one shell; edit the original side and the "
+                   "reflection follows.").arg(QString::fromLatin1(mirrorAxes[axis])));
+            mirrorLayout->addWidget(m_layerMirror[axis]);
+        }
+        mirrorLayout->addStretch();
+        metaLayout->addRow(tr("Mirror"), mirrorRow);
+        m_layerArrayCount = new QSpinBox();
+        m_layerArrayCount->setRange(1, 256);
+        m_layerArrayCount->setToolTip(tr("Copies of the layer in a row (1 = off). Fences, pillars, steps, windows."));
+        metaLayout->addRow(tr("Array Count"), m_layerArrayCount);
+        metaLayout->addRow(tr("Array Offset"), MakeVec3Row(m_layerArrayOffset, -100000.0, 100000.0, 0.1));
+        auto* applyModifiersButton = new QPushButton(tr("Apply Modifiers"));
+        applyModifiersButton->setToolTip(
+            tr("Bake the active layer's mirror and array into its geometry and switch them off, so the copies can be edited one by one."));
+        metaLayout->addRow(QString(), applyModifiersButton);
+        connect(applyModifiersButton, &QPushButton::clicked, this,
+            [this]()
+            {
+                ModifyComponent(
+                    "White Box Apply Layer Modifiers",
+                    [](EditorWhiteBoxComponent* c) { c->ApplyActiveLayerModifiers(); });
+            });
+
         auto* applyTransformButton = new QPushButton(tr("Apply Transform"));
         applyTransformButton->setToolTip(
             tr("Bake the active layer's Position/Rotation/Scale into its geometry and reset them to identity."));
@@ -1341,9 +1375,18 @@ namespace WhiteBox
             const AZ::Vector3 scale(
                 aznumeric_cast<float>(m_layerScale[0]->value()), aznumeric_cast<float>(m_layerScale[1]->value()),
                 aznumeric_cast<float>(m_layerScale[2]->value()));
+            const bool mirror[3] = { m_layerMirror[0]->isChecked(), m_layerMirror[1]->isChecked(), m_layerMirror[2]->isChecked() };
+            const int arrayCount = m_layerArrayCount->value();
+            const AZ::Vector3 arrayOffset(
+                aznumeric_cast<float>(m_layerArrayOffset[0]->value()), aznumeric_cast<float>(m_layerArrayOffset[1]->value()),
+                aznumeric_cast<float>(m_layerArrayOffset[2]->value()));
+            const bool mirrorX = mirror[0];
+            const bool mirrorY = mirror[1];
+            const bool mirrorZ = mirror[2];
             ModifyComponent(
                 "White Box Layer Edit",
-                [row, combine, invert, edgesOnly, collision, pos, rot, scale](EditorWhiteBoxComponent* c)
+                [row, combine, invert, edgesOnly, collision, pos, rot, scale, mirrorX, mirrorY, mirrorZ, arrayCount,
+                 arrayOffset](EditorWhiteBoxComponent* c)
                 {
                     EditorWhiteBoxComponent::LayerMeta meta = c->GetLayerMeta(row);
                     meta.m_combineMode = combine;
@@ -1353,6 +1396,11 @@ namespace WhiteBox
                     meta.m_position = pos;
                     meta.m_rotation = rot;
                     meta.m_scale = scale;
+                    meta.m_mirrorX = mirrorX;
+                    meta.m_mirrorY = mirrorY;
+                    meta.m_mirrorZ = mirrorZ;
+                    meta.m_arrayCount = arrayCount;
+                    meta.m_arrayOffset = arrayOffset;
                     c->SetLayerMeta(row, meta);
                 });
         };
@@ -1362,10 +1410,15 @@ namespace WhiteBox
         connect(m_layerCollision, &QCheckBox::toggled, this, applyMeta);
         for (QDoubleSpinBox* spin :
              { m_layerPos[0], m_layerPos[1], m_layerPos[2], m_layerRot[0], m_layerRot[1], m_layerRot[2],
-               m_layerScale[0], m_layerScale[1], m_layerScale[2] })
+               m_layerScale[0], m_layerScale[1], m_layerScale[2], m_layerArrayOffset[0], m_layerArrayOffset[1], m_layerArrayOffset[2] })
         {
             connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, applyMeta);
         }
+        for (QCheckBox* mirror : m_layerMirror)
+        {
+            connect(mirror, &QCheckBox::toggled, this, applyMeta);
+        }
+        connect(m_layerArrayCount, QOverload<int>::of(&QSpinBox::valueChanged), this, applyMeta);
 
         return group;
     }
@@ -1623,6 +1676,13 @@ namespace WhiteBox
             m_layerInvertNormals->setChecked(meta.m_invertNormals);
             m_layerEdgesOnly->setChecked(meta.m_edgesOnly);
             m_layerCollision->setChecked(meta.m_collision);
+            m_layerMirror[0]->setChecked(meta.m_mirrorX);
+            m_layerMirror[1]->setChecked(meta.m_mirrorY);
+            m_layerMirror[2]->setChecked(meta.m_mirrorZ);
+            m_layerArrayCount->setValue(meta.m_arrayCount);
+            m_layerArrayOffset[0]->setValue(meta.m_arrayOffset.GetX());
+            m_layerArrayOffset[1]->setValue(meta.m_arrayOffset.GetY());
+            m_layerArrayOffset[2]->setValue(meta.m_arrayOffset.GetZ());
             const AZ::Vector3 vecs[3] = { meta.m_position, meta.m_rotation, meta.m_scale };
             QDoubleSpinBox* (*rows[3])[3] = { &m_layerPos, &m_layerRot, &m_layerScale };
             for (int v = 0; v < 3; ++v)
