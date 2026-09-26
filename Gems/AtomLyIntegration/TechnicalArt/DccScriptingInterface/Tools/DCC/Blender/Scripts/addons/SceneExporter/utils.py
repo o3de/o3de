@@ -385,10 +385,11 @@ def create_udp():
                 duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_lod0")
                 # ADD UDP
                 duplicate_object["o3de_atom_lod"] = "_lod0"
-        # If UDP Type is _phys
-        if bpy.types.Scene.udp_type == "_phys":
-            duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_phys")
-            duplicate_object["o3de_atom_phys"] = "_phys"
+        # If UDP Type is _phys_static or _phys_dynamic
+        if bpy.types.Scene.udp_type in ("_phys_static", "_phys_dynamic"):
+            udp_type = bpy.types.Scene.udp_type
+            duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}{udp_type}")
+            duplicate_object["o3de_atom_phys"] = udp_type
         # Select the duplicated object only
         select_object(duplicate_object)
         # Add the Decimate Modifier on for user. Since both _lod and _phys will need this modifier
@@ -397,8 +398,8 @@ def create_udp():
     else:
         if bpy.types.Scene.udp_type == "_lod":
                 selected_objects['o3de_atom_lod'] = "_lod0"
-        if bpy.types.Scene.udp_type == "_phys":
-            selected_objects["o3de_atom_phys"] = "_phys"
+        if bpy.types.Scene.udp_type in ("_phys_static", "_phys_dynamic"):
+            selected_objects["o3de_atom_phys"] = bpy.types.Scene.udp_type
 
 def compair_set(list_a, list_b):
     """!
