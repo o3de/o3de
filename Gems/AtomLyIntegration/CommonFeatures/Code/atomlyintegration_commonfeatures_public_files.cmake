@@ -22,6 +22,9 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentBus.h
+    Include/AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConstants.h
