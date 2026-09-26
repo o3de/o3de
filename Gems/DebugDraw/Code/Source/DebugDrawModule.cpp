@@ -9,6 +9,7 @@
 
 #include "DebugDrawSystemComponent.h"
 #include "DebugDrawLineComponent.h"
+#include "DebugDrawOctreeComponent.h"
 #include "DebugDrawRayComponent.h"
 #include "DebugDrawSphereComponent.h"
 #include "DebugDrawObbComponent.h"
@@ -16,6 +17,7 @@
 
 #ifdef DEBUGDRAW_GEM_EDITOR
 #include "EditorDebugDrawLineComponent.h"
+#include "EditorDebugDrawOctreeComponent.h"
 #include "EditorDebugDrawRayComponent.h"
 #include "EditorDebugDrawSphereComponent.h"
 #include "EditorDebugDrawObbComponent.h"
@@ -40,6 +42,7 @@ namespace DebugDraw
 
                 //DebugDrawSystemComponent::CreateDescriptor(),
                 DebugDrawLineComponent::CreateDescriptor(),
+                DebugDrawOctreeComponent::CreateDescriptor(),
                 DebugDrawRayComponent::CreateDescriptor(),
                 DebugDrawSphereComponent::CreateDescriptor(),
                 DebugDrawObbComponent::CreateDescriptor(),
@@ -48,6 +51,7 @@ namespace DebugDraw
 
                 #ifdef DEBUGDRAW_GEM_EDITOR
                 EditorDebugDrawLineComponent::CreateDescriptor(),
+                EditorDebugDrawOctreeComponent::CreateDescriptor(),
                 EditorDebugDrawRayComponent::CreateDescriptor(),
                 EditorDebugDrawSphereComponent::CreateDescriptor(),
                 EditorDebugDrawObbComponent::CreateDescriptor(),
