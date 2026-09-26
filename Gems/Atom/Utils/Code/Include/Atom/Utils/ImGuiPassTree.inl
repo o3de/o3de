@@ -230,7 +230,7 @@ namespace AZ::Render
                     }
                     else
                     {
-                        descriptor = binding.GetAttachment()->m_descriptor.m_image;
+                        descriptor = binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image;
                     }
                     auto format = descriptor.m_format;
                     auto size = descriptor.m_size;
@@ -251,7 +251,7 @@ namespace AZ::Render
                 else if (type == AZ::RHI::AttachmentType::Buffer)
                 {
                     // Append buffer info: [size]
-                    auto size = binding.GetAttachment()->m_descriptor.m_buffer.m_byteCount;
+                    auto size = binding.GetAttachment()->m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_byteCount;
                     label += AZStd::string::format(" [%llu]", size);
                 }
 
