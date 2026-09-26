@@ -23,7 +23,9 @@ namespace AzNetworking
 {
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
-    AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
+    // A DTLS 1.2 record adds 13 (header) + 8 (explicit nonce) + 16 (GCM tag) = 37 bytes with the default
+    // net_SslCertCiphers (AES-GCM); 32 let packets of 988-992 bytes through unfragmented, cut after encryption.
+    AZ_CVAR(uint32_t, net_SslInflationOverhead, 64, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Bytes DTLS encryption may add to a packet (record header, nonce, tag, padding): taken out of the MTU before deciding to fragment. Must be at least the negotiated cipher's per-record overhead");
 #else
     static const bool net_UdpUseEncryption = false;
     static const uint32_t net_SslInflationOverhead = 0;
