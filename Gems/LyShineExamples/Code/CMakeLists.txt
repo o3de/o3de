@@ -18,8 +18,10 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
+            AZ::AzFramework
             Gem::LmbrCentral
         PUBLIC
+            AZ::AzCore
             Legacy::CryCommon
             Gem::LyShine.Clients.API
 )
@@ -56,4 +58,3 @@ ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}
 ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LmbrCentral)
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LmbrCentral)
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LmbrCentral)
-

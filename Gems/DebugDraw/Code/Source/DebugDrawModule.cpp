@@ -24,18 +24,17 @@
 #include "EditorDebugDrawTextComponent.h"
 #endif // DEBUGDRAW_GEM_EDITOR
 
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 
 namespace DebugDraw
 {
     class DebugDrawModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(DebugDrawModule, "{07AC9E51-535C-402D-A2EB-529366ED9985}", CryHooksModule);
+        AZ_RTTI(DebugDrawModule, "{07AC9E51-535C-402D-A2EB-529366ED9985}", AZ::Module);
 
         DebugDrawModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

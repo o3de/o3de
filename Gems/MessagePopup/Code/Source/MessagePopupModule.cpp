@@ -7,21 +7,20 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 #include <MessagePopupSystemComponent.h>
 #include <LyShineMessagePopup.h>
-#include <IGem.h>
 
 namespace MessagePopup
 {
     class MessagePopupModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(MessagePopupModule, "{79CE538B-D7D1-4066-8C0E-5794121BE8A8}", CryHooksModule);
+        AZ_RTTI(MessagePopupModule, "{79CE538B-D7D1-4066-8C0E-5794121BE8A8}", AZ::Module);
         AZ_CLASS_ALLOCATOR(MessagePopupModule, AZ::SystemAllocator);
 
         MessagePopupModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

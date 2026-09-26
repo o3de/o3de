@@ -9,7 +9,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Translation/TranslationDef.h>
-#include <ISystem.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiCursorBus.h>
