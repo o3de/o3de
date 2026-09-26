@@ -13,41 +13,62 @@
 namespace AZ::RHI
 {
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor()
+        : m_storage{}
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor)
-        : m_buffer(bufferDescriptor)
-        , m_bufferView(BufferViewDescriptor{})
-        , m_type(AttachmentType::Buffer)
+        : m_type{ AttachmentType::Buffer }
+        , m_storage{ bufferDescriptor }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const ImageDescriptor& imageDescriptor)
-        : m_image(imageDescriptor)
-        , m_imageView(ImageViewDescriptor{})
-        , m_type(AttachmentType::Image)
+        : m_type{ AttachmentType::Image }
+        , m_storage{ imageDescriptor }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(
         const BufferDescriptor& bufferDescriptor, const BufferViewDescriptor& bufferViewDescriptor)
-        : m_buffer(bufferDescriptor)
-        , m_bufferView(bufferViewDescriptor)
-        , m_type(AttachmentType::Buffer)
+        : m_type{ AttachmentType::Buffer }
+        , m_storage{ bufferDescriptor, bufferViewDescriptor }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(
         const ImageDescriptor& imageDescriptor, const ImageViewDescriptor& imageViewDescriptor)
-        : m_image(imageDescriptor)
-        , m_imageView(imageViewDescriptor)
-        , m_type(AttachmentType::Image)
+        : m_type{ AttachmentType::Image }
+        , m_storage{ imageDescriptor, imageViewDescriptor }
     {
     }
 
     HashValue64 UnifiedAttachmentDescriptor::GetHash(HashValue64 seed /* = 0 */) const
     {
         return TypeHash64(*this, seed);
+    }
+
+    UnifiedAttachmentDescriptor& UnifiedAttachmentDescriptor::operator=(const BufferDescriptor& bufferDescriptor)
+    {
+        m_type = AttachmentType::Buffer;
+        m_buffer = bufferDescriptor;
+        return *this;
+    }
+
+    UnifiedAttachmentDescriptor& UnifiedAttachmentDescriptor::operator=(const ImageDescriptor& imageDescriptor)
+    {
+        m_type = AttachmentType::Image;
+        m_image = imageDescriptor;
+        return *this;
+    }
+
+    UnifiedAttachmentDescriptor& UnifiedAttachmentDescriptor::operator=(const UnifiedAttachmentDescriptor& other)
+    {
+        m_type = other.m_type;
+        if(m_type == AttachmentType::Image)
+            m_storage.image = other.m_storage.image;
+        else if(m_type == AttachmentType::Buffer)
+            m_storage.buffer = other.m_storage.buffer;
+        return *this;
     }
 } // namespace AZ::RHI
