@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Script Canvas",
+                "category": "Scripting",
+                "components": [
+                    {
+                        "component": "Script Canvas",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}
