@@ -146,6 +146,8 @@ namespace LandscapeCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // AssetEditorRequestBus::Handler overrides
         GraphCanvas::ContextMenuAction::SceneReaction ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint) override;
+        GraphCanvas::ContextMenuAction::SceneReaction ShowConnectionContextMenu(
+            const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -224,6 +226,7 @@ namespace LandscapeCanvasEditor
 
         QString GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex = 0);
         void UpdateConnectionData(GraphModel::ConnectionPtr connection, bool added);
+        void RefreshRerouteTargets(GraphModel::NodePtr rerouteNode, GraphModel::NodePtrList visitedNodes = {});
         void HandleSetImageAssetPath(const AZ::EntityId& sourceEntityId, const AZ::EntityId& targetEntityId);
 
         AZ::u32 GetWrappedNodeLayoutOrder(GraphModel::NodePtr node);

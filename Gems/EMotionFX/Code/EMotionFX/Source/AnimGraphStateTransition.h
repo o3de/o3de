@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
 #include <EMotionFX/Source/AnimGraphObject.h>
@@ -209,6 +210,14 @@ namespace EMotionFX
         int32 GetVisualEndOffsetX() const;
         int32 GetVisualEndOffsetY() const;
 
+        // Visual-only bend points in graph space, ordered from the source to the target state.
+        const AZStd::vector<AZ::Vector2>& GetWaypoints() const                                  { return m_waypoints; }
+        size_t GetNumWaypoints() const                                                          { return m_waypoints.size(); }
+        void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints);
+        void InsertWaypoint(size_t index, const AZ::Vector2& position);
+        void SetWaypoint(size_t index, const AZ::Vector2& position);
+        void RemoveWaypoint(size_t index);
+
         EExtractionMode GetExtractionMode() const;
         void SetExtractionMode(EExtractionMode mode);
 
@@ -278,6 +287,7 @@ namespace EMotionFX
         AZ::s32                                         m_startOffsetY = 0;
         AZ::s32                                         m_endOffsetX = 0;
         AZ::s32                                         m_endOffsetY = 0;
+        AZStd::vector<AZ::Vector2>                      m_waypoints;
         AZ::u32                                         m_priority = 0;
         AnimGraphObject::ESyncMode                      m_syncMode = AnimGraphObject::SYNCMODE_DISABLED;
         AnimGraphObject::EEventMode                     m_eventMode = AnimGraphObject::EVENTMODE_BOTHNODES;
