@@ -13,7 +13,9 @@
 namespace AzFramework
 {
     AZ_CVAR(bool,     bg_octreeUseQuadtree,        false, nullptr, AZ::ConsoleFunctorFlags::ReadOnly, "If set to true, the visibility octrees will degenerate to a quadtree split along the X/Y plane");
-    AZ_CVAR(float,    bg_octreeMaxWorldExtents, 16384.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum supported world size by the world octreeSystemComponent");
+    AZ_CVAR(float,    bg_octreeMaxWorldExtents, 16384.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Initial world size (half-extent) of the visibility octree root. Optionally extended via bg_octreeGrowToContain / bg_octreeGrowMaxExtents");
+    AZ_CVAR(bool,     bg_octreeGrowToContain,      false, nullptr, AZ::ConsoleFunctorFlags::Null, "If true, the octree root automatically grows (doubles) to contain entries placed beyond bg_octreeMaxWorldExtents. Fixes objects disappearing from the viewport when placed far from the origin. Default false matches the legacy behavior");
+    AZ_CVAR(float,    bg_octreeGrowMaxExtents,1048576.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Upper limit (half-extent) the octree root may grow to when bg_octreeGrowToContain is enabled");
     AZ_CVAR(uint32_t, bg_octreeNodeMaxEntries,        64, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of entries to allow in any node before forcing a split");
     AZ_CVAR(uint32_t, bg_octreeNodeMinEntries,        32, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of entries to allow in a node resulting from a merge operation");
 
@@ -255,6 +257,37 @@ namespace AzFramework
         return m_children == nullptr;
     }
 
+    void OctreeNode::GrowToContain(const AZ::Aabb& volume)
+    {
+        AZ_Assert(m_parent == nullptr, "GrowToContain is only supported on the root node, child node bounds are derived by splitting their parent's bounds");
+        if (!bg_octreeGrowToContain || !volume.IsValid())
+        {
+            return;
+        }
+
+        // We will double the roots boulds around their center until the volume passed fits. We have safe limits
+        // just in case.
+        constexpr uint32_t MaxGrowthSteps = 64; // Safety limit. Never double more than 64 times because it's enough for any float world size.
+        for (uint32_t growthStep = 0; (growthStep < MaxGrowthSteps) && (!AZ::ShapeIntersection::Contains(m_bounds, volume)); ++growthStep)
+        {
+            const AZ::Vector3 center = m_bounds.GetCenter();
+            const AZ::Vector3 fullExtent = m_bounds.GetMax() - m_bounds.GetMin();
+
+            // Clamp the new half-extents to bg_octreeGrowMaxExtents so the root can't grow unbounded.
+            const AZ::Vector3 maxExtents(bg_octreeGrowMaxExtents);
+            const AZ::Vector3 clampedHalfExtent = fullExtent.GetMin(maxExtents);
+            const AZ::Aabb newBounds = AZ::Aabb::CreateFromMinMax(center - clampedHalfExtent, center + clampedHalfExtent);
+
+            if (newBounds == m_bounds)
+            {
+                // Growth limit reached and the volume still doesn't fit; stop growing.
+                break;
+            }
+
+            m_bounds = newBounds;
+        }
+    }
+
     void OctreeNode::TryMerge(OctreeScene& octreeScene)
     {
         if (IsLeaf())
@@ -403,6 +436,11 @@ namespace AzFramework
     void OctreeScene::InsertOrUpdateEntry(VisibilityEntry& entry)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_sharedMutex);
+
+        // If bg_octreeGrowToContain enabled, grow the root when the entry sits beyond the current
+        // root bounds so the entry can be properly contained.
+        m_root.GrowToContain(entry.m_boundingVolume);
+
         if (entry.m_internalNode != nullptr)
         {
             static_cast<OctreeNode*>(entry.m_internalNode)->Update(*this, &entry);
