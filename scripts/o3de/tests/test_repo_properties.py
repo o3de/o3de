@@ -13,7 +13,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import download, repo_properties, utils
+from o3de import download, repo_properties
 
 TEST_TEMPLATE_REPO_JSON = '''{
     "repo_name": "repotest",
@@ -188,7 +188,8 @@ def init_repo_json_data(request):
 
 @pytest.fixture(scope="session")
 def temp_folder(tmpdir_factory):
-    temp_path = pathlib.Path(tmpdir_factory.mktemp('temp'))
+    custom_name = "Gems"
+    temp_path = pathlib.Path(tmpdir_factory.mktemp(custom_name, numbered=False))
     gem_path = temp_path / 'gem'
     os.makedirs(gem_path)
     gem_json_path = gem_path / 'gem.json'
@@ -540,3 +541,49 @@ class TestEditRepoProperties:
                             assert template in str(JSON_DICT.get('template_json_key'))
                         else:
                             assert template in expected_templates
+
+    # test copy_to_repo_subfolder
+    @pytest.mark.parametrize("repo_name, expected_result", [
+        # test copy a gem to repo subfolder
+        pytest.param('copytest1', 0)
+        
+    ])
+    def test_copy_to_repo_subfolder(self, temp_folder, repo_name,
+                                    expected_result):
+        def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
+            if not repo_path:
+                self.repo_json.data = None
+            return self.repo_json.data
+        
+        def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            self.repo_json.data = json_data
+            return True
+        
+        def backup_file(file_name: str or pathlib.Path) -> None:
+            self.backup_file_name = file_name
+        
+        object_paths = [
+            temp_folder / 'gem'
+        ]
+        with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
+            patch('o3de.utils.backup_file', side_effect=backup_file) as backup_file_patch, \
+            patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
+            temp_repo_folder = temp_folder / 'repo'
+            os.makedirs(temp_repo_folder)
+            result = repo_properties.edit_repo_props(temp_repo_folder, repo_name, object_paths, copy_to_repo_subfolder=True)
+            assert self.repo_json.data.get('repo_name') == repo_name
+            assert result == expected_result
+            # Make sure the object got copied over to the repo folder you created
+            assert pathlib.Path(temp_repo_folder / 'Gems' / 'gem').exists()
+            # Check if the duplicated gem.json file matches the original gem.json file
+            duplicated_gem_json_data = pathlib.Path(temp_repo_folder) / 'Gems' / 'gem' / 'gem.json'
+            original_gem_json_data = pathlib.Path(object_paths[0]) / 'gem.json'
+            with duplicated_gem_json_data.open('r') as s:
+                data = json.load(s)
+            with original_gem_json_data.open('r') as o:
+                original_data = json.load(o)
+                assert data == original_data
+            # check if the repo.json's gems_data field updated after calling copy-to-repo-subfolder
+            for gem in self.repo_json.data.get('gems_data', []):
+                assert str(gem) in str(data)
+            shutil.rmtree(temp_repo_folder)
