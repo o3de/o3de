@@ -50,9 +50,12 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
     const int materialType = params.m_materialType;
 
+    // No derivatives in the vertex stage: CS_SAMPLERS makes texture nodes use SampleLevel (outside BEGIN/END so it's preserved).
+    #define CS_SAMPLERS
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
+    #undef CS_SAMPLERS
 
     #undef O3DE_MC_UV
 

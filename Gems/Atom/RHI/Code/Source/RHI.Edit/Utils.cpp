@@ -263,7 +263,9 @@ namespace AZ::RHI
 
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
-        processLaunchInfo.m_showWindow = true;
+
+        // No console window: from a GUI tool each child otherwise gets its own conhost.exe (azslc ~650 ms vs ~230 ms).
+        processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         {
@@ -286,6 +288,7 @@ namespace AZ::RHI
         AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
 
         AZStd::string errorMessages;
+
         auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
         {
             auto communicator = watcherPtr->GetCommunicator();
@@ -370,9 +373,10 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
+        // FileIO refuses writes inside the asset cache, so redirect a cache path to the temp folder for the profiling log.
         AZStd::string shaderSourceArg = shaderSourcePathForDebug;
         AZStd::string shaderSourceFolder;
-        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
+        StringFunc::Path::GetFullPath(shaderSourceArg.c_str(), shaderSourceFolder);
         if (StringFunc::Contains(shaderSourceFolder, "Cache"))
         {
             AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");

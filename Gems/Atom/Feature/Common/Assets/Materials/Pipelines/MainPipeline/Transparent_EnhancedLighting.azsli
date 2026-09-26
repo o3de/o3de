@@ -16,7 +16,10 @@
 #define FORCE_OPAQUE 0
 #define OUTPUT_SUBSURFACE 1
 #define ENABLE_TRANSMISSION 1
+// Guarded so a pipeline can compile the shader debug views out with -D, like the ENABLE_ options in LightingOptions.azsli.
+#ifndef ENABLE_SHADER_DEBUGGING
 #define ENABLE_SHADER_DEBUGGING 1
+#endif
 #define ENABLE_CLEAR_COAT 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -38,18 +38,36 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool GraphTemplateFileData::Save(const AZStd::string& path) const
+    bool GraphTemplateFileData::Save(const AZStd::string& path, bool* wroteFile) const
     {
-        AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file: %s\n", path.c_str());
+        // AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file: %s\n", path.c_str());
+
+        if (wroteFile)
+        {
+            *wroteFile = false;
+        }
 
         AZStd::string templateOutputText;
         AZ::StringFunc::Join(templateOutputText, m_lines, '\n');
         templateOutputText += '\n';
 
+        // Skip writing byte-identical content: a rewrite would make the Asset Processor rerun every dependent shader job.
+        if (const auto existingText = AZ::Utils::ReadFile(path);
+            existingText.IsSuccess() && existingText.GetValue() == templateOutputText)
+        {
+            // AZ_TracePrintf_IfTrue(
+            //     "GraphTemplateFileData", IsLoggingEnabled(), "Generated file is unchanged, skipping write: %s\n", path.c_str());
+            return true;
+        }
+
         // Save the file generated from the template to the same folder as the graph.
         if (AZ::Utils::WriteFile(templateOutputText, path).IsSuccess())
         {
-            AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file succeeded: %s\n", path.c_str());
+            // AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "Saving generated file succeeded: %s\n", path.c_str());
+            if (wroteFile)
+            {
+                *wroteFile = true;
+            }
             return true;
         }
 
@@ -90,12 +108,12 @@ namespace AtomToolsFramework
     void GraphTemplateFileData::ReplaceLinesInBlock(
         const AZStd::string& blockBeginToken, const AZStd::string& blockEndToken, const LineGenerationFn& lineGenerationFn)
     {
-        AZ_TracePrintf_IfTrue(
-            "GraphTemplateFileData",
-            IsLoggingEnabled(),
-            "Inserting %s lines into template file: %s\n",
-            blockBeginToken.c_str(),
-            m_path.c_str());
+        // AZ_TracePrintf_IfTrue(
+        //     "GraphTemplateFileData",
+        //     IsLoggingEnabled(),
+        //     "Inserting %s lines into template file: %s\n",
+        //     blockBeginToken.c_str(),
+        //     m_path.c_str());
 
         auto blockBeginItr = AZStd::find_if(
             m_lines.begin(),
@@ -107,7 +125,7 @@ namespace AtomToolsFramework
 
         while (blockBeginItr != m_lines.end())
         {
-            AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "*blockBegin: %s\n", (*blockBeginItr).c_str());
+            // AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "*blockBegin: %s\n", (*blockBeginItr).c_str());
 
             // We have to insert one line at a time because AZStd::vector does not include a standard
             // range insert that returns an iterator
@@ -117,13 +135,13 @@ namespace AtomToolsFramework
                 ++blockBeginItr;
                 blockBeginItr = m_lines.insert(blockBeginItr, lineToInsert);
 
-                AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "lineToInsert: %s\n", lineToInsert.c_str());
+                // AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "lineToInsert: %s\n", lineToInsert.c_str());
             }
 
             if (linesToInsert.empty())
             {
-                AZ_TracePrintf_IfTrue(
-                    "GraphTemplateFileData", IsLoggingEnabled(), "Nothing was generated. This block will remain unmodified.\n");
+                // AZ_TracePrintf_IfTrue(
+                //     "GraphTemplateFileData", IsLoggingEnabled(), "Nothing was generated. This block will remain unmodified.\n");
             }
 
             ++blockBeginItr;
@@ -137,7 +155,7 @@ namespace AtomToolsFramework
                     return AZ::StringFunc::Contains(line, blockEndToken);
                 });
 
-            AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "*blockEnd: %s\n", (*blockEndItr).c_str());
+            // AZ_TracePrintf_IfTrue("GraphTemplateFileData", IsLoggingEnabled(), "*blockEnd: %s\n", (*blockEndItr).c_str());
 
             if (!linesToInsert.empty())
             {

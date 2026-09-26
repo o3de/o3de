@@ -50,9 +50,12 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
     const int materialType = params.m_materialType;
 
+    // No derivatives in the vertex stage: CS_SAMPLERS makes texture nodes use SampleLevel (outside BEGIN/END so it's preserved).
+    #define CS_SAMPLERS
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
+    #undef CS_SAMPLERS
 
     #undef O3DE_MC_UV
 
@@ -64,6 +67,13 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.uvs[1] = uv1;
     output.normal = normal;
     output.tangent = tangent;
+
+#ifdef MATERIAL_USES_VERTEX_LOCALPOSITION
+    // Object-space position times the entity's world scale (object-to-world column lengths): rotates with the entity, no stretching.
+    float3x3 o2wScale = transpose((float3x3)objectToWorld);
+    float3 objectScale = float3(length(o2wScale[0]), length(o2wScale[1]), length(o2wScale[2]));
+    output.localPosition = position * objectScale;
+#endif
 #if ENABLE_VERTEX_COLOR
     if(useVertexColor0)
     {

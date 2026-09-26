@@ -15,6 +15,9 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Graph/GraphDocument.h>
 #include <AtomToolsFramework/Graph/GraphDocumentView.h>
+#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h>
+#include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
@@ -82,6 +85,8 @@ namespace MaterialCanvas
     {
         Base::Reflect(context);
         MaterialGraphCompiler::Reflect(context);
+        AtomToolsFramework::GraphViewSettings::Reflect(context);
+        AtomToolsFramework::GraphViewConstructPresets::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -123,6 +128,11 @@ namespace MaterialCanvas
         // Save all of the graph view configuration settings to the settings registry.
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
 
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Remove("/O3DE/Atom/MaterialCanvas/PaneWindowState");
+        }
+
         m_graphViewSettingsPtr.reset();
         m_window.reset();
         m_viewportSettingsSystem.reset();
@@ -131,6 +141,7 @@ namespace MaterialCanvas
         m_dynamicNodeManager.reset();
 
         ApplyShaderBuildSettings();
+        ApplyPreviewMaterialPipelineSettings();
         Base::Destroy();
     }
 
@@ -147,6 +158,7 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::FactoryRegistered()
     {
         ApplyShaderBuildSettings();
+        ApplyPreviewMaterialPipelineSettings();
     }
 
     void MaterialCanvasApplication::InitDynamicNodeManager()
@@ -258,6 +270,13 @@ namespace MaterialCanvas
             AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
                 rootTreeItem, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::CreateNodePaletteTree);
             return rootTreeItem;
+        };
+        m_graphViewSettingsPtr->m_createSplicingNodeActionName = "Reroute";
+        m_graphViewSettingsPtr->m_createSplicingNodeShortcut = "R";
+        m_graphViewSettingsPtr->m_createSplicingNodeMimeEventFn = [toolId = m_toolId]()
+        {
+            return aznew AtomToolsFramework::CreateDynamicNodeMimeEvent(
+                toolId, AZ::Uuid::CreateString("{A4D0A1B1-0E1C-4E3B-9E5A-000000000013}"));
         };
 
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
@@ -413,6 +432,22 @@ namespace MaterialCanvas
             {
                 fileIO->Remove(settingsPath.c_str());
                 fileIO->Remove(settingsPathDx12.c_str());
+            }
+        }
+    }
+
+    void MaterialCanvasApplication::ApplyPreviewMaterialPipelineSettings()
+    {
+        // Remove the setreg older builds copied in; material types now declare the preview pipeline, and the stale file broke the AP.
+        if (auto fileIO = AZ::IO::FileIOBase::GetInstance())
+        {
+            const AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            const auto settingsPath(
+                projectPath / AZ::SettingsRegistryConstants::DevUserRegistryFolder / "user_preview_material_pipeline.setreg");
+
+            if (fileIO->Exists(settingsPath.c_str()))
+            {
+                fileIO->Remove(settingsPath.c_str());
             }
         }
     }

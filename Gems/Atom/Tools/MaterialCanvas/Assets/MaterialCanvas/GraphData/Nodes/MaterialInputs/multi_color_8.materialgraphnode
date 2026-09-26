@@ -1,0 +1,263 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{6F16A501-9F66-48D2-AB51-179CF2D7C3F4}",
+        "category": "Material Inputs",
+        "title": "Multi Color Input (8)",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Expose eight independent RGBA colors as material properties from one compact node. Each color has its own output pin. Change Group when using more than one Multi Color Input node in the same graph.",
+        "slotDataTypeGroups": [
+            "inColor1|outColor1",
+            "inColor2|outColor2",
+            "inColor3|outColor3",
+            "inColor4|outColor4",
+            "inColor5|outColor5",
+            "inColor6|outColor6",
+            "inColor7|outColor7",
+            "inColor8|outColor8"
+        ],
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Material property group containing these eight colors. Give each Multi Color Input node a unique group name.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "multiColor"
+                }
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Unused. Each color property is named by its slot.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description of this group of material colors.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inColor1",
+                "displayName": "Color 1",
+                "description": "First RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 1"]
+                }
+            },
+            {
+                "name": "inColor2",
+                "displayName": "Color 2",
+                "description": "Second RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 2"]
+                }
+            },
+            {
+                "name": "inColor3",
+                "displayName": "Color 3",
+                "description": "Third RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 3"]
+                }
+            },
+            {
+                "name": "inColor4",
+                "displayName": "Color 4",
+                "description": "Fourth RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 4"]
+                }
+            },
+            {
+                "name": "inColor5",
+                "displayName": "Color 5",
+                "description": "Fifth RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 5"]
+                }
+            },
+            {
+                "name": "inColor6",
+                "displayName": "Color 6",
+                "description": "Sixth RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 6"]
+                }
+            },
+            {
+                "name": "inColor7",
+                "displayName": "Color 7",
+                "description": "Seventh RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 7"]
+                }
+            },
+            {
+                "name": "inColor8",
+                "displayName": "Color 8",
+                "description": "Eighth RGBA material color.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 8"]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor1",
+                "displayName": "Color 1",
+                "description": "First RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor1;"]
+                }
+            },
+            {
+                "name": "outColor2",
+                "displayName": "Color 2",
+                "description": "Second RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor2;"]
+                }
+            },
+            {
+                "name": "outColor3",
+                "displayName": "Color 3",
+                "description": "Third RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor3;"]
+                }
+            },
+            {
+                "name": "outColor4",
+                "displayName": "Color 4",
+                "description": "Fourth RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor4;"]
+                }
+            },
+            {
+                "name": "outColor5",
+                "displayName": "Color 5",
+                "description": "Fifth RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor5;"]
+                }
+            },
+            {
+                "name": "outColor6",
+                "displayName": "Color 6",
+                "description": "Sixth RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor6;"]
+                }
+            },
+            {
+                "name": "outColor7",
+                "displayName": "Color 7",
+                "description": "Seventh RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor7;"]
+                }
+            },
+            {
+                "name": "outColor8",
+                "displayName": "Color 8",
+                "description": "Eighth RGBA color output.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "settings": {
+                    "instructions": ["SLOTTYPE SLOTNAME = params.inColor8;"]
+                }
+            }
+        ]
+    }
+}
