@@ -702,7 +702,14 @@ namespace AzNetworking
         connection->m_state = result == DtlsEndpoint::ConnectResult::Complete ? ConnectionState::Connected : ConnectionState::Connecting;
         connection->SetTimeoutId(timeoutId);
         m_connectionListener.OnConnect(connection.get());
+        UdpConnection* accepted = connection.get();
         m_connectionSet.AddConnection(AZStd::move(connection));
+        // The client's first DTLS flight (its ClientHello) rides in the InitiateConnectionPacket: hand it to
+        // the new endpoint now, instead of waiting for the client's OpenSSL to resend it (1 s later).
+        if (result == DtlsEndpoint::ConnectResult::Pending && packet.GetHandshakeBuffer().GetSize() > 0)
+        {
+            accepted->ProcessHandshakeData(packet.GetHandshakeBuffer());
+        }
     }
 
     void UdpNetworkInterface::RequestDisconnect(UdpConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)
