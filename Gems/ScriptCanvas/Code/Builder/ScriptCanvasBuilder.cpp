@@ -126,10 +126,13 @@ namespace ScriptCanvasBuilder
 
     void BuildVariableOverrides::CopyPreviousOverriddenValues(const BuildVariableOverrides& source)
     {
+        // Match variables strictly by VariableId + type. The previous fallback on
+        // name + type caused stale values to silently transfer between unrelated
+        // variables that happened to share the same name and type — e.g., when a
+        // variable was removed and a new one took the same slot or name.
         auto isEqual = [](const ScriptCanvas::GraphVariable& lhs, const ScriptCanvas::GraphVariable& rhs)
         {
-            return (lhs.GetVariableId() == rhs.GetVariableId() && lhs.GetDataType() == rhs.GetDataType())
-                || (lhs.GetVariableName() == rhs.GetVariableName() && lhs.GetDataType() == rhs.GetDataType());
+            return lhs.GetVariableId() == rhs.GetVariableId() && lhs.GetDataType() == rhs.GetDataType();
         };
 
         auto copyPreviousIfFound = [isEqual](ScriptCanvas::GraphVariable& overriddenValue, const AZStd::vector<ScriptCanvas::GraphVariable>& source)
