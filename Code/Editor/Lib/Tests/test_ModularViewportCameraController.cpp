@@ -338,17 +338,23 @@ namespace UnitTest
         MousePressAndMove(m_rootWidget, start, mouseDelta, Qt::MouseButton::RightButton);
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
+        // move once after capture before taking the baseline
+        MouseMove(m_rootWidget, start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
+        const AZ::Quaternion initialCameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+
         // move the cursor right
         for (int i = 0; i < 50; ++i)
         {
-            MousePressAndMove(m_rootWidget, start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
+            MouseMove(m_rootWidget, start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
             m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
         }
+        EXPECT_FALSE(m_cameraViewportContextView->GetCameraTransform().GetRotation().IsClose(initialCameraRotation));
 
-        // move the cursor left (do an extra iteration moving left to account for the initial dead-zone)
-        for (int i = 0; i < 51; ++i)
+        // move the cursor left
+        for (int i = 0; i < 50; ++i)
         {
-            MousePressAndMove(m_rootWidget, start + mouseDelta, -mouseDelta, Qt::MouseButton::RightButton);
+            MouseMove(m_rootWidget, start + mouseDelta, -mouseDelta, Qt::MouseButton::RightButton);
             m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
         }
 
@@ -356,13 +362,15 @@ namespace UnitTest
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // Then
-        // retrieve the amount of yaw rotation
+        // retrieve the camera rotation
         const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
-        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
 
-        // camera should be back at the center (no yaw)
-        using ::testing::FloatNear;
-        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
+        // camera should be back at the starting rotation
+        const float cameraRotationDot =
+            AZStd::abs(cameraRotation.GetNormalized().Dot(initialCameraRotation.GetNormalized()));
+        const float cameraRotationError =
+            2.0f * AZ::Acos(AZ::GetClamp(cameraRotationDot, 0.0f, 1.0f));
+        EXPECT_NEAR(cameraRotationError, 0.0f, 0.001f);
 
         // Clean-up
         HaltCollaborators();

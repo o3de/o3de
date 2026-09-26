@@ -334,7 +334,10 @@ namespace AzFramework
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
-        ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        //! Should cursor position changes drive the cameras instead of motion deltas.
+        bool ShouldUseCursorDelta() const;
+
+        ScreenVector m_motionDelta; //!< Accumulated two-dimensional motion since the last step.
         CursorState m_cursorState; //!< The current and previous position of the cursor (used to calculate movement delta).
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
         bool m_handlingEvents = false; //!< Is the camera system currently handling events (events are consumed and not propagated).

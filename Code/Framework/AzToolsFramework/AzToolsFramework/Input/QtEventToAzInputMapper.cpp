@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 
+#include <AzCore/std/math.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Input/Buses/Notifications/InputChannelNotificationBus.h>
@@ -230,6 +231,12 @@ namespace AzToolsFramework
         AddChannels(m_keyboardDevice->m_allChannelsById);
         AddChannels(m_mouseDevice->m_allChannelsById);
 
+        m_nativeCursorCapture = NativeCursorCapture::Create(
+            [this](const QPoint& delta)
+            {
+                HandleRelativeMotionDelta(delta);
+            });
+
         // Install a global event filter to ensure we don't miss mouse and key release events.
         QApplication::instance()->installEventFilter(this);
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
@@ -253,6 +260,7 @@ namespace AzToolsFramework
         {
             // Clear input channels to reset our input state if we're disabled.
             ClearInputChannels(nullptr);
+            SetCursorMode(CursorInputMode::CursorModeNone);
         }
     }
 
@@ -260,6 +268,12 @@ namespace AzToolsFramework
     {
         if (mode != m_cursorMode)
         {
+            if (mode == CursorInputMode::CursorModeCaptured && m_nativeCursorCapture)
+            {
+                // Begin failure leaves native capture inactive, so mouse moves use cursor warping.
+                m_nativeCursorCapture->Begin();
+            }
+
             m_cursorMode = mode;
             switch (m_cursorMode)
             {
@@ -268,13 +282,15 @@ namespace AzToolsFramework
                 m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
                 break;
             case CursorInputMode::CursorModeWrapped:
-                qApp->restoreOverrideCursor();
-                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
-                break;
             case CursorInputMode::CursorModeNone:
                 qApp->restoreOverrideCursor();
                 m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
                 break;
+            }
+
+            if (m_cursorMode != CursorInputMode::CursorModeCaptured && m_nativeCursorCapture)
+            {
+                m_nativeCursorCapture->End();
             }
         }
     }
@@ -325,6 +341,24 @@ namespace AzToolsFramework
                 });
         }
 
+        // Qt may deliver hover moves over a native viewport to another QWidget.
+        // Forward them when hit testing still resolves to the source widget.
+        if (eventType == QEvent::Type::MouseMove && object != m_sourceWidget)
+        {
+            if (qobject_cast<QWidget*>(object) && m_sourceWidget->isVisible())
+            {
+                const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+                const QPoint globalCursorPosition = mouseEvent->globalPosition().toPoint();
+                if (mouseEvent->buttons() == Qt::NoButton &&
+                    m_sourceWidget->rect().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)) &&
+                    QApplication::widgetAt(globalCursorPosition) == m_sourceWidget)
+                {
+                    HandleMouseMoveEvent(globalCursorPosition);
+                }
+            }
+
+            return false;
+        }
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
@@ -512,7 +546,9 @@ namespace AzToolsFramework
 
     void QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& globalCursorPosition)
     {
-        const QPoint cursorDelta = globalCursorPosition - m_previousGlobalCursorPosition;
+        // Native capture reports movement separately while keeping the cursor stationary.
+        const bool nativeCaptureActive = m_nativeCursorCapture && m_nativeCursorCapture->IsActive();
+        const QPoint cursorDelta = nativeCaptureActive ? QPoint(0, 0) : globalCursorPosition - m_previousGlobalCursorPosition;
         QScreen* screen = m_sourceWidget->screen();
         const QRect widgetRect(m_sourceWidget->mapToGlobal(QPoint(0, 0)), m_sourceWidget->size());
 
@@ -523,7 +559,10 @@ namespace AzToolsFramework
         switch (m_cursorMode)
         {
         case CursorInputMode::CursorModeCaptured:
-            AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
+            if (!nativeCaptureActive)
+            {
+                AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
+            }
             break;
         case CursorInputMode::CursorModeWrappedX:
         case CursorInputMode::CursorModeWrappedY:
@@ -544,7 +583,7 @@ namespace AzToolsFramework
                     break;
                 default:
                     // this should never happen
-                    AZ_Assert(false, "Invalid Curosr Mode: %i.", m_cursorMode);
+                    AZ_Assert(false, "Invalid Cursor Mode: %i.", m_cursorMode);
                     break;
                 }
                 QCursor::setPos(screen, screenPos);
@@ -556,10 +595,21 @@ namespace AzToolsFramework
             m_previousGlobalCursorPosition = globalCursorPosition;
             break;
         default:
-            AZ_Assert(false, "Invalid Curosr Mode: %i.", m_cursorMode);
+            AZ_Assert(false, "Invalid Cursor Mode: %i.", m_cursorMode);
             break;
         }
         ProcessPendingMouseEvents(cursorDelta);
+    }
+
+    void QtEventToAzInputMapper::HandleRelativeMotionDelta(const QPoint& delta)
+    {
+        if (!m_enabled || m_cursorMode != CursorInputMode::CursorModeCaptured)
+        {
+            return;
+        }
+
+        m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta = WidgetPositionToNormalizedPosition(delta);
+        ProcessPendingMouseEvents(delta);
     }
 
     void QtEventToAzInputMapper::HandleKeyEvent(
@@ -607,13 +657,16 @@ namespace AzToolsFramework
     {
         auto cursorZChannel =
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
-        const QPoint angleDelta = wheelEvent->angleDelta();
-        // Check both angles, as the alt modifier can change the wheel direction.
-        int wheelAngle = angleDelta.x();
-        if (wheelAngle == 0)
+        // Ignore inertial trackpad events after the gesture ends.
+        if (wheelEvent->phase() == Qt::ScrollMomentum)
         {
-            wheelAngle = angleDelta.y();
+            wheelEvent->accept();
+            return;
         }
+
+        const QPoint angleDelta = wheelEvent->angleDelta();
+        // Alt may swap axes and trackpads may populate both, so use the larger delta.
+        const int wheelAngle = AZStd::abs(angleDelta.y()) >= AZStd::abs(angleDelta.x()) ? angleDelta.y() : angleDelta.x();
 
         // reset the consumed event cache so the chain of calls from ProcessRawInputEvent below can properly update it, if necessary
         m_lastConsumedInputChannelIdCrc32 = AZ::Crc32();
