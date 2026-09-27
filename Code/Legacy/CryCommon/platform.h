@@ -233,8 +233,15 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 // Platform dependent functions that emulate Win32 API.
 // Mostly used only for debugging!
 //////////////////////////////////////////////////////////////////////////
-void   CrySleep(unsigned int dwMilliseconds);
-void   CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
+void CrySleep(unsigned int dwMilliseconds);
+
+enum class EShowMessageType
+{
+    Info,
+    Warning,
+    Error
+};
+void CryMessageBox(const char* lpText, const char* lpCaption, EShowMessageType eType);
 
 //---------------------------------------------------------------------------
 // Useful function to clean the structure.

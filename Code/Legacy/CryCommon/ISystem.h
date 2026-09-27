@@ -408,7 +408,7 @@ struct ISystemUserCallback
 
     // Description:
     //   Show message by provider.
-    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) { CryMessageBox(text, caption, uType); }
+    virtual void ShowMessage(const char* text, const char* caption, EShowMessageType eType) { CryMessageBox(text, caption, eType); }
 
     // </interfuscator:shuffle>
 
@@ -783,7 +783,7 @@ struct ISystem
     // Description:
     //   Report message by provider or by using CryMessageBox.
     //   Doesn't terminate the execution.
-    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
+    virtual void ShowMessage(const char* text, const char* caption, EShowMessageType uType) = 0;
 
     // Summary:
     //   Compare specified verbosity level to the one currently set.
