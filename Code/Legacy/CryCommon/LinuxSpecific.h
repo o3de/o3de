@@ -149,38 +149,6 @@ typedef union _LARGE_INTEGER
 #define _O_SEQUENTIAL   0x0020  /* file access is primarily sequential */
 #define _O_RANDOM       0x0010  /* file access is primarily random */
 
-enum
-{
-    IDOK        = 1,
-    IDCANCEL    = 2,
-    IDABORT     = 3,
-    IDRETRY     = 4,
-    IDIGNORE    = 5,
-    IDYES       = 6,
-    IDNO        = 7,
-    IDTRYAGAIN  = 10,
-    IDCONTINUE  = 11
-};
-
-#define MB_OK                0x00000000L
-#define MB_OKCANCEL          0x00000001L
-#define MB_ABORTRETRYIGNORE  0x00000002L
-#define MB_YESNOCANCEL       0x00000003L
-#define MB_YESNO             0x00000004L
-#define MB_RETRYCANCEL       0x00000005L
-#define MB_CANCELTRYCONTINUE 0x00000006L
-
-#define MB_ICONQUESTION     0x00000020L
-#define MB_ICONEXCLAMATION  0x00000030L
-    
-#define MB_ICONERROR        0x00000010L
-#define MB_ICONWARNING      0x00000030L
-#define MB_ICONINFORMATION  0x00000040L
-
-#define MB_SETFOREGROUND    0x00010000L
-
-#define MB_APPLMODAL    0x00000000L
-
 #define MK_LBUTTON  0x0001
 #define MK_RBUTTON  0x0002
 #define MK_SHIFT    0x0004
