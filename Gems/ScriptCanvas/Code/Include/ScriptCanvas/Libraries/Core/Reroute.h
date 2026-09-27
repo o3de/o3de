@@ -47,3 +47,9 @@ namespace ScriptCanvas::Nodes::Core
         Mode m_mode = Mode::Data;
     };
 } // namespace ScriptCanvas::Nodes::Core
+
+namespace AZ
+{
+    // SerializeContext::Enum asserts on an enum without a type id.
+    AZ_TYPE_INFO_SPECIALIZE(ScriptCanvas::Nodes::Core::Reroute::Mode, "{76E3A875-8725-4A30-BB82-69175A884237}");
+}

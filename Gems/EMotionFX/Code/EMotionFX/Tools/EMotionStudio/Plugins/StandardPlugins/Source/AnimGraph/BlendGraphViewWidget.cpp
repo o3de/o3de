@@ -549,11 +549,9 @@ namespace EMStudio
         SetOptionEnabled(EDIT_COPY, actionFilter.m_copyAndPaste && anySelection);
         SetOptionEnabled(EDIT_PASTE, actionFilter.m_copyAndPaste && isEditable && m_parentPlugin->GetActionManager().GetIsReadyForPaste());
         SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
-        // The action filter this needs depends on the graph type, so the graph widget decides it.
-        SetOptionEnabled(
-            EDIT_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanInsertRerouteOnSelectedConnections());
-        SetOptionEnabled(
-            EDIT_REMOVE_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanRemoveRerouteFromSelection());
+        // Shortcut-only actions re-check the selection on trigger; probing it here dereferences objects that can already be freed.
+        SetOptionEnabled(EDIT_REROUTE, isEditable && anySelection);
+        SetOptionEnabled(EDIT_REMOVE_REROUTE, isEditable && anySelection);
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)
