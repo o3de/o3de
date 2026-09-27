@@ -190,21 +190,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    } u;
-    long long QuadPart;
-} LARGE_INTEGER;
-
 #define _A_RDONLY       (0x01)    /* Read only file */
 #define _A_HIDDEN (0x02)    /* Hidden file */
 #define _A_SUBDIR       (0x10)    /* Subdirectory */
@@ -246,19 +231,6 @@ enum
 #endif
 
 #define ERROR_SUCCESS   0L
-
-enum
-{
-    IDOK        = 1,
-    IDCANCEL    = 2,
-    IDABORT     = 3,
-    IDRETRY     = 4,
-    IDIGNORE    = 5,
-    IDYES       = 6,
-    IDNO        = 7,
-    IDTRYAGAIN  = 10,
-    IDCONTINUE  = 11
-};
 
 #define MB_OK                0x00000000L
 #define MB_OKCANCEL          0x00000001L
@@ -434,16 +406,6 @@ typedef HANDLE HBITMAP;
 typedef HANDLE HMENU;
 
 #endif //__cplusplus
-
-extern bool QueryPerformanceCounter(LARGE_INTEGER*);
-extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
-
-inline int64 CryGetTicks()
-{
-    LARGE_INTEGER counter;
-    QueryPerformanceCounter(&counter);
-    return counter.QuadPart;
-}
 
 #ifdef _RELEASE
 #define __debugbreak()

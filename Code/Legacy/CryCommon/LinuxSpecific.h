@@ -98,8 +98,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-//#define __TIMESTAMP__ __DATE__" "__TIME__
-
 // function renaming
 #define _finite __finite
 #define _snprintf snprintf
@@ -110,57 +108,6 @@ typedef uint64 __uint64;
 #define _strnicmp strncasecmp
 #define wcsicmp wcscasecmp
 #define wcsnicmp wcsncasecmp
-
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        AZ::u32 LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        AZ::u32 LowPart;
-        LONG HighPart;
-    } u;
-    long long QuadPart;
-} LARGE_INTEGER;
-
-// stdlib.h stuff
-#define _MAX_DRIVE  3   // max. length of drive component
-#define _MAX_DIR    256 // max. length of path component
-#define _MAX_FNAME  256 // max. length of file name component
-#define _MAX_EXT    256 // max. length of extension component
-
-// fcntl.h
-#define _O_RDONLY       0x0000  /* open for reading only */
-#define _O_WRONLY       0x0001  /* open for writing only */
-#define _O_RDWR         0x0002  /* open for reading and writing */
-#define _O_APPEND       0x0008  /* writes done at eof */
-#define _O_CREAT        0x0100  /* create and open file */
-#define _O_TRUNC        0x0200  /* open and truncate */
-#define _O_EXCL         0x0400  /* open only if file doesn't already exist */
-#define _O_TEXT         0x4000  /* file mode is text (translated) */
-#define _O_BINARY       0x8000  /* file mode is binary (untranslated) */
-#define _O_RAW  _O_BINARY
-#define _O_NOINHERIT    0x0080  /* child process doesn't inherit file */
-#define _O_TEMPORARY    0x0040  /* temporary file bit */
-#define _O_SHORT_LIVED  0x1000  /* temporary storage file, try not to flush */
-#define _O_SEQUENTIAL   0x0020  /* file access is primarily sequential */
-#define _O_RANDOM       0x0010  /* file access is primarily random */
-
-enum
-{
-    IDOK        = 1,
-    IDCANCEL    = 2,
-    IDABORT     = 3,
-    IDRETRY     = 4,
-    IDIGNORE    = 5,
-    IDYES       = 6,
-    IDNO        = 7,
-    IDTRYAGAIN  = 10,
-    IDCONTINUE  = 11
-};
 
 #define MB_OK                0x00000000L
 #define MB_OKCANCEL          0x00000001L
@@ -225,22 +172,6 @@ struct _OVERLAPPED;
 
 
 #ifdef __cplusplus
-extern bool QueryPerformanceCounter(LARGE_INTEGER*);
-extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
-
-#if 0
-template<typename S, typename T>
-inline const S& min(const S& rS, const T& rT)
-{
-    return (rS <= rT) ? rS : rT;
-}
-
-template<typename S, typename T>
-inline const S& max(const S& rS, const T& rT)
-{
-    return (rS >= rT) ? rS : rT;
-}
-#endif
 
 template<typename S, typename T>
 inline S __min(const S& rS, const T& rT)
@@ -253,7 +184,6 @@ inline S __max(const S& rS, const T& rT)
 {
     return std::max(rS, rT);
 }
-
 
 typedef enum
 {
@@ -321,13 +251,6 @@ typedef HANDLE HKEY;
 typedef HANDLE HBITMAP;
 
 typedef HANDLE HMENU;
-
-inline int64 CryGetTicks()
-{
-    LARGE_INTEGER counter;
-    QueryPerformanceCounter(&counter);
-    return counter.QuadPart;
-}
 
 #endif //__cplusplus
 
