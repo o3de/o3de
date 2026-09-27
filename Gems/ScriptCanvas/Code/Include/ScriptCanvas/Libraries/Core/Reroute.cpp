@@ -102,7 +102,11 @@ namespace ScriptCanvas::Nodes::Core
 
     void Reroute::OnInit()
     {
-        ConfigureSlotsForMode();
+        // Slots are serialized, so a loaded reroute already has them.
+        if (GetSlots().empty())
+        {
+            ConfigureSlotsForMode();
+        }
     }
 
     void Reroute::ConfigureSlotsForMode()
