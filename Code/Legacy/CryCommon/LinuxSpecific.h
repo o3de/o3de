@@ -98,19 +98,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-//#define __TIMESTAMP__ __DATE__" "__TIME__
-
-// function renaming
-#define _finite __finite
-#define _snprintf snprintf
-#define _isnan isnan
-#define stricmp strcasecmp
-#define _stricmp strcasecmp
-#define strnicmp strncasecmp
-#define _strnicmp strncasecmp
-#define wcsicmp wcscasecmp
-#define wcsnicmp wcsncasecmp
-
 typedef union _LARGE_INTEGER
 {
     struct
@@ -125,29 +112,6 @@ typedef union _LARGE_INTEGER
     } u;
     long long QuadPart;
 } LARGE_INTEGER;
-
-// stdlib.h stuff
-#define _MAX_DRIVE  3   // max. length of drive component
-#define _MAX_DIR    256 // max. length of path component
-#define _MAX_FNAME  256 // max. length of file name component
-#define _MAX_EXT    256 // max. length of extension component
-
-// fcntl.h
-#define _O_RDONLY       0x0000  /* open for reading only */
-#define _O_WRONLY       0x0001  /* open for writing only */
-#define _O_RDWR         0x0002  /* open for reading and writing */
-#define _O_APPEND       0x0008  /* writes done at eof */
-#define _O_CREAT        0x0100  /* create and open file */
-#define _O_TRUNC        0x0200  /* open and truncate */
-#define _O_EXCL         0x0400  /* open only if file doesn't already exist */
-#define _O_TEXT         0x4000  /* file mode is text (translated) */
-#define _O_BINARY       0x8000  /* file mode is binary (untranslated) */
-#define _O_RAW  _O_BINARY
-#define _O_NOINHERIT    0x0080  /* child process doesn't inherit file */
-#define _O_TEMPORARY    0x0040  /* temporary file bit */
-#define _O_SHORT_LIVED  0x1000  /* temporary storage file, try not to flush */
-#define _O_SEQUENTIAL   0x0020  /* file access is primarily sequential */
-#define _O_RANDOM       0x0010  /* file access is primarily random */
 
 enum
 {
@@ -181,12 +145,6 @@ enum
 
 #define MB_APPLMODAL    0x00000000L
 
-#define MK_LBUTTON  0x0001
-#define MK_RBUTTON  0x0002
-#define MK_SHIFT    0x0004
-#define MK_CONTROL  0x0008
-#define MK_MBUTTON  0x0010
-
 #define SM_MOUSEPRESENT 0x00000000L
 
 #define SM_CMOUSEBUTTONS    43
@@ -205,16 +163,6 @@ enum
 #define VK_OEM_6        0xDD  //  ']}' for US
 
 #define WAIT_TIMEOUT 258L    // dderror
-
-#define WM_MOVE 0x0003
-#define WM_USER 0x0400
-
-#define WHEEL_DELTA 120
-
-#define WS_CHILD    0x40000000L
-#define WS_VISIBLE  0x10000000L
-
-#define CB_ERR  (-1)
 
 // io.h stuff
 typedef unsigned int _fsize_t;

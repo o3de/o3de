@@ -139,7 +139,7 @@ const ICmdLineArg* CCmdLine::FindArg(const ECmdLineArgType ArgType, const char* 
         {
             if (it->GetType() == ArgType)
             {
-                if (!_stricmp(it->GetName(), name))
+                if (!azstricmp(it->GetName(), name))
                 {
                     return &(*it);
                 }
