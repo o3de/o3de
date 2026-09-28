@@ -114,7 +114,7 @@ private:
 
     struct SLanguage;
 
-    //#define LOG_DECOMP_TIMES              //If defined, will log decompression times to a file
+    // #define LOG_DECOMP_TIMES              //If defined, will log decompression times to a file
 
     struct SLocalizedStringEntry
     {

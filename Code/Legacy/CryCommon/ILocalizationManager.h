@@ -9,7 +9,6 @@
 #pragma once
 
 #include "LocalizationManagerBus.h"
-//#include <platform.h> // Needed for LARGE_INTEGER (for consoles).
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Forward declarations

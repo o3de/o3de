@@ -62,15 +62,6 @@ typedef void*               HWND;
 typedef UINT_PTR            WPARAM;
 typedef LONG_PTR            LPARAM;
 typedef LONG_PTR            LRESULT;
-#define PLARGE_INTEGER LARGE_INTEGER *
-typedef const char* LPCSTR, * PCSTR;
-typedef long long           LONGLONG;
-typedef ULONG_PTR           SIZE_T;
-typedef uint8               byte;
-
-#define _A_RDONLY (0x01)
-#define _A_SUBDIR (0x10)
-#define _A_HIDDEN (0x02)
 
 #include "LinuxSpecific.h"
 
