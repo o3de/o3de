@@ -237,17 +237,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
-#if defined(AZ_PLATFORM_WINDOWS)
-int64 CryGetTicks()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceCounter(&li);
-    return li.QuadPart;
-}
-
-#endif
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Threads implementation. For static linking it must be declared inline otherwise creating multiple symbols
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
