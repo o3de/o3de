@@ -718,6 +718,7 @@ namespace AzToolsFramework
                     }
                 }
 
+                
                 // A component whose required services are not met is added *pending* rather than
                 // rejected: the entity looks right in the outliner, the component sits greyed out
                 // in the inspector, and creation reports success. Nothing else reports it, which
