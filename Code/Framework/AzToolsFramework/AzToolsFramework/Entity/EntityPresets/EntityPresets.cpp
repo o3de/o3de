@@ -730,7 +730,7 @@ namespace AzToolsFramework
                 EditorPendingCompositionRequestBus::Event(
                     entityId, &EditorPendingCompositionRequests::GetPendingComponents, pending);
 
-                for (const AZ::Component* pendingComponent : pending)
+                for ([[maybe_unused]] const AZ::Component* pendingComponent : pending)
                 {
                     AZ_Warning(
                         "EntityPresets", false,
