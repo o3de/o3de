@@ -98,8 +98,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-//#define __TIMESTAMP__ __DATE__" "__TIME__
-
 // function renaming
 #define _finite __finite
 #define _snprintf snprintf
@@ -193,22 +191,6 @@ struct _OVERLAPPED;
 
 
 #ifdef __cplusplus
-extern bool QueryPerformanceCounter(LARGE_INTEGER*);
-extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
-
-#if 0
-template<typename S, typename T>
-inline const S& min(const S& rS, const T& rT)
-{
-    return (rS <= rT) ? rS : rT;
-}
-
-template<typename S, typename T>
-inline const S& max(const S& rS, const T& rT)
-{
-    return (rS >= rT) ? rS : rT;
-}
-#endif
 
 template<typename S, typename T>
 inline S __min(const S& rS, const T& rT)
@@ -221,7 +203,6 @@ inline S __max(const S& rS, const T& rT)
 {
     return std::max(rS, rT);
 }
-
 
 typedef enum
 {
@@ -289,13 +270,6 @@ typedef HANDLE HKEY;
 typedef HANDLE HBITMAP;
 
 typedef HANDLE HMENU;
-
-inline int64 CryGetTicks()
-{
-    LARGE_INTEGER counter;
-    QueryPerformanceCounter(&counter);
-    return counter.QuadPart;
-}
 
 #endif //__cplusplus
 

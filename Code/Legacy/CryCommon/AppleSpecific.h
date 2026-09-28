@@ -190,21 +190,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    } u;
-    long long QuadPart;
-} LARGE_INTEGER;
-
 #define _A_RDONLY       (0x01)    /* Read only file */
 #define _A_HIDDEN (0x02)    /* Hidden file */
 #define _A_SUBDIR       (0x10)    /* Subdirectory */
@@ -402,16 +387,6 @@ typedef HANDLE HBITMAP;
 typedef HANDLE HMENU;
 
 #endif //__cplusplus
-
-extern bool QueryPerformanceCounter(LARGE_INTEGER*);
-extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
-
-inline int64 CryGetTicks()
-{
-    LARGE_INTEGER counter;
-    QueryPerformanceCounter(&counter);
-    return counter.QuadPart;
-}
 
 #ifdef _RELEASE
 #define __debugbreak()

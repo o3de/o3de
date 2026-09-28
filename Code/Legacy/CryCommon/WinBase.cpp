@@ -212,44 +212,7 @@ size_t wcsnlen(const wchar_t* str, size_t maxLen)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-bool QueryPerformanceCounter(LARGE_INTEGER* counter)
-{
-#if defined(LINUX)
-    // replaced gettimeofday
-    // http://fixunix.com/kernel/378888-gettimeofday-resolution-linux.html
-    timespec tv;
-    clock_gettime(CLOCK_MONOTONIC, &tv);
-    counter->QuadPart = (uint64)tv.tv_sec * 1000000 + tv.tv_nsec / 1000;
-    return true;
-#elif defined(APPLE)
-    counter->QuadPart = mach_absolute_time();
-    return true;
-#else
-    return false;
-#endif
-}
 
-bool QueryPerformanceFrequency(LARGE_INTEGER* frequency)
-{
-#if defined(LINUX)
-    // On Linux we'll use gettimeofday().  The API resolution is microseconds,
-    // so we'll report that to the caller.
-    frequency->u.LowPart  = 1000000;
-    frequency->u.HighPart = 0;
-    return true;
-#elif defined(APPLE)
-    static mach_timebase_info_data_t s_kTimeBaseInfoData;
-    if (s_kTimeBaseInfoData.denom == 0)
-    {
-        mach_timebase_info(&s_kTimeBaseInfoData);
-    }
-    // mach_timebase_info_data_t expresses the tick period in nanoseconds
-    frequency->QuadPart = 1e+9 * (uint64_t)s_kTimeBaseInfoData.denom / (uint64_t)s_kTimeBaseInfoData.numer;
-    return true;
-#else
-    return false;
-#endif
-}
 #endif
 
 //////////////////////////////////////////////////////////////////////////

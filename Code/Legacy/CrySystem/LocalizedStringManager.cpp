@@ -24,6 +24,9 @@
 #include <locale.h>
 #include <time.h>
 
+#if defined(LOG_DECOMP_TIMES)
+#include <AzCore/std/time.h>
+#endif
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
@@ -791,8 +794,6 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
 
     if (m_pLanguage)
     {
-        //LARGE_INTEGER liStart;
-        //QueryPerformanceCounter(&liStart);
         AutoLock lock(m_cs);    //Make sure to lock, as this is a modifying operation
 
         bool bMapEntryErased = false;
@@ -1882,12 +1883,11 @@ void CLocalizedStringsManager::LocalizeAndSubstituteInternal(AZStd::string& locS
 static double g_fSecondsPerTick = 0.0;
 static FILE* pDecompLog = nullptr;
 // engine independent game timer since gEnv/pSystem isn't available yet
-static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nAllocTicks)
+static void LogDecompTimer(AZStd::sys_time_t nTotalTicks, AZStd::sys_time_t nDecompTicks, AZStd::sys_time_t nAllocTicks)
 {
     if (g_fSecondsPerTick == 0.0)
     {
-        __int64 nPerfFreq;
-        QueryPerformanceFrequency((LARGE_INTEGER*)&nPerfFreq);
+        AZStd::sys_time_t nPerfFreq = AZStd::GetTimeTicksPerSecond();
         g_fSecondsPerTick = 1.0 / (double)nPerfFreq;
     }
 
@@ -1898,7 +1898,7 @@ static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nA
         time(&rawTime);
         struct tm* pTimeInfo = localtime(&rawTime);
 
-        CreateDirectory("TestResults\\", 0);
+        AZ::IO::SystemFile::CreateDir("TestResults\\");
         strftime(szFilenameBuffer, sizeof(szFilenameBuffer), "TestResults\\Decomp_%Y_%m_%d-%H_%M_%S.csv", pTimeInfo);
         pDecompLog = fopen(szFilenameBuffer, "wb");
         fprintf(pDecompLog, "Total,Decomp,Alloc\n");
@@ -1915,9 +1915,10 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 {
     if ((flags & IS_COMPRESSED) != 0)
     {
+
 #if defined(LOG_DECOMP_TIMES)
-        __int64 nTotalTicks, nDecompTicks, nAllocTicks;
-        nTotalTicks = CryGetTicks();
+        AZStd::sys_time_t nTotalTicks, nDecompTicks, nAllocTicks;
+        nTotalTicks = AZStd::GetTimeNowTicks();
 #endif  //LOG_DECOMP_TIMES
 
         AZStd::string outputString;
@@ -1927,7 +1928,7 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
             HuffmanCoder* pEncoder = pLanguage->m_vEncoders[huffmanTreeIndex];
 
 #if defined(LOG_DECOMP_TIMES)
-            nDecompTicks = CryGetTicks();
+            nDecompTicks = AZStd::GetTimeNowTicks();
 #endif  //LOG_DECOMP_TIMES
 
             //We don't actually know how much memory was allocated for this string, but the maximum compression buffer size is known
@@ -1935,7 +1936,7 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
             assert(decompBufSize < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer overflow");
 
 #if defined(LOG_DECOMP_TIMES)
-            nDecompTicks = CryGetTicks() - nDecompTicks;
+            nDecompTicks = AZStd::GetTimeNowTicks() - nDecompTicks;
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
@@ -1944,14 +1945,14 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif
 
 #if defined(LOG_DECOMP_TIMES)
-            nAllocTicks = CryGetTicks();
+            nAllocTicks = AZStd::GetTimeNowTicks();
 #endif  //LOG_DECOMP_TIMES
 
             outputString.assign((const char*)decompressionBuffer, (const char*)decompressionBuffer + decompBufSize);
 
 #if defined(LOG_DECOMP_TIMES)
-            nAllocTicks = CryGetTicks() - nAllocTicks;
-            nTotalTicks = CryGetTicks() - nTotalTicks;
+            nAllocTicks = AZStd::GetTimeNowTicks() - nAllocTicks;
+            nTotalTicks = AZStd::GetTimeNowTicks() - nTotalTicks;
             LogDecompTimer(nTotalTicks, nDecompTicks, nAllocTicks);
 #endif  //LOG_DECOMP_TIMES
         }
