@@ -98,33 +98,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        AZ::u32 LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        AZ::u32 LowPart;
-        LONG HighPart;
-    } u;
-    long long QuadPart;
-} LARGE_INTEGER;
-
-enum
-{
-    IDOK        = 1,
-    IDCANCEL    = 2,
-    IDABORT     = 3,
-    IDRETRY     = 4,
-    IDIGNORE    = 5,
-    IDYES       = 6,
-    IDNO        = 7,
-    IDTRYAGAIN  = 10,
-    IDCONTINUE  = 11
-};
 
 #define MB_OK                0x00000000L
 #define MB_OKCANCEL          0x00000001L
