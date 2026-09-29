@@ -40,6 +40,11 @@ Surface EvaluateSurface_MaterialGraphName(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangents[0];
     const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
+#if MATERIAL_USES_VERTEX_LOCALPOSITION
+    const float3 O3DE_MC_LOCAL_POSITION = (float3)IN.localPosition;
+#else
+    const float3 O3DE_MC_LOCAL_POSITION = float3(0.0, 0.0, 0.0);
+#endif
 #if ENABLE_VERTEX_COLOR
     const float4 O3DE_MC_COLOR = IN.color0;
 #else

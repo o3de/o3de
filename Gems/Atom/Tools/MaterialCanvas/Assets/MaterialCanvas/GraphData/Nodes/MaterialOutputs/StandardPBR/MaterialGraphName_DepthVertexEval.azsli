@@ -39,6 +39,10 @@ float4 GenerateWorldPosition(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangentWS;
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    // Object-space position times the entity's world scale (object-to-world column lengths): rotates with the entity, no stretching.
+    const float3x3 o2wScale = transpose((float3x3)objectToWorld);
+    const float3 objectScale = float3(length(o2wScale[0]), length(o2wScale[1]), length(o2wScale[2]));
+    const float3 O3DE_MC_LOCAL_POSITION = position * objectScale;
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
 
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
