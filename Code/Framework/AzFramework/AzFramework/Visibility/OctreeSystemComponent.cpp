@@ -7,15 +7,18 @@
  */
 
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
+
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {
+    constexpr float DefaultOctreeRootHalfExtent = 16384.0f;
+
     AZ_CVAR(bool,     bg_octreeUseQuadtree,        false, nullptr, AZ::ConsoleFunctorFlags::ReadOnly, "If set to true, the visibility octrees will degenerate to a quadtree split along the X/Y plane");
-    AZ_CVAR(float,    bg_octreeMaxWorldExtents, 16384.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Initial world size (half-extent) of the visibility octree root. Optionally extended via bg_octreeGrowToContain / bg_octreeGrowMaxExtents");
-    AZ_CVAR(bool,     bg_octreeGrowToContain,      false, nullptr, AZ::ConsoleFunctorFlags::Null, "If true, the octree root automatically grows (doubles) to contain entries placed beyond bg_octreeMaxWorldExtents. Fixes objects disappearing from the viewport when placed far from the origin. Default false matches the legacy behavior");
-    AZ_CVAR(float,    bg_octreeGrowMaxExtents,1048576.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Upper limit (half-extent) the octree root may grow to when bg_octreeGrowToContain is enabled");
+    AZ_CVAR(float, bg_octreeMaxWorldExtents, DefaultOctreeRootHalfExtent, nullptr, AZ::ConsoleFunctorFlags::Null, "Initial root half extent, captured per scene. The root grows automatically to contain supported finite bounds");
     AZ_CVAR(uint32_t, bg_octreeNodeMaxEntries,        64, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of entries to allow in any node before forcing a split");
     AZ_CVAR(uint32_t, bg_octreeNodeMinEntries,        32, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of entries to allow in a node resulting from a merge operation");
 
@@ -26,6 +29,145 @@ namespace AzFramework
         return (bg_octreeUseQuadtree) ? QuadtreeNodeChildCount : OctreeNodeChildCount;
     }
 
+    static AZ::Aabb GetChildBounds(
+        const AZ::Aabb& parentBounds,
+        uint32_t child)
+    {
+        const AZ::Vector3 midpoint = parentBounds.GetMin() + parentBounds.GetExtents() * 0.5f;
+        AZ::Vector3 childMin = parentBounds.GetMin();
+        AZ::Vector3 childMax = parentBounds.GetMax();
+
+        if (child & 0x01)
+        {
+            childMin.SetX(midpoint.GetX());
+        }
+        else
+        {
+            childMax.SetX(midpoint.GetX());
+        }
+        if (child & 0x02)
+        {
+            childMin.SetY(midpoint.GetY());
+        }
+        else
+        {
+            childMax.SetY(midpoint.GetY());
+        }
+        if (!bg_octreeUseQuadtree)
+        {
+            if (child & 0x04)
+            {
+                childMin.SetZ(midpoint.GetZ());
+            }
+            else
+            {
+                childMax.SetZ(midpoint.GetZ());
+            }
+        }
+
+        return AZ::Aabb::CreateFromMinMax(childMin, childMax);
+    }
+
+    static bool CalculateNextRootBounds(
+        const AZ::Aabb& currentBounds,
+        const AZ::Aabb& targetBounds,
+        AZ::Aabb& nextBounds,
+        uint32_t& oldRootChild)
+    {
+        const bool useQuadtree = bg_octreeUseQuadtree;
+        const AZ::Vector3 currentExtents = currentBounds.GetExtents();
+        AZ::Vector3 newExtents = currentExtents * 2.0f;
+        if (useQuadtree)
+        {
+            newExtents.SetZ(currentExtents.GetZ());
+        }
+
+        if (!currentExtents.IsFinite()
+            || !newExtents.IsFinite()
+            || currentExtents.GetMinElement() <= 0.0f)
+        {
+            return false;
+        }
+
+        const AZ::Vector3 negativeOverflow = currentBounds.GetMin() - targetBounds.GetMin();
+        const AZ::Vector3 positiveOverflow = targetBounds.GetMax() - currentBounds.GetMax();
+        AZ::Vector3 growthDirection(-1.0f);
+        if (positiveOverflow.GetX() >= negativeOverflow.GetX())
+        {
+            growthDirection.SetX(1.0f);
+        }
+        if (positiveOverflow.GetY() >= negativeOverflow.GetY())
+        {
+            growthDirection.SetY(1.0f);
+        }
+        if (useQuadtree)
+        {
+            growthDirection.SetZ(0.0f);
+        }
+        else if (positiveOverflow.GetZ() >= negativeOverflow.GetZ())
+        {
+            growthDirection.SetZ(1.0f);
+        }
+
+        AZ::Vector3 newMin = currentBounds.GetMin();
+        AZ::Vector3 newMax = currentBounds.GetMax();
+        if (growthDirection.GetX() < 0.0f)
+        {
+            newMin.SetX(newMax.GetX() - newExtents.GetX());
+        }
+        else
+        {
+            newMax.SetX(newMin.GetX() + newExtents.GetX());
+        }
+        if (growthDirection.GetY() < 0.0f)
+        {
+            newMin.SetY(newMax.GetY() - newExtents.GetY());
+        }
+        else
+        {
+            newMax.SetY(newMin.GetY() + newExtents.GetY());
+        }
+        if (!useQuadtree)
+        {
+            if (growthDirection.GetZ() < 0.0f)
+            {
+                newMin.SetZ(newMax.GetZ() - newExtents.GetZ());
+            }
+            else
+            {
+                newMax.SetZ(newMin.GetZ() + newExtents.GetZ());
+            }
+        }
+
+        nextBounds = AZ::Aabb::CreateFromMinMax(newMin, newMax);
+        // Keep centers finite for every descendant AABB, including those near either outer edge.
+        if (!nextBounds.IsValid()
+            || !nextBounds.IsFinite()
+            || !nextBounds.GetExtents().IsFinite()
+            || !(newMin * 2.0f).IsFinite()
+            || !(newMax * 2.0f).IsFinite()
+            || !AZ::ShapeIntersection::Contains(nextBounds, currentBounds))
+        {
+            return false;
+        }
+
+        oldRootChild = 0;
+        if (growthDirection.GetX() < 0.0f)
+        {
+            oldRootChild |= 0x01;
+        }
+        if (growthDirection.GetY() < 0.0f)
+        {
+            oldRootChild |= 0x02;
+        }
+        if (!useQuadtree && growthDirection.GetZ() < 0.0f)
+        {
+            oldRootChild |= 0x04;
+        }
+
+        return true;
+    }
+
     OctreeNode::OctreeNode(const AZ::Aabb& bounds)
         : m_bounds(bounds)
     {
@@ -33,20 +175,16 @@ namespace AzFramework
     }
 
     OctreeNode::OctreeNode(OctreeNode&& rhs)
-        : m_bounds(rhs.m_bounds)
-        , m_parent(rhs.m_parent)
-        , m_children(rhs.m_children)
-        , m_entries(AZStd::move(rhs.m_entries))
     {
-        // Correct internal node pointers
-        for (VisibilityEntry* entry : m_entries)
-        {
-            entry->m_internalNode = this;
-        }
+        // Custom assignment repairs pointers that a default move would leave referring to rhs.
+        *this = AZStd::move(rhs);
     }
 
     OctreeNode& OctreeNode::operator=(OctreeNode&& rhs)
     {
+        AZ_Assert(!m_children && m_entries.empty(), "Move-assignment requires an empty destination OctreeNode");
+
+        m_childNodeIndex = rhs.m_childNodeIndex;
         m_bounds = rhs.m_bounds;
         m_parent = rhs.m_parent;
         m_children = rhs.m_children;
@@ -57,6 +195,20 @@ namespace AzFramework
         {
             entry->m_internalNode = this;
         }
+
+        if (m_children)
+        {
+            const uint32_t childCount = GetChildNodeCount();
+            for (uint32_t child = 0; child < childCount; ++child)
+            {
+                m_children[child].m_parent = this;
+            }
+        }
+
+        rhs.m_childNodeIndex = InvalidChildNodeIndex;
+        rhs.m_parent = nullptr;
+        rhs.m_children = nullptr;
+        rhs.m_entries.clear();
 
         return *this;
     }
@@ -70,10 +222,31 @@ namespace AzFramework
         {
             const AZ::Aabb boundingVolume = entry->m_boundingVolume;
             const uint32_t childCount = GetChildNodeCount();
+            const bool useQuadtree = bg_octreeUseQuadtree;
             for (uint32_t child = 0; child < childCount; ++child)
             {
-                if (AZ::ShapeIntersection::Contains(m_children[child].m_bounds, boundingVolume))
+                AZ::Aabb& childBounds = m_children[child].m_bounds;
+                bool contains = AZ::ShapeIntersection::Contains(childBounds, boundingVolume);
+                if (useQuadtree)
                 {
+                    contains = childBounds.GetMin().GetX() <= boundingVolume.GetMin().GetX()
+                        && childBounds.GetMax().GetX() >= boundingVolume.GetMax().GetX()
+                        && childBounds.GetMin().GetY() <= boundingVolume.GetMin().GetY()
+                        && childBounds.GetMax().GetY() >= boundingVolume.GetMax().GetY();
+                }
+                if (contains)
+                {
+                    if (useQuadtree && (boundingVolume.GetMin().GetZ() < childBounds.GetMin().GetZ()
+                        || boundingVolume.GetMax().GetZ() > childBounds.GetMax().GetZ()))
+                    {
+                        // Widen only the insertion path.
+                        // Its parent already contains the full entry.
+                        AZ::Vector3 childMin = childBounds.GetMin();
+                        AZ::Vector3 childMax = childBounds.GetMax();
+                        childMin.SetZ(AZStd::min(childMin.GetZ(), boundingVolume.GetMin().GetZ()));
+                        childMax.SetZ(AZStd::max(childMax.GetZ(), boundingVolume.GetMax().GetZ()));
+                        childBounds = AZ::Aabb::CreateFromMinMax(childMin, childMax);
+                    }
                     return m_children[child].Insert(octreeScene, entry);
                 }
             }
@@ -81,10 +254,8 @@ namespace AzFramework
 
         // If we reach here, either we don't have children or the entry overlaps multiple child nodes
         // Attempt to add the entry to the current nodes entry set, forcing a split if necessary
-        if ((m_children == nullptr) && (m_entries.size() >= bg_octreeNodeMaxEntries))
+        if ((m_children == nullptr) && (m_entries.size() >= bg_octreeNodeMaxEntries) && Split(octreeScene))
         {
-            // If we're not already split, and our entry list gets too large, split this node
-            Split(octreeScene);
             Insert(octreeScene, entry);
         }
         else
@@ -108,13 +279,17 @@ namespace AzFramework
             return;
         }
 
-        // Remove the entry from our current node, since it is no longer contained
+        // Removing the entry can merge and release this node, but its parent survives that merge.
+        OctreeNode* insertCheck = this;
+        if (m_parent)
+        {
+            insertCheck = m_parent;
+        }
         Remove(octreeScene, entry);
 
         // Traverse up our ancestor nodes to find the first node that fully contains the entry
         // This strategy assumes an entry will typically move a small distance relative to the total world
-        OctreeNode* insertCheck = this;
-        while (insertCheck != nullptr)
+        while (insertCheck)
         {
             if (AZ::ShapeIntersection::Contains(insertCheck->m_bounds, boundingVolume) || !insertCheck->m_parent)
             {
@@ -243,37 +418,6 @@ namespace AzFramework
         return m_children == nullptr;
     }
 
-    void OctreeNode::GrowToContain(const AZ::Aabb& volume)
-    {
-        AZ_Assert(m_parent == nullptr, "GrowToContain is only supported on the root node, child node bounds are derived by splitting their parent's bounds");
-        if (!bg_octreeGrowToContain || !volume.IsValid())
-        {
-            return;
-        }
-
-        // We will double the roots boulds around their center until the volume passed fits. We have safe limits
-        // just in case.
-        constexpr uint32_t MaxGrowthSteps = 64; // Safety limit. Never double more than 64 times because it's enough for any float world size.
-        for (uint32_t growthStep = 0; (growthStep < MaxGrowthSteps) && (!AZ::ShapeIntersection::Contains(m_bounds, volume)); ++growthStep)
-        {
-            const AZ::Vector3 center = m_bounds.GetCenter();
-            const AZ::Vector3 fullExtent = m_bounds.GetMax() - m_bounds.GetMin();
-
-            // Clamp the new half-extents to bg_octreeGrowMaxExtents so the root can't grow unbounded.
-            const AZ::Vector3 maxExtents(bg_octreeGrowMaxExtents);
-            const AZ::Vector3 clampedHalfExtent = fullExtent.GetMin(maxExtents);
-            const AZ::Aabb newBounds = AZ::Aabb::CreateFromMinMax(center - clampedHalfExtent, center + clampedHalfExtent);
-
-            if (newBounds == m_bounds)
-            {
-                // Growth limit reached and the volume still doesn't fit; stop growing.
-                break;
-            }
-
-            m_bounds = newBounds;
-        }
-    }
-
     void OctreeNode::TryMerge(OctreeScene& octreeScene)
     {
         if (IsLeaf())
@@ -326,43 +470,29 @@ namespace AzFramework
         }
     }
 
-    void OctreeNode::Split(OctreeScene& octreeScene)
+    bool OctreeNode::Split(OctreeScene& octreeScene)
     {
         AZ_Assert(m_children == nullptr, "Split invoked on an octreeScene node that has already been split");
+        const AZ::Vector3 midpoint = m_bounds.GetMin() + m_bounds.GetExtents() * 0.5f;
+        if (midpoint.GetX() <= m_bounds.GetMin().GetX()
+            || midpoint.GetX() >= m_bounds.GetMax().GetX()
+            || midpoint.GetY() <= m_bounds.GetMin().GetY()
+            || midpoint.GetY() >= m_bounds.GetMax().GetY()
+            || (!bg_octreeUseQuadtree && (midpoint.GetZ() <= m_bounds.GetMin().GetZ() || midpoint.GetZ() >= m_bounds.GetMax().GetZ())))
+        {
+            // Retain an overfull leaf when floating-point subdivision cannot make progress.
+            return false;
+        }
         m_childNodeIndex = octreeScene.AllocateChildNodes();
         m_children = octreeScene.GetChildNodesAtIndex(m_childNodeIndex);
 
-        // Set child split planes and bounding volumes
+        // Set child split planes and bounding volumes.
+        // The bit ordering splits X/Y in quadtree mode and X/Y/Z otherwise.
+        const uint32_t childCount = GetChildNodeCount();
+        for (uint32_t child = 0; child < childCount; ++child)
         {
-            const AZ::Vector3 childExtent = (m_bounds.GetMax() - m_bounds.GetMin()) * 0.5f;
-            const AZ::Aabb childBound = AZ::Aabb::CreateFromMinMax(m_bounds.GetMin(), m_bounds.GetMin() + childExtent);
-            const uint32_t childCount = GetChildNodeCount();
-
-            for (uint32_t child = 0; child < childCount; ++child)
-            {
-                // Note that the ordering of these offsets is such that in QuadTree mode, we will split along the X/Y plane
-                // This is because we use a slightly non-standard Z-up ground plane
-                // If we ever change to an X/Z ground plane with a Y-up axis, we'll have to swap the Y and Z extent offsets
-                AZ::Vector3 childOffset = AZ::Vector3::CreateZero();
-
-                if (child & 0x01)
-                {
-                    childOffset.SetX(childExtent.GetX());
-                }
-
-                if (child & 0x02)
-                {
-                    childOffset.SetY(childExtent.GetY());
-                }
-
-                if (child & 0x04)
-                {
-                    childOffset.SetZ(childExtent.GetZ());
-                }
-
-                m_children[child].m_bounds = childBound.GetTranslated(childOffset);
-                m_children[child].m_parent = this;
-            }
+            m_children[child].m_bounds = GetChildBounds(m_bounds, child);
+            m_children[child].m_parent = this;
         }
 
         // Re-partition our entry set across ourself and our child nodes
@@ -373,6 +503,8 @@ namespace AzFramework
             entry->m_internalNodeIndex = 0;
             Insert(octreeScene, entry);
         }
+
+        return true;
     }
 
     void OctreeNode::Merge(OctreeScene& octreeScene)
@@ -399,9 +531,18 @@ namespace AzFramework
 
     OctreeScene::OctreeScene(const AZ::Name& sceneName)
         : m_sceneName(sceneName)
-        , m_root(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-bg_octreeMaxWorldExtents), AZ::Vector3(bg_octreeMaxWorldExtents)))
     {
         AZ_Assert(!sceneName.IsEmpty(), "sceneName must be a valid string");
+
+        float initialRootHalfExtent = bg_octreeMaxWorldExtents;
+        if (!AZ::IsFiniteFloat(initialRootHalfExtent)
+            || initialRootHalfExtent <= 0.0f
+            || !AZ::IsFiniteFloat(initialRootHalfExtent * 2.0f))
+        {
+            AZ_Warning("OctreeScene", false, "Invalid bg_octreeMaxWorldExtents value %f. Using the default value %f", initialRootHalfExtent, DefaultOctreeRootHalfExtent);
+            initialRootHalfExtent = DefaultOctreeRootHalfExtent;
+        }
+        m_root.m_bounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(initialRootHalfExtent));
     }
 
     OctreeScene::~OctreeScene()
@@ -419,13 +560,112 @@ namespace AzFramework
         return m_sceneName;
     }
 
+    bool OctreeScene::GrowToContain(const AZ::Aabb& bounds)
+    {
+        if (!bounds.IsValid() || !bounds.IsFinite())
+        {
+            return false;
+        }
+
+        if (AZ::ShapeIntersection::Contains(m_root.m_bounds, bounds))
+        {
+            return true;
+        }
+
+        AZ_PROFILE_SCOPE(AzFramework, "OctreeScene::GrowToContain");
+
+        AZ::Aabb startingBounds = m_root.m_bounds;
+        if (bg_octreeUseQuadtree)
+        {
+            AZ::Vector3 rootMin = startingBounds.GetMin();
+            AZ::Vector3 rootMax = startingBounds.GetMax();
+            rootMin.SetZ(AZStd::min(rootMin.GetZ(), bounds.GetMin().GetZ()));
+            rootMax.SetZ(AZStd::max(rootMax.GetZ(), bounds.GetMax().GetZ()));
+            startingBounds = AZ::Aabb::CreateFromMinMax(rootMin, rootMax);
+            if (!startingBounds.GetExtents().IsFinite()
+                || !(rootMin * 2.0f).IsFinite()
+                || !(rootMax * 2.0f).IsFinite())
+            {
+                return false;
+            }
+        }
+
+        // Preflight all growth so numerical failure leaves the existing tree unchanged.
+        AZ::Aabb candidateBounds = startingBounds;
+        while (!AZ::ShapeIntersection::Contains(candidateBounds, bounds))
+        {
+            AZ::Aabb nextBounds;
+            uint32_t oldRootChild = 0;
+            if (!CalculateNextRootBounds(candidateBounds, bounds, nextBounds, oldRootChild))
+            {
+                return false;
+            }
+            candidateBounds = nextBounds;
+        }
+
+        if (m_root.IsLeaf())
+        {
+            m_root.m_bounds = candidateBounds;
+            ++m_growthCount;
+            return true;
+        }
+
+        if (startingBounds != m_root.m_bounds)
+        {
+            m_root.m_bounds = startingBounds;
+            ++m_growthCount;
+        }
+
+        while (!AZ::ShapeIntersection::Contains(m_root.m_bounds, bounds))
+        {
+            AZ::Aabb newBounds;
+            uint32_t oldRootChild = 0;
+            if (!CalculateNextRootBounds(m_root.m_bounds, bounds, newBounds, oldRootChild))
+            {
+                return false;
+            }
+
+            const uint32_t newChildNodeIndex = AllocateChildNodes();
+            OctreeNode* newChildren = GetChildNodesAtIndex(newChildNodeIndex);
+            // Moving the old root repairs pointers for entries stored directly in it.
+            // Descendants stay in place, so each wrap is O(root-local entries + child count).
+            newChildren[oldRootChild] = AZStd::move(m_root);
+            m_root.m_bounds = newBounds;
+            m_root.m_childNodeIndex = newChildNodeIndex;
+            m_root.m_children = newChildren;
+            const uint32_t childCount = GetChildNodeCount();
+            for (uint32_t child = 0; child < childCount; ++child)
+            {
+                if (child != oldRootChild)
+                {
+                    newChildren[child].m_bounds = GetChildBounds(newBounds, child);
+                }
+                newChildren[child].m_parent = &m_root;
+            }
+            ++m_growthCount;
+        }
+
+        return true;
+    }
+
     void OctreeScene::InsertOrUpdateEntry(VisibilityEntry& entry)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_sharedMutex);
 
-        // If bg_octreeGrowToContain enabled, grow the root when the entry sits beyond the current
-        // root bounds so the entry can be properly contained.
-        m_root.GrowToContain(entry.m_boundingVolume);
+        if (!GrowToContain(entry.m_boundingVolume))
+        {
+            if (entry.m_internalNode)
+            {
+                static_cast<OctreeNode*>(entry.m_internalNode)->Remove(*this, &entry);
+                --m_entryCount;
+            }
+            if (!m_growthWarningIssued)
+            {
+                AZ_Warning("OctreeScene", false, "Scene %s rejected visibility bounds that cannot be represented safely", m_sceneName.GetCStr());
+                m_growthWarningIssued = true;
+            }
+            return;
+        }
 
         if (entry.m_internalNode != nullptr)
         {
@@ -518,11 +758,14 @@ namespace AzFramework
 
     void OctreeScene::DumpStats()
     {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::EntryCount = %u", GetName().GetCStr(), GetEntryCount());
         AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::NodeCount = %u", GetName().GetCStr(), GetNodeCount());
         AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::FreeNodeCount = %u", GetName().GetCStr(), GetFreeNodeCount());
         AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::PageCount = %u", GetName().GetCStr(), GetPageCount());
         AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::ChildNodeCount = %u", GetName().GetCStr(), GetChildNodeCount());
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::GrowthCount = %u", GetName().GetCStr(), m_growthCount);
+        AZ_TracePrintf("Console", "OctreeScene[\"%s\"]::RootBounds = (%f, %f, %f) - (%f, %f, %f)", GetName().GetCStr(), m_root.m_bounds.GetMin().GetX(), m_root.m_bounds.GetMin().GetY(), m_root.m_bounds.GetMin().GetZ(), m_root.m_bounds.GetMax().GetX(), m_root.m_bounds.GetMax().GetY(), m_root.m_bounds.GetMax().GetZ());
     }
 
     static inline uint32_t CreateNodeIndex(uint32_t page, uint32_t offset)

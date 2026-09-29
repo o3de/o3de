@@ -70,18 +70,13 @@ namespace AzFramework
         //! Returns true if this is a leaf node.
         bool IsLeaf() const;
 
-        //! Expand the bounds of this node by doubling it around the center until the provided volume fits into it.
-        //! This is only valid on the root node.
-        void GrowToContain(const AZ::Aabb& volume);
-
     private:
-
         void TryMerge(OctreeScene& octreeScene);
 
         template <typename T>
         void EnumerateHelper(const T& boundingVolume, const IVisibilityScene::EnumerateCallback& callback) const;
 
-        void Split(OctreeScene& octreeScene);
+        bool Split(OctreeScene& octreeScene);
         void Merge(OctreeScene& octreeScene);
 
         // The page is stored in the upper 16-bits of the child node index, the offset into the page is the lower 16-bits
@@ -92,6 +87,8 @@ namespace AzFramework
         OctreeNode* m_parent = nullptr; //< This is a pointer to an array of GetChildNodeCount() nodes, or nullptr if this is a leaf node
         OctreeNode* m_children = nullptr;
         AZStd::vector<VisibilityEntry*> m_entries;
+
+        friend class OctreeScene;
     };
 
     //! Implementation of the visibility system interface.
@@ -132,6 +129,8 @@ namespace AzFramework
         //! @}
 
     private:
+        bool GrowToContain(const AZ::Aabb& bounds);
+
         uint32_t AllocateChildNodes();
         void ReleaseChildNodes(uint32_t nodeIndex);
         OctreeNode* GetChildNodesAtIndex(uint32_t nodeIndex) const;
@@ -140,6 +139,8 @@ namespace AzFramework
 
         AZ::Name m_sceneName; //< The uniquely identifying name for the visibility scene.
         OctreeNode m_root; //< The root node for the octreeSystemComponent.
+        uint32_t m_growthCount = 0;
+        bool m_growthWarningIssued = false;
 
         uint32_t m_entryCount = 0; //< Metric tracking the number of entries inserted into the octreeSystemComponent.
         uint32_t m_nodeCount = 1; //< Metric tracking the number of nodes allocated by the octreeSystemComponent, at least one for the root node.
