@@ -282,75 +282,40 @@ void CrySleep(unsigned int dwMilliseconds)
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] EShowMessageType eType)
 {
 #ifdef WIN32
 #   error WIN32 is defined in WinBase.cpp (it is a non-Windows file)
 #elif defined(MAC)
     CFStringRef strText = CFStringCreateWithCString(nullptr, lpText, kCFStringEncodingMacRoman);
     CFStringRef strCaption = CFStringCreateWithCString(nullptr, lpCaption, kCFStringEncodingMacRoman);
-
     CFStringRef strOk = CFSTR("OK");
-    CFStringRef strCancel = CFSTR("Cancel");
-    CFStringRef strRetry = CFSTR("Retry");
-    CFStringRef strYes = CFSTR("Yes");
-    CFStringRef strNo = CFSTR("No");
-    CFStringRef strAbort = CFSTR("Abort");
-    CFStringRef strIgnore = CFSTR("Ignore");
-    CFStringRef strTryAgain = CFSTR("Try Again");
-    CFStringRef strContinue = CFSTR("Continue");
-
-    CFStringRef defaultButton = nullptr;
-    CFStringRef alternativeButton = nullptr;
-    CFStringRef otherButton = nullptr;
-
-    switch (uType & 0xf)
+    CFOptionFlags cfOpt = 0;
+    switch (eType)
     {
-        case MB_OKCANCEL:
-            defaultButton = strOk;
-            alternativeButton = strCancel;
-            break;
-        case MB_ABORTRETRYIGNORE:
-            defaultButton = strAbort;
-            alternativeButton = strRetry;
-            otherButton = strIgnore;
-            break;
-        case MB_YESNOCANCEL:
-            defaultButton = strYes;
-            alternativeButton = strNo;
-            otherButton = strCancel;
-            break;
-        case MB_YESNO:
-            defaultButton = strYes;
-            alternativeButton = strNo;
-            break;
-        case MB_RETRYCANCEL:
-            defaultButton = strRetry;
-            alternativeButton = strCancel;
-            break;
-        case MB_CANCELTRYCONTINUE:
-            defaultButton = strCancel;
-            alternativeButton = strTryAgain;
-            otherButton = strContinue;
-            break;
-        case MB_OK:
-        default:
-            defaultButton = strOk;
-            break;
+    case EShowMessageType::Error:
+        cfOpt = kCFUserNotificationStopAlertLevel;
+        break;
+    case EShowMessageType::Warning:
+        cfOpt = kCFUserNotificationCautionAlertLevel;
+        break;
+    case EShowMessageType::Info:
+    default:
+        cfOpt = kCFUserNotificationNoteAlertLevel;
+        break;
     }
-
     CFOptionFlags kResult;
     CFUserNotificationDisplayAlert(
         0,                                 // no timeout
-        kCFUserNotificationNoteAlertLevel, //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
+        cfOpt,                             //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
         nullptr,                           //icon url, use default, you can change it depending message_type flags
         nullptr,                           //not used
         nullptr,                           //localization of strings
         strText,                           //header text
         strCaption,                        //message text
-        defaultButton,                     //default "ok" text in button
-        alternativeButton,                 //alternate button title
-        otherButton,                       //other button title, null--> no other button
+        strOk,                     //default "ok" text in button
+        nullptr,                            //alternate button title
+        nullptr,                            //other button title, null--> no other button
         &kResult                           //response flags
     );
 

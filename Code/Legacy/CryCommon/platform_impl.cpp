@@ -163,7 +163,7 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] EShowMessageType eType)
 {
 #ifdef WIN32
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
@@ -175,7 +175,22 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    MessageBoxW(nullptr, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+
+    unsigned int mbMBFlag = MB_OK | MB_APPLMODAL;
+    switch (eType)
+    {
+    case EShowMessageType::Error:
+        mbMBFlag |= MB_ICONERROR;
+        break;
+    case EShowMessageType::Warning:
+        mbMBFlag |= MB_ICONWARNING;
+        break;
+    case EShowMessageType::Info:
+    default:
+        mbMBFlag |= MB_ICONINFORMATION;
+        break;
+    }
+    MessageBoxW(nullptr, lpTextW.c_str(), lpCaptionW.c_str(), mbMBFlag);
 #else
     return;
 #endif
