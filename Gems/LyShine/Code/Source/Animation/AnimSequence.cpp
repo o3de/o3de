@@ -1048,7 +1048,7 @@ IUiAnimNode* CUiAnimSequence::FindNodeByName(const char* sNodeName, const IUiAni
     {
         IUiAnimNode* pAnimNode = it->get();
         // Case insensitive name comparison.
-        if (_stricmp(((CUiAnimNode*)pAnimNode)->GetNameFast(), sNodeName) == 0)
+        if (azstricmp(((CUiAnimNode*)pAnimNode)->GetNameFast(), sNodeName) == 0)
         {
             bool bParentDirectorCheck = pAnimNode->HasDirectorAsParent() == pParentDirector;
             if (bParentDirectorCheck)

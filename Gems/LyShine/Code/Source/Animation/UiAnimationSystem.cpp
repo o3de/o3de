@@ -106,7 +106,7 @@ bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
         {
             continue;
         }
-        if (_stricmp(sName.c_str(), pszMission))
+        if (azstricmp(sName.c_str(), pszMission))
         {
             continue;
         }
@@ -201,7 +201,7 @@ IUiAnimSequence* UiAnimationSystem::FindSequence(const char* pSequenceName) cons
         IUiAnimSequence* pCurrentSequence = it->get();
         const char* fullname = pCurrentSequence->GetName();
 
-        if (_stricmp(fullname, pSequenceName) == 0)
+        if (azstricmp(fullname, pSequenceName) == 0)
         {
             return pCurrentSequence;
         }
@@ -353,7 +353,7 @@ int UiAnimationSystem::OnSequenceRenamed(const char* before, const char* after)
     {
         return 0;
     }
-    if (_stricmp(before, after) == 0)
+    if (azstricmp(before, after) == 0)
     {
         return 0;
     }

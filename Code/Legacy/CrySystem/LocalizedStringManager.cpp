@@ -356,7 +356,7 @@ ILocalizationManager::EPlatformIndependentLanguageID CLocalizedStringsManager::P
 {
     for (int i = 0; i < ILocalizationManager::ePILID_MAX_OR_INVALID; i++)
     {
-        if (!_stricmp(langName.c_str(), PLATFORM_INDEPENDENT_LANGUAGE_NAMES[i]))
+        if (!azstricmp(langName.c_str(), PLATFORM_INDEPENDENT_LANGUAGE_NAMES[i]))
         {
             return (ILocalizationManager::EPlatformIndependentLanguageID)i;
         }
@@ -419,7 +419,7 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
     // Check if already language loaded.
     for (uint32 i = 0; i < m_languages.size(); i++)
     {
-        if (_stricmp(sLanguage, m_languages[i]->sLanguage.c_str()) == 0)
+        if (azstricmp(sLanguage, m_languages[i]->sLanguage.c_str()) == 0)
         {
             InternalSetCurrentLanguage(m_languages[i]);
             return true;
@@ -559,7 +559,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
                 break;
             }
             // HACK until all columns are renamed to "Translation"
-            //if (_stricmp(sCellContent, "Your Translation") == 0)
+            //if (azstricmp(sCellContent, "Your Translation") == 0)
             //{
             //  nCellIndexToType[nCellIndex] = ELOCALIZED_COLUMN_TRANSLATED_ACTOR_LINE;
             //  break;
@@ -905,17 +905,17 @@ enum class YesNoType
 */
 inline YesNoType ToYesNoType(const char* szString)
 {
-    if (!_stricmp(szString, "yes")
-        || !_stricmp(szString, "enable")
-        || !_stricmp(szString, "true")
-        || !_stricmp(szString, "1"))
+    if (!azstricmp(szString, "yes")
+        || !azstricmp(szString, "enable")
+        || !azstricmp(szString, "true")
+        || !azstricmp(szString, "1"))
     {
         return YesNoType::Yes;
     }
-    if (!_stricmp(szString, "no")
-        || !_stricmp(szString, "disable")
-        || !_stricmp(szString, "false")
-        || !_stricmp(szString, "0"))
+    if (!azstricmp(szString, "no")
+        || !azstricmp(szString, "disable")
+        || !azstricmp(szString, "false")
+        || !azstricmp(szString, "0"))
     {
         return YesNoType::No;
     }
@@ -1202,7 +1202,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
                 break;
             case ELOCALIZED_COLUMN_IS_DIRECT_RADIO:
                 sTmp.assign(cell.ptr, cell.count);
-                if (!_stricmp(sTmp.c_str(), "intercept"))
+                if (!azstricmp(sTmp.c_str(), "intercept"))
                 {
                     bIsIntercepted = true;
                 }
@@ -2475,7 +2475,7 @@ namespace
         const LanguageID defaultLanguage = { "en-US", 0x0409 };
         for (int i = 0; i < numLanguagesIDs; ++i)
         {
-            if (_stricmp(language, languageIDArray[i].language) == 0)
+            if (azstricmp(language, languageIDArray[i].language) == 0)
             {
                 return languageIDArray[i];
             }

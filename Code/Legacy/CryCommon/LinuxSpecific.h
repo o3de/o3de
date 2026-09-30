@@ -98,22 +98,6 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
-// function renaming
-#define _finite __finite
-#define _snprintf snprintf
-#define _isnan isnan
-#define stricmp strcasecmp
-#define _stricmp strcasecmp
-#define strnicmp strncasecmp
-#define _strnicmp strncasecmp
-#define wcsicmp wcscasecmp
-#define wcsnicmp wcsncasecmp
-
-#define MK_LBUTTON  0x0001
-#define MK_RBUTTON  0x0002
-#define MK_SHIFT    0x0004
-#define MK_CONTROL  0x0008
-#define MK_MBUTTON  0x0010
 
 #define SM_MOUSEPRESENT 0x00000000L
 
@@ -133,16 +117,6 @@ typedef uint64 __uint64;
 #define VK_OEM_6        0xDD  //  ']}' for US
 
 #define WAIT_TIMEOUT 258L    // dderror
-
-#define WM_MOVE 0x0003
-#define WM_USER 0x0400
-
-#define WHEEL_DELTA 120
-
-#define WS_CHILD    0x40000000L
-#define WS_VISIBLE  0x10000000L
-
-#define CB_ERR  (-1)
 
 // io.h stuff
 typedef unsigned int _fsize_t;

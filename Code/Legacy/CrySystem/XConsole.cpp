@@ -1803,7 +1803,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
     int offset = (szInputBuffer[0] == '\\' ? 1 : 0);        // legacy support
 
-    if ((m_sPrevTab.size() > strlen(szInputBuffer + offset)) || _strnicmp(m_sPrevTab.c_str(), (szInputBuffer + offset), m_sPrevTab.size()))
+    if ((m_sPrevTab.size() > strlen(szInputBuffer + offset)) || azstrnicmp(m_sPrevTab.c_str(), (szInputBuffer + offset), m_sPrevTab.size()))
     {
         m_nTabCount = 0;
         m_sPrevTab = "";
@@ -1877,7 +1877,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
                 for (int i = 0; i < nMatches; i++)
                 {
                     AZStd::string cmd = AZStd::string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
-                    if (_strnicmp(m_sPrevTab.c_str(), cmd.c_str(), m_sPrevTab.length()) == 0)
+                    if (azstrnicmp(m_sPrevTab.c_str(), cmd.c_str(), m_sPrevTab.length()) == 0)
                     {
                         {
                             bArgumentAutoComplete = true;
@@ -1898,7 +1898,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
             if ((cmd.m_nFlags & VF_RESTRICTEDMODE) || !con_restricted)         // in restricted mode we allow only VF_RESTRICTEDMODE CVars&CCmd
             {
-                if (_strnicmp(m_sPrevTab.c_str(), itrCmds->first.c_str(), m_sPrevTab.length()) == 0)
+                if (azstrnicmp(m_sPrevTab.c_str(), itrCmds->first.c_str(), m_sPrevTab.length()) == 0)
                 {
                     {
                         matches.push_back((char* const)itrCmds->first.c_str());
@@ -1917,7 +1917,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
             if ((pVar->GetFlags() & VF_RESTRICTEDMODE) || !con_restricted)         // in restricted mode we allow only VF_RESTRICTEDMODE CVars&CCmd
             {//if(itrVars->first.compare(0,m_sPrevTab.length(),m_sPrevTab)==0)
-                if (_strnicmp(m_sPrevTab.c_str(), itrVars->first, m_sPrevTab.length()) == 0)
+                if (azstrnicmp(m_sPrevTab.c_str(), itrVars->first, m_sPrevTab.length()) == 0)
                 {
                     {
                         matches.push_back((char* const)itrVars->first);
@@ -2367,7 +2367,7 @@ size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, con
         {
             if (szPrefix)
             {
-                if (_strnicmp(it->first, szPrefix, iPrefixLen) != 0)
+                if (azstrnicmp(it->first, szPrefix, iPrefixLen) != 0)
                 {
                     continue;
                 }
@@ -2389,7 +2389,7 @@ size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, con
         {
             if (szPrefix)
             {
-                if (_strnicmp(it->first.c_str(), szPrefix, iPrefixLen) != 0)
+                if (azstrnicmp(it->first.c_str(), szPrefix, iPrefixLen) != 0)
                 {
                     continue;
                 }
