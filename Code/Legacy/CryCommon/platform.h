@@ -183,8 +183,8 @@
 #endif
 
 // Indicates potentially dangerous cast on 64bit machines
-typedef UINT_PTR TRUNCATE_PTR;
-typedef UINT_PTR EXPAND_PTR;
+typedef uintptr_t TRUNCATE_PTR;
+typedef uintptr_t EXPAND_PTR;
 
 // Use static branch prediction to improve the generated assembly when possible.
 // This feature has an indirect effect on runtime performance, as it ensures assembly code

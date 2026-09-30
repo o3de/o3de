@@ -85,7 +85,7 @@ public:
     // ~ILocalizationManager
 
     // ISystemEventManager
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
     // ~ISystemEventManager
 
     void GetLoadedTags(TLocalizationTagVec& tagVec);

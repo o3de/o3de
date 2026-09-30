@@ -60,7 +60,7 @@ typedef uint64              DWORD_PTR;
 typedef DWORD               DWORD_PTR;
 #endif
 typedef intptr_t INT_PTR, *PINT_PTR;
-typedef uintptr_t UINT_PTR, * PUINT_PTR;
+typedef uintptr_t uintptr_t, * PUINT_PTR;
 typedef char* LPSTR, * PSTR;
 typedef uint64      __uint64;
 typedef int64       INT64;
@@ -72,7 +72,7 @@ typedef unsigned long ULONG_PTR, * PULONG_PTR;
 typedef unsigned char               BYTE;
 typedef unsigned short          WORD;
 typedef void*                               HWND;
-typedef UINT_PTR                        WPARAM;
+typedef uintptr_t                        WPARAM;
 typedef LONG_PTR                        LPARAM;
 typedef LONG_PTR                        LRESULT;
 #define PLARGE_INTEGER LARGE_INTEGER *

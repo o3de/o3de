@@ -36,7 +36,7 @@ bool CSystemEventDispatcher::RemoveListener(ISystemEventListener* pListener)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CSystemEventDispatcher::OnSystemEventAnyThread(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
+void CSystemEventDispatcher::OnSystemEventAnyThread(ESystemEvent event, uintptr_t wparam, uintptr_t lparam)
 {
     m_listenerRegistrationLock.lock();
     for (TSystemEventListeners::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
@@ -48,7 +48,7 @@ void CSystemEventDispatcher::OnSystemEventAnyThread(ESystemEvent event, UINT_PTR
 
 
 //////////////////////////////////////////////////////////////////////////
-void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
+void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam)
 {
     if (gEnv && gEnv->mMainThreadId == AZStd::this_thread::get_id())
     {

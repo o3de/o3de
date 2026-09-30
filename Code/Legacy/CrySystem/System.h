@@ -144,7 +144,7 @@ public:
     void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup) override;
 
     // ISystemEventListener
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
 
     ///////////////////////////////////////////////////////////////////////////
     //! @name ISystem implementation
