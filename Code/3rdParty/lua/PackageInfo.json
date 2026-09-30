@@ -1,0 +1,12 @@
+{
+    "PackageName": "Lua",
+    "Version": "5.4.4",
+    "URL": "https://www.lua.org/",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/lua/lua/archive/refs/tags/v5.4.4.tar.gz",
+        "Revision": "5d708c3f9cae12820e415d4f89c9eacbe2ab964b",
+        "SHA256": "2ff89bbea22a7c8b910d6b006f5ba4559edcf468a25537cedf9988ed90f6b450"
+    }
+}
