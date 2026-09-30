@@ -244,6 +244,10 @@ set(FILES
     MainWindow.qrc
     Core/EditorActionsHandler.cpp
     Core/EditorActionsHandler.h
+    Core/ViewportScreenshotCapture.cpp
+    Core/ViewportScreenshotCapture.h
+    Core/ViewportScreenshotUtils.cpp
+    Core/ViewportScreenshotUtils.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
     Core/Widgets/PrefabEditVisualModeWidget.h

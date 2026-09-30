@@ -515,6 +515,8 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 850);
         m_menuManagerInterface->AddActionToMenu(
             EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.geometrySnapping", 875);
+        m_menuManagerInterface->AddSubMenuToMenu(
+            EditorIdentifiers::ViewportOptionsMenuIdentifier, EditorIdentifiers::ViewportScreenshotMenuIdentifier, 900);
     }
 }
 
@@ -527,6 +529,11 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", EditorIdentifiers::ViewportCameraMenuIdentifier, 500);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorIdentifiers::ViewportDebugInfoMenuIdentifier, 600);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier,
+        "o3de.action.viewport.captureScreenshot",
+        EditorIdentifiers::ViewportScreenshotMenuIdentifier,
+        650);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(

@@ -23,6 +23,7 @@ set(FILES
     Lib/Tests/Camera/test_EditorCamera.cpp
     Lib/Tests/test_AzAssetBrowserRequestHandler.cpp
     Lib/Tests/test_CryLegacyDeprecation.cpp
+    Lib/Tests/test_ViewportScreenshot.cpp
     DisplaySettingsPythonFuncs.cpp
     DisplaySettingsPythonFuncs.h
 )
