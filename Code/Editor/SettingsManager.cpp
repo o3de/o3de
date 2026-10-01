@@ -670,7 +670,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
         for (nCurrentVariable = 0; nCurrentVariable < cszVariableNames.size(); ++nCurrentVariable)
         {
-            if (_stricmp(cszVariableNames[nCurrentVariable].data(), "_TestFormatMessage") == 0)
+            if (azstricmp(cszVariableNames[nCurrentVariable].data(), "_TestFormatMessage") == 0)
             {
                 continue;
             }

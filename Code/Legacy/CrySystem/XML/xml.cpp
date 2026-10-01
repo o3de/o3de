@@ -1422,9 +1422,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
         // exclude files and PAKs from Mods folder
         constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
-        if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
-            _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
-            _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
+        if (azstrnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
+            azstrnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
+            azstrnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)
         {
 #ifdef _RELEASE
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Non binary XML found in scripts dir (%s)", filename);

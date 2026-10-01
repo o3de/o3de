@@ -281,7 +281,7 @@ private:
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
-    unsigned long* m_gdiplusToken;
+    uintptr_t m_gdiplusToken;
     QSharedMemory* m_mutexApplication = nullptr;
     //! was the editor active in the previous frame ... needed to detect if the game lost focus and
     //! dispatch proper SystemEvent (needed to release input keys)
