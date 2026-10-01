@@ -16,34 +16,30 @@ o3de_fetch_content(expat
 )
 FetchContent_MakeAvailable(expat)
 
-file(COPY
-    "${expat_SOURCE_DIR}/expat/lib/expat.h"
-    "${expat_SOURCE_DIR}/expat/lib/expat_external.h"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
-)
+set(EXPAT_WITH_LIBBSD OFF)
+include("${expat_SOURCE_DIR}/expat/ConfigureChecks.cmake")
 
-include(CheckSymbolExists)
-check_symbol_exists(arc4random_buf "stdlib.h" HAVE_ARC4RANDOM_BUF)
-check_symbol_exists(getrandom "sys/random.h" HAVE_GETRANDOM)
-
-if(CMAKE_C_BYTE_ORDER STREQUAL "BIG_ENDIAN")
-    set(BYTEORDER 4321)
-else()
-    set(BYTEORDER 1234)
-endif()
-
-if(NOT WIN32 AND NOT HAVE_ARC4RANDOM_BUF AND NOT HAVE_GETRANDOM)
-    set(XML_DEV_URANDOM 1)
-endif()
-
+set(PACKAGE_NAME expat)
+set(PACKAGE_VERSION 2.7.3)
+set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
+set(PACKAGE_TARNAME "${PACKAGE_NAME}")
+set(PACKAGE_BUGREPORT "https://github.com/libexpat/libexpat/issues")
 set(XML_CONTEXT_BYTES 1024)
 set(XML_DTD 1)
 set(XML_GE 1)
 set(XML_NS 1)
+set(XML_DEV_URANDOM 1)
+set(XML_ATTR_INFO OFF)
 
 configure_file(
     "${expat_SOURCE_DIR}/expat/expat_config.h.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/Include/expat_config.h"
+)
+
+file(COPY
+    "${expat_SOURCE_DIR}/expat/lib/expat.h"
+    "${expat_SOURCE_DIR}/expat/lib/expat_external.h"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
 )
 
 o3de_disable_warnings()
@@ -58,12 +54,21 @@ ly_add_target(
         PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Include"
     COMPILE_DEFINITIONS
         PUBLIC XML_STATIC
+    BUILD_DEPENDENCIES
+        PUBLIC $<$<BOOL:${_EXPAT_LIBM_FOUND}>:m>
 )
 
 set_target_properties(expat PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    C_VISIBILITY_PRESET hidden
     POSITION_INDEPENDENT_CODE ON
     SYSTEM TRUE
 )
+
+target_compile_options(expat PRIVATE $<$<BOOL:${FLAG_NO_STRICT_ALIASING}>:-fno-strict-aliasing>)
+
+o3de_find_3rdparty_package(expat)
 
 ly_install_files(
     FILES
