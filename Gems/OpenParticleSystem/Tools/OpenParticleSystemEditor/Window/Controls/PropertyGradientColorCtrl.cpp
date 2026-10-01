@@ -113,33 +113,52 @@ namespace OpenParticleSystemEditor
         EBUS_EVENT_ID_RESULT(sourceData, g_gradientColorUsedwidgetName, ParticleDocumentRequestBus, GetParticleSourceData);
         int dist = static_cast<int>(GetDistIndex(OpenParticle::DistributionType::CURVE, 0));
         
-        if (DistIndexUtil::GetDistributionType(m_valuePtr, azrtti_typeid<OpenParticle::ValueObjColor>()) ==
+        if (sourceData != nullptr &&
+            DistIndexUtil::GetDistributionType(m_valuePtr, azrtti_typeid<OpenParticle::ValueObjColor>()) ==
             OpenParticle::DistributionType::CURVE && dist != 0)
         {
-            QGradientStops stops;
-            if (dist <= sourceData->m_distribution.curves.size())
+            // Each channel's curve can have a different key count, so the stop list is sized to the longest one.
+            auto channelKeys = [&](int channel) -> const AZStd::vector<OpenParticle::KeyPoint>*
             {
-                for (int i = 0; i < static_cast<int>(sourceData->m_distribution.curves[dist - 1]->keyPoints.size()); i++)
+                const size_t curveIndex = GetDistIndex(OpenParticle::DistributionType::CURVE, channel);
+                if (curveIndex == 0 || curveIndex > sourceData->m_distribution.curves.size())
                 {
-                    stops.push_back(QPair<int, QColor>(i, QColor(Qt::white)));
+                    return nullptr;
                 }
+                return &sourceData->m_distribution.curves[curveIndex - 1]->keyPoints;
+            };
+
+            int stopCount = 0;
+            for (int i = 0; i < ELEMENTCOUNT_COLOR; i++)
+            {
+                if (auto* keys = channelKeys(i))
+                {
+                    stopCount = AZStd::max(stopCount, static_cast<int>(keys->size()));
+                }
+            }
+
+            QGradientStops stops;
+            for (int i = 0; i < stopCount; i++)
+            {
+                stops.push_back(QPair<int, QColor>(i, QColor(Qt::white)));
             }
             for (int i = 0; i < ELEMENTCOUNT_COLOR; i++)
             {
-                if (dist + i <= sourceData->m_distribution.curves.size())
+                auto* keys = channelKeys(i);
+                if (keys == nullptr || keys->empty())
                 {
-                    auto currentCurve = sourceData->m_distribution.curves[dist - 1 + i];
-                    int stopIndex = 0;
-                    for (auto iter = currentCurve->keyPoints.begin(); iter != currentCurve->keyPoints.end(); iter++, stopIndex++)
-                    {
-                        OpenParticle::KeyPoint& key = (*iter);
-                        auto& curr = stops.at(stopIndex);
+                    continue;
+                }
+                for (int stopIndex = 0; stopIndex < stopCount; stopIndex++)
+                {
+                    // A channel with fewer keys holds its last value for the remaining stops.
+                    const OpenParticle::KeyPoint& key = (*keys)[AZStd::min(static_cast<size_t>(stopIndex), keys->size() - 1)];
+                    auto& curr = stops.at(stopIndex);
 
-                        AZ::Vector4 vec(curr.second.red(), curr.second.green(), curr.second.blue(), curr.second.alpha());
-                        vec.SetElement(i, key.value * MAXIMUM_COLOR_VALUE);
-                        QColor color(vec.GetX(), vec.GetY(), vec.GetZ(), vec.GetW());
-                        stops.replace(stopIndex, QPair<float, QColor>(key.time, color));
-                    }
+                    AZ::Vector4 vec(curr.second.red(), curr.second.green(), curr.second.blue(), curr.second.alpha());
+                    vec.SetElement(i, key.value * MAXIMUM_COLOR_VALUE);
+                    QColor color(vec.GetX(), vec.GetY(), vec.GetZ(), vec.GetW());
+                    stops.replace(stopIndex, QPair<float, QColor>(key.time, color));
                 }
             }
             m_gradientStops = stops;
