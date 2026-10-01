@@ -55,7 +55,7 @@ namespace SimuCore::ParticleCore {
     inline float CalcDistributionTickValue(const ValueObjFloat& valueObject,
         const BaseInfo& info, const Particle& particle)
     {
-        if (valueObject.distType != DistributionType::CONSTANT) {
+        if (valueObject.distType != DistributionType::CONSTANT && valueObject.distributions.front()) {
             return valueObject.distributions.front()->Tick(info, particle);
         }
         return valueObject.dataValue;
@@ -89,13 +89,19 @@ namespace SimuCore::ParticleCore {
             updateValue = T(valueObject.dataValue.GetElement(0));
         }
         if (valueObject.distType != DistributionType::CONSTANT) {
-            auto tickValue = valueObject.distributions.at(0)->Tick(info, particle);
+            // A channel whose distIndex is 0 has no distribution bound and keeps its constant value.
+            auto* first = valueObject.distributions.at(0);
+            auto tickValue = first ? first->Tick(info, particle) : 0.f;
             for (AZ::u32 index = 0; index < size; ++index) {
                 if (valueObject.isUniform) {
-                    updateValue.SetElement(index, tickValue);
+                    if (first) {
+                        updateValue.SetElement(index, tickValue);
+                    }
                     continue;
                 }
-                updateValue.SetElement(index, valueObject.distributions.at(index)->Tick(info, particle));
+                if (auto* dist = valueObject.distributions.at(index)) {
+                    updateValue.SetElement(index, dist->Tick(info, particle));
+                }
             }
         }
         return updateValue;
