@@ -5,5 +5,5 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-ly_parse_third_party_dependencies(3rdParty::PNG)
+ly_parse_third_party_dependencies(3rdParty::PNG 3rdParty::expat)
 o3de_find_3rdparty_package(OpenImageIO)
