@@ -823,6 +823,33 @@ namespace EMotionFX
         return m_endOffsetY;
     }
 
+    void AnimGraphStateTransition::SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints)
+    {
+        m_waypoints = waypoints;
+    }
+
+    void AnimGraphStateTransition::InsertWaypoint(size_t index, const AZ::Vector2& position)
+    {
+        const size_t clampedIndex = index < m_waypoints.size() ? index : m_waypoints.size();
+        m_waypoints.insert(m_waypoints.begin() + clampedIndex, position);
+    }
+
+    void AnimGraphStateTransition::SetWaypoint(size_t index, const AZ::Vector2& position)
+    {
+        if (index < m_waypoints.size())
+        {
+            m_waypoints[index] = position;
+        }
+    }
+
+    void AnimGraphStateTransition::RemoveWaypoint(size_t index)
+    {
+        if (index < m_waypoints.size())
+        {
+            m_waypoints.erase(m_waypoints.begin() + index);
+        }
+    }
+
     bool AnimGraphStateTransition::CanWildcardTransitionFrom(AnimGraphNode* sourceNode) const
     {
         if (m_allowTransitionsFrom.IsEmpty())
@@ -1000,7 +1027,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<AnimGraphStateTransition, AnimGraphObject>()
-            ->Version(4)
+            ->Version(5)
             ->Field("id", &AnimGraphStateTransition::m_id)
             ->Field("sourceNodeId", &AnimGraphStateTransition::m_sourceNodeId)
             ->Field("targetNodeId", &AnimGraphStateTransition::m_targetNodeId)
@@ -1025,6 +1052,7 @@ namespace EMotionFX
             ->Field("startOffsetY", &AnimGraphStateTransition::m_startOffsetY)
             ->Field("endOffsetX", &AnimGraphStateTransition::m_endOffsetX)
             ->Field("endOffsetY", &AnimGraphStateTransition::m_endOffsetY)
+            ->Field("waypoints", &AnimGraphStateTransition::m_waypoints)
             ->Field("conditions", &AnimGraphStateTransition::m_conditions)
             ->Field("actionSetup", &AnimGraphStateTransition::m_actionSetup)
             ->Field("extractionMode", &AnimGraphStateTransition::m_extractionMode)

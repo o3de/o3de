@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QMenu>
 #include <QWidgetAction>
@@ -196,6 +197,44 @@ namespace ScriptCanvasEditor
         const AZ::BehaviorMethod* m_methodWithAzEventReturn{};
         GraphCanvas::Endpoint m_methodNodeAzEventEndpoint;
 
+    };
+
+    //! Creates the correct Script Canvas reroute variant for the selected connection.
+    class CreateRerouteConnectionAction
+        : public GraphCanvas::ContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CreateRerouteConnectionAction, AZ::SystemAllocator);
+
+        explicit CreateRerouteConnectionAction(QObject* parent);
+
+        GraphCanvas::ActionGroupId GetActionGroupId() const override;
+
+        using GraphCanvas::ContextMenuAction::RefreshAction;
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::ContextMenuAction::TriggerAction;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(
+            const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
+    };
+
+    //! Creates one reroute for all selected connections when they share the same source endpoint.
+    bool CreateRerouteOnSelectedConnections(const GraphCanvas::GraphId& graphId);
+
+    class DissolveRerouteNodeAction
+        : public GraphCanvas::NodeContextMenuAction
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(DissolveRerouteNodeAction, AZ::SystemAllocator);
+
+        explicit DissolveRerouteNodeAction(QObject* parent);
+
+        using GraphCanvas::NodeContextMenuAction::RefreshAction;
+        void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::NodeContextMenuAction::TriggerAction;
+        GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(
+            const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
     };
 
     /////////////////

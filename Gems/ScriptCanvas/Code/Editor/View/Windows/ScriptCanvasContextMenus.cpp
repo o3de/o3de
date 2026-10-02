@@ -15,6 +15,9 @@
 #include <QVBoxLayout>
 
 #include <AzCore/UserSettings/UserSettings.h>
+#include <AzCore/Component/EntityUtils.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -39,6 +42,7 @@
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Utils/ConversionUtils.h>
+#include <GraphCanvas/Utils/GraphUtils.h>
 #include <GraphCanvas/Utils/NodeNudgingController.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
 
@@ -55,6 +59,7 @@
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include <ScriptCanvas/Libraries/Core/Reroute.h>
 
 #include <ScriptEvents/ScriptEventsBus.h>
 
@@ -63,6 +68,224 @@
 
 namespace ScriptCanvasEditor
 {
+    namespace
+    {
+        bool IsRerouteNode(const GraphCanvas::NodeId& nodeId)
+        {
+            const AZStd::any* userData = nullptr;
+            GraphCanvas::NodeRequestBus::EventResult(userData, nodeId, &GraphCanvas::NodeRequests::GetUserData);
+            const AZ::EntityId scriptCanvasNodeId = userData && userData->is<AZ::EntityId>()
+                ? *AZStd::any_cast<AZ::EntityId>(userData)
+                : AZ::EntityId();
+            return scriptCanvasNodeId.IsValid() &&
+                AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Nodes::Core::Reroute>(scriptCanvasNodeId);
+        }
+
+        bool CanDissolveRerouteNode(const GraphCanvas::NodeId& nodeId)
+        {
+            if (!IsRerouteNode(nodeId))
+            {
+                return false;
+            }
+
+            AZStd::vector<AZ::EntityId> slotIds;
+            GraphCanvas::NodeRequestBus::EventResult(slotIds, nodeId, &GraphCanvas::NodeRequests::GetSlotIds);
+            bool hasConnectedInput = false;
+            bool hasConnectedOutput = false;
+            for (const AZ::EntityId& slotId : slotIds)
+            {
+                AZStd::vector<AZ::EntityId> connectionIds;
+                GraphCanvas::SlotRequestBus::EventResult(
+                    connectionIds, slotId, &GraphCanvas::SlotRequests::GetConnections);
+                if (connectionIds.empty())
+                {
+                    continue;
+                }
+
+                GraphCanvas::ConnectionType connectionType = GraphCanvas::ConnectionType::CT_Invalid;
+                GraphCanvas::SlotRequestBus::EventResult(
+                    connectionType, slotId, &GraphCanvas::SlotRequests::GetConnectionType);
+                hasConnectedInput = hasConnectedInput || connectionType == GraphCanvas::ConnectionType::CT_Input;
+                hasConnectedOutput = hasConnectedOutput || connectionType == GraphCanvas::ConnectionType::CT_Output;
+            }
+            return hasConnectedInput && hasConnectedOutput;
+        }
+
+        bool CanCreateRerouteOnConnections(const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds)
+        {
+            if (connectionIds.empty())
+            {
+                return false;
+            }
+
+            GraphCanvas::Endpoint sharedSourceEndpoint;
+            GraphCanvas::SlotType sharedSlotType = GraphCanvas::SlotTypes::Invalid;
+            for (const GraphCanvas::ConnectionId& connectionId : connectionIds)
+            {
+                if (!GraphCanvas::GraphUtils::IsSpliceableConnection(connectionId))
+                {
+                    return false;
+                }
+
+                GraphCanvas::ConnectionEndpoints endpoints;
+                GraphCanvas::ConnectionRequestBus::EventResult(
+                    endpoints, connectionId, &GraphCanvas::ConnectionRequests::GetEndpoints);
+                if (!endpoints.m_sourceEndpoint.IsValid() || !endpoints.m_targetEndpoint.IsValid())
+                {
+                    return false;
+                }
+
+                GraphCanvas::SlotType slotType = GraphCanvas::SlotTypes::Invalid;
+                GraphCanvas::SlotRequestBus::EventResult(
+                    slotType, endpoints.m_sourceEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetSlotType);
+                if (slotType != GraphCanvas::SlotTypes::DataSlot && slotType != GraphCanvas::SlotTypes::ExecutionSlot)
+                {
+                    return false;
+                }
+
+                if (!sharedSourceEndpoint.IsValid())
+                {
+                    sharedSourceEndpoint = endpoints.m_sourceEndpoint;
+                    sharedSlotType = slotType;
+                }
+                else if (endpoints.m_sourceEndpoint != sharedSourceEndpoint || slotType != sharedSlotType)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        AZStd::vector<GraphCanvas::ConnectionId> GetConnectionsForContextTarget(
+            const GraphCanvas::GraphId& graphId, const GraphCanvas::ConnectionId& targetConnectionId)
+        {
+            AZStd::vector<GraphCanvas::ConnectionId> selectedConnections;
+            GraphCanvas::SceneRequestBus::EventResult(
+                selectedConnections, graphId, &GraphCanvas::SceneRequests::GetSelectedConnections);
+            if (AZStd::find(selectedConnections.begin(), selectedConnections.end(), targetConnectionId) != selectedConnections.end())
+            {
+                return selectedConnections;
+            }
+            return { targetConnectionId };
+        }
+
+        bool CreateRerouteOnConnections(
+            const GraphCanvas::GraphId& graphId,
+            const AZStd::vector<GraphCanvas::ConnectionId>& connectionIds,
+            const AZ::Vector2& scenePosition)
+        {
+            if (!CanCreateRerouteOnConnections(connectionIds))
+            {
+                return false;
+            }
+
+            AZStd::vector<GraphCanvas::ConnectionEndpoints> originalConnections;
+            originalConnections.reserve(connectionIds.size());
+            for (const GraphCanvas::ConnectionId& connectionId : connectionIds)
+            {
+                GraphCanvas::ConnectionEndpoints endpoints;
+                GraphCanvas::ConnectionRequestBus::EventResult(
+                    endpoints, connectionId, &GraphCanvas::ConnectionRequests::GetEndpoints);
+                originalConnections.push_back(endpoints);
+            }
+
+            GraphCanvas::SlotType slotType = GraphCanvas::SlotTypes::Invalid;
+            GraphCanvas::SlotRequestBus::EventResult(
+                slotType,
+                originalConnections.front().m_sourceEndpoint.GetSlotId(),
+                &GraphCanvas::SlotRequests::GetSlotType);
+
+            ScriptCanvas::ScriptCanvasId scriptCanvasId;
+            GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
+            if (!scriptCanvasId.IsValid())
+            {
+                return false;
+            }
+
+            const auto mode = slotType == GraphCanvas::SlotTypes::ExecutionSlot
+                ? ScriptCanvas::Nodes::Core::Reroute::Mode::Execution
+                : ScriptCanvas::Nodes::Core::Reroute::Mode::Data;
+
+            Nodes::StyleConfiguration styleConfiguration;
+            auto nodeAndPair = Nodes::CreateAndGetNode(
+                azrtti_typeid<ScriptCanvas::Nodes::Core::Reroute>(), scriptCanvasId, styleConfiguration,
+                [mode](ScriptCanvas::Node* node)
+                {
+                    if (auto* reroute = azrtti_cast<ScriptCanvas::Nodes::Core::Reroute*>(node))
+                    {
+                        reroute->ConfigureMode(mode);
+                    }
+                });
+
+            const NodeIdPair& nodePair = nodeAndPair.second;
+            if (!nodePair.m_graphCanvasId.IsValid() || !nodePair.m_scriptCanvasId.IsValid())
+            {
+                return false;
+            }
+
+            GraphCanvas::SceneRequestBus::Event(
+                graphId, &GraphCanvas::SceneRequests::AddNode, nodePair.m_graphCanvasId, scenePosition, false);
+            GraphCanvas::VisualRequestBus::Event(
+                nodePair.m_graphCanvasId, &GraphCanvas::VisualRequests::SetVisible, false);
+            NodeCreationNotificationBus::Event(
+                scriptCanvasId, &NodeCreationNotifications::OnGraphCanvasNodeCreated, nodePair.m_graphCanvasId);
+
+            GraphCanvas::ConnectionSpliceConfig spliceConfig;
+            spliceConfig.m_allowOpportunisticConnections = false;
+            if (!GraphCanvas::GraphUtils::SpliceNodeOntoConnection(
+                    nodePair.m_graphCanvasId, connectionIds.front(), spliceConfig))
+            {
+                GraphCanvas::GraphUtils::DeleteOutermostNode(graphId, nodePair.m_graphCanvasId);
+                return false;
+            }
+
+            bool allConnectionsCreated = spliceConfig.m_splicedSourceEndpoint.IsValid();
+            if (connectionIds.size() > 1)
+            {
+                AZStd::unordered_set<AZ::EntityId> connectionsToDelete;
+                connectionsToDelete.insert(connectionIds.begin() + 1, connectionIds.end());
+                GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::Delete, connectionsToDelete);
+
+                for (size_t connectionIndex = 1;
+                     allConnectionsCreated && connectionIndex < originalConnections.size();
+                     ++connectionIndex)
+                {
+                    GraphCanvas::ConnectionId newConnectionId;
+                    GraphCanvas::SceneRequestBus::EventResult(
+                        newConnectionId,
+                        graphId,
+                        &GraphCanvas::SceneRequests::CreateConnectionBetween,
+                        spliceConfig.m_splicedSourceEndpoint,
+                        originalConnections[connectionIndex].m_targetEndpoint);
+                    allConnectionsCreated = newConnectionId.IsValid();
+                }
+            }
+
+            if (!allConnectionsCreated)
+            {
+                GraphCanvas::GraphUtils::DeleteOutermostNode(graphId, nodePair.m_graphCanvasId);
+                for (const GraphCanvas::ConnectionEndpoints& endpoints : originalConnections)
+                {
+                    GraphCanvas::SceneRequestBus::Event(
+                        graphId,
+                        &GraphCanvas::SceneRequests::CreateConnectionBetween,
+                        endpoints.m_sourceEndpoint,
+                        endpoints.m_targetEndpoint);
+                }
+                return false;
+            }
+
+            GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::ClearSelection);
+            GraphCanvas::VisualRequestBus::Event(
+                nodePair.m_graphCanvasId, &GraphCanvas::VisualRequests::SetVisible, true);
+            GraphCanvas::SceneMemberUIRequestBus::Event(
+                nodePair.m_graphCanvasId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
+            GraphCanvas::SceneNotificationBus::Event(graphId, &GraphCanvas::SceneNotifications::PostCreationEvent);
+            return true;
+        }
+    } // namespace
+
     ////////////////////////////
     // EndpointSelectionAction
     ////////////////////////////
@@ -114,6 +337,90 @@ namespace ScriptCanvasEditor
     GraphCanvas::ContextMenuAction::SceneReaction RemoveUnusedVariablesMenuAction::TriggerAction(const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2& scenePos)
     {
         GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::RemoveUnusedNodes);
+        return SceneReaction::PostUndo;
+    }
+
+    ////////////////////////////////////
+    // CreateRerouteConnectionAction
+    ////////////////////////////////////
+
+    CreateRerouteConnectionAction::CreateRerouteConnectionAction(QObject* parent)
+        : GraphCanvas::ContextMenuAction("Reroute", parent)
+    {
+        setToolTip("Insert a compact reroute node on this connection.");
+    }
+
+    GraphCanvas::ActionGroupId CreateRerouteConnectionAction::GetActionGroupId() const
+    {
+        return AZ_CRC_CE("ScriptCanvasConnectionActions");
+    }
+
+    void CreateRerouteConnectionAction::RefreshAction(
+        const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
+    {
+        setEnabled(CanCreateRerouteOnConnections(GetConnectionsForContextTarget(graphId, targetId)));
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction CreateRerouteConnectionAction::TriggerAction(
+        const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos)
+    {
+        return CreateRerouteOnConnections(graphId, GetConnectionsForContextTarget(graphId, GetTargetId()), scenePos)
+            ? SceneReaction::PostUndo
+            : SceneReaction::Nothing;
+    }
+
+    bool CreateRerouteOnSelectedConnections(const GraphCanvas::GraphId& graphId)
+    {
+        AZStd::vector<GraphCanvas::ConnectionId> selectedConnections;
+        GraphCanvas::SceneRequestBus::EventResult(
+            selectedConnections, graphId, &GraphCanvas::SceneRequests::GetSelectedConnections);
+        if (!CanCreateRerouteOnConnections(selectedConnections))
+        {
+            return false;
+        }
+
+        QPointF midpointSum;
+        for (const GraphCanvas::ConnectionId& connectionId : selectedConnections)
+        {
+            QPointF sourcePosition;
+            QPointF targetPosition;
+            GraphCanvas::ConnectionRequestBus::EventResult(
+                sourcePosition, connectionId, &GraphCanvas::ConnectionRequests::GetSourcePosition);
+            GraphCanvas::ConnectionRequestBus::EventResult(
+                targetPosition, connectionId, &GraphCanvas::ConnectionRequests::GetTargetPosition);
+            midpointSum += (sourcePosition + targetPosition) * 0.5;
+        }
+
+        const QPointF averageMidpoint = midpointSum / aznumeric_cast<qreal>(selectedConnections.size());
+        return CreateRerouteOnConnections(
+            graphId,
+            selectedConnections,
+            AZ::Vector2(aznumeric_cast<float>(averageMidpoint.x()), aznumeric_cast<float>(averageMidpoint.y())));
+    }
+
+    DissolveRerouteNodeAction::DissolveRerouteNodeAction(QObject* parent)
+        : GraphCanvas::NodeContextMenuAction("Dissolve", parent)
+    {
+        setToolTip("Remove this reroute and reconnect its incoming and outgoing connections.");
+    }
+
+    void DissolveRerouteNodeAction::RefreshAction(
+        [[maybe_unused]] const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
+    {
+        setVisible(IsRerouteNode(targetId));
+        setEnabled(CanDissolveRerouteNode(targetId));
+    }
+
+    GraphCanvas::ContextMenuAction::SceneReaction DissolveRerouteNodeAction::TriggerAction(
+        const GraphCanvas::GraphId& graphId, [[maybe_unused]] const AZ::Vector2& scenePos)
+    {
+        if (!CanDissolveRerouteNode(GetTargetId()))
+        {
+            return SceneReaction::Nothing;
+        }
+
+        GraphCanvas::SceneRequestBus::Event(
+            graphId, &GraphCanvas::SceneRequests::DeleteNodeAndStitchConnections, GetTargetId());
         return SceneReaction::PostUndo;
     }
 
@@ -893,6 +1200,9 @@ namespace ScriptCanvasEditor
     ConnectionContextMenu::ConnectionContextMenu(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
         : GraphCanvas::ConnectionContextMenu(ScriptCanvasEditor::AssetEditorId)
     {
+        AddActionGroup(AZ_CRC_CE("ScriptCanvasConnectionActions"));
+        AddMenuActionFront(aznew CreateRerouteConnectionAction(this));
+
         const bool inContextMenu = true;
         Widget::ScriptCanvasNodePaletteConfig paletteConfig(nodePaletteModel, assetModel, inContextMenu);
 

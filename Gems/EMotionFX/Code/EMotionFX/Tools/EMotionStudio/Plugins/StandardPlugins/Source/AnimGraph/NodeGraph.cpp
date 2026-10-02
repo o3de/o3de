@@ -86,6 +86,8 @@ namespace EMStudio
         connect(&m_scaleTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScale);
 
         m_replaceTransitionValid = false;
+        m_waypointConnection = nullptr;
+        m_waypointIndex = InvalidIndex;
 
         // Overlay
         m_font.setPixelSize(12);
@@ -1579,6 +1581,22 @@ namespace EMStudio
     void NodeGraph::StopReplaceTransitionTail()
     {
         m_replaceTransitionTail = nullptr;
+    }
+
+
+    void NodeGraph::StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    {
+        m_waypointConnection = connection;
+        m_waypointIndex = waypointIndex;
+        m_waypointOldValues = oldWaypoints;
+    }
+
+
+    void NodeGraph::StopRepositionWaypoint()
+    {
+        m_waypointConnection = nullptr;
+        m_waypointIndex = InvalidIndex;
+        m_waypointOldValues.clear();
     }
 
     // reset members
