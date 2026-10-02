@@ -42,11 +42,21 @@
 #include "TreeViewPage.h"
 #include "TypographyPage.h"
 
+#include <AzQtComponents/Components/Widgets/Card.h>
+
 #include <QAction>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QDir>
+#include <QDockWidget>
 #include <QMap>
 #include <QMenu>
 #include <QMenuBar>
+#include <QPixmap>
+#include <QPushButton>
 #include <QSettings>
+#include <QTimer>
+#include <QTreeView>
 
 #include <cctype>
 
@@ -149,6 +159,172 @@ void ComponentDemoWidget::addPage(QWidget* widget, const QString& title)
 {
     ui->demoSelector->addItem(title);
     ui->demoWidgetStack->addWidget(widget);
+}
+
+void ComponentDemoWidget::captureAllPages(const QString& outputDirPath)
+{
+    QDir().mkpath(outputDirPath);
+
+    for (int pageIndex = 0; pageIndex < ui->demoSelector->count(); ++pageIndex)
+    {
+        ui->demoSelector->setCurrentIndex(pageIndex);
+
+        // let polish, layout and paint settle before grabbing
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+
+        QString pageName = ui->demoSelector->itemText(pageIndex).toLower();
+        for (int charIndex = 0; charIndex < pageName.size(); ++charIndex)
+        {
+            if (!pageName.at(charIndex).isLetterOrNumber())
+            {
+                pageName[charIndex] = QLatin1Char('-');
+            }
+        }
+
+        const QPixmap pageGrab = window()->grab();
+        pageGrab.save(QStringLiteral("%1/%2_%3.png")
+                          .arg(outputDirPath)
+                          .arg(pageIndex, 2, 10, QLatin1Char('0'))
+                          .arg(pageName));
+
+        capturePageInteractions(outputDirPath, pageIndex, pageName);
+    }
+}
+
+void ComponentDemoWidget::selectPage(const QString& pageNameOrIndex)
+{
+    bool isNumber = false;
+    const int numericIndex = pageNameOrIndex.toInt(&isNumber);
+    if (isNumber && numericIndex >= 0 && numericIndex < ui->demoSelector->count())
+    {
+        ui->demoSelector->setCurrentIndex(numericIndex);
+        return;
+    }
+
+    for (int pageIndex = 0; pageIndex < ui->demoSelector->count(); ++pageIndex)
+    {
+        if (ui->demoSelector->itemText(pageIndex).contains(pageNameOrIndex, Qt::CaseInsensitive))
+        {
+            ui->demoSelector->setCurrentIndex(pageIndex);
+            return;
+        }
+    }
+}
+
+void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, int pageIndex, const QString& pageName)
+{
+    QWidget* page = ui->demoWidgetStack->currentWidget();
+    if (!page)
+    {
+        return;
+    }
+
+    const auto settle = []()
+    {
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+    };
+    const auto capturePath = [outputDirPath, pageIndex, pageName](const QString& suffix)
+    {
+        return QStringLiteral("%1/%2_%3__%4.png")
+            .arg(outputDirPath)
+            .arg(pageIndex, 2, 10, QLatin1Char('0'))
+            .arg(pageName)
+            .arg(suffix);
+    };
+
+    // Expanded state: open every tree and card so collapsed-only content is captured
+    bool expandedAnything = false;
+    for (QTreeView* treeView : page->findChildren<QTreeView*>())
+    {
+        treeView->expandAll();
+        expandedAnything = true;
+    }
+    for (AzQtComponents::Card* card : page->findChildren<AzQtComponents::Card*>())
+    {
+        card->setExpanded(true);
+        expandedAnything = true;
+    }
+    if (expandedAnything)
+    {
+        settle();
+        window()->grab().save(capturePath(QStringLiteral("expanded")));
+    }
+
+    // Combo popups: open each visible combo on the page and grab the popup window
+    int comboIndex = 0;
+    for (QComboBox* combo : page->findChildren<QComboBox*>())
+    {
+        if (!combo->isVisible() || combo->count() == 0)
+        {
+            continue;
+        }
+        combo->showPopup();
+        settle();
+        if (QWidget* popup = QApplication::activePopupWidget())
+        {
+            popup->grab().save(capturePath(QStringLiteral("combo%1-popup").arg(comboIndex)));
+        }
+        combo->hidePopup();
+        settle();
+        if (++comboIndex >= 3)
+        {
+            break;
+        }
+    }
+
+    // Modal dialog launchers (color picker etc.): a watchdog grabs and closes the
+    // dialog while the button's exec() blocks
+    int dialogIndex = 0;
+    for (QPushButton* button : page->findChildren<QPushButton*>())
+    {
+        const QString buttonText = button->text().toLower();
+        const bool opensDialog = buttonText.contains(QStringLiteral("picker"))
+            || buttonText.contains(QStringLiteral("dialog"))
+            || buttonText.contains(QStringLiteral("rgb"))
+            || buttonText.contains(QStringLiteral("hsl"))
+            || buttonText.contains(QStringLiteral("hsv"));
+        if (!button->isVisible() || !opensDialog)
+        {
+            continue;
+        }
+
+        const QString dialogCapturePath = capturePath(QStringLiteral("dialog%1").arg(dialogIndex));
+        QTimer::singleShot(900, this, [dialogCapturePath]()
+        {
+            if (QWidget* modal = QApplication::activeModalWidget())
+            {
+                modal->grab().save(dialogCapturePath);
+                modal->close();
+            }
+        });
+        button->click();
+        settle();
+        if (++dialogIndex >= 3)
+        {
+            break;
+        }
+    }
+
+    // Dock widgets: float each one and grab its window, then re-dock
+    int dockIndex = 0;
+    for (QDockWidget* dockWidget : page->findChildren<QDockWidget*>())
+    {
+        if (!dockWidget->isVisible())
+        {
+            continue;
+        }
+        dockWidget->setFloating(true);
+        settle();
+        dockWidget->window()->grab().save(capturePath(QStringLiteral("dock%1-floating").arg(dockIndex)));
+        dockWidget->setFloating(false);
+        settle();
+        if (++dockIndex >= 3)
+        {
+            break;
+        }
+    }
 }
 
 void ComponentDemoWidget::setupMenuBar()

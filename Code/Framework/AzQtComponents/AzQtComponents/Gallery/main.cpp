@@ -33,6 +33,7 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QSettings>
+#include <QTimer>
 
 #include <iostream>
 
@@ -157,6 +158,28 @@ int main(int argc, char **argv)
     });
 
     app.setQuitOnLastWindowClosed(true);
+
+    // --screenshot-dir <path>: rasterize every gallery page to PNG and exit.
+    // Pairs with --disable-stylesheets to produce flattened vs qss-mode sets
+    // for side-by-side parity evaluation.
+    const QStringList arguments = QApplication::arguments();
+
+    // --page <name-or-index>: start on a specific gallery page
+    const int pageArgIndex = arguments.indexOf(QStringLiteral("--page"));
+    if (pageArgIndex >= 0 && pageArgIndex + 1 < arguments.size())
+    {
+        widget->selectPage(arguments.at(pageArgIndex + 1));
+    }
+
+    const int screenshotArgIndex = arguments.indexOf(QStringLiteral("--screenshot-dir"));
+    if (screenshotArgIndex >= 0 && screenshotArgIndex + 1 < arguments.size())
+    {
+        const QString screenshotDir = arguments.at(screenshotArgIndex + 1);
+        QTimer::singleShot(800, widget, [widget, screenshotDir]() {
+            widget->captureAllPages(screenshotDir);
+            QApplication::quit();
+        });
+    }
 
     app.exec();
 }
