@@ -1,0 +1,131 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Point Light (Sphere)",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Point Light (Simple)",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 6
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Spot Light (Disk)",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 2
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Spot Light (Simple)",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 7
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Capsule Light",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 3
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Quad Light",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 4
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Polygon Light",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Light",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Light type",
+                                "type": "int",
+                                "value": 5
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Directional Light",
+                "category": "Lights",
+                "components": [
+                    {
+                        "component": "Directional Light",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

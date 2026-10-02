@@ -572,7 +572,8 @@ namespace AtomToolsFramework
 
         bool saved = false;
         constexpr auto configurationMode =
-            AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+            AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH |
+            AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY | AZ::IO::SystemFile::SF_OPEN_TRUNCATE;
         if (AZ::IO::SystemFile outputFile; outputFile.Open(savePath.c_str(), configurationMode))
         {
             saved = outputFile.Write(stringBuffer.c_str(), stringBuffer.size()) == stringBuffer.size();

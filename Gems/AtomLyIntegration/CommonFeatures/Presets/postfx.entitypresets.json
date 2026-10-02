@@ -1,0 +1,148 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "PostFX Layer",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "PostFX Volume",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Layer Category",
+                                "type": "int",
+                                "value": 5000000
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Exposure Control",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "Exposure Control",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Exposure Volume",
+                "description": "Exposure control that applies only inside the box. The Shape Weight Modifier fades it in as the camera enters, so size the box to the area you want affected.",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "Box Shape",
+                        "properties": []
+                    },
+                    {
+                        "component": "PostFX Layer",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Layer Category",
+                                "type": "int",
+                                "value": 5000000
+                            }
+                        ]
+                    },
+                    {
+                        "component": "Exposure Control",
+                        "properties": []
+                    },
+                    {
+                        "component": "PostFX Shape Weight Modifier",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Bloom",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "Bloom",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "SSAO",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "Ambient Occlusion",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Chromatic Aberration",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "Chromatic Aberration",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Vignette",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "Vignette",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "HDR Color Grading",
+                "category": "PostFX",
+                "components": [
+                    {
+                        "component": "PostFX Layer",
+                        "properties": []
+                    },
+                    {
+                        "component": "HDR Color Grading",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}
