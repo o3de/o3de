@@ -46,6 +46,10 @@ namespace AZ
             SceneAPI::Events::ProcessingResult AssignDefaultMaterials(MaterialAssetBuilderContext& context) const;
             
             Data::Asset<MaterialAsset> GetDefaultMaterialAsset() const;
+
+            //! Utility to return true if there even any meshes in the scene export settings at all
+            //! Since we do not export materials if there are no meshes.
+            static bool SceneHasMeshesToExport(const MaterialAssetBuilderContext& context);
         };
 
         /**
