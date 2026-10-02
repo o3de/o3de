@@ -1487,8 +1487,7 @@ namespace WhiteBox
                 c->SetActiveLayer(to);
             });
 
-        // RefreshLayerControls restores the previously selected ROW, which now holds a different
-        // layer - follow the layer the user moved instead.
+        // Select the moved layer now so the highlight does not flash on the row it left.
         const bool wasUpdating = m_updating;
         m_updating = true;
         m_layerList->setCurrentRow(to);
@@ -1550,8 +1549,8 @@ namespace WhiteBox
             }
         }
 
-        // Layer list (preserve the selected row across the rebuild).
-        const int previousRow = m_layerList->currentRow();
+        // Layer list. The highlighted row is the active layer, so rebuild it around that: a change made anywhere
+        // else (the combo, the viewport tools, a script) then shows up here instead of leaving the old row lit.
         m_layerList->clear();
         const int layerCount = component->GetLayerCount();
         for (int i = 0; i < layerCount; ++i)
@@ -1570,8 +1569,7 @@ namespace WhiteBox
         {
             m_layerCountLabel->setText(layerCount == 1 ? tr("1 layer") : tr("%1 layers").arg(layerCount));
         }
-        const int row = (previousRow >= 0 && previousRow < layerCount) ? previousRow
-            : (layerCount > 0 ? AZStd::clamp(activeIndex, 0, layerCount - 1) : -1);
+        const int row = layerCount > 0 ? AZStd::clamp(activeIndex, 0, layerCount - 1) : -1;
         m_layerList->setCurrentRow(row);
 
         // Size the list to its contents so every layer is visible without an inner scrollbar.

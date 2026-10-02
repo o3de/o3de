@@ -10,6 +10,10 @@ set(FILES
     Include/WhiteBox/EditorWhiteBoxComponentBus.h
     Include/WhiteBox/WhiteBoxToolApi.h
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
+    Source/EditorWhiteBoxAuthoring.cpp
+    Source/EditorWhiteBoxAuthoring.h
+    Source/EditorWhiteBoxAuthoringBus.h
+    Source/EditorWhiteBoxAuthoringReflection.cpp
     Source/EditorWhiteBoxComponent.cpp
     Source/EditorWhiteBoxComponent.h
     Source/EditorWhiteBoxComponentLayers.cpp

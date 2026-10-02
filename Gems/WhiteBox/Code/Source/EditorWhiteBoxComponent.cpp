@@ -15,6 +15,7 @@
  */
 
 #include "Asset/EditorWhiteBoxMeshAsset.h"
+#include "EditorWhiteBoxAuthoring.h"
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
 #include "Rendering/WhiteBoxNullRenderMesh.h"
@@ -1113,6 +1114,9 @@ namespace WhiteBox
         // regenerating would discard freeform edits made before the level was saved).
         DeserializeWhiteBox();
 
+        // Script access (Python / MCP) to this entity's White Box values and mesh tools.
+        m_authoring = AZStd::make_unique<EditorWhiteBoxAuthoring>(*this);
+
         // Refresh render/physics/bounds when the entity's non-uniform scale changes (it is separate
         // from the Transform, so it does not raise OnTransformChanged).
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -1153,6 +1157,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::Deactivate()
     {
+        m_authoring.reset();
         m_nonUniformScaleChangedHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportSnapping::ViewportSnapSourceRequestBus::Handler::BusDisconnect();

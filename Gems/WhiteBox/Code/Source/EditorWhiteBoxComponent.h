@@ -44,6 +44,7 @@ namespace WhiteBox
     //! own parameter is migrated through this so existing tori keep the tessellation they had.
     int LegacyTubeSidesFromSides(int sides);
 
+    class EditorWhiteBoxAuthoring;
     class EditorWhiteBoxMeshAsset;
     class RenderMeshInterface;
 
@@ -873,6 +874,9 @@ namespace WhiteBox
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation
                                                        //!< and creating a concrete ComponentMode.
+
+        //! Answers the Python / MCP authoring bus for this entity while the component is active.
+        AZStd::unique_ptr<EditorWhiteBoxAuthoring> m_authoring;
 
         Api::WhiteBoxMeshPtr m_whiteBox; //!< Handle/opaque pointer to the White Box mesh data.
         AZStd::optional<AZStd::unique_ptr<RenderMeshInterface>>

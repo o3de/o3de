@@ -6,6 +6,7 @@
  *
  */
 
+#include "EditorWhiteBoxAuthoringBus.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "WhiteBoxToolApiReflection.h"
 
@@ -280,6 +281,9 @@ namespace WhiteBox
                         return AZ::EntityComponentIdPair(AZ::EntityId(entityId), componentId);
                     });
         }
+
+        // Entity-addressed authoring bus: the pane's values and the id-based mesh tools, for Python and MCP.
+        ReflectAuthoring(context);
     }
 } // namespace WhiteBox
 
