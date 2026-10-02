@@ -359,7 +359,8 @@ namespace PhysX
             }
             else
             {
-                m_cachedSceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
+                m_cachedSceneInterface->RegisterSceneSimulationSynchronizedWithTickHandler(
+                    m_attachedSceneHandle, m_sceneFinishSimHandler);
             }
         }
 

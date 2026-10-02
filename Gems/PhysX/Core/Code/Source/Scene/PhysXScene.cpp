@@ -584,6 +584,8 @@ namespace PhysX
             return;
         }
 
+        const bool simulationThreaded = GetPhysXSystem() && GetPhysXSystem()->IsSimulationThreadRunning();
+
         {
             AZ_PROFILE_SCOPE(Physics, "PhysXScene::CheckResults");
 
@@ -629,7 +631,7 @@ namespace PhysX
             // Keep the event signal outside of the scene lock since there may be handlers that want to lock the scene for write
             m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
 
-            if (physx_batchTransformSync)
+            if (physx_batchTransformSync || simulationThreaded)
             {
                 m_queuedActiveBodyIndices.IncreaseCapacity(activeBodyHandles.size());
 
@@ -655,6 +657,10 @@ namespace PhysX
             m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
         }
 
+        //! Covered by the next tick-synchronized signal, which the main thread sends once the results
+        //! of these steps are published.
+        m_tickSynchronizedDeltaTime = m_tickSynchronizedDeltaTime.value_or(0.0f) + m_currentDeltaTime;
+
         UpdateAzProfilerDataPoints();
     }
 
@@ -665,6 +671,18 @@ namespace PhysX
 
         //send queued collision events
         ProcessCollisionEvents();
+    }
+
+    void PhysXScene::SignalSimulationSynchronizedWithTick()
+    {
+        if (!m_tickSynchronizedDeltaTime.has_value())
+        {
+            return;
+        }
+        AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationSynchronizedWithTickEvent::Signaled");
+
+        m_sceneSimulationSynchronizedWithTickEvent.Signal(m_sceneHandle, *m_tickSynchronizedDeltaTime);
+        m_tickSynchronizedDeltaTime.reset();
     }
 
     void PhysXScene::SetEnabled(bool enable)
@@ -1339,6 +1357,8 @@ namespace PhysX
     {
         AZ_PROFILE_SCOPE(Physics, "PhysX::FlushTransformSync");
 
+        const bool simulationThreaded = GetPhysXSystem() && GetPhysXSystem()->IsSimulationThreadRunning();
+
         auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
         {
             if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
@@ -1347,7 +1367,9 @@ namespace PhysX
             }
         };
 
-        if (physx_parallelTransformSync)
+        //! ApplyParallel's tasks take a read lock while we wait on them - deadlocks under the write
+        //! lock the caller holds while a simulation thread is running.
+        if (physx_parallelTransformSync && !simulationThreaded)
         {
             m_queuedActiveBodyIndices.ApplyParallel(transformSync, m_pxScene);
         }
