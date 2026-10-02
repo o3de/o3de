@@ -7,10 +7,20 @@
  */
 
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporter.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporterSystem.h>
+#include <AtomToolsFramework/Graph/GraphCompiler.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileData.h>
+#include <AtomToolsFramework/Graph/GraphUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
+#include <AzTest/Utils.h>
+#include <GraphModel/Model/GraphContext.h>
 
 namespace UnitTest
 {
@@ -82,6 +92,394 @@ namespace UnitTest
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_localFileIO;
     };
+
+    class GraphCompilerLifecycleTestDouble : public AtomToolsFramework::GraphCompiler
+    {
+    public:
+        bool Finish(State state)
+        {
+            return FinishCompile(state);
+        }
+
+        void RecordGeneratedFile(const AZStd::string& path, bool written)
+        {
+            m_generatedFiles.push_back(path);
+            if (written)
+            {
+                m_modifiedGeneratedFiles.push_back(path);
+            }
+        }
+
+    };
+
+    class SortTestNode : public GraphModel::Node
+    {
+    public:
+        explicit SortTestNode(const GraphModel::GraphPtr& graph)
+            : GraphModel::Node(graph)
+        {
+        }
+
+        const char* GetTitle() const override
+        {
+            return "SortTestNode";
+        }
+    };
+
+    class AssetSystemJobRequestStub : public AzToolsFramework::AssetSystemJobRequestBus::Handler
+    {
+    public:
+        AssetSystemJobRequestStub()
+        {
+            BusConnect();
+        }
+
+        ~AssetSystemJobRequestStub() override
+        {
+            BusDisconnect();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfo(
+            [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] bool escalateJobs) override
+        {
+            ++m_requestCount;
+            if (m_failRequest)
+            {
+                return AZ::Failure();
+            }
+            if (m_jobStatuses.empty())
+            {
+                return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+            }
+
+            AzToolsFramework::AssetSystem::JobInfo jobInfo;
+            jobInfo.m_status = m_jobStatuses.front();
+            if (m_jobStatuses.size() > 1)
+            {
+                m_jobStatuses.erase(m_jobStatuses.begin());
+            }
+            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{ jobInfo });
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfoByAssetID(
+            [[maybe_unused]] const AZ::Data::AssetId& assetId,
+            [[maybe_unused]] bool escalateJobs,
+            [[maybe_unused]] bool requireFencing) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfoByJobKey(
+            [[maybe_unused]] const AZStd::string& jobKey, [[maybe_unused]] bool escalateJobs) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobStatus> GetAssetJobsStatusByJobKey(
+            [[maybe_unused]] const AZStd::string& jobKey, [[maybe_unused]] bool escalateJobs) override
+        {
+            return AZ::Failure();
+        }
+
+        AZ::Outcome<AZStd::string> GetJobLog([[maybe_unused]] AZ::u64 jobRunKey) override
+        {
+            return AZ::Failure();
+        }
+
+        size_t m_requestCount = 0;
+        bool m_failRequest = false;
+        AZStd::vector<AzToolsFramework::AssetSystem::JobStatus> m_jobStatuses;
+    };
+
+    class ReentrantAssetSystemJobRequestStub : public AssetSystemJobRequestStub
+    {
+    public:
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> GetAssetJobsInfo(
+            [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] bool escalateJobs) override
+        {
+            AtomToolsFramework::AssetStatusReporterSystemRequestBus::Event(
+                m_toolId,
+                &AtomToolsFramework::AssetStatusReporterSystemRequestBus::Events::StopReporting,
+                m_requestId);
+            m_requestReturned = true;
+            return AZ::Success(AzToolsFramework::AssetSystem::JobInfoContainer{});
+        }
+
+        AZ::Crc32 m_toolId = AZ_CRC_CE("ReentrantAssetStatusReporterTest");
+        AZ::Uuid m_requestId = AZ::Uuid::CreateRandom();
+        AZStd::atomic_bool m_requestReturned = false;
+    };
+
+    TEST(AssetStatusReporterTest, UpdateProcessesOneSettledPath)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        assetSystem.m_jobStatuses = { AzToolsFramework::AssetSystem::JobStatus::Completed };
+        const AZStd::vector<AZStd::string> sourcePaths = { "first.azsl", "second.shader", "third.material" };
+        AtomToolsFramework::AssetStatusReporter reporter(sourcePaths);
+
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Succeeded);
+        EXPECT_EQ(assetSystem.m_requestCount, sourcePaths.size());
+    }
+
+    TEST(AssetStatusReporterTest, FailedAndEmptyQueriesRemainQueuedUntilJobsComplete)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        AtomToolsFramework::AssetStatusReporter reporter({ "generated.material" });
+
+        assetSystem.m_failRequest = true;
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+
+        assetSystem.m_failRequest = false;
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+
+        assetSystem.m_jobStatuses = {
+            AzToolsFramework::AssetSystem::JobStatus::Queued,
+            AzToolsFramework::AssetSystem::JobStatus::Completed,
+        };
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Processing);
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Succeeded);
+    }
+
+    TEST(AssetStatusReporterTest, FailedJobFailsReporter)
+    {
+        AssetSystemJobRequestStub assetSystem;
+        assetSystem.m_jobStatuses = { AzToolsFramework::AssetSystem::JobStatus::Failed };
+        AtomToolsFramework::AssetStatusReporter reporter({ "generated.material" });
+
+        EXPECT_EQ(reporter.Update(), AtomToolsFramework::AssetStatusReporterState::Failed);
+    }
+
+    TEST(AssetStatusReporterSystemTest, AssetRequestCanStopReporterReentrantly)
+    {
+        ReentrantAssetSystemJobRequestStub assetSystem;
+        AtomToolsFramework::AssetStatusReporterSystem reporterSystem(assetSystem.m_toolId);
+
+        reporterSystem.StartReporting(assetSystem.m_requestId, { "generated.material" });
+        for (int iteration = 0; iteration < 1000 && !assetSystem.m_requestReturned; ++iteration)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+        }
+
+        EXPECT_TRUE(assetSystem.m_requestReturned);
+        EXPECT_EQ(reporterSystem.GetStatus(assetSystem.m_requestId), AtomToolsFramework::AssetStatusReporterState::Invalid);
+    }
+
+    TEST(AssetStatusReporterSystemTest, IdleReporterSystemStops)
+    {
+        constexpr int systemCount = 20;
+        for (int index = 0; index < systemCount; ++index)
+        {
+            AtomToolsFramework::AssetStatusReporterSystem reporterSystem(AZ::Crc32(index + 1));
+        }
+    }
+
+    TEST(GraphCompilerLifecycleTest, QueuedReplacementCancelsActiveCompile)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+
+        EXPECT_TRUE(compiler.Reset());
+        EXPECT_FALSE(compiler.CanCompileGraph());
+
+        // A second reservation requests cancellation and leaves the replacement queued.
+        EXPECT_FALSE(compiler.Reset());
+        EXPECT_FALSE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+        EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Canceled);
+
+        EXPECT_TRUE(compiler.Reset());
+        EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+        EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Complete);
+    }
+
+    TEST(GraphCompilerLifecycleTest, RequestCancelDoesNotReserveIdleCompiler)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+
+        compiler.RequestCancel();
+        EXPECT_TRUE(compiler.CanCompileGraph());
+        EXPECT_TRUE(compiler.Reset());
+        EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+    }
+
+    TEST(GraphCompilerLifecycleTest, RequestCancelCancelsReservedCompileBeforeDispatch)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+
+        compiler.RecordGeneratedFile("previous.materialtype", true);
+        ASSERT_TRUE(compiler.Reset());
+        compiler.RequestCancel();
+        compiler.RequestCancel();
+        EXPECT_FALSE(compiler.CompileGraph({}, "graph", "graph.materialgraph"));
+        EXPECT_EQ(compiler.GetState(), AtomToolsFramework::GraphCompiler::State::Canceled);
+        EXPECT_TRUE(compiler.GetGeneratedFilePaths().empty());
+        EXPECT_TRUE(compiler.GetModifiedGeneratedFilePaths().empty());
+    }
+
+    TEST(GraphCompilerLifecycleTest, TerminalSetStateReleasesReservation)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+
+        ASSERT_TRUE(compiler.Reset());
+        compiler.SetState(AtomToolsFramework::GraphCompiler::State::Complete);
+        EXPECT_TRUE(compiler.CanCompileGraph());
+    }
+
+    TEST(GraphCompilerLifecycleTest, TerminalStateHandlerCanReserveNextCompile)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+        bool resetSucceeded = false;
+        compiler.SetStateChangeHandler(
+            [&compiler, &resetSucceeded](const AtomToolsFramework::GraphCompiler* graphCompiler)
+            {
+                if (graphCompiler->GetState() == AtomToolsFramework::GraphCompiler::State::Complete)
+                {
+                    resetSucceeded = compiler.Reset();
+                }
+            });
+
+        ASSERT_TRUE(compiler.Reset());
+        EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+        EXPECT_TRUE(resetSucceeded);
+        EXPECT_FALSE(compiler.CanCompileGraph());
+        compiler.RequestCancel();
+        EXPECT_FALSE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+    }
+
+    TEST(GraphCompilerLifecycleTest, NewStateDoesNotOvertakeTerminalNotification)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+        AZStd::atomic_bool terminalHandlerEntered = false;
+        AZStd::atomic_bool releaseTerminalHandler = false;
+        AZStd::mutex statesMutex;
+        AZStd::vector<AtomToolsFramework::GraphCompiler::State> states;
+        compiler.SetStateChangeHandler(
+            [&](const AtomToolsFramework::GraphCompiler* graphCompiler)
+            {
+                const auto state = graphCompiler->GetState();
+                {
+                    AZStd::scoped_lock lock(statesMutex);
+                    states.push_back(state);
+                }
+                if (state == AtomToolsFramework::GraphCompiler::State::Complete)
+                {
+                    terminalHandlerEntered = true;
+                    while (!releaseTerminalHandler)
+                    {
+                        AZStd::this_thread::yield();
+                    }
+                }
+            });
+
+        ASSERT_TRUE(compiler.Reset());
+        AZStd::thread terminalThread([&compiler]() { compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete); });
+        for (int iteration = 0; iteration < 1000 && !terminalHandlerEntered; ++iteration)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+        }
+        if (!terminalHandlerEntered)
+        {
+            releaseTerminalHandler = true;
+            terminalThread.join();
+            FAIL() << "Terminal state handler was not invoked";
+            return;
+        }
+
+        EXPECT_TRUE(compiler.Reset());
+        AZStd::thread nextStateThread(
+            [&compiler]() { compiler.SetState(AtomToolsFramework::GraphCompiler::State::Compiling); });
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
+        {
+            AZStd::scoped_lock lock(statesMutex);
+            EXPECT_EQ(states.size(), 1);
+            if (!states.empty())
+            {
+                EXPECT_EQ(states.front(), AtomToolsFramework::GraphCompiler::State::Complete);
+            }
+        }
+
+        releaseTerminalHandler = true;
+        terminalThread.join();
+        nextStateThread.join();
+        {
+            AZStd::scoped_lock lock(statesMutex);
+            ASSERT_EQ(states.size(), 2);
+            EXPECT_EQ(states.back(), AtomToolsFramework::GraphCompiler::State::Compiling);
+        }
+
+        compiler.RequestCancel();
+        EXPECT_FALSE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+    }
+
+    TEST(GraphCompilerLifecycleTest, StateHandlerCanPublishSubsequentState)
+    {
+        GraphCompilerLifecycleTestDouble compiler;
+        AZStd::vector<AtomToolsFramework::GraphCompiler::State> states;
+        compiler.SetStateChangeHandler(
+            [&compiler, &states](const AtomToolsFramework::GraphCompiler* graphCompiler)
+            {
+                const auto state = graphCompiler->GetState();
+                states.push_back(state);
+                if (state == AtomToolsFramework::GraphCompiler::State::Complete)
+                {
+                    EXPECT_TRUE(compiler.Reset());
+                    compiler.SetState(AtomToolsFramework::GraphCompiler::State::Compiling);
+                }
+            });
+
+        ASSERT_TRUE(compiler.Reset());
+        EXPECT_TRUE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+        EXPECT_EQ(
+            states,
+            (AZStd::vector<AtomToolsFramework::GraphCompiler::State>{
+                AtomToolsFramework::GraphCompiler::State::Complete,
+                AtomToolsFramework::GraphCompiler::State::Compiling,
+            }));
+
+        compiler.RequestCancel();
+        EXPECT_FALSE(compiler.Finish(AtomToolsFramework::GraphCompiler::State::Complete));
+    }
+
+    TEST(GraphUtilTest, EqualScoreNodesAreOrderedByNodeId)
+    {
+        const auto context = AZStd::make_shared<GraphModel::GraphContext>("GraphUtilTest", ".test", GraphModel::DataTypeList{});
+        const auto graph = AZStd::make_shared<GraphModel::Graph>(context);
+        const auto first = AZStd::make_shared<SortTestNode>(graph);
+        const auto second = AZStd::make_shared<SortTestNode>(graph);
+        const auto third = AZStd::make_shared<SortTestNode>(graph);
+        graph->AddNode(first);
+        graph->AddNode(second);
+        graph->AddNode(third);
+
+        AZStd::vector<GraphModel::NodePtr> nodes = { third, first, second };
+        AtomToolsFramework::SortNodesInExecutionOrder(nodes);
+
+        EXPECT_EQ(nodes[0]->GetId(), first->GetId());
+        EXPECT_EQ(nodes[1]->GetId(), second->GetId());
+        EXPECT_EQ(nodes[2]->GetId(), third->GetId());
+    }
+
+    TEST_F(AtomToolsFrameworkTest, GraphTemplateFileDataSaveSkipsIdenticalFile)
+    {
+        const AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const AZ::IO::Path templatePath = tempDirectory.Resolve("template.txt");
+        const AZ::IO::Path outputPath = tempDirectory.Resolve("output.txt");
+        ASSERT_TRUE(AZ::Utils::WriteFile("generated content\n", templatePath.Native()).IsSuccess());
+
+        AtomToolsFramework::GraphTemplateFileData templateData;
+        ASSERT_TRUE(templateData.Load(templatePath.Native()));
+
+        bool wroteFile = false;
+        ASSERT_TRUE(templateData.Save(outputPath.Native(), &wroteFile));
+        EXPECT_TRUE(wroteFile);
+
+        wroteFile = true;
+        ASSERT_TRUE(AZ::IO::SystemFile::SetWritable(outputPath.Native().c_str(), false));
+        const bool saveResult = templateData.Save(outputPath.Native(), &wroteFile);
+        EXPECT_TRUE(AZ::IO::SystemFile::SetWritable(outputPath.Native().c_str(), true));
+        EXPECT_TRUE(saveResult);
+        EXPECT_FALSE(wroteFile);
+    }
 
     TEST_F(AtomToolsFrameworkTest, GetPathToExteralReference_Succeeds)
     {

@@ -29,8 +29,9 @@ namespace AtomToolsFramework
         //! Loads and tokenizes template data from a text file at the specified, absolute path.
         bool Load(const AZStd::string& path);
 
-        //! Concatenates and saves template lines to read text file at the specified, absolute path.
-        bool Save(const AZStd::string& path) const;
+        //! Concatenates and writes the template lines to the specified absolute path.
+        //! @param wroteFile Set to true if the file was written, or false if identical content was already on disk.
+        bool Save(const AZStd::string& path, bool* wroteFile = nullptr) const;
 
         //! Return true if the file has been modified since the last time it was loaded.
         bool IsReloadRequired() const;

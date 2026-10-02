@@ -205,12 +205,12 @@ namespace MaterialCanvas
                   "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted",
                   tr("Clear Viewport Material When Compiling Starts").toUtf8().constData(),
                   tr("Clear the viewport model's material whenever compiling shaders and materials starts.").toUtf8().constData(),
-                  true),
+                  false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed",
                   tr("Clear Viewport Material When Compiling Fails").toUtf8().constData(),
                   tr("Clear the viewport model's material whenever compiling shaders and materials fails.").toUtf8().constData(),
-                  true),
+                  false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
                   tr("Enable Compiler Logging").toUtf8().constData(),
@@ -264,4 +264,3 @@ namespace MaterialCanvas
         return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/material-canvas/";
     }
 } // namespace MaterialCanvas
-
