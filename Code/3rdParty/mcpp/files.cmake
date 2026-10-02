@@ -6,16 +6,17 @@
 #
 
 set(FILES
-    Include/mcpp_lib.h
-    Include/mcpp_out.h
-    Source/directive.c
-    Source/eval.c
-    Source/expand.c
-    Source/internal.h
-    Source/main.c
-    Source/mbchar.c
-    Source/noconfig.h
-    Source/support.c
-    Source/system.c
-    Source/system.h
+    "${mcpp_SOURCE_DIR}/include/mcpp_lib.h"
+    "${mcpp_SOURCE_DIR}/include/mcpp_out.h"
+    "${mcpp_SOURCE_DIR}/include/mcpp.h"
+    "${mcpp_SOURCE_DIR}/src/directive.c"
+    "${mcpp_SOURCE_DIR}/src/eval.c"
+    "${mcpp_SOURCE_DIR}/src/expand.c"
+    "${mcpp_SOURCE_DIR}/src/internal.h"
+    "${mcpp_SOURCE_DIR}/src/main.c"
+    "${mcpp_SOURCE_DIR}/src/mbchar.c"
+    "${mcpp_SOURCE_DIR}/src/noconfig.h"
+    "${mcpp_SOURCE_DIR}/src/support.c"
+    "${mcpp_SOURCE_DIR}/src/system.c"
+    "${mcpp_SOURCE_DIR}/src/system.h"
 )
