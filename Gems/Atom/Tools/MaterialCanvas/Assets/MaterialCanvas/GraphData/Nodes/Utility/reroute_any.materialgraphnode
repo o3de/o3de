@@ -1,0 +1,42 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{A4D0A1B1-0E1C-4E3B-9E5A-000000000013}",
+        "category": "Utility",
+        "title": "Reroute Any",
+        "description": "Passes the connected input type through for cleaner graph wiring.",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
+        "settings": {
+            "isReroute": [ "true" ],
+            "nodeStyle": [ ".reroute" ],
+            "dataTypePassthrough": [ "inValue|outValue" ]
+        },
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "(bool|int|uint|float|float2|float3|float4|color|float2x2|float3x3|float4x3|float4x4)",
+                "defaultDataType": "float",
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "(bool|int|uint|float|float2|float3|float4|color|float2x2|float3x3|float4x3|float4x4)",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = inValue;" ]
+                }
+            }
+        ]
+    }
+}

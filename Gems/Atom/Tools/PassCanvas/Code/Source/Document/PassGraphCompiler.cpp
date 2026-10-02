@@ -49,7 +49,6 @@ namespace PassCanvas
             return false;
         }
 
-        SetState(State::Complete);
-        return true;
+        return FinishCompile(State::Complete);
     }
 } // namespace PassCanvas

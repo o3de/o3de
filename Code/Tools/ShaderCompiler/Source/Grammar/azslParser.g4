@@ -29,9 +29,10 @@ topLevelDeclaration:
 ;
 
 // Amazon: AZSL has scopes, and identifiers can be qualified
+// qualifiedId is first so SLL conflict resolution picks it for qualified names, letting the parser run in SLL (see Main.cpp).
 idExpression:
-        unqualifiedId   // stricly unqualified (no nested specifiers at all)
-    |   qualifiedId     // could be relatively qualified OR fully qualified.
+        qualifiedId     // could be relatively qualified OR fully qualified.
+    |   unqualifiedId   // stricly unqualified (no nested specifiers at all)
 ;
 
 unqualifiedId:
@@ -42,8 +43,10 @@ qualifiedId:
     nestedNameSpecifier unqualifiedId
 ;
 
+// Left-factored so it cannot derive empty; that made each Identifier ambiguous in idExpression and forced full-context prediction.
 nestedNameSpecifier:
-    GlobalSROToken='::'? (Identifier '::')*
+        GlobalSROToken='::' (Identifier '::')*   // ::a::b::   or just ::
+    |   (Identifier '::')+                       // a::b::
 ;
 
 classDefinitionStatement:

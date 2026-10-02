@@ -45,6 +45,9 @@ namespace AZ
                 ScriptExecutionContext(const MaterialTypeSourceData& materialType, const ShaderTemplatesList& availableShaderTemplates);
 
                 AZStd::string GetLightingModelName() const;
+
+                //! Returns the material type's value for @name, or @defaultValue; see MaterialTypeSourceData::m_buildSettings.
+                AZStd::string GetBuildSetting(const char* name, const char* defaultValue) const;
                 void IncludeAllShaders();
                 void ExcludeAllShaders();
                 void IncludeShader(const char* shaderTemplateName);
