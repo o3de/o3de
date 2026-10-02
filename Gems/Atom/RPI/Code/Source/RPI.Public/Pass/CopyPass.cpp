@@ -229,17 +229,17 @@ namespace AZ
                 dest->m_lifetime = RHI::AttachmentLifetimeType::Transient;
 
                 // Set bind flags to CopyWrite. Other bind flags will be auto-inferred by pass system
-                if (dest->m_descriptor.m_type == RHI::AttachmentType::Image)
+                if (dest->m_descriptor.type() == RHI::AttachmentType::Image)
                 {
-                    dest->m_descriptor.m_image.m_bindFlags = RHI::ImageBindFlags::CopyWrite;
+                    dest->m_descriptor.get<RHI::ImageAttachment>().m_image.m_bindFlags = RHI::ImageBindFlags::CopyWrite;
                 }
-                else if (dest->m_descriptor.m_type == RHI::AttachmentType::Buffer)
+                else if (dest->m_descriptor.type() == RHI::AttachmentType::Buffer)
                 {
-                    dest->m_descriptor.m_buffer.m_bindFlags = RHI::BufferBindFlags::CopyWrite;
-                    if (dest->m_descriptor.m_bufferView.m_elementCount == 0)
+                    dest->m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_bindFlags = RHI::BufferBindFlags::CopyWrite;
+                    if (dest->m_descriptor.get<RHI::BufferAttachment>().m_bufferView.m_elementCount == 0)
                     {
-                        dest->m_descriptor.m_bufferView =
-                            RHI::BufferViewDescriptor::CreateRaw(0, static_cast<uint32_t>(dest->m_descriptor.m_buffer.m_byteCount));
+                        dest->m_descriptor.get<RHI::BufferAttachment>().m_bufferView =
+                            RHI::BufferViewDescriptor::CreateRaw(0, static_cast<uint32_t>(dest->m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_byteCount));
                     }
                 }
 

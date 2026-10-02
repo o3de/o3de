@@ -144,7 +144,7 @@ namespace AZ
             // The sizeSource contains the original depth buffer
             const RPI::PassAttachmentBinding* sizeSource = tileBuffer->m_sizeSource;
             const RHI::UnifiedAttachmentDescriptor& depthBufferDescriptor = sizeSource->GetAttachment()->m_descriptor;
-            return depthBufferDescriptor.m_image.m_size;
+            return depthBufferDescriptor.get<RHI::ImageAttachment>().m_image.m_size;
         }
 
         void LightCullingPass::SetConstantdataToSRG()
@@ -181,7 +181,7 @@ namespace AZ
         AZ::RHI::Size LightCullingPass::GetTileDataBufferResolution()
         {
             auto binding = GetInputBinding(m_tileDataIndex).GetAttachment().get();
-            return binding->m_descriptor.m_image.m_size;
+            return binding->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
         }
 
         // Used to convert a compute shader threadGroup.xy coordinate into a 0 to 1 screen uv coordinate
