@@ -67,9 +67,80 @@ static CCryEditDoc * theDocument;
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
+#include <QDir>
+
+namespace
+{
+    //! Best-effort emergency save, invoked from inside the crash handler. Returns the file written,
+    //! or empty when there was nothing to save or the save failed.
+    //!
+    //! This deliberately runs work that is not async-signal-safe (see SetEmergencySaveCallback's
+    //! warning) - saving a level allocates and takes locks. It is the same trade other engines'
+    //! crash handlers make: losing the user's unsaved work is worse than a small chance of the
+    //! save itself faulting, and the crash report is already captured by this point either way.
+    AZStd::string AttemptEmergencyLevelSave()
+    {
+        CCryEditDoc* document = GetIEditor() ? GetIEditor()->GetDocument() : nullptr;
+        if (!document || !document->IsDocumentReady() || !document->IsModified())
+        {
+            return {};
+        }
+
+        CGameEngine* gameEngine = GetIEditor()->GetGameEngine();
+        if (!gameEngine)
+        {
+            return {};
+        }
+
+        const QString levelPath = gameEngine->GetLevelPath();
+        const QString levelName = gameEngine->GetLevelName();
+        if (levelPath.isEmpty() || levelName.isEmpty())
+        {
+            return {};
+        }
+
+        // Reuse the editor's existing autobackup path rather than inventing a parallel save
+        // format; bForce bypasses the user's autobackup-enabled preference, which should not
+        // decide whether crash recovery happens.
+        document->SaveAutoBackup(true);
+
+        // SaveAutoBackup names its folder with a "yyyy-MM-dd [HH.mm.ss]" timestamp and does not
+        // report the path back, so pick the newest entry. That format sorts lexicographically in
+        // chronological order, which makes "newest" a plain string comparison.
+        const QDir backupRoot(levelPath + "/_autobackup");
+        const QStringList backups =
+            backupRoot.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        if (backups.isEmpty())
+        {
+            return {};
+        }
+
+        const QString savedFile = backupRoot.absoluteFilePath(
+            backups.last() + "/" + levelName + "/" + levelName + gameEngine->GetLevelExtension());
+        return QFile::exists(savedFile) ? AZStd::string(savedFile.toUtf8().constData()) : AZStd::string{};
+    }
+}
+#endif
 #endif
 #ifndef VERIFY
 #define VERIFY(EXPRESSION) { auto e = EXPRESSION; assert(e); }
+#endif
+
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+#include <AzCore/Console/IConsole.h>
+namespace
+{
+    // Intentionally faults the process so the crash handler pipeline can be exercised without
+    // waiting for a real bug. Compiled out entirely in Release builds.
+    void SimulateCrash(const AZ::ConsoleCommandContainer&)
+    {
+        AZ_Warning("CrashReporting", false, "simulate_crash invoked - intentionally crashing the Editor to test the crash handler");
+        volatile int* crashPtr = nullptr;
+        *crashPtr = 0;
+    }
+    AZ_CONSOLEFREEFUNC("simulate_crash", SimulateCrash, AZ::ConsoleFunctorFlags::Null,
+        "Intentionally crashes the Editor to test the crash handler pipeline. Debug/Profile only.");
+}
 #endif
 
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
@@ -145,6 +216,7 @@ void CEditorImpl::Initialize()
 {
 #if defined(EXTERNAL_CRASH_REPORTING)
     CrashHandler::ToolsCrashHandler::InitCrashHandler("Editor", {});
+    SentryCrash::SetEmergencySaveCallback(&AttemptEmergencyLevelSave);
 #endif
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
