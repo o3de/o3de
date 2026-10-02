@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
+import locale
 import subprocess
 
 class SubprocessRunner:
@@ -32,24 +33,37 @@ class SubprocessRunner:
         """
         self._arg_list_str = " ".join(self._argList)
         print(f"{self._name} will run command:\n{self._arg_list_str}\n")
-        self._subprocess = subprocess.Popen(
-            self._argList, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self._cwd
-        )
+        try:
+            self._subprocess = subprocess.Popen(
+                self._argList, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self._cwd
+            )
+        except OSError as error:
+            self._error_code = -1
+            self._error_message = str(error)
+            return False
         try:
             outs, errs = self._subprocess.communicate(timeout=self._timeOut)
-            self._success_message = outs.decode("utf-8")
-            self._error_message = errs.decode("utf-8")
+            self._success_message = self._decode_output(outs)
+            self._error_message = self._decode_output(errs)
             print(f"ok:<{self._success_message}>, err:<{self._error_message}>")
             self._error_code = self._subprocess.returncode
             return self._subprocess.returncode == 0
         except subprocess.TimeoutExpired:
             self._subprocess.kill()
             outs, errs = self._subprocess.communicate()
-            self._success_message = outs.decode("utf-8")
-            self._error_message = errs.decode("utf-8")
+            self._success_message = self._decode_output(outs)
+            self._error_message = self._decode_output(errs)
             print(f"ok:<{self._success_message}>, err:<{self._error_message}>")
             self._error_code = -1
             return False
+
+
+    @staticmethod
+    def _decode_output(output: bytes) -> str:
+        try:
+            return output.decode("utf-8")
+        except UnicodeDecodeError:
+            return output.decode(locale.getpreferredencoding(False), errors="replace")
 
 
     def get_error_code(self):
