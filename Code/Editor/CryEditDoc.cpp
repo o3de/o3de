@@ -921,7 +921,9 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     }
 
     // Commit changes to the disk.
-    _flushall();
+#if defined(WIN32) || defined(WIN64)
+   _flushall();
+#endif
 
     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::OnSaveLevel);
 

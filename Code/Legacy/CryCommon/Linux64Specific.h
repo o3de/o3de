@@ -42,27 +42,6 @@
 //////////////////////////////////////////////////////////////////////////
 #include "BaseTypes.h"
 
-typedef double real;
-
-typedef intptr_t INT_PTR, * PINT_PTR;
-typedef uintptr_t UINT_PTR, * PUINT_PTR;
-typedef char* LPSTR, * PSTR;
-typedef uint64      __uint64;
-#if !defined(__clang__)
-typedef int64       __int64;
-#endif
-typedef int64       INT64;
-typedef uint64      UINT64;
-
-typedef long LONG_PTR, * PLONG_PTR, * PLONG;
-typedef unsigned long ULONG_PTR, * PULONG_PTR;
-
-typedef uint8               BYTE;
-typedef void*               HWND;
-typedef UINT_PTR            WPARAM;
-typedef LONG_PTR            LPARAM;
-typedef LONG_PTR            LRESULT;
-
 #include "LinuxSpecific.h"
 
 #define TARGET_DEFAULT_ALIGN (0x8U)

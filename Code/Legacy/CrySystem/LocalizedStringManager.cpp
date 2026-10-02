@@ -606,7 +606,7 @@ static void ReplaceEndOfLine(AZStd::fixed_string<CLocalizedStringsManager::LOADI
 //////////////////////////////////////////////////////////////////////////
 
 void CLocalizedStringsManager::OnSystemEvent(
-    ESystemEvent eEvent, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    ESystemEvent eEvent, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
 {
     // might want to add an event which tells us that we are loading the main menu
     // so everything can be unloaded and init files reloaded so safe some memory

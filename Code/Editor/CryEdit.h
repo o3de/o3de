@@ -134,7 +134,7 @@ public:
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
-    AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
+    AZ::Outcome<void, AZStd::string> InitGameSystem(void* hwndForInputSystem);
     void CreateSplashScreen();
     void InitEditorTools();
     void ShutdownEditorTools();
@@ -281,7 +281,7 @@ private:
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
-    ULONG_PTR m_gdiplusToken;
+    uintptr_t m_gdiplusToken;
     QSharedMemory* m_mutexApplication = nullptr;
     //! was the editor active in the previous frame ... needed to detect if the game lost focus and
     //! dispatch proper SystemEvent (needed to release input keys)

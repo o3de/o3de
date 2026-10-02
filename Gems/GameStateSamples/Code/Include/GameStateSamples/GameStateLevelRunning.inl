@@ -135,7 +135,7 @@ namespace GameStateSamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline void GameStateLevelRunning::OnSystemEvent(ESystemEvent event, UINT_PTR, UINT_PTR)
+    inline void GameStateLevelRunning::OnSystemEvent(ESystemEvent event, uintptr_t, uintptr_t)
     {
         // If the user happens to initiate a level load outside the context of these game states,
         // for example via executing the 'map' command from the debug console or in autoexec.cfg,

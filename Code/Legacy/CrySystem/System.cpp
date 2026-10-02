@@ -1180,7 +1180,7 @@ void CSystem::OnLogLevelCvarChanged(ICVar* pArgs)
 }
 
 
-void CSystem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+void CSystem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
 {
     switch (event)
     {
