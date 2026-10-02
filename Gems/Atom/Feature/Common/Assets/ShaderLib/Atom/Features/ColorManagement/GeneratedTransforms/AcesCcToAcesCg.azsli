@@ -59,16 +59,15 @@ UNDISCLOSED.
 
 #pragma once
 
-#include <Atom/Features/PostProcessing/Aces.azsli>
-
 real AcesCcToLinear(real value)
 {
+  const float halfMax = 65504.0f;
   if (value < -0.3013698630) // (9.72-15)/17.52
     return (pow( 2., value*17.52-9.72) - pow( 2.,-16.))*2.0;
-  else if (value < (log2(HALF_MAX)+9.72)/17.52)
+  else if (value < (log2(halfMax)+9.72)/17.52)
     return pow( 2., value*17.52-9.72);
-  else // (value >= (log2(HALF_MAX)+9.72)/17.52)
-    return HALF_MAX;
+  else // (value >= (log2(halfMax)+9.72)/17.52)
+    return halfMax;
 }
 
 real3 AcesCcToAcesCg(real3 color)
