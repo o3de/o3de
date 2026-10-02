@@ -32,8 +32,8 @@ namespace ImageProcessingAtomEditor
 
     static const char* MipGenTypeToString(MipGenType mipGenType)
     {
-        static const char* mipGenTypeNames[] = { "Point", "Box", "Triangle", "Quadratic", "Gaussian", "BlackmanHarris", "KaiserSinc" };
-        AZ_Assert(mipGenType <= MipGenType::kaiserSinc, "Invalid MipGenType!");
+        static const char* mipGenTypeNames[] = { "Point", "Box", "Triangle", "Quadratic", "Gaussian", "BlackmanHarris", "KaiserSinc", "AlphaWeighted" };
+        AZ_Assert(mipGenType <= MipGenType::alphaWeighted, "Invalid MipGenType!");
         return mipGenTypeNames[(int)mipGenType];
     }
 

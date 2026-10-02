@@ -16,6 +16,32 @@ real GetAlphaAndClip(const MaterialParameters params, float2 uvs[UvSetCount], fl
     float2 baseColorUV = uvs[params.m_baseColorMapUvIndex];
     float2 opacityUV = uvs[params.m_opacityMapUvIndex];
     real alpha = SampleAlpha(GetMaterialTexture(params.m_baseColorMap), GetMaterialTexture(params.m_opacityMap), baseColorUV, opacityUV, GetMaterialTextureSampler(), o_opacity_source, uvDxDy, customDerivatives);
-    CheckClipping(alpha, real(params.m_opacityFactor));
-    return real(params.m_opacityFactor) * alpha;
+
+    real opacityFactor = real(params.m_opacityFactor);
+
+#ifdef MATERIAL_HAS_OPACITY_EDGE_SOFTNESS
+    real edgeSoftness = real(params.m_opacityEdgeSoftness);
+
+    if (o_opacity_mode == OpacityMode::Cutout && edgeSoftness > 0.0)
+    {
+        real threshold = 1.0 - opacityFactor;
+        real smoothedAlpha = smoothstep(threshold - edgeSoftness, threshold + edgeSoftness, alpha);
+        clip(smoothedAlpha - 0.001);
+        return smoothedAlpha;
+    }
+#endif
+
+#ifdef MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+    if (o_alphaToCoverage && o_opacity_mode == OpacityMode::Cutout)
+    {
+        real threshold = 1.0 - opacityFactor;
+        clip(alpha - threshold + 0.001);
+        real centered = alpha - threshold + 0.5;
+        real sharpness = 6.0;
+        return saturate((centered - 0.5) * sharpness + 0.5);
+    }
+#endif
+
+    CheckClipping(alpha, opacityFactor);
+    return opacityFactor * alpha;
 }

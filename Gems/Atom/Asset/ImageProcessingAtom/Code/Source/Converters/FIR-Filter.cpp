@@ -1268,6 +1268,8 @@ namespace ImageProcessingAtom
             return eWindowFunction_BlackmanHarris;
         case MipGenType::kaiserSinc:
             return eWindowFunction_KaiserSinc;
+        case MipGenType::alphaWeighted:
+            return eWindowFunction_Box;
         default:
             AZ_Assert(false, "unable find filter type for mipmap gen type %d", filterType);
             return eWindowFunction_BlackmanHarris;
@@ -1276,9 +1278,127 @@ namespace ImageProcessingAtom
 
     /* #################################################################################################################### \
     */
+    void FilterImageAlphaWeighted(
+        const IImageObjectPtr srcImg, int srcMip, IImageObjectPtr dstImg, int dstMip, QRect* srcRect, QRect* dstRect)
+    {
+        if (srcImg->GetPixelFormat() != ePixelFormat_R32G32B32A32F || dstImg->GetPixelFormat() != ePixelFormat_R32G32B32A32F)
+        {
+            AZ_Assert(false, "FilterImageAlphaWeighted only supports R32G32B32A32F format");
+            return;
+        }
+
+        uint32 srcWidth, srcHeight;
+        uint8* pSrcMem;
+        uint32 dwSrcPitch;
+        srcImg->GetImagePointer(srcMip, pSrcMem, dwSrcPitch);
+        srcWidth = srcImg->GetWidth(srcMip);
+        srcHeight = srcImg->GetHeight(srcMip);
+
+        uint32 dstWidth, dstHeight;
+        uint8* pDstMem;
+        uint32 dwDstPitch;
+        dstImg->GetImagePointer(dstMip, pDstMem, dwDstPitch);
+        dstWidth = dstImg->GetWidth(dstMip);
+        dstHeight = dstImg->GetHeight(dstMip);
+
+        uint32 srcLeft = 0, srcTop = 0, srcRight = srcWidth, srcBottom = srcHeight;
+        uint32 dstLeft = 0, dstTop = 0;
+        if (srcRect)
+        {
+            srcLeft = srcRect->left();
+            srcTop = srcRect->top();
+            srcRight = srcRect->right();
+            srcBottom = srcRect->bottom();
+        }
+        if (dstRect)
+        {
+            dstLeft = dstRect->left();
+            dstTop = dstRect->top();
+        }
+
+        uint32 srcRegionWidth = srcRight - srcLeft;
+        uint32 srcRegionHeight = srcBottom - srcTop;
+
+        for (uint32 dy = 0; dy < dstHeight; dy++)
+        {
+            for (uint32 dx = 0; dx < dstWidth; dx++)
+            {
+                uint32 sx0 = srcLeft + (dx * srcRegionWidth) / dstWidth;
+                uint32 sx1 = srcLeft + ((dx + 1) * srcRegionWidth) / dstWidth;
+                uint32 sy0 = srcTop + (dy * srcRegionHeight) / dstHeight;
+                uint32 sy1 = srcTop + ((dy + 1) * srcRegionHeight) / dstHeight;
+
+                if (sx1 <= sx0)
+                {
+                    sx1 = sx0 + 1;
+                }
+                if (sy1 <= sy0)
+                {
+                    sy1 = sy0 + 1;
+                }
+                if (sx1 > srcRight)
+                {
+                    sx1 = srcRight;
+                }
+                if (sy1 > srcBottom)
+                {
+                    sy1 = srcBottom;
+                }
+
+                float rSum = 0.0f, gSum = 0.0f, bSum = 0.0f, aSum = 0.0f;
+                float weightSum = 0.0f;
+                uint32 count = 0;
+
+                for (uint32 sy = sy0; sy < sy1; sy++)
+                {
+                    for (uint32 sx = sx0; sx < sx1; sx++)
+                    {
+                        const float* pSrc = reinterpret_cast<const float*>(pSrcMem + sy * dwSrcPitch) + sx * 4;
+                        float a = pSrc[3];
+                        float weight = (a > 0.0f) ? a : 0.0001f;
+                        rSum += pSrc[0] * weight;
+                        gSum += pSrc[1] * weight;
+                        bSum += pSrc[2] * weight;
+                        aSum += a;
+                        weightSum += weight;
+                        count++;
+                    }
+                }
+
+                if (count == 0)
+                {
+                    continue;
+                }
+
+                float* pDst = reinterpret_cast<float*>(pDstMem + (dy + dstTop) * dwDstPitch) + (dx + dstLeft) * 4;
+                if (weightSum > 0.0f)
+                {
+                    pDst[0] = rSum / weightSum;
+                    pDst[1] = gSum / weightSum;
+                    pDst[2] = bSum / weightSum;
+                }
+                else
+                {
+                    pDst[0] = rSum / count;
+                    pDst[1] = gSum / count;
+                    pDst[2] = bSum / count;
+                }
+                pDst[3] = aSum / count;
+            }
+        }
+    }
+
+    /* #################################################################################################################### \
+    */
     void FilterImage(MipGenType filterType, MipGenEvalType evalType, float blurH, float blurV, const IImageObjectPtr srcImg, int srcMip,
         IImageObjectPtr dstImg, int dstMip, QRect* srcRect, QRect* dstRect)
     {
+        if (filterType == MipGenType::alphaWeighted)
+        {
+            FilterImageAlphaWeighted(srcImg, srcMip, dstImg, dstMip, srcRect, dstRect);
+            return;
+        }
+
         int filterIndex = MipGenTypeToFilterIndex(filterType);
         int filterOp = static_cast<int>(evalType);
         FilterImage(filterIndex, filterOp, blurH, blurV, srcImg, srcMip, dstImg, dstMip, srcRect, dstRect);
