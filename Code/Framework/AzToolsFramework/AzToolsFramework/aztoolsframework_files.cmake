@@ -1096,6 +1096,7 @@ set(FILES
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
+    Input/NativeCursorCapture.h
     Input/QtEventToAzInputMapper.h
     Input/QtEventToAzInputMapper.cpp
     Script/LuaEditorSystemComponent.h

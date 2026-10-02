@@ -178,6 +178,7 @@ namespace AzQtComponents
         QItemSelection m_previousSelection;
 
         void ClearQueuedMouseEvent();
+        void ResetDragState();
         void ProcessQueuedMousePressedEvent(QMouseEvent* event);
         void HandleDrag();
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions);
