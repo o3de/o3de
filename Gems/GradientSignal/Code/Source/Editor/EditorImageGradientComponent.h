@@ -51,7 +51,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient by sampling an image asset";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/gradients/image-gradient/";
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
