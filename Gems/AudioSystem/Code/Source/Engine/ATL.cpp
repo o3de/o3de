@@ -1649,7 +1649,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    void CAudioTranslationLayer::OnSystemEvent(ESystemEvent event, uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
     {
         switch (event)
         {

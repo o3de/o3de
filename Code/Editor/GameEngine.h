@@ -53,7 +53,7 @@ public:
         bool bTestMode,
         const char* sCmdLine,
         IInitializeUIInfo* logo,
-        HWND hwndForInputSystem);
+        void* hwndForInputSystem);
     //! Initialize game.
     //! @return true if initialization succeeded, false otherwise
     bool InitGame(const char* sGameDLL);

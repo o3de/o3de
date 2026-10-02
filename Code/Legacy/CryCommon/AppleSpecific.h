@@ -76,7 +76,7 @@ typedef uint32          DWORD;
 typedef DWORD*          LPDWORD;
 typedef uint64                          DWORD_PTR;
 typedef intptr_t INT_PTR, * PINT_PTR;
-typedef uintptr_t UINT_PTR, * PUINT_PTR;
+typedef uintptr_t uintptr_t, * PUINT_PTR;
 typedef char* LPSTR, * PSTR;
 typedef char TCHAR;
 typedef uint64          __uint64;
@@ -92,7 +92,7 @@ typedef unsigned long ULONG_PTR, * PULONG_PTR;
 typedef uint8                               BYTE;
 typedef uint16                          WORD;
 typedef void*                               HWND;
-typedef UINT_PTR                        WPARAM;
+typedef uintptr_t                        WPARAM;
 typedef LONG_PTR                        LPARAM;
 typedef LONG_PTR                        LRESULT;
 #define PLARGE_INTEGER LARGE_INTEGER *
@@ -290,73 +290,6 @@ typedef struct _SECURITY_ATTRIBUTES
 #define __min(_S, _T) min(_S, _T)
 #define __max(_S, _T) max(_S, _T)
 
-typedef enum
-{
-    INVALID_HANDLE_VALUE = -1l
-}INVALID_HANDLE_VALUE_ENUM;
-//for compatibility reason we got to create a class which actually contains an int rather than a void* and make sure it does not get mistreated
-template <class T, T U>
-//U is default type for invalid handle value, T the encapsulated handle type to be used instead of void* (as under windows and never linux)
-class CHandle
-{
-public:
-    typedef T           HandleType;
-    typedef void* PointerType;  //for compatibility reason to encapsulate a void* as an int
-
-    static const HandleType sciInvalidHandleValue = U;
-
-    CHandle(const CHandle<T, U>& cHandle)
-        : m_Value(cHandle.m_Value){}
-    CHandle(const HandleType cHandle = U)
-        : m_Value(cHandle){}
-    CHandle(const PointerType cpHandle)
-        : m_Value(reinterpret_cast<HandleType>(cpHandle)){}
-    CHandle(INVALID_HANDLE_VALUE_ENUM)
-        : m_Value(U){}                               //to be able to use a common value for all InvalidHandle - types
-#if defined(PLATFORM_64BIT)
-    //treat __null tyope also as invalid handle type
-    CHandle(long)
-        : m_Value(U){}          //to be able to use a common value for all InvalidHandle - types
-#endif
-    operator HandleType(){
-        return m_Value;
-    }
-    bool operator!() const{return m_Value == sciInvalidHandleValue; }
-    const CHandle& operator =(const CHandle& crHandle){m_Value = crHandle.m_Value; return *this; }
-    const CHandle& operator =(const PointerType cpHandle){m_Value = (HandleType) reinterpret_cast<UINT_PTR>(cpHandle); return *this; }
-    const bool operator ==(const CHandle& crHandle)     const{return m_Value == crHandle.m_Value; }
-    const bool operator ==(const HandleType cHandle)    const{return m_Value == cHandle; }
-    const bool operator ==(const PointerType cpHandle) const{return m_Value == reinterpret_cast<HandleType>(cpHandle); }
-    const bool operator !=(const HandleType cHandle)    const{return m_Value != cHandle; }
-    const bool operator !=(const CHandle& crHandle)     const{return m_Value != crHandle.m_Value; }
-    const bool operator !=(const PointerType cpHandle) const{return m_Value != reinterpret_cast<HandleType>(cpHandle); }
-    const bool operator <   (const CHandle& crHandle)       const{return m_Value < crHandle.m_Value; }
-    HandleType Handle() const{return m_Value; }
-
-private:
-    HandleType m_Value; //the actual value, remember that file descriptors are ints under linux
-
-    typedef void    ReferenceType;//for compatibility reason to encapsulate a void* as an int
-    //forbid these function which would actually not work on an int
-    PointerType operator->();
-    PointerType operator->() const;
-    ReferenceType operator*();
-    ReferenceType operator*() const;
-    operator PointerType();
-};
-
-typedef CHandle<int, (int) - 1l> HANDLE;
-
-typedef HANDLE EVENT_HANDLE;
-typedef HANDLE THREAD_HANDLE;
-
-typedef HANDLE HKEY;
-typedef HANDLE HDC;
-
-typedef HANDLE HBITMAP;
-
-typedef HANDLE HMENU;
-
 #endif //__cplusplus
 
 #ifdef _RELEASE
@@ -366,7 +299,6 @@ typedef HANDLE HMENU;
 #endif
 
 #define __assume(x)
-#define _flushall sync
 
 inline int closesocket(int s)
 {
@@ -379,8 +311,3 @@ char (*RtlpNumberOf( T (&)[N] ))[N];
 #define RTL_NUMBER_OF_V2(A) (sizeof(*RtlpNumberOf(A)))
 
 #define ARRAYSIZE(A) RTL_NUMBER_OF_V2(A)
-
-#undef SUCCEEDED
-#define SUCCEEDED(x) ((x) >= 0)
-#undef FAILED
-#define FAILED(x) (!(SUCCEEDED(x)))
