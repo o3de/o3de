@@ -305,21 +305,40 @@ class CustomProjectPath(bpy.types.Operator, ImportHelper):
             o3de_utils.build_projects_list() 
         return {'FINISHED'}
 
-class AddColliderMesh(bpy.types.Operator):
+class AddStaticColliderMesh(bpy.types.Operator):
     """!
     This Class is for the UI Wiki Button
     """
-    bl_idname = "vin.collider"
-    bl_label = "Add a PhysX Collider mesh to selected."
+    bl_idname = "vin.collider_static"
+    bl_label = "Add a static PhysX Collider mesh to selected."
 
     def execute(self, context):
         """!
-        This function will create the collision mesh.
+        This function will create the static collision mesh.
         """
         # Create a Pop-Up confirm window
-        bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_phys to mesh.'
+        bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_phys_static to mesh.'
         bpy.types.Scene.pop_up_question_label = 'Add UDP to a Duplicate mesh?'
-        bpy.types.Scene.udp_type = constants.UDP.get('o3de_atom_phys')
+        bpy.types.Scene.udp_type = constants.UDP.get('o3de_atom_phys_static')
+        bpy.types.Scene.pop_up_type = "UDP"
+        bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
+        return{'FINISHED'}
+
+class AddDynamicColliderMesh(bpy.types.Operator):
+    """!
+    This Class is for the UI Wiki Button
+    """
+    bl_idname = "vin.collider_dynamic"
+    bl_label = "Add a dynamic PhysX Collider mesh to selected."
+
+    def execute(self, context):
+        """!
+        This function will create the dynamic collision mesh.
+        """
+        # Create a Pop-Up confirm window
+        bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_phys_dynamic to mesh.'
+        bpy.types.Scene.pop_up_question_label = 'Add UDP to a Duplicate mesh?'
+        bpy.types.Scene.udp_type = constants.UDP.get('o3de_atom_phys_dynamic')
         bpy.types.Scene.pop_up_type = "UDP"
         bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
@@ -598,7 +617,8 @@ class O3deTools(Panel):
             
             # Let user create a O3DE Collider Mesh for Physx
             create_collider_button = layout.row()
-            create_collider_button.operator("vin.collider", text='Create PhysX Collider', icon="SNAP_VOLUME")
+            create_collider_button.operator("vin.collider_static", text='Create Static PhysX Collider', icon="SNAP_VOLUME")
+            create_collider_button.operator("vin.collider_dynamic", text='Create Dynamic PhysX Collider', icon="SNAP_VOLUME")
 
             # Let user create a O3DE LOD Mesh
             create_lod_button = layout.row()
