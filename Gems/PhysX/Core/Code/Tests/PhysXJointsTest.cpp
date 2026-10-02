@@ -17,12 +17,15 @@
 #include <D6JointComponent.h>
 #include <FixedJointComponent.h>
 #include <HingeJointComponent.h>
+#include <PrismaticJointComponent.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/Joint/PhysXJointRequestsBus.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/math.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
@@ -38,13 +41,14 @@ namespace PhysX
         const AZ::Vector3& initialLinearVelocity,
         AZStd::shared_ptr<JointComponentConfiguration> jointConfig = nullptr,
         AZStd::shared_ptr<JointGenericProperties> jointGenericProperties = nullptr,
-        AZStd::shared_ptr<JointLimitProperties> jointLimitProperties = nullptr)
+        AZStd::shared_ptr<JointLimitProperties> jointLimitProperties = nullptr,
+        const AZ::Quaternion& rotation = AZ::Quaternion::CreateIdentity())
     {
         const char* entityName = "testEntity";
         auto entity = AZStd::make_unique<AZ::Entity>(entityName);
 
         AZ::TransformConfig transformConfig;
-        transformConfig.m_worldTransform = AZ::Transform::CreateTranslation(position);
+        transformConfig.m_worldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position);
         entity->CreateComponent<AzFramework::TransformComponent>()->SetConfiguration(transformConfig);
 
         auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
@@ -478,6 +482,266 @@ namespace PhysX
         EXPECT_NEAR(readBack.second.GetX(), commandedAngular.GetX(), 1e-3f);
         EXPECT_NEAR(readBack.second.GetY(), commandedAngular.GetY(), 1e-3f);
         EXPECT_NEAR(readBack.second.GetZ(), commandedAngular.GetZ(), 1e-3f);
+    }
+
+    // Far from the world origin on purpose: an accessor that leaks a position into a velocity fails loudly here.
+    // The whole system is also rigidly rotated, which cannot change a joint space readout, so every expectation
+    // below is the one it would have axis aligned. An implementation that mixes up frames fails instead.
+
+    const AZ::Quaternion FunnyRotation =
+        AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 2.0f, 3.0f).GetNormalized(), 0.7f);
+
+    //! A direction of the rotated system, so each test reads as it would with world aligned joint frames.
+    AZ::Vector3 InRotatedSystem(const AZ::Vector3& axisAlignedDirection)
+    {
+        return FunnyRotation.TransformVector(axisAlignedDirection);
+    }
+
+    namespace HingeVelocityTest
+    {
+        const AZ::Vector3 LeadPosition(100.0f, 0.0f, 0.0f);
+        const AZ::Vector3 FollowerPosition(99.0f, 0.0f, 0.0f);
+        const AZ::Vector3 JointLocalPosition(1.0f, 0.0f, 0.0f);
+        const float SpinRate = 2.0f;
+        const float Tolerance = 1e-3f;
+    }
+
+    struct HingeVelocityTestBodies
+    {
+        AZStd::unique_ptr<AZ::Entity> m_lead;
+        AZStd::unique_ptr<AZ::Entity> m_follower;
+    };
+
+    HingeVelocityTestBodies CreateHingeVelocityTestBodies(AzPhysics::SceneHandle sceneHandle)
+    {
+        // Templated joint component type is irrelevant since joint component is not created for this invocation.
+        auto lead = AddBodyColliderEntity<JointComponent>(
+            sceneHandle,
+            InRotatedSystem(HingeVelocityTest::LeadPosition),
+            AZ::Vector3::CreateZero(),
+            nullptr,
+            nullptr,
+            nullptr,
+            FunnyRotation);
+
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_leadEntity = lead->GetId();
+        //! No rotation, so the hinge free axis (joint frame X) is world X.
+        jointConfig->m_localTransformFromFollower = AZ::Transform::CreateTranslation(HingeVelocityTest::JointLocalPosition);
+
+        auto jointLimits = AZStd::make_shared<JointLimitProperties>();
+        jointLimits->m_isLimited = false;
+
+        auto follower = AddBodyColliderEntity<HingeJointComponent>(
+            sceneHandle,
+            InRotatedSystem(HingeVelocityTest::FollowerPosition),
+            AZ::Vector3::CreateZero(),
+            jointConfig,
+            nullptr,
+            jointLimits,
+            FunnyRotation);
+
+        return { AZStd::move(lead), AZStd::move(follower) };
+    }
+
+    AZ::EntityComponentIdPair GetHingeJointId(const AZ::Entity& followerEntity)
+    {
+        const auto* jointComponent = followerEntity.FindComponent<HingeJointComponent>();
+        EXPECT_NE(jointComponent, nullptr);
+        return AZ::EntityComponentIdPair(
+            followerEntity.GetId(), jointComponent ? jointComponent->GetId() : AZ::InvalidComponentId);
+    }
+
+    float GetHingeVelocity(const AZ::Entity& followerEntity)
+    {
+        float velocity = AZStd::numeric_limits<float>::quiet_NaN();
+        PhysX::JointRequestBus::EventResult(velocity, GetHingeJointId(followerEntity), &PhysX::JointRequests::GetVelocity);
+        return velocity;
+    }
+
+    void SetFollowerAngularVelocity(const AZ::Entity& followerEntity, const AZ::Vector3& angularVelocity)
+    {
+        Physics::RigidBodyRequestBus::Event(
+            followerEntity.GetId(), &Physics::RigidBodyRequests::SetAngularVelocity, angularVelocity);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_HingeJoint_GetVelocityIsZeroAtRestFarFromOrigin)
+    {
+        auto bodies = CreateHingeVelocityTestBodies(m_testSceneHandle);
+
+        EXPECT_NEAR(GetHingeVelocity(*bodies.m_follower), 0.0f, HingeVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_HingeJoint_GetVelocityReportsRateAboutFreeAxis)
+    {
+        auto bodies = CreateHingeVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerAngularVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisX(HingeVelocityTest::SpinRate)));
+
+        EXPECT_NEAR(GetHingeVelocity(*bodies.m_follower), HingeVelocityTest::SpinRate, HingeVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_HingeJoint_GetVelocityIsSigned)
+    {
+        auto bodies = CreateHingeVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerAngularVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisX(-HingeVelocityTest::SpinRate)));
+
+        EXPECT_NEAR(GetHingeVelocity(*bodies.m_follower), -HingeVelocityTest::SpinRate, HingeVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_HingeJoint_GetVelocityIgnoresRotationOffTheFreeAxis)
+    {
+        auto bodies = CreateHingeVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerAngularVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisY(HingeVelocityTest::SpinRate)));
+
+        EXPECT_NEAR(GetHingeVelocity(*bodies.m_follower), 0.0f, HingeVelocityTest::Tolerance);
+    }
+
+    // A prismatic joint only serves JointRequestBus when it is motorised, so these bodies enable the motor.
+
+    namespace PrismaticVelocityTest
+    {
+        const AZ::Vector3 LeadPosition(100.0f, 0.0f, 0.0f);
+        const AZ::Vector3 FollowerPosition(99.0f, 0.0f, 0.0f);
+        const AZ::Vector3 JointLocalPosition(1.0f, 0.0f, 0.0f);
+        //! Joint frame offset perpendicular to the free axis, so the follower's spin reaches the reading.
+        const AZ::Vector3 JointLocalPositionOffAxis(0.0f, 0.0f, 1.0f);
+        const float SlideRate = 2.0f;
+        const float Tolerance = 1e-3f;
+    }
+
+    AZStd::unique_ptr<AZ::Entity> AddPrismaticFollowerEntity(
+        AzPhysics::SceneHandle sceneHandle,
+        const AZ::Vector3& position,
+        AZStd::shared_ptr<JointComponentConfiguration> jointConfig,
+        const AZ::Quaternion& rotation = AZ::Quaternion::CreateIdentity())
+    {
+        auto entity = AZStd::make_unique<AZ::Entity>("prismaticTestEntity");
+
+        AZ::TransformConfig transformConfig;
+        transformConfig.m_worldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position);
+        entity->CreateComponent<AzFramework::TransformComponent>()->SetConfiguration(transformConfig);
+
+        auto colliderConfiguration = AZStd::make_shared<Physics::ColliderConfiguration>();
+        auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>();
+        auto* boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
+        boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfiguration, boxShapeConfiguration) });
+
+        AzPhysics::RigidBodyConfiguration rigidBodyConfig;
+        rigidBodyConfig.m_gravityEnabled = false;
+        entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
+
+        jointConfig->m_followerEntity = entity->GetId();
+        const JointGenericProperties genericProperties;
+        JointLimitProperties limitProperties;
+        limitProperties.m_isLimited = false;
+        JointMotorProperties motorProperties;
+        motorProperties.m_useMotor = true;
+        entity->CreateComponent<PrismaticJointComponent>(*jointConfig, genericProperties, limitProperties, motorProperties);
+
+        entity->Init();
+        entity->Activate();
+
+        return entity;
+    }
+
+    struct PrismaticVelocityTestBodies
+    {
+        AZStd::unique_ptr<AZ::Entity> m_lead;
+        AZStd::unique_ptr<AZ::Entity> m_follower;
+    };
+
+    PrismaticVelocityTestBodies CreatePrismaticVelocityTestBodies(
+        AzPhysics::SceneHandle sceneHandle,
+        const AZ::Vector3& jointLocalPosition = PrismaticVelocityTest::JointLocalPosition)
+    {
+        // Templated joint component type is irrelevant since joint component is not created for this invocation.
+        auto lead = AddBodyColliderEntity<JointComponent>(
+            sceneHandle,
+            InRotatedSystem(PrismaticVelocityTest::LeadPosition),
+            AZ::Vector3::CreateZero(),
+            nullptr,
+            nullptr,
+            nullptr,
+            FunnyRotation);
+
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_leadEntity = lead->GetId();
+        //! No rotation, so the sliding free axis (joint frame X) is world X.
+        jointConfig->m_localTransformFromFollower = AZ::Transform::CreateTranslation(jointLocalPosition);
+
+        auto follower = AddPrismaticFollowerEntity(
+            sceneHandle, InRotatedSystem(PrismaticVelocityTest::FollowerPosition), jointConfig, FunnyRotation);
+
+        return { AZStd::move(lead), AZStd::move(follower) };
+    }
+
+    AZ::EntityComponentIdPair GetPrismaticJointId(const AZ::Entity& followerEntity)
+    {
+        const auto* jointComponent = followerEntity.FindComponent<PrismaticJointComponent>();
+        EXPECT_NE(jointComponent, nullptr);
+        return AZ::EntityComponentIdPair(
+            followerEntity.GetId(), jointComponent ? jointComponent->GetId() : AZ::InvalidComponentId);
+    }
+
+    float GetPrismaticVelocity(const AZ::Entity& followerEntity)
+    {
+        float velocity = AZStd::numeric_limits<float>::quiet_NaN();
+        PhysX::JointRequestBus::EventResult(velocity, GetPrismaticJointId(followerEntity), &PhysX::JointRequests::GetVelocity);
+        return velocity;
+    }
+
+    void SetFollowerLinearVelocity(const AZ::Entity& followerEntity, const AZ::Vector3& linearVelocity)
+    {
+        Physics::RigidBodyRequestBus::Event(
+            followerEntity.GetId(), &Physics::RigidBodyRequests::SetLinearVelocity, linearVelocity);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_PrismaticJoint_GetVelocityIsZeroAtRestFarFromOrigin)
+    {
+        auto bodies = CreatePrismaticVelocityTestBodies(m_testSceneHandle);
+
+        EXPECT_NEAR(GetPrismaticVelocity(*bodies.m_follower), 0.0f, PrismaticVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_PrismaticJoint_GetVelocityReportsRateAlongFreeAxis)
+    {
+        auto bodies = CreatePrismaticVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerLinearVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisX(PrismaticVelocityTest::SlideRate)));
+
+        EXPECT_NEAR(GetPrismaticVelocity(*bodies.m_follower), PrismaticVelocityTest::SlideRate, PrismaticVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_PrismaticJoint_GetVelocityIsSigned)
+    {
+        auto bodies = CreatePrismaticVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerLinearVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisX(-PrismaticVelocityTest::SlideRate)));
+
+        EXPECT_NEAR(GetPrismaticVelocity(*bodies.m_follower), -PrismaticVelocityTest::SlideRate, PrismaticVelocityTest::Tolerance);
+    }
+
+    TEST_F(PhysXJointsTest, Joint_PrismaticJoint_GetVelocityIgnoresMotionOffTheFreeAxis)
+    {
+        auto bodies = CreatePrismaticVelocityTestBodies(m_testSceneHandle);
+
+        SetFollowerLinearVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisY(PrismaticVelocityTest::SlideRate)));
+
+        EXPECT_NEAR(GetPrismaticVelocity(*bodies.m_follower), 0.0f, PrismaticVelocityTest::Tolerance);
+    }
+
+    // The joint frame sits 1m off the follower's centre of mass along Z, so spinning the follower about Y sweeps the
+    // joint frame origin along the free axis at SlideRate. Only a correct lever arm term reports it.
+    TEST_F(PhysXJointsTest, Joint_PrismaticJoint_GetVelocityIncludesLeverArmOfSpinningBody)
+    {
+        auto bodies = CreatePrismaticVelocityTestBodies(m_testSceneHandle, PrismaticVelocityTest::JointLocalPositionOffAxis);
+
+        SetFollowerAngularVelocity(*bodies.m_follower, InRotatedSystem(AZ::Vector3::CreateAxisY(PrismaticVelocityTest::SlideRate)));
+
+        EXPECT_NEAR(GetPrismaticVelocity(*bodies.m_follower), PrismaticVelocityTest::SlideRate, PrismaticVelocityTest::Tolerance);
     }
 
     template<class JointConfigurationType>
