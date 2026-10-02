@@ -99,6 +99,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AzToolsFramework
                 Legacy::CryCommon
+                Legacy::EditorCore
                 Legacy::Editor.Headers
                 Gem::${gem_name}.Static
                 3rdParty::OpenMesh # Needs to be public, so that the below .Editor gem module includes the lib.

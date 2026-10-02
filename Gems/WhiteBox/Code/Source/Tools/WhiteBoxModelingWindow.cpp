@@ -13,6 +13,19 @@
 
 namespace WhiteBox
 {
+    namespace
+    {
+        // Qt 6 replaced globalPos() with globalPosition(), and the old name warns as an error.
+        QPoint GlobalPosition(const QMouseEvent* event)
+        {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            return event->globalPosition().toPoint();
+#else
+            return event->globalPos();
+#endif
+        }
+    } // namespace
+
     WhiteBoxModelingWindow::WhiteBoxModelingWindow(const QString& title, QWidget* parent)
         : QDialog(parent, Qt::Tool | Qt::FramelessWindowHint)
     {
@@ -62,10 +75,10 @@ namespace WhiteBox
     {
         // Use the actual title geometry so theme font sizes never make controls draggable.
         if (event->button() == Qt::LeftButton && m_dragHandle &&
-            m_dragHandle->rect().contains(m_dragHandle->mapFromGlobal(event->globalPos())))
+            m_dragHandle->rect().contains(m_dragHandle->mapFromGlobal(GlobalPosition(event))))
         {
             m_dragging = true;
-            m_dragOffset = event->globalPos() - frameGeometry().topLeft();
+            m_dragOffset = GlobalPosition(event) - frameGeometry().topLeft();
             event->accept();
             return;
         }
@@ -76,7 +89,7 @@ namespace WhiteBox
     {
         if (m_dragging)
         {
-            move(event->globalPos() - m_dragOffset);
+            move(GlobalPosition(event) - m_dragOffset);
             event->accept();
             return;
         }

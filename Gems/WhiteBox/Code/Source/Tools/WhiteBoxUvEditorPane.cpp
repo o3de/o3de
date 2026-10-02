@@ -432,7 +432,7 @@ namespace WhiteBox
             const QSignalBlocker block(m_textureLayer);
             m_textureLayer->clear();
             m_textureLayer->addItems(names);
-            m_textureLayer->setCurrentIndex(AZStd::max(0, names.indexOf(chosen)));
+            m_textureLayer->setCurrentIndex(AZStd::max(0, aznumeric_cast<int>(names.indexOf(chosen))));
             m_textureLayerNames = names;
         }
         m_textureLayerAction->setVisible(names.size() > 1);
