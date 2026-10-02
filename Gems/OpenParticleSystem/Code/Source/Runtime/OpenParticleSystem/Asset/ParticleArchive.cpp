@@ -257,6 +257,11 @@ namespace OpenParticle
     static inline AZStd::pair<AZ::u32, bool> AnySize(AZ::SerializeContext* context, const AZStd::any& val)
     {
         AZ_Assert(context != nullptr, "invalid serialize context");
+        if (val.empty())
+        {
+            return { 0, false };
+        }
+
         auto classData = context->FindClassData(val.type());
         if (classData == nullptr)
         {
