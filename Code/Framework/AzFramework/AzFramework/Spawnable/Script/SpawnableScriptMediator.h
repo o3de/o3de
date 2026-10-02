@@ -14,6 +14,8 @@
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 #include <AzFramework/AzFrameworkAPI.h>
 
+#include <AzCore/std/containers/unordered_set.h>
+
 namespace AzFramework::Scripts
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
@@ -34,7 +36,7 @@ namespace AzFramework::Scripts
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //! Creates EntitySpawnTicket using provided prefab asset
-        EntitySpawnTicket CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset);
+        AZ::Outcome<EntitySpawnTicket, AZStd::string> CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset);
 
         //! Spawns a prefab and places it under level entity
         bool Spawn(EntitySpawnTicket spawnTicket);
@@ -80,6 +82,8 @@ namespace AzFramework::Scripts
         AZStd::recursive_mutex m_mutex;
         // used to track when SpawnableScriptMediator is destroyed to avoid executing logic in callbacks
         AZStd::shared_ptr<CallbackSentinel> m_sentinel;
+
+        AZStd::unordered_set<EntitySpawnTicket> m_activeSpawnTickets;
 
         // Maintain a cache of tickets to at least keep 1 reference in the mediator, some script systems
         // may do garbage collection which could lead to unintended despawn due to reference 
