@@ -320,8 +320,6 @@ class QColor;
 QColor ColorLinearToGamma(const AZ::Color& col);
 AZ::Color ColorGammaToLinear(const QColor& col);
 
-QColor ColorToQColor(uint32 color);
-
 class QCursor;
 class QPixmap;
 

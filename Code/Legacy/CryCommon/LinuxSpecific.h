@@ -52,16 +52,7 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif
 #endif
-typedef AZ::u32 COLORREF;
-#define RGB(r,g,b) ((COLORREF)(((AZ::u8)(r)|((AZ::u16)((AZ::u8)(g))<<8))|(((AZ::u32)(AZ::u8)(b))<<16)))
 
-#define GetRValue(rgb)  ((AZ::u8)((AZ::u64)(rgb) & 0xff))
-#define GetGValue(rgb)  ((AZ::u8)((AZ::u64)(((AZ::u16)(rgb)) >> 8) & 0xff))
-#define GetBValue(rgb)  ((AZ::u8)((AZ::u64)(rgb) & 0xff))
-
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                \
-    ((AZ::u32)(AZ::u8)(ch0) | ((AZ::u32)(AZ::u8)(ch1) << 8) | \
-     ((AZ::u32)(AZ::u8)(ch2) << 16) | ((AZ::u32)(AZ::u8)(ch3) << 24))
 #define FILE_ATTRIBUTE_NORMAL               0x00000080
 
 typedef int                         BOOL;

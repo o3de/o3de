@@ -84,8 +84,8 @@ public:
     void SetTooltipValueScale(float x, float y) { m_fTooltipScaleX = x; m_fTooltipScaleY = y; };
     void SetSplineSet(ISplineSet* pSplineSet);
 
-    void AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF color);
-    void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, COLORREF anColorArray[4]);
+    void AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color& color);
+    void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, const AZ::Color anColorArray[4]);
     void RemoveSpline(ISplineInterpolator* pSpline);
     void RemoveAllSplines();
     int  GetSplineCount() const { return static_cast<int>(m_splines.size()); }
