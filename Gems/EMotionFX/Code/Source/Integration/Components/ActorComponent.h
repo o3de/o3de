@@ -125,6 +125,10 @@ namespace EMotionFX
             AZ::Vector3 GetSocketForward(size_t socketIndex, Space space) const override;
             AZ::Transform GetSocketTransformByName(const char* name, Space space) const override;
             AZ::Vector3 GetSocketForwardByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketBindTransform(size_t socketIndex, Space space) const override;
+            AZ::Transform GetSocketBindTransformByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketTransformFromEntity(size_t socketIndex) const override;
+            AZ::Transform GetSocketTransformFromEntityByName(const char* name) const override;
 
             ActorInstance* GetActorInstance() override { return m_actorInstance.get(); }
             void AttachToEntity(AZ::EntityId targetEntityId, AttachmentType attachmentType) override;

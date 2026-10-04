@@ -103,6 +103,14 @@ namespace EMotionFX
             virtual AZ::Transform GetSocketTransformByName(const char* /*name*/, Space /*space*/) const { return AZ::Transform::CreateIdentity(); }
             virtual AZ::Vector3 GetSocketForwardByName(const char* /*name*/, Space /*space*/) const { return AZ::Vector3::CreateAxisY(); }
 
+            /// Socket transform in the bind pose, independent of animation so server and clients agree; WorldSpace uses the entity's current world transform.
+            virtual AZ::Transform GetSocketBindTransform(size_t /*socketIndex*/, Space /*space*/) const { return AZ::Transform::CreateIdentity(); }
+            virtual AZ::Transform GetSocketBindTransformByName(const char* /*name*/, Space /*space*/) const { return AZ::Transform::CreateIdentity(); }
+
+            /// Animated model-space socket times the entity's current world transform; use it in network input processing, which runs before the animation update.
+            virtual AZ::Transform GetSocketTransformFromEntity(size_t /*socketIndex*/) const { return AZ::Transform::CreateIdentity(); }
+            virtual AZ::Transform GetSocketTransformFromEntityByName(const char* /*name*/) const { return AZ::Transform::CreateIdentity(); }
+
             /// Attach to the specified entity.
             /// \param targetEntityId - Id of the entity to attach to.
             /// \param attachmentType - Desired type of attachment.

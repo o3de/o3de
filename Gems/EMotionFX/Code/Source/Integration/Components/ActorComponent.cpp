@@ -198,6 +198,10 @@ namespace EMotionFX
                     ->Event("GetSocketForward", &ActorComponentRequestBus::Events::GetSocketForward)
                     ->Event("GetSocketTransformByName", &ActorComponentRequestBus::Events::GetSocketTransformByName)
                     ->Event("GetSocketForwardByName", &ActorComponentRequestBus::Events::GetSocketForwardByName)
+                    ->Event("GetSocketBindTransform", &ActorComponentRequestBus::Events::GetSocketBindTransform)
+                    ->Event("GetSocketBindTransformByName", &ActorComponentRequestBus::Events::GetSocketBindTransformByName)
+                    ->Event("GetSocketTransformFromEntity", &ActorComponentRequestBus::Events::GetSocketTransformFromEntity)
+                    ->Event("GetSocketTransformFromEntityByName", &ActorComponentRequestBus::Events::GetSocketTransformFromEntityByName)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)
                     ->Event("DetachFromEntity", &ActorComponentRequestBus::Events::DetachFromEntity)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
@@ -994,6 +998,71 @@ namespace EMotionFX
                 return AZ::Vector3::CreateAxisY();
             }
             return GetSocketForward(socketIndex, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketBindTransform(size_t socketIndex, Space space) const
+        {
+            if (socketIndex >= GetNumSockets())
+            {
+                AZ_Warning("EMotionFX", false, "GetSocketBindTransform: Invalid socket index %zu. Entity: %s", socketIndex, GetEntity()->GetName().c_str());
+                return AZ::Transform::CreateIdentity();
+            }
+
+            const ActorSocket& socket = m_actorInstance->GetActor()->GetSocketSetup()->GetSocket(socketIndex);
+            if (space == Space::LocalSpace)
+            {
+                return socket.GetLocalTransform();
+            }
+
+            if (socket.GetJointIndex() >= m_actorInstance->GetActor()->GetNumNodes())
+            {
+                AZ_WarningOnce("EMotionFX", false, "GetSocketBindTransform: The parent joint '%s' of socket '%s' is not in the skeleton. Entity: %s",
+                    socket.GetJointName().c_str(), socket.GetName().c_str(), GetEntity()->GetName().c_str());
+                return AZ::Transform::CreateIdentity();
+            }
+
+            const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
+            const AZ::Transform modelSpace = bindPose->GetModelSpaceTransform(socket.GetJointIndex()).ToAZTransform() * socket.GetLocalTransform();
+            if (space == Space::ModelSpace)
+            {
+                return modelSpace;
+            }
+
+            return GetEntity()->GetTransform()->GetWorldTM() * modelSpace;
+        }
+
+        AZ::Transform ActorComponent::GetSocketBindTransformByName(const char* name, Space space) const
+        {
+            const size_t socketIndex = GetSocketIndexByName(name);
+            if (socketIndex == s_invalidSocketIndex)
+            {
+                AZ_Warning("EMotionFX", false, "GetSocketBindTransformByName: Socket '%s' does not exist. Entity: %s", name ? name : "", GetEntity()->GetName().c_str());
+                return AZ::Transform::CreateIdentity();
+            }
+            return GetSocketBindTransform(socketIndex, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransformFromEntity(size_t socketIndex) const
+        {
+            if (socketIndex >= GetNumSockets())
+            {
+                AZ_Warning("EMotionFX", false, "GetSocketTransformFromEntity: Invalid socket index %zu. Entity: %s", socketIndex, GetEntity()->GetName().c_str());
+                return AZ::Transform::CreateIdentity();
+            }
+
+            // The actor instance's world transform only catches up with the entity during the animation update, so compose with the entity's.
+            return GetEntity()->GetTransform()->GetWorldTM() * GetSocketTransform(socketIndex, Space::ModelSpace);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransformFromEntityByName(const char* name) const
+        {
+            const size_t socketIndex = GetSocketIndexByName(name);
+            if (socketIndex == s_invalidSocketIndex)
+            {
+                AZ_Warning("EMotionFX", false, "GetSocketTransformFromEntityByName: Socket '%s' does not exist. Entity: %s", name ? name : "", GetEntity()->GetName().c_str());
+                return AZ::Transform::CreateIdentity();
+            }
+            return GetSocketTransformFromEntity(socketIndex);
         }
 
         // The entity has attached to the target.
