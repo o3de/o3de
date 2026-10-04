@@ -91,6 +91,11 @@ void AssetEditorWindow::OpenAssetById(const AZ::Data::AssetId assetId)
     // The catalog knows the real asset type; GetAsset<AssetData> would ask for a type that has no handler
     AZ::Data::AssetInfo assetInfo;
     AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+    if (!assetInfo.m_assetId.IsValid())
+    {
+        AZ_Warning("AssetEditor", false, "OpenAssetById: asset id %s is not in the catalog", assetId.ToFixedString().c_str());
+        return;
+    }
     OpenAsset(AZ::Data::AssetManager::Instance().GetAsset(assetId, assetInfo.m_assetType, AZ::Data::AssetLoadBehavior::NoLoad));
 }
 
