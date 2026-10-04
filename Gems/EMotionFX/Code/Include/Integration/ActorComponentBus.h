@@ -14,6 +14,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/Character.h>
 #include <Integration/Assets/ActorAsset.h>
@@ -78,6 +79,30 @@ namespace EMotionFX
             
             virtual Physics::AnimationConfiguration* GetPhysicsConfig() const { return nullptr; }
 
+            /// Sockets are named joint-relative frames authored on the actor; a socket's forward direction is its local +Y axis.
+            /// For the socket transform and forward, LocalSpace is the authored offset from the socket's joint,
+            /// ModelSpace is relative to the origin of the character and WorldSpace is relative to the world origin.
+
+            /// Retrieve the number of sockets on the actor.
+            virtual size_t GetNumSockets() const { return 0; }
+
+            /// Retrieve the name of a socket, or an empty string if the index is out of range.
+            virtual AZStd::string GetSocketName(size_t /*socketIndex*/) const { return {}; }
+
+            /// Find a socket index by its name, case sensitive.
+            /// \return The socket index, or s_invalidSocketIndex if not found.
+            virtual size_t GetSocketIndexByName(const char* /*name*/) const { return s_invalidSocketIndex; }
+
+            /// Retrieve the transform of a socket in the given space; identity if the socket is invalid.
+            virtual AZ::Transform GetSocketTransform(size_t /*socketIndex*/, Space /*space*/) const { return AZ::Transform::CreateIdentity(); }
+
+            /// Retrieve the normalized forward direction (local +Y) of a socket in the given space; +Y if the socket is invalid.
+            virtual AZ::Vector3 GetSocketForward(size_t /*socketIndex*/, Space /*space*/) const { return AZ::Vector3::CreateAxisY(); }
+
+            /// Same as GetSocketTransform/GetSocketForward but looking the socket up by name on every call.
+            virtual AZ::Transform GetSocketTransformByName(const char* /*name*/, Space /*space*/) const { return AZ::Transform::CreateIdentity(); }
+            virtual AZ::Vector3 GetSocketForwardByName(const char* /*name*/, Space /*space*/) const { return AZ::Vector3::CreateAxisY(); }
+
             /// Attach to the specified entity.
             /// \param targetEntityId - Id of the entity to attach to.
             /// \param attachmentType - Desired type of attachment.
@@ -105,6 +130,7 @@ namespace EMotionFX
             virtual void EnableInstanceUpdate(bool enableInstanceUpdate) = 0;
 
             static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
+            static const size_t s_invalidSocketIndex = std::numeric_limits<size_t>::max();
         };
 
         using ActorComponentRequestBus = AZ::EBus<ActorComponentRequests>;
