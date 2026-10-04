@@ -325,9 +325,9 @@ namespace EMStudio
         options.m_cameraViewMode = static_cast<CameraViewMode>(settings->value("cameraViewMode", options.m_cameraViewMode).toInt());
         options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
 
-        // Read render flags
-        options.m_renderFlags =
-            EMotionFX::ActorRenderFlags(settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default)).toInt());
+        // Read render flags; sockets are shown by default so that newly added ones are visible.
+        options.m_renderFlags = EMotionFX::ActorRenderFlags(
+            settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default | EMotionFX::ActorRenderFlags::Sockets)).toInt());
 
         options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 

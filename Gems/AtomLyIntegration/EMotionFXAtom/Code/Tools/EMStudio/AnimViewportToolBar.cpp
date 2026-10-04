@@ -91,6 +91,7 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS, true,
                 ":/EMotionFXAtom/SimulatedObjectCollider.svg");
             CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlagIndex::SIMULATEJOINTS);
+            CreateViewOptionEntry(contextMenu, "Sockets", EMotionFX::ActorRenderFlagIndex::SOCKETS);
 
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Motion Extraction", EMotionFX::ActorRenderFlagIndex::MOTIONEXTRACTION);
