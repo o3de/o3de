@@ -210,8 +210,8 @@ namespace EMotionFX
         ParameterMixinActorId::InitSyntax(syntax);
         syntax.AddRequiredParameter(s_jointNameParameterName, "The parent joint of the socket.", MCore::CommandSyntax::PARAMTYPE_STRING);
         syntax.AddParameter(s_nameParameterName, "The socket name; made unique if empty or already used.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
-        syntax.AddParameter(s_positionParameterName, "The position relative to the joint.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "0,0,0");
-        syntax.AddParameter(s_rotationParameterName, "The rotation relative to the joint as a quaternion (x,y,z,w).", MCore::CommandSyntax::PARAMTYPE_VECTOR4, "0,0,0,1");
+        syntax.AddParameter(s_positionParameterName, "The position relative to the joint.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "0.0,0.0,0.0");
+        syntax.AddParameter(s_rotationParameterName, "The rotation relative to the joint as a quaternion (x,y,z,w).", MCore::CommandSyntax::PARAMTYPE_VECTOR4, "0.0,0.0,0.0,1.0");
     }
 
     bool CommandAddSocket::SetCommandParameters(const MCore::CommandLine& parameters)
@@ -415,8 +415,8 @@ namespace EMotionFX
         syntax.AddRequiredParameter(s_nameParameterName, "The name of the socket to adjust.", MCore::CommandSyntax::PARAMTYPE_STRING);
         syntax.AddParameter(s_newNameParameterName, "The new socket name.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
         syntax.AddParameter(s_jointNameParameterName, "The new parent joint.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
-        syntax.AddParameter(s_positionParameterName, "The new position relative to the joint.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "0,0,0");
-        syntax.AddParameter(s_rotationParameterName, "The new rotation relative to the joint as a quaternion (x,y,z,w).", MCore::CommandSyntax::PARAMTYPE_VECTOR4, "0,0,0,1");
+        syntax.AddParameter(s_positionParameterName, "The new position relative to the joint.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "0.0,0.0,0.0");
+        syntax.AddParameter(s_rotationParameterName, "The new rotation relative to the joint as a quaternion (x,y,z,w).", MCore::CommandSyntax::PARAMTYPE_VECTOR4, "0.0,0.0,0.0,1.0");
     }
 
     bool CommandAdjustSocket::SetCommandParameters(const MCore::CommandLine& parameters)
