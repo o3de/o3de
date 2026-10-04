@@ -19,6 +19,9 @@
 #include <AzFramework/Physics/Character.h>
 #include <Integration/Assets/ActorAsset.h>
 
+// Lets gems that also build against engines without actor sockets compile the socket calls conditionally.
+#define EMOTIONFX_HAS_ACTOR_SOCKETS 1
+
 namespace EMotionFX
 {
     class ActorInstance;
