@@ -16,6 +16,7 @@
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
+#include <Editor/Plugins/Socket/SocketOutlinerNotificationHandler.h>
 
 #include <QPushButton>
 #include <QTreeWidget>
@@ -48,6 +49,7 @@ namespace EMotionFX
     private slots:
         void OnAddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
         void OnAddToRagdoll();
+        void OnAddSocket();
         void OnSearchTextChanged();
 
     private:
@@ -58,6 +60,7 @@ namespace EMotionFX
         HitDetectionJointWidget* m_hitDetectionJointWidget = nullptr;
         RagdollNodeWidget* m_ragdollJointWidget = nullptr;
         SimulatedObjectColliderWidget* m_simulatedJointWidget = nullptr;
+        SocketOutlinerNotificationHandler m_socketHandler;
 
         AZStd::unique_ptr<EMStudio::ActorInfo> m_actorInfo;
         AZStd::unique_ptr<EMStudio::NodeInfo> m_nodeInfo;
@@ -79,6 +82,7 @@ namespace EMotionFX
     signals:
         void AddCollider(PhysicsSetup::ColliderConfigType configType, AZ::TypeId colliderType);
         void AddToRagdoll();
+        void AddSocket();
     protected slots:
         void OnCreateContextMenu();
     protected:
