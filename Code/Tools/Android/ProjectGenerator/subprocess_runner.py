@@ -43,8 +43,8 @@ class SubprocessRunner:
             return False
         try:
             outs, errs = self._subprocess.communicate(timeout=self._timeOut)
-            self._success_message = self._decode_output(outs)
-            self._error_message = self._decode_output(errs)
+            self._success_message = SubprocessRunner._decode_output(outs)
+            self._error_message = SubprocessRunner._decode_output(errs)
             print(f"ok:<{self._success_message}>, err:<{self._error_message}>")
             self._error_code = self._subprocess.returncode
             return self._subprocess.returncode == 0
