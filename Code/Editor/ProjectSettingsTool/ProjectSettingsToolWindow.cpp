@@ -553,7 +553,7 @@ namespace ProjectSettingsTool
                 plat,
                 AZStd::placeholders::_1,
                 windowsJSonSettings.m_document.get(),
-                ProjectSettingsContainer::GetJsonValue(*windowsJSonSettings.m_document, WindowsSettingsJsonValueString).GetValue()));
+                ProjectSettingsContainer::GetJsonValue(*windowsJSonSettings.m_document, WindowsSettingsJsonValueString, rapidjson::kObjectType).GetValue()));
            break;
         }
         default:
