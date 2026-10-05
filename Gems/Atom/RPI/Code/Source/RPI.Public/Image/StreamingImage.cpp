@@ -159,7 +159,11 @@ namespace AZ
                    AZ_Error("Image", false, "Failed to initialize RHI image view. This is not a recoverable error and is likely a bug.");
                    return RHI::ResultCode::Fail;
                 }
-                
+
+                // Connect before any mip chain upload can start, so no upload event is missed.
+                m_uploadEventId = AZ::Uuid::CreateRandom();
+                StreamingImageUploadNotificationBus::Handler::BusConnect(m_uploadEventId);
+
                 // Build a local set of mip chain asset handles.
                 for (size_t mipChainIndex = 0; mipChainIndex < imageAsset.GetMipChainCount(); ++mipChainIndex)
                 {
@@ -196,7 +200,7 @@ namespace AZ
 #endif
                                 
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
-                BusConnect(imageAsset.GetId());
+                Data::AssetBus::MultiHandler::BusConnect(imageAsset.GetId());
 #endif                                
                 return RHI::ResultCode::Success;
             }
@@ -212,7 +216,7 @@ namespace AZ
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
                 Data::AssetBus::MultiHandler::BusDisconnect(GetAssetId());
 #endif
-
+                StreamingImageUploadNotificationBus::Handler::BusDisconnect();
                 if(m_pool)
                 {
                     m_pool->DetachImage(this);
@@ -499,17 +503,12 @@ namespace AZ
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 
-                // thisPtr makes sure the request holds an intrusive ptr to the current StreamingImage, so it doesn't get destroyed before
-                // the callback is executed
-                request.m_completeCallback = [this, mipChainIndex, thisPtr = RHI::Ptr<StreamingImage>(this)]()
+                // mipChainAsset keeps the mip slice data valid until the upload is done, even if this image is destroyed.
+                request.m_completeCallback = [uploadEventId = m_uploadEventId, mipChainIndex, mipChainAsset]()
                 {
-                    AZ_UNUSED(thisPtr);
-#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                    AZ_TracePrintf("StreamingImage", "Upload mipchain done [%s]\n", mipChainAsset.GetHint().c_str());
-#endif
-                    // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
-                    AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
-                    EvictMipChainAsset(mipChainIndex);
+                    AZ_UNUSED(mipChainAsset);
+                    StreamingImageUploadNotificationBus::Event(
+                        uploadEventId, &StreamingImageUploadNotifications::OnMipChainUploaded, mipChainIndex);
                 };
 
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
@@ -520,6 +519,16 @@ namespace AZ
                 return m_rhiPool->ExpandImage(request);
             }
             return RHI::ResultCode::InvalidOperation;
+        }
+
+        void StreamingImage::OnMipChainUploaded(size_t mipChainIndex)
+        {
+#ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
+            AZ_TracePrintf("StreamingImage", "Upload mipchain done [%d] [%s]\n", mipChainIndex, m_image->GetName().GetCStr());
+#endif
+            // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
+            AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
+            EvictMipChainAsset(mipChainIndex);
         }
 
         void StreamingImage::OnAssetReady(Data::Asset<Data::AssetData> asset)
