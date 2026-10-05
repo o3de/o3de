@@ -187,7 +187,7 @@ namespace WhiteBox
         {
             m_activeLayerIndex = static_cast<int>(m_layers.size()) - 1;
         }
-        const WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
+        WhiteBoxLayer& layer = m_layers[m_activeLayerIndex];
         m_whiteBoxData = layer.m_freeformData;
         m_voxel.m_legacyGridData = layer.m_gridData;
         m_voxel.m_cells = layer.m_voxelCells;
@@ -195,7 +195,12 @@ namespace WhiteBox
         m_voxel.m_legacyMerged.clear(); // legacy flags, feature removed
 
         m_whiteBox = Api::CreateWhiteBoxMesh();
-        Api::ReadMesh(*m_whiteBox, m_whiteBoxData); // new/empty layers stay empty (no default cube)
+        const auto readResult = Api::ReadMesh(*m_whiteBox, m_whiteBoxData); // empty layers stay empty
+        if (readResult == Api::ReadResult::Full && !layer.m_bevelSource.empty())
+        {
+            // OpenMesh may reorder connectivity on read; re-baseline so StoreLayer does not see an edit.
+            if (Api::WriteMesh(*m_whiteBox, m_whiteBoxData)) { layer.m_freeformData = m_whiteBoxData; }
+        }
         m_gridMesh = Api::CreateWhiteBoxMesh();
         Api::ReadMesh(*m_gridMesh, m_voxel.m_legacyGridData);
         m_layerRuntime.m_loadedIndex = m_activeLayerIndex;

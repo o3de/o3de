@@ -44,6 +44,7 @@ namespace WhiteBox
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "whitebox.request.bus")
                 ->Event("WhiteBoxIsVisible", &WhiteBoxComponentRequestBus::Events::WhiteBoxIsVisible)
+                ->Event("SetWhiteBoxVisible", &WhiteBoxComponentRequestBus::Events::SetWhiteBoxVisible)
                 ->Event("SetLiveBoolean", &WhiteBoxComponentRequestBus::Events::SetLiveBoolean)
                 ->Event("GetLiveBoolean", &WhiteBoxComponentRequestBus::Events::GetLiveBoolean)
                 ->Event(
@@ -192,6 +193,14 @@ namespace WhiteBox
     bool WhiteBoxComponent::WhiteBoxIsVisible() const
     {
         return m_renderMesh->IsVisible();
+    }
+
+    void WhiteBoxComponent::SetWhiteBoxVisible(const bool visible)
+    {
+        if (m_renderMesh)
+        {
+            m_renderMesh->SetVisiblity(visible);
+        }
     }
 
     // Implement the setters:

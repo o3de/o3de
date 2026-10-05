@@ -47,6 +47,7 @@ namespace WhiteBox
         const WhiteBoxRenderData& GetPhysicsRenderData() const;
         // WhiteBoxComponentRequestBus ...
         bool WhiteBoxIsVisible() const override;
+        void SetWhiteBoxVisible(bool visible) override;
         void SetLiveBoolean(bool enabled) override;
         bool GetLiveBoolean() const override;
         void BakeWhiteBox(bool rebakeCollider = false) override;

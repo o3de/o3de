@@ -7915,12 +7915,9 @@ namespace WhiteBox
                 for (size_t i = 0; i < data.m_border.size(); ++i)
                 {
                     const auto p = VertexPosition(whiteBox, data.m_border[i]);
-                    const auto q = VertexPosition(whiteBox, data.m_border[(i + 1) % data.m_border.size()]);
-                    const auto s = VertexPosition(whiteBox, data.m_border[(i + 2) % data.m_border.size()]);
-                    if (AZStd::abs((p - origin).Dot(data.m_normal)) > scale * 1e-5f ||
-                        (q - p).Cross(s - q).Dot(data.m_normal) <= 1e-10f)
+                    if (!p.IsFinite() || AZStd::abs((p - origin).Dot(data.m_normal)) > scale * 1e-5f)
                     {
-                        error = "Bevel requires flat, convex neighboring faces without redundant collinear corners.";
+                        error = "Bevel requires flat neighboring faces.";
                         return nullptr;
                     }
                 }
@@ -7966,9 +7963,9 @@ namespace WhiteBox
                 const VertexHandle vertex{index};
                 const auto origin = VertexPosition(whiteBox, vertex);
                 const auto& around = incident[index];
-                if (around.size() < 2 || around.size() > 3)
+                if (around.size() < 2)
                 {
-                    return fail("Bevel currently supports corners with two or three incident polygons.");
+                    return fail("Bevel needs an edge between two faces, not an open boundary.");
                 }
                 for (const auto& polygon : around)
                 {
@@ -7982,13 +7979,32 @@ namespace WhiteBox
                     const auto next = border[(i + 1) % border.size()];
                     const bool before = edgeSelected(vertex, prev);
                     const bool after = edgeSelected(vertex, next);
-                    if (!before && !after) { continue; }
+                    if (!before && !after)
+                    {
+                        if (around.size() > 3)
+                        {
+                            return fail("At a corner with more than three faces, select edges touching every incident face.");
+                        }
+                        continue;
+                    }
                     const auto u = VertexPosition(whiteBox, prev) - origin;
                     const auto v = VertexPosition(whiteBox, next) - origin;
                     const auto un = u.GetNormalizedSafe();
                     const auto vn = v.GetNormalizedSafe();
-                    const float sine = un.Cross(vn).GetLength();
-                    if (sine < 1e-5f) { return fail("Cannot bevel a collapsed corner."); }
+                    // Signed offsets follow the face interior even at reflex corners.
+                    const float sine = vn.Cross(un).Dot(data->m_normal);
+                    if (AZStd::abs(sine) < 1e-5f)
+                    {
+                        // A split straight edge has a well-defined offset when both halves
+                        // are selected. Keep its vertex to join the two strips exactly.
+                        if (before && after && un.Dot(vn) < -0.9999f)
+                        {
+                            const auto point = origin + data->m_normal.Cross(vn) * width;
+                            replacements[polygon.m_faceHandles.front().Index()][index] = {cornerVertex(vertex, point)};
+                            continue;
+                        }
+                        return fail("Select both edge segments at a straight corner, or remove the collapsed corner.");
+                    }
                     const float distance = width / sine;
                     if ((after && distance >= u.GetLength() - 1e-6f) ||
                         (before && distance >= v.GetLength() - 1e-6f))
@@ -8006,7 +8022,7 @@ namespace WhiteBox
             {
                 if (item.second != 3) { continue; }
                 const auto& around = incident[item.first];
-                if (around.size() != 3) { return fail("Unsupported three-edge bevel junction."); }
+                if (around.size() != 3) { continue; }
                 AZ::Vector3 sum = AZ::Vector3::CreateZero();
                 for (const auto& polygon : around)
                 {
@@ -8053,9 +8069,12 @@ namespace WhiteBox
                     if (p0.empty() || p1.empty()) { return fail("Invalid bevel boundary."); }
                     const auto v0 = VertexPosition(*candidate, p0.front()) - origin;
                     const auto v1 = VertexPosition(*candidate, p1.front()) - origin;
-                    if (first->m_normal.Dot(v1) >= -1e-6f || second->m_normal.Dot(v0) >= -1e-6f)
+                    const float sideDistance0 = first->m_normal.Dot(v1);
+                    const float sideDistance1 = second->m_normal.Dot(v0);
+                    if (AZStd::abs(sideDistance0) <= width * 1e-5f || AZStd::abs(sideDistance1) <= width * 1e-5f ||
+                        (sideDistance0 < 0.0f) != (sideDistance1 < 0.0f))
                     {
-                        return fail("Select convex sharp edges. Flat and inward edges are not supported.");
+                        return fail("Select sharp edges between consistently oriented faces; flat edges cannot be beveled.");
                     }
                     for (int segment = 0; segment <= segments; ++segment)
                     {
@@ -8083,6 +8102,7 @@ namespace WhiteBox
                         const int key = cap.m_faceHandles.front().Index();
                         if (replacements[key].count(vertex.Index())) { continue; }
                         auto* data = loadPolygon(cap);
+                        if (!data) { return false; }
                         const auto& border = data->m_border;
                         const auto found = AZStd::find(border.begin(), border.end(), vertex);
                         const size_t i = static_cast<size_t>(found - border.begin());
@@ -8096,7 +8116,7 @@ namespace WhiteBox
                         replacements[key][vertex.Index()] = AZStd::move(arc);
                         capped = true;
                     }
-                    if (!capped && incident[vertex.Index()].size() == 3)
+                    if (!capped && incident[vertex.Index()].size() >= 3)
                     {
                         auto arc = arcs[end];
                         // Reverse the strip end boundary so the patch closes it.
@@ -8128,7 +8148,7 @@ namespace WhiteBox
                     }
                     continue;
                 }
-                if (arcs.size() != 3) { return fail("Unsupported bevel corner junction."); }
+                if (arcs.size() < 3) { return fail("Unsupported bevel corner junction."); }
                 VertexHandles ring = arcs.front();
                 AZStd::unordered_set<size_t> used{0};
                 while (used.size() < arcs.size())
@@ -8148,13 +8168,6 @@ namespace WhiteBox
                 }
                 if (ring.front() != ring.back()) { return fail("The bevel corner patch is not closed."); }
                 ring.pop_back();
-                const auto centerIt = cornerCenters.find(item.first);
-                if (centerIt == cornerCenters.end()) { return fail("Missing bevel corner profile."); }
-                const auto center = centerIt->second;
-                const AZStd::array<AZ::Vector3, 3> axes{{
-                    VertexPosition(*candidate, ring[0]) - center,
-                    VertexPosition(*candidate, ring[segments]) - center,
-                    VertexPosition(*candidate, ring[2 * segments]) - center}};
                 AZ::Vector3 normal = AZ::Vector3::CreateZero();
                 for (const auto& polygon : incident[item.first]) { normal += PolygonNormal(whiteBox, polygon); }
                 normal = normal.GetNormalizedSafe();
@@ -8164,6 +8177,27 @@ namespace WhiteBox
                 const auto uvProjection = FaceUvProjection(whiteBox, source);
                 AZ::u32 smoothing = 0;
                 for (const auto& polygon : incident[item.first]) { smoothing |= FaceSmoothingGroups(whiteBox, polygon.m_faceHandles.front()); }
+                const auto centerIt = cornerCenters.find(item.first);
+                if (centerIt == cornerCenters.end())
+                {
+                    // General junctions share a single interior vertex and the exact strip
+                    // boundary. The specialized trihedral grid below keeps its rounded profile.
+                    AZ::Vector3 center = AZ::Vector3::CreateZero();
+                    for (const auto vertex : ring) { center += VertexPosition(*candidate, vertex); }
+                    center /= static_cast<float>(ring.size());
+                    const auto centerVertex = cornerVertex(VertexHandle{item.first}, center);
+                    for (size_t i = 0; i < ring.size(); ++i)
+                    {
+                        patches.push_back({{ring[i], ring[(i + 1) % ring.size()], centerVertex},
+                            normal, material, paint, uvProjection, smoothing});
+                    }
+                    continue;
+                }
+                const auto center = centerIt->second;
+                const AZStd::array<AZ::Vector3, 3> axes{{
+                    VertexPosition(*candidate, ring[0]) - center,
+                    VertexPosition(*candidate, ring[segments]) - center,
+                    VertexPosition(*candidate, ring[2 * segments]) - center}};
                 const float exponent = 2.0f * (1.0f - profile);
                 const auto gridVertex = [&](const AZ::Vector3& barycentric)
                 {
@@ -8297,48 +8331,127 @@ namespace WhiteBox
                     if (replacement == changed.end()) { border.push_back(vertex); }
                     else { border.insert(border.end(), replacement->second.begin(), replacement->second.end()); }
                 }
+                // Even a simple outline can hide an over-wide offset that reverses an
+                // original edge. Test the surviving span before triangulating concave faces.
+                for (size_t i = 0; i < data.m_border.size(); ++i)
+                {
+                    const auto a = data.m_border[i];
+                    const auto b = data.m_border[(i + 1) % data.m_border.size()];
+                    const auto aIt = changed.find(a.Index());
+                    const auto bIt = changed.find(b.Index());
+                    const auto newA = aIt == changed.end() ? a : aIt->second.back();
+                    const auto newB = bIt == changed.end() ? b : bIt->second.front();
+                    const auto original = VertexPosition(whiteBox, b) - VertexPosition(whiteBox, a);
+                    if ((VertexPosition(*candidate, newB) - VertexPosition(*candidate, newA)).Dot(original) <= 0.0f)
+                    {
+                        return fail("Bevel width collapses a neighboring edge. Reduce the width.");
+                    }
+                }
                 rebuilt.push_back({AZStd::move(border), data.m_normal, data.m_material, data.m_paint, data.m_uvProjection, data.m_smoothing});
                 removed.insert(removed.end(), data.m_polygon.m_faceHandles.begin(), data.m_polygon.m_faceHandles.end());
             }
             rebuilt.insert(rebuilt.end(), strips.begin(), strips.end());
             rebuilt.insert(rebuilt.end(), patches.begin(), patches.end());
-            // Validate every resulting boundary before removing any faces.
+            // Project each boundary in its own orientation and reject crossings explicitly.
+            // Ear clipping permits concave outlines and retained collinear border vertices.
+            using Triangles = AZStd::vector<AZStd::array<size_t, 3>>;
+            AZStd::vector<Triangles> triangulations;
             for (const auto& polygon : rebuilt)
             {
                 const auto& vertices = polygon.m_vertices;
+                if (vertices.size() < 3 || polygon.m_normal.GetLengthSq() < 0.5f)
+                {
+                    return fail("Bevel would create a collapsed face. Reduce the width.");
+                }
                 const auto base = VertexPosition(*candidate, vertices.front());
-                for (size_t i = 0; i < vertices.size(); ++i)
+                float extent = 0.0f;
+                for (const auto vertex : vertices)
                 {
-                    const auto p = VertexPosition(*candidate, vertices[i]);
-                    const auto q = VertexPosition(*candidate, vertices[(i + 1) % vertices.size()]);
-                    const auto s = VertexPosition(*candidate, vertices[(i + 2) % vertices.size()]);
-                    if ((q - p).Cross(s - q).Dot(polygon.m_normal) <= 1e-10f)
+                    const auto point = VertexPosition(*candidate, vertex);
+                    if (!point.IsFinite()) { return fail("Bevel produced an invalid vertex."); }
+                    extent = AZStd::max(extent, (point - base).GetLength());
+                }
+                if (!(extent > 0.0f)) { return fail("Bevel would create a collapsed face."); }
+                const auto reference = AZStd::abs(polygon.m_normal.GetZ()) < 0.9f
+                    ? AZ::Vector3::CreateAxisZ() : AZ::Vector3::CreateAxisX();
+                const auto u = polygon.m_normal.Cross(reference).GetNormalizedSafe();
+                const auto v = polygon.m_normal.Cross(u);
+                AZStd::vector<AZ::Vector2> points;
+                for (const auto vertex : vertices)
+                {
+                    const auto offset = (VertexPosition(*candidate, vertex) - base) / extent;
+                    points.emplace_back(offset.Dot(u), offset.Dot(v));
+                }
+                const auto cross = [](const AZ::Vector2& a, const AZ::Vector2& b)
+                {
+                    return double(a.GetX()) * b.GetY() - double(a.GetY()) * b.GetX();
+                };
+                const auto onSegment = [](const AZ::Vector2& a, const AZ::Vector2& b, const AZ::Vector2& p)
+                {
+                    return p.GetX() >= AZStd::min(a.GetX(), b.GetX()) && p.GetX() <= AZStd::max(a.GetX(), b.GetX()) &&
+                        p.GetY() >= AZStd::min(a.GetY(), b.GetY()) && p.GetY() <= AZStd::max(a.GetY(), b.GetY());
+                };
+                bool convex = true;
+                for (size_t i = 0; i < points.size(); ++i)
+                {
+                    const auto& a = points[i];
+                    const auto& b = points[(i + 1) % points.size()];
+                    if ((b - a).GetLengthSq() <= 1e-20f) { return fail("Bevel would collapse an edge. Reduce the width."); }
+                    convex = convex && cross(b - a, points[(i + 2) % points.size()] - b) > EarMinimumTurn;
+                    for (size_t j = i + 1; j < points.size(); ++j)
                     {
-                        return fail("Bevel would collapse or overlap a face. Reduce the width or simplify the corner.");
+                        if (j == i + 1 || (i == 0 && j + 1 == points.size())) { continue; }
+                        const auto& c = points[j];
+                        const auto& d = points[(j + 1) % points.size()];
+                        const auto abC = cross(b - a, c - a);
+                        const auto abD = cross(b - a, d - a);
+                        const auto cdA = cross(d - c, a - c);
+                        const auto cdB = cross(d - c, b - c);
+                        if (((abC < 0.0 && abD > 0.0) || (abC > 0.0 && abD < 0.0)) &&
+                            ((cdA < 0.0 && cdB > 0.0) || (cdA > 0.0 && cdB < 0.0)))
+                        {
+                            return fail("Bevel would overlap a face. Reduce the width.");
+                        }
+                        if ((abC == 0.0 && onSegment(a, b, c)) || (abD == 0.0 && onSegment(a, b, d)) ||
+                            (cdA == 0.0 && onSegment(c, d, a)) || (cdB == 0.0 && onSegment(c, d, b)))
+                        {
+                            return fail("Bevel would pinch a face. Reduce the width.");
+                        }
                     }
                 }
-                // Triangulate with a fan only when it preserves the face winding.
-                for (size_t i = 1; i + 1 < vertices.size(); ++i)
+                Triangles triangles;
+                if (convex)
                 {
-                    if ((VertexPosition(*candidate, vertices[i]) - base).Cross(
-                            VertexPosition(*candidate, vertices[i + 1]) - base).Dot(polygon.m_normal) <= 1e-10f)
+                    // Preserve the existing diagonals on convex strips and corner grids.
+                    for (size_t i = 1; i + 1 < vertices.size(); ++i) { triangles.push_back({{0, i, i + 1}}); }
+                }
+                else if (!TriangulateLoop(points, triangles))
+                {
+                    return fail("Bevel cannot triangulate this face safely. Reduce the width.");
+                }
+                for (const auto& triangle : triangles)
+                {
+                    if (cross(points[triangle[1]] - points[triangle[0]], points[triangle[2]] - points[triangle[0]]) <= EarMinimumTurn)
                     {
-                        return fail("Bevel cannot triangulate this face safely. Reduce the width.");
+                        return fail("Bevel would collapse or invert a face. Reduce the width.");
                     }
                 }
+                triangulations.push_back(AZStd::move(triangles));
             }
             RemoveFaces(*candidate, removed);
             FaceHandles added;
             PolygonPropertyHandle property;
             candidate->mesh.get_property_handle(property, PolygonProps);
             auto& groups = candidate->mesh.property(property);
-            for (const auto& polygon : rebuilt)
+            for (size_t polygonIndex = 0; polygonIndex < rebuilt.size(); ++polygonIndex)
             {
+                const auto& polygon = rebuilt[polygonIndex];
                 FaceHandlesInternal group;
                 const auto& vertices = polygon.m_vertices;
-                for (size_t i = 1; i + 1 < vertices.size(); ++i)
+                for (const auto& triangle : triangulations[polygonIndex])
                 {
-                    const auto face = candidate->mesh.add_face(om_vh(vertices[0]), om_vh(vertices[i]), om_vh(vertices[i + 1]));
+                    const auto face = candidate->mesh.add_face(
+                        om_vh(vertices[triangle[0]]), om_vh(vertices[triangle[1]]), om_vh(vertices[triangle[2]]));
                     if (!face.is_valid()) { return fail("Bevel would create invalid face connections. The mesh was left unchanged."); }
                     group.push_back(face);
                     const auto handle = wb_fh(face);

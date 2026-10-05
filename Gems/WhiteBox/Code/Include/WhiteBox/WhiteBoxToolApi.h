@@ -1035,8 +1035,7 @@ namespace WhiteBox
         //! Add a visible corner on a polygon border edge at fraction (0, 1) from its first endpoint; invalid on failure.
         VertexHandle InsertVertexOnEdge(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error);
 
-        //! Bevel convex edges, including connected selections at simple corners. Width is the face offset.
-        //! Segments (1-32) controls the rounded profile. Failure leaves the mesh unchanged.
+        //! Bevel sharp edges by @p width with @p segments (1-32). Failure leaves the mesh unchanged.
         bool BevelEdges(WhiteBoxMesh& whiteBox, const EdgeHandles& edges, float width, int segments, AZStd::string& error, float profile = 0.5f);
 
         //! Insert 1-64 evenly spaced cuts as one transactional mesh edit. Slide [-1, 1] translates the group within its end margins.

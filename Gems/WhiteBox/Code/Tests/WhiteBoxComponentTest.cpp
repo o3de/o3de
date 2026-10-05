@@ -1112,6 +1112,33 @@ namespace UnitTest
         EXPECT_EQ(Api::MeshVertexCount(*component->GetWhiteBoxMesh()), 14);
     }
 
+    TEST_F(EditorWhiteBoxModifierTestFixture, RestoredBevelStaysLiveUntilAnActualMeshEdit)
+    {
+        namespace Api = WhiteBox::Api;
+        auto* component = m_whiteBoxComponent;
+        Api::InitializeAsUnitCube(*component->GetWhiteBoxMesh());
+        component->SerializeWhiteBox();
+        const int sourceLayer = component->GetActiveLayerIndex();
+        const auto seed = Api::MeshPolygonEdgeHandles(*component->GetWhiteBoxMesh()).front();
+        AZStd::string error;
+        ASSERT_TRUE(component->SetParametricBevel({seed}, {0.1f, 4, 0.7f}, error)) << error.c_str();
+        component->AddLayer();
+        const int otherLayer = component->GetActiveLayerIndex();
+        for (int pass = 0; pass < 3; ++pass)
+        {
+            component->SetActiveLayer(sourceLayer);
+            component->SerializeWhiteBox();
+            ASSERT_TRUE(component->HasActiveBevel());
+            component->SetActiveLayer(otherLayer);
+        }
+        component->SetActiveLayer(sourceLayer);
+        auto* mesh = component->GetWhiteBoxMesh();
+        const auto vertex = Api::MeshVertexHandles(*mesh).front();
+        Api::SetVertexPosition(*mesh, vertex, Api::VertexPosition(*mesh, vertex) + AZ::Vector3(0.01f, 0, 0));
+        component->SerializeWhiteBox();
+        EXPECT_FALSE(component->HasActiveBevel());
+    }
+
     TEST_F(EditorWhiteBoxModifierTestFixture, LoopCutPreviewCancelsOnEscapeAndMeshRefresh)
     {
         namespace Api = WhiteBox::Api;

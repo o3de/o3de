@@ -21,6 +21,9 @@ namespace WhiteBox
 
         virtual bool WhiteBoxIsVisible() const = 0;
 
+        //! Show or hide the runtime render mesh (the collider is unaffected), e.g. to fade out a wall the camera has moved behind.
+        virtual void SetWhiteBoxVisible([[maybe_unused]] bool visible) {}
+
         //! Select the pre-baked boolean variant (or the base). Call BakeWhiteBox to apply it.
         virtual void SetLiveBoolean([[maybe_unused]] bool enabled) {}
 

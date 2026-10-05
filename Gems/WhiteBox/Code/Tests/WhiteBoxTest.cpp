@@ -2483,6 +2483,237 @@ namespace UnitTest
         }
     }
 
+    namespace
+    {
+        // A closed L-shaped prism exercises inward edges and concave cap polygons.
+        WhiteBox::Api::WhiteBoxMeshPtr MakeBevelConcavePrism()
+        {
+            namespace Api = WhiteBox::Api;
+            auto mesh = Api::CreateWhiteBoxMesh();
+            const AZStd::array<AZ::Vector2, 6> outline{{
+                AZ::Vector2(0, 0), AZ::Vector2(2, 0), AZ::Vector2(2, 1), AZ::Vector2(1, 1), AZ::Vector2(1, 2), AZ::Vector2(0, 2)}};
+            AZStd::array<Api::VertexHandles, 2> rings;
+            for (int layer = 0; layer < 2; ++layer)
+            {
+                for (const auto& point : outline)
+                {
+                    rings[layer].push_back(Api::AddVertex(*mesh, AZ::Vector3(point.GetX(), point.GetY(), float(layer))));
+                }
+            }
+            const AZStd::array<AZStd::array<size_t, 3>, 4> triangles{{
+                {{0, 1, 3}}, {{1, 2, 3}}, {{0, 3, 5}}, {{3, 4, 5}}}};
+            for (int layer = 0; layer < 2; ++layer)
+            {
+                Api::FaceVertHandlesList faces;
+                for (const auto& triangle : triangles)
+                {
+                    faces.push_back({{{rings[layer][triangle[0]], rings[layer][triangle[layer ? 1 : 2]],
+                        rings[layer][triangle[layer ? 2 : 1]]}}});
+                }
+                Api::AddPolygon(*mesh, faces);
+            }
+            for (size_t i = 0; i < outline.size(); ++i)
+            {
+                const size_t next = (i + 1) % outline.size();
+                Api::AddQuadPolygon(*mesh, rings[0][i], rings[0][next], rings[1][next], rings[1][i]);
+            }
+            Api::CalculateNormals(*mesh);
+            return mesh;
+        }
+
+        double ExpectValidClosedBevel(WhiteBox::WhiteBoxMesh& mesh)
+        {
+            namespace Api = WhiteBox::Api;
+            EXPECT_EQ(Api::MeshVertexCount(mesh) - Api::MeshEdgeHandles(mesh).size() + Api::MeshFaceCount(mesh), 2);
+            for (const auto edge : Api::MeshEdgeHandles(mesh)) { EXPECT_EQ(Api::EdgeFaceHandles(mesh, edge).size(), 2); }
+            double volume = 0.0;
+            for (const auto face : Api::MeshFaceHandles(mesh))
+            {
+                const auto p = Api::FaceVertexPositions(mesh, face);
+                EXPECT_TRUE(p[0].IsFinite() && p[1].IsFinite() && p[2].IsFinite());
+                EXPECT_GT((p[1] - p[0]).Cross(p[2] - p[0]).GetLengthSq(), 1e-16f);
+                volume += p[0].Dot(p[1].Cross(p[2])) / 6.0;
+            }
+            Api::WhiteBoxMeshStream saved;
+            EXPECT_TRUE(Api::WriteMesh(mesh, saved));
+            auto restored = Api::CreateWhiteBoxMesh();
+            EXPECT_EQ(Api::ReadMesh(*restored, saved), Api::ReadResult::Full);
+            EXPECT_EQ(Api::MeshFaceCount(*restored), Api::MeshFaceCount(mesh));
+            return volume;
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelConcavePrismAcceptsInwardAndOutwardEdges)
+    {
+        namespace Api = WhiteBox::Api;
+        auto source = MakeBevelConcavePrism();
+        const auto material = AZ::Data::AssetId::CreateString("{15214A10-CEAC-49D8-AB23-B7129F69B9F1}:1");
+        for (const auto face : Api::MeshFaceHandles(*source))
+        {
+            Api::SetFaceMaterial(*source, face, material);
+            Api::SetFacePaintColor(*source, face, 0xFF00FF00u);
+        }
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*source))
+        {
+            const auto points = Api::EdgeVertexPositions(*source, edge);
+            if (AZStd::abs(points[1].GetZ() - points[0].GetZ()) < 0.5f) { continue; }
+            const bool inward = points[0].GetX() == 1.0f && points[0].GetY() == 1.0f;
+            for (const int segments : {1, 3, 8})
+            {
+                for (const float profile : {0.25f, 0.5f, 0.75f})
+                {
+                    auto mesh = Api::CloneMesh(*source);
+                    AZStd::string error;
+                    ASSERT_TRUE(Api::BevelEdges(*mesh, {edge}, 0.1f, segments, error, profile)) << error.c_str();
+                    const double volume = ExpectValidClosedBevel(*mesh);
+                    if (inward) { EXPECT_GT(volume, 3.0); EXPECT_LT(volume, 3.01); }
+                    else { EXPECT_LT(volume, 3.0); EXPECT_GT(volume, 2.99); }
+                    for (const auto face : Api::MeshFaceHandles(*mesh))
+                    {
+                        EXPECT_EQ(Api::FaceMaterial(*mesh, face), material);
+                        EXPECT_EQ(Api::FacePaintColor(*mesh, face), 0xFF00FF00u);
+                    }
+                }
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelCrossesSplitStraightEdgesAndPreservesUnselectedCollinearCorners)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto seed = Api::MeshPolygonEdgeHandles(*m_whiteBox).front();
+        AZStd::string error;
+        const auto middle = Api::InsertVertexOnEdge(*m_whiteBox, seed, 0.4f, error);
+        ASSERT_TRUE(middle.IsValid()) << error.c_str();
+        Api::EdgeHandles split;
+        Api::EdgeHandle separate;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            const auto ends = Api::EdgeVertexHandles(*m_whiteBox, edge);
+            if (ends[0] == middle || ends[1] == middle) { split.push_back(edge); }
+            else { separate = edge; }
+        }
+        ASSERT_EQ(split.size(), 2);
+        for (const auto& selection : {split, Api::EdgeHandles{separate}})
+        {
+            for (const int segments : {1, 3, 8})
+            {
+                auto mesh = Api::CloneMesh(*m_whiteBox);
+                ASSERT_TRUE(Api::BevelEdges(*mesh, selection, 0.1f, segments, error)) << error.c_str();
+                EXPECT_GT(ExpectValidClosedBevel(*mesh), 0.98);
+            }
+        }
+        Api::WhiteBoxMeshStream before, after;
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, before));
+        EXPECT_FALSE(Api::BevelEdges(*m_whiteBox, {split.front()}, 0.1f, 3, error));
+        ASSERT_TRUE(Api::WriteMesh(*m_whiteBox, after));
+        EXPECT_EQ(before, after);
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelFullySelectedFourAndFiveFaceJunctionsRemainClosed)
+    {
+        namespace Api = WhiteBox::Api;
+        for (const int sides : {4, 5})
+        {
+            auto source = Api::CreateWhiteBoxMesh();
+            Api::VertexHandles base;
+            for (int i = 0; i < sides; ++i)
+            {
+                const float angle = AZ::Constants::TwoPi * float(i) / sides;
+                base.push_back(Api::AddVertex(*source, AZ::Vector3(cosf(angle), sinf(angle), 0)));
+            }
+            const auto apex = Api::AddVertex(*source, AZ::Vector3(0, 0, 1));
+            Api::FaceVertHandlesList bottom;
+            for (int i = 1; i + 1 < sides; ++i) { bottom.push_back({{{base[0], base[i + 1], base[i]}}}); }
+            Api::AddPolygon(*source, bottom);
+            for (int i = 0; i < sides; ++i) { Api::AddPolygon(*source, {{{{base[i], base[(i + 1) % sides], apex}}}}); }
+            Api::CalculateNormals(*source);
+            Api::EdgeHandles selection;
+            for (const auto edge : Api::MeshPolygonEdgeHandles(*source))
+            {
+                const auto ends = Api::EdgeVertexHandles(*source, edge);
+                if (ends[0] == apex || ends[1] == apex) { selection.push_back(edge); }
+            }
+            ASSERT_EQ(selection.size(), sides);
+            const double sourceVolume = ExpectValidClosedBevel(*source);
+            for (const int segments : {1, 3, 8})
+            {
+                auto mesh = Api::CloneMesh(*source);
+                AZStd::string error;
+                ASSERT_TRUE(Api::BevelEdges(*mesh, selection, 0.1f, segments, error)) << error.c_str();
+                const double volume = ExpectValidClosedBevel(*mesh);
+                EXPECT_GT(volume, sourceVolume * 0.8);
+                EXPECT_LT(volume, sourceVolume);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelAtReflexFaceCornersPreservesClosedMesh)
+    {
+        namespace Api = WhiteBox::Api;
+        auto source = MakeBevelConcavePrism();
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*source))
+        {
+            const auto points = Api::EdgeVertexPositions(*source, edge);
+            if (points[0].GetZ() != points[1].GetZ()) { continue; }
+            for (const int segments : {1, 3, 8})
+            {
+                auto mesh = Api::CloneMesh(*source);
+                AZStd::string error;
+                ASSERT_TRUE(Api::BevelEdges(*mesh, {edge}, 0.1f, segments, error)) << error.c_str();
+                const double volume = ExpectValidClosedBevel(*mesh);
+                EXPECT_GT(volume, 2.97);
+                EXPECT_LT(volume, 3.0);
+            }
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelCrossesFourFaceLoopCutJunction)
+    {
+        namespace Api = WhiteBox::Api;
+        Api::InitializeAsUnitCube(*m_whiteBox);
+        const auto seed = Api::MeshPolygonEdgeHandles(*m_whiteBox).front();
+        const auto original = Api::EdgeVertexPositions(*m_whiteBox, seed);
+        const auto direction = original[1] - original[0];
+        AZStd::string error;
+        ASSERT_TRUE(Api::InsertEdgeLoop(*m_whiteBox, seed, 0.4f, error)) << error.c_str();
+        Api::EdgeHandles selection;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*m_whiteBox))
+        {
+            const auto ends = Api::EdgeVertexPositions(*m_whiteBox, edge);
+            if ((ends[0] - original[0]).Cross(direction).IsZero() &&
+                (ends[1] - original[0]).Cross(direction).IsZero()) { selection.push_back(edge); }
+        }
+        ASSERT_EQ(selection.size(), 2);
+        for (const int segments : {1, 3, 8, 32})
+        {
+            auto mesh = Api::CloneMesh(*m_whiteBox);
+            ASSERT_TRUE(Api::BevelEdges(*mesh, selection, 0.1f, segments, error)) << error.c_str();
+            EXPECT_GT(ExpectValidClosedBevel(*mesh), 0.98);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, BevelRejectsOverlappingOffsetsTransactionally)
+    {
+        namespace Api = WhiteBox::Api;
+        auto mesh = MakeBevelConcavePrism();
+        Api::EdgeHandles vertical;
+        for (const auto edge : Api::MeshPolygonEdgeHandles(*mesh))
+        {
+            const auto p = Api::EdgeVertexPositions(*mesh, edge);
+            if (AZStd::abs(p[1].GetZ() - p[0].GetZ()) > 0.5f) { vertical.push_back(edge); }
+        }
+        Api::WhiteBoxMeshStream before, after;
+        ASSERT_TRUE(Api::WriteMesh(*mesh, before));
+        AZStd::string error;
+        // Each individual offset fits along its edge, but two offsets consume a unit-wide arm.
+        EXPECT_FALSE(Api::BevelEdges(*mesh, vertical, 0.6f, 3, error));
+        EXPECT_FALSE(error.empty());
+        ASSERT_TRUE(Api::WriteMesh(*mesh, after));
+        EXPECT_EQ(before, after);
+    }
+
     TEST_F(WhiteBoxTestFixture, BevelCubeEdgesPreservesClosedMeshAndFaceProperties)
     {
         namespace Api = WhiteBox::Api;
