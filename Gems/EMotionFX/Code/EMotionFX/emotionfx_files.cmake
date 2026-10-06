@@ -316,6 +316,8 @@ set(FILES
     Source/AnimGraphPlayTimeCondition.h
     Source/AnimGraphStateCondition.cpp
     Source/AnimGraphStateCondition.h
+    Source/AnimGraphScriptEventCondition.cpp
+    Source/AnimGraphScriptEventCondition.h
     Source/AnimGraphTagCondition.cpp
     Source/AnimGraphTagCondition.h
     Source/AnimGraphTimeCondition.cpp

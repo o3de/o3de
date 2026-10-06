@@ -200,6 +200,16 @@ namespace EMotionFX
 
             /// Stops updating an anim graph instance and resets its state
             virtual void StopAnimGraph() = 0;
+
+            /// Fires a named event. Transitions with a Script Event Condition of that name can take it for a short hold time, and the first one that starts uses it up.
+            virtual void FireEvent(const char* eventName) { AZ_UNUSED(eventName); }
+
+            /// Returns true when the named state is active in the anim graph, also while it is blending in or out.
+            virtual bool IsStateActive(const char* stateName) { AZ_UNUSED(stateName); return false; }
+
+            /// Switches to the named state at the start of the next anim graph update and skips the transition conditions.
+            /// A direct transition to the state still supplies the blend settings, otherwise the state is cut to. Returns false when the state does not exist.
+            virtual bool TransitionToState(const char* stateName) { AZ_UNUSED(stateName); return false; }
         };
 
         using AnimGraphComponentRequestBus = AZ::EBus<AnimGraphComponentRequests>;
