@@ -873,7 +873,7 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(void* hwndForInputSystem)
+AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSystem)
 {
     CGameEngine* pGameEngine = new CGameEngine;
 
@@ -1556,7 +1556,7 @@ bool CCryEditApp::InitInstance()
     // it returns an invalid handle unless the widget has been shown and polished and even then
     // it sometimes returns an invalid handle.
     // So instead, we use winId(), which does consistently work
-    void* mainWindowWrapperHwnd = reinterpret_cast<void*>(mainWindowWrapper->winId());
+    HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
