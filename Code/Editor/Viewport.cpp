@@ -618,9 +618,9 @@ void QtViewport::ResetCursor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void* QtViewport::renderOverlayHWND() const
+HWND QtViewport::renderOverlayHWND() const
 {
-    return reinterpret_cast<void*>(m_renderOverlay.winId());
+    return reinterpret_cast<HWND>(m_renderOverlay.winId());
 }
 
 //////////////////////////////////////////////////////////////////////////

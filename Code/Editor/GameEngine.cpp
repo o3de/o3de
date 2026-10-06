@@ -320,7 +320,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     bool bTestMode,
     const char* sInCmdLine,
     IInitializeUIInfo* logo,
-    void* hwndForInputSystem)
+    HWND hwndForInputSystem)
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
 
