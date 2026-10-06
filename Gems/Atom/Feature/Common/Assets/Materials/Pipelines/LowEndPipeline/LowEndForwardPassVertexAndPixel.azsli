@@ -56,6 +56,15 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_depth = IN.position.z;
 #endif
 
+#if OUTPUT_COVERAGE
+    // Per-sample coverage for alpha-to-coverage cutout materials; all samples when inactive.
+    #if MATERIAL_HAS_ALPHA_TO_COVERAGE_MASK
+    OUT.m_coverage = GetAlphaToCoverageMask();
+    #else
+    OUT.m_coverage = 0xFFFFFFFFu;
+    #endif
+#endif
+
     return OUT;
 }
 

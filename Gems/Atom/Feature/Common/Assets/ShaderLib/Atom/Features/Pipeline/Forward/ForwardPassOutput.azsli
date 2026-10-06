@@ -19,6 +19,13 @@
 #define OUTPUT_SUBSURFACE 0
 #endif
 
+// Passes that define OUTPUT_COVERAGE emit a per-sample coverage mask (see AlphaUtils.azsli). Only
+// passes that already run depth/stencil after the pixel shader should do so, otherwise samples the
+// mask rejects would still have written depth.
+#ifndef OUTPUT_COVERAGE
+#define OUTPUT_COVERAGE 0
+#endif
+
 
 #if UNIFIED_FORWARD_OUTPUT
 
@@ -28,6 +35,9 @@ struct ForwardPassOutput
 
 #if OUTPUT_DEPTH
     float m_depth : SV_Depth;
+#endif
+#if OUTPUT_COVERAGE
+    uint m_coverage : SV_Coverage;
 #endif
 };
 
@@ -47,6 +57,9 @@ struct ForwardPassOutput
 
 #if OUTPUT_DEPTH
     float m_depth : SV_Depth;
+#endif
+#if OUTPUT_COVERAGE
+    uint m_coverage : SV_Coverage;
 #endif
 };
 

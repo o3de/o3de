@@ -10,12 +10,53 @@
 
 #include "../MaterialInputs/AlphaInput.azsli"
 
+// Half-width of the anti-aliased band around the cutout threshold, in alpha units, derived from how fast
+// alpha changes across the screen so the band is always about one pixel wide plus opacity.edgeSoftness
+// extra pixels. Specifying the softness in pixels rather than alpha keeps gently graded alpha textures from
+// turning into a wide translucent rim. Material types that expose edgeSoftness define
+// MATERIAL_HAS_OPACITY_EDGE_SOFTNESS; the others get the one-pixel band.
+real GetAlphaToCoverageBand(const MaterialParameters params, real alpha)
+{
+#ifdef MATERIAL_HAS_OPACITY_EDGE_SOFTNESS
+    real extraPixels = real(params.m_opacityEdgeSoftness);
+#else
+    real extraPixels = 0.0;
+#endif
+#ifndef CS_SAMPLERS
+    real alphaPerPixel = real(fwidth(alpha));
+#else
+    real alphaPerPixel = 0.0;
+#endif
+    real band = alphaPerPixel * (0.5 + extraPixels);
+    return clamp(band, real(1e-4), real(0.5));
+}
+
 real GetAlphaAndClip(const MaterialParameters params, float2 uvs[UvSetCount], float4 uvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f), bool customDerivatives = false)
 {
     // Alpha
     float2 baseColorUV = uvs[params.m_baseColorMapUvIndex];
     float2 opacityUV = uvs[params.m_opacityMapUvIndex];
     real alpha = SampleAlpha(GetMaterialTexture(params.m_baseColorMap), GetMaterialTexture(params.m_opacityMap), baseColorUV, opacityUV, GetMaterialTextureSampler(), o_opacity_source, uvDxDy, customDerivatives);
-    CheckClipping(alpha, real(params.m_opacityFactor));
-    return real(params.m_opacityFactor) * alpha;
+    real opacityFactor = real(params.m_opacityFactor);
+
+#ifndef CS_SAMPLERS
+    if (o_opacity_mode == OpacityMode::Cutout && o_alphaToCoverage)
+    {
+        // Alpha-to-coverage: instead of a hard clip at the threshold, map a band around it to per-sample
+        // coverage. The depth pre-pass and the forward pass both emit this mask (OUTPUT_COVERAGE), so they
+        // agree on which samples a cutout edge covers and MSAA resolves the silhouette.
+        real threshold = GetAlphaCutoutThreshold(opacityFactor);
+        real band = GetAlphaToCoverageBand(params, alpha);
+        real coverage = smoothstep(threshold - band, threshold + band, alpha);
+        s_alphaToCoverageMask = CoverageToSampleMask(coverage);
+        if (s_alphaToCoverageMask == 0)
+        {
+            clip(-1);
+        }
+        return coverage;
+    }
+#endif
+
+    CheckClipping(alpha, opacityFactor);
+    return opacityFactor * alpha;
 }
