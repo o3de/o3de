@@ -41,6 +41,8 @@ namespace ImageProcessingAtom
                 ->Field("PixelFormat", &PresetSettings::m_pixelFormat)
                 ->Field("PixelFormatAlpha", &PresetSettings::m_pixelFormatAlpha)
                 ->Field("DiscardAlpha", &PresetSettings::m_discardAlpha)
+                ->Field("AlphaDilate", &PresetSettings::m_alphaDilate)
+                ->Field("AlphaEdgeDarken", &PresetSettings::m_alphaEdgeDarken)
                 ->Field("MaxTextureSize", &PresetSettings::m_maxTextureSize)
                 ->Field("MinTextureSize", &PresetSettings::m_minTextureSize)
                 ->Field("IsPowerOf2", &PresetSettings::m_isPowerOf2)
@@ -200,6 +202,8 @@ namespace ImageProcessingAtom
             m_pixelFormat == other.m_pixelFormat &&
             m_pixelFormatAlpha == other.m_pixelFormatAlpha &&
             m_discardAlpha == other.m_discardAlpha &&
+            m_alphaDilate == other.m_alphaDilate &&
+            m_alphaEdgeDarken == other.m_alphaEdgeDarken &&
             m_minTextureSize == other.m_minTextureSize &&
             m_maxTextureSize == other.m_maxTextureSize &&
             m_isPowerOf2 == other.m_isPowerOf2 &&
@@ -238,6 +242,8 @@ namespace ImageProcessingAtom
             m_pixelFormat = other.m_pixelFormat;
             m_pixelFormatAlpha = other.m_pixelFormatAlpha;
             m_discardAlpha = other.m_discardAlpha;
+            m_alphaDilate = other.m_alphaDilate;
+            m_alphaEdgeDarken = other.m_alphaEdgeDarken;
             m_minTextureSize = other.m_minTextureSize;
             m_maxTextureSize = other.m_maxTextureSize;
             m_isPowerOf2 = other.m_isPowerOf2;
