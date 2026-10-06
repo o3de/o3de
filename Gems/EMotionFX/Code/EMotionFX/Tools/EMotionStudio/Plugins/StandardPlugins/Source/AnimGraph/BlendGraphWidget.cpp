@@ -148,6 +148,18 @@ namespace EMStudio
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &BlendGraphWidget::OnFocusChanged);
 
         connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &BlendGraphWidget::OnSelectionModelChanged);
+
+        // Edits made from other windows or through commands reach the graph through the model, so they request a repaint too.
+        AnimGraphModel* model = &plugin->GetAnimGraphModel();
+        connect(model, &AnimGraphModel::dataChanged, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::rowsInserted, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::rowsRemoved, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::rowsMoved, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::layoutChanged, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::modelReset, this, &NodeGraphWidget::RequestRedraw);
+        connect(model, &AnimGraphModel::FocusChanged, this, &NodeGraphWidget::RequestRedraw);
+        connect(&model->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &NodeGraphWidget::RequestRedraw);
+        connect(&model->GetSelectionModel(), &QItemSelectionModel::currentChanged, this, &NodeGraphWidget::RequestRedraw);
     }
 
 

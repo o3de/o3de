@@ -30,8 +30,10 @@
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QCheckBox>
 #include <QContextMenuEvent>
+#include <QGuiApplication>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <Editor/InspectorBus.h>
 #include <Source/Editor/ObjectEditor.h>
@@ -158,10 +160,12 @@ namespace EMStudio
             }
         }
 
-        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
-            {
-                UpdateAndShowInInspector();
-            });
+        m_deferredUpdateTimer = new QTimer(this);
+        m_deferredUpdateTimer->setSingleShot(true);
+        m_deferredUpdateTimer->setInterval(50);
+        connect(m_deferredUpdateTimer, &QTimer::timeout, this, &AttributesWindow::OnSelectionChanged);
+
+        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &AttributesWindow::OnSelectionChanged);
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &AttributesWindow::OnDataChanged);
 
         Init(QModelIndex(), true);
@@ -548,8 +552,27 @@ namespace EMStudio
         EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, this);
     }
 
+    void AttributesWindow::OnSelectionChanged()
+    {
+        // Rebuilding the property editors stalls the UI, so a click or drag in the graph finishes first and the inspector catches up on release.
+        if (QGuiApplication::mouseButtons() != Qt::NoButton)
+        {
+            m_deferredUpdateTimer->start();
+            return;
+        }
+
+        m_deferredUpdateTimer->stop();
+        UpdateAndShowInInspector();
+    }
+
     void AttributesWindow::OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
     {
+        // A pending selection update rebuilds the inspector anyway, so refreshing the outgoing object would be wasted work.
+        if (m_deferredUpdateTimer->isActive())
+        {
+            return;
+        }
+
         QItemSelection changes(topLeft, bottomRight);
         if (changes.contains(m_displayingModelIndex))
         {
