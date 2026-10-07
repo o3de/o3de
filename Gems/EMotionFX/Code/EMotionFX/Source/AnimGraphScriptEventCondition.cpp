@@ -52,18 +52,18 @@ namespace EMotionFX
 
     bool AnimGraphScriptEventCondition::TestCondition(AnimGraphInstance* animGraphInstance) const
     {
-        return !m_eventName.empty() && animGraphInstance->IsScriptEventActive(m_eventId);
+        return !m_eventName.empty() && animGraphInstance->IsScriptEventActive(m_eventId, m_holdTime);
     }
 
     void AnimGraphScriptEventCondition::GetSummary(AZStd::string* outResult) const
     {
-        *outResult = AZStd::string::format("%s: Event='%s'", RTTI_GetTypeName(), m_eventName.c_str());
+        *outResult = AZStd::string::format("%s: Event='%s', Hold Time=%.2f", RTTI_GetTypeName(), m_eventName.c_str(), m_holdTime);
     }
 
     void AnimGraphScriptEventCondition::GetTooltip(AZStd::string* outResult) const
     {
-        *outResult = AZStd::string::format("<table border=\"0\"><tr><td width=\"165\"><b>Condition Type: </b></td><td>%s</td></tr><tr><td><b>Event: </b></td><td>%s</td></tr></table>",
-            RTTI_GetTypeName(), m_eventName.c_str());
+        *outResult = AZStd::string::format("<table border=\"0\"><tr><td width=\"165\"><b>Condition Type: </b></td><td>%s</td></tr><tr><td><b>Event: </b></td><td>%s</td></tr><tr><td><b>Hold Time: </b></td><td>%.2f s</td></tr></table>",
+            RTTI_GetTypeName(), m_eventName.c_str(), m_holdTime);
     }
 
     void AnimGraphScriptEventCondition::SetEventName(const AZStd::string& eventName)
@@ -77,6 +77,16 @@ namespace EMotionFX
         return m_eventName;
     }
 
+    void AnimGraphScriptEventCondition::SetHoldTime(float holdTime)
+    {
+        m_holdTime = holdTime;
+    }
+
+    float AnimGraphScriptEventCondition::GetHoldTime() const
+    {
+        return m_holdTime;
+    }
+
     void AnimGraphScriptEventCondition::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -88,6 +98,7 @@ namespace EMotionFX
         serializeContext->Class<AnimGraphScriptEventCondition, AnimGraphTransitionCondition>()
             ->Version(1)
             ->Field("eventName", &AnimGraphScriptEventCondition::m_eventName)
+            ->Field("holdTime", &AnimGraphScriptEventCondition::m_holdTime)
             ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -102,6 +113,11 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphScriptEventCondition::m_eventName, "Event Name", "The event name a script fires with FireEvent. The condition stays true for a short hold time after it was fired, until a transition takes it.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphScriptEventCondition::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AnimGraphScriptEventCondition::m_holdTime, "Hold Time", "How long after the update that took the event the condition still sees it. Zero sees it for that update only; a longer time lets a busy state machine take it later.")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                ->Attribute(AZ::Edit::Attributes::Max, AnimGraphInstance::s_scriptEventMaxAge)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                ->Attribute(AZ::Edit::Attributes::Suffix, " s")
             ;
     }
 } // namespace EMotionFX

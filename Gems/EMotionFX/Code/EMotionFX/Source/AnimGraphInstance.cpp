@@ -509,7 +509,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::IsScriptEventActive(AZ::Crc32 eventId) const
+    bool AnimGraphInstance::IsScriptEventActive(AZ::Crc32 eventId, float holdTime) const
     {
         const AnimGraphInstance* rootInstance = this;
         while (rootInstance->m_parentAnimGraphInstance)
@@ -517,11 +517,25 @@ namespace EMotionFX
             rootInstance = rootInstance->m_parentAnimGraphInstance;
         }
 
+        // an event is at age zero during the update that took it, so even a hold time of zero sees it once
         return AZStd::any_of(rootInstance->m_activeScriptEvents.begin(), rootInstance->m_activeScriptEvents.end(),
-            [eventId](const ActiveScriptEvent& scriptEvent)
+            [eventId, holdTime](const ActiveScriptEvent& scriptEvent)
             {
-                return scriptEvent.m_id == eventId;
+                return scriptEvent.m_id == eventId && scriptEvent.m_age <= holdTime;
             });
+    }
+
+
+    void AnimGraphInstance::ClearAllScriptEvents()
+    {
+        AnimGraphInstance* rootInstance = this;
+        while (rootInstance->m_parentAnimGraphInstance)
+        {
+            rootInstance = rootInstance->m_parentAnimGraphInstance;
+        }
+
+        rootInstance->m_pendingScriptEvents.clear();
+        rootInstance->m_activeScriptEvents.clear();
     }
 
 
@@ -1008,7 +1022,7 @@ namespace EMotionFX
         // reset the output is ready flags, so we return cached copies of the outputs, but refresh/recalculate them
         AnimGraphNode* rootNode = GetRootNode();
 
-        // events fired since the last update become visible to conditions, firing one again restarts its hold time
+        // events fired since the last update become visible to conditions, firing one again restarts its age
         if (!m_parentAnimGraphInstance)
         {
             for (const AZ::Crc32 eventId : m_pendingScriptEvents)
@@ -1020,11 +1034,11 @@ namespace EMotionFX
                     });
                 if (existing != m_activeScriptEvents.end())
                 {
-                    existing->m_timeLeft = s_scriptEventHoldTime;
+                    existing->m_age = 0.0f;
                 }
                 else
                 {
-                    m_activeScriptEvents.push_back({ eventId, s_scriptEventHoldTime });
+                    m_activeScriptEvents.push_back({ eventId, 0.0f });
                 }
             }
             m_pendingScriptEvents.clear();
@@ -1059,14 +1073,14 @@ namespace EMotionFX
         // bottom up pass event buffers and update motion extraction deltas
         rootNode->PerformPostUpdate(this, timePassedInSeconds);
 
-        // every event is seen by at least one full update before its hold time runs down
+        // every event is seen by at least one full update, then ages until no condition can still want it
         if (!m_parentAnimGraphInstance)
         {
             m_activeScriptEvents.erase(AZStd::remove_if(m_activeScriptEvents.begin(), m_activeScriptEvents.end(),
                 [timePassedInSeconds](ActiveScriptEvent& scriptEvent)
                 {
-                    scriptEvent.m_timeLeft -= timePassedInSeconds;
-                    return scriptEvent.m_timeLeft <= 0.0f;
+                    scriptEvent.m_age += timePassedInSeconds;
+                    return scriptEvent.m_age > s_scriptEventMaxAge;
                 }), m_activeScriptEvents.end());
         }
 

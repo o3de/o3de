@@ -204,6 +204,12 @@ namespace EMotionFX
             /// Fires a named event. Transitions with a Script Event Condition of that name can take it for a short hold time, and the first one that starts uses it up.
             virtual void FireEvent(const char* eventName) { AZ_UNUSED(eventName); }
 
+            /// Cancels a fired event that no transition has taken yet, like Havok's ResetRequest for a single event.
+            virtual void ClearEvent(const char* eventName) { AZ_UNUSED(eventName); }
+
+            /// Cancels every fired event that no transition has taken yet.
+            virtual void ClearAllEvents() {}
+
             /// Returns true when the named state is active in the anim graph, also while it is blending in or out.
             virtual bool IsStateActive(const char* stateName) { AZ_UNUSED(stateName); return false; }
 

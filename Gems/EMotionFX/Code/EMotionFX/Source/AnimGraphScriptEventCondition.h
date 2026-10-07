@@ -18,6 +18,7 @@ namespace EMotionFX
     class AnimGraphInstance;
 
     // True after a script fires the named event through AnimGraphComponentRequestBus::FireEvent, until a transition takes it or the hold time runs out.
+    // The hold time is how long after the update that took the event the condition still sees it, zero meaning that update only.
     class EMFX_API AnimGraphScriptEventCondition
         : public AnimGraphTransitionCondition
     {
@@ -40,6 +41,10 @@ namespace EMotionFX
 
         void SetEventName(const AZStd::string& eventName);
         const AZStd::string& GetEventName() const;
+
+        static constexpr float s_defaultHoldTime = 0.25f;
+        void SetHoldTime(float holdTime);
+        float GetHoldTime() const;
         AZ::Crc32 GetEventId() const { return m_eventId; }
 
         static void Reflect(AZ::ReflectContext* context);
@@ -47,5 +52,6 @@ namespace EMotionFX
     private:
         AZStd::string   m_eventName;
         AZ::Crc32       m_eventId;
+        float           m_holdTime = s_defaultHoldTime;
     };
 } // namespace EMotionFX
