@@ -524,7 +524,7 @@ namespace AZ
         void StreamingImage::OnMipChainUploaded(size_t mipChainIndex)
         {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-            AZ_TracePrintf("StreamingImage", "Upload mipchain done [%d] [%s]\n", mipChainIndex, m_image->GetName().GetCStr());
+            AZ_TracePrintf("StreamingImage", "Upload mipchain done [%zu] [%s]\n", mipChainIndex, m_image->GetName().GetCStr());
 #endif
             // make sure the callback isn't interrupted by Shutdown(), which could remove mipchains mid-processing
             AZStd::scoped_lock<AZStd::mutex> guard(m_mipChainMutex);
