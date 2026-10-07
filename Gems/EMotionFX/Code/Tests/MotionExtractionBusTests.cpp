@@ -8,12 +8,17 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Physics/CharacterBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <EMotionFX/Source/Actor.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimGraphComponent.h>
+#include <Integration/ActorComponentBus.h>
 #include <Integration/MotionExtractionBus.h>
 #include <Tests/Integration/EntityComponentFixture.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
@@ -143,5 +148,102 @@ namespace EMotionFX
 
         EXPECT_CALL(testBus, ExtractMotion(testing::_, testing::_));
         Integration::MotionExtractionRequestBus::Event(m_entityId, &Integration::MotionExtractionRequestBus::Events::ExtractMotion, positionDelta, timeDelta);
+    }
+    class RootMotionModifierTestHandler : public Integration::RootMotionModifierRequestBus::Handler
+    {
+    public:
+        explicit RootMotionModifierTestHandler(AZ::EntityId entityId) { BusConnect(entityId); }
+        ~RootMotionModifierTestHandler() override { BusDisconnect(); }
+        bool ModifyRootMotion(const ActorInstance&, float simulationDeltaTime,
+            const AZ::Transform& current, AZ::Transform& desired) override
+        {
+            ++m_calls;
+            m_timestep = simulationDeltaTime;
+            m_original = desired;
+            desired.SetTranslation(current.GetTranslation() + AZ::Vector3(0.0f, 0.25f, 0.0f));
+            return m_accept;
+        }
+        bool m_accept = true;
+        int m_calls = 0;
+        float m_timestep = 0.0f;
+        AZ::Transform m_original = AZ::Transform::CreateIdentity();
+    };
+
+    class RootMotionRecordingCharacter : public Physics::CharacterRequestBus::Handler
+    {
+    public:
+        explicit RootMotionRecordingCharacter(AZ::EntityId entityId) { BusConnect(entityId); }
+        ~RootMotionRecordingCharacter() override { BusDisconnect(); }
+        AZ::Vector3 GetBasePosition() const override { return AZ::Vector3::CreateZero(); }
+        void SetBasePosition(const AZ::Vector3&) override {}
+        AZ::Vector3 GetCenterPosition() const override { return AZ::Vector3::CreateZero(); }
+        float GetStepHeight() const override { return 0.0f; }
+        void SetStepHeight(float) override {}
+        AZ::Vector3 GetUpDirection() const override { return AZ::Vector3::CreateAxisZ(); }
+        void SetUpDirection(const AZ::Vector3&) override {}
+        float GetSlopeLimitDegrees() const override { return 0.0f; }
+        void SetSlopeLimitDegrees(float) override {}
+        float GetMaximumSpeed() const override { return 100.0f; }
+        void SetMaximumSpeed(float) override {}
+        AZ::Vector3 GetVelocity() const override { return m_velocity; }
+        void AddVelocityForTick(const AZ::Vector3& velocity) override { m_velocity = velocity; ++m_calls; }
+        void AddVelocityForPhysicsTimestep(const AZ::Vector3&) override {}
+        bool IsPresent() const override { return true; }
+        Physics::Character* GetCharacter() override { return nullptr; }
+        AZ::Vector3 m_velocity = AZ::Vector3::CreateZero();
+        int m_calls = 0;
+    };
+
+    TEST_F(MotionExtractionBusTests, ModifierRunsBeforePhysicsAndSubmitsMovementExactlyOnce)
+    {
+        ActorInstance* actor = nullptr;
+        Integration::ActorComponentRequestBus::EventResult(actor, m_entityId,
+            &Integration::ActorComponentRequests::GetActorInstance);
+        ASSERT_NE(actor, nullptr);
+        actor->GetActor()->AutoSetMotionExtractionNode();
+        ASSERT_NE(actor->GetActor()->GetMotionExtractionNode(), nullptr);
+        RootMotionModifierTestHandler modifier(m_entityId);
+        RootMotionRecordingCharacter character(m_entityId);
+        MotionExtractionTestBus customExtraction(m_entityId);
+        EXPECT_CALL(customExtraction, ExtractMotion(testing::_, testing::_)).Times(0);
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.25f, AZ::ScriptTimePoint());
+        EXPECT_EQ(modifier.m_calls, 1);
+        EXPECT_FLOAT_EQ(modifier.m_timestep, 0.25f);
+        EXPECT_EQ(character.m_calls, 1);
+        EXPECT_TRUE(character.m_velocity.IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f), 0.0001f));
+    }
+
+    TEST_F(MotionExtractionBusTests, ModifierAlsoRunsWithoutPhysicsController)
+    {
+        ActorInstance* actor = nullptr;
+        Integration::ActorComponentRequestBus::EventResult(actor, m_entityId,
+            &Integration::ActorComponentRequests::GetActorInstance);
+        ASSERT_NE(actor, nullptr);
+        actor->GetActor()->AutoSetMotionExtractionNode();
+        RootMotionModifierTestHandler modifier(m_entityId);
+        AZ::Transform before = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(before, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.25f, AZ::ScriptTimePoint());
+        AZ::Transform after = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(after, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+        EXPECT_EQ(modifier.m_calls, 1);
+        EXPECT_TRUE(after.GetTranslation().IsClose(before.GetTranslation() + AZ::Vector3(0.0f, 0.25f, 0.0f), 0.0001f));
+    }
+
+    TEST_F(MotionExtractionBusTests, RejectedModifierRetainsOriginalMovement)
+    {
+        ActorInstance* actor = nullptr;
+        Integration::ActorComponentRequestBus::EventResult(actor, m_entityId,
+            &Integration::ActorComponentRequests::GetActorInstance);
+        ASSERT_NE(actor, nullptr);
+        actor->GetActor()->AutoSetMotionExtractionNode();
+        RootMotionModifierTestHandler modifier(m_entityId);
+        modifier.m_accept = false;
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.25f, AZ::ScriptTimePoint());
+        AZ::Transform after = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(after, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+        EXPECT_EQ(modifier.m_calls, 1);
+        EXPECT_TRUE(after.GetTranslation().IsClose(modifier.m_original.GetTranslation(), 0.0001f));
+        EXPECT_TRUE(after.GetRotation().IsClose(modifier.m_original.GetRotation(), 0.0001f));
     }
 } // end namespace EMotionFX
