@@ -86,7 +86,23 @@ namespace AzNetworking
 #if AZ_TRAIT_USE_OPENSSL
         uint8_t encrpytedSendBuffer[MaxUdpTransmissionUnit];
         // Write out the packet we were requested to send
-        SSL_write(dtlsEndpoint.m_sslSocket, data, size);
+        if (SSL_write(dtlsEndpoint.m_sslSocket, data, size) <= 0)
+        {
+            AZLOG_ERROR("DTLS: encrypting a %u byte packet failed; it is dropped", size);
+            PrintSslErrorStack();
+            return SocketOpResultError;
+        }
+        // One datagram must carry the whole record. Read out in part, the record would arrive cut and its
+        // tail would start the next datagram, which the receiver could not decrypt either.
+        const size_t encryptedSize = BIO_ctrl_pending(dtlsEndpoint.m_writeBio);
+        if (encryptedSize > sizeof(encrpytedSendBuffer))
+        {
+            AZLOG_ERROR("DTLS: a %u byte packet encrypts to %u bytes, more than a %u byte datagram; it is dropped "
+                "(net_SslInflationOverhead is too small for this cipher)",
+                size, aznumeric_cast<uint32_t>(encryptedSize), aznumeric_cast<uint32_t>(sizeof(encrpytedSendBuffer)));
+            (void)BIO_reset(dtlsEndpoint.m_writeBio);
+            return SocketOpResultError;
+        }
         const int32_t sentBytesEnc = BIO_read(dtlsEndpoint.m_writeBio, encrpytedSendBuffer, sizeof(encrpytedSendBuffer));
 
         // Track encryption metrics

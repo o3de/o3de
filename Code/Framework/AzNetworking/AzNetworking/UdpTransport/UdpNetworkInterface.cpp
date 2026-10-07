@@ -23,7 +23,9 @@ namespace AzNetworking
 {
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
-    AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
+    // A DTLS 1.2 record adds 13 (header) + 8 (explicit nonce) + 16 (GCM tag) = 37 bytes with the default
+    // net_SslCertCiphers (AES-GCM); 32 let packets of 988-992 bytes through unfragmented, cut after encryption.
+    AZ_CVAR(uint32_t, net_SslInflationOverhead, 64, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Bytes DTLS encryption may add to a packet (record header, nonce, tag, padding): taken out of the MTU before deciding to fragment. Must be at least the negotiated cipher's per-record overhead");
 #else
     static const bool net_UdpUseEncryption = false;
     static const uint32_t net_SslInflationOverhead = 0;
@@ -702,7 +704,14 @@ namespace AzNetworking
         connection->m_state = result == DtlsEndpoint::ConnectResult::Complete ? ConnectionState::Connected : ConnectionState::Connecting;
         connection->SetTimeoutId(timeoutId);
         m_connectionListener.OnConnect(connection.get());
+        UdpConnection* accepted = connection.get();
         m_connectionSet.AddConnection(AZStd::move(connection));
+        // The client's first DTLS flight (its ClientHello) rides in the InitiateConnectionPacket: hand it to
+        // the new endpoint now, instead of waiting for the client's OpenSSL to resend it (1 s later).
+        if (result == DtlsEndpoint::ConnectResult::Pending && packet.GetHandshakeBuffer().GetSize() > 0)
+        {
+            accepted->ProcessHandshakeData(packet.GetHandshakeBuffer());
+        }
     }
 
     void UdpNetworkInterface::RequestDisconnect(UdpConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)
