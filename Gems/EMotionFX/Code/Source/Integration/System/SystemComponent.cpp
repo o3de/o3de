@@ -715,8 +715,25 @@ namespace EMotionFX
 
                 if (hasPhysicsController)
                 {
-                    Physics::CharacterRequestBus::Event(
-                        entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
+                    bool queued = false;
+                    RootMotionModifierRequestBus::EventResult(queued, entityId,
+                        &RootMotionModifierRequests::QueueRootMotionTranslation, positionDelta, timeDelta);
+                    if (queued)
+                    {
+                        // The physics owner holds a displacement, not a velocity divided by
+                        // a potentially tiny hit-stop tick. Rebase the actor position now so
+                        // frames with zero physics substeps cannot enqueue the same drift again.
+                        Transform rebasedWorld = actorInstance->GetWorldSpaceTransform();
+                        rebasedWorld.m_position = currentTransform.GetTranslation();
+                        const Transform rebasedLocal = rebasedWorld.CalcRelativeTo(actorInstance->GetParentWorldSpaceTransform());
+                        actorInstance->SetLocalSpacePosition(rebasedLocal.m_position);
+                        actorInstance->UpdateWorldTransform();
+                    }
+                    else
+                    {
+                        Physics::CharacterRequestBus::Event(
+                            entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
+                    }
                 }
                 else if (hasCustomMotionExtractionController)
                 {

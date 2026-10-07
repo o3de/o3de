@@ -163,6 +163,17 @@ namespace EMotionFX
             desired.SetTranslation(current.GetTranslation() + AZ::Vector3(0.0f, 0.25f, 0.0f));
             return m_accept;
         }
+        bool QueueRootMotionTranslation(const AZ::Vector3& delta, float timestep) override
+        {
+            ++m_queueCalls;
+            m_queuedDelta = delta;
+            m_queuedTime = timestep;
+            return m_ownTranslation;
+        }
+        bool m_ownTranslation = false;
+        int m_queueCalls = 0;
+        AZ::Vector3 m_queuedDelta = AZ::Vector3::CreateZero();
+        float m_queuedTime = 0.0f;
         bool m_accept = true;
         int m_calls = 0;
         float m_timestep = 0.0f;
@@ -211,6 +222,26 @@ namespace EMotionFX
         EXPECT_FLOAT_EQ(modifier.m_timestep, 0.25f);
         EXPECT_EQ(character.m_calls, 1);
         EXPECT_TRUE(character.m_velocity.IsClose(AZ::Vector3(0.0f, 1.0f, 0.0f), 0.0001f));
+    }
+
+    TEST_F(MotionExtractionBusTests, TranslationOwnerDefersMovementAndRebasesActorBeforePhysics)
+    {
+        ActorInstance* actor = nullptr;
+        Integration::ActorComponentRequestBus::EventResult(actor, m_entityId,
+            &Integration::ActorComponentRequests::GetActorInstance);
+        ASSERT_NE(actor, nullptr);
+        actor->GetActor()->AutoSetMotionExtractionNode();
+        RootMotionModifierTestHandler modifier(m_entityId);
+        modifier.m_ownTranslation = true;
+        RootMotionRecordingCharacter character(m_entityId);
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.0005f, AZ::ScriptTimePoint());
+        EXPECT_EQ(modifier.m_queueCalls, 1);
+        EXPECT_TRUE(modifier.m_queuedDelta.IsClose(AZ::Vector3(0.0f, 0.25f, 0.0f)));
+        EXPECT_FLOAT_EQ(modifier.m_queuedTime, 0.0005f);
+        EXPECT_EQ(character.m_calls, 0); // A parry can still discard the queued displacement.
+        AZ::Vector3 actual = AZ::Vector3::CreateZero();
+        AZ::TransformBus::EventResult(actual, m_entityId, &AZ::TransformBus::Events::GetWorldTranslation);
+        EXPECT_TRUE(actor->GetWorldSpaceTransform().m_position.IsClose(actual));
     }
 
     TEST_F(MotionExtractionBusTests, ModifierAlsoRunsWithoutPhysicsController)
