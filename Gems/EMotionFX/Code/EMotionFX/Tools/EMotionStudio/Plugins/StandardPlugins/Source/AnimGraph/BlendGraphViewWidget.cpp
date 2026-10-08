@@ -598,8 +598,8 @@ namespace EMStudio
                     m_viewportStack.setCurrentIndex(index);
                 }
 
-                widget->SetCurrentNode(node);
                 widget->SetCurrentModelIndex(newFocusParent);
+                widget->SetCurrentNode(node);
             }
             else
             {
