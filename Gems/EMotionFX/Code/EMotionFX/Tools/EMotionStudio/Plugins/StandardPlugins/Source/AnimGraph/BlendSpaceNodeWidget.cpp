@@ -31,7 +31,6 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MotionSetSelectionWindow.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QMenu>
-#include <QMessageBox>
 #include <QSignalBlocker>
 #include <QToolButton>
 #include <MCore/Source/Algorithms.h>
@@ -637,16 +636,9 @@ void BlendSpaceNodeWidget::AddMotionAt(EMotionFX::BlendSpaceNode* node, const AZ
         return;
     }
 
+    // A motion can be placed more than once, each entry with its own coordinates.
     const AZStd::string& motionId = selectedMotionIds.front();
     const BlendSpaceMotions before = node->GetMotions();
-    const bool alreadyAdded = AZStd::any_of(before.begin(), before.end(),
-        [&motionId](const EMotionFX::BlendSpaceNode::BlendSpaceMotion& motion) { return motion.GetMotionId() == motionId; });
-    if (alreadyAdded)
-    {
-        QMessageBox::information(m_previewWidget, "Motion already in blend space",
-            QString("'%1' is already in this blend space. Drag its point to move it.").arg(motionId.c_str()));
-        return;
-    }
 
     EMotionFX::BlendSpaceNode::BlendSpaceMotion motion(motionId);
     motion.SetXCoordinate(coordinates.GetX());

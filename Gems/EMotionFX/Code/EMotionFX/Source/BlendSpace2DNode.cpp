@@ -559,6 +559,7 @@ namespace EMotionFX
         MotionInstancePool& motionInstancePool = GetMotionInstancePool();
 
         uniqueData->m_leaderMotionIdx = 0;
+        bool leaderFound = false;
 
         PlayBackInfo playInfo;// TODO: Init from attributes
         for (BlendSpaceMotion& blendSpaceMotion : m_motions)
@@ -580,9 +581,11 @@ namespace EMotionFX
             motionInstance->SetWeight(1.0f, 0.0f);
             AddMotionInfo(uniqueData->m_motionInfos, motionInstance);
 
-            if (motionId == m_syncLeaderMotionId)
+            // A motion can be in the blend space more than once; the first entry leads.
+            if (!leaderFound && motionId == m_syncLeaderMotionId)
             {
                 uniqueData->m_leaderMotionIdx = (AZ::u32)uniqueData->m_motionInfos.size() - 1;
+                leaderFound = true;
             }
         }
         uniqueData->m_allMotionsHaveSyncTracks = DoAllMotionsHaveSyncTracks(uniqueData->m_motionInfos);

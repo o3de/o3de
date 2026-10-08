@@ -41,7 +41,7 @@ namespace EMotionFX
         layout->addWidget(m_labelMotion, row, column);
         column++;
 
-        const auto makeSpinbox = [row, &column, layout, motionId = motionId.c_str()](const QString& text, const QString& color)
+        const auto makeSpinbox = [row, &column, layout](const QString& text, const QString& color)
         {
             auto* axisLayout = new QHBoxLayout();
             axisLayout->setAlignment(Qt::AlignRight);
@@ -55,7 +55,7 @@ namespace EMotionFX
             spinbox->setSingleStep(0.1);
             spinbox->setDecimals(4);
             spinbox->setRange(-FLT_MAX, FLT_MAX);
-            spinbox->setProperty("motionId", motionId);
+            spinbox->setProperty("motionIndex", row);
             spinbox->setKeyboardTracking(false);
             axisLayout->addWidget(spinbox);
 
@@ -84,7 +84,7 @@ namespace EMotionFX
         m_restoreButton->setMinimumSize(iconSize, iconSize);
         m_restoreButton->setMaximumSize(iconSize, iconSize);
         m_restoreButton->setIcon(QIcon(":/EMotionFX/Restore.svg"));
-        m_restoreButton->setProperty("motionId", motionId.c_str());
+        m_restoreButton->setProperty("motionIndex", row);
         layout->addWidget(m_restoreButton, row, column);
         column++;
 
@@ -194,29 +194,17 @@ namespace EMotionFX
     }
 
 
-    BlendSpaceMotionWidget* BlendSpaceMotionContainerWidget::FindWidgetByMotionId(const AZStd::string& motionId) const
-    {
-        for (BlendSpaceMotionWidget* container : m_motionWidgets)
-        {
-            const BlendSpaceNode::BlendSpaceMotion* motion = container->m_motion;
-            if (motion->GetMotionId() == motionId)
-            {
-                return container;
-            }
-        }
-
-        return nullptr;
-    }
-
-
     BlendSpaceMotionWidget* BlendSpaceMotionContainerWidget::FindWidget(QObject* object)
     {
-        const AZStd::string motionId = object->property("motionId").toString().toUtf8().data();
-
-        BlendSpaceMotionWidget* widget = FindWidgetByMotionId(motionId);
-        AZ_Assert(widget, "Can't find widget for motion with id '%s'.", motionId.c_str());
-
-        return widget;
+        // Rows are found by index, as the same motion can be in the blend space more than once.
+        bool isValid = false;
+        const int motionIndex = object->property("motionIndex").toInt(&isValid);
+        if (!isValid || motionIndex < 0 || static_cast<size_t>(motionIndex) >= m_motionWidgets.size())
+        {
+            AZ_Assert(false, "Can't find widget for blend space motion %d.", motionIndex);
+            return nullptr;
+        }
+        return m_motionWidgets[motionIndex];
     }
 
 
@@ -247,24 +235,10 @@ namespace EMotionFX
             return;
         }
 
+        // A motion can be added more than once, each entry with its own coordinates.
         for (const AZStd::string& selectedMotionId : selectedMotionIds)
         {
-            bool alreadyExists = false;
-
-            for (const BlendSpaceNode::BlendSpaceMotion& blendSpaceMotion : m_motions)
-            {
-                if (blendSpaceMotion.GetMotionId() == selectedMotionId)
-                {
-                    alreadyExists = true;
-                    break;
-                }
-            }
-
-            if (!alreadyExists)
-            {
-                BlendSpaceNode::BlendSpaceMotion newMotion(selectedMotionId);
-                m_motions.emplace_back(BlendSpaceNode::BlendSpaceMotion(selectedMotionId));
-            }
+            m_motions.emplace_back(BlendSpaceNode::BlendSpaceMotion(selectedMotionId));
         }
 
         m_blendSpaceNode->SetMotions(m_motions);

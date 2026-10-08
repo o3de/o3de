@@ -59,7 +59,6 @@ namespace EMotionFX
         void MotionsChanged();
 
     protected slots:
-        BlendSpaceMotionWidget* FindWidgetByMotionId(const AZStd::string& motionId) const;
         BlendSpaceMotionWidget* FindWidget(QObject* object);
 
         void OnAddMotion();
