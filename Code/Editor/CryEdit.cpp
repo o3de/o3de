@@ -735,17 +735,14 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char
 }
 
 /////////////////////////////////////////////////////////////////////////////
-namespace
+AZStd::mutex g_splashScreenStateLock;
+enum ESplashScreenState
 {
-    AZStd::mutex g_splashScreenStateLock;
-    enum ESplashScreenState
-    {
-        eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
-    };
-    ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
-    IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
-    QWidget* g_splashScreen = nullptr;
-}
+    eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
+};
+ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
+IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
+QWidget* g_splashScreen = nullptr;
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
