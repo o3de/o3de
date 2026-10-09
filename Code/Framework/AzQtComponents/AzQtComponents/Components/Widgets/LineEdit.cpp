@@ -667,6 +667,19 @@ namespace AzQtComponents
 
         if (lineEdit->hasFrame())
         {
+            if (StyleManager::stylesheetsDisabled())
+            {
+                // LineEdit.qss + BaseStyleSheet input rule resolved to one layer (legacy capture
+                // 2026-09-24, page 13): 2px #E9E9E9 border, square corners, field #CCCCCC
+                // (:disabled #666666). The legacy plain QLineEdit shows NO error border and NO
+                // drop-target frame (only the error icon), so none is drawn here.
+                // TOKENIZE: LineEditBorderColor, LineEditFieldColor, LineEditDisabledFieldColor
+                const bool enabled = option->state.testFlag(QStyle::State_Enabled);
+                painter->fillRect(option->rect, QColor(0xE9, 0xE9, 0xE9));
+                painter->fillRect(option->rect.adjusted(2, 2, -2, -2), enabled ? QColor(0xCC, 0xCC, 0xCC) : QColor(0x66, 0x66, 0x66));
+                return true;
+            }
+
             const bool hasError = lineEdit->property(HasError).toBool();
             const bool validDropTarget = Style::hasClass(lineEdit, ValidDropTarget);
             const bool invalidDropTarget = Style::hasClass(lineEdit, InvalidDropTarget);

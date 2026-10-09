@@ -8,6 +8,7 @@
 
 #include "TableViewPage.h"
 
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/UI/Logging/LogTableModel.h>
 #include <AzToolsFramework/UI/Logging/LogTableItemDelegate.h>
 
@@ -135,7 +136,15 @@ TableViewPage::TableViewPage(QWidget* parent)
     ui->logTableView->setItemDelegate(logItemDelegate);
 
     // Example of changing the header section background color
-    ui->logTableView->setStyleSheet("QHeaderView::section { background: transparent; }");
+    if (AzQtComponents::StyleManager::stylesheetsDisabled())
+    {
+        // Flattened styling: the same intent without a style sheet (see Style CE_Header).
+        ui->logTableView->header()->setProperty("SectionBackground", "transparent");
+    }
+    else
+    {
+        ui->logTableView->setStyleSheet("QHeaderView::section { background: transparent; }");
+    }
 
     ui->qTableView->setModel(logModel);
     ui->qTableView->setAlternatingRowColors(true);

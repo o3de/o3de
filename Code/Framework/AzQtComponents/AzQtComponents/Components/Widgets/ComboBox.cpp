@@ -18,6 +18,7 @@
 #include <QIcon>
 #include <QLineEdit>
 #include <QPainter>
+#include <QPixmap>
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QToolButton>
@@ -419,6 +420,17 @@ namespace AzQtComponents
 
         QSize comboBoxSize = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // ComboBox.qss: height 16 + margin 1 -> 18; [HasError=true] margin 0 + 2px border -> 20.
+            // The legacy box is 3px narrower than Fusion's for the same text (capture 2026-09-24).
+            // TOKENIZE: ComboBoxHeight, ComboBoxErrorHeight, ComboBoxWidthAdjust
+            const bool hasError = widget && widget->property(HasError).toBool();
+            comboBoxSize.setHeight(hasError ? 20 : 18);
+            comboBoxSize.rwidth() -= 3;
+            return comboBoxSize;
+        }
+
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
         if (opt && opt->frame)
         {
@@ -444,6 +456,62 @@ namespace AzQtComponents
         Q_UNUSED(config);
 
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
+
+        if (StyleManager::stylesheetsDisabled() && opt)
+        {
+            // ComboBox.qss resolved to one layer (legacy capture 2026-09-24, page 08):
+            //   QComboBox           : field #CCCCCC inset by the 1px margin, no border
+            //   :hover              : margin 0, 1px rgba(0,0,0,50) border, radius 3
+            //   :focus / popup open : margin 0, 1px #94D2FF border, radius 3, field #FFFFFF
+            //   [HasError=true]     : margin 0, 2px #E25243 border, radius 4
+            //   :disabled           : field #666666
+            //   ::down-arrow        : combobox-arrow(-disabled).svg 16x16, 4px from the right edge
+            // Frameless combos (setFrame(false)) render the same box.
+            // TOKENIZE: ComboBoxFieldColor, ComboBoxFocusFieldColor, ComboBoxDisabledFieldColor,
+            //           ComboBoxHoverBorder, ComboBoxFocusBorder, ComboBoxErrorBorder, ComboBoxArrow
+            const bool enabled = opt->state.testFlag(QStyle::State_Enabled);
+            const bool hover = enabled && opt->state.testFlag(QStyle::State_MouseOver);
+            const bool popupOpen = widget && widget->property(HasPopupOpen).toBool();
+            const bool focus = enabled && (opt->state.testFlag(QStyle::State_HasFocus) || popupOpen);
+            const bool hasError = widget && widget->property(HasError).toBool();
+            const QRect rect = opt->rect;
+            const QColor field = enabled ? QColor(0xCC, 0xCC, 0xCC) : QColor(0x66, 0x66, 0x66);
+
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            if (hasError)
+            {
+                painter->setPen(QPen(QColor(0xE2, 0x52, 0x43), 2.0));
+                painter->setBrush(field);
+                painter->drawRoundedRect(QRectF(rect).adjusted(1.0, 1.0, -1.0, -1.0), 4.0, 4.0);
+            }
+            else if (focus)
+            {
+                painter->setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
+                painter->setBrush(QColor(0xFF, 0xFF, 0xFF));
+                painter->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), 3.0, 3.0);
+            }
+            else if (hover)
+            {
+                painter->setPen(QPen(QColor(0, 0, 0, 50), 1.0));
+                painter->setBrush(field);
+                painter->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), 3.0, 3.0);
+            }
+            else
+            {
+                painter->setRenderHint(QPainter::Antialiasing, false);
+                painter->fillRect(rect.adjusted(1, 1, -1, -1), field);
+            }
+
+            const qreal devicePixelRatio = widget ? widget->devicePixelRatioF() : 1.0;
+            const QPixmap arrow = QIcon(enabled
+                ? QStringLiteral(":/stylesheet/img/UI20/combobox-arrow.svg")
+                : QStringLiteral(":/stylesheet/img/UI20/combobox-arrow-disabled.svg")).pixmap(QSize(16, 16), devicePixelRatio);
+            painter->drawPixmap(QPoint(rect.right() - 18, rect.top() + (rect.height() - 16) / 2), arrow);
+            painter->restore();
+            return true;
+        }
+
         if (!opt || opt->frame)
         {
             return false;
@@ -457,6 +525,19 @@ namespace AzQtComponents
     bool ComboBox::drawComboBoxLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
     {
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
+
+        if (StyleManager::stylesheetsDisabled() && opt)
+        {
+            // Text black, :disabled #999999 (ComboBox.qss / BaseStyleSheet input rule), framed
+            // or not. TOKENIZE: ComboBoxTextColor, ComboBoxDisabledTextColor
+            QStyleOptionComboBox cb(*opt);
+            const QColor text = opt->state.testFlag(QStyle::State_Enabled) ? QColor(Qt::black) : QColor(0x99, 0x99, 0x99);
+            cb.palette.setColor(QPalette::ButtonText, text);
+            cb.palette.setColor(QPalette::Text, text);
+            style->QProxyStyle::drawControl(QStyle::CE_ComboBoxLabel, &cb, painter, widget);
+            return true;
+        }
+
         if (!opt || opt->frame)
         {
             return false;

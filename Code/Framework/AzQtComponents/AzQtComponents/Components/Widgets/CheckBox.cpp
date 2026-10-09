@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QStyleFactory>
 
@@ -59,6 +60,13 @@ bool CheckBox::polish(Style* style, QWidget* widget, const CheckBox::Config& con
 QSize CheckBox::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget, const CheckBox::Config& config)
 {
     Q_UNUSED(config);
+
+    if (StyleManager::stylesheetsDisabled() && style->hasClass(widget, g_expanderClass))
+    {
+        // CheckBox.qss QCheckBox.Expander: min/max-height 16, min-width 16, no text.
+        // TOKENIZE: ExpanderSize
+        return QSize(16, 16);
+    }
 
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 

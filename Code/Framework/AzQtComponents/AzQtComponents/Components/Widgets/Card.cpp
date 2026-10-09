@@ -16,18 +16,28 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <QMenu>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QStyle>
 #include <QPoint>
 #include <QSettings>
 #include <QStyleOption>
+#include <qdrawutil.h>
 
 namespace AzQtComponents
 {
 
     static QString g_containerCardClass = QStringLiteral("ContainerCard");
     static QString g_sectionCardClass = QStringLiteral("SectionCard");
+
+    // ContainerCard / SectionCard have no shadow border-image and no body fill (Card.qss).
+    static bool cardHasFlatFrame(const Card* card)
+    {
+        return Style::hasClass(card, g_containerCardClass) || Style::hasClass(card, g_sectionCardClass);
+    }
 
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
@@ -385,23 +395,22 @@ namespace AzQtComponents
 
             if (StyleManager::stylesheetsDisabled())
             {
-                // Card.qss: the Card itself is transparent (its qss box was only the
-                // shadow border-image, dropped); #contentContainer carries the #555555
-                // body fill with the 8/7/7/7 inset and joins flush to the header
+                // Card.qss resolved to one layer (legacy capture 2026-09-23): the boxes
+                // come from Card::shapedFrameContents (SE_ShapedFrameContents, the same
+                // contact point QStyleSheetStyle used), the fills from Card::paintEvent.
+                // The frames themselves stay unfilled and their layouts carry no margins.
                 card->setAutoFillBackground(false);
+                card->m_contentContainer->setAutoFillBackground(false);
                 card->m_rootLayout->setContentsMargins(0, 0, 0, 0);
+                card->m_mainLayout->setContentsMargins(0, 0, 0, 0);
 
-                if (auto contentContainer = card->findChild<QFrame*>(QStringLiteral("contentContainer")))
-                {
-                    QPalette contentPalette = contentContainer->palette();
-                    contentPalette.setColor(QPalette::Window, QColor(0x55, 0x55, 0x55));
-                    contentContainer->setPalette(contentPalette);
-                    contentContainer->setAutoFillBackground(true);
-                    if (contentContainer->layout())
-                    {
-                        contentContainer->layout()->setContentsMargins(7, 8, 7, 7);
-                    }
-                }
+                // .separator { color: #999999 } on the QFrame::HLine: a Plain shadow
+                // paints the line with WindowText. TOKENIZE: CardSeparatorColor
+                card->m_separator->setFrameShadow(QFrame::Plain);
+                card->m_separator->setLineWidth(1);
+                QPalette separatorPalette = card->m_separator->palette();
+                separatorPalette.setColor(QPalette::WindowText, QColor(0x99, 0x99, 0x99));
+                card->m_separator->setPalette(separatorPalette);
             }
 
             style->repolishOnSettingsChange(card);
@@ -413,20 +422,46 @@ namespace AzQtComponents
 
             if (StyleManager::stylesheetsDisabled())
             {
-                // Card.qss header: bg #333333, button glyphs were qproperty-icon rules,
-                // header inset 2px 7px 3px 7px (t/r/b/l)
-                cardHeader->m_helpButton->setIcon(QIcon(QStringLiteral(":/Cards/img/UI20/Cards/help.svg")));
-                cardHeader->m_helpButton->setFlat(true);
-                cardHeader->m_contextMenuButton->setIcon(QIcon(QStringLiteral(":/Cards/img/UI20/Cards/menu_ico.svg")));
-                cardHeader->m_contextMenuButton->setFlat(true);
+                // Card.qss header, one layer. The header fill is painted by
+                // CardHeader::paintEvent; #Background stays transparent and gets its
+                // 2/7/3/7 padding + 1px border as the frame box (8, 3, 8, 3) from
+                // Card::shapedFrameContents. The per-child 4px margins (#Expander,
+                // #Icon, #WarningIcon, #Help) collapse into one layout spacing.
+                // TOKENIZE: CardHeaderItemSpacing
+                cardHeader->m_backgroundFrame->setAutoFillBackground(false);
+                cardHeader->m_backgroundLayout->setSpacing(4);
+                cardHeader->m_backgroundLayout->setContentsMargins(0, 0, 0, 0);
 
-                // Card.qss CardHeader background is #555555 (NOT the CardHeaderColor
-                // #333333 token - qss is ground truth for parity)
-                QPalette headerPalette = cardHeader->m_backgroundFrame->palette();
-                headerPalette.setColor(QPalette::Window, QColor(0x55, 0x55, 0x55));
-                cardHeader->m_backgroundFrame->setPalette(headerPalette);
-                cardHeader->m_backgroundFrame->setAutoFillBackground(true);
-                cardHeader->m_backgroundLayout->setContentsMargins(7, 2, 7, 3);
+                // #Title { font-weight: bold }; ColorPicker.qss: PaletteCardBase CardHeader #Title
+                // { font-weight: normal }  TOKENIZE: CardTitleFontWeight
+                const bool paletteCardHeader = cardHeader->parentWidget()
+                    && cardHeader->parentWidget()->inherits("AzQtComponents::PaletteCardBase");
+                QFont titleFont = cardHeader->m_titleLabel->font();
+                titleFont.setBold(!paletteCardHeader);
+                cardHeader->m_titleLabel->setFont(titleFont);
+
+                // CardHeader[contentModified=true] * { color: #E57829 }
+                // TOKENIZE: CardModifiedTextColor
+                QPalette titlePalette;
+                if (cardHeader->isContentModified())
+                {
+                    titlePalette.setColor(QPalette::WindowText, QColor(0xE5, 0x78, 0x29));
+                }
+                cardHeader->m_titleLabel->setPalette(titlePalette);
+
+                // #ContextMenu / #ContextMenuPlusIcon / #Help: qproperty-icon, iconSize,
+                // flat, max-width/max-height. TOKENIZE: CardHeaderMenuIcon, CardHeaderHelpIcon
+                const bool plusIcon = cardHeader->m_contextMenuButton->objectName() == QLatin1String("ContextMenuPlusIcon");
+                cardHeader->m_contextMenuButton->setIcon(QIcon(plusIcon
+                    ? QStringLiteral(":/Gallery/Add.svg")
+                    : QStringLiteral(":/Cards/img/UI20/Cards/menu_ico.svg")));
+                cardHeader->m_contextMenuButton->setIconSize(QSize(18, 18));
+                cardHeader->m_contextMenuButton->setFlat(true);
+                cardHeader->m_contextMenuButton->setMaximumSize(plusIcon ? QSize(18, 18) : QSize(28, 18));
+                cardHeader->m_helpButton->setIcon(QIcon(QStringLiteral(":/Cards/img/UI20/Cards/help.svg")));
+                cardHeader->m_helpButton->setIconSize(QSize(16, 16));
+                cardHeader->m_helpButton->setFlat(true);
+                cardHeader->m_helpButton->setMaximumSize(QSize(16, 16));
             }
             else
             {
@@ -463,6 +498,113 @@ namespace AzQtComponents
         }
 
         return unpolished;
+    }
+
+    QRect Card::shapedFrameContents(const QStyleOption* option, const QWidget* widget)
+    {
+        // Card.qss box model, resolved to the frame widths QStyleSheetStyle realized
+        // (read off the legacy capture, 2026-09-23). Negative values are what the
+        // negative qss padding produced and are kept as-is.
+        if (!option || !widget)
+        {
+            return QRect();
+        }
+        const QRect rect = option->rect;
+
+        if (auto card = qobject_cast<const Card*>(widget))
+        {
+            // Card: border-image 5/7/9/7, padding -4/-5/-4/-5, margin-bottom 4 -> (2, 1, 2, 9)
+            // ContainerCard / SectionCard: border none, same padding          -> (-5, -4, -5, 0)
+            // Card[hideFrame=true]: border 1px transparent, same padding     -> (-4, -3, -4, 1)
+            // TOKENIZE: CardShadowInset
+            if (cardHasFlatFrame(card))
+            {
+                return rect.adjusted(-5, -4, 5, 0);
+            }
+            if (card->property("hideFrame").toBool())
+            {
+                return rect.adjusted(-4, -3, 4, -1);
+            }
+            return rect.adjusted(2, 1, -2, -9);
+        }
+
+        const QWidget* parent = widget->parentWidget();
+        if (widget->objectName() == QLatin1String("contentContainer"))
+        {
+            // #contentContainer: padding 8/7/7/7 + 1px border (no top) -> (8, 8, 8, 8)
+            // ContainerCard / SectionCard body: no border               -> (7, 8, 7, 7)
+            // TOKENIZE: CardBodyInset
+            if (auto card = qobject_cast<const Card*>(parent))
+            {
+                return cardHasFlatFrame(card) ? rect.adjusted(7, 8, -7, -7) : rect.adjusted(8, 8, -8, -8);
+            }
+        }
+        else if (widget->objectName() == QLatin1String("Background"))
+        {
+            // CardHeader #Background: padding 2/7/3/7 + 1px border (no bottom) -> (8, 3, 8, 3)
+            // .secondaryCardHeader #Background: padding 2/0/2/0, no border      -> (0, 2, 0, 2)
+            // TOKENIZE: CardHeaderInset
+            if (auto header = qobject_cast<const CardHeader*>(parent))
+            {
+                return Style::hasClass(header, QStringLiteral("secondaryCardHeader"))
+                    ? rect.adjusted(0, 2, 0, -2)
+                    : rect.adjusted(8, 3, -8, -3);
+            }
+        }
+
+        return QRect();
+    }
+
+    void Card::paintEvent(QPaintEvent* event)
+    {
+        if (!StyleManager::stylesheetsDisabled())
+        {
+            QFrame::paintEvent(event);
+            return;
+        }
+
+        // Card.qss, one layer:
+        //   Card: border-image shadow.png sliced 5/7/9/7 over the box left after the
+        //         4px bottom margin (ContainerCard / SectionCard / hideFrame: none)
+        //   #contentContainer: #555555 with its 1px same-colour border, bottom corners
+        //         2px (ContainerCard / SectionCard: transparent)
+        //   Card[selected=true] > #contentContainer: 1px #94D2FF border, no top edge
+        // TOKENIZE: CardShadowImage, CardBodyColor, CardCornerRadius, CardSelectedBorderColor
+        const bool flatFrame = cardHasFlatFrame(this);
+        QPainter painter(this);
+
+        if (!flatFrame && !property("hideFrame").toBool())
+        {
+            static const QPixmap shadow(QStringLiteral(":/Cards/img/UI20/Cards/shadow.png"));
+            const QMargins shadowSlices(7, 5, 7, 9); // left, top, right, bottom
+            qDrawBorderPixmap(&painter, rect().adjusted(0, 0, 0, -4), shadowSlices, shadow);
+        }
+
+        if (!flatFrame && !m_contentContainer->isHidden())
+        {
+            const QRectF body(m_contentContainer->geometry());
+            const qreal radius = 2.0;
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QColor(0x55, 0x55, 0x55));
+            painter.drawRoundedRect(body, radius, radius);
+            painter.drawRect(body.adjusted(0, 0, 0, -radius)); // square top corners
+
+            if (m_selected)
+            {
+                const QRectF stroke = body.adjusted(0.5, 0.5, -0.5, -0.5);
+                QPainterPath outline;
+                outline.moveTo(stroke.left(), stroke.top());
+                outline.lineTo(stroke.left(), stroke.bottom() - radius);
+                outline.arcTo(QRectF(stroke.left(), stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 180, 90);
+                outline.lineTo(stroke.right() - radius, stroke.bottom());
+                outline.arcTo(QRectF(stroke.right() - 2 * radius, stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 270, 90);
+                outline.lineTo(stroke.right(), stroke.top());
+                painter.setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
+                painter.setBrush(Qt::NoBrush);
+                painter.drawPath(outline);
+            }
+        }
     }
 
     QPixmap Card::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const QWidget* widget, const Config& config)

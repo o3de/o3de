@@ -987,6 +987,58 @@ bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, 
 
     if (const auto styleOption = qstyleoption_cast<const QStyleOptionSpinBox*>(option))
     {
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // SpinBox.qss resolved to one layer (legacy capture 2026-09-24, page 23 + colour
+            // picker): field #CCCCCC inset by the 2px margin, no border (:disabled #666666);
+            // the up/down glyphs only appear while hovered, as before.
+            // TOKENIZE: SpinBoxFieldColor, SpinBoxDisabledFieldColor, SpinBoxMargin
+            const bool enabled = styleOption->state & QStyle::State_Enabled;
+            // VectorInput.qss: VectorElement spin boxes have margin-left 0 (flush with the
+            // coordinate label); SpinBox.qss [hasAcceptableInput=false] / [HasError=true]:
+            // margin 0, 2px #E25243 border, radius 4. TOKENIZE: SpinBoxErrorBorder
+            const bool vectorElement = widget && widget->parentWidget() && widget->parentWidget()->inherits("AzQtComponents::VectorElement");
+            auto abstractSpinBox = qobject_cast<const QAbstractSpinBox*>(widget);
+            const bool hasError = widget && enabled
+                && ((abstractSpinBox && !abstractSpinBox->hasAcceptableInput()) || widget->property("HasError").toBool());
+            const QColor field = enabled ? QColor(0xCC, 0xCC, 0xCC) : QColor(0x66, 0x66, 0x66);
+            if (hasError)
+            {
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing, true);
+                painter->setPen(QPen(QColor(0xE2, 0x52, 0x43), 2.0));
+                painter->setBrush(field);
+                painter->drawRoundedRect(QRectF(styleOption->rect).adjusted(1.0, 1.0, -1.0, -1.0), 4.0, 4.0);
+                painter->restore();
+            }
+            else
+            {
+                painter->fillRect(styleOption->rect.adjusted(vectorElement ? 0 : 2, 2, -2, -2), field);
+            }
+            // SpinBox.qss ::down-button (arrowLeftHover.svg, right: 8px) and ::up-button
+            // (arrowRightHover.svg, right: 2px), 6x10, shown at rest on enabled spin boxes.
+            // ColorPicker.qss gives its spin boxes 0px buttons. TOKENIZE: SpinBoxArrowGlyphs
+            bool insideColorPicker = false;
+            for (const QWidget* ancestor = widget; ancestor; ancestor = ancestor->parentWidget())
+            {
+                if (ancestor->inherits("AzQtComponents::ColorPicker"))
+                {
+                    insideColorPicker = true;
+                    break;
+                }
+            }
+            if (enabled && !insideColorPicker)
+            {
+                const qreal devicePixelRatio = widget ? widget->devicePixelRatioF() : 1.0;
+                const int glyphTop = styleOption->rect.top() + (styleOption->rect.height() - 10) / 2;
+                const QPixmap leftArrow = QIcon(QStringLiteral(":/SpinBox/arrowLeftHover.svg")).pixmap(QSize(6, 10), devicePixelRatio);
+                const QPixmap rightArrow = QIcon(QStringLiteral(":/SpinBox/arrowRightHover.svg")).pixmap(QSize(6, 10), devicePixelRatio);
+                painter->drawPixmap(QPoint(styleOption->rect.right() - 13, glyphTop), leftArrow);
+                painter->drawPixmap(QPoint(styleOption->rect.right() - 7, glyphTop), rightArrow);
+            }
+            return true;
+        }
+
         // Only draw the up and down controls if the spinbox is enabled and has the mouse over it
         if (!(styleOption->state & QStyle::State_Enabled) || !(styleOption->state & QStyle::State_MouseOver))
         {
@@ -1022,6 +1074,16 @@ QRect SpinBox::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex
 
     if (auto spinBoxOption = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
     {
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // SpinBox.qss margin 2 (VectorElement: margin-left 0), padding-top -1 / bottom 1,
+            // padding-right 12: the legacy line edit sits at (x+2, y+1, w-22, 19).
+            // TOKENIZE: SpinBoxEditInset
+            const bool vectorElement = widget && widget->parentWidget() && widget->parentWidget()->inherits("AzQtComponents::VectorElement");
+            const int left = vectorElement ? 0 : 2;
+            return QRect(option->rect.left() + left, option->rect.top() + 1, option->rect.width() - left - 20, 19);
+        }
+
         // Long values should run off the right side of the spinbox, so extend the SC_SpinBoxEditField
         // to the edge of the spinbox contents but don't overlap with the buttons
         const auto baseRect = style->baseStyle()->subControlRect(QStyle::CC_SpinBox,
@@ -1071,6 +1133,20 @@ bool SpinBox::polish(QProxyStyle* style, QWidget* widget, const SpinBox::Config&
         if (newStyle)
         {
             newStyle->repolishOnSettingsChange(spinBox);
+        }
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // The spin box line edit paints no field of its own in the sheet; the box comes
+            // from SpinBox::drawSpinBox. TOKENIZE: SpinBoxLineEditField
+            if (QLineEdit* lineEdit = spinBox->findChild<QLineEdit*>())
+            {
+                QPalette lineEditPalette = lineEdit->palette();
+                lineEditPalette.setColor(QPalette::Base, Qt::transparent);
+                lineEditPalette.setColor(QPalette::Text, Qt::black);
+                lineEditPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(0x99, 0x99, 0x99));
+                lineEdit->setPalette(lineEditPalette);
+            }
         }
 
         s_spinBoxWatcher->m_config = config;

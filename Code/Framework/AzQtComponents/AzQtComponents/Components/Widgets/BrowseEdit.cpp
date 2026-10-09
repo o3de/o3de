@@ -69,6 +69,16 @@ namespace AzQtComponents
 
         m_data->m_attachedButton = new QPushButton(this);
         m_data->m_attachedButton->setObjectName("attached-button");
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // BrowseEdit.qss: #attached-button flat, 16x16, icon 12x12; the inner QLineEdit has
+            // border-width 0 (its field colour comes from the palette, the frame from
+            // BrowseEdit::drawFrame). TOKENIZE: BrowseEditButtonSize, BrowseEditButtonIconSize
+            m_data->m_attachedButton->setFlat(true);
+            m_data->m_attachedButton->setFixedSize(16, 16);
+            m_data->m_attachedButton->setIconSize(QSize(12, 12));
+            m_data->m_lineEdit->setFrame(false);
+        }
         boxLayout->addWidget(m_data->m_attachedButton);
         connect(m_data->m_attachedButton, &QPushButton::clicked, this, &BrowseEdit::attachedButtonTriggered);
         setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
@@ -183,11 +193,39 @@ namespace AzQtComponents
         return LineEdit::defaultConfig();
     }
 
+    // BrowseEdit.qss: .ValidDropTarget QLineEdit { background-color: transparent } (the blue
+    // frame fill painted by BrowseEdit::drawFrame shows through), .InvalidDropTarget QLineEdit
+    // { background-color: #FFFFFF }, otherwise #CCCCCC. Re-applied whenever the drop-target
+    // class changes, since the style-sheet repolish is a no-op in flattened mode.
+    // TOKENIZE: BrowseEditFieldColor, BrowseEditInvalidDropFieldColor
+    static void applyFlattenedDropTargetField(const BrowseEdit* browseEdit, QLineEdit* lineEdit)
+    {
+        if (!StyleManager::stylesheetsDisabled() || !lineEdit)
+        {
+            return;
+        }
+        QPalette fieldPalette = lineEdit->palette();
+        QColor field(0xCC, 0xCC, 0xCC);
+        if (Style::hasClass(browseEdit, ValidDropTarget))
+        {
+            field = Qt::transparent;
+        }
+        else if (Style::hasClass(browseEdit, InvalidDropTarget))
+        {
+            field = QColor(0xFF, 0xFF, 0xFF);
+        }
+        fieldPalette.setColor(QPalette::Base, field);
+        lineEdit->setPalette(fieldPalette);
+        lineEdit->update();
+    }
+
     void BrowseEdit::applyDropTargetStyle(BrowseEdit* browseEdit, bool valid)
     {
         BrowseEdit::removeDropTargetStyle(browseEdit);
         Style::addClass(browseEdit, valid ? ValidDropTarget : InvalidDropTarget);
         StyleManager::repolishStyleSheet(browseEdit);
+        applyFlattenedDropTargetField(browseEdit, browseEdit->m_data->m_lineEdit);
+        browseEdit->update();
     }
 
     void BrowseEdit::removeDropTargetStyle(BrowseEdit* browseEdit)
@@ -195,6 +233,8 @@ namespace AzQtComponents
         Style::removeClass(browseEdit, ValidDropTarget);
         Style::removeClass(browseEdit, InvalidDropTarget);
         StyleManager::repolishStyleSheet(browseEdit);
+        applyFlattenedDropTargetField(browseEdit, browseEdit->m_data->m_lineEdit);
+        browseEdit->update();
     }
 
     bool BrowseEdit::eventFilter(QObject* watched, QEvent* event)
@@ -271,6 +311,8 @@ namespace AzQtComponents
             auto lineEdit = browseEdit->m_data->m_lineEdit;
             LineEdit::polish(style, lineEdit, lineEditConfig);
 
+            applyFlattenedDropTargetField(browseEdit, lineEdit);
+
             QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
             if (action)
             {
@@ -317,12 +359,14 @@ namespace AzQtComponents
         const bool hasError = !browserEdit->hasAcceptableInput();
         const int lineWidth = config.getLineWidth(option, hasError, dropTarget);
 
-        const QRect contentsRect = browserEdit->rect();
+        // Flattened: the frame sits inside the BrowseEdit.qss 2px margin, i.e. on the frame
+        // rect the style option carries (legacy capture 2026-09-24: 1px ring, not 3px).
+        const QRect contentsRect = StyleManager::stylesheetsDisabled() ? option->rect : browserEdit->rect();
 
         if (lineWidth > 0)
         {
             const QColor frameColor = config.getBorderColor(option, hasError, dropTarget);
-            const QPainterPath borderRect = style->borderLineEditRect(browserEdit->rect(), lineWidth, config.borderRadius);
+            const QPainterPath borderRect = style->borderLineEditRect(contentsRect, lineWidth, config.borderRadius);
             Style::drawFrame(painter, borderRect, Qt::NoPen, frameColor);
         }
         else

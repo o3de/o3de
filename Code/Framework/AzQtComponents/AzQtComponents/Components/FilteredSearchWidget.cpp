@@ -69,6 +69,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         m_tagLabel = new QLabel(this);
@@ -94,6 +100,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         if (!extraIconFileName.isEmpty())
@@ -116,6 +128,14 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss QPushButton#closeTag: close_x.svg 10x10, flat, 16x16
+            // TOKENIZE: TagCloseIcon, TagCloseButtonSize
+            button->setIcon(QIcon(QStringLiteral(":/stylesheet/img/close_x.svg")));
+            button->setIconSize(QSize(10, 10));
+            button->setFixedSize(16, 16);
+        }
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);
@@ -134,6 +154,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         if (type != FilterCriteriaButton::ExtraButtonType::None)
@@ -180,6 +206,14 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss QPushButton#closeTag: close_x.svg 10x10, flat, 16x16
+            // TOKENIZE: TagCloseIcon, TagCloseButtonSize
+            button->setIcon(QIcon(QStringLiteral(":/stylesheet/img/close_x.svg")));
+            button->setIconSize(QSize(10, 10));
+            button->setFixedSize(16, 16);
+        }
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);
@@ -1467,6 +1501,13 @@ namespace AzQtComponents
         }
 
         LineEdit::applySearchStyle(filteredSearchWidget->m_ui->textSearch);
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss: #assetTypeSelector { qproperty-icon: filter.svg }
+            // TOKENIZE: FilterIcon
+            filteredSearchWidget->m_ui->assetTypeSelector->setIcon(QIcon(QStringLiteral(":/stylesheet/img/UI20/filter.svg")));
+        }
 
         return true;
     }

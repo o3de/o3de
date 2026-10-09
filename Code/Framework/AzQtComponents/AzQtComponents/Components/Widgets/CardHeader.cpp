@@ -7,10 +7,16 @@
  */
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/Internal/RectangleWidget.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
+#include <QIcon>
+#include <QPainterPath>
+#include <QPixmap>
 
 #include <QCheckBox>
 #include <QDesktopServices>
@@ -445,6 +451,91 @@ namespace AzQtComponents
             break;
         }
         Style::addClass(m_contextMenuButton, HeaderBarConstants::kCardHeaderMenuClassName);
+    }
+
+    // error-conclict-state.svg is authored at 445x24 logical px; rasterized once per DPR.
+    static const QPixmap& cardHeaderWarningTile(qreal devicePixelRatio)
+    {
+        static QPixmap tile;
+        if (tile.isNull() || !qFuzzyCompare(tile.devicePixelRatio(), devicePixelRatio))
+        {
+            tile = QIcon(QStringLiteral(":/Cards/img/UI20/Cards/error-conclict-state.svg")).pixmap(QSize(445, 24), devicePixelRatio);
+        }
+        return tile;
+    }
+
+    void CardHeader::paintEvent(QPaintEvent* event)
+    {
+        if (!StyleManager::stylesheetsDisabled())
+        {
+            QFrame::paintEvent(event);
+            return;
+        }
+
+        // Card.qss header box, one layer (the underline widget sits below the box):
+        //   .primaryCardHeader: #333333, top corners 2px
+        //   ContainerCardHeader: #333333, square
+        //   .secondaryCardHeader: #555555 (same as the body), square
+        //   SectionCardHeader: transparent
+        //   [warning=true] #Background: error-conclict-state.svg tiled over the box
+        //   Card[selected=true] > CardHeader #Background: 1px #94D2FF, top corners 2px
+        //         (all four corners while the card is collapsed)
+        // TOKENIZE: CardHeaderColor, CardSecondaryHeaderColor, CardCornerRadius,
+        //           CardWarningTile, CardSelectedBorderColor
+        const bool sectionHeader = Style::hasClass(this, g_sectionCardHeaderClass);
+        const bool containerHeader = Style::hasClass(this, g_containerCardHeaderClass);
+        const bool secondaryHeader = Style::hasClass(this, QStringLiteral("secondaryCardHeader"));
+        // ColorPicker.qss: PaletteCardBase CardHeader { background-color: transparent }
+        const bool paletteHeader = parentWidget() && parentWidget()->inherits("AzQtComponents::PaletteCardBase");
+        const qreal radius = (sectionHeader || containerHeader || secondaryHeader) ? 0.0 : 2.0;
+        const QRectF box(m_backgroundFrame->geometry());
+
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(Qt::NoPen);
+
+        if (!sectionHeader && !paletteHeader)
+        {
+            painter.setBrush(secondaryHeader ? QColor(0x55, 0x55, 0x55) : QColor(0x33, 0x33, 0x33));
+            painter.drawRoundedRect(box, radius, radius);
+            painter.drawRect(box.adjusted(0, radius, 0, 0)); // square bottom corners
+        }
+
+        if (m_warning)
+        {
+            QPainterPath clip;
+            clip.setFillRule(Qt::WindingFill);
+            clip.addRoundedRect(box, radius, radius);
+            clip.addRect(box.adjusted(0, radius, 0, 0));
+            painter.save();
+            painter.setClipPath(clip);
+            painter.setBrushOrigin(box.topLeft());
+            painter.fillRect(box, QBrush(cardHeaderWarningTile(devicePixelRatioF())));
+            painter.restore();
+        }
+
+        auto card = qobject_cast<Card*>(parentWidget());
+        if (card && card->isSelected() && card->header() == this)
+        {
+            const QRectF stroke = box.adjusted(0.5, 0.5, -0.5, -0.5);
+            painter.setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
+            painter.setBrush(Qt::NoBrush);
+            if (card->isExpanded())
+            {
+                QPainterPath outline;
+                outline.moveTo(stroke.left(), stroke.bottom());
+                outline.lineTo(stroke.left(), stroke.top() + radius);
+                outline.arcTo(QRectF(stroke.left(), stroke.top(), 2 * radius, 2 * radius), 180, -90);
+                outline.lineTo(stroke.right() - radius, stroke.top());
+                outline.arcTo(QRectF(stroke.right() - 2 * radius, stroke.top(), 2 * radius, 2 * radius), 90, -90);
+                outline.lineTo(stroke.right(), stroke.bottom());
+                painter.drawPath(outline);
+            }
+            else
+            {
+                painter.drawRoundedRect(stroke, radius, radius);
+            }
+        }
     }
 
     void CardHeader::setUnderlineColor(const QColor& color)

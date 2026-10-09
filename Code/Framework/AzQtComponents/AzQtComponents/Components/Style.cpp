@@ -51,6 +51,10 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QLayout>
 #include <QPainterPath>
 #include <QTabBar>
+#include <QMenu>
+#include <QAbstractItemView>
+#include <QMainWindow>
+#include <QScrollArea>
 #include <QToolBar>
 #include <QComboBox>
 #include <QDebug>
@@ -237,10 +241,27 @@ namespace AzQtComponents
             && (hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"))
                 || hasClass(widget, QStringLiteral("TabMiddle")) || hasClass(widget, QStringLiteral("TabLast"))))
         {
+            // Legacy capture (page 20): 30 tall (28 + the 1px borders), 4px wider than this
+            // formula gave for the leading segment, 3px for the others (margin-left -1);
+            // vertical bars: 30 for the leading segment, 29 for the rest (margin-top -1).
+            // TOKENIZE: SegmentHeight, SegmentPadding
             QSize segmentSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-            segmentSize.setHeight(28);
-            segmentSize.setWidth(qMax(segmentSize.width() + 16, 70));
+            const bool leading = hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"));
+            const QWidget* bar = widget->parentWidget();
+            const bool verticalBar = bar && bar->property("orientation").toInt() == 2;
+            segmentSize.setHeight((verticalBar && !leading) ? 29 : 30);
+            segmentSize.setWidth(qMax(segmentSize.width() + 16, 70) + (leading ? 4 : 3));
             return segmentSize;
+        }
+
+        // BrowseEdit's line edit carries flagToIgnore (hasStyle == false); BrowseEdit.qss
+        // QLineEdit { height: 16px; border-width: 0 }. TOKENIZE: BrowseEditLineEditHeight
+        if (StyleManager::stylesheetsDisabled() && type == CT_LineEdit && widget && widget->parentWidget()
+            && widget->parentWidget()->inherits("AzQtComponents::BrowseEdit"))
+        {
+            QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+            lineEditSize.setHeight(16);
+            return lineEditSize;
         }
 
         if (!hasStyle(widget))
@@ -261,22 +282,70 @@ namespace AzQtComponents
                 }
                 case CT_TabBarTab:
                 {
-                    // TabWidgetConfig TabHeight 30; qss max tab width 200. DockTabBar excluded.
-                    if (!(widget && widget->inherits("AzQtComponents::DockTabBar")))
-                    {
-                        QSize tabSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-                        tabSize.setHeight(30);
-                        tabSize.setWidth(qMin(tabSize.width(), 200));
-                        return tabSize;
-                    }
-                    break;
+                    // TabWidget.qss TabBar:tab { padding: 6px 21px 6px 9px; max-width: 200px },
+                    // TabBar { min-height: 28px }: the legacy tab is 8px wider than Fusion's
+                    // for the same text and the bar 31 tall (Gallery capture); dock tab bars
+                    // follow the same rule, which is what makes their overflow caret appear.
+                    // TOKENIZE: TabPadding, TabHeight, TabMaxWidth
+                    QSize tabSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    tabSize.setHeight(31);
+                    tabSize.setWidth(qMin(tabSize.width() + 8, 200));
+                    return tabSize;
                 }
                 case CT_ComboBox:
+                    if (qobject_cast<const QComboBox*>(widget))
+                    {
+                        return ComboBox::sizeFromContents(this, type, option, size, widget, m_data->comboBoxConfig);
+                    }
+                    break;
+                case CT_LineEdit:
                 {
-                    // qss-era combo height (16px content + border/padding = 20)
-                    QSize comboSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-                    comboSize.setHeight(20);
-                    return comboSize;
+                    // LineEdit.qss: height 16 + 2px border -> 20; SpinBox.qss line edits 19;
+                    // editable-combo line edits 16. The legacy box is 2px wider than Fusion's.
+                    // TOKENIZE: LineEditHeight, SpinBoxLineEditHeight, ComboBoxLineEditHeight
+                    QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    const QWidget* parent = widget ? widget->parentWidget() : nullptr;
+                    int height = 20;
+                    if (parent && parent->inherits("QAbstractSpinBox"))
+                    {
+                        height = 19;
+                    }
+                    else if (parent && parent->inherits("QComboBox"))
+                    {
+                        height = 16;
+                    }
+                    lineEditSize.setHeight(height);
+                    lineEditSize.rwidth() += 2;
+                    return lineEditSize;
+                }
+                case CT_SpinBox:
+                {
+                    // SpinBox.qss: height 16 + margin 2 + padding -> 23 (legacy capture, page 23)
+                    // TOKENIZE: SpinBoxHeight
+                    QSize spinSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    spinSize.setHeight(23);
+                    return spinSize;
+                }
+                case CT_MenuBarItem:
+                {
+                    // MenuBar.qss: QMenuBar height 28 + border-bottom 2px = 30; ::item padding
+                    // left/right 14px (legacy capture: bar 30 tall). TOKENIZE: MenuBarHeight, MenuBarItemPadding
+                    return QSize(size.width() + 28, 30);
+                }
+                case CT_HeaderSection:
+                {
+                    // TableView.qss QHeaderView::section { padding-left: 7px }: vertical (row
+                    // number) sections are text + 7 + 4 wide (legacy capture: 18 for one digit).
+                    // TOKENIZE: HeaderSectionPadding
+                    auto header = qobject_cast<const QHeaderView*>(widget);
+                    auto headerOption = qstyleoption_cast<const QStyleOptionHeader*>(option);
+                    if (header && headerOption && header->orientation() == Qt::Vertical)
+                    {
+                        QSize sectionSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                        sectionSize.setWidth(headerOption->fontMetrics.horizontalAdvance(headerOption->text) + 11);
+                        return sectionSize;
+                    }
+                    break;
                 }
                 default:
                     break;
@@ -403,6 +472,67 @@ namespace AzQtComponents
                     painter->restore();
                     return;
                 }
+                if (StyleManager::stylesheetsDisabled() && widget
+                    && QString::fromLatin1(widget->metaObject()->className()) == QLatin1String("QFrame"))
+                {
+                    if (auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option))
+                    {
+                        // BaseStyleSheet.qss `.QFrame[frameShape="1|2|4|5|6"] { background-color:
+                        // #444444 }` (exact QFrame only): the sheet's box replaced the native
+                        // frame, so Box / Panel / StyledPanel frames show no line (the Inspector
+                        // asset details frame), and HLine / VLine draw a 1px line in the text
+                        // colour the universal rule gave them. TOKENIZE: PlainFrameFace, PlainFrameLine
+                        const int shape = frameOption->frameShape;
+                        if (shape == QFrame::Box || shape == QFrame::Panel || shape == QFrame::StyledPanel)
+                        {
+                            painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
+                            return;
+                        }
+                        if (shape == QFrame::HLine || shape == QFrame::VLine)
+                        {
+                            const QRect r = option->rect;
+                            const QRect line = (shape == QFrame::HLine)
+                                ? QRect(r.left(), r.center().y(), r.width(), 1)
+                                : QRect(r.center().x(), r.top(), 1, r.height());
+                            painter->fillRect(r, QColor(0x44, 0x44, 0x44));
+                            painter->fillRect(line, option->palette.color(QPalette::WindowText));
+                            return;
+                        }
+                    }
+                }
+                if (StyleManager::stylesheetsDisabled() && widget && hasClass(widget, QStringLiteral("HorizontalSeparator")))
+                {
+                    // ColorPicker.qss .HorizontalSeparator: background #222222 with 1px #393a3c
+                    // top and bottom lines. TOKENIZE: PickerSeparatorFill, PickerSeparatorLine
+                    painter->fillRect(option->rect, QColor(0x22, 0x22, 0x22));
+                    painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x39, 0x3A, 0x3C));
+                    painter->fillRect(QRect(option->rect.left(), option->rect.bottom(), option->rect.width(), 1), QColor(0x39, 0x3A, 0x3C));
+                    return;
+                }
+                if (StyleManager::stylesheetsDisabled() && widget && widget->parentWidget()
+                    && widget->parentWidget()->inherits("AzQtComponents::VectorElement") && widget->inherits("QLabel"))
+                {
+                    // VectorInput.qss VectorElement[Coordinate=X|Y|Z|W] QLabel background
+                    // #E25243 / #58BC61 / #4285F4 / #E57829, left corners 2px.
+                    // TOKENIZE: VectorXColor, VectorYColor, VectorZColor, VectorWColor
+                    const QString coordinate = widget->parentWidget()->property("Coordinate").toString();
+                    QColor fill;
+                    if (coordinate == QLatin1String("X")) fill = QColor(0xE2, 0x52, 0x43);
+                    else if (coordinate == QLatin1String("Y")) fill = QColor(0x58, 0xBC, 0x61);
+                    else if (coordinate == QLatin1String("Z")) fill = QColor(0x42, 0x85, 0xF4);
+                    else if (coordinate == QLatin1String("W")) fill = QColor(0xE5, 0x78, 0x29);
+                    if (fill.isValid())
+                    {
+                        painter->save();
+                        painter->setRenderHint(QPainter::Antialiasing, true);
+                        painter->setPen(Qt::NoPen);
+                        painter->setBrush(fill);
+                        painter->drawRoundedRect(QRectF(option->rect), 2.0, 2.0);
+                        painter->drawRect(QRectF(option->rect).adjusted(2.0, 0.0, 0.0, 0.0)); // square right corners
+                        painter->restore();
+                    }
+                    return;
+                }
                 if (BrowseEdit::drawFrame(this, option, painter, widget, m_data->browseEditConfig))
                 {
                     return;
@@ -412,11 +542,25 @@ namespace AzQtComponents
 
             case CE_Splitter:
             {
-                // Splitter.qss: handle #222222, hover #1E70EB
+                // Splitter.qss: a 1px #222222 line (hover #1E70EB) in the middle of the 5px
+                // handle; QMainWindow::separator (dock gaps): #111111 across the whole gap.
+                // TOKENIZE: SplitterLineColor, SplitterHoverColor, DockSeparatorColor
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    painter->fillRect(option->rect,
-                        option->state.testFlag(QStyle::State_MouseOver) ? QColor(0x1E, 0x70, 0xEB) : QColor(0x22, 0x22, 0x22));
+                    if (qobject_cast<const QMainWindow*>(widget))
+                    {
+                        painter->fillRect(option->rect, QColor(0x11, 0x11, 0x11));
+                        return;
+                    }
+                    const QColor line = option->state.testFlag(QStyle::State_MouseOver) ? QColor(0x1E, 0x70, 0xEB) : QColor(0x22, 0x22, 0x22);
+                    if (option->state.testFlag(QStyle::State_Horizontal))
+                    {
+                        painter->fillRect(QRect(option->rect.center().x(), option->rect.top(), 1, option->rect.height()), line);
+                    }
+                    else
+                    {
+                        painter->fillRect(QRect(option->rect.left(), option->rect.center().y(), option->rect.width(), 1), line);
+                    }
                     return;
                 }
             }
@@ -425,13 +569,116 @@ namespace AzQtComponents
             case CE_TabBarTabShape:
             {
                 // TabWidget.qss: flat boxes, inactive #333333 / active #444444, #111111 border
-                if (StyleManager::stylesheetsDisabled() && !(widget && widget->inherits("AzQtComponents::DockTabBar")))
+                if (StyleManager::stylesheetsDisabled())
                 {
                     const bool selected = option->state.testFlag(QStyle::State_Selected);
-                    painter->fillRect(option->rect, selected ? QColor(0x44, 0x44, 0x44) : QColor(0x33, 0x33, 0x33));
+                    if (hasClass(widget, QStringLiteral("Secondary")))
+                    {
+                        // TabWidget.qss TabBar.Secondary::tab: #444444 (:hover +15% white),
+                        // border-bottom 3px #333333 (:hover #444444, :selected #008DE5);
+                        // .Bordered adds border-top 1px #111111.
+                        // TOKENIZE: SecondaryTabFace, SecondaryTabUnderline, SecondaryTabSelectedUnderline
+                        const bool hover = option->state.testFlag(QStyle::State_MouseOver);
+                        painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
+                        if (hover && !selected)
+                        {
+                            painter->fillRect(option->rect, QColor(255, 255, 255, 38));
+                        }
+                        const QRect underline(option->rect.left(), option->rect.bottom() - 2, option->rect.width(), 3);
+                        painter->fillRect(underline, selected ? QColor(0x00, 0x8D, 0xE5) : (hover ? QColor(0x44, 0x44, 0x44) : QColor(0x33, 0x33, 0x33)));
+                        if (hasClass(widget, QStringLiteral("Bordered")))
+                        {
+                            painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x11, 0x11, 0x11));
+                        }
+                        return;
+                    }
+                    // TabWidget.qss TabBar:tab: #333333 with a 1px #111111 border; :selected
+                    // #444444 whose bottom border is #444444 (flush with the page). The legacy
+                    // tab box reaches the bottom of the tab bar (no bar backdrop under it).
+                    // Dock tab bars (legacy capture): plain faces, no outline at all.
+                    // TOKENIZE: TabFace, TabSelectedFace, TabBorder
+                    QRect tabRect = option->rect;
+                    if (widget)
+                    {
+                        tabRect.setBottom(widget->rect().bottom());
+                    }
+                    const QColor face = selected ? QColor(0x44, 0x44, 0x44) : QColor(0x33, 0x33, 0x33);
+                    painter->fillRect(tabRect, face);
+                    if (widget && widget->inherits("AzQtComponents::DockTabBar"))
+                    {
+                        return;
+                    }
                     painter->setPen(QColor(0x11, 0x11, 0x11));
-                    painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                    painter->drawRect(tabRect.adjusted(0, 0, -1, -1));
+                    if (selected)
+                    {
+                        painter->fillRect(QRect(tabRect.left() + 1, tabRect.bottom(), tabRect.width() - 2, 1), face);
+                    }
                     return;
+                }
+            }
+            break;
+
+            case CE_MenuBarEmptyArea:
+            {
+                // MenuBar.qss QMenuBar: window face with a 2px #111111 bottom border.
+                // TOKENIZE: MenuBarBorderColor
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
+                    painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
+                    return;
+                }
+            }
+            break;
+
+            case CE_MenuBarItem:
+            {
+                // MenuBar.qss ::item:selected #555555, ::item:pressed #222222, white text; the
+                // 2px #111111 bottom border runs under the items too.
+                // TOKENIZE: MenuBarItemHoverColor, MenuBarItemPressedColor
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    if (auto menuBarItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
+                    {
+                        const QRect box = option->rect.adjusted(0, 0, 0, -2);
+                        const bool pressed = option->state.testFlag(QStyle::State_Sunken);
+                        const bool selected = option->state.testFlag(QStyle::State_Selected) && option->state.testFlag(QStyle::State_Enabled);
+                        painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
+                        if (pressed)
+                        {
+                            painter->fillRect(box, QColor(0x22, 0x22, 0x22));
+                        }
+                        else if (selected)
+                        {
+                            painter->fillRect(box, QColor(0x55, 0x55, 0x55));
+                        }
+                        painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
+                        QPalette textPalette = option->palette;
+                        textPalette.setColor(QPalette::ButtonText, QColor(0xFF, 0xFF, 0xFF));
+                        drawItemText(painter, box, Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine,
+                            textPalette, option->state.testFlag(QStyle::State_Enabled), menuBarItem->text, QPalette::ButtonText);
+                        return;
+                    }
+                }
+            }
+            break;
+
+            case CE_TabBarTabLabel:
+            {
+                // TabWidget.qss TabBar.Secondary::tab { color: #959595 } (:hover/:selected #FFFFFF)
+                // TOKENIZE: SecondaryTabTextColor, SecondaryTabActiveTextColor
+                if (StyleManager::stylesheetsDisabled() && hasClass(widget, QStringLiteral("Secondary")))
+                {
+                    if (auto tabOption = qstyleoption_cast<const QStyleOptionTab*>(option))
+                    {
+                        const bool lit = option->state.testFlag(QStyle::State_Selected) || option->state.testFlag(QStyle::State_MouseOver);
+                        QStyleOptionTab labelOption = *tabOption;
+                        labelOption.palette.setColor(QPalette::WindowText, lit ? QColor(0xFF, 0xFF, 0xFF) : QColor(0x95, 0x95, 0x95));
+                        labelOption.palette.setColor(QPalette::ButtonText, labelOption.palette.color(QPalette::WindowText));
+                        QProxyStyle::drawControl(CE_TabBarTabLabel, &labelOption, painter, widget);
+                        return;
+                    }
                 }
             }
             break;
@@ -516,9 +763,19 @@ namespace AzQtComponents
             {
                 // Flatten: hard-fill header sections (TableView.qss #2d2d2d) - the
                 // palette-only route was unreliable because Fusion blends Button
+                if (StyleManager::stylesheetsDisabled() && widget && widget->inherits("QTableCornerButton"))
+                {
+                    // Legacy render: the QTableView corner button is solid black (user verdict,
+                    // 2026-09-24 pair 19). TOKENIZE: TableCornerButtonColor
+                    painter->fillRect(option->rect, QColor(Qt::black));
+                    return;
+                }
                 if (StyleManager::stylesheetsDisabled() && qobject_cast<const QHeaderView*>(widget))
                 {
-                    painter->fillRect(option->rect, QColor(0x2D, 0x2D, 0x2D));
+                    // A header whose sections were made transparent by a local sheet
+                    // (property "SectionBackground" = "transparent") shows the window colour.
+                    const bool transparentSections = widget->property("SectionBackground").toString() == QLatin1String("transparent");
+                    painter->fillRect(option->rect, transparentSections ? QColor(0x44, 0x44, 0x44) : QColor(0x2D, 0x2D, 0x2D));
                     painter->setPen(QColor(0x22, 0x22, 0x22));
                     painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
                     painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
@@ -769,6 +1026,16 @@ namespace AzQtComponents
     {
         if (element == PE_IndicatorDockWidgetResizeHandle)
         {
+            // BaseStyleSheet.qss QMainWindow::separator { background-color: #111111 }
+            // (:hover #1E70EB) -- Fusion would draw its light resize line instead.
+            // TOKENIZE: DockSeparatorColor, DockSeparatorHoverColor
+            if (StyleManager::stylesheetsDisabled())
+            {
+                painter->fillRect(option->rect,
+                    option->state.testFlag(QStyle::State_MouseOver) ? QColor(0x1E, 0x70, 0xEB) : QColor(0x11, 0x11, 0x11));
+                return;
+            }
+
             // There is a bug in Qt where the option state Horizontal flag is
             // being set/unset incorrectly for some cases, particularly when you
             // have multiple dock widgets docked on the absolute edges, so we
@@ -951,7 +1218,185 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
+                    if (qobject_cast<const QMenu*>(widget))
+                    {
+                        // Fusion asks for a check BOX on checkable menu items; the sheet left the
+                        // base style's plain check MARK (white, no box). TOKENIZE: MenuCheckMark
+                        QProxyStyle::drawPrimitive(PE_IndicatorMenuCheckMark, option, painter, widget);
+                        return;
+                    }
+                    if (widget && widget->inherits("AzToolsFramework::EntityOutlinerCheckBox"))
+                    {
+                        // EntityOutliner.qss: the outliner's visibility / lock toggles are check
+                        // boxes whose indicator image is picked by objectName + state (eye / lock
+                        // glyphs, hover variants, "Mixed" variants on a rounded rgba(0,0,0,80) pad);
+                        // 16x16 image centred in an 18px box, margin-top 3 (lock_on, lock hover and
+                        // lock overridden-unchecked: 1). Legacy at rest shows the small dots.
+                        // TOKENIZE: OutlinerVisibilityIcons, OutlinerLockIcons, OutlinerMixedPad
+                        const QString name = widget->objectName();
+                        const bool checked = option->state.testFlag(QStyle::State_On);
+                        const bool visibility = name.startsWith(QLatin1String("Visibility"));
+                        const bool hover = name.endsWith(QLatin1String("Hover"));
+                        const bool overridden = name.contains(QLatin1String("Overridden"));
+                        const bool mixed = name.contains(QLatin1String("Mixed"));
+                        QString image;
+                        int marginTop = 3;
+                        if (visibility)
+                        {
+                            if (hover)
+                            {
+                                image = checked ? QStringLiteral("visibility_default_hover") : QStringLiteral("visibility_on_hover");
+                            }
+                            else if (overridden)
+                            {
+                                image = checked ? QStringLiteral("visibility_default_transparent") : QStringLiteral("visibility_on_transparent");
+                            }
+                            else
+                            {
+                                image = checked ? QStringLiteral("visibility_default") : QStringLiteral("visibility_on");
+                            }
+                        }
+                        else
+                        {
+                            if (hover)
+                            {
+                                image = checked ? QStringLiteral("lock_on_hover") : QStringLiteral("lock_default_hover");
+                                marginTop = 1;
+                            }
+                            else if (overridden)
+                            {
+                                image = checked ? QStringLiteral("lock_on_transparent") : QStringLiteral("lock_default_transparent");
+                                marginTop = checked ? 3 : 1;
+                            }
+                            else
+                            {
+                                image = checked ? QStringLiteral("lock_on") : QStringLiteral("lock_default");
+                                marginTop = checked ? 1 : 3;
+                            }
+                        }
+                        const QRect box(widget->rect().left(), widget->rect().top() + marginTop, 18, 16);
+                        if (mixed)
+                        {
+                            painter->save();
+                            painter->setRenderHint(QPainter::Antialiasing, true);
+                            painter->setPen(Qt::NoPen);
+                            painter->setBrush(QColor(0, 0, 0, 80));
+                            painter->drawRoundedRect(box, 5, 5);
+                            painter->restore();
+                        }
+                        drawFlattenedIndicator(QStringLiteral(":/Outliner/%1.svg").arg(image), painter, QRect(box.left() + 1, box.top(), 16, 16));
+                        return;
+                    }
                     drawFlattenedIndicator(flattenedCheckBoxIndicatorPath(option, widget), painter, option->rect);
+                    return;
+                }
+            }
+            break;
+
+            case PE_PanelToolBar:
+            {
+                // ToolBar.qss QToolBar { background-color: #444444; border: 0 none };
+                // MainWindow QToolBar { border-bottom: 2px solid #111111 }. TOKENIZE: ToolBarBottomBorder
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
+                    const QWidget* parent = widget ? widget->parentWidget() : nullptr;
+                    if (parent && QString::fromLatin1(parent->metaObject()->className()) == QLatin1String("MainWindow"))
+                    {
+                        painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
+                    }
+                    return;
+                }
+            }
+            break;
+
+            case PE_IndicatorToolBarSeparator:
+            {
+                // ToolBar.qss QToolBar::separator { background-color: #111111; width: 1px;
+                // margin: 4px 0px }  TOKENIZE: ToolBarSeparatorColor
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    const QRect line = option->state.testFlag(QStyle::State_Horizontal)
+                        ? option->rect.adjusted(0, 4, 0, -4)
+                        : option->rect.adjusted(4, 0, -4, 0);
+                    painter->fillRect(line, QColor(0x11, 0x11, 0x11));
+                    return;
+                }
+            }
+            break;
+
+            case PE_FrameStatusBarItem:
+            {
+                // Status bar items carry no frame (PE_FrameDockWidget is handled above).
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    return;
+                }
+            }
+            break;
+
+            case PE_FrameTabBarBase:
+            {
+                // TabWidget.qss: qproperty-drawBase false; TabBar.Secondary.Bordered adds a 1px
+                // #111111 left + top line. TOKENIZE: TabBarBorderColor
+                if (StyleManager::stylesheetsDisabled() && widget && widget->inherits("AzQtComponents::TabBar"))
+                {
+                    if (hasClass(widget, QStringLiteral("Secondary")) && hasClass(widget, QStringLiteral("Bordered")))
+                    {
+                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), 1, option->rect.height()), QColor(0x11, 0x11, 0x11));
+                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x11, 0x11, 0x11));
+                    }
+                    return;
+                }
+            }
+            break;
+
+            case PE_PanelMenu:
+            {
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    // Menu.qss QMenu { background-color: #222222 }, no frame. TOKENIZE: MenuSurfaceColor
+                    painter->fillRect(option->rect, QColor(0x22, 0x22, 0x22));
+                    return;
+                }
+            }
+            break;
+
+            case PE_FrameMenu:
+            {
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    return;
+                }
+            }
+            break;
+
+            case PE_PanelButtonCommand:
+            {
+                // Fusion sinks a panel behind the icon of a checked menu item; the sheet drew none.
+                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QMenu*>(widget))
+                {
+                    return;
+                }
+            }
+            break;
+
+            case PE_FrameTabWidget:
+            {
+                // TabWidget.qss: TabWidget:pane { border: 0 none }; .Secondary:pane adds a 2px
+                // #2B2B2B top line. TOKENIZE: SecondaryTabPaneLine
+                if (StyleManager::stylesheetsDisabled() && widget && widget->inherits("AzQtComponents::TabWidget"))
+                {
+                    if (hasClass(widget, QStringLiteral("Secondary")))
+                    {
+                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 2), QColor(0x2B, 0x2B, 0x2B));
+                        if (hasClass(widget, QStringLiteral("Bordered")))
+                        {
+                            // TabWidget.Secondary.Bordered { border: 1px solid #111111 }
+                            painter->setPen(QColor(0x11, 0x11, 0x11));
+                            painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                        }
+                    }
                     return;
                 }
             }
@@ -1055,27 +1500,7 @@ namespace AzQtComponents
                 break;
 
             case CC_ComboBox:
-                // Flatten: flat rounded light face (BaseStyleSheet input rule shape);
-                // framed combos otherwise fall to Fusion's native 3D bevel because the
-                // ComboBox.cpp hooks decline when opt->frame is true.
-                if (StyleManager::stylesheetsDisabled())
-                {
-                    painter->save();
-                    painter->setRenderHint(QPainter::Antialiasing);
-                    painter->setPen(Qt::NoPen);
-                    painter->setBrush(option->palette.button());
-                    painter->drawRoundedRect(QRectF(option->rect).adjusted(0.5, 0.5, -0.5, -0.5), 2.0, 2.0);
-
-                    if (auto comboOption = qstyleoption_cast<const QStyleOptionComboBox*>(option))
-                    {
-                        QStyleOption arrowOption = *option;
-                        arrowOption.rect = subControlRect(CC_ComboBox, comboOption, SC_ComboBoxArrow, widget);
-                        arrowOption.palette.setColor(QPalette::ButtonText, QColor(0x33, 0x33, 0x33));
-                        QProxyStyle::drawPrimitive(PE_IndicatorArrowDown, &arrowOption, painter, widget);
-                    }
-                    painter->restore();
-                    return;
-                }
+                // Flatten: ComboBox::drawComboBox owns the ComboBox.qss box for every combo.
                 if (ComboBox::drawComboBox(this, option, painter, widget, m_data->comboBoxConfig))
                 {
                     return;
@@ -1244,7 +1669,13 @@ namespace AzQtComponents
                         auto doubleSpinBox = qobject_cast<const DoubleSpinBox*>(widget);
                         auto vectorElement = qobject_cast<const VectorElement*>(widget->parent());
 
-                        if (vectorElement && doubleSpinBox)
+                        if (StyleManager::stylesheetsDisabled() && (spinBox || doubleSpinBox))
+                        {
+                            // Flatten: one box for plain and vector spin boxes (SpinBox.qss +
+                            // VectorInput.qss resolved inside SpinBox::editFieldRect).
+                            r = SpinBox::editFieldRect(this, option, widget, m_data->spinBoxConfig);
+                        }
+                        else if (vectorElement && doubleSpinBox)
                         {
                             r = VectorElement::editFieldRect(this, option, widget, m_data->spinBoxConfig);
                         }
@@ -1275,6 +1706,72 @@ namespace AzQtComponents
         return QProxyStyle::subControlRect(control, option, subControl, widget);
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened label box (GUI flattening)
+    //
+    // Text.qss gives every QLabel a vertical margin per typography class. It
+    // reached Qt as the label's frame box (SE_ShapedFrameContents), which is
+    // also what switches on QLabel's automatic half-'x' text indent, so it is
+    // reproduced at that contact point rather than as a contents margin.
+    // TOKENIZE: TextLabelMargin (per class)
+    //////////////////////////////////////////////////////////////////////////
+    static QRect flattenedLabelFrameContents(const QStyleOption* option, const QWidget* widget)
+    {
+        if (!option || !widget || !widget->inherits("QLabel"))
+        {
+            return QRect();
+        }
+
+        const QWidget* parent = widget->parentWidget();
+        if (parent && (parent->inherits("AzQtComponents::FilterCriteriaButton") || parent->inherits("AzQtComponents::FilterTextButton")))
+        {
+            // FilteredSearchWidget.qss: chip labels carry no margin except #tagIcon
+            // margin-right 4 and #tagText margin-left/right 4. TOKENIZE: TagLabelMargin
+            if (widget->objectName() == QLatin1String("tagIcon"))
+            {
+                return option->rect.adjusted(0, 0, -4, 0);
+            }
+            if (widget->objectName() == QLatin1String("tagText"))
+            {
+                return option->rect.adjusted(4, 0, -4, 0);
+            }
+            return option->rect;
+        }
+        if (parent && parent->inherits("AzQtComponents::VectorElement"))
+        {
+            // VectorInput.qss: VectorElement QLabel { margin-top: 2px; margin-bottom: 2px }
+            return option->rect.adjusted(0, 2, 0, -2);
+        }
+        if (widget->objectName() == QLatin1String("title") && parent && parent->inherits("AzQtComponents::TitleBar"))
+        {
+            // TitleBar.qss #title { margin-left: 10px; margin-right: 16px } + the QLabel 1px
+            return option->rect.adjusted(10, 1, -16, -1);
+        }
+
+        int margin = 1; // .Label, QLabel
+        if (Style::hasClass(widget, QStringLiteral("Headline")) || Style::hasClass(widget, QStringLiteral("Paragraph")))
+        {
+            margin = 4;
+        }
+        else if (Style::hasClass(widget, QStringLiteral("Title")))
+        {
+            margin = 7;
+        }
+        else if (Style::hasClass(widget, QStringLiteral("Subtitle")))
+        {
+            margin = 8;
+        }
+        else if (Style::hasClass(widget, QStringLiteral("Menu")) || Style::hasClass(widget, QStringLiteral("Button")))
+        {
+            margin = 6;
+        }
+        else if (Style::hasClass(widget, QStringLiteral("Tooltip")))
+        {
+            margin = 2;
+        }
+        return option->rect.adjusted(0, margin, 0, -margin);
+    }
+
     QRect Style::subElementRect(SubElement element, const QStyleOption* option, const QWidget* widget) const
     {
         if (!hasStyle(widget))
@@ -1284,10 +1781,53 @@ namespace AzQtComponents
 
         switch (element)
         {
+            case SE_ShapedFrameContents:
+            {
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    // The qss box (margin/border/padding) of a QFrame reached Qt through
+                    // this element; the flattened boxes come back through the same door.
+                    QRect r = Card::shapedFrameContents(option, widget);
+                    if (r.isNull() && widget && widget->inherits("AzQtComponents::BrowseEdit"))
+                    {
+                        // BrowseEdit.qss: margin 2px. TOKENIZE: BrowseEditMargin
+                        r = option->rect.adjusted(2, 2, -2, -2);
+                    }
+                    if (r.isNull() && widget
+                        && (widget->inherits("AzQtComponents::FilterCriteriaButton") || widget->inherits("AzQtComponents::FilterTextButton")
+                            || widget->inherits("AzQtComponents::SelectionCountButton")))
+                    {
+                        // FilteredSearchWidget.qss chips: border 1px. TOKENIZE: TagBorderWidth
+                        r = option->rect.adjusted(1, 1, -1, -1);
+                    }
+                    if (r.isNull() && widget && widget->inherits("AzQtComponents::SegmentBar"))
+                    {
+                        // SegmentControl.qss SegmentBar { margin-bottom: 15px }. TOKENIZE: SegmentBarBottomMargin
+                        r = option->rect.adjusted(0, 0, 0, -15);
+                    }
+                    if (r.isNull())
+                    {
+                        r = flattenedLabelFrameContents(option, widget);
+                    }
+                    if (!r.isNull())
+                    {
+                        return r;
+                    }
+                }
+            }
+            break;
             case SE_ItemViewItemText:       // intentional fall-through
             case SE_ItemViewItemDecoration: // intentional fall-through
             case SE_ItemViewItemFocusRect:
             {
+                if (StyleManager::stylesheetsDisabled() && element == SE_ItemViewItemText
+                    && widget && StyleHelpers::findParent<QComboBox>(widget))
+                {
+                    // ComboBox.qss QComboBox QAbstractItemView::item { padding-left: 24px;
+                    // padding-right: 24px } (room for the delegate's check mark).
+                    // TOKENIZE: ComboBoxPopupItemPadding
+                    return QProxyStyle::subElementRect(element, option, widget).adjusted(24, 0, -24, 0);
+                }
                 auto optionItemView = qstyleoption_cast<const QStyleOptionViewItem*>(option);
                 if (qobject_cast<const TableView*>(widget) && optionItemView)
                 {
@@ -1356,8 +1896,19 @@ namespace AzQtComponents
                     // ScrollBar.qss handle min-height/min-width
                     return 32;
                 case PM_SplitterWidth:
-                    // qss used 1px visual; 4px keeps the handle grabbable
-                    return 4;
+                    // Legacy capture: the handle widget is 5px wide and Splitter.qss draws a
+                    // 1px #222222 line in it (CE_Splitter). TOKENIZE: SplitterHandleWidth
+                    return 5;
+                case PM_ToolBarSeparatorExtent:
+                    // ToolBar.qss QToolBar::separator { width: 1px }  TOKENIZE: ToolBarSeparatorWidth
+                    return 1;
+                case PM_MenuBarVMargin:
+                case PM_MenuBarHMargin:
+                case PM_MenuBarItemSpacing:
+                case PM_MenuBarPanelWidth:
+                    // MenuBar.qss QMenuBar { margin: 0; spacing: 0 }; the item box carries the
+                    // padding (CT_MenuBarItem) and the 2px bottom border (CE_MenuBar*).
+                    return 0;
                 case PM_ToolBarIconSize:
                     // ToolBar.qss qproperty-iconSize tiers: default 16, IconLarge 20,
                     // MainToolBar 20, MainToolBar+IconLarge 32
@@ -1550,11 +2101,37 @@ namespace AzQtComponents
             pixelSize = 16;
         }
 
-        if (pixelSize > 0)
+        // Text.qss font weights: Headline / Subtitle 250, Button 570 (others 400)
+        // TOKENIZE: HeadlineWeight, SubtitleWeight, ButtonTextWeight
+        int weight = 0;
+        if (Style::hasClass(widget, QStringLiteral("Headline")) || Style::hasClass(widget, QStringLiteral("Subtitle")))
+        {
+            weight = 250;
+        }
+        else if (Style::hasClass(widget, QStringLiteral("Button")))
+        {
+            weight = 570;
+        }
+
+        if (pixelSize > 0 || weight > 0)
         {
             QFont classFont = widget->font();
-            classFont.setPixelSize(pixelSize);
+            if (pixelSize > 0)
+            {
+                classFont.setPixelSize(pixelSize);
+            }
+            if (weight > 0)
+            {
+                classFont.setWeight(static_cast<QFont::Weight>(weight));
+            }
             widget->setFont(classFont);
+        }
+
+        // The class tags arrive after construction; re-read the label's frame box
+        // (flattenedLabelFrameContents) now that they are known.
+        if (auto frame = qobject_cast<QFrame*>(widget))
+        {
+            frame->setFrameStyle(frame->frameStyle());
         }
 
         QColor textColor;
@@ -1599,6 +2176,15 @@ namespace AzQtComponents
             return;
         }
 
+        // The line edit inside a BrowseEdit or a spin box has no field of its own in the
+        // sheet (transparent over the parent's box); BrowseEdit::polish / SpinBox::polish own it.
+        const QWidget* parent = widget->parentWidget();
+        if (widget->inherits("QLineEdit") && parent
+            && (parent->inherits("AzQtComponents::BrowseEdit") || parent->inherits("QAbstractSpinBox")))
+        {
+            return;
+        }
+
         QPalette entryPalette = widget->palette();
         const QColor base = isTextEdit ? QColor(0xE9, 0xE9, 0xE9) : QColor(0xCC, 0xCC, 0xCC);
         const QColor text = isTextEdit ? QColor(0x54, 0x54, 0x54) : QColor(Qt::black);
@@ -1609,6 +2195,19 @@ namespace AzQtComponents
         entryPalette.setColor(QPalette::Inactive, QPalette::Text, text);
         entryPalette.setColor(QPalette::Disabled, QPalette::Base, QColor(0x66, 0x66, 0x66));   // QLineEdit:disabled background
         entryPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(0x99, 0x99, 0x99));   // QLineEdit:disabled color
+
+        if (isTextEdit)
+        {
+            // The sheet's QTextEdit background covered the whole widget, scroll bar lanes
+            // included, and the widget carried no frame (legacy capture: field flush to the
+            // edge, scroll bar drawn over the light field). TOKENIZE: TextEditFieldColor
+            entryPalette.setColor(QPalette::Window, base);
+            widget->setAutoFillBackground(true);
+            if (auto frame = qobject_cast<QFrame*>(widget))
+            {
+                frame->setFrameShape(QFrame::NoFrame);
+            }
+        }
 
         if (widget->inherits("QComboBox") || widget->inherits("QAbstractSpinBox"))
         {
@@ -1644,6 +2243,48 @@ namespace AzQtComponents
             if (widget->inherits("QComboBoxPrivateContainer"))
             {
                 widget->setPalette(buildO3DEMenuPalette(widget->palette()));
+            }
+
+            // MenuBar.qss: font-family "Amazon Ember" 12px (the sheet's family, which the
+            // platform resolves the same way it did for the sheet). TOKENIZE: MenuBarFont
+            if (widget->inherits("QMenuBar"))
+            {
+                QFont menuBarFont = widget->font();
+                menuBarFont.setFamily(QStringLiteral("Amazon Ember"));
+                menuBarFont.setPixelSize(12);
+                widget->setFont(menuBarFont);
+            }
+
+            // TableView.qss: QTableView/QListView/QTreeView { border: none } and
+            // QTableView { qproperty-showGrid: false }. TOKENIZE: ItemViewFrame, TableViewGrid
+            if (auto itemView = qobject_cast<QAbstractItemView*>(widget))
+            {
+                itemView->setFrameShape(QFrame::NoFrame);
+                if (auto tableView = qobject_cast<QTableView*>(widget))
+                {
+                    tableView->setShowGrid(false);
+                }
+            }
+
+            // ScrollBar.qss: QAbstractScrollArea > .QWidget { background: none } -- a plain
+            // QScrollArea's viewport is transparent, so the scroll area's own background
+            // (e.g. a page's inline white sheet) shows through. TOKENIZE: ScrollAreaViewport
+            if (auto scrollArea = qobject_cast<QScrollArea*>(widget))
+            {
+                // Under the universal `* { background-color: transparent }` rule the viewport
+                // and a plain contents QWidget painted nothing of their own.
+                QPalette viewportPalette = scrollArea->viewport()->palette();
+                viewportPalette.setColor(QPalette::Window, Qt::transparent);
+                viewportPalette.setColor(QPalette::Base, Qt::transparent);
+                scrollArea->viewport()->setPalette(viewportPalette);
+                scrollArea->viewport()->setAutoFillBackground(false);
+                if (QWidget* contents = scrollArea->widget())
+                {
+                    if (QString::fromLatin1(contents->metaObject()->className()) == QLatin1String("QWidget"))
+                    {
+                        contents->setAutoFillBackground(false);
+                    }
+                }
             }
 
             // Progress bar track and fill (ProgressBar.qss: track #9A9A9A, chunk #1E70EB,
@@ -1695,8 +2336,9 @@ namespace AzQtComponents
             // page area sits on #444444
             if (widget->inherits("AzQtComponents::TabWidget"))
             {
+                // TabWidget.qss: TabWidget.Secondary { background-color: #444444 }
                 QPalette tabWidgetPalette = widget->palette();
-                tabWidgetPalette.setColor(QPalette::Window, QColor(0x11, 0x11, 0x11));
+                tabWidgetPalette.setColor(QPalette::Window, hasClass(widget, QStringLiteral("Secondary")) ? QColor(0x44, 0x44, 0x44) : QColor(0x11, 0x11, 0x11));
                 widget->setPalette(tabWidgetPalette);
                 widget->setAutoFillBackground(true);
             }
@@ -1717,8 +2359,9 @@ namespace AzQtComponents
                 {
                     tabBar->setDrawBase(false);
                 }
+                // TabWidget.qss: TabBar.Secondary rows sit on the #444444 tab widget
                 QPalette tabPalette = widget->palette();
-                tabPalette.setColor(QPalette::Window, QColor(0x11, 0x11, 0x11));
+                tabPalette.setColor(QPalette::Window, hasClass(widget, QStringLiteral("Secondary")) ? QColor(0x44, 0x44, 0x44) : QColor(0x11, 0x11, 0x11));
                 widget->setPalette(tabPalette);
                 widget->setAutoFillBackground(true);
             }
@@ -1729,6 +2372,10 @@ namespace AzQtComponents
                 QPalette headerPalette = widget->palette();
                 headerPalette.setColor(QPalette::Button, QColor(0x2D, 0x2D, 0x2D));
                 headerPalette.setColor(QPalette::ButtonText, QColor(0xCC, 0xCC, 0xCC));
+                // What shows through a section painted transparent by an inline sheet
+                // (e.g. the Gallery log table) is the window colour, as in the legacy render.
+                headerPalette.setColor(QPalette::Window, QColor(0x44, 0x44, 0x44));
+                headerPalette.setColor(QPalette::Base, QColor(0x44, 0x44, 0x44));
                 widget->setPalette(headerPalette);
             }
 

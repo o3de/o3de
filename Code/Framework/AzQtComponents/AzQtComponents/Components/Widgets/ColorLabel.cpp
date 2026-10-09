@@ -7,6 +7,9 @@
  */
 
 #include <AzQtComponents/Components/Widgets/ColorLabel.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
+#include <QLineEdit>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/ColorHexEdit.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/Swatch.h>
@@ -33,6 +36,19 @@ namespace AzQtComponents
 
         boxLayout->addWidget(m_swatch);
         boxLayout->addWidget(m_hexEdit);
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // ColorLabel.qss: Swatch min/max 32x16; ColorHexEdit min/max-width 100 and its
+            // QLineEdit min/max-width 100 (+ the 2px borders = 104 on screen).
+            // TOKENIZE: ColorLabelSwatchSize, ColorLabelHexEditWidth
+            m_swatch->setFixedSize(32, 16);
+            m_hexEdit->setFixedWidth(100);
+            if (auto hexLineEdit = m_hexEdit->findChild<QLineEdit*>())
+            {
+                hexLineEdit->setFixedWidth(104);
+            }
+        }
 
         m_swatch->installEventFilter(this);
 

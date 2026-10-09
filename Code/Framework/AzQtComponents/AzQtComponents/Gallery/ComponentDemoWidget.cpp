@@ -47,18 +47,61 @@
 #include <QAction>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QCursor>
+#include <QDebug>
 #include <QDir>
 #include <QDockWidget>
+#include <QElapsedTimer>
+#include <QEventLoop>
+#include <QFile>
+#include <QImage>
+#include <QFontInfo>
 #include <QMap>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPixmap>
 #include <QPushButton>
+#include <QScreen>
 #include <QSettings>
+#include <QSplitter>
+#include <QTextEdit>
+#include <QTextStream>
 #include <QTimer>
 #include <QTreeView>
 
 #include <cctype>
+#include <memory>
+
+namespace
+{
+    // Capture-time frame pinning (see ComponentDemoWidget::pinCaptureLayout).
+    // Every gallery page is a QHBoxLayout [exampleText | demo]; the layout hands
+    // the spare width out by sizeHint, which legitimately differs between the
+    // qss and flattened styling modes and would otherwise shift every widget.
+    constexpr int kCaptureWindowWidth = 1600;
+    constexpr int kCaptureWindowHeight = 1100;
+    constexpr int kCaptureExampleTextWidth = 480;
+
+    // Modal-dialog watchdog: poll for the dialog instead of a single fixed delay,
+    // so a slow dialog is still captured and a missing one cannot hang the run.
+    constexpr int kDialogPollIntervalMs = 100;
+    constexpr int kDialogPollAttempts = 60;
+
+    // The styling of a page plays out over many event-loop turns (style sheet
+    // polish, re-polish, deferred layout, timers). A capture is only taken after a
+    // minimum dwell AND once two consecutive grabs are identical, so the recorded
+    // frame is the final user-side view, never an intermediate state.
+    constexpr int kSettleMinDwellMs = 3000;
+    constexpr int kSettleProbeIntervalMs = 500;
+    constexpr int kSettleMaxMs = 10000;
+
+    void pumpEventsFor(int milliseconds)
+    {
+        QEventLoop loop;
+        QTimer::singleShot(milliseconds, &loop, &QEventLoop::quit);
+        loop.exec();
+    }
+}
 
 const QString g_pageIndexSettingKey = QStringLiteral("ComponentDemoWidgetPage");
 
@@ -165,13 +208,42 @@ void ComponentDemoWidget::captureAllPages(const QString& outputDirPath)
 {
     QDir().mkpath(outputDirPath);
 
+    // Same frame in every styling mode and on every machine.
+    window()->showNormal();
+    window()->resize(kCaptureWindowWidth, kCaptureWindowHeight);
+    // Park the pointer outside the window so no widget captures a hover state.
+    if (const QScreen* screen = window()->screen())
+    {
+        const QRect screenRect = screen->geometry();
+        QCursor::setPos(screenRect.right() - 1, screenRect.bottom() - 1);
+    }
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+
     for (int pageIndex = 0; pageIndex < ui->demoSelector->count(); ++pageIndex)
     {
         ui->demoSelector->setCurrentIndex(pageIndex);
+        pinCaptureLayout(ui->demoWidgetStack->currentWidget());
 
-        // let polish, layout and paint settle before grabbing
-        QCoreApplication::processEvents();
-        QCoreApplication::processEvents();
+        // Deterministic state for every base capture: no popup left open by a
+        // previous interaction (its list view would keep keyboard focus), the main
+        // window active, the page selector focused.
+        for (int attempt = 0; attempt < 8; ++attempt)
+        {
+            QWidget* popup = QApplication::activePopupWidget();
+            if (!popup)
+            {
+                break;
+            }
+            popup->close();
+            QCoreApplication::processEvents();
+        }
+        window()->activateWindow();
+        window()->raise();
+        ui->demoSelector->setFocus(Qt::OtherFocusReason);
+
+        // Let the whole styling chain play out before recording (see kSettle*).
+        settleForCapture();
 
         QString pageName = ui->demoSelector->itemText(pageIndex).toLower();
         for (int charIndex = 0; charIndex < pageName.size(); ++charIndex)
@@ -182,13 +254,141 @@ void ComponentDemoWidget::captureAllPages(const QString& outputDirPath)
             }
         }
 
+        const QString baseName = QStringLiteral("%1/%2_%3")
+                                     .arg(outputDirPath)
+                                     .arg(pageIndex, 2, 10, QLatin1Char('0'))
+                                     .arg(pageName);
+
         const QPixmap pageGrab = window()->grab();
-        pageGrab.save(QStringLiteral("%1/%2_%3.png")
-                          .arg(outputDirPath)
-                          .arg(pageIndex, 2, 10, QLatin1Char('0'))
-                          .arg(pageName));
+        pageGrab.save(baseName + QStringLiteral(".png"));
+        dumpPageGeometry(ui->demoWidgetStack->currentWidget(), baseName + QStringLiteral("__geometry.txt"));
 
         capturePageInteractions(outputDirPath, pageIndex, pageName);
+    }
+}
+
+void ComponentDemoWidget::settleForCapture()
+{
+    pumpEventsFor(kSettleMinDwellMs);
+
+    QImage previous = window()->grab().toImage();
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < kSettleMaxMs)
+    {
+        pumpEventsFor(kSettleProbeIntervalMs);
+        const QImage current = window()->grab().toImage();
+        if (current == previous)
+        {
+            return;
+        }
+        previous = current;
+    }
+    qWarning() << "captureAllPages: the window did not settle within" << kSettleMaxMs << "ms";
+}
+
+void ComponentDemoWidget::pinCaptureLayout(QWidget* page)
+{
+    if (!page)
+    {
+        return;
+    }
+
+    if (auto* exampleText = page->findChild<QTextEdit*>(QStringLiteral("exampleText")))
+    {
+        exampleText->setFixedWidth(kCaptureExampleTextWidth);
+    }
+
+    const QList<QSplitter*> splitters = page->findChildren<QSplitter*>();
+    for (QSplitter* splitter : splitters)
+    {
+        const QList<int> natural = splitter->sizes();
+        int total = 0;
+        for (int size : natural)
+        {
+            total += size;
+        }
+        if (natural.size() < 2 || total <= 0)
+        {
+            continue;
+        }
+        QList<int> even;
+        for (int index = 0; index < natural.size(); ++index)
+        {
+            even.append(total / natural.size());
+        }
+        splitter->setSizes(even);
+    }
+}
+
+void ComponentDemoWidget::dumpPageGeometry(QWidget* page, const QString& filePath)
+{
+    if (!page)
+    {
+        return;
+    }
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+    {
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Frame line: lets the comparer attribute differences to the window shell,
+    // the example text panel, or the demo area (all in logical px; dpr scales
+    // them to the grabbed pixmap).
+    const QWidget* frame = window();
+    const QPoint pageOrigin = page->mapTo(window(), QPoint(0, 0));
+    QRect exampleRect;
+    if (auto* exampleText = page->findChild<QTextEdit*>(QStringLiteral("exampleText")))
+    {
+        exampleRect = QRect(exampleText->mapTo(window(), QPoint(0, 0)), exampleText->size());
+    }
+    out << "# frame window " << frame->width() << ' ' << frame->height()
+        << " dpr " << frame->devicePixelRatioF()
+        << " page " << pageOrigin.x() << ' ' << pageOrigin.y() << ' ' << page->width() << ' ' << page->height()
+        << " example " << exampleRect.x() << ' ' << exampleRect.y() << ' ' << exampleRect.width() << ' ' << exampleRect.height()
+        << '\n';
+    // Determinism diagnostics: where the window sits, what has focus, what is hovered.
+    const QRect screenRect = frame->screen() ? frame->screen()->geometry() : QRect();
+    const QWidget* focus = QApplication::focusWidget();
+    const QWidget* hovered = QApplication::widgetAt(QCursor::pos());
+    const auto describe = [](const QWidget* w)
+    {
+        return w ? QString::fromLatin1("%1/%2").arg(QString::fromLatin1(w->metaObject()->className()), w->objectName()) : QStringLiteral("none");
+    };
+    out << "# state screen " << screenRect.x() << ' ' << screenRect.y() << ' ' << screenRect.width() << ' ' << screenRect.height()
+        << " windowPos " << frame->pos().x() << ' ' << frame->pos().y()
+        << " cursor " << QCursor::pos().x() << ' ' << QCursor::pos().y()
+        << " focus " << describe(focus) << " hovered " << describe(hovered) << '\n';
+    out << "# class\tobjectName\tx\ty\tw\th\tsizeHintW\tsizeHintH\tminHintW\tminHintH\tvisible"
+           "\tfont\tcontentsMargins\n";
+
+    // Whole window, window-relative coordinates: the shell (menu bar, page selector,
+    // status area) is compared exactly like the page content. Widgets of the OTHER
+    // (hidden) gallery pages are skipped: they are not laid out and would only add
+    // noise to the geometry comparison.
+    const QList<QWidget*> widgets = window()->findChildren<QWidget*>();
+    for (QWidget* widget : widgets)
+    {
+        if (ui->demoWidgetStack->isAncestorOf(widget) && widget != page && !page->isAncestorOf(widget))
+        {
+            continue;
+        }
+        const QPoint topLeft = widget->mapTo(window(), QPoint(0, 0));
+        const QSize hint = widget->sizeHint();
+        const QSize minHint = widget->minimumSizeHint();
+        const QFont font = widget->font();
+        const QMargins margins = widget->contentsMargins();
+        out << widget->metaObject()->className() << '\t' << widget->objectName() << '\t'
+            << topLeft.x() << '\t' << topLeft.y() << '\t' << widget->width() << '\t' << widget->height() << '\t'
+            << hint.width() << '\t' << hint.height() << '\t' << minHint.width() << '\t' << minHint.height() << '\t'
+            << (widget->isVisible() ? 1 : 0) << '\t'
+            << font.family() << '=' << QFontInfo(font).family() << '/' << font.pixelSize() << "px/"
+            << font.pointSizeF() << "pt/" << font.weight() << '\t'
+            << margins.left() << ',' << margins.top() << ',' << margins.right() << ',' << margins.bottom() << '\n';
     }
 }
 
@@ -220,10 +420,10 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         return;
     }
 
-    const auto settle = []()
+    // Every interaction state gets the same dwell + frame-stable wait as the base capture.
+    const auto settle = [this]()
     {
-        QCoreApplication::processEvents();
-        QCoreApplication::processEvents();
+        settleForCapture();
     };
     const auto capturePath = [outputDirPath, pageIndex, pageName](const QString& suffix)
     {
@@ -234,22 +434,24 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
             .arg(suffix);
     };
 
-    // Expanded state: open every tree and card so collapsed-only content is captured
-    bool expandedAnything = false;
+    // Toggled state: open every tree and flip every card, so the state the base
+    // capture did not show (collapsed cards are the default-expanded ones) is
+    // captured too. Card::setExpanded is a no-op when already in that state.
+    bool toggledAnything = false;
     for (QTreeView* treeView : page->findChildren<QTreeView*>())
     {
         treeView->expandAll();
-        expandedAnything = true;
+        toggledAnything = true;
     }
     for (AzQtComponents::Card* card : page->findChildren<AzQtComponents::Card*>())
     {
-        card->setExpanded(true);
-        expandedAnything = true;
+        card->setExpanded(!card->isExpanded());
+        toggledAnything = true;
     }
-    if (expandedAnything)
+    if (toggledAnything)
     {
         settle();
-        window()->grab().save(capturePath(QStringLiteral("expanded")));
+        window()->grab().save(capturePath(QStringLiteral("toggled")));
     }
 
     // Combo popups: open each visible combo on the page and grab the popup window
@@ -262,9 +464,20 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         }
         combo->showPopup();
         settle();
-        if (QWidget* popup = QApplication::activePopupWidget())
+        // The popup can take a few event-loop turns to become active; retry briefly.
+        QWidget* popup = QApplication::activePopupWidget();
+        for (int attempt = 0; !popup && attempt < 20; ++attempt)
+        {
+            QCoreApplication::processEvents();
+            popup = QApplication::activePopupWidget();
+        }
+        if (popup)
         {
             popup->grab().save(capturePath(QStringLiteral("combo%1-popup").arg(comboIndex)));
+        }
+        else
+        {
+            qWarning() << "captureAllPages: combo popup did not appear on page" << pageName << "combo" << comboIndex;
         }
         combo->hidePopup();
         settle();
@@ -291,14 +504,29 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         }
 
         const QString dialogCapturePath = capturePath(QStringLiteral("dialog%1").arg(dialogIndex));
-        QTimer::singleShot(900, this, [dialogCapturePath]()
+        auto* watchdog = new QTimer(this);
+        watchdog->setInterval(kDialogPollIntervalMs);
+        auto attempts = std::make_shared<int>(0);
+        connect(watchdog, &QTimer::timeout, this, [watchdog, attempts, dialogCapturePath, settle]()
         {
+            ++(*attempts);
             if (QWidget* modal = QApplication::activeModalWidget())
             {
-                modal->grab().save(dialogCapturePath);
+                settle();
+                // window() includes the WindowDecorationWrapper chrome the dialog was wrapped in
+                modal->window()->grab().save(dialogCapturePath);
                 modal->close();
+                watchdog->stop();
+                watchdog->deleteLater();
+            }
+            else if (*attempts >= kDialogPollAttempts)
+            {
+                qWarning() << "captureAllPages: no modal dialog appeared for" << dialogCapturePath;
+                watchdog->stop();
+                watchdog->deleteLater();
             }
         });
+        watchdog->start();
         button->click();
         settle();
         if (++dialogIndex >= 3)
@@ -307,9 +535,36 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         }
     }
 
-    // Dock widgets: float each one and grab its window, then re-dock
+    // Dock widgets: the StyledDockWidget page builds its dock main window lazily
+    // behind a "Show main window" button, as its own top-level window (wrapped by
+    // WindowDecorationWrapper), so docks are searched in every top-level window,
+    // not just the page. Grab the host, then float each dock, grab, re-dock.
+    QWidget* dockHost = nullptr;
+    for (QPushButton* button : page->findChildren<QPushButton*>())
+    {
+        if (button->isVisible() && button->text().contains(QStringLiteral("main window"), Qt::CaseInsensitive))
+        {
+            button->click();
+            settle();
+            break;
+        }
+    }
+    for (QWidget* top : QApplication::topLevelWidgets())
+    {
+        if (top != window() && top->isVisible() && !top->findChildren<QDockWidget*>().isEmpty())
+        {
+            dockHost = top;
+            break;
+        }
+    }
+    QWidget* dockSearchRoot = dockHost ? dockHost : page;
+    if (dockHost)
+    {
+        dockHost->grab().save(capturePath(QStringLiteral("dockmain")));
+    }
+
     int dockIndex = 0;
-    for (QDockWidget* dockWidget : page->findChildren<QDockWidget*>())
+    for (QDockWidget* dockWidget : dockSearchRoot->findChildren<QDockWidget*>())
     {
         if (!dockWidget->isVisible())
         {
@@ -324,6 +579,12 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         {
             break;
         }
+    }
+
+    if (dockHost)
+    {
+        dockHost->close();
+        settle();
     }
 }
 

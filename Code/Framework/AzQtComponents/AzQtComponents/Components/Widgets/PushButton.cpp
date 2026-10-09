@@ -10,11 +10,14 @@
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 
 #include <QDialogButtonBox>
 #include <QImage>
+#include <QLinearGradient>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QPixmapCache>
 #include <QPushButton>
@@ -134,6 +137,14 @@ QSize PushButton::sizeFromContents(const Style* style, QStyle::ContentsType type
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
     const QPushButton* pushButton = qobject_cast<const QPushButton*>(widget);
+    if (StyleManager::stylesheetsDisabled() && pushButton && style->hasClass(widget, QStringLiteral("CardHeaderMenu")))
+    {
+        // Card.qss #ContextMenu / #Help: flat icon-only buttons whose qss box was the
+        // icon plus 4px of width; max-width/max-height (set by Card::polish) then clamp
+        // the layout size. Legacy capture: 18px icon -> 22x18, 16px icon -> 16x16.
+        // TOKENIZE: CardHeaderButtonPadding
+        return pushButton->iconSize() + QSize(4, 0);
+    }
     if (style->hasClass(widget, g_smallIconClass))
     {
         sz.setHeight(config.smallIcon.frame.height);
@@ -164,6 +175,54 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
     Q_UNUSED(style);
 
     const auto* button = qobject_cast<const QPushButton*>(widget);
+    if (StyleManager::stylesheetsDisabled() && button && button->objectName() == QLatin1String("attached-button"))
+    {
+        // BrowseEdit.qss #attached-button: vertical gradient #666666 -> #555555 (:hover
+        // #777777 -> #666666, :pressed #444444, :disabled #666666 + 1px #555555 left line),
+        // square left edge, right corners 2px. TOKENIZE: BrowseEditButtonFace
+        const bool enabled = option->state.testFlag(QStyle::State_Enabled);
+        const bool pressed = option->state.testFlag(QStyle::State_Sunken);
+        const bool hover = enabled && option->state.testFlag(QStyle::State_MouseOver);
+        const QRectF r(option->rect);
+
+        QBrush face;
+        if (!enabled)
+        {
+            face = QColor(0x66, 0x66, 0x66);
+        }
+        else if (pressed)
+        {
+            face = QColor(0x44, 0x44, 0x44);
+        }
+        else
+        {
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0.0, hover ? QColor(0x77, 0x77, 0x77) : QColor(0x66, 0x66, 0x66));
+            gradient.setColorAt(1.0, hover ? QColor(0x66, 0x66, 0x66) : QColor(0x55, 0x55, 0x55));
+            face = gradient;
+        }
+
+        const qreal radius = 2.0;
+        QPainterPath path;
+        path.moveTo(r.left(), r.top());
+        path.lineTo(r.right() - radius, r.top());
+        path.arcTo(QRectF(r.right() - 2 * radius, r.top(), 2 * radius, 2 * radius), 90, -90);
+        path.lineTo(r.right(), r.bottom() - radius);
+        path.arcTo(QRectF(r.right() - 2 * radius, r.bottom() - 2 * radius, 2 * radius, 2 * radius), 0, -90);
+        path.lineTo(r.left(), r.bottom());
+        path.closeSubpath();
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->fillPath(path, face);
+        if (!enabled)
+        {
+            painter->fillRect(QRectF(r.left(), r.top(), 1.0, r.height()), QColor(0x55, 0x55, 0x55));
+        }
+        painter->restore();
+        return true;
+    }
+
     if (!button || button->isFlat())
     {
         return false;

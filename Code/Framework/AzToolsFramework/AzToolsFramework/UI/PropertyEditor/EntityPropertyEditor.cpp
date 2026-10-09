@@ -31,6 +31,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -580,6 +581,19 @@ namespace AzToolsFramework
 
         m_gui = new Ui::EntityPropertyEditorUI();
         m_gui->setupUi(this);
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            // The form embeds an orange (255,153,0) WindowText palette on these labels that
+            // the app-wide `* { color: white }` rule always overrode; without the sheet the
+            // palette would show. Reset them to the inherited (white) text colour.
+            // TOKENIZE: InspectorHeaderTextColor
+            for (QLabel* label : { static_cast<QLabel*>(m_gui->m_entityNameLabel), static_cast<QLabel*>(m_gui->m_entityIdLabel),
+                                   static_cast<QLabel*>(m_gui->m_entityIdText), static_cast<QLabel*>(m_gui->m_prefabContainerLabel),
+                                   static_cast<QLabel*>(m_gui->m_prefabContainerText), static_cast<QLabel*>(m_gui->m_statusLabel) })
+            {
+                label->setPalette(QPalette());
+            }
+        }
         m_gui->m_entityNameEditor->setReadOnly(false);
         m_gui->m_entityDetailsLabel->setObjectName("LabelEntityDetails");
         m_gui->m_entitySearchBox->setReadOnly(false);
