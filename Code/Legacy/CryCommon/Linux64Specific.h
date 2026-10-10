@@ -20,6 +20,8 @@
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
 #include <malloc.h>
+#include <math.h>
+#include <signal.h>
 #include <stdint.h>
 #include <sys/dir.h>
 #if !defined(__ARM_ARCH)
@@ -41,8 +43,6 @@
 // Define platform independent types.
 //////////////////////////////////////////////////////////////////////////
 #include "BaseTypes.h"
-
-#include "LinuxSpecific.h"
 
 #define TARGET_DEFAULT_ALIGN (0x8U)
 

@@ -171,11 +171,11 @@ typedef uint64 __uint64;
 #define TRUE 1
 #define FALSE 0
 
-#ifndef MAX_PATH
-#define MAX_PATH PATH_MAX
+#ifndef AZ_TRAIT_OS_MAX_PATH_LEN
+#define AZ_TRAIT_OS_MAX_PATH_LEN PATH_MAX
 #endif
-#ifndef _MAX_PATH
-#define _MAX_PATH MAX_PATH
+#ifndef AZ_TRAIT_OS_MAX_PATH_LEN
+#define AZ_TRAIT_OS_MAX_PATH_LEN AZ_TRAIT_OS_MAX_PATH_LEN
 #endif
 
 #define _PTRDIFF_T_DEFINED 1
@@ -277,8 +277,8 @@ typedef struct _SECURITY_ATTRIBUTES
 
 #ifdef __cplusplus
 
-#define __min(_S, _T) min(_S, _T)
-#define __max(_S, _T) max(_S, _T)
+#define AZStd::min(_S, _T) min(_S, _T)
+#define AZStd::max(_S, _T) max(_S, _T)
 
 #endif //__cplusplus
 

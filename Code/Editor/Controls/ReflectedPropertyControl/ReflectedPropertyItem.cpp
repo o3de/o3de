@@ -566,9 +566,9 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
     switch (m_type)
     {
     case ePropertyTexture:
-        if (value.length() >= MAX_PATH)
+        if (value.length() >= AZ_TRAIT_OS_MAX_PATH_LEN)
         {
-            value = value.left(MAX_PATH);
+            value = value.left(AZ_TRAIT_OS_MAX_PATH_LEN);
         }
         break;
     }

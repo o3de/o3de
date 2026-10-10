@@ -658,7 +658,7 @@ namespace AZ {
             DWORD   modBaseSize;    // Size in bytes of module starting at modBaseAddr
             HMODULE hModule;        // The hModule of this module in th32ProcessID's context
             char    szModule[MAX_MODULE_NAME32 + 1];
-            char    szExePath[MAX_PATH];
+            char    szExePath[AZ_TRAIT_OS_MAX_PATH_LEN];
         } MODULEENTRY32;
         typedef MODULEENTRY32*  PMODULEENTRY32;
         typedef MODULEENTRY32*  LPMODULEENTRY32;
