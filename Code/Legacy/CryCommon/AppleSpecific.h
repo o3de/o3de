@@ -34,34 +34,11 @@
 #include <string>
 //////////////////////////////////////////////////////////////////////////
 
-#define FP16_MESH
-#define BOOST_DISABLE_WIN32
-
 #ifndef __COUNTER__
 #define __COUNTER__ __LINE__
 #endif
 
-typedef void*                               LPVOID;
-#define VOID                    void
-#define PVOID                               void*
-
-typedef unsigned int UINT;
-typedef char CHAR;
-typedef float FLOAT;
-
 #define PHYSICS_EXPORTS
-
-// MSVC compiler-specific keywords
-#define __forceinline inline
-#define _inline inline
-#define __cdecl
-#define _cdecl
-#define __stdcall
-#define _stdcall
-#define __fastcall
-#define _fastcall
-#define IN
-#define OUT
 
 #define MAP_ANONYMOUS MAP_ANON
 
@@ -70,217 +47,11 @@ typedef float FLOAT;
 //////////////////////////////////////////////////////////////////////////
 #include "BaseTypes.h"
 
-typedef double real;
-
-typedef uint32          DWORD;
-typedef DWORD*          LPDWORD;
-typedef uint64                          DWORD_PTR;
-typedef intptr_t INT_PTR, * PINT_PTR;
-typedef uintptr_t uintptr_t, * PUINT_PTR;
-typedef char* LPSTR, * PSTR;
-typedef char TCHAR;
-typedef uint64          __uint64;
-#if !defined(__clang__)
-typedef int64               __int64;
-#endif
-typedef int64               INT64;
-typedef uint64          UINT64;
-
-typedef long LONG_PTR, * PLONG_PTR, * PLONG;
-typedef unsigned long ULONG_PTR, * PULONG_PTR;
-
-typedef uint8                               BYTE;
-typedef uint16                          WORD;
-typedef void*                               HWND;
-typedef uintptr_t                        WPARAM;
-typedef LONG_PTR                        LPARAM;
-typedef LONG_PTR                        LRESULT;
-#define PLARGE_INTEGER LARGE_INTEGER *
-typedef const char* LPCSTR, * PCSTR;
-typedef long long                       LONGLONG;
-typedef ULONG_PTR                       SIZE_T;
-typedef uint8                               byte;
-
-#ifndef MAXUINT
-#define MAXUINT ((uint) ~((uint)0))
-#endif
-
-#ifndef MAXINT
-#define MAXINT ((int)(MAXUINT >> 1))
-#endif
-
-#ifndef _CVTBUFSIZE
-#define _CVTBUFSIZE (309+40) /* # of digits in max. dp value + slop */
-#endif
-
-#ifndef STDMETHODCALLTYPE_DEFINED
-#define STDMETHODCALLTYPE_DEFINED
-#define STDMETHODCALLTYPE
-#endif
-
 #define _PACK __attribute__ ((packed))
-
-#define MAKEWORD(a, b)      ((WORD)(((BYTE)((DWORD_PTR)(a) & 0xff)) | ((WORD)((BYTE)((DWORD_PTR)(b) & 0xff))) << 8))
-#define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
-#define LOWORD(l)           ((WORD)((DWORD_PTR)(l) & 0xffff))
-#define HIWORD(l)           ((WORD)((DWORD_PTR)(l) >> 16))
-#define LOBYTE(w)           ((BYTE)((DWORD_PTR)(w) & 0xff))
-#define HIBYTE(w)           ((BYTE)((DWORD_PTR)(w) >> 8))
-
-#define CALLBACK
-#define WINAPI
-
-#ifndef __cplusplus
-#ifndef _WCHAR_T_DEFINED
-typedef unsigned short wchar_t;
-#define TCHAR wchar_t;
-#define _WCHAR_T_DEFINED
-#endif
-#endif
-typedef wchar_t WCHAR;    // wc,   16-bit UNICODE character
-typedef WCHAR* PWCHAR;
-typedef WCHAR* LPWCH, * PWCH;
-typedef const WCHAR* LPCWCH, * PCWCH;
-typedef WCHAR* NWPSTR;
-typedef WCHAR* LPWSTR, * PWSTR;
-typedef WCHAR* LPUWSTR, * PUWSTR;
-
-typedef const WCHAR* LPCWSTR, * PCWSTR;
-typedef const WCHAR* LPCUWSTR, * PCUWSTR;
-
-typedef LPCWSTR LPCTSTR;
-typedef LPWSTR LPTSTR;
-
-#define FILE_ATTRIBUTE_NORMAL               0x00000080
-
-// Conflit with OBJC defined bool type.
-
-#if defined(IOS)
-typedef bool BOOL;
-#endif
-
-typedef int32_t LONG;
-typedef unsigned int ULONG;
-typedef int HRESULT;
-
-//typedef int32 __int32;
-typedef uint32 __uint32;
-typedef int64 __int64;
-typedef uint64 __uint64;
-
-#define TRUE 1
-#define FALSE 0
-
-#ifndef AZ_TRAIT_OS_MAX_PATH_LEN
-#define AZ_TRAIT_OS_MAX_PATH_LEN PATH_MAX
-#endif
-#ifndef AZ_TRAIT_OS_MAX_PATH_LEN
-#define AZ_TRAIT_OS_MAX_PATH_LEN AZ_TRAIT_OS_MAX_PATH_LEN
-#endif
 
 #define _PTRDIFF_T_DEFINED 1
 
-#define _A_RDONLY       (0x01)    /* Read only file */
-#define _A_HIDDEN (0x02)    /* Hidden file */
-#define _A_SUBDIR       (0x10)    /* Subdirectory */
-
-//////////////////////////////////////////////////////////////////////////
-// Win32 FileAttributes.
-//////////////////////////////////////////////////////////////////////////
-#define FILE_ATTRIBUTE_READONLY             0x00000001
-#define FILE_ATTRIBUTE_HIDDEN               0x00000002
-#define FILE_ATTRIBUTE_SYSTEM               0x00000004
-#define FILE_ATTRIBUTE_DIRECTORY            0x00000010
-#define FILE_ATTRIBUTE_ARCHIVE              0x00000020
-#define FILE_ATTRIBUTE_DEVICE               0x00000040
-#define FILE_ATTRIBUTE_NORMAL               0x00000080
-#define FILE_ATTRIBUTE_TEMPORARY            0x00000100
-#define FILE_ATTRIBUTE_SPARSE_FILE          0x00000200
-#define FILE_ATTRIBUTE_REPARSE_POINT        0x00000400
-#define FILE_ATTRIBUTE_COMPRESSED           0x00000800
-#define FILE_ATTRIBUTE_OFFLINE              0x00001000
-#define FILE_ATTRIBUTE_NOT_CONTENT_INDEXED  0x00002000
-#define FILE_ATTRIBUTE_ENCRYPTED            0x00004000
-
-#define INVALID_FILE_ATTRIBUTES (-1)
-
-#define BST_UNCHECKED   0x0000
-
-#ifndef HRESULT_VALUES_DEFINED
-#define HRESULT_VALUES_DEFINED
-enum
-{
-    E_OUTOFMEMORY  = 0x8007000E,
-    E_FAIL         = 0x80004005,
-    E_ABORT        = 0x80004004,
-    E_INVALIDARG   = 0x80070057,
-    E_NOINTERFACE  = 0x80004002,
-    E_NOTIMPL      = 0x80004001,
-    E_UNEXPECTED   = 0x8000FFFF
-};
-#endif
-
-#define ERROR_SUCCESS   0L
-
-#define SM_MOUSEPRESENT 0x00000000L
-
-#define SM_CMOUSEBUTTONS    43
-
-#define VK_TAB      0x09
-#define VK_SHIFT    0x10
-#define VK_MENU     0x12
-#define VK_ESCAPE   0x1B
-#define VK_SPACE    0x20
-#define VK_DELETE   0x2E
-
-#define VK_OEM_COMMA    0xBC   // ',' any country
-#define VK_OEM_PERIOD   0xBE   // '.' any country
-#define VK_OEM_3        0xC0   // '`~' for US
-#define VK_OEM_4        0xDB  //  '[{' for US
-#define VK_OEM_6        0xDD  //  ']}' for US
-
-#define WAIT_TIMEOUT 258L    // dderror
-
 #define TARGET_DEFAULT_ALIGN (0x8U)
-
-#define _msize malloc_size
-
-#include <AzCore/base.h>
-
-struct _OVERLAPPED;
-
-typedef void (* LPOVERLAPPED_COMPLETION_ROUTINE)(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, struct _OVERLAPPED* lpOverlapped);
-
-typedef struct _OVERLAPPED
-{
-    void* pCaller;//this is orginally reserved for internal purpose, we store the Caller pointer here
-    LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine; ////this is orginally ULONG_PTR InternalHigh and reserved for internal purpose
-    union
-    {
-        struct
-        {
-            DWORD Offset;
-            DWORD OffsetHigh;
-        };
-        PVOID Pointer;
-    };
-    DWORD dwNumberOfBytesTransfered;    //additional member temporary speciying the number of bytes to be read
-    /*HANDLE*/ void*  hEvent;
-} OVERLAPPED, * LPOVERLAPPED;
-
-typedef struct _SECURITY_ATTRIBUTES
-{
-    DWORD nLength;
-    LPVOID lpSecurityDescriptor;
-    AZ::u8 bInheritHandle;
-} SECURITY_ATTRIBUTES, * PSECURITY_ATTRIBUTES, * LPSECURITY_ATTRIBUTES;
-
-#ifdef __cplusplus
-
-#define AZStd::min(_S, _T) min(_S, _T)
-#define AZStd::max(_S, _T) max(_S, _T)
-
-#endif //__cplusplus
 
 #ifdef _RELEASE
 #define __debugbreak()
@@ -289,15 +60,3 @@ typedef struct _SECURITY_ATTRIBUTES
 #endif
 
 #define __assume(x)
-
-inline int closesocket(int s)
-{
-    return ::close(s);
-}
-
-template <typename T, size_t N>
-char (*RtlpNumberOf( T (&)[N] ))[N];
-
-#define RTL_NUMBER_OF_V2(A) (sizeof(*RtlpNumberOf(A)))
-
-#define ARRAYSIZE(A) RTL_NUMBER_OF_V2(A)
