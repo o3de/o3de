@@ -318,6 +318,22 @@ namespace AzFramework
     {
         if (m_captureCursor) {
             if (systemCursorState != m_systemCursorState) {
+                // XFixes hide/show requests are per-window and counted: a window hidden earlier
+                // (e.g. a previous cursor constraint window) keeps the cursor hidden until it is
+                // explicitly shown again on that same window. Before transitioning to a visible
+                // state, undo every hide we have issued, no matter which window currently has
+                // focus or is used to constrain the cursor.
+                const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
+                    (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
+                if (cursorShown)
+                {
+                    for (const xcb_window_t hiddenWindow : m_hiddenCursorWindows)
+                    {
+                        ShowCursor(hiddenWindow, true);
+                    }
+                    m_hiddenCursorWindows.clear();
+                }
+
                 m_systemCursorState = systemCursorState;
 
                 m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
@@ -339,6 +355,18 @@ namespace AzFramework
 
             CreateBarriers(window, confined);
             ShowCursor(window, cursorShown);
+
+            if (window != XCB_WINDOW_NONE)
+            {
+                if (cursorShown)
+                {
+                    m_hiddenCursorWindows.erase(window);
+                }
+                else
+                {
+                    m_hiddenCursorWindows.insert(window);
+                }
+            }
         }
     }
 
