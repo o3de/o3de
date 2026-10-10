@@ -8,6 +8,12 @@
 
 #include <Core/EditorActionsHandler.h>
 
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/std/parallel/atomic.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
@@ -28,11 +34,26 @@
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <Atom/Utils/PngFile.h>
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
+#include <Core/ViewportScreenshotCapture.h>
+#include <Core/ViewportScreenshotUtils.h>
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
 #include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <CryEdit.h>
+#include <CustomResolutionDlg.h>
 #include <EditorCoreAPI.h>
 #include <LevelRoots.h>
 #include <Editor/EditorViewportCamera.h>
@@ -41,25 +62,42 @@
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
+#include <MainStatusBar.h>
 #include <Viewport.h>
 #include <QtViewPaneManager.h>
 #include <ToolBox.h>
 #include <ToolsConfigPage.h>
 #include <Util/PathUtil.h>
 
+#include <QByteArray>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDateTime>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
 #include <QApplication>
+#include <QPointer>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QWidget>
 
 static const int maxRecentFiles = 10;
+
+// Snapshot resolution presets (width x height), grouped by aspect ratio.
+static constexpr int ScreenshotResolutions[][2] = {
+    // 16:9
+    { 1280, 720 }, { 1920, 1080 }, { 2560, 1440 }, { 3840, 2160 },
+    // 16:10
+    { 1920, 1200 }, { 2560, 1600 },
+    // 21:9
+    { 3440, 1440 }
+};
+
+// Hard cap on one capture dimension, mirroring CustomResolutionDlg::MAX_RES.
+static constexpr uint32_t MaxScreenshotDimension = 8192;
 
 class EditorViewportDisplayInfoHandler
     : private AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
@@ -182,6 +220,9 @@ EditorActionsHandler::~EditorActionsHandler()
         {
             delete m_editorViewportDisplayInfoHandler;
         }
+
+        // unique_ptr: ViewportScreenshotCapture's destructor tears down any in-flight capture.
+        m_viewportScreenshotCapture.reset();
     }
 }
 
@@ -1447,6 +1488,155 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Z");
     }
 
+    // Capture Viewport Screenshot
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.captureScreenshot";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Capture Viewport Screenshot";
+        actionProperties.m_description = "Save an image of the current viewport to disk using the selected resolution.";
+        actionProperties.m_category = "View";
+        actionProperties.m_iconPath = ":/Menu/snapshot.svg";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this]
+            {
+                CaptureViewportScreenshot(m_screenshotWidth, m_screenshotHeight);
+            }
+        );
+
+        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Shift+S");
+    }
+
+    // Screenshot resolution selection (radio): the capture button uses the current choice.
+    {
+        // Viewport resolution (0x0 means "use the viewport size").
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.captureScreenshot.viewport";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Viewport Resolution";
+            actionProperties.m_category = "View";
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this]
+                {
+                    m_screenshotWidth = 0;
+                    m_screenshotHeight = 0;
+                    m_screenshotUseCustom = false;
+                    RefreshScreenshotResolutionActions();
+                },
+                [this]() -> bool
+                {
+                    return !m_screenshotUseCustom && m_screenshotWidth <= 0 && m_screenshotHeight <= 0;
+                }
+            );
+        }
+
+        // Fixed resolutions.
+        for (const auto& resolution : ScreenshotResolutions)
+        {
+            const int width = resolution[0];
+            const int height = resolution[1];
+            const AZStd::string actionIdentifier =
+                AZStd::string::format("o3de.action.viewport.captureScreenshot.resolution[%i:%i]", width, height);
+
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = AZStd::string::format("%i x %i", width, height);
+            actionProperties.m_category = "View";
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this, width, height]
+                {
+                    m_screenshotWidth = width;
+                    m_screenshotHeight = height;
+                    m_screenshotUseCustom = false;
+                    RefreshScreenshotResolutionActions();
+                },
+                [this, width, height]() -> bool
+                {
+                    return !m_screenshotUseCustom && m_screenshotWidth == width && m_screenshotHeight == height;
+                }
+            );
+        }
+
+        // Custom resolution (stays selected until another option is picked).
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.captureScreenshot.custom";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Custom...";
+            actionProperties.m_category = "View";
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this]
+                {
+                    const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+                    auto viewportContext =
+                        viewportContextRequests ? viewportContextRequests->GetDefaultViewportContext() : nullptr;
+                    const AzFramework::WindowSize viewportSize =
+                        viewportContext ? viewportContext->GetViewportSize() : AzFramework::WindowSize{};
+
+                    const int defaultWidth =
+                        m_screenshotWidth > 0 ? m_screenshotWidth : aznumeric_cast<int>(viewportSize.m_width);
+                    const int defaultHeight =
+                        m_screenshotHeight > 0 ? m_screenshotHeight : aznumeric_cast<int>(viewportSize.m_height);
+
+                    CCustomResolutionDlg resolutionDialog(defaultWidth, defaultHeight, m_mainWindow);
+                    if (resolutionDialog.exec() == QDialog::Accepted)
+                    {
+                        m_screenshotWidth = resolutionDialog.GetWidth();
+                        m_screenshotHeight = resolutionDialog.GetHeight();
+                        m_screenshotUseCustom = true;
+                        RefreshScreenshotResolutionActions();
+                    }
+                },
+                [this]() -> bool
+                {
+                    return m_screenshotUseCustom;
+                }
+            );
+        }
+    }
+
+    // Capture Viewport Screenshot - antialiasing option
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.captureScreenshot.antialiasing";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Antialiasing (SMAA)";
+        actionProperties.m_category = "View";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this, actionIdentifier]
+            {
+                m_screenshotAntialiasing = !m_screenshotAntialiasing;
+                m_actionManagerInterface->UpdateAction(actionIdentifier);
+            },
+            [this]() -> bool
+            {
+                return m_screenshotAntialiasing;
+            }
+        );
+    }
+
     // View Bookmarks
     InitializeViewBookmarkActions();
 
@@ -1985,6 +2175,13 @@ void EditorActionsHandler::OnMenuRegistrationHook()
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityCreationMenuIdentifier, menuProperties);
     }
 
+    // Viewport Screenshot resolution submenu
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Screenshot Resolution";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportScreenshotMenuIdentifier, menuProperties);
+    }
+
 }
 
 void EditorActionsHandler::OnMenuBindingHook()
@@ -2199,6 +2396,36 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 80000);
     m_menuManagerInterface->AddActionToMenu(
         EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.entityOutliner.findEntity", 80100);
+
+    // Viewport Screenshot resolution submenu
+    {
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportScreenshotMenuIdentifier, "o3de.action.viewport.captureScreenshot", 100);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportScreenshotMenuIdentifier, 200);
+
+        // Resolution selection (radio); capture always uses the current choice.
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportScreenshotMenuIdentifier, "o3de.action.viewport.captureScreenshot.viewport", 300);
+
+        int sortKey = 400;
+        for (const auto& resolution : ScreenshotResolutions)
+        {
+            const AZStd::string actionIdentifier = AZStd::string::format(
+                "o3de.action.viewport.captureScreenshot.resolution[%i:%i]", resolution[0], resolution[1]);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportScreenshotMenuIdentifier, actionIdentifier, sortKey);
+            sortKey += 100;
+        }
+
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportScreenshotMenuIdentifier, "o3de.action.viewport.captureScreenshot.custom", sortKey);
+
+        // Capture options
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportScreenshotMenuIdentifier, sortKey + 100);
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportScreenshotMenuIdentifier,
+            "o3de.action.viewport.captureScreenshot.antialiasing",
+            sortKey + 200);
+    }
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
@@ -2464,6 +2691,81 @@ void EditorActionsHandler::OnEntityPickModeStopped()
 void EditorActionsHandler::OnContainerEntityStatusChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool open)
 {
     m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::ContainerEntityStatesChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::RefreshScreenshotResolutionActions()
+{
+    m_actionManagerInterface->UpdateAction("o3de.action.viewport.captureScreenshot.viewport");
+    for (const auto& resolution : ScreenshotResolutions)
+    {
+        m_actionManagerInterface->UpdateAction(AZStd::string::format(
+            "o3de.action.viewport.captureScreenshot.resolution[%i:%i]", resolution[0], resolution[1]));
+    }
+    m_actionManagerInterface->UpdateAction("o3de.action.viewport.captureScreenshot.custom");
+}
+
+void EditorActionsHandler::CaptureViewportScreenshot(int width, int height)
+{
+    const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
+    const AZ::RPI::ViewportContextPtr viewportContext =
+        viewportContextRequests ? viewportContextRequests->GetDefaultViewportContext() : nullptr;
+    if (!viewportContext)
+    {
+        AZ_Warning("Editor", false, "Failed to capture viewport screenshot: no viewport context is available.");
+        return;
+    }
+
+    // Keep the scene alive via ScenePtr so async teardown can't hit a dangling pointer.
+    AZ::RPI::ScenePtr scene = viewportContext->GetRenderScene();
+    AZ::RPI::ViewPtr sourceView = viewportContext->GetDefaultView();
+    if (!scene || !sourceView)
+    {
+        AZ_Warning("Editor", false, "Failed to capture viewport screenshot: no scene or view is available.");
+        return;
+    }
+
+    // Resolves the requested resolution, falling back to the viewport size and enforcing the dimension cap.
+    const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
+    const AZ::Outcome<EditorViewportScreenshot::CaptureResolution, AZStd::string> resolution =
+        EditorViewportScreenshot::ResolveCaptureResolution(
+            width, height, viewportSize.m_width, viewportSize.m_height, MaxScreenshotDimension);
+    if (!resolution.IsSuccess())
+    {
+        AZ_Warning("Editor", false, "Failed to capture viewport screenshot: %s", resolution.GetError().c_str());
+        return;
+    }
+    const uint32_t captureWidth = resolution.GetValue().m_width;
+    const uint32_t captureHeight = resolution.GetValue().m_height;
+
+    // Reject the request while another capture is still in flight.
+    if (m_viewportScreenshotCapture && m_viewportScreenshotCapture->IsCapturing())
+    {
+        AZ_Warning("Editor", false, "A viewport screenshot capture is already in progress.");
+        return;
+    }
+
+    // Materialized as locals so the string views passed below outlive the call.
+    const QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+    const QByteArray timestampUtf8 = timestamp.toUtf8();
+    const AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    static AZStd::atomic<uint32_t> s_screenshotSequence = 0;
+    const AZStd::string screenshotPath = EditorViewportScreenshot::MakeCaptureOutputPath(
+        AZStd::string_view(projectPath.c_str()),
+        AZStd::string_view(timestampUtf8.constData(), timestampUtf8.size()),
+        captureWidth,
+        captureHeight,
+        s_screenshotSequence.fetch_add(1));
+
+    m_viewportScreenshotCapture.reset(new ViewportScreenshotCapture(
+        m_mainWindow != nullptr ? m_mainWindow->StatusBar() : nullptr,
+        screenshotPath,
+        m_screenshotAntialiasing));
+
+    if (!m_viewportScreenshotCapture->Begin(scene, sourceView, captureWidth, captureHeight))
+    {
+        // The unique_ptr releases and destroys the already torn-down capture.
+        m_viewportScreenshotCapture.reset();
+    }
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)

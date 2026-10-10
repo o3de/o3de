@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
@@ -35,6 +36,7 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 class EditorViewportDisplayInfoHandler;
+class ViewportScreenshotCapture;
 
 class EditorActionsHandler
     : private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
@@ -98,6 +100,17 @@ private:
 
     // ContainerEntityNotificationBus overrides ...
     void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open);
+
+    // Viewport Screenshot
+    void CaptureViewportScreenshot(int width, int height);
+    void RefreshScreenshotResolutionActions();
+    // Sole owner of the in-flight capture; its destructor tears down the pipeline if one is active.
+    AZStd::unique_ptr<ViewportScreenshotCapture> m_viewportScreenshotCapture;
+    bool m_screenshotAntialiasing = true;
+    // Selected capture resolution. A width/height of 0 means "use the viewport resolution".
+    int m_screenshotWidth = 0;
+    int m_screenshotHeight = 0;
+    bool m_screenshotUseCustom = false;
 
     // Layouts
     void RefreshLayoutActions();

@@ -32,6 +32,7 @@
         <file alias="resolution.svg">Menu/resolution.svg</file>
         <file alias="debug.svg">Menu/debug.svg</file>
         <file alias="camera.svg">Menu/camera.svg</file>
+        <file alias="snapshot.svg">Menu/snapshot.svg</file>
         <file alias="asset_editor.svg">Menu/asset_editor.svg</file>
         <file alias="audio_editor.svg">Menu/audio_editor.svg</file>
         <file alias="emfx_editor.svg">Menu/emfx_editor.svg</file>
