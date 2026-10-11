@@ -7,6 +7,7 @@
             "Name": "TransparentParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
+                // Inputs...
                 {
                     "Name": "DirectionalShadowmap",
                     "SlotType": "Input"
@@ -35,6 +36,7 @@
                     "Name": "InputLinearDepth",
                     "SlotType": "Input"
                 },
+                // Input/Outputs...
                 {
                     "Name": "DepthStencil",
                     "SlotType": "InputOutput"
@@ -91,6 +93,7 @@
                     "TemplateName": "TransparentPassTemplate",
                     "Enabled": true,
                     "Connections": [
+                        // Inputs...
                         {
                             "LocalSlot": "DirectionalLightShadowmap",
                             "AttachmentRef": {
@@ -147,6 +150,7 @@
                                 "Attachment": "SceneColorCopy"
                             }
                         },
+                        // Input/Outputs...
                         {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
