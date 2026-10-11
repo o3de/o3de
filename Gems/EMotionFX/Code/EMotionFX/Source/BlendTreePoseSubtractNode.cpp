@@ -109,7 +109,7 @@ namespace EMotionFX
             AnimGraphPose* subtractPose = subtractNode->GetMainOutputPose(animGraphInstance);
             if (subtractPose)
             {
-                outputPose->GetPose().MakeRelativeTo(subtractPose->GetPose());
+                outputPose->GetPose().MakeAdditive(subtractPose->GetPose());
             }
         }
 

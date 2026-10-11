@@ -1165,7 +1165,7 @@ namespace EMotionFX
                 expectedResult.m_rotation = transformB.m_rotation.GetConjugate() * transformA.m_rotation;
                 EMFX_SCALECODE
                 (
-                    expectedResult.m_scale = transformA.m_scale * transformB.m_scale;
+                    expectedResult.m_scale = transformA.m_scale / transformB.m_scale;
                 )
             }
             else if (additiveFunction == ApplyAdditive || weight > 1.0f - MCore::Math::epsilon)
@@ -1186,7 +1186,7 @@ namespace EMotionFX
             else
             {
                 expectedResult.m_position = transformA.m_position + transformB.m_position * weight;
-                expectedResult.m_rotation = transformA.m_rotation.NLerp(transformB.m_rotation * transformA.m_rotation, weight);
+                expectedResult.m_rotation = transformA.m_rotation.NLerp(transformA.m_rotation * transformB.m_rotation, weight);
                 expectedResult.m_rotation.Normalize();
 
                 EMFX_SCALECODE

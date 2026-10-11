@@ -950,7 +950,7 @@ namespace EMotionFX
                     Transform& transform = const_cast<Transform&>(GetLocalSpaceTransform(nodeNr));
                     const Transform& additiveTransform = additivePose.GetLocalSpaceTransform(nodeNr);
                     transform.m_position += additiveTransform.m_position * weight;
-                    transform.m_rotation = transform.m_rotation.NLerp(additiveTransform.m_rotation * transform.m_rotation, weight);
+                    transform.m_rotation = transform.m_rotation.NLerp(transform.m_rotation * additiveTransform.m_rotation, weight);
                     EMFX_SCALECODE
                     (
                         transform.m_scale *= AZ::Vector3::CreateOne().Lerp(additiveTransform.m_scale, weight);
@@ -966,7 +966,7 @@ namespace EMotionFX
                     Transform& transform = const_cast<Transform&>(GetLocalSpaceTransform(i));
                     const Transform& additiveTransform = additivePose.GetLocalSpaceTransform(i);
                     transform.m_position += additiveTransform.m_position * weight;
-                    transform.m_rotation = transform.m_rotation.NLerp(additiveTransform.m_rotation * transform.m_rotation, weight);
+                    transform.m_rotation = transform.m_rotation.NLerp(transform.m_rotation * additiveTransform.m_rotation, weight);
                     EMFX_SCALECODE
                     (
                         transform.m_scale *= AZ::Vector3::CreateOne().Lerp(additiveTransform.m_scale, weight);
@@ -1052,7 +1052,7 @@ namespace EMotionFX
                 transform.m_rotation = refTransform.m_rotation.GetConjugate() * transform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    transform.m_scale *= refTransform.m_scale;
+                    transform.m_scale /= refTransform.m_scale;
                 )
             }
         }
@@ -1067,7 +1067,7 @@ namespace EMotionFX
                 transform.m_rotation = refTransform.m_rotation.GetConjugate() * transform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    transform.m_scale *= refTransform.m_scale;
+                    transform.m_scale /= refTransform.m_scale;
                 )
             }
         }
