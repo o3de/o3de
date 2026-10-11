@@ -232,6 +232,13 @@ namespace AzPhysics
         //! @param handler The handler to receive the event.
         virtual void RegisterSceneSimulationFinishHandler(SceneHandle sceneHandle, SceneEvents::OnSceneSimulationFinishHandler& handler) = 0;
 
+        //! Register a handler to receive an event once per tick, on the main thread, when the results of the steps
+        //! taken since the previous tick have been published.
+        //! @param sceneHandle A handle to the scene to register the event with.
+        //! @param handler The handler to receive the event.
+        virtual void RegisterSceneSimulationSynchronizedWithTickHandler(
+            SceneHandle sceneHandle, SceneEvents::OnSceneSimulationSynchronizedWithTickHandler& handler) = 0;
+
         //! Register a handler to receive an event with a list of SimulatedBodyHandles that updated this scene tick.
         //! @note This will fire after the OnSceneSimulationStartEvent and before the OnSceneSimulationFinishEvent when SceneConfiguration::m_enableActiveActors is true.
         //! @param sceneHandle A handle to the scene to register the event with.
@@ -440,6 +447,11 @@ namespace AzPhysics
         //! @param handler The handler to receive the event.
         void RegisterSceneSimulationFinishHandler(SceneEvents::OnSceneSimulationFinishHandler& handler);
 
+        //! Register a handler to receive an event once per tick, on the main thread, when the results of the steps
+        //! taken since the previous tick have been published.
+        //! @param handler The handler to receive the event.
+        void RegisterSceneSimulationSynchronizedWithTickHandler(SceneEvents::OnSceneSimulationSynchronizedWithTickHandler& handler);
+
         //! Register a handler to receive an event with a list of SimulatedBodyHandles that updated this scene tick.
         //! @note This will fire after the OnSceneSimulationStartEvent and before the OnSceneSimulationFinishEvent when SceneConfiguration::m_enableActiveActors is true.
         //! @param handler The handler to receive the event.
@@ -465,6 +477,7 @@ namespace AzPhysics
         SceneEvents::OnSimulationBodySimulationDisabled m_simulatedBodySimulationDisabledEvent;
         SceneEvents::OnSceneSimulationStartEvent m_sceneSimulationStartEvent;
         SceneEvents::OnSceneSimulationFinishEvent m_sceneSimulationFinishEvent;
+        SceneEvents::OnSceneSimulationSynchronizedWithTickEvent m_sceneSimulationSynchronizedWithTickEvent;
         SceneEvents::OnSceneActiveSimulatedBodiesEvent m_sceneActiveSimulatedBodies;
         SceneEvents::OnSceneCollisionsEvent m_sceneCollisionEvent;
         SceneEvents::OnSceneTriggersEvent m_sceneTriggerEvent;
@@ -510,6 +523,12 @@ namespace AzPhysics
     inline void Scene::RegisterSceneSimulationFinishHandler(SceneEvents::OnSceneSimulationFinishHandler& handler)
     {
         handler.Connect(m_sceneSimulationFinishEvent);
+    }
+
+    inline void Scene::RegisterSceneSimulationSynchronizedWithTickHandler(
+        SceneEvents::OnSceneSimulationSynchronizedWithTickHandler& handler)
+    {
+        handler.Connect(m_sceneSimulationSynchronizedWithTickEvent);
     }
 
     inline void Scene::RegisterSceneActiveSimulatedBodiesHandler(SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler& handler)
