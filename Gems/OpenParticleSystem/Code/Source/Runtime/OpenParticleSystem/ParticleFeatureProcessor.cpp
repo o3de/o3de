@@ -106,6 +106,12 @@ namespace OpenParticle
 
     void ParticleDataInstance::Init()
     {
+        if (m_particleInstance)
+        {
+            // OnAssetReady can fire more than once (reload, re-registration); the instance is already built.
+            return;
+        }
+
         if (m_particleFp)
         {
             m_driver.m_bufferPool = m_particleFp->GetBufferPool();
@@ -218,7 +224,9 @@ namespace OpenParticle
 
         {
             AZ::RHI::BufferPoolDescriptor desc;
-            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
+            // Particle instance data is rewritten by the CPU every frame and read once by the GPU, so a
+            // host-visible pool avoids a staging copy per update.
+            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Host;
             desc.m_bindFlags = AZ::RHI::BufferBindFlags::ShaderRead;
             m_shaderReadBufferPool = aznew AZ::RHI::BufferPool;
             m_shaderReadBufferPool->SetName(AZ::Name("ParticleShaderReadBufferPool"));
