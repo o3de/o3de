@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -123,6 +125,24 @@ namespace AZ
                     guid += subId;
 
                     return Uuid::CreateData(guid);
+                }
+
+                AZStd::string CreateStableGroupName(const Containers::Scene& scene, const Uuid& typeId, const AZStd::string& subId)
+                {
+                    AZStd::string name = "default_";
+                    name += scene.GetName();
+                    name += CreateStableUuid(scene, typeId, subId).ToFixedString().c_str();
+
+                    AZStd::replace_if(
+                        name.begin(),
+                        name.end(),
+                        [](char c)
+                        {
+                            return (!AZStd::is_alnum(c) && c != '_');
+                        },
+                        '_');
+
+                    return name;
                 }
             } // namespace Utilities
         } // namespace DataTypes
