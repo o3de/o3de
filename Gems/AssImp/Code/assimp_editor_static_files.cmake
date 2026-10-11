@@ -1,0 +1,54 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    Source/AssImpImporterComponent.h
+    Source/AssImpImporterComponent.cpp
+    SceneAPI/SDKWrapper/AssImpSceneWrapper.h
+    SceneAPI/SDKWrapper/AssImpSceneWrapper.cpp
+    SceneAPI/SDKWrapper/AssImpNodeWrapper.h
+    SceneAPI/SDKWrapper/AssImpNodeWrapper.cpp
+    SceneAPI/SDKWrapper/AssImpMaterialWrapper.h
+    SceneAPI/SDKWrapper/AssImpMaterialWrapper.cpp
+    SceneAPI/SDKWrapper/AssImpTypeConverter.h
+    SceneAPI/SDKWrapper/AssImpTypeConverter.cpp
+    SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h
+    SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.cpp
+    SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.h
+    SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.cpp
+    SceneAPI/SceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h
+    SceneAPI/SceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpBitangentStreamImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpBitangentStreamImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpBlendShapeImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpBlendShapeImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpBoneImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpBoneImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpCustomPropertyImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpCustomPropertyImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h
+    SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.cpp
+    SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h
+    SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.cpp
+)

@@ -10,7 +10,9 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ
 {
@@ -37,6 +39,7 @@ namespace AZ
                 virtual void RegisterContextProvider(ImportContextProvider* provider) = 0;
                 virtual void UnregisterContextProvider(ImportContextProvider* provider) = 0;
                 virtual ImportContextProvider* SelectImportProvider(AZStd::string_view fileExtension) const = 0;
+                virtual void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const = 0;
             };
 
             using ImportContextRegistryInterface = AZ::Interface<ImportContextRegistry>;
