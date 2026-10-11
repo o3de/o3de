@@ -349,7 +349,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     // Create a hidden QWidget. Would show a black window on macOS otherwise.
     auto window = new QWidget();
     QObject::connect(qApp, &QApplication::lastWindowClosed, window, &QWidget::deleteLater);
-    sip.hWnd = (HWND)window->winId();
+    sip.hWnd = (void*)window->winId();
 #else
     sip.hWnd = hwndForInputSystem;
 #endif

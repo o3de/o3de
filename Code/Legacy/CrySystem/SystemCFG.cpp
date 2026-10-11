@@ -106,16 +106,16 @@ void CSystem::QueryVersionInfo()
     m_fileVersion.v[3] = m_productVersion.v[3] = EXE_VERSION_INFO_0;
     m_buildVersion = m_fileVersion;
 #else  //WIN32
-    char moduleName[_MAX_PATH];
+    char moduleName[AZ_TRAIT_OS_MAX_PATH_LEN];
     DWORD dwHandle;
     UINT len;
 
     char ver[1024 * 8];
 
-    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, AZ_TRAIT_OS_MAX_PATH_LEN);  //retrieves the PATH for the current module
 
 #ifdef AZ_MONOLITHIC_BUILD
-    AZ::Utils::GetExecutablePath(moduleName, _MAX_PATH);  //retrieves the PATH for the current module
+    AZ::Utils::GetExecutablePath(moduleName, AZ_TRAIT_OS_MAX_PATH_LEN);  //retrieves the PATH for the current module
 #else // AZ_MONOLITHIC_BUILD
     azstrcpy(moduleName, AZ_ARRAY_SIZE(moduleName), "CrySystem.dll"); // we want to version from the system dll
 #endif // AZ_MONOLITHIC_BUILD
