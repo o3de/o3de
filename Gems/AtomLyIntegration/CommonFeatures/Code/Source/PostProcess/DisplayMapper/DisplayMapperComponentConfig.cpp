@@ -17,8 +17,6 @@ namespace AZ
     {
         void DisplayMapperComponentConfig::Reflect(ReflectContext* context)
         {
-            AcesParameterOverrides::Reflect(context);
-
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<DisplayMapperComponentConfig, ComponentConfig>()
