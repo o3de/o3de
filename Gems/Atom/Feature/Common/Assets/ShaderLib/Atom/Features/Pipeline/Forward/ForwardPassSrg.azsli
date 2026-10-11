@@ -44,6 +44,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     StructuredBuffer<uint> m_lightListRemapped;
     Texture2D<float> m_linearDepthTexture;
 
+    // Snapshot taken before transparent rendering; bound by TransparentPass.
+    Texture2D<float4> m_sceneColor;
+
     // Whether the m_linearDepthTexture is linear depth or original depth
     // This is useful for render pipeline which doesn't have a pass to convert original depth to linear depth
     // We can use m_linearDepthTexture for original depth and set this flag to true. 

@@ -283,6 +283,34 @@
                     ]
                 },
                 {
+                    "Name": "SceneColorPass",
+                    "TemplateName": "SceneColorTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SceneColorInput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "SceneColorOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Color",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "DepthStencil"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DeferredFogPass",
                     "TemplateName": "DeferredFogPassTemplate",
                     "Enabled": false,

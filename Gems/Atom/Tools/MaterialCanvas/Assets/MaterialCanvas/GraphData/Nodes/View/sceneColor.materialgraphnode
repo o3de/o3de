@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{4888B469-FA9F-46FA-A0C1-71DE7058D0D7}",
+        "category": "View",
+        "title": "Scene Color",
+        "subTitle": "Transparent Mode Only!",
+        "titlePaletteName": "SceneNodeTitlePalette",
+        "settings": {
+            "includePaths": [
+                "Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli"
+            ],
+            "instructions": [
+                "SLOTTYPE(outColor) outColor = PassSrg::m_sceneColor.SampleLevel(PassSrg::LinearSampler, (float2)inUV, 0.0);"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inUV",
+                "displayName": "Screen UV",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "defaultValue": {
+                    "$type": "Vector2",
+                    "Value": [
+                        0.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "defaultValue": {
+                    "$type": "Vector4",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                "editableOnNode": false
+            }
+        ],
+        "description": "Samples the HDR scene snapshot captured before transparent rendering. Fragment stage, transparent materials only. Mobile and MultiView pipelines are not supported. Connect Screen UVs to Screen UV."
+    }
+}
