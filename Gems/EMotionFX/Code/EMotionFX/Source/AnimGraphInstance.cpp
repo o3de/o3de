@@ -485,7 +485,153 @@ namespace EMotionFX
     // stop the state machines and reset the current state to nullptr
     void AnimGraphInstance::Stop()
     {
+        m_pendingScriptEvents.clear();
+        m_activeScriptEvents.clear();
+        m_pendingStateRequests.clear();
         RecursiveResetCurrentState(GetRootNode());
+    }
+
+
+    void AnimGraphInstance::FireScriptEvent(const char* eventName)
+    {
+        // reference nodes run child instances, so the event is kept on the root where all conditions can read it
+        AnimGraphInstance* rootInstance = this;
+        while (rootInstance->m_parentAnimGraphInstance)
+        {
+            rootInstance = rootInstance->m_parentAnimGraphInstance;
+        }
+
+        const AZ::Crc32 eventId(eventName);
+        if (AZStd::find(rootInstance->m_pendingScriptEvents.begin(), rootInstance->m_pendingScriptEvents.end(), eventId) == rootInstance->m_pendingScriptEvents.end())
+        {
+            rootInstance->m_pendingScriptEvents.emplace_back(eventId);
+        }
+    }
+
+
+    bool AnimGraphInstance::IsScriptEventActive(AZ::Crc32 eventId, float holdTime) const
+    {
+        const AnimGraphInstance* rootInstance = this;
+        while (rootInstance->m_parentAnimGraphInstance)
+        {
+            rootInstance = rootInstance->m_parentAnimGraphInstance;
+        }
+
+        // an event is at age zero during the update that took it, so even a hold time of zero sees it once
+        return AZStd::any_of(rootInstance->m_activeScriptEvents.begin(), rootInstance->m_activeScriptEvents.end(),
+            [eventId, holdTime](const ActiveScriptEvent& scriptEvent)
+            {
+                return scriptEvent.m_id == eventId && scriptEvent.m_age <= holdTime;
+            });
+    }
+
+
+    void AnimGraphInstance::ClearAllScriptEvents()
+    {
+        AnimGraphInstance* rootInstance = this;
+        while (rootInstance->m_parentAnimGraphInstance)
+        {
+            rootInstance = rootInstance->m_parentAnimGraphInstance;
+        }
+
+        rootInstance->m_pendingScriptEvents.clear();
+        rootInstance->m_activeScriptEvents.clear();
+    }
+
+
+    void AnimGraphInstance::ConsumeScriptEvent(AZ::Crc32 eventId)
+    {
+        AnimGraphInstance* rootInstance = this;
+        while (rootInstance->m_parentAnimGraphInstance)
+        {
+            rootInstance = rootInstance->m_parentAnimGraphInstance;
+        }
+
+        rootInstance->m_pendingScriptEvents.erase(AZStd::remove(rootInstance->m_pendingScriptEvents.begin(), rootInstance->m_pendingScriptEvents.end(), eventId),
+            rootInstance->m_pendingScriptEvents.end());
+        rootInstance->m_activeScriptEvents.erase(AZStd::remove_if(rootInstance->m_activeScriptEvents.begin(), rootInstance->m_activeScriptEvents.end(),
+            [eventId](const ActiveScriptEvent& scriptEvent)
+            {
+                return scriptEvent.m_id == eventId;
+            }), rootInstance->m_activeScriptEvents.end());
+    }
+
+
+    bool AnimGraphInstance::RequestStateTransition(const char* stateName)
+    {
+        AnimGraphNode* node = m_animGraph->RecursiveFindNodeByName(stateName);
+        if (!node || !node->GetParentNode() || !azrtti_istypeof<AnimGraphStateMachine>(node->GetParentNode()))
+        {
+            return false;
+        }
+
+        m_pendingStateRequests.emplace_back(node);
+        return true;
+    }
+
+
+    void AnimGraphInstance::ApplyRequestedStates()
+    {
+        if (m_pendingStateRequests.empty())
+        {
+            return;
+        }
+
+        const AZStd::vector<AnimGraphNode*> requests = AZStd::move(m_pendingStateRequests);
+        m_pendingStateRequests.clear();
+
+        for (AnimGraphNode* state : requests)
+        {
+            // collect the state and every node above it, then bring each state machine into that branch starting at the outermost
+            AZStd::vector<AnimGraphNode*> chain;
+            for (AnimGraphNode* node = state; node && node->GetParentNode(); node = node->GetParentNode())
+            {
+                chain.push_back(node);
+            }
+
+            for (auto it = chain.rbegin(); it != chain.rend(); ++it)
+            {
+                AnimGraphNode* child = *it;
+                if (azrtti_istypeof<AnimGraphStateMachine>(child->GetParentNode()))
+                {
+                    AnimGraphStateMachine* stateMachine = static_cast<AnimGraphStateMachine*>(child->GetParentNode());
+                    if (stateMachine->GetCurrentState(this) != child)
+                    {
+                        stateMachine->TransitionToState(this, child);
+
+                        // a freshly entered state machine would jump to its entry state on its next update and drop the forced state
+                        static_cast<AnimGraphStateMachine::UniqueData*>(FindOrCreateUniqueNodeData(stateMachine))->m_switchToEntryState = false;
+                    }
+                }
+            }
+        }
+    }
+
+
+    bool AnimGraphInstance::IsStateActive(const char* stateName)
+    {
+        const AnimGraphNode* node = m_animGraph->RecursiveFindNodeByName(stateName);
+        if (!node)
+        {
+            return false;
+        }
+
+        // a nested state is only active while every state machine above it is in the branch that holds it
+        const AnimGraphNode* child = node;
+        for (const AnimGraphNode* parent = node->GetParentNode(); parent; parent = parent->GetParentNode())
+        {
+            if (azrtti_istypeof<AnimGraphStateMachine>(parent))
+            {
+                const AZStd::vector<AnimGraphNode*>& activeStates = static_cast<const AnimGraphStateMachine*>(parent)->GetActiveStates(this);
+                if (AZStd::find(activeStates.begin(), activeStates.end(), child) == activeStates.end())
+                {
+                    return false;
+                }
+            }
+            child = parent;
+        }
+
+        return true;
     }
 
 
@@ -876,6 +1022,30 @@ namespace EMotionFX
         // reset the output is ready flags, so we return cached copies of the outputs, but refresh/recalculate them
         AnimGraphNode* rootNode = GetRootNode();
 
+        // events fired since the last update become visible to conditions, firing one again restarts its age
+        if (!m_parentAnimGraphInstance)
+        {
+            for (const AZ::Crc32 eventId : m_pendingScriptEvents)
+            {
+                auto existing = AZStd::find_if(m_activeScriptEvents.begin(), m_activeScriptEvents.end(),
+                    [eventId](const ActiveScriptEvent& scriptEvent)
+                    {
+                        return scriptEvent.m_id == eventId;
+                    });
+                if (existing != m_activeScriptEvents.end())
+                {
+                    existing->m_age = 0.0f;
+                }
+                else
+                {
+                    m_activeScriptEvents.push_back({ eventId, 0.0f });
+                }
+            }
+            m_pendingScriptEvents.clear();
+        }
+
+        ApplyRequestedStates();
+
         ResetFlagsForAllObjects();
 
         if (GetEMotionFX().GetIsInEditorMode())
@@ -902,6 +1072,17 @@ namespace EMotionFX
 
         // bottom up pass event buffers and update motion extraction deltas
         rootNode->PerformPostUpdate(this, timePassedInSeconds);
+
+        // every event is seen by at least one full update, then ages until no condition can still want it
+        if (!m_parentAnimGraphInstance)
+        {
+            m_activeScriptEvents.erase(AZStd::remove_if(m_activeScriptEvents.begin(), m_activeScriptEvents.end(),
+                [timePassedInSeconds](ActiveScriptEvent& scriptEvent)
+                {
+                    scriptEvent.m_age += timePassedInSeconds;
+                    return scriptEvent.m_age > s_scriptEventMaxAge;
+                }), m_activeScriptEvents.end());
+        }
 
         //-------------------------------------
 

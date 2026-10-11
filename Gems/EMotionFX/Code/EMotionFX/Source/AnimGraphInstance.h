@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <EMotionFX/Source/AnimGraphEventBuffer.h>
 #include <EMotionFX/Source/AnimGraphObject.h>
@@ -78,6 +79,19 @@ namespace EMotionFX
 
         void Start();
         void Stop();
+
+        // Script events are queued by FireScriptEvent. A condition sees an event for its own hold time after the update that took it, unless a transition consumes it first.
+        static constexpr float s_scriptEventMaxAge = 5.0f;
+        void FireScriptEvent(const char* eventName);
+        bool IsScriptEventActive(AZ::Crc32 eventId, float holdTime) const;
+        void ConsumeScriptEvent(AZ::Crc32 eventId);
+        void ClearAllScriptEvents();
+
+        // True when the named state is the active state of its state machine and of every state machine above it.
+        bool IsStateActive(const char* stateName);
+
+        // Queues a switch to the named state that skips transition conditions, applied at the start of the next update.
+        bool RequestStateTransition(const char* stateName);
 
         MCORE_INLINE ActorInstance* GetActorInstance() const            { return m_actorInstance; }
         MCORE_INLINE AnimGraph* GetAnimGraph() const                  { return m_animGraph; }
@@ -175,6 +189,7 @@ namespace EMotionFX
 
         void Update(float timePassedInSeconds);
         void OutputEvents();
+        void ApplyRequestedStates();
 
         /**
          * Set if we want to automatically unregister the anim graph instance from the anim graph manager when we delete the anim graph instance.
@@ -312,6 +327,14 @@ namespace EMotionFX
         MCore::Mutex                                        m_mutex;
         InitSettings                                        m_initSettings;
         AnimGraphEventBuffer                                m_eventBuffer;           /**< The event buffer of the last update. */
+        AZStd::vector<AZ::Crc32>                            m_pendingScriptEvents;   /**< Script events fired since the last update, only used on the root instance. */
+        struct ActiveScriptEvent
+        {
+            AZ::Crc32 m_id;
+            float m_age;
+        };
+        AZStd::vector<ActiveScriptEvent>                    m_activeScriptEvents;    /**< Script events with the time since the update that took them, until a transition consumes them or they pass s_scriptEventMaxAge. */
+        AZStd::vector<AnimGraphNode*>                       m_pendingStateRequests;  /**< States a script asked to switch to, applied at the start of the next update. */
         float                                               m_visualizeScale;
         bool                                                m_autoUnregister;        /**< Specifies whether we will automatically unregister this anim graph instance set from the anim graph manager or not, when deleting this object. */
         bool                                                m_enableVisualization;

@@ -19,6 +19,7 @@
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
+#include <EMotionFX/Source/AnimGraphScriptEventCondition.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include <EMotionFX/Source/AnimGraphTriggerAction.h>
@@ -358,6 +359,15 @@ namespace EMotionFX
     {
         AnimGraphNode* sourceNode = transition->GetSourceNode();
         AnimGraphNode* targetNode = transition->GetTargetNode();
+
+        // a script event is used up by the transition that took it, so it cannot also trigger the next one
+        for (size_t i = 0; i < transition->GetNumConditions(); ++i)
+        {
+            if (const AnimGraphScriptEventCondition* eventCondition = azrtti_cast<AnimGraphScriptEventCondition*>(transition->GetCondition(i)))
+            {
+                animGraphInstance->ConsumeScriptEvent(eventCondition->GetEventId());
+            }
+        }
 
         bool targetStateNeedsUpdate = false;
         {
