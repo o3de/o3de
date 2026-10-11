@@ -1657,36 +1657,10 @@ namespace AZ
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
 
             auto& context = GetContext();
-            // We pass the function pointers from the Glad context since we already loaded them.
-            VmaVulkanFunctions vulkanFunctions =
-            {
-                context.GetInstanceProcAddr,
-                context.GetDeviceProcAddr,
-                context.GetPhysicalDeviceProperties,
-                context.GetPhysicalDeviceMemoryProperties,
-                context.AllocateMemory,
-                context.FreeMemory,
-                context.MapMemory,
-                context.UnmapMemory,
-                context.FlushMappedMemoryRanges,
-                context.InvalidateMappedMemoryRanges,
-                context.BindBufferMemory,
-                context.BindImageMemory,
-                context.GetBufferMemoryRequirements,
-                context.GetImageMemoryRequirements,
-                context.CreateBuffer,
-                context.DestroyBuffer,
-                context.CreateImage,
-                context.DestroyImage,
-                context.CmdCopyBuffer,
-                context.GetBufferMemoryRequirements2,
-                context.GetImageMemoryRequirements2,
-                context.BindBufferMemory2,
-                context.BindImageMemory2,
-                context.GetPhysicalDeviceMemoryProperties2,
-                context.GetDeviceBufferMemoryRequirements,
-                context.GetDeviceImageMemoryRequirements
-            };
+            // VMA loads the functions it needs through Glad's Vulkan entry points.
+            VmaVulkanFunctions vulkanFunctions = {};
+            vulkanFunctions.vkGetInstanceProcAddr = context.GetInstanceProcAddr;
+            vulkanFunctions.vkGetDeviceProcAddr = context.GetDeviceProcAddr;
 
             auto& instance = Instance::GetInstance();
 
