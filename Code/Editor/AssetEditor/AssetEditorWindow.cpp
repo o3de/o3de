@@ -15,6 +15,7 @@
 
 // AzCore
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -87,8 +88,20 @@ void AssetEditorWindow::OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData>& as
 
 void AssetEditorWindow::OpenAssetById(const AZ::Data::AssetId assetId)
 {
-    AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::Data::AssetData>(assetId, AZ::Data::AssetLoadBehavior::NoLoad);
-    OpenAsset(asset);
+    // The catalog knows the real asset type; GetAsset<AssetData> would ask for a type that has no handler
+    AZ::Data::AssetInfo assetInfo;
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+    if (!assetInfo.m_assetId.IsValid())
+    {
+        AZ_Warning("AssetEditor", false, "OpenAssetById: asset id %s is not in the catalog", assetId.ToFixedString().c_str());
+        return;
+    }
+    OpenAsset(AZ::Data::AssetManager::Instance().GetAsset(assetId, assetInfo.m_assetType, AZ::Data::AssetLoadBehavior::NoLoad));
+}
+
+void AssetEditorWindow::OpenAssetByPath(const AZStd::string& path)
+{
+    m_ui->m_assetEditorWidget->OpenAssetFromPath(path);
 }
 
 void AssetEditorWindow::SaveAssetAs(const AZStd::string_view assetPath)

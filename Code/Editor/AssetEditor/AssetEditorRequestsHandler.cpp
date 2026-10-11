@@ -12,6 +12,7 @@
 
 // AzCore
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 
 // Editor
 #include "AssetEditorWindow.h"
@@ -64,6 +65,17 @@ void AssetEditorRequestsHandler::OpenAssetEditor(const AZ::Data::Asset<AZ::Data:
 
 void AssetEditorRequestsHandler::OpenAssetEditorById(const AZ::Data::AssetId assetId)
 {
-    AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::Data::AssetData>(assetId, AZ::Data::AssetLoadBehavior::NoLoad);
-    OpenAssetEditor(asset);
+    // The catalog knows the real asset type; GetAsset<AssetData> would ask for a type that has no handler
+    AZ::Data::AssetInfo assetInfo;
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+    OpenAssetEditor(AZ::Data::AssetManager::Instance().GetAsset(assetId, assetInfo.m_assetType, AZ::Data::AssetLoadBehavior::NoLoad));
+}
+
+void AssetEditorRequestsHandler::OpenAssetEditorByPath(const AZStd::string& path)
+{
+    using namespace AzToolsFramework::AssetEditor;
+
+    QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetEditor, QtViewPane::OpenMode::RestoreLayout);
+
+    AssetEditorWidgetRequestsBus::Broadcast(&AssetEditorWidgetRequests::OpenAssetByPath, path);
 }
