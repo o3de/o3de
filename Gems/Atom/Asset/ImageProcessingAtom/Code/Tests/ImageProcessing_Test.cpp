@@ -1099,6 +1099,138 @@ namespace UnitTest
         AZ::IO::FileIOBase::GetInstance()->Remove(filepath.c_str());
     }
 
+    namespace AlphaDilateTestHelpers
+    {
+        // 4x4 RGBA32F image where every texel is a white, fully transparent matte.
+        IImageObjectPtr CreateWhiteMatteImage()
+        {
+            IImageObjectPtr image(IImageObject::CreateImage(4, 4, 1, ePixelFormat_R32G32B32A32F));
+            AZ::u8* mem = nullptr;
+            AZ::u32 pitch = 0;
+            image->GetImagePointer(0, mem, pitch);
+            for (AZ::u32 y = 0; y < 4; ++y)
+            {
+                float* row = reinterpret_cast<float*>(mem + static_cast<size_t>(y) * pitch);
+                for (AZ::u32 x = 0; x < 4; ++x)
+                {
+                    row[x * 4 + 0] = 1.0f;
+                    row[x * 4 + 1] = 1.0f;
+                    row[x * 4 + 2] = 1.0f;
+                    row[x * 4 + 3] = 0.0f;
+                }
+            }
+            return image;
+        }
+
+        float* Texel(IImageObjectPtr image, AZ::u32 x, AZ::u32 y)
+        {
+            AZ::u8* mem = nullptr;
+            AZ::u32 pitch = 0;
+            image->GetImagePointer(0, mem, pitch);
+            return reinterpret_cast<float*>(mem + static_cast<size_t>(y) * pitch) + static_cast<size_t>(x) * 4;
+        }
+
+        void SetTexel(IImageObjectPtr image, AZ::u32 x, AZ::u32 y, float r, float g, float b, float a)
+        {
+            float* p = Texel(image, x, y);
+            p[0] = r;
+            p[1] = g;
+            p[2] = b;
+            p[3] = a;
+        }
+    } // namespace AlphaDilateTestHelpers
+
+    TEST_F(ImageProcessingTest, AlphaDilate_TransparentTexelsTakeNearestOpaqueColor_AlphaUnchanged)
+    {
+        using namespace AlphaDilateTestHelpers;
+        IImageObjectPtr image = CreateWhiteMatteImage();
+        SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f); // single opaque green texel
+
+        AlphaDilateImage(image, false);
+
+        for (AZ::u32 y = 0; y < 4; ++y)
+        {
+            for (AZ::u32 x = 0; x < 4; ++x)
+            {
+                const float* p = Texel(image, x, y);
+                EXPECT_FLOAT_EQ(p[0], 0.1f) << "x=" << x << " y=" << y;
+                EXPECT_FLOAT_EQ(p[1], 0.6f) << "x=" << x << " y=" << y;
+                EXPECT_FLOAT_EQ(p[2], 0.2f) << "x=" << x << " y=" << y;
+                EXPECT_FLOAT_EQ(p[3], (x == 1 && y == 1) ? 1.0f : 0.0f) << "x=" << x << " y=" << y;
+            }
+        }
+    }
+
+    TEST_F(ImageProcessingTest, AlphaDilate_SemiTransparentTexelAboveFloor_KeepsOwnColor)
+    {
+        using namespace AlphaDilateTestHelpers;
+        IImageObjectPtr image = CreateWhiteMatteImage();
+        SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
+        SetTexel(image, 2, 1, 1.0f, 1.0f, 1.0f, 0.5f); // bright edge texel, well above the 16/255 floor
+
+        AlphaDilateImage(image, false);
+
+        const float* edge = Texel(image, 2, 1);
+        EXPECT_FLOAT_EQ(edge[0], 1.0f);
+        EXPECT_FLOAT_EQ(edge[1], 1.0f);
+        EXPECT_FLOAT_EQ(edge[2], 1.0f);
+        EXPECT_FLOAT_EQ(edge[3], 0.5f);
+
+        // The semi-transparent texel is itself Known, so the texel beyond it inherits white, not green.
+        const float* beyond = Texel(image, 3, 1);
+        EXPECT_FLOAT_EQ(beyond[0], 1.0f);
+        EXPECT_FLOAT_EQ(beyond[3], 0.0f);
+    }
+
+    TEST_F(ImageProcessingTest, AlphaDilate_EdgeDarken_BlendsBrightLowAlphaTexelTowardDilatedColor)
+    {
+        using namespace AlphaDilateTestHelpers;
+        IImageObjectPtr image = CreateWhiteMatteImage();
+        SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
+        SetTexel(image, 2, 1, 1.0f, 1.0f, 1.0f, 0.02f); // bright, below the floor: dilated, then darkened
+
+        AlphaDilateImage(image, true);
+
+        const float* p = Texel(image, 2, 1);
+        // Blended strictly between the original white and the dilated green.
+        EXPECT_LT(p[0], 1.0f);
+        EXPECT_GT(p[0], 0.1f);
+        EXPECT_LT(p[1], 1.0f);
+        EXPECT_GT(p[1], 0.6f);
+        EXPECT_LT(p[2], 1.0f);
+        EXPECT_GT(p[2], 0.2f);
+        EXPECT_FLOAT_EQ(p[3], 0.02f);
+
+        // Without edge darkening the same texel simply takes the dilated color.
+        IImageObjectPtr plain = CreateWhiteMatteImage();
+        SetTexel(plain, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
+        SetTexel(plain, 2, 1, 1.0f, 1.0f, 1.0f, 0.02f);
+        AlphaDilateImage(plain, false);
+        EXPECT_FLOAT_EQ(Texel(plain, 2, 1)[1], 0.6f);
+    }
+
+    TEST_F(ImageProcessingTest, AlphaDilate_FullyTransparentOrFullyOpaqueImage_IsLeftUntouched)
+    {
+        using namespace AlphaDilateTestHelpers;
+        IImageObjectPtr transparent = CreateWhiteMatteImage();
+        AlphaDilateImage(transparent, true);
+        EXPECT_FLOAT_EQ(Texel(transparent, 0, 0)[0], 1.0f);
+        EXPECT_FLOAT_EQ(Texel(transparent, 0, 0)[3], 0.0f);
+
+        IImageObjectPtr opaque = CreateWhiteMatteImage();
+        for (AZ::u32 y = 0; y < 4; ++y)
+        {
+            for (AZ::u32 x = 0; x < 4; ++x)
+            {
+                SetTexel(opaque, x, y, 0.25f * x, 0.25f * y, 0.5f, 1.0f);
+            }
+        }
+        AlphaDilateImage(opaque, true);
+        EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[0], 0.75f);
+        EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[1], 0.5f);
+        EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[3], 1.0f);
+    }
+
 } // UnitTest
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
