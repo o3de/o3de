@@ -22,6 +22,7 @@ QT_FORWARD_DECLARE_CLASS(QScrollArea)
 QT_FORWARD_DECLARE_CLASS(QItemSelection)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QTimer)
 
 namespace AzQtComponents
 {
@@ -147,6 +148,7 @@ namespace EMStudio
         void OnRemoveStateAction();
 
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+        void OnSelectionChanged();
     private:
         AddConditionButton* m_addConditionButton = nullptr;
         void contextMenuEvent(QContextMenuEvent* event) override;
@@ -162,6 +164,7 @@ namespace EMStudio
         EMotionFX::AnimGraphEditor*             m_animGraphEditor;
         EMotionFX::ObjectEditor*                m_objectEditor;
         bool                                    m_isLocked = false;
+        QTimer*                                 m_deferredUpdateTimer = nullptr; // holds the rebuild while a mouse button is down
 
         struct CachedWidgets
         {
