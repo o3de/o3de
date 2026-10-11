@@ -256,7 +256,7 @@ namespace ProjectSettingsTool
         return GetJsonValue(*m_projectJson.m_document, key);
     }
 
-    AZ::Outcome<rapidjson::Value*, void> ProjectSettingsContainer::GetJsonValue(rapidjson::Document& settings, const char* key)
+    AZ::Outcome<rapidjson::Value*, void> ProjectSettingsContainer::GetJsonValue(rapidjson::Document& settings, const char* key, rapidjson::Type defaultCreateType)
     {
         // Try to find member
         rapidjson::Value::MemberIterator memberIterator = settings.FindMember(key);
@@ -267,7 +267,7 @@ namespace ProjectSettingsTool
         else
         {
             settings.AddMember(rapidjson::Value(key, settings.GetAllocator()),
-                rapidjson::Value(rapidjson::kNullType), settings.GetAllocator());
+                rapidjson::Value(defaultCreateType), settings.GetAllocator());
             return AZ::Success(&settings.FindMember(key)->value);
         }
     }
