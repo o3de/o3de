@@ -1025,8 +1025,19 @@ namespace AZ
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
 
+            // Entry points are compiled in name order so the output, including the merged dynamic branch count, does not depend on
+            // unordered_map iteration order.
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
-            for (const auto& shaderEntryPoint : shaderEntryPoints)
+            AZStd::vector<AZStd::pair<AZStd::string, RPI::ShaderStageType>> sortedShaderEntryPoints(
+                shaderEntryPoints.begin(), shaderEntryPoints.end());
+            AZStd::sort(
+                sortedShaderEntryPoints.begin(), sortedShaderEntryPoints.end(),
+                [](const auto& lhs, const auto& rhs)
+                {
+                    return lhs.first < rhs.first;
+                });
+
+            for (const auto& shaderEntryPoint : sortedShaderEntryPoints)
             {
                 auto shaderEntryName = shaderEntryPoint.first;
                 auto shaderStageType = shaderEntryPoint.second;
@@ -1049,8 +1060,18 @@ namespace AZ
                 {
                     return AZ::Failure(AZStd::string::format("Could not compile the shader function %s", shaderEntryName.c_str()));
                 }
-                // bubble up the byproducts to the caller by moving them to the context.
-                outputByproducts.emplace(AZStd::move(descriptor.m_byProducts));
+
+                // Merge rather than emplace: emplace replaces the previous entry point's byproducts.
+                if (!outputByproducts)
+                {
+                    outputByproducts.emplace(AZStd::move(descriptor.m_byProducts));
+                }
+                else
+                {
+                    outputByproducts->m_intermediatePaths.insert(
+                        descriptor.m_byProducts.m_intermediatePaths.begin(), descriptor.m_byProducts.m_intermediatePaths.end());
+                    outputByproducts->m_dynamicBranchCount = descriptor.m_byProducts.m_dynamicBranchCount;
+                }
 
                 RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction = creationContext.m_shaderPlatformInterface.CreateShaderStageFunction(descriptor);
                 variantCreator.SetShaderFunction(ToRHIShaderStage(assetBuilderShaderType), shaderStageFunction);
