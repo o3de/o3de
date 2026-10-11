@@ -120,6 +120,12 @@ namespace AzFramework
         processData.startupInfo.wShowWindow = processLaunchInfo.m_showWindow ? SW_SHOW : SW_HIDE;
 
         DWORD createFlags = 0;
+
+        // SW_HIDE still spawns a hidden console (conhost.exe); CREATE_NO_WINDOW skips it when no window was requested.
+        if (!processLaunchInfo.m_showWindow)
+        {
+            createFlags |= CREATE_NO_WINDOW;
+        }
         switch (processLaunchInfo.m_processPriority)
         {
         case PROCESSPRIORITY_BELOWNORMAL:

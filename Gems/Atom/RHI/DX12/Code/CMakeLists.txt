@@ -196,11 +196,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             ${pal_builder_tools_files}
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source
                 ${pal_source_dir}
                 ${pal_builder_tools_includes}
             PUBLIC
                 Include
+                # Public so Material Canvas can use RHI.Builders/ShaderPlatformInterface.h to run DXC in process.
+                Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
