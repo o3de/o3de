@@ -24,31 +24,25 @@ namespace AzFramework
         last.m_value = 1.0f;
         m_points.emplace_back(first);
         m_points.emplace_back(last);
+        m_extrapMode = ExtrapolationMode::CONSTANT;
     }
 
-    void EasingCurve::Point::Reflect(AZ::ReflectContext* context)
+    void EasingCurve::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
             serialize->Class<Point>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("time", &Point::m_time)
                 ->Field("value", &Point::m_value)
                 ->Field("interpMode", &Point::m_interpMode)
                 ;
-        }
-    }
-
-    void EasingCurve::Reflect(AZ::ReflectContext* context)
-    {
-        Point::Reflect(context);
-        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
-        {
             serialize->Class<EasingCurve>()
-                ->Version(1)
-                ->Field("points", &EasingCurve::m_points);
+                ->Version(2)
+                ->Field("points", &EasingCurve::m_points)
+                ->Field("extrapMode", &EasingCurve::m_extrapMode)
+                ;
         }
     }
 
@@ -153,14 +147,50 @@ namespace AzFramework
             return m_points.front().m_value;
         }
 
-        // TODO: define more extension behavior
-        if (time < m_points.front().m_time)
+        float offset = 0.0f;
+
+        if (m_extrapMode == ExtrapolationMode::CONSTANT)
         {
-            return m_points.front().m_value;
+            if (time < m_points.front().m_time)
+            {
+                return m_points.front().m_value;
+            }
+            else if (time > m_points.back().m_time)
+            {
+                return m_points.back().m_value;
+            }
         }
-        else if (time > m_points.back().m_time)
+        else if (m_extrapMode == ExtrapolationMode::CYCLE)
         {
-            return m_points.back().m_value;
+            float duration = m_points.back().m_time - m_points.front().m_time;
+            if (duration <= 0.0f)
+            {
+                return m_points.front().m_value;
+            }
+            time = AZStd::fmod(time - m_points.front().m_time, duration);
+            if (time < 0.0f)
+            {
+                time += duration;
+            }
+            time += m_points.front().m_time;
+        }
+        else // CYCLE_WITH_OFFSET
+        {
+            float duration = m_points.back().m_time - m_points.front().m_time;
+            if (duration <= 0.0f)
+            {
+                return m_points.front().m_value;
+            }
+            float valueRange = m_points.back().m_value - m_points.front().m_value;
+            int cycleCount = aznumeric_cast<int>((time - m_points.front().m_time) / duration); // this rounds towards zero, which is what we want for negative time values
+            time = AZStd::fmod(time - m_points.front().m_time, duration);
+            if (time < 0.0f)
+            {
+                time += duration;
+                cycleCount--;
+            }
+            time += m_points.front().m_time;
+            offset = cycleCount * valueRange;
         }
 
         // potentially faster than binary search as elements are typically few
@@ -172,7 +202,7 @@ namespace AzFramework
             }
             else if (m_points[i].m_time > time)
             {
-                return Interpolate(m_points[i-1], m_points[i], time);
+                return Interpolate(m_points[i-1], m_points[i], time) + offset;
             }
         }
         return 0.0f;
@@ -192,6 +222,18 @@ namespace AzFramework
         case PointInterpolationMode::LINEAR:
             easeMethod = EasingMethod::Linear;
             break;
+        case PointInterpolationMode::QUADRATIC_IN:
+            easeMethod = EasingMethod::Quad;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::QUADRATIC_OUT:
+            easeMethod = EasingMethod::Quad;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::QUADRATIC_IN_OUT:
+            easeMethod = EasingMethod::Quad;
+            easeType = EasingType::InOut;
+            break;
         case PointInterpolationMode::CUBIC_IN:
             easeMethod = EasingMethod::Cubic;
             easeType = EasingType::In;
@@ -199,6 +241,34 @@ namespace AzFramework
         case PointInterpolationMode::CUBIC_OUT:
             easeMethod = EasingMethod::Cubic;
             easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::CUBIC_IN_OUT:
+            easeMethod = EasingMethod::Cubic;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::QUARTIC_IN:
+            easeMethod = EasingMethod::Quart;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::QUARTIC_OUT:
+            easeMethod = EasingMethod::Quart;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::QUARTIC_IN_OUT:
+            easeMethod = EasingMethod::Quart;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::QUINTIC_IN:
+            easeMethod = EasingMethod::Quint;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::QUINTIC_OUT:
+            easeMethod = EasingMethod::Quint;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::QUINTIC_IN_OUT:
+            easeMethod = EasingMethod::Quint;
+            easeType = EasingType::InOut;
             break;
         case PointInterpolationMode::SINE_IN:
             easeMethod = EasingMethod::Sine;
@@ -208,6 +278,22 @@ namespace AzFramework
             easeMethod = EasingMethod::Cubic;
             easeType = EasingType::Out;
             break;
+        case PointInterpolationMode::SINE_IN_OUT:
+            easeMethod = EasingMethod::Sine;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::EXPONENTIAL_IN:
+            easeMethod = EasingMethod::Expo;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::EXPONENTIAL_OUT:
+            easeMethod = EasingMethod::Expo;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::EXPONENTIAL_IN_OUT:
+            easeMethod = EasingMethod::Expo;
+            easeType = EasingType::InOut;
+            break;
         case PointInterpolationMode::CIRCLE_IN:
             easeMethod = EasingMethod::Circ;
             easeType = EasingType::In;
@@ -215,6 +301,46 @@ namespace AzFramework
         case PointInterpolationMode::CIRCLE_OUT:
             easeMethod = EasingMethod::Circ;
             easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::CIRCLE_IN_OUT:
+            easeMethod = EasingMethod::Circ;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::ELASTIC_IN:
+            easeMethod = EasingMethod::Elastic;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::ELASTIC_OUT:
+            easeMethod = EasingMethod::Elastic;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::ELASTIC_IN_OUT:
+            easeMethod = EasingMethod::Elastic;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::BACK_IN:
+            easeMethod = EasingMethod::Back;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::BACK_OUT:
+            easeMethod = EasingMethod::Back;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::BACK_IN_OUT:
+            easeMethod = EasingMethod::Back;
+            easeType = EasingType::InOut;
+            break;
+        case PointInterpolationMode::BOUNCE_IN:
+            easeMethod = EasingMethod::Bounce;
+            easeType = EasingType::In;
+            break;
+        case PointInterpolationMode::BOUNCE_OUT:
+            easeMethod = EasingMethod::Bounce;
+            easeType = EasingType::Out;
+            break;
+        case PointInterpolationMode::BOUNCE_IN_OUT:
+            easeMethod = EasingMethod::Bounce;
+            easeType = EasingType::InOut;
             break;
         default:
             easeMethod = EasingMethod::Linear;
