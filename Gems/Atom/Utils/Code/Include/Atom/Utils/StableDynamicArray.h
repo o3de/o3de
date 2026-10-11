@@ -336,7 +336,7 @@ namespace AZ
 
         /// Move constructor that allows converting between handles of different types, as long as they are part of the same inheritance chain
         template<typename OtherType>
-        StableDynamicArrayHandle<ValueType>(StableDynamicArrayHandle<OtherType>&& other);
+        StableDynamicArrayHandle(StableDynamicArrayHandle<OtherType>&& other);
         
         /// Destructor will also destroy its underlying data and free it from the StableDynamicArray
         ~StableDynamicArrayHandle();
