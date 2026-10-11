@@ -56,7 +56,8 @@ namespace AZ::Render
         };
 
         TaaConstants cb;
-        RHI::Size inputSize = m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.m_image.m_size;
+        RHI::Size inputSize =
+            m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
         cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
@@ -75,7 +76,7 @@ namespace AZ::Render
 
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
-        RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
+        RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
         Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
         RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
         if (view)
