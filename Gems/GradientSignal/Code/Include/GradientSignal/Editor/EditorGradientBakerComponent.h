@@ -121,7 +121,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Bakes out an inbound gradient signal to a streaming image asset";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientBaker.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientBaker.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/gradients/gradient-baker/";
 
     protected:
         //! AZ::TickBus overrides ...
