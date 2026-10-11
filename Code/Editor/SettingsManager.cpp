@@ -603,7 +603,7 @@ bool CSettingsManager::NeedSettingsNode(const QString& path)
 
 void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 {
-    int nNumberOfVariables(0);
+    size_t nNumberOfVariables(0);
     int nCurrentVariable(0);
     IConsole* piConsole(nullptr);
     ICVar* piVariable(nullptr);
@@ -659,12 +659,13 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
         XmlNodeRef cvarsNode = XmlHelpers::CreateXmlNode(CVARS_NODE);
 
-        nNumberOfVariables = piConsole->GetNumVisibleVars();
+        nNumberOfVariables = static_cast<size_t>(piConsole->GetNumVisibleVars());
         cszVariableNames.resize(nNumberOfVariables);
+        size_t resultVariables = piConsole->GetSortedVars(cszVariableNames);
 
-        if (piConsole->GetSortedVars(cszVariableNames) != nNumberOfVariables)
+        if (resultVariables != nNumberOfVariables)
         {
-            assert(false);
+            AZ_Assert(false, "Number of sorted variables does not match the expected count: %d != %d", resultVariables, nNumberOfVariables);
             return;
         }
 
@@ -678,7 +679,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
             piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable].data());
             if (!piVariable)
             {
-                assert(false);
+                // Skip over unset variables
                 continue;
             }
 
