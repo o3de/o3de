@@ -123,6 +123,9 @@ namespace AZ
                     ;
 
                 serializeContext->RegisterGenericType<VersionUpdates>();
+                // BuildSettings is the same underlying type as UvNameMap (AZStd::map<AZStd::string, AZStd::string>), so the
+                // registration above already covers it. Registering it a second time would be a duplicate registration of one generic
+                // type.
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
@@ -132,6 +135,7 @@ namespace AZ
                     ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("lightingModel", &MaterialTypeSourceData::m_lightingModel)
+                    ->Field("buildSettings", &MaterialTypeSourceData::m_buildSettings)
                     ->Field("materialShaderCode", &MaterialTypeSourceData::m_materialShaderCode)
                     ->Field("materialShaderDefines", &MaterialTypeSourceData::m_materialShaderDefines)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)

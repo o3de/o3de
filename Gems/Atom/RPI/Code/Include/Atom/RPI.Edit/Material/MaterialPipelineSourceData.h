@@ -77,6 +77,15 @@ namespace AZ
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             } m_runtimeControls;
 
+            //! Name the generated shader collection is stored under, and the name a render pipeline asks for through
+            //! RenderPipelineDescriptor::m_materialPipelineTag, which defaults to "MainPipeline".
+            //!
+            //! Empty means the file stem is used, which is the original behaviour and what almost every pipeline wants. Setting it
+            //! separates the name a material type addresses this pipeline by, which is always the file stem, from the name the runtime
+            //! looks the resulting shaders up by. A pipeline that stands in for another one needs exactly that: a distinct file name so a
+            //! material type can ask for it, and the tag of the pipeline it replaces so the render pipeline still finds its shaders.
+            AZStd::string m_materialPipelineTag;
+
             AZStd::vector<ShaderTemplate> m_shaderTemplates;
 
             // A list of members to be added to the Object SRG. For example, writing:
