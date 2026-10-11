@@ -686,6 +686,9 @@ namespace ScriptCanvas
 
         EndpointsResolved GetConnectedNodes(const Slot& slot) const;
 
+        //! Resolves connections while bypassing nodes that are transparent to translation.
+        EndpointsResolved GetConnectedNodesForTranslation(const Slot& slot) const;
+
         AZStd::vector<const Slot*> GetEventSlots() const;
 
         bool ValidateNode(ValidationResults& validationResults);
@@ -764,6 +767,9 @@ namespace ScriptCanvas
         virtual bool IsLogicalOR() const { return false; }
 
         virtual bool IsNoOp() const { return false; }
+
+        //! Translation traversals cross this node without emitting it into the abstract code model.
+        virtual bool IsConnectionTransparentForTranslation() const { return false; }
 
         virtual bool IsNodeableNode() const { return false; }
 
