@@ -7,7 +7,6 @@
             "Name": "TransparentParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
-                // Inputs...
                 {
                     "Name": "DirectionalShadowmap",
                     "SlotType": "Input"
@@ -36,7 +35,6 @@
                     "Name": "InputLinearDepth",
                     "SlotType": "Input"
                 },
-                // Input/Outputs...
                 {
                     "Name": "DepthStencil",
                     "SlotType": "InputOutput"
@@ -44,15 +42,55 @@
                 {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "SceneColorOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "SceneColorCopy",
+                    "Lifetime": "Transient",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputOutput"
+                    }
                 }
             ],
             "PassRequests": [
+                {
+                    "Name": "SceneColorCopyPass",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SceneColorCopy"
+                            }
+                        }
+                    ]
+                },
                 {
                     "Name": "TransparentPass",
                     "TemplateName": "TransparentPassTemplate",
                     "Enabled": true,
                     "Connections": [
-                        // Inputs...
                         {
                             "LocalSlot": "DirectionalLightShadowmap",
                             "AttachmentRef": {
@@ -102,7 +140,13 @@
                                 "Attachment": "InputLinearDepth"
                             }
                         },
-                        // Input/Outputs...
+                        {
+                            "LocalSlot": "SceneColorInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SceneColorCopy"
+                            }
+                        },
                         {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
@@ -126,6 +170,15 @@
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "SceneColorOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "SceneColorCopy"
                     }
                 }
             ]
