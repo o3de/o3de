@@ -24,6 +24,7 @@
 #include <AzFramework/Translation/TranslationDef.h>
 
 #include <Integration/Editor/Components/EditorActorComponent.h>
+#include <Integration/Components/ActorSocketQueries.h>
 #include <Integration/AnimGraphComponentBus.h>
 #include <Integration/Rendering/RenderBackendManager.h>
 
@@ -292,6 +293,61 @@ namespace EMotionFX
             }
 
             return 0;
+        }
+
+        size_t EditorActorComponent::GetNumSockets() const
+        {
+            return SocketQueries::GetNumSockets(m_actorInstance.get());
+        }
+
+        AZStd::string EditorActorComponent::GetSocketName(size_t socketIndex) const
+        {
+            return SocketQueries::GetSocketName(m_actorInstance.get(), socketIndex);
+        }
+
+        size_t EditorActorComponent::GetSocketIndexByName(const char* name) const
+        {
+            return SocketQueries::GetSocketIndexByName(m_actorInstance.get(), name);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketTransform(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketTransform(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Vector3 EditorActorComponent::GetSocketForward(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketForward(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketTransformByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketTransformByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Vector3 EditorActorComponent::GetSocketForwardByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketForwardByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketBindTransform(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketBindTransform(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketBindTransformByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketBindTransformByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketTransformFromEntity(size_t socketIndex) const
+        {
+            return SocketQueries::GetSocketTransformFromEntity(m_actorInstance.get(), *GetEntity(), socketIndex);
+        }
+
+        AZ::Transform EditorActorComponent::GetSocketTransformFromEntityByName(const char* name) const
+        {
+            return SocketQueries::GetSocketTransformFromEntityByName(m_actorInstance.get(), *GetEntity(), name);
         }
 
         //////////////////////////////////////////////////////////////////////////

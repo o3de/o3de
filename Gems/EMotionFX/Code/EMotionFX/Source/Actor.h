@@ -45,6 +45,7 @@ namespace EMotionFX
     class MorphSetup;
     class NodeGroup;
     class SimulatedObjectSetup;
+    class SocketSetup;
     class Skeleton;
     class Mesh;
     class MeshDeformerStack;
@@ -252,6 +253,10 @@ namespace EMotionFX
         //------------------------------------------------
         void SetSimulatedObjectSetup(const AZStd::shared_ptr<SimulatedObjectSetup>& setup);
         const AZStd::shared_ptr<SimulatedObjectSetup>& GetSimulatedObjectSetup() const;
+
+        //------------------------------------------------
+        void SetSocketSetup(const AZStd::shared_ptr<SocketSetup>& setup);
+        const AZStd::shared_ptr<SocketSetup>& GetSocketSetup() const;
 
         /**
          * Add a LOD level.
@@ -835,6 +840,7 @@ namespace EMotionFX
         AZStd::vector<NodeGroup*>                       m_nodeGroups;                /**< The set of node groups. */
         AZStd::shared_ptr<PhysicsSetup>                 m_physicsSetup;             /**< Hit detection, ragdoll and cloth colliders, joint limits and rigid bodies. */
         AZStd::shared_ptr<SimulatedObjectSetup>         m_simulatedObjectSetup;     /**< Setup for simulated objects */
+        AZStd::shared_ptr<SocketSetup>                  m_socketSetup;              /**< Named joint-relative sockets */
         MCore::Distance::EUnitType                      m_unitType;                  /**< The unit type used on export. */
         MCore::Distance::EUnitType                      m_fileUnitType;              /**< The unit type used on export. */
         AZStd::vector<Transform>                        m_invBindPoseTransforms;     /**< The inverse world space bind pose transforms. */

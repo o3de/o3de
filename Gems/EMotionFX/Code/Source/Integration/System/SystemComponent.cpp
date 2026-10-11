@@ -40,6 +40,7 @@
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SocketSetup.h>
 #include <MCore/Source/Command.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.h>
@@ -308,6 +309,7 @@ namespace EMotionFX
             // Actor
             EMotionFX::PhysicsSetup::Reflect(context);
             EMotionFX::SimulatedObjectSetup::Reflect(context);
+            EMotionFX::SocketSetup::Reflect(context);
 
             EMotionFX::PoseData::Reflect(context);
             EMotionFX::PoseDataRagdoll::Reflect(context);

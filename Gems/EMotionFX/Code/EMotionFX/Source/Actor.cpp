@@ -36,6 +36,7 @@
 #include <EMotionFX/Source/DualQuatSkinDeformer.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SocketSetup.h>
 #include <EMotionFX/Source/SoftSkinManager.h>
 
 #include <MCore/Source/IDGenerator.h>
@@ -88,6 +89,7 @@ namespace EMotionFX
 
         m_physicsSetup              = AZStd::make_shared<PhysicsSetup>();
         m_simulatedObjectSetup      = AZStd::make_shared<SimulatedObjectSetup>(this);
+        m_socketSetup               = AZStd::make_shared<SocketSetup>();
 
         m_optimizeSkeleton          = false;
 
@@ -189,6 +191,7 @@ namespace EMotionFX
         result->m_nodeMirrorInfos = m_nodeMirrorInfos;
         result->m_physicsSetup = m_physicsSetup;
         result->SetSimulatedObjectSetup(m_simulatedObjectSetup->Clone(result.get()));
+        result->m_socketSetup = AZStd::make_shared<SocketSetup>(*m_socketSetup);
 
         GetEMotionFX().GetEventManager()->OnPostCreateActor(result.get());
 
@@ -692,6 +695,16 @@ namespace EMotionFX
     const AZStd::shared_ptr<SimulatedObjectSetup>& Actor::GetSimulatedObjectSetup() const
     {
         return m_simulatedObjectSetup;
+    }
+
+    void Actor::SetSocketSetup(const AZStd::shared_ptr<SocketSetup>& setup)
+    {
+        m_socketSetup = setup;
+    }
+
+    const AZStd::shared_ptr<SocketSetup>& Actor::GetSocketSetup() const
+    {
+        return m_socketSetup;
     }
 
     // remove all morph setups

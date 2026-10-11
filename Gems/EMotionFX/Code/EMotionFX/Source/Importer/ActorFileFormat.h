@@ -29,6 +29,7 @@ namespace EMotionFX
             ACTOR_CHUNK_PHYSICSSETUP          = 18,
             ACTOR_CHUNK_SIMULATEDOBJECTSETUP  = 19,
             ACTOR_CHUNK_MESHASSET             = 20,
+            ACTOR_CHUNK_SOCKETSETUP           = 21,
             ACTOR_FORCE_32BIT                 = 0xFFFFFFFF
         };
 

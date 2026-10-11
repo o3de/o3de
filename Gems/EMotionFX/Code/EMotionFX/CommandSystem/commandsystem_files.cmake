@@ -68,4 +68,6 @@ set(FILES
     Source/SimulatedObjectCommands.h
     Source/SimulatedObjectCommands_Impl.inl
     Source/SimulatedObjectCommands_Interface.inl
+    Source/SocketCommands.cpp
+    Source/SocketCommands.h
 )
