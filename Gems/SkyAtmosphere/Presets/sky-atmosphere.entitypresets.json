@@ -1,0 +1,19 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Sky Atmosphere",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "Sky Atmosphere",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}
