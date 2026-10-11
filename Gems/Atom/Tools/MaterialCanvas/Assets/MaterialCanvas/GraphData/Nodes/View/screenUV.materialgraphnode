@@ -4,9 +4,9 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "id": "{B8FA8EEC-BAFD-4FE8-AF61-AB703C72F8C1}",
-        "category": "Vertex",
+        "category": "View",
         "title": "Screen UV's",
-        "titlePaletteName": "VertexNodeTitlePalette",
+        "titlePaletteName": "ViewNodeTitlePalette",
         "settings": {
             "instructions": [
                 "SLOTTYPE(screenUVS) screenUVS;\n{\n    float4 sceneColorViewPos = mul(ViewSrg::m_viewMatrix, float4(O3DE_MC_POSITION_WS, 1.0));\n    float4 sceneColorClipPos = mul(ViewSrg::m_projectionMatrix, sceneColorViewPos);\n    float2 sceneColorNdc = sceneColorClipPos.xy / sceneColorClipPos.w;\n    screenUVS = float2(sceneColorNdc.x * 0.5 + 0.5, 0.5 - sceneColorNdc.y * 0.5);\n}"

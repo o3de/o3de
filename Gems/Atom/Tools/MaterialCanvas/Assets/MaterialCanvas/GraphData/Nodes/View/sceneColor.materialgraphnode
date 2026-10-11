@@ -54,6 +54,6 @@
                 "editableOnNode": false
             }
         ],
-        "description": "Samples the HDR scene snapshot captured before transparent rendering. Fragment stage, transparent materials only. Connect Screen UVs to Screen UV."
+        "description": "Samples the HDR scene snapshot captured before transparent rendering. Fragment stage, transparent materials only. Mobile and MultiView pipelines are not supported. Connect Screen UVs to Screen UV."
     }
 }
