@@ -1,0 +1,12 @@
+{
+    "PackageName": "expat",
+    "Version": "2.7.3",
+    "URL": "https://github.com/libexpat/libexpat",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/libexpat/libexpat/archive/refs/tags/R_2_7_3.tar.gz",
+        "Revision": "4575e52f83e0d6d7bd24939eab8952bbc7bc358f",
+        "SHA256": "7c853a76f7c2a562c3edfd84ca47e487d9eff3966786191dfb60cc441daf82d6"
+    }
+}
