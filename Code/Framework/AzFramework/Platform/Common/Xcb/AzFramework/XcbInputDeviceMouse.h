@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/XcbConnectionManager.h>
 #include <AzFramework/XcbEventHandler.h>
@@ -168,6 +169,12 @@ namespace AzFramework
 
         //! Will be true if the cursor is shown else false.
         bool m_cursorShown;
+
+        //! The set of windows on which we have hidden the cursor and not yet shown it again.
+        //! XFixes hide/show requests are per-window and counted, so a window hidden earlier
+        //! (e.g. the previous cursor constraint window) must be explicitly shown again,
+        //! otherwise the cursor could remain invisible for the lifetime of the process.
+        AZStd::unordered_set<xcb_window_t> m_hiddenCursorWindows;
 
         struct XFixesBarrierProperty
         {
