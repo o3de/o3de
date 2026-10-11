@@ -1,0 +1,23 @@
+{
+    "Type": "JsonSerialization", "Version": 1, "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SceneColorTemplate",
+            "PassClass": "RasterPass",
+            "Slots": [
+                {
+                    "Name": "SceneColorInput", "ShaderInputName": "m_sceneColor",
+                    "SlotType": "Input", "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
+                },
+                { "Name": "Color", "SlotType": "InputOutput", "ScopeAttachmentUsage": "RenderTarget" },
+                { "Name": "Depth", "SlotType": "Input", "ScopeAttachmentUsage": "DepthStencil" }
+            ],
+            "PassData": {
+                "$type": "RasterPassData", "DrawListTag": "sceneColor",
+                "DrawListSortType": "KeyThenReverseDepth", "BindViewSrg": true,
+                "PassSrgShaderAsset": { "FilePath": "Shaders/SceneColor/SceneColorSrg.shader" }
+            }
+        }
+    }
+}
