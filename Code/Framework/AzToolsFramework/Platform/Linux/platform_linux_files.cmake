@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ../Common/Default/AzToolsFramework/Input/NativeCursorCapture_Default.cpp
     ../Common/LinuxLike/AzToolsFramework/ToolsFileUtils/ToolsFileUtils.cpp
     AzToolsFramework/API/EditorAssetSystemAPI_Linux.cpp
     AzToolsFramework/AzToolsFramework_Traits_Platform.h
