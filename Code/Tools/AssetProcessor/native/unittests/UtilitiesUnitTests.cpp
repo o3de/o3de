@@ -29,6 +29,11 @@ using namespace UnitTestUtils;
 using namespace AssetUtilities;
 using namespace AssetProcessor;
 
+namespace AssetUtilsInternal
+{
+    AZ::u64 GetNextRetryAttemptTimeMs(AZ::u64 currentAttemptMs, AZ::u64 timeoutMs);
+}
+
 namespace AssetProcessor
 {
     // simple utility class to make sure threads join and don't cause asserts
@@ -58,6 +63,70 @@ class UtilitiesUnitTests
     : public UnitTest::AssetProcessorUnitTestBase
 {
 };
+
+class CacheFileUpdateTracker : public AssetProcessor::ProcessingJobInfoBus::Handler
+{
+public:
+    CacheFileUpdateTracker()
+    {
+        BusConnect();
+    }
+
+    ~CacheFileUpdateTracker() override
+    {
+        BusDisconnect();
+    }
+
+    void BeginCacheFileUpdate(const char*) override
+    {
+        ++m_beginCount;
+    }
+
+    void EndCacheFileUpdate(const char*, bool queueAgainForProcessing) override
+    {
+        ++m_endCount;
+        m_queueAgainForProcessing = queueAgainForProcessing;
+    }
+
+    size_t m_beginCount = 0;
+    size_t m_endCount = 0;
+    bool m_queueAgainForProcessing = false;
+};
+
+TEST_F(UtilitiesUnitTests, FileCopyRetrySchedule_UsesEarlyProbesAndOriginalBoundaries)
+{
+    const AZStd::vector<AZ::u64> expected = { 0, 5, 15, 35, 75, 155, 250, 500, 750, 1000 };
+    AZStd::vector<AZ::u64> actual = { 0 };
+    while (actual.back() < 1000)
+    {
+        actual.push_back(AssetUtilsInternal::GetNextRetryAttemptTimeMs(actual.back(), 1000));
+    }
+
+    EXPECT_EQ(actual, expected);
+    EXPECT_EQ(AssetUtilsInternal::GetNextRetryAttemptTimeMs(155, 200), 200);
+}
+
+TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_PairsCacheFileClaimOnSuccessAndFailure)
+{
+    QDir dir(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
+    const QString sourceFileName(dir.filePath("claim_source.txt"));
+    const QString outputFileName(dir.filePath("claim_output.txt"));
+    ASSERT_TRUE(CreateDummyFile(sourceFileName));
+
+    CacheFileUpdateTracker tracker;
+    EXPECT_TRUE(CopyFileWithTimeout(sourceFileName, outputFileName, 0));
+    EXPECT_EQ(tracker.m_beginCount, 1);
+    EXPECT_EQ(tracker.m_endCount, 1);
+    EXPECT_FALSE(tracker.m_queueAgainForProcessing);
+
+    {
+        UnitTestUtils::AssertAbsorber absorb;
+        EXPECT_FALSE(CopyFileWithTimeout(dir.filePath("missing_source.txt"), outputFileName, 0));
+    }
+    EXPECT_EQ(tracker.m_beginCount, 2);
+    EXPECT_EQ(tracker.m_endCount, 2);
+    EXPECT_TRUE(tracker.m_queueAgainForProcessing);
+}
 
 TEST_F(UtilitiesUnitTests, NormalizeFilePath_FeedFilePathInDifferentFormats_Succeeds)
 {

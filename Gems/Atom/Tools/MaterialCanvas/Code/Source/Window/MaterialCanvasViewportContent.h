@@ -8,9 +8,15 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
 #include <AtomToolsFramework/Graph/GraphDocumentNotificationBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 namespace MaterialCanvas
 {
@@ -18,6 +24,9 @@ namespace MaterialCanvas
         : public AtomToolsFramework::EntityPreviewViewportContent
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
         , public AtomToolsFramework::GraphDocumentNotificationBus::Handler
+        , public AzFramework::AssetCatalogEventBus::Handler
+        , public AZ::Data::AssetBus::MultiHandler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         MaterialCanvasViewportContent(
@@ -33,19 +42,74 @@ namespace MaterialCanvas
         AZ::EntityId GetGridEntityId() const;
 
     private:
+        enum class AssetNotification : AZ::u8
+        {
+            Ready,
+            Reloaded,
+            Error
+        };
+
+        enum class MaterialLoadState : AZ::u8
+        {
+            None,
+            Loading,
+            Reloading
+        };
+
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::GraphDocumentNotificationBus::Handler overrides...
         void OnCompileGraphStarted(const AZ::Uuid& documentId) override;
+        void OnCompileGraphGeneratedFilesChanged(
+            const AZ::Uuid& documentId, const AZStd::vector<AZStd::string>& modifiedGeneratedFiles) override;
         void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
         void OnCompileGraphFailed(const AZ::Uuid& documentId) override;
+
+        // AzFramework::AssetCatalogEventBus::Handler overrides...
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+
+        // AZ::Data::AssetBus::MultiHandler overrides...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        // AZ::SystemTickBus::Handler overrides...
+        void OnSystemTick() override;
 
         // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
 
-        void ApplyMaterial(const AZ::Uuid& documentId);
+        struct PreviewState
+        {
+            AZStd::string m_materialSourcePath;
+            AZ::Data::AssetId m_materialAssetId;
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
+            AZStd::unordered_set<AZ::Data::AssetId> m_trackedAssetReloads;
+            AZStd::unordered_set<AZ::Data::AssetId> m_outstandingAssetReloads;
+            AZStd::unordered_set<AZ::Data::AssetId> m_supersededAssetReloads;
+            bool m_updatePending = false;
+            bool m_updateFailed = false;
+            bool m_materialProductChanged = false;
+            bool m_waitForMaterialProduct = false;
+            bool m_sourceGenerationAccepted = true;
+            MaterialLoadState m_staleMaterialLoadState = MaterialLoadState::None;
+            MaterialLoadState m_materialLoadState = MaterialLoadState::None;
+        };
+
+        void UpdateMaterialIdentity(const AZ::Uuid& documentId, PreviewState& state, bool clearIfEmpty);
+        void RefreshTrackedAssetReloads(PreviewState& state);
+        bool IsMaterialSourcePath(const PreviewState& state, const AZStd::string& assetPath) const;
+        void BeginMaterialUpdate(PreviewState& state, const AZStd::vector<AZStd::string>& modifiedGeneratedFiles);
+        void ResetMaterialUpdate(PreviewState& state);
+        void FailMaterialUpdate(PreviewState& state);
+        void RebuildAssetBusConnections();
+        void ApplyExpectedMaterialIfReady(PreviewState& state);
+        void ApplyMaterial(const AZ::Data::AssetId& assetId);
+        void ClearMaterial();
 
         AZ::Entity* m_environmentEntity = {};
         AZ::Entity* m_gridEntity = {};
@@ -53,5 +117,11 @@ namespace MaterialCanvas
         AZ::Entity* m_postFxEntity = {};
         AZ::Entity* m_shadowCatcherEntity = {};
         AZ::Uuid m_lastOpenedDocumentId;
+        AZStd::unordered_map<AZ::Uuid, PreviewState> m_previewStates;
+        AZStd::unordered_set<AZ::Data::AssetId> m_connectedAssetIds;
+        bool m_materialAssigned = false;
+
+        AZStd::mutex m_assetNotificationMutex;
+        AZStd::vector<AZStd::pair<AZ::Data::Asset<AZ::Data::AssetData>, AssetNotification>> m_assetNotifications;
     };
 } // namespace MaterialCanvas
