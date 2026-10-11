@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/Allocators.h>
 
 #include <MCore/Source/IDGenerator.h>
+#include <cmath>
 
 namespace EMotionFX
 {
@@ -1152,6 +1153,66 @@ namespace EMotionFX
         }
 
         return true;
+    }
+
+    bool MotionInstance::SampleMotionExtractionDelta(float startTime, float endTime,
+        const AZ::Quaternion& actorLocalRotation, Transform& outTrajectoryDelta) const
+    {
+        outTrajectoryDelta.IdentityWithZeroScale();
+        Actor* actor = m_actorInstance->GetActor();
+        Node* extractionNode = actor ? actor->GetMotionExtractionNode() : nullptr;
+        if (!GetMotionExtractionEnabled() || !extractionNode || !std::isfinite(startTime) || !std::isfinite(endTime)
+            || startTime < 0.0f || endTime < startTime || endTime > GetDuration()
+            || !actorLocalRotation.IsFinite() || !AZ::IsClose(actorLocalRotation.GetLengthSq(), 1.0f, 0.001f))
+        {
+            return false;
+        }
+        const MotionLinkData* linkData = FindMotionLinkData(actor);
+        if (!linkData || !linkData->IsJointActive(extractionNode->GetNodeIndex()))
+        {
+            return false;
+        }
+
+        Transform trajectory = Transform::CreateIdentityWithZeroScale();
+        CalcRelativeTransform(extractionNode, endTime, startTime, &trajectory);
+        trajectory.ApplyMotionExtractionFlags(m_motion->GetMotionExtractionFlags());
+
+        // Match the regular extraction path's yaw removal and bind-pose orientation, including
+        // retargeting. CalcRelativeTransform alone is not the runtime root-motion delta.
+        Transform firstFrame;
+        Transform endFrame;
+        m_motion->CalcNodeTransform(this, &firstFrame, actor, extractionNode, 0.0f, GetRetargetingEnabled());
+        m_motion->CalcNodeTransform(this, &endFrame, actor, extractionNode, endTime, GetRetargetingEnabled());
+        const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
+        AZ::Quaternion bindRotation = firstFrame.m_rotation
+            * bindPose->GetLocalSpaceTransform(extractionNode->GetNodeIndex()).m_rotation.GetConjugate();
+        bindRotation.SetX(0.0f);
+        bindRotation.SetY(0.0f);
+        if (bindRotation.GetLengthSq() < AZ::Constants::FloatEpsilon)
+        {
+            return false;
+        }
+        bindRotation.Normalize();
+
+        AZ::Quaternion removeRotation = endFrame.m_rotation * firstFrame.m_rotation.GetConjugate();
+        removeRotation.SetX(0.0f);
+        removeRotation.SetY(0.0f);
+        if (removeRotation.GetLengthSq() < AZ::Constants::FloatEpsilon)
+        {
+            return false;
+        }
+        removeRotation.Normalize();
+        AZ::Quaternion rotation = removeRotation.GetConjugate() * trajectory.m_rotation * bindRotation.GetConjugate();
+        rotation.SetX(0.0f);
+        rotation.SetY(0.0f);
+        if (rotation.GetLengthSq() < AZ::Constants::FloatEpsilon)
+        {
+            return false;
+        }
+        rotation.Normalize();
+        outTrajectoryDelta.m_position = actorLocalRotation.TransformVector(rotation.TransformVector(trajectory.m_position));
+        outTrajectoryDelta.m_rotation = trajectory.m_rotation.GetNormalized();
+        return outTrajectoryDelta.m_position.IsFinite() && outTrajectoryDelta.m_rotation.IsFinite();
     }
 
     // get the sub pool
