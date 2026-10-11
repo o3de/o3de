@@ -1,0 +1,78 @@
+name: Bug report
+title: "Bug Report:"
+# Inspired by the [GoDot](https://github.com/godotengine/godot/blob/master/.github/ISSUE_TEMPLATE/bug_report.yml) bug report template.
+description: Report an issue to help us improve.
+labels: needs-triage, needs-sig, kind/bug
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      - Read our [CONTRIBUTING.md guide](https://github.com/o3de/community/blob/main/CONTRIBUTING.md) on reporting bugs.
+      - Write a descriptive issue title above.
+      - Search [open](https://github.com/o3de/o3de/issues) and [closed](https://github.com/o3de/o3de/issues?q=is%3Aissue+is%3Aclosed+) issues to ensure it has not already been reported.
+      - If you are using a custom build, please test if your issue is reproducible on an O3DE/O3DE official branch, installer or project.
+
+- type: input
+  attributes:
+    label: Commit ID or Release Version
+    description: >
+      Please provide either the release version or the [o3de/o3de](https://github.com/o3de/o3de) Git commit hash your project is using.
+      The release version can be found via the Editor launch screen or the "About O3DE" option in the Help menus when using an O3DE installer or packaged release.
+      You can get the commit ID by running the `git rev-parse HEAD` command on your current branch or by looking at your Git history using `git log`.
+    placeholder: 22.10
+
+- type: textarea
+  attributes:
+    label: Issue description
+    description: |
+      Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
+      Please include any relevant information that may help reproduce issue. This could include setup, build or configuration information. You can [format code blocks](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-code), callstacks or logs with <code>```</code> tags.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: |
+      List of steps or sample code that reproduces the issue. Having reproducible issues is a prerequisite for contributors to be able to solve them.
+      If you include a minimal reproduction assets below, you can detail how to use then here.
+    placeholder: |
+      1. Go to '...'
+      2. Click on '...'
+      3. Select attached asset '...'
+      4. Scroll down to '...'
+      5. See error
+
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: |
+      A clear and concise description of what you expected to happen. 
+
+- type: textarea
+  attributes:
+    label: Actual Behavior
+    description: |
+      A clear and concise description of what you expected to happen.
+
+- type: textarea
+  attributes:
+    label: Minimal project, config or assets to aid reproduction
+    description: |
+        [!Important!] Please consider providing sample assets needed to reproduce the issue, either as an [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) or as a link to a public asset in GitHub.
+
+- type: textarea
+  attributes:
+    label: Screenshots/Video
+    description: |
+      If applicable, [add screenshots](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images) and/or a video to help explain your problem.  You can upload images or videos with drag and drop or add a link.
+
+- type: textarea
+  attributes:
+    label: Device/System Information
+    description: |
+        Please tell us about the desktop or device issue was encountered on. For rendering issues please provide GPU details.
+    placeholder: |
+        - OS: [e.g. Windows, macOS, iOS, Android]
+        - Version [e.g. 10, Monterey, Oreo]
