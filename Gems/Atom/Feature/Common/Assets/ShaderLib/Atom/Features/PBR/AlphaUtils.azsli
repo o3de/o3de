@@ -10,6 +10,62 @@
 
 option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
 
+// Cutout materials can emit per-sample coverage from the shader (SV_Coverage) instead of a hard clip,
+// so MSAA resolves the silhouette. Only passes that define OUTPUT_COVERAGE consume the mask; see
+// GetAlphaToCoverageMask().
+option bool o_alphaToCoverage;
+
+// An opacityFactor of 1.0 produces a cutout threshold of 0.0, which would keep every texel with any
+// non-zero alpha, including the 1-3/255 residue that block compression (BC7/BC3) leaves in blocks that
+// were fully transparent in the source texture. Treat alpha at or below that noise floor as transparent.
+static const real AlphaCutoutMinThreshold = 2.0 / 255.0;
+
+real GetAlphaCutoutThreshold(real opacityFactor)
+{
+    return max(1.0 - opacityFactor, AlphaCutoutMinThreshold);
+}
+
+// Sample mask produced by the alpha-to-coverage path for the current pixel. It defaults to all samples so
+// a pass that outputs SV_Coverage behaves as if it did not whenever alpha-to-coverage is off for the
+// material. Written by GetAlphaAndClip(), read by the pass through GetAlphaToCoverageMask().
+static uint s_alphaToCoverageMask = 0xFFFFFFFFu;
+
+// Number of samples the mask is built for. The hardware ignores bits beyond the attachment's real sample
+// count, so at 1x this degrades to an alpha test and at 2x the band is biased slightly toward opaque.
+// A pass can supply the true count later without changing callers (DXC cannot compile
+// GetRenderTargetSampleCount() for SPIR-V, so it would have to be a pipeline constant).
+static const uint AlphaToCoverageMaskSamples = 4;
+
+// Which samples a given coverage level claims. The pipeline resolves depth by taking sample 0
+// (MSAAResolveDepth.azsl), and per-pixel passes such as the fullscreen directional shadow and screen-space
+// AO are evaluated at that resolved depth and then applied to every sample of the pixel. If the lowest
+// coverage level claimed sample 0, every partially covered cutout pixel would resolve to the cutout surface
+// and the background samples in it would be shaded with the cutout's shadow and occlusion, which shows as
+// a bright rim along edges that shadow the surface behind them. Leaving sample 0 to the background at the
+// lowest level puts the outer half of the band on the background's terms instead. Sample 1 exists at 2x
+// and above, so the 2x fallback still works.
+uint CoverageToSampleMask(real coverage)
+{
+    uint covered = uint(round(saturate(coverage) * real(AlphaToCoverageMaskSamples)));
+    if (covered == 0)
+    {
+        return 0u;
+    }
+    if (covered == 1)
+    {
+        return 0x2u;
+    }
+    return (1u << covered) - 1u;
+}
+
+// Lets pass shaders fall back to full coverage for material types that do not include this file.
+#define MATERIAL_HAS_ALPHA_TO_COVERAGE_MASK 1
+
+uint GetAlphaToCoverageMask()
+{
+    return s_alphaToCoverageMask;
+}
+
 void CheckClipping(real alpha, real opacityFactor)
 {
 #ifdef CS_SAMPLERS
@@ -19,11 +75,10 @@ void CheckClipping(real alpha, real opacityFactor)
     {
         case OpacityMode::Cutout:
         {
-            if(alpha)
-            {
-                clip(alpha - (1.0 - opacityFactor));
-            }
-            else
+            // clip() only rejects negative values, so a threshold of 0 would keep fully transparent
+            // texels and the compression residue just above zero. Reject everything at or below the
+            // threshold explicitly.
+            if (alpha <= GetAlphaCutoutThreshold(opacityFactor))
             {
                 clip(-1);
             }
