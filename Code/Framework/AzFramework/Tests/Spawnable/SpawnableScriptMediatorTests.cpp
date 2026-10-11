@@ -119,7 +119,8 @@ namespace UnitTest
         auto spawnable = CreateSpawnable(1);
         SpawnableScriptMediator mediator;
         auto ticket = mediator.CreateSpawnTicket(spawnable);
-        EXPECT_TRUE(ticket.IsValid());
+        EXPECT_TRUE(ticket.IsSuccess());
+        EXPECT_TRUE(ticket.GetValue().IsValid());
     }
 
     TEST_F(SpawnableScriptMediatorTests, SpawnAndDespawn_Works)
@@ -130,15 +131,15 @@ namespace UnitTest
         SpawnableScriptMediator mediator;
         const auto ticket = mediator.CreateSpawnTicket(spawnable);
 
-        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetId());
+        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetValue().GetId());
 
-        mediator.Spawn(ticket);
+        mediator.Spawn(ticket.GetValue());
         WaitForResponse(mediator);
         EXPECT_EQ(m_spawnedTicketAndEntitiesPairs .size(), 1);
-        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].first, ticket);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].first, ticket.GetValue());
         EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].second.size(), 1);
 
-        mediator.Despawn(ticket);
+        mediator.Despawn(ticket.GetValue());
         WaitForResponse(mediator);
 
         EXPECT_TRUE(m_spawnedTicketAndEntitiesPairs .empty());
@@ -156,18 +157,18 @@ namespace UnitTest
         auto ticket1 = mediator.CreateSpawnTicket(spawnable1);
         auto ticket2 = mediator.CreateSpawnTicket(spawnable2);
 
-        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket1.GetId());
-        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket2.GetId());
+        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket1.GetValue().GetId());
+        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket2.GetValue().GetId());
 
-        mediator.Spawn(ticket1);
-        mediator.Spawn(ticket2);
+        mediator.Spawn(ticket1.GetValue());
+        mediator.Spawn(ticket2.GetValue());
         WaitForResponse(mediator);
 
         auto it1 = AZStd::find_if(
             m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
             [&ticket1](const TicketToEntityIdsPair& pair) -> bool
             {
-                return pair.first == ticket1;
+                return pair.first == ticket1.GetValue();
             });
         EXPECT_FALSE(it1 == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_EQ(it1->second.size(), 1);
@@ -176,13 +177,13 @@ namespace UnitTest
             m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
             [&ticket2](const TicketToEntityIdsPair& pair) -> bool
             {
-                return pair.first == ticket2;
+                return pair.first == ticket2.GetValue();
             });
         EXPECT_FALSE(it2 == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_EQ(it2->second.size(), 2);
 
-        mediator.Despawn(ticket1);
-        mediator.Despawn(ticket2);
+        mediator.Despawn(ticket1.GetValue());
+        mediator.Despawn(ticket2.GetValue());
         WaitForResponse(mediator);
 
         EXPECT_TRUE(m_spawnedTicketAndEntitiesPairs .empty());
@@ -196,7 +197,7 @@ namespace UnitTest
         SpawnableScriptMediator mediator;
         auto ticket = mediator.CreateSpawnTicket(spawnable);
 
-        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetId());
+        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetValue().GetId());
 
         AZ::EntityId parentId = AZ::Entity::MakeId();
         AZ::Entity parentEntity(parentId);
@@ -205,7 +206,7 @@ namespace UnitTest
         parentEntity.Init();
         parentEntity.ApplyEffectiveActiveState();
 
-        mediator.SpawnAndParent(ticket, parentEntity.GetId());
+        mediator.SpawnAndParent(ticket.GetValue(), parentEntity.GetId());
         WaitForResponse(mediator);
 
         AZStd::vector<AZ::EntityId> descendantIds;
@@ -215,7 +216,7 @@ namespace UnitTest
         EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].second.size(), 1);
         EXPECT_EQ(descendantIds[0], m_spawnedTicketAndEntitiesPairs [0].second[0]);
 
-        mediator.Despawn(ticket);
+        mediator.Despawn(ticket.GetValue());
         WaitForResponse(mediator);
 
         // Wait for entities to actually be destroyed
@@ -236,7 +237,7 @@ namespace UnitTest
         SpawnableScriptMediator mediator;
         auto ticket = mediator.CreateSpawnTicket(spawnable);
 
-        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetId());
+        SpawnableScriptNotificationsBus::MultiHandler::BusConnect(ticket.GetValue().GetId());
 
         AZ::EntityId parentId = AZ::Entity::MakeId();
         AZ::Entity parentEntity(parentId);
@@ -249,7 +250,7 @@ namespace UnitTest
         AZ::Vector3 rotation(90, 0, 0);
         float scale = 2.0f;
 
-        mediator.SpawnAndParentAndTransform(ticket, parentEntity.GetId(), translation, rotation, scale);
+        mediator.SpawnAndParentAndTransform(ticket.GetValue(), parentEntity.GetId(), translation, rotation, scale);
         WaitForResponse(mediator);
 
         AZStd::vector<AZ::EntityId> descendantIds;
@@ -260,7 +261,7 @@ namespace UnitTest
             m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
             [&ticket](const TicketToEntityIdsPair& pair) -> bool
             {
-                return pair.first.GetId() == ticket.GetId();
+                return pair.first.GetId() == ticket.GetValue().GetId();
             });
         EXPECT_FALSE(it == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_FALSE(it->second.empty());
@@ -277,7 +278,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::Quaternion::CreateFromEulerAnglesDegrees(rotation), spawnedRotation);
         EXPECT_EQ(scale, spawnedScale);
 
-        mediator.Despawn(ticket);
+        mediator.Despawn(ticket.GetValue());
         WaitForResponse(mediator);
 
         // Wait for entities to actually be destroyed
