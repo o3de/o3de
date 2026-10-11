@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
+#include <extensions/PxRigidBodyExt.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 
 namespace PhysX
@@ -131,7 +132,34 @@ namespace PhysX
     {
         AZ_Assert(m_nativeJoint, "PhysX Prismatic Joint native pointer is null.");
         PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
-        return m_nativeJoint->getRelativeLinearVelocity().x;
+        //! PxJoint::getRelativeLinearVelocity() applies transformInv() to a vector, leaking the parent COM position
+        //! into the result, and its lever arm term has the wrong sign and ignores the COM offset. Project instead.
+        //! It can be replaced with getRelativeLinearVelocity() with PhysX 5.4+
+
+        physx::PxRigidActor* actor0 = nullptr;
+        physx::PxRigidActor* actor1 = nullptr;
+        m_nativeJoint->getActors(actor0, actor1);
+        const auto jointFrameVelocity = [this](physx::PxRigidActor* actor, physx::PxJointActorIndex::Enum actorIndex)
+        {
+            if (actor && actor->is<physx::PxRigidBody>())
+            {
+                auto* body = static_cast<physx::PxRigidBody*>(actor);
+                //! getLinearVelocity() is the velocity of the centre of mass, so ask for the joint frame origin.
+                const physx::PxVec3 jointFrameOrigin = body->getGlobalPose().transform(m_nativeJoint->getLocalPose(actorIndex).p);
+                return physx::PxRigidBodyExt::getVelocityAtPos(*body, jointFrameOrigin);
+            }
+            return physx::PxVec3(0.0f);
+        };
+
+        physx::PxTransform jointFrame = physx::PxTransform(physx::PxIdentity);
+        if (actor0)
+        {
+            jointFrame *= actor0->getGlobalPose();
+        }
+        jointFrame *= m_nativeJoint->getLocalPose(physx::PxJointActorIndex::eACTOR0);
+        const physx::PxVec3 relativeVelocity = jointFrameVelocity(actor1, physx::PxJointActorIndex::eACTOR1) -
+            jointFrameVelocity(actor0, physx::PxJointActorIndex::eACTOR0);
+        return relativeVelocity.dot(jointFrame.q.getBasisVector0());
     };
 
     AZStd::pair<float, float> PrismaticJointComponent::GetLimits() const
