@@ -180,6 +180,9 @@ namespace EMotionFX
             motion.SetDimension(2);
         }
 
+        UpdateAxisPortName(INPUTPORT_XVALUE, m_axisX, "X");
+        UpdateAxisPortName(INPUTPORT_YVALUE, m_axisY, "Y");
+
         AnimGraphNode::Reinit();
     }
 
@@ -228,12 +231,23 @@ namespace EMotionFX
         }
     }
 
+    void BlendSpace2DNode::OnAxisChanged()
+    {
+        // Renames the input pins; the visual node only rebuilds its pins on a sync, which must happen on the main thread.
+        Reinit();
+        SyncVisualObject();
+    }
+
     const char* BlendSpace2DNode::GetAxisLabel(int axisIndex) const
     {
         switch (axisIndex)
         {
         case 0:
         {
+            if (!m_axisX.m_name.empty())
+            {
+                return m_axisX.m_name.c_str();
+            }
             if (!m_evaluatorX || m_evaluatorX->IsNullEvaluator())
             {
                 return "X-Axis";
@@ -243,6 +257,10 @@ namespace EMotionFX
         }
         case 1:
         {
+            if (!m_axisY.m_name.empty())
+            {
+                return m_axisY.m_name.c_str();
+            }
             if (!m_evaluatorY || m_evaluatorY->IsNullEvaluator())
             {
                 return "Y-Axis";
@@ -541,6 +559,7 @@ namespace EMotionFX
         MotionInstancePool& motionInstancePool = GetMotionInstancePool();
 
         uniqueData->m_leaderMotionIdx = 0;
+        bool leaderFound = false;
 
         PlayBackInfo playInfo;// TODO: Init from attributes
         for (BlendSpaceMotion& blendSpaceMotion : m_motions)
@@ -562,9 +581,11 @@ namespace EMotionFX
             motionInstance->SetWeight(1.0f, 0.0f);
             AddMotionInfo(uniqueData->m_motionInfos, motionInstance);
 
-            if (motionId == m_syncLeaderMotionId)
+            // A motion can be in the blend space more than once; the first entry leads.
+            if (!leaderFound && motionId == m_syncLeaderMotionId)
             {
                 uniqueData->m_leaderMotionIdx = (AZ::u32)uniqueData->m_motionInfos.size() - 1;
+                leaderFound = true;
             }
         }
         uniqueData->m_allMotionsHaveSyncTracks = DoAllMotionsHaveSyncTracks(uniqueData->m_motionInfos);
@@ -588,6 +609,13 @@ namespace EMotionFX
     void BlendSpace2DNode::SetCurrentPosition(const AZ::Vector2& point)
     {
         m_currentPositionSetInteractively = point;
+    }
+
+    void BlendSpace2DNode::UpdatePreviewPosition(UniqueData& uniqueData, const AZ::Vector2& position)
+    {
+        uniqueData.m_currentPosition = position;
+        uniqueData.m_normCurrentPosition = uniqueData.ConvertToNormalizedSpace(position);
+        UpdateBlendingInfoForCurrentPoint(uniqueData);
     }
 
     void BlendSpace2DNode::ComputeMotionCoordinates(const AZStd::string& motionId, AnimGraphInstance* animGraphInstance, AZ::Vector2& position)
@@ -1279,6 +1307,8 @@ namespace EMotionFX
             ->Field("syncLeaderMotionId", &BlendSpace2DNode::m_syncLeaderMotionId)
             ->Field("eventFilterMode", &BlendSpace2DNode::m_eventFilterMode)
             ->Field("motions", &BlendSpace2DNode::m_motions)
+            ->Field("axisX", &BlendSpace2DNode::m_axisX)
+            ->Field("axisY", &BlendSpace2DNode::m_axisY)
         ;
 
 
@@ -1306,6 +1336,12 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace2DNode::GetEvaluatorYVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpace2DNode::m_axisX, "Horizontal axis (X)", "Label, grid range and snapping of the X axis. The name also labels the X input pin.")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::OnAxisChanged)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpace2DNode::m_axisY, "Vertical axis (Y)", "Label, grid range and snapping of the Y axis. The name also labels the Y input pin.")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace2DNode::OnAxisChanged)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace2DNode::m_syncMode)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ_CRC_CE("BlendSpaceMotion"), &BlendSpace2DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")

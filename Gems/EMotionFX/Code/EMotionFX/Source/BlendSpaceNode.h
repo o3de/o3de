@@ -87,6 +87,34 @@ namespace EMotionFX
             TypeFlags       m_typeFlags;
         };
 
+        //! Editor settings of one blend space axis: label, grid range, grid divisions and snapping.
+        class EMFX_API BlendSpaceAxis final
+        {
+        public:
+            AZ_RTTI(BlendSpaceAxis, "{6A3B1F52-8C0E-4D7A-9E21-3F5C7B9D2E10}")
+            AZ_CLASS_ALLOCATOR_DECL
+
+            virtual ~BlendSpaceAxis() = default;
+
+            //! True with the fixed grid range when one is set, false when the range follows the motion coordinates.
+            bool GetCustomRange(float& outMin, float& outMax) const;
+
+            //! The value moved to the nearest grid line of the given range.
+            float SnapToGrid(float value, float rangeMin, float rangeMax) const;
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            AZStd::string   m_name;
+            bool            m_useCustomRange = false;
+            float           m_minimum = 0.0f;
+            float           m_maximum = 1.0f;
+            AZ::u32         m_gridDivisions = 4;
+            bool            m_snapToGrid = false;
+
+        private:
+            AZ::Crc32 GetRangeVisibility() const;
+        };
+
     public:
         BlendSpaceNode();
         BlendSpaceNode(AnimGraph* animGraph, const char* name);
@@ -108,6 +136,9 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
+        //! Name an input port after its axis, falling back to the default name when the axis has none.
+        void UpdateAxisPortName(size_t portIndex, const BlendSpaceAxis& axis, const char* defaultName);
+
         struct MotionInfo
         {
             MotionInstance*     m_motionInstance;

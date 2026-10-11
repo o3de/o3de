@@ -38,6 +38,7 @@ public:
     int32               m_oldPosY;
     AZStd::string       m_oldName;
     AZStd::string       m_oldParameterMask;
+    AZStd::string       m_oldAttributesString;
     bool                m_oldDirtyFlag;
     bool                m_oldEnabled;
     bool                m_oldVisualized;

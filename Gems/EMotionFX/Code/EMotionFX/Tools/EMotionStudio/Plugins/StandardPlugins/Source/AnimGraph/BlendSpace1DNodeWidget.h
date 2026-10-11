@@ -26,6 +26,8 @@ namespace EMStudio
         , public BlendSpaceNodeWidget
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL
+
         BlendSpace1DNodeWidget(AnimGraphPlugin* animGraphPlugin, QWidget* parent = nullptr);
         ~BlendSpace1DNodeWidget();
 
@@ -43,11 +45,20 @@ namespace EMStudio
         void mousePressEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
+        void hideEvent(QHideEvent* event) override;
+        void contextMenuEvent(QContextMenuEvent* event) override;
+        void keyPressEvent(QKeyEvent* event) override;
 
     private:
         void PrepareForDrawing(EMotionFX::BlendSpace1DNode::UniqueData* uniqueData);
+        void UpdateDisplayRange(const EMotionFX::BlendSpace1DNode::UniqueData* uniqueData);
+        //! Grid line values across the visible range, plus how many lines to skip between labels.
+        AZStd::vector<float> GetGridLines(int& outLabelStride) const;
+        bool HasMotionsOutsideCustomRange(const EMotionFX::BlendSpace1DNode::UniqueData* uniqueData) const;
 
         void DrawGrid(QPainter& painter);
+        void DrawAxisGrid(QPainter& painter);
+        void DrawSelectedMotion(QPainter& painter);
         void DrawAxisLabels(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData);
         void DrawBoundRect(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData);
         void DrawMotionsLine(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData);
@@ -63,6 +74,9 @@ namespace EMStudio
         void SetCurrentSamplePosition(int windowX, int windowY);
 
         void OnMouseMove(int windowX, int windowY);
+        AZ::u32 FindPointAt(int windowX, int windowY) const;
+        //! Blend space coordinate under the cursor, kept inside the grid and snapped when the axis asks for it.
+        float GridCoordinateAt(int windowX, int windowY);
 
         void RegisterForPerFrameCallback();
         void UnregisterForPerFrameCallback();
@@ -80,7 +94,7 @@ namespace EMStudio
         }
 
         EMotionFX::BlendSpace1DNode* GetCurrentNode() const;
-        EMotionFX::BlendSpace1DNode::UniqueData* GetUniqueData() const;
+        EMotionFX::BlendSpace1DNode::UniqueData* GetUniqueData();
 
     private:
         EMotionFX::BlendSpace1DNode*                m_currentNode;
@@ -89,6 +103,11 @@ namespace EMStudio
         AZStd::vector<QPointF>                      m_renderPoints;
         AZ::Vector2                                 m_scale;
         AZ::Vector2                                 m_shift;
+        float                                       m_displayMin = 0.0f; // range shown in the view
+        float                                       m_displayMax = 1.0f;
+        float                                       m_gridMin = 0.0f; // range the grid lines, snapping and clamping use
+        float                                       m_gridMax = 1.0f;
+        bool                                        m_customRange = false;
         float                                       m_zoomFactor;// 0 for farthest zoom, 1 for closest zoom
         float                                       m_zoomScale;
         QRect                                       m_drawRect; // Rectangle where parameter space is displayed
@@ -102,6 +121,7 @@ namespace EMStudio
         QPen                                        m_highlightedEdgePen;
         QPen                                        m_gridPen;
         QPen                                        m_subgridPen;
+        QPen                                        m_divisionPen;
         QPen                                        m_axisLabelPen;
         QPen                                        m_infoTextPen;
         QBrush                                      m_backgroundRectBrush;

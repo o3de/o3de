@@ -41,10 +41,14 @@ namespace EMotionFX
 
         if (m_blendSpaceNode)
         {
+            // List each motion once, even when it is in the blend space more than once.
             const AZStd::vector<BlendSpaceNode::BlendSpaceMotion>& motions = m_blendSpaceNode->GetMotions();
             for (const BlendSpaceNode::BlendSpaceMotion& motion : motions)
             {
-                addItem(motion.GetMotionId().c_str());
+                if (findText(motion.GetMotionId().c_str()) == -1)
+                {
+                    addItem(motion.GetMotionId().c_str());
+                }
             }
         }
     }

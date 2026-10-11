@@ -949,17 +949,23 @@ namespace EMStudio
     // timer event
     void AnimGraphPlugin::ProcessFrame(float timePassedInSeconds)
     {
-        if (GetManager()->GetAvoidRendering() || !m_graphWidget || m_graphWidget->visibleRegion().isEmpty())
+        if (GetManager()->GetAvoidRendering() || !m_graphWidget)
+        {
+            return;
+        }
+
+        // Node views such as the blend space editor replace the graph canvas, so they tick while it is hidden.
+        for (AnimGraphPerFrameCallback* callback : m_perFrameCallbacks)
+        {
+            callback->ProcessFrame(timePassedInSeconds);
+        }
+
+        if (m_graphWidget->visibleRegion().isEmpty())
         {
             return;
         }
 
         m_totalTime += timePassedInSeconds;
-
-        for (AnimGraphPerFrameCallback* callback : m_perFrameCallbacks)
-        {
-            callback->ProcessFrame(timePassedInSeconds);
-        }
 
         bool redraw = false;
     #ifdef MCORE_DEBUG
