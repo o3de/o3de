@@ -149,6 +149,8 @@ namespace EMStudio
 
         void OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
         void OnSelectionChanged();
+        void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
+        void ClearEditors();
     private:
         AddConditionButton* m_addConditionButton = nullptr;
         void contextMenuEvent(QContextMenuEvent* event) override;

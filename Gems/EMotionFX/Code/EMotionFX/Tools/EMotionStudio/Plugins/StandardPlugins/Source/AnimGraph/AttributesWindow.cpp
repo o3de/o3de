@@ -167,6 +167,7 @@ namespace EMStudio
 
         connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &AttributesWindow::OnSelectionChanged);
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &AttributesWindow::OnDataChanged);
+        connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::rowsAboutToBeRemoved, this, &AttributesWindow::OnRowsAboutToBeRemoved);
 
         Init(QModelIndex(), true);
 
@@ -199,15 +200,7 @@ namespace EMStudio
 
         if (!modelIndex.isValid())
         {
-            m_objectEditor->ClearInstances(false);
-            for (const CachedWidgets& widget : m_conditionsCachedWidgets)
-            {
-                widget.m_objectEditor->ClearInstances(false);
-            }
-            for (const CachedWidgets& widget : m_actionsCachedWidgets)
-            {
-                widget.m_objectEditor->ClearInstances(false);
-            }
+            ClearEditors();
         }
 
         // This only works on TRANSITIONS and NODES
@@ -563,6 +556,34 @@ namespace EMStudio
 
         m_deferredUpdateTimer->stop();
         UpdateAndShowInInspector();
+    }
+
+    void AttributesWindow::ClearEditors()
+    {
+        m_objectEditor->ClearInstances(false);
+        for (const CachedWidgets& widget : m_conditionsCachedWidgets)
+        {
+            widget.m_objectEditor->ClearInstances(false);
+        }
+        for (const CachedWidgets& widget : m_actionsCachedWidgets)
+        {
+            widget.m_objectEditor->ClearInstances(false);
+        }
+    }
+
+    void AttributesWindow::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
+    {
+        // The inspector holds raw pointers into the displayed object, so it lets go before the model frees it, even when locked or waiting on the deferred update.
+        for (QModelIndex index = m_displayingModelIndex; index.isValid(); index = index.parent())
+        {
+            if (index.parent() == parent && index.row() >= first && index.row() <= last)
+            {
+                m_deferredUpdateTimer->stop();
+                ClearEditors();
+                m_displayingModelIndex = QModelIndex();
+                break;
+            }
+        }
     }
 
     void AttributesWindow::OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
