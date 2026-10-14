@@ -147,7 +147,7 @@ namespace AzToolsFramework
             return extensions;
         }
 
-        auto PrefabLoader::FindTemplateFileHandlers(AZ::IO::PathView path) const -> const TemplateFileHandlers*
+        const PrefabLoader::TemplateFileHandlers* PrefabLoader::FindTemplateFileHandlers(AZ::IO::PathView path) const
         {
             auto foundIt = m_templateFileHandlers.find(NormalizeTemplateFileExtension(path.Extension().Native()));
             return foundIt != m_templateFileHandlers.end() ? &foundIt->second : nullptr;
