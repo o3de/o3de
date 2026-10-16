@@ -1,0 +1,12 @@
+{
+    "PackageName": "squish-ccr",
+    "Version": "2.00-alpha2",
+    "URL": "https://github.com/Ethatron/squish-ccr",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/Ethatron/squish-ccr/archive/deb557d2fa647b191b37a2d8682df54ec8a7cfba.tar.gz",
+        "Revision": "deb557d2fa647b191b37a2d8682df54ec8a7cfba",
+        "SHA256": "5b578a95b339a99af3fc31116b159118c2fad8568388f824bbdfacba00afa7f3"
+    }
+}

@@ -738,11 +738,6 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char
 namespace
 {
     AZStd::mutex g_splashScreenStateLock;
-    enum ESplashScreenState
-    {
-        eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
-    };
-    ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
     IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
     QWidget* g_splashScreen = nullptr;
 }
@@ -780,7 +775,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     g_pInitializeUIInfo = splashScreen;
     g_splashScreen = splashScreen;
-    g_splashScreenState = eSplashScreenState_Started;
 
     g_splashScreenStateLock.unlock();
 
@@ -820,9 +814,6 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.lock();
-        g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.unlock();
     }
 
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);

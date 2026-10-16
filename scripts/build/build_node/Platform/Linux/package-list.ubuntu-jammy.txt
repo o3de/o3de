@@ -28,12 +28,6 @@ libxcb-cursor0
 xxd
 zlib1g-dev
 mesa-common-dev
-ros-humble-ackermann-msgs               # ROS2 development tools
-ros-humble-control-toolbox              # ROS2 development tools
-ros-humble-gazebo-msgs                  # ROS2 development tools
-ros-humble-tf2-ros                      # ROS2 development tools
-ros-humble-urdfdom                      # ROS2 development tools
-ros-humble-vision-msgs                  # ROS2 development tools
 libunwind-dev
 libzstd-dev
 

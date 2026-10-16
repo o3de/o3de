@@ -111,7 +111,7 @@ namespace ProjectSettingsTool
         // Returns the allocator used by ProjectJson
         rapidjson::Document::AllocatorType& GetProjectJsonAllocator();
 
-        static AZ::Outcome<rapidjson::Value*, void> GetJsonValue(rapidjson::Document& settings, const char* key);
+        static AZ::Outcome<rapidjson::Value*, void> GetJsonValue(rapidjson::Document& settings, const char* key, rapidjson::Type defaultCreateType = rapidjson::kNullType);
 
     protected:
         void LoadJson(JsonSettings& jsonSettings);

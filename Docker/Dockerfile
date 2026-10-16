@@ -39,16 +39,16 @@ ENV LANG=en_US.UTF-8
 
 # Validate the tag if the image is 'ubuntu'
 RUN if [ "$INPUT_IMAGE" = "ubuntu" ]; then \
-        if [ "$INPUT_TAG" != "jammy" ] && [ "$INPUT_TAG" != "nobel" ]; then \
-            echo "ERROR: Unsupported ubuntu tag: ${INPUT_TAG}. Must be either 'jammy' or 'nobel'"; \
+        if [ "$INPUT_TAG" != "jammy" ] && [ "$INPUT_TAG" != "noble" ] && [ "$INPUT_TAG" != "resolute" ]; then \
+            echo "ERROR: Unsupported ubuntu tag: ${INPUT_TAG}. Must be one of 'jammy', 'noble' or 'resolute'"; \
             exit 1;\
         fi \
     fi
 
 # Validate the tag if the image is 'ros'
 RUN if [ "$INPUT_IMAGE" = "ros" ]; then \
-        if [ "$INPUT_TAG" != "humble" ] && [ "$INPUT_TAG" != "jazzy" ]; then \
-            echo "ERROR: Unsupported ros tag: ${INPUT_TAG}. Must be either 'humble' or 'jazzy'"; \
+        if [ "$INPUT_TAG" != "humble" ] && [ "$INPUT_TAG" != "jazzy" ] && [ "$INPUT_TAG" != "lyrical" ]; then \
+            echo "ERROR: Unsupported ros tag: ${INPUT_TAG}. Must be one of 'humble', 'jazzy' or 'lyrical'"; \
             exit 1;\
         fi \
     fi
@@ -73,7 +73,6 @@ RUN apt-get update \
             libglu1-mesa-dev \
             libxcb-xinerama0 \
             libfontconfig1-dev \
-            libnvidia-gl-470 \
             libxcb-xkb-dev \
             libxcb-randr0-dev \
             libxkbcommon-x11-dev \
@@ -104,7 +103,6 @@ RUN if [ "$INPUT_IMAGE" = "ros" ]; then \
      apt-get install -y ros-${ROS_DISTRO}-ackermann-msgs \
                         ros-${ROS_DISTRO}-control-toolbox \
                         ros-${ROS_DISTRO}-nav-msgs \
-                        ros-${ROS_DISTRO}-gazebo-msgs \
                         ros-${ROS_DISTRO}-xacro \
                         ros-${ROS_DISTRO}-moveit \
                         ros-${ROS_DISTRO}-moveit-resources \

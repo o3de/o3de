@@ -9,13 +9,14 @@
 
 #include <Animation/Controls/UiSplineCtrlEx.h>
 #include <Editor/Resource.h>
-//#include "MemDC.h"
 #include <Animation/Controls/UiTimelineCtrl.h>
 #include "Clipboard.h"
 #include "GridUtils.h"
 #include "../UiAnimUndo.h"
 
 #include <QtUtil.h>
+
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -2653,7 +2654,7 @@ void SplineWidget::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF color)
+void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color& color)
 {
     for (int i = 0; i < (int)m_splines.size(); i++)
     {
@@ -2666,7 +2667,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
 
     for (int nCurrentDimension = 0; nCurrentDimension < pSpline->GetNumDimensions(); nCurrentDimension++)
     {
-        si.anColorArray[nCurrentDimension] = color;
+        si.anColorArray[nCurrentDimension] = AzQtComponents::AzColorToQtColor(color);
     }
 
     si.pSpline = pSpline;
@@ -2676,7 +2677,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
     update();
 }
 
-void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF anColorArray[4])
+void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color anColorArray[4])
 {
     for (int i = 0; i < (int)m_splines.size(); i++)
     {
@@ -2689,7 +2690,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
 
     for (int nCurrentDimension = 0; nCurrentDimension < pSpline->GetNumDimensions(); nCurrentDimension++)
     {
-        si.anColorArray[nCurrentDimension] = anColorArray[nCurrentDimension];
+        si.anColorArray[nCurrentDimension] =  AzQtComponents::AzColorToQtColor(anColorArray[nCurrentDimension]);
     }
 
     si.pSpline = pSpline;

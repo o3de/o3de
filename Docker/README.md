@@ -28,7 +28,7 @@ The following example build commands are based on the general use case for O3DE.
 
 If there are any ROS2 gem based projects that will be created or used by the image, then you will need to follow the **ROS Example** section below.
 
-You can build a minimal Docker image that can create or use non-simulation projects using the `ubuntu` input image and either the `jammy` or `noble` input tag. To build a Docker image that supports robotic simulations using ROS, you must use the `ros` input image and either the `humble` or `jazzy` input tag. (Refer to the [Docker distribution of ROS](https://hub.docker.com/_/ros/))
+You can build a minimal Docker image that can create or use non-simulation projects using the `ubuntu` input image and one of the `jammy`, `noble` or `resolute` input tags. To build a Docker image that supports robotic simulations using ROS, you must use the `ros` input image and one of the `humble`, `jazzy` or `lyrical` input tags. (Refer to the [Docker distribution of ROS](https://hub.docker.com/_/ros/))
 
 ### Locally
 

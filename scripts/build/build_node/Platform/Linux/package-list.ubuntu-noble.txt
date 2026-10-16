@@ -26,12 +26,6 @@ libxcb-cursor0
 
 zlib1g-dev
 mesa-common-dev
-ros-jazzy-ackermann-msgs               # ROS2 development tools
-ros-jazzy-control-toolbox              # ROS2 development tools
-ros-jazzy-gazebo-msgs                  # ROS2 development tools
-ros-jazzy-tf2-ros                      # ROS2 development tools
-ros-jazzy-urdfdom                      # ROS2 development tools
-ros-jazzy-vision-msgs                  # ROS2 development tools
 libunwind-dev
 libzstd-dev
 

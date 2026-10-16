@@ -1,0 +1,12 @@
+{
+    "PackageName": "vulkan-memory-allocator",
+    "Version": "3.4.0",
+    "URL": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.4.0.tar.gz",
+        "Revision": "3aa921224c154a0d2c43912bc88e1c42ce1f7607",
+        "SHA256": "822aa850c6ce77346ae96a8a1d351d52e77e85929f35363849a0a4e638e0a2a1"
+    }
+}
