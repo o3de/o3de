@@ -28,6 +28,7 @@
 #include <QMessageBox>
 
 #include <QtUtilWin.h>
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 
 #include "UiEditorAnimationBus.h"
 
@@ -324,33 +325,33 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
         {
             continue;
         }
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        AZ::u32 color = std::numeric_limits<AZ::u32>::max();
         childNode->getAttr("color", color);
-        m_colorButtons[entryIndex]->SetColor(color);
+        m_colorButtons[entryIndex]->SetColor(AzQtComponents::ARGBToQColor(color));
     }
 
     XmlNodeRef othersNode = customTrackColorsNode->findChild("others");
     if (othersNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        AZ::u32 color = std::numeric_limits<AZ::u32>::max();
         othersNode->getAttr("color", color);
-        m_colorButtons[kOthersEntryIndex]->SetColor(color);
+        m_colorButtons[kOthersEntryIndex]->SetColor(AzQtComponents::ARGBToQColor(color));
     }
 
     XmlNodeRef disabledNode = customTrackColorsNode->findChild("disabled");
     if (disabledNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        AZ::u32 color = std::numeric_limits<AZ::u32>::max();
         disabledNode->getAttr("color", color);
-        m_colorButtons[kDisabledEntryIndex]->SetColor(color);
+        m_colorButtons[kDisabledEntryIndex]->SetColor(AzQtComponents::ARGBToQColor(color));
     }
 
     XmlNodeRef mutedNode = customTrackColorsNode->findChild("muted");
     if (mutedNode)
     {
-        COLORREF color = std::numeric_limits<COLORREF>::max();
+        AZ::u32 color = std::numeric_limits<AZ::u32>::max();
         mutedNode->getAttr("color", color);
-        m_colorButtons[kMutedEntryIndex]->SetColor(color);
+        m_colorButtons[kMutedEntryIndex]->SetColor(AzQtComponents::ARGBToQColor(color));
     }
 
     return true;

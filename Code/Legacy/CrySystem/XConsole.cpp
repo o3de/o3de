@@ -2348,6 +2348,11 @@ int CXConsole::GetNumVisibleVars()
         if ((v.second->GetFlags() & VF_INVISIBLE) == 0)
             ++numVars;
     }
+    for (auto& v : m_mapCommands)
+    {
+        if ((v.second.m_nFlags & VF_INVISIBLE) == 0)
+            ++numVars;
+    }
 
     return numVars;
 }

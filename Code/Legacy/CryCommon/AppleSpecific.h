@@ -151,16 +151,6 @@ typedef const WCHAR* LPCUWSTR, * PCUWSTR;
 typedef LPCWSTR LPCTSTR;
 typedef LPWSTR LPTSTR;
 
-typedef DWORD COLORREF;
-#define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
-
-#define GetRValue(rgb)  (LOBYTE(rgb))
-#define GetGValue(rgb)  (LOBYTE(((WORD)(rgb)) >> 8))
-#define GetBValue(rgb)  (LOBYTE((rgb)>>16))
-
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                \
-    ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) | \
-     ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24))
 #define FILE_ATTRIBUTE_NORMAL               0x00000080
 
 // Conflit with OBJC defined bool type.

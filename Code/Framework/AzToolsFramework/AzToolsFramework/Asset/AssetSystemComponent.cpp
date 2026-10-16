@@ -212,6 +212,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Event("CreateNewAsset", &AssetEditor::AssetEditorRequests::CreateNewAsset)
                     ->Event("OpenAssetEditorById", &AssetEditor::AssetEditorRequests::OpenAssetEditorById)
+                    ->Event("OpenAssetEditorByPath", &AssetEditor::AssetEditorRequests::OpenAssetEditorByPath)
                     ;
 
                 behaviorContext->EBus<AssetEditor::AssetEditorWidgetRequestsBus>("AssetEditorWidgetRequestsBus")
@@ -222,6 +223,7 @@ namespace AzToolsFramework
                     ->Event("CreateAsset", &AssetEditor::AssetEditorWidgetRequests::CreateAsset)
                     ->Event("SaveAssetAs", &AssetEditor::AssetEditorWidgetRequests::SaveAssetAs)
                     ->Event("OpenAssetById", &AssetEditor::AssetEditorWidgetRequests::OpenAssetById)
+                    ->Event("OpenAssetByPath", &AssetEditor::AssetEditorWidgetRequests::OpenAssetByPath)
                     ;
             }
         }
