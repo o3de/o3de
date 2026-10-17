@@ -117,6 +117,8 @@ set(FILES
     Source/SimulatedObjectSetup_Interface.inl
     Source/SingleThreadScheduler.cpp
     Source/SingleThreadScheduler.h
+    Source/SocketSetup.cpp
+    Source/SocketSetup.h
     Source/Skeleton.cpp
     Source/Skeleton.h
     Source/SkinningInfoVertexAttributeLayer.cpp
