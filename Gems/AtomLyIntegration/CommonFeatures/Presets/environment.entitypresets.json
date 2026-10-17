@@ -1,0 +1,64 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Global Skylight (IBL)",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "Global Skylight (IBL)",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "HDRi Skybox",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "HDRi Skybox",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Physical Sky",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "Physical Sky",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Reflection Probe",
+                "description": "Captures local reflections inside its box. Size the box to the space, then press Bake Reflection Probe on the component - nothing is captured until you do.",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "Box Shape",
+                        "properties": []
+                    },
+                    {
+                        "component": "Reflection Probe",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Decal",
+                "category": "Environment",
+                "components": [
+                    {
+                        "component": "Decal",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

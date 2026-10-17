@@ -1,0 +1,249 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Cube",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/cube.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Cone",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/cone.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Cylinder",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/cylinder.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Torus",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/torus.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Beveled Cube",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/beveledcube.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Beveled Cone",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/beveledcone.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Beveled Cylinder",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/beveledcylinder.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Plane 1x1",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/plane_1x1.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Plane 3x3",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/plane_3x3.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Platonic Sphere",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/platonicsphere.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Polar Sphere",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/polarsphere.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Quad Sphere",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/quadsphere.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Shaderball",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/shaderball.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Caduceus",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/caduceus.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Hermanubis",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "materialeditor/viewportmodels/hermanubis.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
