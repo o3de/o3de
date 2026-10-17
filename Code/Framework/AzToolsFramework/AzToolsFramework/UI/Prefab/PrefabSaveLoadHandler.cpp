@@ -9,8 +9,9 @@
 #include <AzToolsFramework/UI/Prefab/PrefabSaveLoadHandler.h>
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -206,7 +207,6 @@ namespace AzToolsFramework
         {
             for (const AZStd::string& entry : prefabsToInstantiate)
             {
-                // its a .prefab file.
                 auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(entry, parentEntity, instantiateLocation);
 
                 if (!instantiatePrefabOutcome.IsSuccess())
@@ -308,11 +308,9 @@ namespace AzToolsFramework
             {
                 if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                 {
-                    // if you directly selected a .prefab source file, add it to the instantiate list:
+                    // if you directly selected a prefab source file, add it to the instantiate list:
                     const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-                    AZStd::string extension;
-                    AZ::StringFunc::Path::GetExtension(sourceEntry->GetFullPath().c_str(), extension);
-                    if (AZ::StringFunc::Equal(PrefabSaveHandler::s_prefabFileExtension, extension.c_str()))
+                    if (IsPrefabFilePath(sourceEntry->GetFullPath()))
                     {
                         // its a prefab file.
                         if (prefabsToInstantiate)
@@ -493,19 +491,50 @@ namespace AzToolsFramework
             }
         }
 
+        AZStd::vector<AZStd::string> PrefabSaveHandler::GetPrefabFileExtensions()
+        {
+            AZStd::vector<AZStd::string> extensions{ s_prefabFileExtension };
+            if (s_prefabLoaderInterface)
+            {
+                const AZStd::vector<AZStd::string> registeredExtensions = s_prefabLoaderInterface->GetRegisteredTemplateFileExtensions();
+                extensions.insert(extensions.end(), registeredExtensions.begin(), registeredExtensions.end());
+            }
+            return extensions;
+        }
+
+        bool PrefabSaveHandler::IsPrefabFilePath(AZStd::string_view filePath)
+        {
+            const AZStd::vector<AZStd::string> extensions = GetPrefabFileExtensions();
+            return AZStd::any_of(
+                extensions.begin(),
+                extensions.end(),
+                [filePath](const AZStd::string& extension)
+                {
+                    return AZ::StringFunc::EndsWith(filePath, extension);
+                });
+        }
+
         bool PrefabSaveHandler::QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath)
         {
             AssetSelectionModel selection;
 
-            // Note, string filter will match every source file CONTAINING ".prefab".
+            // Note, string filter will match every source file CONTAINING the extension string.
             // If this causes issues, we will need to create a new filter class for regex matching.
             // We'll need to check if the file contents are actually a prefab later in the flow anyways,
             // so this should not be an issue.
-            StringFilter* stringFilter = new StringFilter();
-            stringFilter->SetName("Prefab");
-            stringFilter->SetFilterString(".prefab");
-            stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            auto stringFilterPtr = FilterConstType(stringFilter);
+            // Only the composite propagates down: it evaluates each sub filter against every entry it
+            // visits, so propagating from the sub filters too would rescan each subtree per ancestor.
+            CompositeFilter* extensionFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
+            extensionFilter->SetName("Prefab Extension");
+            extensionFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            for (const AZStd::string& extension : GetPrefabFileExtensions())
+            {
+                StringFilter* stringFilter = new StringFilter();
+                stringFilter->SetName("Prefab");
+                stringFilter->SetFilterString(extension.c_str());
+                extensionFilter->AddFilter(FilterConstType(stringFilter));
+            }
+            auto extensionFilterPtr = FilterConstType(extensionFilter);
 
             EntryTypeFilter* sourceFilter = new EntryTypeFilter();
             sourceFilter->SetName("Source");
@@ -516,7 +545,7 @@ namespace AzToolsFramework
             CompositeFilter* compositeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             compositeFilter->SetName("Prefab");
             compositeFilter->AddFilter(sourceFilterPtr);
-            compositeFilter->AddFilter(stringFilterPtr);
+            compositeFilter->AddFilter(extensionFilterPtr);
             auto compositeFilterPtr = FilterConstType(compositeFilter);
 
             selection.SetDisplayFilter(compositeFilterPtr);
