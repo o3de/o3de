@@ -284,6 +284,10 @@ namespace EMStudio
     void AnimViewportWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
         RenderViewportWidget::OnTick(deltaTime, time);
+        if (!m_renderer)
+        {
+            return;
+        }
         CalculateCameraProjection();
         RenderCustomPluginData();
         FollowCharacter();
