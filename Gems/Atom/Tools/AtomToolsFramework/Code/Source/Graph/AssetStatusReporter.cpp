@@ -18,58 +18,82 @@ namespace AtomToolsFramework
 
     AssetStatusReporterState AssetStatusReporter::Update()
     {
-        if (GetCurrentState() == AssetStatusReporterState::Processing)
+        AZStd::string sourcePath;
         {
-            const AZStd::string& sourcePath = GetCurrentPath();
-
-            AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-            AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
-                jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, sourcePath, false);
-
-            if (jobOutcome.IsSuccess())
+            AZStd::scoped_lock lock(m_mutex);
+            if (GetCurrentStateUnlocked() != AssetStatusReporterState::Processing)
             {
-                for (const auto& job : jobOutcome.GetValue())
-                {
-                    switch (job.m_status)
-                    {
-                    case AzToolsFramework::AssetSystem::JobStatus::Failed:
-                    case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
-                        // If any of the asset jobs failed then the entire operation is a failure.
-                        m_failed = true;
-                        return GetCurrentState();
-                    }
-                }
-
-                for (const auto& job : jobOutcome.GetValue())
-                {
-                    switch (job.m_status)
-                    {
-                    case AzToolsFramework::AssetSystem::JobStatus::Queued:
-                    case AzToolsFramework::AssetSystem::JobStatus::InProgress:
-                        // If any of the asset jobs are queued or in progress then return early until the next status request.
-                        return GetCurrentState();
-                    }
-                }
+                return GetCurrentStateUnlocked();
             }
-
-            ++m_index;
+            sourcePath = m_sourcePaths[m_index];
         }
 
-        return GetCurrentState();
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
+        AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
+            jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, sourcePath, false);
+
+        if (!jobOutcome.IsSuccess() || jobOutcome.GetValue().empty())
+        {
+            return GetCurrentState();
+        }
+
+        for (const auto& job : jobOutcome.GetValue())
+        {
+            switch (job.m_status)
+            {
+            case AzToolsFramework::AssetSystem::JobStatus::Failed:
+            case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
+                AZStd::scoped_lock lock(m_mutex);
+                m_failed = true;
+                return GetCurrentStateUnlocked();
+            }
+        }
+
+        for (const auto& job : jobOutcome.GetValue())
+        {
+            switch (job.m_status)
+            {
+            case AzToolsFramework::AssetSystem::JobStatus::Queued:
+            case AzToolsFramework::AssetSystem::JobStatus::InProgress:
+                return GetCurrentState();
+            }
+        }
+
+        {
+            AZStd::scoped_lock lock(m_mutex);
+            ++m_index;
+            return GetCurrentStateUnlocked();
+        }
     }
 
     AssetStatusReporterState AssetStatusReporter::GetCurrentState() const
+    {
+        AZStd::scoped_lock lock(m_mutex);
+        return GetCurrentStateUnlocked();
+    }
+
+    AssetStatusReporterState AssetStatusReporter::GetCurrentStateUnlocked() const
     {
         if (m_failed)
         {
             return AssetStatusReporterState::Failed;
         }
-        return m_index < m_sourcePaths.size() ? AssetStatusReporterState::Processing : AssetStatusReporterState::Succeeded;
+        if (m_index < m_sourcePaths.size())
+        {
+            return AssetStatusReporterState::Processing;
+        }
+        return AssetStatusReporterState::Succeeded;
     }
 
     AZStd::string AssetStatusReporter::GetCurrentStateName() const
     {
-        switch (GetCurrentState())
+        AZStd::scoped_lock lock(m_mutex);
+        return GetCurrentStateNameUnlocked();
+    }
+
+    const char* AssetStatusReporter::GetCurrentStateNameUnlocked() const
+    {
+        switch (GetCurrentStateUnlocked())
         {
         case AssetStatusReporterState::Failed:
             return "Failed";
@@ -83,11 +107,22 @@ namespace AtomToolsFramework
 
     AZStd::string AssetStatusReporter::GetCurrentStatusMessage() const
     {
-        return AZStd::string::format("%s (%s)", GetCurrentPath().c_str(), GetCurrentStateName().c_str());
+        AZStd::scoped_lock lock(m_mutex);
+        AZStd::string currentPath;
+        if (m_index < m_sourcePaths.size())
+        {
+            currentPath = m_sourcePaths[m_index];
+        }
+        return AZStd::string::format("%s (%s)", currentPath.c_str(), GetCurrentStateNameUnlocked());
     }
 
     AZStd::string AssetStatusReporter::GetCurrentPath() const
     {
-        return m_index < m_sourcePaths.size() ? m_sourcePaths[m_index] : AZStd::string();
+        AZStd::scoped_lock lock(m_mutex);
+        if (m_index < m_sourcePaths.size())
+        {
+            return m_sourcePaths[m_index];
+        }
+        return {};
     }
 } // namespace AtomToolsFramework

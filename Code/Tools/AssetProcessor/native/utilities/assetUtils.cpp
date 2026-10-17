@@ -63,7 +63,26 @@
 
 namespace AssetUtilsInternal
 {
-    static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
+    static constexpr AZ::u64 g_RetryWaitIntervalMs = 250;
+
+    AZ::u64 GetNextRetryAttemptTimeMs(AZ::u64 currentAttemptMs, AZ::u64 timeoutMs)
+    {
+        constexpr AZ::u64 EarlyAttemptTimes[] = { 5, 15, 35, 75, 155 };
+        for (const AZ::u64 attemptTime : EarlyAttemptTimes)
+        {
+            if (attemptTime > currentAttemptMs)
+            {
+                return AZStd::min(attemptTime, timeoutMs);
+            }
+        }
+
+        AZ::u64 nextAttemptTime = g_RetryWaitIntervalMs;
+        if (currentAttemptMs >= g_RetryWaitIntervalMs)
+        {
+            nextAttemptTime = ((currentAttemptMs / g_RetryWaitIntervalMs) + 1) * g_RetryWaitIntervalMs;
+        }
+        return AZStd::min(nextAttemptTime, timeoutMs);
+    }
     // This is because Qt has to init random number gen on each thread.
     AZ_THREAD_LOCAL bool g_hasInitializedRandomNumberGenerator = false;
 
@@ -76,78 +95,79 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
-        bool failureOccurredOnce = false; // used for logging.
+        bool failureOccurredOnce = false;
         bool operationSucceeded = false;
         QFile outFile(outputFile);
+        const AZ::u64 timeoutMs = aznumeric_cast<AZ::u64>(waitTimeInSeconds) * 1000;
+        const QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
         QElapsedTimer timer;
         timer.start();
-        do
-        {
-            QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
-            AssetProcessor::ProcessingJobInfoBus::Broadcast(
-                &AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, normalized.toUtf8().constData());
 
-            //Removing the old file if it exists
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, normalized.toUtf8().constData());
+
+        AZ::u64 attemptTimeMs = 0;
+        while (true)
+        {
+            const AZ::u64 elapsedMs = aznumeric_cast<AZ::u64>(timer.elapsed());
+            if (attemptTimeMs > elapsedMs)
+            {
+                QThread::msleep(attemptTimeMs - elapsedMs);
+            }
+
             if (outFile.exists())
             {
                 if (!outFile.remove())
                 {
                     if (!failureOccurredOnce)
                     {
-                        // This is not a warning because there is retry logic in place.
                         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
-                        failureOccurredOnce = true;
                     }
-                    //not able to remove the file
-                    if (waitTimeInSeconds != 0)
-                    {
-                        //Sleep only for non zero waitTime
-                        QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
-                    }
-                    continue;
+                    failureOccurredOnce = true;
                 }
             }
 
-            //ensure that the output dir is present
-            QFileInfo outFileInfo(outputFile);
-            if (!outFileInfo.absoluteDir().mkpath("."))
+            if (!outFile.exists())
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Failed to create directory (%s).\n", outFileInfo.absolutePath().toUtf8().data());
-                return false;
-            }
-
-            if (isCopy && QFile::copy(sourceFile, outputFile))
-            {
-                //Success
-                operationSucceeded = true;
-                break;
-            }
-            else if (!isCopy && QFile::rename(sourceFile, outputFile))
-            {
-                //Success
-                operationSucceeded = true;
-                break;
-            }
-            else
-            {
-                failureOccurredOnce = true;
-                if (waitTimeInSeconds != 0)
+                QFileInfo outFileInfo(outputFile);
+                if (!outFileInfo.absoluteDir().mkpath("."))
                 {
-                    //Sleep only for non zero waitTime
-                    QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "Failed to create directory (%s).\n",
+                        outFileInfo.absolutePath().toUtf8().data());
+                    break;
                 }
-            }
-        } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
 
-        // once we're done, regardless of success or failure, we 'unlock' those files for further process.
-        // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
-        QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
+                if ((isCopy && QFile::copy(sourceFile, outputFile)) || (!isCopy && QFile::rename(sourceFile, outputFile)))
+                {
+                    operationSucceeded = true;
+                    break;
+                }
+                failureOccurredOnce = true;
+            }
+
+            if (attemptTimeMs >= timeoutMs)
+            {
+                break;
+            }
+            const AZ::u64 completedElapsedMs = aznumeric_cast<AZ::u64>(timer.elapsed());
+            if (completedElapsedMs >= timeoutMs)
+            {
+                break;
+            }
+
+            const AZ::u64 nextScheduledAttemptMs =
+                AssetUtilsInternal::GetNextRetryAttemptTimeMs(attemptTimeMs, timeoutMs);
+            attemptTimeMs = AZStd::max(nextScheduledAttemptMs, completedElapsedMs);
+        }
+
+        // Release the cache claim and rescan after a failure.
         AssetProcessor::ProcessingJobInfoBus::Broadcast(
             &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, normalized.toUtf8().constData(), !operationSucceeded);
 
         if (!operationSucceeded)
         {
-            //operation failed for the given timeout
             AZ_Warning(AssetProcessor::ConsoleChannel, false, "WARNING: Could not %s source from %s to %s, giving up\n",
                 isCopy ? "copy" : "move (via rename)",
                 sourceFile.toUtf8().constData(), outputFile.toUtf8().constData());
@@ -734,7 +754,7 @@ namespace AssetUtilities
 
             if (waitTimeinSeconds != 0)
             {
-                QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                QThread::msleep(AssetUtilsInternal::g_RetryWaitIntervalMs);
             }
 
         } while (!timer.hasExpired(waitTimeinSeconds * 1000));
