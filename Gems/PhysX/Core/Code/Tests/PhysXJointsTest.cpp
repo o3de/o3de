@@ -22,11 +22,15 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/math.h>
+#include <AzCore/std/optional.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <PhysX/PhysXLocks.h>
 
 namespace PhysX
 {
@@ -38,7 +42,8 @@ namespace PhysX
         const AZ::Vector3& initialLinearVelocity,
         AZStd::shared_ptr<JointComponentConfiguration> jointConfig = nullptr,
         AZStd::shared_ptr<JointGenericProperties> jointGenericProperties = nullptr,
-        AZStd::shared_ptr<JointLimitProperties> jointLimitProperties = nullptr)
+        AZStd::shared_ptr<JointLimitProperties> jointLimitProperties = nullptr,
+        AZStd::optional<float> massOverride = AZStd::nullopt)
     {
         const char* entityName = "testEntity";
         auto entity = AZStd::make_unique<AZ::Entity>(entityName);
@@ -56,10 +61,19 @@ namespace PhysX
         rigidBodyConfig.m_initialLinearVelocity = initialLinearVelocity;
         rigidBodyConfig.m_gravityEnabled = false;
 
-        // Make lead body very heavy
+        // Preserve the historical lead-body setup used by the existing tests. With automatic
+        // mass computation enabled, this value is intentionally ignored in favor of the collider mass.
         if (!jointConfig)
         {
             rigidBodyConfig.m_mass = 9999.0f;
+        }
+
+        // Some tests need a specific rigid-body mass. Keep that override local to the caller
+        // instead of changing the mass-computation behavior for every lead body in this fixture.
+        if (massOverride.has_value())
+        {
+            rigidBodyConfig.m_computeMass = false;
+            rigidBodyConfig.m_mass = massOverride.value();
         }
         entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
@@ -210,6 +224,88 @@ namespace PhysX
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
         EXPECT_GT(followerEndPosition.GetZ(), followerPosition.GetZ());
+    }
+
+    TEST_F(PhysXJointsTest, Joint_BallJoint_BreaksUnderForce)
+    {
+        // Place a follower below a heavy lead body, configure a breakable ball joint,
+        // and give the follower an initial lateral velocity. The joint should break.
+        const AZ::Vector3 followerPosition(0.0f, 0.0f, -1.0f);
+        const AZ::Vector3 followerInitialLinearVelocity(5.0f, 2.0f, 0.0f);
+
+        const AZ::Vector3 leadPosition(0.0f, 0.0f, 1.0f);
+        const AZ::Vector3 leadInitialLinearVelocity(0.0f, 0.0f, 0.0f);
+
+        const AZ::Vector3 jointLocalPosition(0.0f, 0.0f, 2.0f);
+        const AZ::Quaternion jointLocalRotation = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            jointLocalRotation,
+            jointLocalPosition);
+
+        // Templated joint component type is irrelevant since joint component is not created for this invocation.
+        constexpr float leadMass = 9999.0f;
+        auto leadEntity = AddBodyColliderEntity<JointComponent>(
+            m_testSceneHandle,
+            leadPosition,
+            leadInitialLinearVelocity,
+            nullptr,
+            nullptr,
+            nullptr,
+            leadMass);
+
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
+        jointConfig->m_leadEntity = leadEntity->GetId();
+        jointConfig->m_localTransformFromFollower = jointLocalTransform;
+
+        auto jointGenericProperties = AZStd::make_shared<JointGenericProperties>(
+            JointGenericProperties::GenericJointFlag::Breakable, 1.0f, 1.0f);
+
+        auto jointLimits = AZStd::make_shared<JointLimitProperties>();
+        jointLimits->m_isLimited = false;
+
+        auto followerEntity = AddBodyColliderEntity<BallJointComponent>(
+            m_testSceneHandle,
+            followerPosition,
+            followerInitialLinearVelocity,
+            jointConfig,
+            jointGenericProperties,
+            jointLimits);
+
+        AzPhysics::SimulatedBody* followerBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            followerBody,
+            followerEntity->GetId(),
+            &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
+        ASSERT_NE(followerBody, nullptr);
+
+        auto* followerActor = static_cast<physx::PxRigidActor*>(followerBody->GetNativePointer());
+        ASSERT_NE(followerActor, nullptr);
+
+        physx::PxConstraint* jointConstraint = nullptr;
+        {
+            PHYSX_SCENE_READ_LOCK(followerActor->getScene());
+            ASSERT_EQ(followerActor->getNbConstraints(), 1u);
+            ASSERT_EQ(followerActor->getConstraints(&jointConstraint, 1), 1u);
+            ASSERT_NE(jointConstraint, nullptr);
+            EXPECT_FALSE(jointConstraint->getFlags().isSet(physx::PxConstraintFlag::eBROKEN));
+        }
+
+        const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
+
+        {
+            PHYSX_SCENE_READ_LOCK(followerActor->getScene());
+            EXPECT_TRUE(jointConstraint->getFlags().isSet(physx::PxConstraintFlag::eBROKEN));
+        }
+
+        AZ::Vector3 leadEndPosition;
+        AZ::TransformBus::EventResult(
+            leadEndPosition, leadEntity->GetId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
+        EXPECT_NEAR(leadEndPosition.GetX(), leadPosition.GetX(), 0.2f);
+        EXPECT_NEAR(leadEndPosition.GetY(), leadPosition.GetY(), 0.2f);
+        EXPECT_NEAR(leadEndPosition.GetZ(), leadPosition.GetZ(), 0.2f);
+        EXPECT_GT(followerEndPosition.GetX() - followerPosition.GetX(), 0.2f);
+        EXPECT_NEAR(followerEndPosition.GetZ(), followerPosition.GetZ(), 0.2f);
     }
 
     TEST_F(PhysXJointsTest, Joint_BallJoint_GlobalConstraint)
