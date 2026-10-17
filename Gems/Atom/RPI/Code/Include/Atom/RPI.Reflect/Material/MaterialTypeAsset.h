@@ -92,6 +92,9 @@ namespace AZ
             //! Return the general purpose shader collection that applies to any render pipeline.
             const ShaderCollection& GetGeneralShaderCollection() const;
 
+            //! Replaces any referenced asset with @asset's id (reloads, Material Canvas in-process shaders); other ids are ignored.
+            void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
+
             //! The material may contain any number of MaterialFunctors.
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
@@ -175,9 +178,6 @@ namespace AZ
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-
-            //! Replaces the appropriate asset members when a reload occurs
-            void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
 
             void ForAllShaderItems(AZStd::function<bool(const Name& materialPipelineName, ShaderCollection::Item& shaderItem, uint32_t shaderIndex)> callback);
 

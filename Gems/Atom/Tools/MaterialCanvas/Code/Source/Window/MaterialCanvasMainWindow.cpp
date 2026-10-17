@@ -6,13 +6,23 @@
  *
  */
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <Document/InMemoryShaderCompiler.h>
+#include <Document/MaterialGraphCompiler.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/MaterialCanvasViewportContent.h>
 
+#include <QAction>
+#include <QFileDialog>
+#include <QMenu>
 #include <QMessageBox>
 
 namespace MaterialCanvas
@@ -116,6 +126,205 @@ namespace MaterialCanvas
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/GraphView/GraphView.qss"));
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusConnect(m_toolId);
+    }
+
+    MaterialCanvasMainWindow::~MaterialCanvasMainWindow()
+    {
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusDisconnect();
+    }
+
+    void MaterialCanvasMainWindow::CreateMenus(QMenuBar* menuBar)
+    {
+        Base::CreateMenus(menuBar);
+
+        // Apply publishes the material without saving; built by hand since CreateActionAtPosition is only instantiable in its own .cpp.
+        m_actionApply = new QAction(tr("A&pply"), m_menuFile);
+        m_actionApply->setShortcut(QKeySequence("Ctrl+Shift+A"));
+        m_actionApply->setShortcutContext(Qt::WindowShortcut);
+        QObject::connect(
+            m_actionApply,
+            &QAction::triggered,
+            m_menuFile,
+            [this]()
+            {
+                AtomToolsFramework::GraphDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &AtomToolsFramework::GraphDocumentRequestBus::Events::QueueApplyGraph);
+            });
+        m_menuFile->insertAction(m_actionSaveAsCopy, m_actionApply);
+
+        // Measurement only, run manually: doing it on every compile would add an azslc run to the loop it measures.
+        if (!m_menuTools)
+        {
+            return;
+        }
+
+        m_menuTools->addAction(
+            tr("Run In-Memory Shader Spike..."),
+            [this]()
+            {
+                // Start in the cache, where the Asset Processor keeps preprocessed AZSL; any *_dx12.azslin will do.
+                const QString cacheFolder =
+                    QString("%1/Cache/pc").arg(QString::fromUtf8(AZ::Utils::GetProjectPath().c_str()));
+
+                const QString selectedPath = QFileDialog::getOpenFileName(
+                    this,
+                    tr("Select an intermediate AZSL file"),
+                    cacheFolder,
+                    // .azsl runs the whole chain including MCPP; .azslin starts at azslc, bypassing the reconstructed include paths.
+                    tr("AZSL (*.azsl *.azslin)"));
+                if (selectedPath.isEmpty())
+                {
+                    return;
+                }
+
+                // Run on a worker: ExecuteShaderCompiler busy-spins, which on the UI thread starves azslc (~6 s instead of 670 ms).
+                const AZStd::string inputPath = selectedPath.toUtf8().constData();
+                auto spikeJob = AZ::CreateJobFunction(
+                    [this, inputPath]()
+                    {
+                        const auto spikeResult = RunInMemoryShaderSpike(inputPath);
+
+                        // Back to the UI thread to report; the result is copied since the job's frame is gone by then.
+                        QMetaObject::invokeMethod(
+                            this,
+                            [this, spikeResult]()
+                            {
+                                if (!spikeResult.m_succeeded)
+                                {
+                                    QMessageBox::warning(
+                                        this, tr("In-Memory Shader Spike"), tr("Failed: %1").arg(spikeResult.m_failure.c_str()));
+                                    return;
+                                }
+
+                                QMessageBox::information(
+                                    this,
+                                    tr("In-Memory Shader Spike"),
+                                    tr("MCPP: %1 ms\nazslc: %2 ms\nreflection: %3 ms\ntotal: %4 ms\n\n"
+                                       "%5 preprocessed lines from %6 files.\n"
+                                       "%7 SRGs, %8 shader options, %9 lines of HLSL.\n\n"
+                                       "DXC and dxsc add about 298 ms on top of this. Compare against roughly 2.2 s for the same "
+                                       "shader through the Asset Processor.")
+                                        .arg(qRound(spikeResult.m_preprocessMs))
+                                        .arg(qRound(spikeResult.m_azslcMs))
+                                        .arg(qRound(spikeResult.m_reflectionMs))
+                                        .arg(qRound(spikeResult.m_totalMs))
+                                        .arg(spikeResult.m_preprocessedLineCount)
+                                        .arg(spikeResult.m_includedFileCount)
+                                        .arg(spikeResult.m_srgCount)
+                                        .arg(spikeResult.m_shaderOptionCount)
+                                        .arg(spikeResult.m_hlslLineCount));
+                            },
+                            Qt::QueuedConnection);
+                    },
+                    true);
+                spikeJob->Start();
+            });
+
+        // The material half: CreateMaterialTypeAsset is the same public call FinalStage makes, so no process or reimplementation.
+        m_menuTools->addAction(
+            tr("Run In-Memory Material Spike..."),
+            [this]()
+            {
+                const QString previewFolder = QString("%1/Assets/MaterialCanvasPreview")
+                                                  .arg(QString::fromUtf8(AZ::Utils::GetProjectPath().c_str()));
+
+                const QString selectedPath = QFileDialog::getOpenFileName(
+                    this,
+                    // The abstract one the canvas wrote, not the generated one. The intermediate is found from it.
+                    tr("Select a preview material type"),
+                    previewFolder,
+                    tr("Material Type (*.materialtype)"));
+                if (selectedPath.isEmpty())
+                {
+                    return;
+                }
+
+                const AZStd::string inputPath = selectedPath.toUtf8().constData();
+                auto spikeJob = AZ::CreateJobFunction(
+                    [this, inputPath]()
+                    {
+                        const auto spikeResult = RunInMemoryMaterialSpike(inputPath);
+
+                        QMetaObject::invokeMethod(
+                            this,
+                            [this, spikeResult]()
+                            {
+                                if (!spikeResult.m_succeeded)
+                                {
+                                    QMessageBox::warning(
+                                        this, tr("In-Memory Material Spike"), tr("Failed: %1").arg(spikeResult.m_failure.c_str()));
+                                    return;
+                                }
+
+                                QMessageBox::information(
+                                    this,
+                                    tr("In-Memory Material Spike"),
+                                    tr("locate + load: %1 ms\nmaterial type asset: %2 ms\ntotal: %3 ms\n\n"
+                                       "%4 properties, %5 shader collections.\n\n"
+                                       "The Asset Processor spends about 300 ms on the FinalStage job that does this.")
+                                        .arg(qRound(spikeResult.m_locateMs))
+                                        .arg(qRound(spikeResult.m_createMaterialTypeMs))
+                                        .arg(qRound(spikeResult.m_totalMs))
+                                        .arg(spikeResult.m_propertyCount)
+                                        .arg(spikeResult.m_shaderCount));
+                            },
+                            Qt::QueuedConnection);
+                    },
+                    true);
+                spikeJob->Start();
+            });
+    }
+
+    void MaterialCanvasMainWindow::UpdateMenus(QMenuBar* menuBar)
+    {
+        Base::UpdateMenus(menuBar);
+
+        // The base constructor builds the menus, and a menu update can be queued before this class has finished adding to them.
+        if (!m_actionApply)
+        {
+            return;
+        }
+
+        const AZ::Uuid documentId = GetCurrentDocumentId();
+
+        bool isOpen = false;
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            isOpen, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsOpen);
+
+        bool applyNeeded = false;
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            applyNeeded, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::IsApplyGraphNeeded);
+
+        // Hidden when preview output is off: every compile already produced the real material, so Apply would do nothing.
+        m_actionApply->setVisible(MaterialGraphCompiler::IsPreviewOutputEnabled());
+        m_actionApply->setEnabled(isOpen && applyNeeded);
+
+        // Enabled means the material in the level is behind the graph; the tooltip explains either state.
+        m_actionApply->setToolTip(
+            applyNeeded ? tr("Rebuild the material for use outside Material Canvas. It is currently behind this graph.")
+                        : tr("The material outside Material Canvas is up to date with this graph."));
+    }
+
+    void MaterialCanvasMainWindow::OnCompileGraphCompleted(const AZ::Uuid& documentId)
+    {
+        if (documentId != GetCurrentDocumentId())
+        {
+            return;
+        }
+
+        // Also show the state permanently, since the menu only shows it while open; runs after the compile's own status messages.
+        bool applyNeeded = false;
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            applyNeeded, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::IsApplyGraphNeeded);
+
+        if (MaterialGraphCompiler::IsPreviewOutputEnabled() && applyNeeded)
+        {
+            SetStatusWarning("Preview is current. The material outside Material Canvas is out of date -- File, Apply to rebuild it.");
+        }
+
+        QueueUpdateMenus(false);
     }
 
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -172,6 +381,45 @@ namespace MaterialCanvas
                   "require clearing the cache to regenerate shaders for the new RHI.\n\nThe settings files containing the overrides will be "
                   "placed in the user/Registry folder for the current project.").toUtf8().constData(),
                   false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/EnablePreviewOnlyMaterialPipeline",
+                  tr("Use Preview-Only Material Pipeline").toUtf8().constData(),
+                  tr("An abstract material type is expanded into one shader per render pass, for every enabled material pipeline. With "
+                  "the default MainPipeline and LowEndPipeline, a Standard lighting model produces 21 shaders, and every one of them is "
+                  "rebuilt whenever the graph changes.\n\nThis option replaces both with a single trimmed pipeline that builds only the "
+                  "shaders the Material Canvas viewport actually draws with: depth, shadow, forward, and transparent. Four shaders "
+                  "instead of 21.\n\nThe cost is reduced fidelity for a few features while it is enabled. Per-pixel depth offset and "
+                  "alpha cutout fall back to un-offset depth and shadow silhouettes, tinted transparent materials do not draw, light "
+                  "culling gets less precise depth bounds for transparent surfaces, and there are no motion vectors for TAA or motion "
+                  "blur.\n\nThe pipeline is declared on each material type Material Canvas generates, so it applies to the graphs "
+                  "being edited and to nothing else in the project. It takes effect on the next compile; no restart is needed. Note that "
+                  "the generated material type is still the one other systems load, so while this is enabled that material carries "
+                  "preview shaders rather than production ones.").toUtf8().constData(),
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/EnableInMemoryPreviewMaterial",
+                  tr("Build Preview Material In Memory").toUtf8().constData(),
+                  tr("Builds the preview material inside Material Canvas instead of waiting for the Asset Processor to build it.\n\n"
+                  "Two of the four jobs an edit currently triggers, the material type final stage and the material builder, were "
+                  "measured at 300 ms and 268 ms of Asset Processor time for 16 ms and roughly 20 ms of actual work. The remainder "
+                  "is hashing, dependency fingerprinting, product copies and catalog updates around builders that barely do "
+                  "anything.\n\nNothing is reimplemented to skip them: CreateMaterialTypeAsset and MaterialAssetCreator are the same "
+                  "calls those builders make, so the preview material is built the same way, just here. The shader is still built by "
+                  "the Asset Processor and this depends on it, so whenever the shader is not ready yet the viewport falls back to "
+                  "the normal path and waits, exactly as before.\n\nRequires preview output to be enabled. Production materials are "
+                  "unaffected: this only changes how the viewport gets its preview.").toUtf8().constData(),
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ProductionMaterialPipelines",
+                  tr("Production Material Pipelines").toUtf8().constData(),
+                  tr("Comma separated list of material pipelines the production material type is built through. Leave this empty to use "
+                  "every pipeline the project registers, which by default is MainPipeline and LowEndPipeline.\n\nThose two produce nearly "
+                  "identical shaders: for the same transparent Standard PBR material they measure 13,201 and 13,181 preprocessed lines, "
+                  "and 1,287 ms and 1,286 ms of azslc. A project with no low end target therefore pays for a second complete set of "
+                  "shaders on every save and never loads them. Setting this to \"MainPipeline\" removes that.\n\nThis affects the "
+                  "production output only; the preview set is unaffected. An unrecognised name is reported as a warning and the default "
+                  "list is used, so a mistake here costs a log line rather than a material that does not render.").toUtf8().constData(),
+                  AZStd::string("")),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
                   tr("Delete Files On Compile").toUtf8().constData(),
@@ -256,7 +504,19 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::OnSettingsDialogClosed()
     {
         AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
+
         Base::OnSettingsDialogClosed();
+
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Remove("/O3DE/Atom/MaterialCanvas/PaneWindowState");
+        }
+
+        const AZ::IO::FixedMaxPath settingsFilePath(
+            AZStd::string::format("%s/user/Registry/usersettings.materialcanvas.setreg", AZ::Utils::GetProjectPath().c_str()));
+        AtomToolsFramework::SaveSettingsToFile(
+            settingsFilePath,
+            { "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", "/O3DE/Atom/GraphView", "/O3DE/Atom/MaterialCanvas" });
     }
 
     AZStd::string MaterialCanvasMainWindow::GetHelpUrl() const

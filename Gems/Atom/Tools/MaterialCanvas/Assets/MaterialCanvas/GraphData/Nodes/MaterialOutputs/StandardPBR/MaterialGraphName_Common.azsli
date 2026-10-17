@@ -99,6 +99,11 @@ void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, 
     const float3 O3DE_MC_NORMAL_WS = geoData.vertexNormal;
     const float3 O3DE_MC_TANGENT_WS = geoData.tangents[0];
     const float3 O3DE_MC_BITANGENT_WS = geoData.bitangents[0];
+#if MATERIAL_USES_VERTEX_LOCALPOSITION
+    const float3 O3DE_MC_LOCAL_POSITION = (float3)IN.localPosition;
+#else
+    const float3 O3DE_MC_LOCAL_POSITION = float3(0.0, 0.0, 0.0);
+#endif
     #define O3DE_MC_UV(index) geoData.uvs[clamp(index, 0, UvSetCount-1)];
 
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
