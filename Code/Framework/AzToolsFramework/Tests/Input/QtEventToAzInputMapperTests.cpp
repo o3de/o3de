@@ -9,8 +9,12 @@
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
-#include <AzFramework/Input/Events/InputTextEventListener.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Input/Events/InputTextEventListener.h>
+
+#include <QApplication>
+#include <QWheelEvent>
 
 
 namespace UnitTest
@@ -156,11 +160,13 @@ namespace UnitTest
             explicit AzEventInfo(const AzFramework::InputChannel& inputChannel)
                 : m_inputChannelId(inputChannel.GetInputChannelId())
                 , m_isActive(inputChannel.IsActive())
+                , m_value(inputChannel.GetValue())
             {
             }
 
             AzFramework::InputChannelId m_inputChannelId;
             bool m_isActive;
+            float m_value;
         };
 
 
@@ -177,7 +183,77 @@ namespace UnitTest
         bool m_captureTextEvents{ false };
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    TEST_F(QtEventToAzInputMapperFixture, DisablingRestoresTheSystemCursor)
+    {
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
+        m_inputChannelMapper->SetEnabled(false);
+
+        AzFramework::SystemCursorState cursorState = AzFramework::SystemCursorState::Unknown;
+        AzFramework::InputSystemCursorRequestBus::EventResult(
+            cursorState,
+            AzToolsFramework::GetSyntheticMouseDeviceId(TestDeviceIdSeed),
+            &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+
+        EXPECT_EQ(cursorState, AzFramework::SystemCursorState::UnconstrainedAndVisible);
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseMovementChannelsUseLogicalPixels)
+    {
+        AZStd::vector<float> movementValues;
+        QObject::connect(
+            m_inputChannelMapper.get(),
+            &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated,
+            m_rootWidget.get(),
+            [&movementValues](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                const auto& inputChannelId = inputChannel->GetInputChannelId();
+                if (inputChannelId == AzFramework::InputDeviceMouse::Movement::X ||
+                    inputChannelId == AzFramework::InputDeviceMouse::Movement::Y)
+                {
+                    movementValues.push_back(inputChannel->GetValue());
+                }
+            });
+
+        const QPoint initialPosition(100, 100);
+        MouseMove(m_rootWidget.get(), initialPosition, QPoint());
+        movementValues.clear();
+        MouseMove(m_rootWidget.get(), initialPosition, QPoint(5, -7));
+
+        EXPECT_THAT(movementValues, ::testing::ElementsAre(5.0f, -7.0f));
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseMoveFromAnotherWidgetIsForwardedWhenSourceWidgetIsHit)
+    {
+        m_rootWidget->show();
+        QApplication::processEvents();
+
+        QWidget otherWidget;
+        const QPoint localPosition(100, 100);
+        const QPoint globalPosition = m_rootWidget->mapToGlobal(localPosition);
+        ASSERT_EQ(QApplication::widgetAt(globalPosition), m_rootWidget.get());
+
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+
+        QMouseEvent mouseMoveEvent(
+            QEvent::MouseMove,
+            QPointF(localPosition),
+            QPointF(globalPosition),
+            Qt::NoButton,
+            Qt::NoButton,
+            Qt::NoModifier);
+
+        m_inputChannelMapper->eventFilter(&otherWidget, &mouseMoveEvent);
+
+        EXPECT_EQ(m_azCursorPositions.size(), 1);
+        if (m_azCursorPositions.size() == 1)
+        {
+            EXPECT_TRUE(m_azCursorPositions[0].m_normalizedPosition.IsClose(AZ::Vector2(
+                aznumeric_cast<float>(localPosition.x()) / aznumeric_cast<float>(WidgetSize.width()),
+                aznumeric_cast<float>(localPosition.y()) / aznumeric_cast<float>(WidgetSize.height()))));
+        }
+
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
 
     // Qt event forwarding through the internal signal handler test
     TEST_F(QtEventToAzInputMapperFixture, MouseWheel_NoAzHandlers_ReceivedThreeSignalAndZeroAzChannelEvents)
@@ -336,6 +412,54 @@ namespace UnitTest
 
         EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), mouseButtonIds.m_az.GetName());
         EXPECT_FALSE(m_azChannelEvents[1].m_isActive);
+
+        // cleanup
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWheel_MomentumPhase_ReceivedZeroAzChannelEvents)
+    {
+        // setup
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        m_captureAzEvents = false;
+
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint globalEventPos = m_rootWidget->mapToGlobal(mouseEventPos);
+        const QPoint zero = QPoint();
+
+        QWheelEvent momentumEvent(globalEventPos, zero, zero, QPoint(0, 10), Qt::NoButton, Qt::NoModifier, Qt::ScrollMomentum, false);
+        QApplication::sendEvent(m_rootWidget.get(), &momentumEvent);
+
+        // az validation
+        EXPECT_EQ(m_azChannelEvents.size(), 0);
+
+        // cleanup
+        AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();
+    }
+
+    TEST_F(QtEventToAzInputMapperFixture, MouseWheel_BothAxes_DominantAxisIsUsed)
+    {
+        // setup
+        AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+        m_captureAzEvents = false;
+
+        const QPoint mouseEventPos = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        const QPoint globalEventPos = m_rootWidget->mapToGlobal(mouseEventPos);
+        const QPoint zero = QPoint();
+
+        QWheelEvent mostlyVerticalEvent(globalEventPos, zero, zero, QPoint(3, -10), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+        QApplication::sendEvent(m_rootWidget.get(), &mostlyVerticalEvent);
+
+        QWheelEvent mostlyHorizontalEvent(globalEventPos, zero, zero, QPoint(-12, 4), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+        QApplication::sendEvent(m_rootWidget.get(), &mostlyHorizontalEvent);
+
+        // az validation
+        ASSERT_EQ(m_azChannelEvents.size(), 2);
+
+        EXPECT_STREQ(m_azChannelEvents[0].m_inputChannelId.GetName(), AzFramework::InputDeviceMouse::Movement::Z.GetName());
+        EXPECT_FLOAT_EQ(m_azChannelEvents[0].m_value, -10.0f);
+        EXPECT_STREQ(m_azChannelEvents[1].m_inputChannelId.GetName(), AzFramework::InputDeviceMouse::Movement::Z.GetName());
+        EXPECT_FLOAT_EQ(m_azChannelEvents[1].m_value, -12.0f);
 
         // cleanup
         AzFramework::InputChannelNotificationBus::Handler::BusDisconnect();

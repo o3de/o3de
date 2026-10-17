@@ -152,7 +152,7 @@ namespace AzToolsFramework
     {
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
-        ClearQueuedMouseEvent();
+        ResetDragState();
         m_queuedMouseEvent = event->clone();
     }
 
@@ -162,7 +162,14 @@ namespace AzToolsFramework
         bool forceUpdate = false;
 
         m_mousePosition = event->pos();
-        
+
+        // A queued press is only valid while a button is held.
+        // Native drag sessions can consume the release event.
+        if (m_queuedMouseEvent && event->buttons() == Qt::NoButton)
+        {
+            ResetDragState();
+        }
+
         if (m_queuedMouseEvent)
         {
             if (!m_isDragSelectActive)
@@ -206,30 +213,32 @@ namespace AzToolsFramework
             ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
         }
 
-        ClearQueuedMouseEvent();
-        m_isDragSelectActive = false;
+        ResetDragState();
 
         QTreeView::mouseReleaseEvent(event);
     }
 
+    void EntityOutlinerTreeView::ResetDragState()
+    {
+        ClearQueuedMouseEvent();
+        m_isDragSelectActive = false;
+    }
+
     void EntityOutlinerTreeView::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        // Cancel pending mouse press.
-        ClearQueuedMouseEvent();
+        ResetDragState();
         QTreeView::mouseDoubleClickEvent(event);
     }
 
     void EntityOutlinerTreeView::focusInEvent(QFocusEvent* event)
     {
-        // Cancel pending mouse press.
-        ClearQueuedMouseEvent();
+        ResetDragState();
         QTreeView::focusInEvent(event);
     }
 
     void EntityOutlinerTreeView::focusOutEvent(QFocusEvent* event)
     {
-        // Cancel pending mouse press.
-        ClearQueuedMouseEvent();
+        ResetDragState();
         QTreeView::focusOutEvent(event);
     }
 
@@ -248,7 +257,7 @@ namespace AzToolsFramework
         emit ItemDropped();
         QTreeView::dropEvent(event);
 
-        ClearQueuedMouseEvent();
+        ResetDragState();
     }
 
     void EntityOutlinerTreeView::HandleDrag()
@@ -341,7 +350,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        ClearQueuedMouseEvent();
+        ResetDragState();
 
         // Only clear the mouse position if the last mouse position registered is inside.
         // This allows drag to select to work correctly in all situations.

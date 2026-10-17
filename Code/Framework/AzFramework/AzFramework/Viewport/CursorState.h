@@ -23,6 +23,8 @@ namespace AzFramework
         void SetCurrentPosition(const ScreenPoint& currentPosition);
         //! Set whether the cursor is currently being constrained (and hidden).
         void SetCaptured(bool captured);
+        //! Is the cursor currently being constrained and hidden.
+        [[nodiscard]] bool IsCaptured() const;
         //! Call this in an 'update' call to copy the current cursor position to the last
         //! cursor position.
         void Update();
@@ -41,6 +43,11 @@ namespace AzFramework
     inline void CursorState::SetCurrentPosition(const ScreenPoint& currentPosition)
     {
         m_currentCursorPosition = currentPosition;
+    }
+
+    inline bool CursorState::IsCaptured() const
+    {
+        return m_captured;
     }
 
     inline ScreenVector CursorState::CursorDelta() const

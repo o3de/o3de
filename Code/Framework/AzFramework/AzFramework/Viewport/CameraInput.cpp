@@ -21,7 +21,7 @@ namespace AzFramework
         true,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "Should the camera use cursor absolute positions or motion deltas");
+        "Use cursor position deltas when available. Captured cursors always use motion deltas");
 
     //! return -1.0f if inverted, 1.0f otherwise
     constexpr static float Invert(const bool invert)
@@ -152,6 +152,10 @@ namespace AzFramework
 
     bool CameraSystem::HandleEvents(const InputState& state)
     {
+        // Accumulate movement and scrolling until StepCamera.
+        // Multiple events can arrive per frame, so keeping only the last would drop input.
+        // Use only this event's movement for activation detection.
+        ScreenVector eventMotionDelta{ 0, 0 };
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
@@ -159,27 +163,34 @@ namespace AzFramework
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_x = horizontalMotion->m_delta;
+            eventMotionDelta.m_x = horizontalMotion->m_delta;
+            m_motionDelta.m_x += horizontalMotion->m_delta;
         }
         else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&state.m_inputEvent))
         {
-            m_motionDelta.m_y = verticalMotion->m_delta;
+            eventMotionDelta.m_y = verticalMotion->m_delta;
+            m_motionDelta.m_y += verticalMotion->m_delta;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
         {
-            m_scrollDelta = scroll->m_delta;
+            m_scrollDelta += scroll->m_delta;
         }
 
-        m_handlingEvents =
-            m_cameras.HandleEvents(state, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta);
+        m_handlingEvents = m_cameras.HandleEvents(state, ShouldUseCursorDelta() ? m_cursorState.CursorDelta() : eventMotionDelta, m_scrollDelta);
 
         return m_handlingEvents;
     }
 
+    bool CameraSystem::ShouldUseCursorDelta() const
+    {
+        // A captured cursor is stationary, so its position cannot represent movement.
+        return ed_cameraSystemUseCursor && !m_cursorState.IsCaptured();
+    }
+
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto nextCamera = m_cameras.StepCamera(
-            targetCamera, ed_cameraSystemUseCursor ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta, deltaTime);
+        const auto nextCamera =
+            m_cameras.StepCamera(targetCamera, ShouldUseCursorDelta() ? m_cursorState.CursorDelta() : m_motionDelta, m_scrollDelta, deltaTime);
 
         m_cursorState.Update();
         m_motionDelta = ScreenVector{ 0, 0 };
@@ -1012,12 +1023,18 @@ namespace AzFramework
             }
             else if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                const auto x = inputChannel.GetValue();
+                const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
+
+                const auto x = position->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(windowSize.m_width);
                 return InputState{ HorizontalMotionEvent{ aznumeric_cast<int>(AZStd::lround(x)) }, modifiers };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Y)
             {
-                const auto y = inputChannel.GetValue();
+                const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
+
+                const auto y = position->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(windowSize.m_height);
                 return InputState{ VerticalMotionEvent{ aznumeric_cast<int>(AZStd::lround(y)) }, modifiers };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
