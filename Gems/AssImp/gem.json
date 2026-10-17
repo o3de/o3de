@@ -1,0 +1,25 @@
+{
+    "gem_name": "AssImp",
+    "version": "0.0.0",
+    "display_name": "AssImp",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Tool",
+    "summary": "The AssImp Gem provides scene file importing through the AssImp library for the SceneAPI asset pipeline, supporting FBX, glTF, GLB, STL, OBJ, USD and other scene formats for actors, meshes, motions, and PhysX assets.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Assets",
+        "Tools",
+        "Core"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "Downloads and builds the Open Asset Import Library (assimp, Custom BSD-3-Clause) from https://github.com/assimp/assimp when the Gem is enabled.",
+    "documentation_url": "https://www.o3de.org/docs/user-guide/gems/reference/assets/scene-processing/",
+    "dependencies": [
+        "SceneProcessing"
+    ]
+}

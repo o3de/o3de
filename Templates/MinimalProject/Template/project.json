@@ -19,6 +19,7 @@
     ],
     "gem_names": [
         "${Name}",
+        "AssImp",
         "Atom",
         "CameraFramework",
         "ImGui"
