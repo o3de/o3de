@@ -215,6 +215,35 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
             action->setEnabled(false);
         }
     }
+
+    // Select the selected elements and everything below them.
+    {
+        action = new QAction(tr("Select Hierarchy"), this);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                QMetaObject::invokeMethod(hierarchy, "SelectHierarchy", Qt::QueuedConnection);
+            });
+        addAction(action);
+
+        bool anyHaveChildren = false;
+        for (QTreeWidgetItem* item : selectedItems)
+        {
+            if (item->childCount() > 0)
+            {
+                anyHaveChildren = true;
+                break;
+            }
+        }
+
+        if (!anyHaveChildren)
+        {
+            action->setEnabled(false);
+        }
+    }
 }
 
 void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, size_t showMask)
