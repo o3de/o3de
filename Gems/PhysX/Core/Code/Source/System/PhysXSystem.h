@@ -10,6 +10,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
@@ -37,6 +39,13 @@ namespace physx
 
 namespace PhysX
 {
+    //! State of the free-running simulation thread.
+    struct SimulationThread
+    {
+        AZStd::thread m_thread;
+        AZStd::atomic_bool m_exit{ false };
+    };
+
     class PhysXSystem
         : public AZ::Interface<AzPhysics::SystemInterface>::Registrar
     {
@@ -87,6 +96,9 @@ namespace PhysX
 
         AZ::Debug::PerformanceCollector* GetPerformanceCollector();
 
+        //! True while a simulation thread owns scene stepping.
+        bool IsSimulationThreadRunning() const { return m_simulationThread.has_value(); }
+
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
@@ -96,12 +108,37 @@ namespace PhysX
 
         void InitializePerformanceCollector();
 
+        //! Steps every enabled scene @a numSubSteps times, each sub-step advancing by @a timeStep.
+        void SimulateScenes(float timeStep, AZ::u32 numSubSteps);
+
+        //! Free-running is gameplay only. In Editor edit mode just the editor preview scene is
+        //! enabled and the viewport mutates bodies constantly, so stepping stays on the main thread.
+        bool ShouldRunFreeThreaded() const;
+
+        void StartSimulationThread();
+        void StopSimulationThread();
+
+        //! Free-running loop: owns its own clock and steps the scenes between publication windows.
+        //! Scene start, trigger and collision events fire from here at simulation rate, so
+        //! consumers can act on every step; those handlers - and the body add/remove events they
+        //! cause - must be thread-safe and touch physics only. The finish event is recorded and
+        //! signaled by PublishSimulationResults, whose scene write lock also serializes handler
+        //! state against this loop.
+        void FreeRunningSimulationLoop();
+
+        //! Main-tick half of the free-running mode - signals the scene simulation finish events the
+        //! simulation thread deferred and pushes the transforms it produced to the entities.
+        void PublishSimulationResults();
+
         PhysXSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;
         AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; //when a scene is removed cache its index here to be used for the next add.
 
         float m_accumulatedTime = 0.0f;
+
+        //! Simulation thread, initialized on first tick.
+        AZStd::optional<SimulationThread> m_simulationThread;
 
         struct PhysXSdk
         {
