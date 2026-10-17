@@ -14,6 +14,12 @@ if(NOT PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
     return()
 endif()
 
+if(PAL_TRAIT_CRASH_HANDLER_BACKEND STREQUAL "SentryNative")
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/sentry-native.cmake)
+    add_subdirectory(SentryNative)
+    return()
+endif()
+
 add_subdirectory(Support)
 
 ly_add_target(
