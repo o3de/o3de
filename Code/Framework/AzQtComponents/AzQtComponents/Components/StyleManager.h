@@ -27,6 +27,7 @@ namespace AzQtComponents
     class StyleSheetCache;
     class StylesheetPreprocessor;
     class AutoCustomWindowDecorations;
+    class StyleManagerTests;
 
     /**
      * Wrapper around classes dealing with Open 3D Engine style.
@@ -51,6 +52,8 @@ namespace AzQtComponents
     {
         Q_OBJECT
 
+        friend StyleManagerTests;
+
         static StyleManager* s_instance;
 
     public:
@@ -60,6 +63,14 @@ namespace AzQtComponents
             const AZ::IO::PathView& engineRootPath);
 
         static bool setStyleSheet(QWidget* widget, QString styleFileName);
+
+        //! Flattened GUI only (see stylesheetsDisabled): the function that defines the rules of a style sheet as
+        //! elements (TextElement::registerElement, ...), registered under the name the sheet is set by (with or
+        //! without the extension). setStyleSheet runs it the first time that sheet is set on a widget, and a
+        //! registration after that runs at once, so the order of calls does not matter. Several functions may
+        //! register for one sheet (a sheet shared by modules); legacy mode never runs any.
+        using FlatSheetRegistrar = void (*)();
+        static void registerFlatSheet(const QString& styleFileName, FlatSheetRegistrar registrar);
 
         static QStyle* styleSheetStyle(const QWidget* widget);
         static QStyle* baseStyle(const QWidget* widget);
@@ -111,6 +122,9 @@ namespace AzQtComponents
         void stopTrackingWidget(QObject* object);
 
     private:
+        //! The flat branch of setStyleSheet
+        static void applyFlatSheet(QWidget* widget, const QString& styleFileName);
+
         void initializeFonts();
         void initializeSearchPaths(QApplication* application, const AZ::IO::PathView& engineRootPath);
 

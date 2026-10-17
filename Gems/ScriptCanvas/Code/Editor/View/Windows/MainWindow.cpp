@@ -98,6 +98,7 @@
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+#include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
@@ -165,6 +166,54 @@ namespace ScriptCanvasEditor
 {
     namespace
     {
+        // ------------------------------------------------------------------------------
+        // ScriptCanvas.Tab.Graph: the graph tab strip (flattened GUI tab element). The
+        // Global.Tab.Secondary look in a tab widget held at 32px with 2px side margins
+        // (Editor.qss AzQtComponents--TabWidget#ScriptCanvasTabs).
+        // ------------------------------------------------------------------------------
+
+        // Sources: AzQtComponents Components/Widgets/ stylesheets as file:line, and Editor.qss.
+        const AzQtComponents::TabElement GraphTabs{
+            .m_name = "ScriptCanvas.Tab.Graph",
+            .m_barFill = QColor(0x44, 0x44, 0x44),                                  // TabWidget.qss:26
+            .m_barMinHeight = 28,                                                   // TabWidget.qss:46
+            // TabWidget.qss:136 (idle), :145 (hover), :158 (selected text and bottom edge)
+            .m_idle = { QColor(0x44, 0x44, 0x44), QColor(0x95, 0x95, 0x95), { {}, {}, { 3, QColor(0x33, 0x33, 0x33) }, {} } },
+            .m_hover = { QColor(0xFF, 0xFF, 0xFF, 0x26), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x44, 0x44, 0x44) }, {} } },
+            .m_selected = { QColor(0x44, 0x44, 0x44), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x00, 0x8D, 0xE5) }, {} } },
+            .m_selectedHover = { QColor(0xFF, 0xFF, 0xFF, 0x26), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x00, 0x8D, 0xE5) }, {} } },
+            .m_padding = QMargins(14, 7, 14, 5),                                    // TabWidget.qss:136
+            .m_maxContentWidth = 200,                                               // TabWidget.qss:16
+            .m_closeIcon = ":/stylesheet/img/close_small.svg",                      // TabWidget.qss:64
+            .m_closeHoverFill = QColor(0xFF, 0xFF, 0xFF, 0x33),                     // TabWidget.qss:70
+            .m_closeRadius = 2,                                                     // TabWidget.qss:70
+            .m_closeMarginRight = 4,                                                // TabWidget.qss:64
+            .m_widgetFill = QColor(0x44, 0x44, 0x44),                               // TabWidget.qss:101
+            .m_paneEdges = { { 2, QColor(0x2B, 0x2B, 0x2B) }, {}, {}, {} },         // TabWidget.qss:111
+            .m_panePadding = QMargins(3, 0, 3, 3),                                  // TabWidget.qss:111
+            .m_paneEmptyOffset = 30,                                                // TabWidget.qss:41
+            .m_barLeft = 1,                                                         // TabWidget.qss:119
+            .m_barAreaMinHeight = 30,                                               // TabWidget.qss:119
+            .m_widgetHeight = 32,                                                   // Editor.qss:117 height, :119 max-height
+            .m_widgetMargins = QMargins(2, 0, 2, 0),                                // Editor.qss:118
+            .m_cornerMinHeight = 28,                                                // TabWidgetActionToolBar.qss:1
+            .m_cornerMarginBottom = 9,                                              // TabWidgetActionToolBar.qss:1
+            .m_moveAnimationDuration = 0,                                           // TabWidget.qss:46
+        };
+
+        void RegisterGraphTabElement()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                AzQtComponents::TabElement::registerElement(&GraphTabs, [](const QWidget* tabBar)
+                    {
+                        return tabBar->parentWidget() && tabBar->parentWidget()->objectName() == QLatin1String("ScriptCanvasTabs");
+                    });
+            }
+        }
+
         template <typename T>
         class ScopedVariableSetter
         {
@@ -560,6 +609,7 @@ namespace ScriptCanvasEditor
 
         // Tab bar
         {
+            RegisterGraphTabElement();
             m_tabWidget = new AzQtComponents::TabWidget(m_host);
             m_tabBar = new Widget::GraphTabBar(m_tabWidget);
             m_tabWidget->setCustomTabBar(m_tabBar);
@@ -572,8 +622,10 @@ namespace ScriptCanvasEditor
             connect(m_tabBar, &Widget::GraphTabBar::CopyPathToClipboard, this, &MainWindow::CopyPathToClipboard);
             connect(m_tabBar, &Widget::GraphTabBar::OnActiveFileStateChanged, this, &MainWindow::OnActiveFileStateChanged);
 
-            AzQtComponents::TabWidget::applySecondaryStyle(m_tabWidget, false);
+            // The name comes first: the tab element is matched on it when the style classes
+            // re-polish the tab bar
             m_tabWidget->setObjectName("ScriptCanvasTabs");
+            AzQtComponents::TabWidget::applySecondaryStyle(m_tabWidget, false);
 
             m_layout->addWidget(m_tabWidget);
         }

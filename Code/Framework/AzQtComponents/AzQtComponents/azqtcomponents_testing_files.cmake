@@ -8,11 +8,16 @@
 
 set(FILES
     Tests/AzQtComponentTests.cpp
+    Tests/BrowseEditTests.cpp
     Tests/ColorControllerTests.cpp
     Tests/FileDialogTests.cpp
+    Tests/FlatFramePaintTests.cpp
     Tests/FloatToStringConversionTests.cpp
+    Tests/HeaderSectionTests.cpp
     Tests/HexParsingTests.cpp
+    Tests/StyleManagerTests.cpp
     Tests/StyleSheetCacheTests.cpp
+    Tests/TextElementTests.cpp
     Tests/WindowDecoratorWrapperTests.cpp
     Tests/qrc1.qrc
     Tests/qrc2.qrc

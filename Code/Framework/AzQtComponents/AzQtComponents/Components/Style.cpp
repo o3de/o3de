@@ -29,6 +29,8 @@
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/StatusBar.h>
+#include <AzQtComponents/Components/Elements/TabElement.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
@@ -51,6 +53,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QLayout>
 #include <QPainterPath>
 #include <QTabBar>
+#include <QTabWidget>
 #include <QMenu>
 #include <QAbstractItemView>
 #include <QMainWindow>
@@ -232,6 +235,27 @@ namespace AzQtComponents
         return g_dropZoneColorOnHover;
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened table header sections (GUI flattening)
+    //
+    // TableView.qss:62-76 gave the sections of a header inside a QTableView,
+    // QListView or QTreeView: height 24px, background #2d2d2d, no border, 12px
+    // normal text, padding-left 7px. No rule gave the label a colour (the '*'
+    // rule's white reached it, BaseStyleSheet.qss:18) or the sort arrow a look
+    // (the base style draws it). All 88 header widgets of the legacy captures
+    // sit inside such a view.
+    // TOKENIZE: HeaderSectionHeight, HeaderSectionPaddingLeft, HeaderSectionTextSize
+    //////////////////////////////////////////////////////////////////////////
+    static const int g_headerSectionHeight = 24;
+    static const int g_headerSectionPaddingLeft = 7;
+    static const int g_headerSectionTextSize = 12;
+
+    static bool hasFlattenedHeaderSection(const QWidget* widget)
+    {
+        return qobject_cast<const QHeaderView*>(widget)
+            && (StyleHelpers::findParent<QTableView>(widget) || StyleHelpers::findParent<QListView>(widget)
+                || StyleHelpers::findParent<QTreeView>(widget));
+    }
 
     QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget) const
     {
@@ -282,16 +306,13 @@ namespace AzQtComponents
                 }
                 case CT_TabBarTab:
                 {
-                    // TabWidget.qss TabBar:tab { padding: 6px 21px 6px 9px; max-width: 200px },
-                    // TabBar { min-height: 28px }: the legacy tab is 8px wider than Fusion's
-                    // for the same text and the bar 31 tall (Gallery capture); dock tab bars
-                    // follow the same rule, which is what makes their overflow caret appear.
-                    // TOKENIZE: TabPadding, TabHeight, TabMaxWidth
-                    QSize tabSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-                    tabSize.setHeight(31);
-                    tabSize.setWidth(qMin(tabSize.width() + 8, 200));
-                    return tabSize;
+                    // The tab element sizes the tab around Qt's contents (text and tab buttons)
+                    if (const TabElement* tabElement = TabElement::forTabBar(widget))
+                    {
+                        return tabElement->tabSize(size);
+                    }
                 }
+                break;
                 case CT_ComboBox:
                     if (qobject_cast<const QComboBox*>(widget))
                     {
@@ -334,16 +355,18 @@ namespace AzQtComponents
                 }
                 case CT_HeaderSection:
                 {
-                    // TableView.qss QHeaderView::section { padding-left: 7px }: vertical (row
-                    // number) sections are text + 7 + 4 wide (legacy capture: 18 for one digit).
-                    // TOKENIZE: HeaderSectionPadding
-                    auto header = qobject_cast<const QHeaderView*>(widget);
-                    auto headerOption = qstyleoption_cast<const QStyleOptionHeader*>(option);
-                    if (header && headerOption && header->orientation() == Qt::Vertical)
+                    // TableView.qss:62-76 QHeaderView::section { height: 24px; padding-left: 7px }: the rule's
+                    // height, and the base style's width plus the padding (qstylesheetstyle.cpp:5352-5382;
+                    // legacy capture: 18 wide for a one-digit row number, a column sized to its text 7 wider
+                    // than the base). The base is the TableView size of a horizontal header, Qt's for a vertical one.
+                    if (hasFlattenedHeaderSection(widget))
                     {
-                        QSize sectionSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-                        sectionSize.setWidth(headerOption->fontMetrics.horizontalAdvance(headerOption->text) + 11);
-                        return sectionSize;
+                        QSize sectionSize = TableView::sizeFromContents(this, type, option, size, widget, m_data->tableViewConfig);
+                        if (!sectionSize.isValid())
+                        {
+                            sectionSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                        }
+                        return QSize(sectionSize.width() + g_headerSectionPaddingLeft, g_headerSectionHeight);
                     }
                     break;
                 }
@@ -472,6 +495,26 @@ namespace AzQtComponents
                     painter->restore();
                     return;
                 }
+                if (StyleManager::stylesheetsDisabled() && widget && hasClass(widget, QStringLiteral("HorizontalSeparator")))
+                {
+                    // ColorPicker.qss:83-90 `AzQtComponents--ColorPicker .HorizontalSeparator` (an exact QFrame HLine,
+                    // ColorPicker.cpp:1331-1335): background #222222, 1px #393a3c top and bottom borders, none left or
+                    // right. First, ahead of the exact-QFrame rule: a class tag replaces the class name in Qt's selector
+                    // match (qstylesheetstyle.cpp:1545-1551), so Native never gave this frame BaseStyleSheet's .QFrame
+                    // fill. The borders are antialiased fills, as qDrawEdge draws them (qcssutil.cpp:165-169 under
+                    // qstylesheetstyle.cpp:1282-1285): at a fractional device ratio the edge rows blend.
+                    // TOKENIZE: PickerSeparatorFill, PickerSeparatorLine
+                    const QRect r = option->rect;
+                    painter->fillRect(r, QColor(0x22, 0x22, 0x22));
+                    painter->save();
+                    painter->setRenderHint(QPainter::Antialiasing);
+                    painter->setPen(Qt::NoPen);
+                    painter->setBrush(QColor(0x39, 0x3A, 0x3C));
+                    painter->drawRect(QRectF(r.left(), r.top(), r.width(), 1));
+                    painter->drawRect(QRectF(r.left(), r.bottom(), r.width(), 1));
+                    painter->restore();
+                    return;
+                }
                 if (StyleManager::stylesheetsDisabled() && widget
                     && QString::fromLatin1(widget->metaObject()->className()) == QLatin1String("QFrame"))
                 {
@@ -499,15 +542,6 @@ namespace AzQtComponents
                             return;
                         }
                     }
-                }
-                if (StyleManager::stylesheetsDisabled() && widget && hasClass(widget, QStringLiteral("HorizontalSeparator")))
-                {
-                    // ColorPicker.qss .HorizontalSeparator: background #222222 with 1px #393a3c
-                    // top and bottom lines. TOKENIZE: PickerSeparatorFill, PickerSeparatorLine
-                    painter->fillRect(option->rect, QColor(0x22, 0x22, 0x22));
-                    painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x39, 0x3A, 0x3C));
-                    painter->fillRect(QRect(option->rect.left(), option->rect.bottom(), option->rect.width(), 1), QColor(0x39, 0x3A, 0x3C));
-                    return;
                 }
                 if (StyleManager::stylesheetsDisabled() && widget && widget->parentWidget()
                     && widget->parentWidget()->inherits("AzQtComponents::VectorElement") && widget->inherits("QLabel"))
@@ -568,53 +602,14 @@ namespace AzQtComponents
 
             case CE_TabBarTabShape:
             {
-                // TabWidget.qss: flat boxes, inactive #333333 / active #444444, #111111 border
+                // The tab element: fill and edges of the tab's state
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    const bool selected = option->state.testFlag(QStyle::State_Selected);
-                    if (hasClass(widget, QStringLiteral("Secondary")))
+                    if (const TabElement* tabElement = TabElement::forTabBar(widget))
                     {
-                        // TabWidget.qss TabBar.Secondary::tab: #444444 (:hover +15% white),
-                        // border-bottom 3px #333333 (:hover #444444, :selected #008DE5);
-                        // .Bordered adds border-top 1px #111111.
-                        // TOKENIZE: SecondaryTabFace, SecondaryTabUnderline, SecondaryTabSelectedUnderline
-                        const bool hover = option->state.testFlag(QStyle::State_MouseOver);
-                        painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
-                        if (hover && !selected)
-                        {
-                            painter->fillRect(option->rect, QColor(255, 255, 255, 38));
-                        }
-                        const QRect underline(option->rect.left(), option->rect.bottom() - 2, option->rect.width(), 3);
-                        painter->fillRect(underline, selected ? QColor(0x00, 0x8D, 0xE5) : (hover ? QColor(0x44, 0x44, 0x44) : QColor(0x33, 0x33, 0x33)));
-                        if (hasClass(widget, QStringLiteral("Bordered")))
-                        {
-                            painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x11, 0x11, 0x11));
-                        }
+                        tabElement->drawTab(painter, option);
                         return;
                     }
-                    // TabWidget.qss TabBar:tab: #333333 with a 1px #111111 border; :selected
-                    // #444444 whose bottom border is #444444 (flush with the page). The legacy
-                    // tab box reaches the bottom of the tab bar (no bar backdrop under it).
-                    // Dock tab bars (legacy capture): plain faces, no outline at all.
-                    // TOKENIZE: TabFace, TabSelectedFace, TabBorder
-                    QRect tabRect = option->rect;
-                    if (widget)
-                    {
-                        tabRect.setBottom(widget->rect().bottom());
-                    }
-                    const QColor face = selected ? QColor(0x44, 0x44, 0x44) : QColor(0x33, 0x33, 0x33);
-                    painter->fillRect(tabRect, face);
-                    if (widget && widget->inherits("AzQtComponents::DockTabBar"))
-                    {
-                        return;
-                    }
-                    painter->setPen(QColor(0x11, 0x11, 0x11));
-                    painter->drawRect(tabRect.adjusted(0, 0, -1, -1));
-                    if (selected)
-                    {
-                        painter->fillRect(QRect(tabRect.left() + 1, tabRect.bottom(), tabRect.width() - 2, 1), face);
-                    }
-                    return;
                 }
             }
             break;
@@ -666,16 +661,19 @@ namespace AzQtComponents
 
             case CE_TabBarTabLabel:
             {
-                // TabWidget.qss TabBar.Secondary::tab { color: #959595 } (:hover/:selected #FFFFFF)
-                // TOKENIZE: SecondaryTabTextColor, SecondaryTabActiveTextColor
-                if (StyleManager::stylesheetsDisabled() && hasClass(widget, QStringLiteral("Secondary")))
+                // The tab element: the label is laid out inside the tab's contents box (the
+                // stylesheet passed Qt the rect minus edges and padding) in the state's text color
+                if (StyleManager::stylesheetsDisabled())
                 {
-                    if (auto tabOption = qstyleoption_cast<const QStyleOptionTab*>(option))
+                    const TabElement* tabElement = TabElement::forTabBar(widget);
+                    auto tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
+                    if (tabElement && tabOption)
                     {
-                        const bool lit = option->state.testFlag(QStyle::State_Selected) || option->state.testFlag(QStyle::State_MouseOver);
                         QStyleOptionTab labelOption = *tabOption;
-                        labelOption.palette.setColor(QPalette::WindowText, lit ? QColor(0xFF, 0xFF, 0xFF) : QColor(0x95, 0x95, 0x95));
-                        labelOption.palette.setColor(QPalette::ButtonText, labelOption.palette.color(QPalette::WindowText));
+                        labelOption.rect = tabElement->contentsRect(option->rect);
+                        const QColor text = tabElement->face(option).m_text;
+                        labelOption.palette.setColor(QPalette::WindowText, text);
+                        labelOption.palette.setColor(QPalette::ButtonText, text);
                         QProxyStyle::drawControl(CE_TabBarTabLabel, &labelOption, painter, widget);
                         return;
                     }
@@ -770,22 +768,38 @@ namespace AzQtComponents
                     painter->fillRect(option->rect, QColor(Qt::black));
                     return;
                 }
-                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QHeaderView*>(widget))
+                if (StyleManager::stylesheetsDisabled() && hasFlattenedHeaderSection(widget))
                 {
+                    // The legacy draw was QCommonStyle's CE_Header over the section rule (qcommonstyle.cpp:2158-2178):
+                    // clipped to the section, the rule's fill (TableView.qss:69), the label in the rule's content box
+                    // (padding only, no border: qstylesheetstyle.cpp:6264-6270), then the base style's sort arrow.
                     // A header whose sections were made transparent by a local sheet
                     // (property "SectionBackground" = "transparent") shows the window colour.
+                    painter->save();
+                    painter->setClipRect(option->rect);
                     const bool transparentSections = widget->property("SectionBackground").toString() == QLatin1String("transparent");
                     painter->fillRect(option->rect, transparentSections ? QColor(0x44, 0x44, 0x44) : QColor(0x2D, 0x2D, 0x2D));
-                    painter->setPen(QColor(0x22, 0x22, 0x22));
-                    painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
-                    painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
                     if (auto headerOption = qstyleoption_cast<const QStyleOptionHeader*>(option))
                     {
+                        // font-size: 12px, font-style: normal (TableView.qss:72-73) over the painter's font, as
+                        // qstylesheetstyle.cpp:4142-4145 does; family and weight stay the viewport's
+                        QFont sectionFont;
+                        sectionFont.setPixelSize(g_headerSectionTextSize);
+                        sectionFont.setStyle(QFont::StyleNormal);
+                        painter->setFont(sectionFont.resolve(painter->font()));
+
                         QStyleOptionHeader labelOption = *headerOption;
-                        labelOption.rect = option->rect.adjusted(7, 0, -4, 0); // qss header pad-left 7
-                        labelOption.palette.setColor(QPalette::ButtonText, QColor(0xCC, 0xCC, 0xCC));
+                        labelOption.rect = option->rect.adjusted(g_headerSectionPaddingLeft, 0, 0, 0);
                         QProxyStyle::drawControl(CE_HeaderLabel, &labelOption, painter, widget);
+
+                        if (headerOption->sortIndicator != QStyleOptionHeader::None)
+                        {
+                            QStyleOptionHeader arrowOption = *headerOption;
+                            arrowOption.rect = QProxyStyle::subElementRect(SE_HeaderArrow, option, widget);
+                            QProxyStyle::drawPrimitive(PE_IndicatorHeaderArrow, &arrowOption, painter, widget);
+                        }
                     }
+                    painter->restore();
                     return;
                 }
                 if (qobject_cast<const QHeaderView*>(widget))
@@ -1069,6 +1083,41 @@ namespace AzQtComponents
         prepPainter(painter);
         switch (element)
         {
+            case PE_Widget:
+            {
+                // The tab element's bar and tab widget boxes (the stylesheet drew a widget's own
+                // background and border here, for widgets with WA_StyledBackground)
+                if (StyleManager::stylesheetsDisabled() && widget)
+                {
+                    if (widget->inherits("QTabBar"))
+                    {
+                        if (const TabElement* tabElement = TabElement::forTabBar(widget))
+                        {
+                            if (tabElement->m_barFill.isValid())
+                            {
+                                painter->fillRect(option->rect, tabElement->m_barFill);
+                            }
+                            TabElement::drawEdges(painter, option->rect, tabElement->m_barEdges);
+                            return;
+                        }
+                    }
+                    else if (widget->inherits("QTabWidget"))
+                    {
+                        if (const TabElement* tabElement = TabElement::forTabWidget(widget))
+                        {
+                            const QRect box = option->rect.marginsRemoved(tabElement->m_widgetMargins);
+                            if (tabElement->m_widgetFill.isValid())
+                            {
+                                painter->fillRect(box, tabElement->m_widgetFill);
+                            }
+                            TabElement::drawEdges(painter, box, tabElement->m_widgetEdges);
+                            return;
+                        }
+                    }
+                }
+            }
+            break;
+
             case PE_PanelLineEdit:
             {
                 if (LineEdit::drawFrame(this, option, painter, widget, m_data->lineEditConfig))
@@ -1186,6 +1235,12 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
+                    // The close button widget belongs to the tab bar (the stylesheet matched the bar)
+                    if (const TabElement* tabElement = TabElement::forTabBar(widget ? widget->parentWidget() : nullptr))
+                    {
+                        tabElement->drawClose(painter, option);
+                        return;
+                    }
                     if (option->state.testFlag(QStyle::State_MouseOver))
                     {
                         painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
@@ -1337,15 +1392,10 @@ namespace AzQtComponents
 
             case PE_FrameTabBarBase:
             {
-                // TabWidget.qss: qproperty-drawBase false; TabBar.Secondary.Bordered adds a 1px
-                // #111111 left + top line. TOKENIZE: TabBarBorderColor
-                if (StyleManager::stylesheetsDisabled() && widget && widget->inherits("AzQtComponents::TabBar"))
+                // Tab elements draw no base line (the stylesheet set drawBase false); the bar's
+                // own edges are part of its box (PE_Widget)
+                if (StyleManager::stylesheetsDisabled() && TabElement::forTabBar(widget))
                 {
-                    if (hasClass(widget, QStringLiteral("Secondary")) && hasClass(widget, QStringLiteral("Bordered")))
-                    {
-                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), 1, option->rect.height()), QColor(0x11, 0x11, 0x11));
-                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 1), QColor(0x11, 0x11, 0x11));
-                    }
                     return;
                 }
             }
@@ -1383,21 +1433,14 @@ namespace AzQtComponents
 
             case PE_FrameTabWidget:
             {
-                // TabWidget.qss: TabWidget:pane { border: 0 none }; .Secondary:pane adds a 2px
-                // #2B2B2B top line. TOKENIZE: SecondaryTabPaneLine
-                if (StyleManager::stylesheetsDisabled() && widget && widget->inherits("AzQtComponents::TabWidget"))
+                // The tab element's pane edges, on the pane rect (SE_TabWidgetTabPane)
+                if (StyleManager::stylesheetsDisabled())
                 {
-                    if (hasClass(widget, QStringLiteral("Secondary")))
+                    if (const TabElement* tabElement = TabElement::forTabWidget(widget))
                     {
-                        painter->fillRect(QRect(option->rect.left(), option->rect.top(), option->rect.width(), 2), QColor(0x2B, 0x2B, 0x2B));
-                        if (hasClass(widget, QStringLiteral("Bordered")))
-                        {
-                            // TabWidget.Secondary.Bordered { border: 1px solid #111111 }
-                            painter->setPen(QColor(0x11, 0x11, 0x11));
-                            painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-                        }
+                        TabElement::drawEdges(painter, option->rect, tabElement->m_paneEdges);
+                        return;
                     }
-                    return;
                 }
             }
             break;
@@ -1748,24 +1791,25 @@ namespace AzQtComponents
             return option->rect.adjusted(10, 1, -16, -1);
         }
 
+        // Text.qss tier margins; a tag is a whole word compared with case, as Qt's [class~=] (qcssparser.cpp:2168-2180)
         int margin = 1; // .Label, QLabel
-        if (Style::hasClass(widget, QStringLiteral("Headline")) || Style::hasClass(widget, QStringLiteral("Paragraph")))
+        if (TextElement::tagged(widget, "Headline") || TextElement::tagged(widget, "Paragraph"))
         {
             margin = 4;
         }
-        else if (Style::hasClass(widget, QStringLiteral("Title")))
+        else if (TextElement::tagged(widget, "Title"))
         {
             margin = 7;
         }
-        else if (Style::hasClass(widget, QStringLiteral("Subtitle")))
+        else if (TextElement::tagged(widget, "Subtitle"))
         {
             margin = 8;
         }
-        else if (Style::hasClass(widget, QStringLiteral("Menu")) || Style::hasClass(widget, QStringLiteral("Button")))
+        else if (TextElement::tagged(widget, "Menu") || TextElement::tagged(widget, "Button"))
         {
             margin = 6;
         }
-        else if (Style::hasClass(widget, QStringLiteral("Tooltip")))
+        else if (TextElement::tagged(widget, "Tooltip"))
         {
             margin = 2;
         }
@@ -1813,6 +1857,44 @@ namespace AzQtComponents
                     {
                         return r;
                     }
+                }
+            }
+            break;
+            case SE_TabWidgetTabBar:
+            case SE_TabWidgetTabPane:
+            case SE_TabWidgetTabContents:
+            {
+                // The tab element lays out its tab widget the way the stylesheet did: the bar at
+                // its left offset with a minimum slot height, the pane below the slot (or below the
+                // empty offset when there are no tabs), the contents inside the pane's edges and
+                // padding (legacy geometry: Bordered bar (1, 0, w, 33), pages (3, 35)).
+                const TabElement* tabElement = StyleManager::stylesheetsDisabled() ? TabElement::forTabWidget(widget) : nullptr;
+                auto frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame*>(option);
+                if (tabElement && frame)
+                {
+                    // Pane top = the bar's slot (when there are tabs) + the empty offset while the
+                    // widget carries the "Empty" class tag (TabWidget.Empty:pane { margin-top }). The
+                    // tag can outlive the first tab (log panels keep it), and the offset then sits
+                    // below the bar, as in the legacy run.
+                    const QRect area = frame->rect;
+                    const int barSlot = frame->tabBarSize.isEmpty() ? 0 : qMax(frame->tabBarSize.height(), tabElement->m_barAreaMinHeight);
+                    const int slot = barSlot + (hasClass(widget, QStringLiteral("Empty")) ? tabElement->m_paneEmptyOffset : 0);
+                    if (element == SE_TabWidgetTabBar)
+                    {
+                        const int left = area.left() + frame->leftCornerWidgetSize.width() + tabElement->m_barLeft;
+                        const int room = area.right() - frame->rightCornerWidgetSize.width() - left + 1;
+                        return QRect(left, area.top(), qMax(0, qMin(frame->tabBarSize.width(), room)),
+                            qMax(frame->tabBarSize.height(), tabElement->m_barAreaMinHeight));
+                    }
+                    const QRect pane(area.left(), area.top() + slot, area.width(), area.height() - slot);
+                    if (element == SE_TabWidgetTabPane)
+                    {
+                        return pane;
+                    }
+                    const TabElement::Edges& edges = tabElement->m_paneEdges;
+                    const QMargins& padding = tabElement->m_panePadding;
+                    return pane.adjusted(edges.m_left.m_width + padding.left(), edges.m_top.m_width + padding.top(),
+                        -(edges.m_right.m_width + padding.right()), -(edges.m_bottom.m_width + padding.bottom()));
                 }
             }
             break;
@@ -1877,6 +1959,17 @@ namespace AzQtComponents
             // Indicator footprints from CheckBox.qss / RadioButton.qss (16x16; toggle switch 32x16)
             switch (metric)
             {
+                case PM_TabBarTabHSpace:
+                case PM_TabBarTabVSpace:
+                case PM_TabBarTabShiftHorizontal:
+                case PM_TabBarTabShiftVertical:
+                    // A tab element's box replaces Qt's tab spacing and the selected-tab shift
+                    // (QStyleSheetStyle returned 0 for a tab rule with a box or border)
+                    if (TabElement::forTabBar(widget))
+                    {
+                        return 0;
+                    }
+                    break;
                 case PM_IndicatorWidth:
                     return (widget && hasClass(widget, QStringLiteral("ToggleSwitch"))) ? 32 : 16;
                 case PM_IndicatorHeight:
@@ -2075,56 +2168,16 @@ namespace AzQtComponents
     //////////////////////////////////////////////////////////////////////////
     // Flattened typography (GUI flattening)
     //
-    // Text.qss set per-class font sizes and colors on QLabel via the
-    // Text::add*Style/add*Color class tags. The app-wide Open Sans 12px font
-    // already covers Label/Menu/Paragraph/Tooltip; only the larger tiers and
-    // the color classes need explicit owners here.
+    // Text.qss set the colors of QLabel via the secondaryText, highlightedText and
+    // blackText class tags (Text::addSecondaryStyle, addHighlightedStyle, addBlackStyle).
+    // The font sizes and weights of the tiers are TextElement's, applied first in
+    // Style::polish.
     //////////////////////////////////////////////////////////////////////////
     static void applyFlattenedTypographyStyle(QWidget* widget)
     {
         if (!widget->inherits("QLabel"))
         {
             return;
-        }
-
-        int pixelSize = 0;
-        if (Style::hasClass(widget, QStringLiteral("Headline")))
-        {
-            pixelSize = 24;
-        }
-        else if (Style::hasClass(widget, QStringLiteral("Title")))
-        {
-            pixelSize = 18;
-        }
-        else if (Style::hasClass(widget, QStringLiteral("Subtitle")))
-        {
-            pixelSize = 16;
-        }
-
-        // Text.qss font weights: Headline / Subtitle 250, Button 570 (others 400)
-        // TOKENIZE: HeadlineWeight, SubtitleWeight, ButtonTextWeight
-        int weight = 0;
-        if (Style::hasClass(widget, QStringLiteral("Headline")) || Style::hasClass(widget, QStringLiteral("Subtitle")))
-        {
-            weight = 250;
-        }
-        else if (Style::hasClass(widget, QStringLiteral("Button")))
-        {
-            weight = 570;
-        }
-
-        if (pixelSize > 0 || weight > 0)
-        {
-            QFont classFont = widget->font();
-            if (pixelSize > 0)
-            {
-                classFont.setPixelSize(pixelSize);
-            }
-            if (weight > 0)
-            {
-                classFont.setWeight(static_cast<QFont::Weight>(weight));
-            }
-            widget->setFont(classFont);
         }
 
         // The class tags arrive after construction; re-read the label's frame box
@@ -2134,16 +2187,17 @@ namespace AzQtComponents
             frame->setFrameStyle(frame->frameStyle());
         }
 
+        // Text.qss colour tags, whole words compared with case (qcssparser.cpp:2168-2180)
         QColor textColor;
-        if (Style::hasClass(widget, QStringLiteral("secondaryText")))
+        if (TextElement::tagged(widget, "secondaryText"))
         {
             textColor = QColor(0x88, 0x88, 0x88);
         }
-        else if (Style::hasClass(widget, QStringLiteral("highlightedText")))
+        else if (TextElement::tagged(widget, "highlightedText"))
         {
             textColor = QColor(0x44, 0xB2, 0xF8);
         }
-        else if (Style::hasClass(widget, QStringLiteral("blackText")))
+        else if (TextElement::tagged(widget, "blackText"))
         {
             textColor = QColor(0x00, 0x00, 0x00);
         }
@@ -2193,7 +2247,10 @@ namespace AzQtComponents
         entryPalette.setColor(QPalette::Inactive, QPalette::Base, base);
         entryPalette.setColor(QPalette::Active, QPalette::Text, text);
         entryPalette.setColor(QPalette::Inactive, QPalette::Text, text);
-        entryPalette.setColor(QPalette::Disabled, QPalette::Base, QColor(0x66, 0x66, 0x66));   // QLineEdit:disabled background
+        // The :disabled field of the entry classes, the only owner of a disabled Base: LineEdit.qss:28-35
+        // (QLineEdit, QTextEdit, QPlainTextEdit), SpinBox.qss:69-74, ComboBox.qss:53-57.
+        // TOKENIZE: TextEntryDisabledFieldColor
+        entryPalette.setColor(QPalette::Disabled, QPalette::Base, QColor(0x66, 0x66, 0x66));
         entryPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(0x99, 0x99, 0x99));   // QLineEdit:disabled color
 
         if (isTextEdit)
@@ -2236,6 +2293,10 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
+            // Fonts first: the text element of the widget (its class tags, its place in the window) over the font
+            // Qt gives it. Under an inline style sheet too: QStyleSheetStyle::polish calls this style's polish first.
+            TextElement::apply(widget);
+
             applyFlattenedTextEntryPalette(widget);
 
             // Combo box popups share the menu chrome (Menu.qss #222222); the
@@ -2243,16 +2304,6 @@ namespace AzQtComponents
             if (widget->inherits("QComboBoxPrivateContainer"))
             {
                 widget->setPalette(buildO3DEMenuPalette(widget->palette()));
-            }
-
-            // MenuBar.qss: font-family "Amazon Ember" 12px (the sheet's family, which the
-            // platform resolves the same way it did for the sheet). TOKENIZE: MenuBarFont
-            if (widget->inherits("QMenuBar"))
-            {
-                QFont menuBarFont = widget->font();
-                menuBarFont.setFamily(QStringLiteral("Amazon Ember"));
-                menuBarFont.setPixelSize(12);
-                widget->setFont(menuBarFont);
             }
 
             // TableView.qss: QTableView/QListView/QTreeView { border: none } and
@@ -2332,16 +2383,7 @@ namespace AzQtComponents
                 }
             }
 
-            // TabWidget.qss: the TabWidget itself is the #111111 backdrop; the stacked
-            // page area sits on #444444
-            if (widget->inherits("AzQtComponents::TabWidget"))
-            {
-                // TabWidget.qss: TabWidget.Secondary { background-color: #444444 }
-                QPalette tabWidgetPalette = widget->palette();
-                tabWidgetPalette.setColor(QPalette::Window, hasClass(widget, QStringLiteral("Secondary")) ? QColor(0x44, 0x44, 0x44) : QColor(0x11, 0x11, 0x11));
-                widget->setPalette(tabWidgetPalette);
-                widget->setAutoFillBackground(true);
-            }
+            // TabWidget.qss: the stacked page area of a tab widget sits on #444444
             if (widget->inherits("QStackedWidget") && widget->parentWidget()
                 && widget->parentWidget()->inherits("AzQtComponents::TabWidget"))
             {
@@ -2351,19 +2393,42 @@ namespace AzQtComponents
                 widget->setAutoFillBackground(true);
             }
 
-            // Tab bars: qss-era #111111 row backdrop + no native base line. DockTabBar
-            // (docked panel strips) keeps its own treatment.
-            if (widget->inherits("QTabBar") && !widget->inherits("AzQtComponents::DockTabBar"))
+            // Tab elements: resolved once here (adding or removing a class tag re-polishes);
+            // the bar and its tab widget paint their own boxes through PE_Widget.
+            if (widget->inherits("QTabBar"))
             {
-                if (auto tabBar = qobject_cast<QTabBar*>(widget))
+                if (const TabElement* tabElement = TabElement::resolve(widget))
                 {
-                    tabBar->setDrawBase(false);
+                    static_cast<QTabBar*>(widget)->setDrawBase(false);
+                    widget->setAttribute(Qt::WA_StyledBackground, true);
+                    widget->setAutoFillBackground(false);
+                    // The stylesheet set the minimum outright (replacing a code-set one, e.g. the
+                    // DockTabBar's fixed 32), as min-height plus the bar's own edges
+                    widget->setMinimumHeight(tabElement->m_barMinHeight + tabElement->m_barEdges.m_top.m_width
+                        + tabElement->m_barEdges.m_bottom.m_width);
                 }
-                // TabWidget.qss: TabBar.Secondary rows sit on the #444444 tab widget
-                QPalette tabPalette = widget->palette();
-                tabPalette.setColor(QPalette::Window, hasClass(widget, QStringLiteral("Secondary")) ? QColor(0x44, 0x44, 0x44) : QColor(0x11, 0x11, 0x11));
-                widget->setPalette(tabPalette);
-                widget->setAutoFillBackground(true);
+            }
+            if (widget->inherits("QTabWidget"))
+            {
+                if (const TabElement* tabElement = TabElement::forTabWidget(widget))
+                {
+                    widget->setAttribute(Qt::WA_StyledBackground, true);
+                    widget->setAutoFillBackground(false);
+                    if (tabElement->m_widgetHeight > 0)
+                    {
+                        // height + max-height in the stylesheet: the widget is that tall
+                        widget->setMinimumHeight(tabElement->m_widgetHeight);
+                        widget->setMaximumHeight(tabElement->m_widgetHeight);
+                    }
+                    // The action toolbar container in the top-right corner: min-height plus
+                    // margin-bottom make its height, and its contents sit above the margin
+                    QWidget* corner = static_cast<QTabWidget*>(widget)->cornerWidget(Qt::TopRightCorner);
+                    if (corner && corner->inherits("AzQtComponents::TabWidgetActionToolBarContainer") && tabElement->m_cornerMinHeight > 0)
+                    {
+                        corner->setMinimumHeight(tabElement->m_cornerMinHeight + tabElement->m_cornerMarginBottom);
+                        corner->setContentsMargins(0, 0, 0, tabElement->m_cornerMarginBottom);
+                    }
+                }
             }
 
             // Headers: TableView.qss flat #2d2d2d sections (Fusion draws from Button)
@@ -2371,7 +2436,11 @@ namespace AzQtComponents
             {
                 QPalette headerPalette = widget->palette();
                 headerPalette.setColor(QPalette::Button, QColor(0x2D, 0x2D, 0x2D));
-                headerPalette.setColor(QPalette::ButtonText, QColor(0xCC, 0xCC, 0xCC));
+                // The section rule sets no colour: the '*' rule's white (BaseStyleSheet.qss:18) reached the label
+                // (ButtonText) and the sort arrow (WindowText) in every state, disabled included (the legacy
+                // palette dump of LuaIDE's two disabled headers has both white in its disabled group)
+                headerPalette.setColor(QPalette::ButtonText, QColor(Qt::white));
+                headerPalette.setColor(QPalette::WindowText, QColor(Qt::white));
                 // What shows through a section painted transparent by an inline sheet
                 // (e.g. the Gallery log table) is the window colour, as in the legacy render.
                 headerPalette.setColor(QPalette::Window, QColor(0x44, 0x44, 0x44));
@@ -2379,7 +2448,7 @@ namespace AzQtComponents
                 widget->setPalette(headerPalette);
             }
 
-            // Text.qss class-driven typography
+            // Text.qss class-driven label box and text colors
             applyFlattenedTypographyStyle(widget);
 
             // Scroll area corner tile: mirrors the qss [ShowBackground=true] rule.
@@ -2560,6 +2629,16 @@ namespace AzQtComponents
         if (hint == QStyle::SH_ComboBox_Popup && StyleManager::stylesheetsDisabled())
         {
             return 0;
+        }
+
+        // Tab bars: the tab element gives how long a moved tab takes to slide into place. QTabBar
+        // animates only above 0; the legacy stylesheet set 0 (TabWidget.qss:46), so tabs snap.
+        if (hint == QStyle::SH_Widget_Animation_Duration && StyleManager::stylesheetsDisabled() && widget && widget->inherits("QTabBar"))
+        {
+            if (const TabElement* tabElement = TabElement::forTabBar(widget))
+            {
+                return tabElement->m_moveAnimationDuration;
+            }
         }
 
         if (!hasStyle(widget))
@@ -2815,6 +2894,12 @@ namespace AzQtComponents
     // palette keeps Base dark for the views; text-entry widget classes get
     // their light palette in Style::polish(QWidget*) below, mirroring the
     // QLineEdit/QSpinBox/QComboBox rule from BaseStyleSheet.qss.
+    //
+    // The same holds for the disabled group: the :disabled backgrounds that
+    // reach a widget painted from Base are the entry classes' alone
+    // (LineEdit.qss:28-35, SpinBox.qss:69-74, ComboBox.qss:53-57), so a view
+    // keeps its enabled Base when disabled (BaseStyleSheet.qss:23-38 has no
+    // :disabled rule); the #666666 belongs to applyFlattenedTextEntryPalette.
     //////////////////////////////////////////////////////////////////////////
     static QPalette buildO3DEBasePalette()
     {
@@ -2825,7 +2910,6 @@ namespace AzQtComponents
         const QColor alternateBase(0x4D, 0x4D, 0x4D);   // TableView.qss alternate-background-color: rgb(77,77,77)
         const QColor textWhite(0xFF, 0xFF, 0xFF);       // global '*' rule color: white
         const QColor disabledText(0x99, 0x99, 0x99);    // QLineEdit:disabled color: #999999
-        const QColor disabledBase(0x66, 0x66, 0x66);    // QLineEdit:disabled background-color: #666666
 
         // Buttons and the 3D bevel ladder (Fusion derives frame/bevel shading from these)
         const QColor button(0x55, 0x55, 0x55);          // mid button surface (Original shared palette)
@@ -2874,7 +2958,7 @@ namespace AzQtComponents
         // Disabled group
         palette.setColor(QPalette::Disabled, QPalette::Window, window);
         palette.setColor(QPalette::Disabled, QPalette::WindowText, disabledText);
-        palette.setColor(QPalette::Disabled, QPalette::Base, disabledBase);
+        palette.setColor(QPalette::Disabled, QPalette::Base, viewBase);     // views: no :disabled rule (BaseStyleSheet.qss:23-38)
         palette.setColor(QPalette::Disabled, QPalette::AlternateBase, alternateBase);
         palette.setColor(QPalette::Disabled, QPalette::Text, disabledText);
         palette.setColor(QPalette::Disabled, QPalette::PlaceholderText, disabledText);
@@ -2972,6 +3056,9 @@ namespace AzQtComponents
                 menuBarPalette.setColor(group, QPalette::Highlight, QColor(0x55, 0x55, 0x55));
             }
             application->setPalette(menuBarPalette, "QMenuBar");
+
+            // Class fonts: Qt rebuilt them from the platform in this setStyle, right before this polish
+            TextElement::installClassFonts();
         }
 
         // need to listen to and fix tooltips so that they wrap

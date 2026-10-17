@@ -49,19 +49,14 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
-            // Menu.qss QMenu { background-color: #222222 }, ::item:disabled color #555555, and
-            // the family the sheet gave every QMenu (Open Sans at the platform 9pt size).
-            // TOKENIZE: MenuSurfaceColor, MenuDisabledTextColor, MenuFontFamily
+            // Menu.qss QMenu { background-color: #222222 }, ::item:disabled color #555555. The font is
+            // the QMenu class font (TextElement::installClassFonts). TOKENIZE: MenuSurfaceColor, MenuDisabledTextColor
             QPalette menuPalette = menu->palette();
             menuPalette.setColor(QPalette::Window, QColor(0x22, 0x22, 0x22));
             menuPalette.setColor(QPalette::Base, QColor(0x22, 0x22, 0x22));
             menuPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(0x55, 0x55, 0x55));
             menuPalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(0x55, 0x55, 0x55));
             menu->setPalette(menuPalette);
-
-            QFont menuFont = menu->font();
-            menuFont.setFamily(QStringLiteral("Open Sans"));
-            menu->setFont(menuFont);
         }
 
         style->repolishOnSettingsChange(widget);

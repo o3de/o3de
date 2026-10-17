@@ -432,13 +432,9 @@ namespace AzQtComponents
                 cardHeader->m_backgroundLayout->setSpacing(4);
                 cardHeader->m_backgroundLayout->setContentsMargins(0, 0, 0, 0);
 
-                // #Title { font-weight: bold }; ColorPicker.qss: PaletteCardBase CardHeader #Title
-                // { font-weight: normal }  TOKENIZE: CardTitleFontWeight
-                const bool paletteCardHeader = cardHeader->parentWidget()
-                    && cardHeader->parentWidget()->inherits("AzQtComponents::PaletteCardBase");
-                QFont titleFont = cardHeader->m_titleLabel->font();
-                titleFont.setBold(!paletteCardHeader);
-                cardHeader->m_titleLabel->setFont(titleFont);
+                // #Title { font-weight: bold }, normal inside a palette card: TextElement CardTitle, applied when
+                // each #Title label of the header is polished (the title and the hidden label its ElidingLabel
+                // measures the size hint with; ElidingLabel::setObjectName names both)
 
                 // CardHeader[contentModified=true] * { color: #E57829 }
                 // TOKENIZE: CardModifiedTextColor

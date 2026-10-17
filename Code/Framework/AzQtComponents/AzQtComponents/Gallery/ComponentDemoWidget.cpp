@@ -42,6 +42,7 @@
 #include "TreeViewPage.h"
 #include "TypographyPage.h"
 
+#include <AzQtComponents/Components/UiCaptureHarness.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 
 #include <QAction>
@@ -261,6 +262,7 @@ void ComponentDemoWidget::captureAllPages(const QString& outputDirPath)
 
         const QPixmap pageGrab = window()->grab();
         pageGrab.save(baseName + QStringLiteral(".png"));
+        AzQtComponents::UiCaptureHarness::record(window(), baseName);
         dumpPageGeometry(ui->demoWidgetStack->currentWidget(), baseName + QStringLiteral("__geometry.txt"));
 
         capturePageInteractions(outputDirPath, pageIndex, pageName);
@@ -425,13 +427,19 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
     {
         settleForCapture();
     };
-    const auto capturePath = [outputDirPath, pageIndex, pageName](const QString& suffix)
+    const auto captureBase = [outputDirPath, pageIndex, pageName](const QString& suffix)
     {
-        return QStringLiteral("%1/%2_%3__%4.png")
+        return QStringLiteral("%1/%2_%3__%4")
             .arg(outputDirPath)
             .arg(pageIndex, 2, 10, QLatin1Char('0'))
             .arg(pageName)
             .arg(suffix);
+    };
+    // Grab + widget dump + stylesheet census for one capture.
+    const auto capture = [captureBase](QWidget* widget, const QString& suffix)
+    {
+        widget->grab().save(captureBase(suffix) + QStringLiteral(".png"));
+        AzQtComponents::UiCaptureHarness::record(widget, captureBase(suffix));
     };
 
     // Toggled state: open every tree and flip every card, so the state the base
@@ -451,7 +459,7 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
     if (toggledAnything)
     {
         settle();
-        window()->grab().save(capturePath(QStringLiteral("toggled")));
+        capture(window(), QStringLiteral("toggled"));
     }
 
     // Combo popups: open each visible combo on the page and grab the popup window
@@ -473,7 +481,7 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         }
         if (popup)
         {
-            popup->grab().save(capturePath(QStringLiteral("combo%1-popup").arg(comboIndex)));
+            capture(popup, QStringLiteral("combo%1-popup").arg(comboIndex));
         }
         else
         {
@@ -503,25 +511,25 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
             continue;
         }
 
-        const QString dialogCapturePath = capturePath(QStringLiteral("dialog%1").arg(dialogIndex));
+        const QString dialogSuffix = QStringLiteral("dialog%1").arg(dialogIndex);
         auto* watchdog = new QTimer(this);
         watchdog->setInterval(kDialogPollIntervalMs);
         auto attempts = std::make_shared<int>(0);
-        connect(watchdog, &QTimer::timeout, this, [watchdog, attempts, dialogCapturePath, settle]()
+        connect(watchdog, &QTimer::timeout, this, [watchdog, attempts, dialogSuffix, settle, capture]()
         {
             ++(*attempts);
             if (QWidget* modal = QApplication::activeModalWidget())
             {
                 settle();
                 // window() includes the WindowDecorationWrapper chrome the dialog was wrapped in
-                modal->window()->grab().save(dialogCapturePath);
+                capture(modal->window(), dialogSuffix);
                 modal->close();
                 watchdog->stop();
                 watchdog->deleteLater();
             }
             else if (*attempts >= kDialogPollAttempts)
             {
-                qWarning() << "captureAllPages: no modal dialog appeared for" << dialogCapturePath;
+                qWarning() << "captureAllPages: no modal dialog appeared for" << dialogSuffix;
                 watchdog->stop();
                 watchdog->deleteLater();
             }
@@ -560,7 +568,7 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
     QWidget* dockSearchRoot = dockHost ? dockHost : page;
     if (dockHost)
     {
-        dockHost->grab().save(capturePath(QStringLiteral("dockmain")));
+        capture(dockHost, QStringLiteral("dockmain"));
     }
 
     int dockIndex = 0;
@@ -572,7 +580,7 @@ void ComponentDemoWidget::capturePageInteractions(const QString& outputDirPath, 
         }
         dockWidget->setFloating(true);
         settle();
-        dockWidget->window()->grab().save(capturePath(QStringLiteral("dock%1-floating").arg(dockIndex)));
+        capture(dockWidget->window(), QStringLiteral("dock%1-floating").arg(dockIndex));
         dockWidget->setFloating(false);
         settle();
         if (++dockIndex >= 3)

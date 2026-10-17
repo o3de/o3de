@@ -24,12 +24,14 @@ AZ_POP_DISABLE_WARNING
 #include <QString>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QVector>
 #include <QWidget>
 
 #include <AzQtComponents/Components/AutoCustomWindowDecorations.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
+#include <AzQtComponents/Components/UiCaptureHarness.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 namespace AzQtComponents
@@ -74,6 +76,35 @@ namespace AzQtComponents
         return areStyleSheetsDisabled();
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flat sheets (GUI flattening work)
+    //
+    // Where legacy setStyleSheet(widget, sheet) replaced the widget's own style
+    // sheet with the file's, the flattened GUI clears the widget's own sheet and
+    // carries the file's rules as elements: a module registers the function that
+    // defines them (registerFlatSheet) and setStyleSheet runs it, once per sheet.
+    // A sheet nobody registered is logged once, which lists the sheets still to
+    // carry.
+    //////////////////////////////////////////////////////////////////////////
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
+    //! with others into one translation unit, where anonymous namespaces merge (TextElement.cpp does the same).
+    namespace StyleManagerInternal
+    {
+        struct FlatSheet
+        {
+            QVector<StyleManager::FlatSheetRegistrar> m_registrars;
+            bool m_applied = false;     //!< a widget was given the sheet: its registrars have run
+        };
+
+        //! By the name a sheet is loaded by (with the extension)
+        QHash<QString, FlatSheet>& flatSheets()
+        {
+            static QHash<QString, FlatSheet> sheets;
+            return sheets;
+        }
+    } // namespace StyleManagerInternal
+
     void StyleManager::addSearchPaths(
         const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix, const AZ::IO::PathView& engineRootPath)
     {
@@ -100,11 +131,6 @@ namespace AzQtComponents
             return false;
         }
 
-        if (areStyleSheetsDisabled())
-        {
-            return false;
-        }
-
         if (!styleFileName.endsWith(StyleSheetCache::styleSheetExtension()))
         {
             styleFileName.append(StyleSheetCache::styleSheetExtension());
@@ -116,6 +142,14 @@ namespace AzQtComponents
             return false;
         }
 
+        // The flattened GUI sets no sheet. The file is resolved as legacy resolved it (a sheet it never found
+        // replaced nothing), and the widget's own sheet goes as the file's replaced it.
+        if (areStyleSheetsDisabled())
+        {
+            applyFlatSheet(widget, styleFileName);
+            return false;
+        }
+
         s_instance->m_widgetToStyleSheetMap.insert(widget, styleFileName);
 
         connect(widget, &QObject::destroyed, s_instance, &StyleManager::stopTrackingWidget, Qt::UniqueConnection);
@@ -123,6 +157,58 @@ namespace AzQtComponents
         widget->setStyleSheet(styleSheet);
 
         return true;
+    }
+
+    void StyleManager::registerFlatSheet(const QString& styleFileName, FlatSheetRegistrar registrar)
+    {
+        QString name = styleFileName;
+        if (!name.endsWith(StyleSheetCache::styleSheetExtension()))
+        {
+            name.append(StyleSheetCache::styleSheetExtension());
+        }
+
+        StyleManagerInternal::FlatSheet& sheet = StyleManagerInternal::flatSheets()[name];
+        if (sheet.m_registrars.contains(registrar))
+        {
+            return;
+        }
+        sheet.m_registrars.append(registrar);
+
+        // The sheet was set before this call: the widgets it reached are built, and the element registries
+        // resolve the polished ones again
+        if (sheet.m_applied)
+        {
+            registrar();
+        }
+    }
+
+    void StyleManager::applyFlatSheet(QWidget* widget, const QString& styleFileName)
+    {
+        // Legacy replaced the sheet the widget had. One that only follows the sheet of a parent is left alone:
+        // clearing it would repolish it for nothing (qwidget.cpp:2595-2600, 2753-2764).
+        if (!widget->styleSheet().isEmpty())
+        {
+            widget->setStyleSheet(QString());
+        }
+
+        StyleManagerInternal::FlatSheet& sheet = StyleManagerInternal::flatSheets()[styleFileName];
+        if (sheet.m_applied)
+        {
+            return;
+        }
+        sheet.m_applied = true;
+
+        // A registrar may register sheets, which moves the hash: copied, and 'sheet' is not read again
+        const QVector<FlatSheetRegistrar> registrars = sheet.m_registrars;
+        if (registrars.isEmpty())
+        {
+            AZ_Info("StyleManager", "Flat sheet '%s' has no registrar, its rules are not carried (first set on %s '%s').\n",
+                styleFileName.toUtf8().constData(), widget->metaObject()->className(), widget->objectName().toUtf8().constData());
+        }
+        for (FlatSheetRegistrar registrar : registrars)
+        {
+            registrar();
+        }
     }
 
     QStyle* StyleManager::styleSheetStyle(const QWidget* widget)
@@ -253,6 +339,9 @@ namespace AzQtComponents
             {
                 refresh();
             });
+
+        // HARNESS (flatten capture, not product code): no-op unless O3DE_UI_CAPTURE_DIR is set.
+        UiCaptureHarness::installIfRequested(application);
     }
 
     void StyleManager::cleanupStyles()

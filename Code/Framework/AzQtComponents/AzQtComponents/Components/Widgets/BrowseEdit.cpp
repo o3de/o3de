@@ -193,28 +193,43 @@ namespace AzQtComponents
         return LineEdit::defaultConfig();
     }
 
-    // BrowseEdit.qss: .ValidDropTarget QLineEdit { background-color: transparent } (the blue
-    // frame fill painted by BrowseEdit::drawFrame shows through), .InvalidDropTarget QLineEdit
-    // { background-color: #FFFFFF }, otherwise #CCCCCC. Re-applied whenever the drop-target
-    // class changes, since the style-sheet repolish is a no-op in flattened mode.
-    // TOKENIZE: BrowseEditFieldColor, BrowseEditInvalidDropFieldColor
-    static void applyFlattenedDropTargetField(const BrowseEdit* browseEdit, QLineEdit* lineEdit)
+    // The field of the line edit inside a BrowseEdit, as the sheets painted it: the QLineEdit
+    // rule gave #CCCCCC with black text (BaseStyleSheet.qss:76-77), :disabled #666666 with #999999
+    // text (LineEdit.qss:33-34). .ValidDropTarget QLineEdit { background-color: transparent }
+    // (BrowseEdit.qss:35: the blue frame fill painted by BrowseEdit::drawFrame shows through) and
+    // .InvalidDropTarget QLineEdit { background-color: #FFFFFF } (BrowseEdit.qss:41) outrank
+    // :disabled, so they hold in every state. A style sheet derives the placeholder from the text
+    // color at half alpha (qstylesheetstyle.cpp:1459-1463): #80000000, #80999999 when disabled.
+    // Runs after LineEdit::polish, whose #888888 placeholder it replaces. Style::addClass and
+    // removeClass polish the BrowseEdit, so a drop-target class change lands here too.
+    // TOKENIZE: BrowseEditFieldColor, BrowseEditDisabledFieldColor, BrowseEditTextColor,
+    // BrowseEditDisabledTextColor, BrowseEditInvalidDropFieldColor
+    static void applyFlattenedFieldPalette(const BrowseEdit* browseEdit, QLineEdit* lineEdit)
     {
         if (!StyleManager::stylesheetsDisabled() || !lineEdit)
         {
             return;
         }
-        QPalette fieldPalette = lineEdit->palette();
         QColor field(0xCC, 0xCC, 0xCC);
+        QColor disabledField(0x66, 0x66, 0x66);
         if (Style::hasClass(browseEdit, ValidDropTarget))
         {
-            field = Qt::transparent;
+            field = disabledField = Qt::transparent;
         }
         else if (Style::hasClass(browseEdit, InvalidDropTarget))
         {
-            field = QColor(0xFF, 0xFF, 0xFF);
+            field = disabledField = QColor(0xFF, 0xFF, 0xFF);
         }
-        fieldPalette.setColor(QPalette::Base, field);
+        QPalette fieldPalette = lineEdit->palette();
+        for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
+        {
+            const bool disabled = group == QPalette::Disabled;
+            QColor text = disabled ? QColor(0x99, 0x99, 0x99) : QColor(Qt::black);
+            fieldPalette.setColor(group, QPalette::Base, disabled ? disabledField : field);
+            fieldPalette.setColor(group, QPalette::Text, text);
+            text.setAlpha((text.alpha() + 1) / 2);
+            fieldPalette.setColor(group, QPalette::PlaceholderText, text);
+        }
         lineEdit->setPalette(fieldPalette);
         lineEdit->update();
     }
@@ -224,7 +239,7 @@ namespace AzQtComponents
         BrowseEdit::removeDropTargetStyle(browseEdit);
         Style::addClass(browseEdit, valid ? ValidDropTarget : InvalidDropTarget);
         StyleManager::repolishStyleSheet(browseEdit);
-        applyFlattenedDropTargetField(browseEdit, browseEdit->m_data->m_lineEdit);
+        applyFlattenedFieldPalette(browseEdit, browseEdit->m_data->m_lineEdit);
         browseEdit->update();
     }
 
@@ -233,7 +248,7 @@ namespace AzQtComponents
         Style::removeClass(browseEdit, ValidDropTarget);
         Style::removeClass(browseEdit, InvalidDropTarget);
         StyleManager::repolishStyleSheet(browseEdit);
-        applyFlattenedDropTargetField(browseEdit, browseEdit->m_data->m_lineEdit);
+        applyFlattenedFieldPalette(browseEdit, browseEdit->m_data->m_lineEdit);
         browseEdit->update();
     }
 
@@ -311,7 +326,7 @@ namespace AzQtComponents
             auto lineEdit = browseEdit->m_data->m_lineEdit;
             LineEdit::polish(style, lineEdit, lineEditConfig);
 
-            applyFlattenedDropTargetField(browseEdit, lineEdit);
+            applyFlattenedFieldPalette(browseEdit, lineEdit);
 
             QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
             if (action)

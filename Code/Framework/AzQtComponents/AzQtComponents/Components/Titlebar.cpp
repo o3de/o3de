@@ -19,7 +19,6 @@
 
 #include <QApplication>
 #include <QDockWidget>
-#include <QFont>
 #include <QLabel>
 #include <QMenu>
 #include <QMouseEvent>
@@ -499,10 +498,8 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
-            // TitleBar.qss #title: font-size 14px, margin-left 10px, margin-right 16px
-            QFont titleFont = titleBar->m_label->font();
-            titleFont.setPixelSize(14);
-            titleBar->m_label->setFont(titleFont);
+            // TitleBar.qss #title: margin-left 10px, margin-right 16px (its font-size 14px is TextElement's
+            // TitleBarTitle, applied to every #title label of the bar)
             titleBar->m_label->setContentsMargins(10, 0, 16, 0);
         }
         titleBar->m_showLabelWhenSimple = config.title.visibleWhenSimple;

@@ -33,6 +33,10 @@ set(FILES
     Components/DockTabBar.h
     Components/DockTabWidget.cpp
     Components/DockTabWidget.h
+    Components/Elements/TabElement.cpp
+    Components/Elements/TabElement.h
+    Components/Elements/TextElement.cpp
+    Components/Elements/TextElement.h
     Components/FancyDocking.cpp
     Components/FancyDocking.h
     Components/FancyDockingGhostWidget.cpp
@@ -87,6 +91,8 @@ set(FILES
     Components/StyleSheetCache.h
     Components/StylesheetPreprocessor.cpp
     Components/StylesheetPreprocessor.h
+    Components/UiCaptureHarness.cpp
+    Components/UiCaptureHarness.h
     Components/TagSelector.cpp
     Components/TagSelector.h
     Components/ToolBarArea.cpp

@@ -48,7 +48,7 @@ block()
     # The rest of these are all specific settings that come from Assimp's CMakeLists.txt files.
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
     set(ASSIMP_BUILD_TESTS OFF)
-    set(ASSIMP_BUILD_USD_IMPORTER ON)
+    set(ASSIMP_BUILD_USD_IMPORTER OFF)
     set(ASSIMP_BUILD_USE_CCACHE OFF)
     set(ASSIMP_BUILD_ZLIB OFF)  # Don't rebuild ZLIB. O3DE's comes with its own ZLIB 3rdParty package.
     set(ASSIMP_HUNTER_ENABLED OFF)

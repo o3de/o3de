@@ -573,6 +573,29 @@ namespace AzToolsFramework
         AZ::s32 m_componentEditorsUsed;
         ComponentEditorVector m_componentEditors;
 
+        // I.2 refresh diagnostics (ed_inspectorRefreshDiagnostics): component composition of the last completed
+        // UpdateContents, used to measure how often consecutive full rebuilds share composition -- i.e. how many
+        // could instead be value-only refreshes that reuse the existing widget tree.
+        AZStd::vector<AZ::Uuid> m_lastBuiltComponentSignature;
+        size_t m_lastBuiltSelectionCount = 0;
+
+        // D1c per-component sub-phase accumulators (microseconds), populated by BuildSharedComponentUI and reported by
+        // UpdateContents when m_inspectorDiagnosticsActive. Localizes which per-component call dominates the buildUI phase.
+        bool m_inspectorDiagnosticsActive = false;
+        AZ::s64 m_diagCreateEditorUs = 0;
+        AZ::s64 m_diagAddInstanceUs = 0;
+        AZ::s64 m_diagOverrideVizUs = 0;
+        AZ::s64 m_diagNotificationsUs = 0;
+        AZ::s64 m_diagInvalidateUs = 0;
+        AZ::s64 m_diagShowUs = 0;
+
+        // Per-substep timing of the pool-wide teardown loop in ClearInstances (microseconds), to localize whether the
+        // clear cost is hide() (layout, NOT deferrable) or the per-editor content clear (deferrable). Reported when
+        // m_inspectorDiagnosticsActive.
+        AZ::s64 m_diagClearHideUs = 0;
+        AZ::s64 m_diagClearContentUs = 0;
+        AZ::s64 m_diagClearPreventUs = 0;
+
         using ComponentPropertyEditorMap = AZStd::unordered_map<AZ::Component*, ComponentEditor*>;
         ComponentPropertyEditorMap m_componentToEditorMap;
 
