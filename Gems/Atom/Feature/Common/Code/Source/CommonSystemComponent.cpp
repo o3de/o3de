@@ -44,6 +44,7 @@
 #include <DisplayMapper/DisplayMapperFullScreenPass.h>
 #include <DisplayMapper/DisplayMapperPass.h>
 #include <DisplayMapper/OutputTransformPass.h>
+#include <GradientGI/GradientGIFeatureProcessor.h>
 #include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <Mesh/MeshFeatureProcessor.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
@@ -134,6 +135,7 @@ namespace AZ
             Transform2DFunctor::Reflect(context);
             MeshFeatureProcessor::Reflect(context);
             ImageBasedLightFeatureProcessor::Reflect(context);
+            GradientGIFeatureProcessor::Reflect(context);
             AcesDisplayMapperFeatureProcessor::Reflect(context);
             DisplayMapperConfigurationDescriptor::Reflect(context);
             DisplayMapperPassData::Reflect(context);
@@ -208,6 +210,7 @@ namespace AZ
             {
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyBoxFeatureProcessor, SkyBoxFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ImageBasedLightFeatureProcessor, ImageBasedLightFeatureProcessorInterface>();
+                AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<GradientGIFeatureProcessor, GradientGIFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DecalTextureArrayFeatureProcessor, DecalFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PostProcessFeatureProcessor, PostProcessFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AcesDisplayMapperFeatureProcessor, DisplayMapperFeatureProcessorInterface>();
@@ -374,6 +377,7 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<PostProcessFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DecalTextureArrayFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
+                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<GradientGIFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingDebugFeatureProcessor>();
