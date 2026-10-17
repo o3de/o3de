@@ -199,10 +199,10 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
 // Initializes root folder of the game, optionally returns exe and path name.
 void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
-    char szPath[_MAX_PATH];
-    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    char szPath[AZ_TRAIT_OS_MAX_PATH_LEN];
+    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, AZ_TRAIT_OS_MAX_PATH_LEN);
     AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
-    const size_t nLen = strnlen(szPath, _MAX_PATH);
+    const size_t nLen = strnlen(szPath, AZ_TRAIT_OS_MAX_PATH_LEN);
 
     // Find path above exe name and deepest folder.
     bool firstIteration = true;
@@ -230,8 +230,8 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
             // Check if the engineroot exists
             azstrcat(szPath, AZ_ARRAY_SIZE(szPath), "\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
-            wchar_t szPathW[_MAX_PATH];
-            AZStd::to_wstring(szPathW, _MAX_PATH, szPath);
+            wchar_t szPathW[AZ_TRAIT_OS_MAX_PATH_LEN];
+            AZStd::to_wstring(szPathW, AZ_TRAIT_OS_MAX_PATH_LEN, szPath);
             BOOL res = GetFileAttributesExW(szPathW, GetFileExInfoStandard, &data);
             if (res != 0 && data.dwFileAttributes != INVALID_FILE_ATTRIBUTES)
             {

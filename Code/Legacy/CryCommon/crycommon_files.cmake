@@ -70,7 +70,6 @@ set(FILES
     AndroidSpecific.h
     AppleSpecific.h
     Linux64Specific.h
-    LinuxSpecific.h
     LoadScreenBus.h
     MacSpecific.h
     platform.h

@@ -1019,7 +1019,7 @@ void FileServer::RecordFileOp(AZ::IO::FileIOBase* fileIO, const char* op, const 
     (void)fileHandle;
     (void)moreInfo;
 #ifdef VERBOSE_FILE_OPS
-    char filename[MAX_PATH];
+    char filename[AZ_TRAIT_OS_MAX_PATH_LEN];
     if (fileIO->GetFilename(fileHandle, filename, sizeof(filename)))
     {
         RecordFileOp(fileIO, op, filename, moreInfo);

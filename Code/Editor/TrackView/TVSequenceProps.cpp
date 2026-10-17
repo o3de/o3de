@@ -63,7 +63,7 @@ bool CTVSequenceProps::OnInitDialog()
 
     ToggleCutsceneOptions(ui->CUT_SCENE->isChecked());
 
-    ui->MOVE_SCALE_KEYS->setChecked(BST_UNCHECKED);
+    ui->MOVE_SCALE_KEYS->setChecked(false);
 
     ui->START_TIME->setRange(0.0, (1e+5));
     ui->END_TIME->setRange(0.0, (1e+5));
