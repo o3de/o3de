@@ -112,6 +112,8 @@ namespace EMotionFX
             motion.SetDimension(1);
         }
 
+        UpdateAxisPortName(INPUTPORT_VALUE, m_axis, "X");
+
         AnimGraphNode::Reinit();
     }
 
@@ -143,8 +145,19 @@ namespace EMotionFX
     }
 
 
+    void BlendSpace1DNode::OnAxisChanged()
+    {
+        // Renames the input pin; the visual node only rebuilds its pins on a sync, which must happen on the main thread.
+        Reinit();
+        SyncVisualObject();
+    }
+
     const char* BlendSpace1DNode::GetAxisLabel() const
     {
+        if (!m_axis.m_name.empty())
+        {
+            return m_axis.m_name.c_str();
+        }
         if (!m_evaluator || m_evaluator->IsNullEvaluator())
         {
             return "X-Axis";
@@ -399,6 +412,7 @@ namespace EMotionFX
         MotionInstancePool& motionInstancePool = GetMotionInstancePool();
 
         uniqueData->m_leaderMotionIdx = 0;
+        bool leaderFound = false;
 
         PlayBackInfo playInfo;// TODO: Init from attributes
         for (BlendSpaceMotion& blendSpaceMotion : m_motions)
@@ -420,9 +434,11 @@ namespace EMotionFX
             motionInstance->SetWeight(1.0f, 0.0f);
             AddMotionInfo(uniqueData->m_motionInfos, motionInstance);
 
-            if (motionId == m_syncLeaderMotionId)
+            // A motion can be in the blend space more than once; the first entry leads.
+            if (!leaderFound && motionId == m_syncLeaderMotionId)
             {
                 uniqueData->m_leaderMotionIdx = (AZ::u32)uniqueData->m_motionInfos.size() - 1;
+                leaderFound = true;
             }
         }
         uniqueData->m_allMotionsHaveSyncTracks = DoAllMotionsHaveSyncTracks(uniqueData->m_motionInfos);
@@ -497,6 +513,12 @@ namespace EMotionFX
     void BlendSpace1DNode::SetCurrentPosition(float point)
     {
         m_currentPositionSetInteractively = point;
+    }
+
+    void BlendSpace1DNode::UpdatePreviewPosition(UniqueData& uniqueData, float position)
+    {
+        uniqueData.m_currentPosition = position;
+        UpdateBlendingInfoForCurrentPoint(uniqueData);
     }
 
 
@@ -903,6 +925,7 @@ namespace EMotionFX
             ->Field("syncLeaderMotionId", &BlendSpace1DNode::m_syncLeaderMotionId)
             ->Field("eventFilterMode", &BlendSpace1DNode::m_eventFilterMode)
             ->Field("motions", &BlendSpace1DNode::m_motions)
+            ->Field("axis", &BlendSpace1DNode::m_axis)
         ;
 
 
@@ -923,6 +946,9 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpace1DNode::GetEvaluatorVisibility)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpace1DNode::m_axis, "Axis", "Label, grid range and snapping of the blend space axis. The name also labels the input pin.")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendSpace1DNode::OnAxisChanged)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendSpace1DNode::m_syncMode)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ_CRC_CE("BlendSpaceMotion"), &BlendSpace1DNode::m_syncLeaderMotionId, "Sync Leader Motion", "The leader motion used for motion synchronization.")
