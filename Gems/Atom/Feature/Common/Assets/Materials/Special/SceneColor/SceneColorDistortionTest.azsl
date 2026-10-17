@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ */
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/SceneColor/SceneColorSrg.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    float m_distortionStrength;
+    float m_waveFrequency;
+}
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_worldPosition : TEXCOORD0;
+};
+
+VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
+{
+    VSOutput OUT;
+    OUT.m_worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    float4 clipPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(IN.m_worldPosition, 1.0));
+    float2 ndc = clipPosition.xy / clipPosition.w;
+    float2 screenUv = float2(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5);
+
+    float frequency = MaterialSrg::m_waveFrequency;
+    float2 offset = float2(sin(screenUv.y * frequency), sin(screenUv.x * frequency));
+    float2 distortedUv = screenUv + offset * MaterialSrg::m_distortionStrength;
+    float3 capturedColor = PassSrg::m_sceneColor.SampleLevel(
+        PassSrg::LinearSampler, distortedUv, 0.0).rgb;
+
+    // Unlit HDR output: no PBR relighting or color-space conversion.
+    OUT.m_color = float4(capturedColor, 1.0);
+    return OUT;
+}

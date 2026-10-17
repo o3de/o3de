@@ -1,0 +1,32 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{B8FA8EEC-BAFD-4FE8-AF61-AB703C72F8C1}",
+        "category": "View",
+        "title": "Screen UV's",
+        "titlePaletteName": "ViewNodeTitlePalette",
+        "settings": {
+            "instructions": [
+                "SLOTTYPE(screenUVS) screenUVS;\n{\n    float4 sceneColorViewPos = mul(ViewSrg::m_viewMatrix, float4(O3DE_MC_POSITION_WS, 1.0));\n    float4 sceneColorClipPos = mul(ViewSrg::m_projectionMatrix, sceneColorViewPos);\n    float2 sceneColorNdc = sceneColorClipPos.xy / sceneColorClipPos.w;\n    screenUVS = float2(sceneColorNdc.x * 0.5 + 0.5, 0.5 - sceneColorNdc.y * 0.5);\n}"
+            ]
+        },
+        "outputSlots": [
+            {
+                "name": "screenUVS",
+                "displayName": "Screen UV's",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "defaultValue": {
+                    "$type": "Vector2",
+                    "Value": [
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ],
+        "description": "Projects world position to full-viewport screen UV. Connect to Scene Color. Intended for fragment-stage sampling."
+    }
+}

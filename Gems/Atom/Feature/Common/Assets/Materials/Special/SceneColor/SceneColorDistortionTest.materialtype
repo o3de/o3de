@@ -1,0 +1,23 @@
+{
+    "description": "Unlit mesh diagnostic sampling the independent SceneColor PassSrg. Requires SceneColorPass.",
+    "version": 1,
+    "propertyLayout": {
+        "groups": [ { "name": "distortion", "displayName": "Distortion" } ],
+        "properties": {
+            "distortion": [
+                {
+                    "name": "strength", "displayName": "Strength",
+                    "description": "Screen UV offset. Set to zero for an undistorted reference.",
+                    "type": "Float", "defaultValue": 0.025,
+                    "connection": { "type": "ShaderInput", "name": "m_distortionStrength" }
+                },
+                {
+                    "name": "frequency", "displayName": "Wave Frequency",
+                    "type": "Float", "defaultValue": 40.0,
+                    "connection": { "type": "ShaderInput", "name": "m_waveFrequency" }
+                }
+            ]
+        }
+    },
+    "shaders": [ { "file": "SceneColorDistortionTest.shader" } ]
+}

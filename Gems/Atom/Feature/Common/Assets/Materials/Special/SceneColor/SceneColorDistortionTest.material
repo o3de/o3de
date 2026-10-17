@@ -1,0 +1,8 @@
+{
+    "materialType": "SceneColorDistortionTest.materialtype",
+    "materialTypeVersion": 1,
+    "propertyValues": {
+        "distortion.strength": 0.025,
+        "distortion.frequency": 40.0
+    }
+}

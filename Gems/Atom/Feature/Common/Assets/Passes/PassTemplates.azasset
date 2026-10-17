@@ -5,6 +5,10 @@
     "ClassData": {
         "AssetPaths": [
             {
+                "Name": "SceneColorTemplate",
+                "Path": "Passes/SceneColor.pass"
+            },
+            {
                 "Name": "MSAAResolveColorTemplate",
                 "Path": "Passes/MSAAResolveColor.pass"
             },
