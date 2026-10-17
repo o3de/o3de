@@ -82,22 +82,24 @@ end
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("mode")
 
-    if not context:HasShaderWithTag("ForwardPass_EDS") then
-        return
-    end
+    context:SetInternalMaterialPropertyValue_bool("isTransparent", opacityMode == OpacityMode_Blended)
+    context:SetInternalMaterialPropertyValue_bool("isTintedTransparent", opacityMode == OpacityMode_TintedTransparent)
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelClip", opacityMode == OpacityMode_Cutout)
 
-    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
+    if context:HasShaderWithTag("ForwardPass_EDS") then
+        local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
 
-    if IsShaderItemValid(forwardPassEDS) then
-        if opacityMode == OpacityMode_Blended then
-            ConfigureAlphaBlending(forwardPassEDS)
-            forwardPassEDS:SetDrawListTagOverride("transparent")
-        elseif (opacityMode == OpacityMode_TintedTransparent) then
-            ConfigureDualSourceBlending(forwardPassEDS)
-            forwardPassEDS:SetDrawListTagOverride("transparent")
-        else
-            ResetAlphaBlending(forwardPassEDS)
-            forwardPassEDS:SetDrawListTagOverride("")
+        if IsShaderItemValid(forwardPassEDS) then
+            if opacityMode == OpacityMode_Blended then
+                ConfigureAlphaBlending(forwardPassEDS)
+                forwardPassEDS:SetDrawListTagOverride("transparent")
+            elseif (opacityMode == OpacityMode_TintedTransparent) then
+                ConfigureDualSourceBlending(forwardPassEDS)
+                forwardPassEDS:SetDrawListTagOverride("transparent")
+            else
+                ResetAlphaBlending(forwardPassEDS)
+                forwardPassEDS:SetDrawListTagOverride("")
+            end
         end
     end
 end
