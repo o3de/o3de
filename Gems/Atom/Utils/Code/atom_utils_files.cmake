@@ -27,6 +27,8 @@ set(FILES
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
     Include/Atom/Utils/StableDynamicArray.inl
+    Include/Atom/Utils/StableDynamicStructOfArrays.h
+    Include/Atom/Utils/StableDynamicStructOfArrays.inl
     Include/Atom/Utils/Utils.h
     Include/Atom/Utils/Utils.inl
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
