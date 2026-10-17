@@ -127,7 +127,29 @@ namespace PhysX
     {
         AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
         PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
-        return m_nativeJoint->getVelocity();
+        //! PxRevoluteJoint::getVelocity() returns |getRelativeAngularVelocity()|, and that helper applies
+        //! transformInv() to a vector, leaking the parent COM position into the result. Project instead.
+        //! It can be replaced with getRelativeAngularVelocity() with PhysX 5.4+
+
+        physx::PxRigidActor* actor0 = nullptr;
+        physx::PxRigidActor* actor1 = nullptr;
+        m_nativeJoint->getActors(actor0, actor1);
+        const auto angularVelocity = [](physx::PxRigidActor* actor)
+        {
+            if (actor && actor->is<physx::PxRigidBody>())
+            {
+                return static_cast<physx::PxRigidBody*>(actor)->getAngularVelocity();
+            }
+            return physx::PxVec3(0.0f);
+        };
+
+        physx::PxTransform jointFrame = physx::PxTransform(physx::PxIdentity);
+        if (actor0)
+        {
+            jointFrame *= actor0->getGlobalPose();
+        }
+        jointFrame *= m_nativeJoint->getLocalPose(physx::PxJointActorIndex::eACTOR0);
+        return (angularVelocity(actor1) - angularVelocity(actor0)).dot(jointFrame.q.getBasisVector0());
     }
 
     AZStd::pair<float, float> HingeJointComponent::GetLimits() const
