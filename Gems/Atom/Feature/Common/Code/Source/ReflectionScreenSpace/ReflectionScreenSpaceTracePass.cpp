@@ -45,7 +45,7 @@ namespace AZ
             previousFrameImageAttachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
 
             // set the bind flags
-            RHI::ImageDescriptor& imageDesc = previousFrameImageAttachment->m_descriptor.m_image;
+            RHI::ImageDescriptor& imageDesc = previousFrameImageAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
             imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
 
             // create the image attachment
@@ -69,7 +69,7 @@ namespace AZ
 
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
             AZ_Assert(outputAttachment, "ReflectionScreenSpaceTracePass: Output binding has no attachment!");
-            RHI::Size outputImageSize = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size outputImageSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             const SSROptions& ssrOptions = specularReflectionsFeatureProcessor->GetSSROptions();
 
