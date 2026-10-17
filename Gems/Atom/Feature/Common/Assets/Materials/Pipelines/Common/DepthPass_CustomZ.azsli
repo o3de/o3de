@@ -41,6 +41,8 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 struct PsOutput
 {
     precise float m_depth : SV_Depth;
+    // Same per-sample mask the forward pass emits, so a cutout edge covers identical samples in both.
+    uint m_coverage : SV_Coverage;
 };
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
@@ -56,6 +58,11 @@ PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     PsOutput OUT;
     OUT.m_depth = IN.position.z;
+#if MATERIAL_HAS_ALPHA_TO_COVERAGE_MASK
+    OUT.m_coverage = GetAlphaToCoverageMask();
+#else
+    OUT.m_coverage = 0xFFFFFFFFu;
+#endif
 
     return OUT;
 }
