@@ -1578,6 +1578,13 @@ namespace OpenParticle
         AZStd::invoke(fn, destEmitter->m_emitModules);
         AZStd::invoke(fn, destEmitter->m_updateModules);
         AZStd::invoke(fn, destEmitter->m_eventModules);
+        // The render config (a ribbon's width, for one) holds distributions too.
+        DataConvertor::GetDistIndex(destEmitter->m_renderConfig, distInfos);
+        if (!distInfos.randomIndexInfos.empty() || !distInfos.curveIndexInfos.empty())
+        {
+            modulesWithDist.emplace_back(&destEmitter->m_renderConfig);
+            distInfos.Clear();
+        }
         for (auto& module : modulesWithDist)
         {
             StashDistribution(*module, destDetail, "className", "moduleName");
@@ -1704,6 +1711,13 @@ namespace OpenParticle
         AZStd::invoke(fn, destEmitter->m_emitModules);
         AZStd::invoke(fn, destEmitter->m_updateModules);
         AZStd::invoke(fn, destEmitter->m_eventModules);
+        // The render config (a ribbon's width, for one) holds distributions too; without this the copy shares the source's curve and the file fails to build.
+        DataConvertor::GetDistIndex(destEmitter->m_renderConfig, distInfos);
+        if (!distInfos.randomIndexInfos.empty() || !distInfos.curveIndexInfos.empty())
+        {
+            modulesWithDist.emplace_back(&destEmitter->m_renderConfig);
+            distInfos.Clear();
+        }
 
         CopyDistributions(modulesWithDist);
     }
