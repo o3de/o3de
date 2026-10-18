@@ -33,6 +33,26 @@ set(FILES
     Components/DockTabBar.h
     Components/DockTabWidget.cpp
     Components/DockTabWidget.h
+    Components/Elements/BoxElement.cpp
+    Components/Elements/BoxElement.h
+    Components/Elements/ColorPickerElements.cpp
+    Components/Elements/ColorPickerElements.h
+    Components/Elements/ComboPopupElement.cpp
+    Components/Elements/ComboPopupElement.h
+    Components/Elements/ControlElements.cpp
+    Components/Elements/ControlElements.h
+    Components/Elements/FrameElement.cpp
+    Components/Elements/FrameElement.h
+    Components/Elements/IndicatorElement.cpp
+    Components/Elements/IndicatorElement.h
+    Components/Elements/ItemViewElement.cpp
+    Components/Elements/ItemViewElement.h
+    Components/Elements/MenuElement.cpp
+    Components/Elements/MenuElement.h
+    Components/Elements/PropertyEditorElements.cpp
+    Components/Elements/PropertyEditorElements.h
+    Components/Elements/SpinBoxElement.cpp
+    Components/Elements/SpinBoxElement.h
     Components/Elements/TabElement.cpp
     Components/Elements/TabElement.h
     Components/Elements/TextElement.cpp

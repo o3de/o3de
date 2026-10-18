@@ -920,11 +920,17 @@ namespace AzQtComponents
             return;
         }
 
-        // WindowDecorationWrapper.qss: border 1px solid black. margins() already
-        // reserves this 1px gutter (FrameWidth); this paints it.
+        // WindowDecorationWrapper.qss:9-11 `border: 1px solid black`. margins() already reserves this 1px gutter
+        // (FrameWidth); this paints it as four fills of the gutter's logical rectangles: at a fractional device
+        // ratio their edges round to whole device pixels like the guest's and the title bar's, so the line is as
+        // wide as the gutter they leave (150%: 2px on the left, 1px on the right; a stroked rectangle left it 1px
+        // and one pixel inside)
         QPainter painter(this);
-        painter.setPen(QColor(Qt::black));
-        painter.drawRect(rect().adjusted(0, 0, -1, -1));
+        const QColor black(Qt::black);
+        painter.fillRect(QRect(0, 0, width(), FrameWidth), black);
+        painter.fillRect(QRect(0, height() - FrameWidth, width(), FrameWidth), black);
+        painter.fillRect(QRect(0, 0, FrameWidth, height()), black);
+        painter.fillRect(QRect(width() - FrameWidth, 0, FrameWidth, height()), black);
     }
 
     bool WindowDecorationWrapper::event(QEvent* ev)

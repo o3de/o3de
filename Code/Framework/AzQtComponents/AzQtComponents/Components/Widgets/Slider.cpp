@@ -11,6 +11,7 @@
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <AzQtComponents/Components/Widgets/GradientSlider.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
@@ -705,8 +706,12 @@ void Slider::drawHandle(const QStyleOption* option, QPainter* painter, const Sli
     }
     else
     {
+        // The pen of a disabled handle is the palette's Window brush. Under the legacy sheet that brush is transparent: the `*` rule's
+        // `background-color: transparent` (BaseStyleSheet.qss:15-17) is the Window of every widget's palette (QRenderRule::configurePalette,
+        // qstylesheetstyle.cpp:1393-1405; n2's slider palettes), so no ring was drawn and the disc spans 13 x 12 device pixels at 150%. The
+        // flat palette's Window is opaque, and the ring it drew took 0.75px off every side of the disc.
         auto pen = painter->pen();
-        pen.setBrush(option->palette.window());
+        pen.setBrush(StyleManager::stylesheetsDisabled() ? QBrush(Qt::transparent) : option->palette.window());
         painter->setPen(pen);
     }
     painter->setBrush(handleColor);

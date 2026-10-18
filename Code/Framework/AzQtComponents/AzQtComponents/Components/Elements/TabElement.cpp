@@ -8,14 +8,19 @@
 
 #include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
+#include <QApplication>
 #include <QHash>
 #include <QIcon>
 #include <QImageReader>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPalette>
 #include <QStyle>
 #include <QStyleOption>
+#include <QTabBar>
+#include <QTabWidget>
 #include <QVariant>
 #include <QVector>
 #include <QWidget>
@@ -174,6 +179,20 @@ namespace AzQtComponents
             .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
         };
 
+        //! Plain tab widgets and tab bars, which no other element covers (a QTabWidget of Qt's, as the Asset Processor's
+        //! Builders and Assets pages): the tabs and the pane are Qt's own (Fusion's), over the palette TabWidget.qss:10
+        //! gave them. That rule's background-color filled the bar and became the palette's Base, Button and Window
+        //! (qstylesheetstyle.cpp:1434-1441); Fusion derives the look from them: the pane #535353, the selected tab #565656
+        //! fading to #535353, an idle tab #4d4d4d (qfusionstyle.cpp:783-785, 1671-1686; the Asset Processor captures of
+        //! Builders and Assets show those). They are Fusion's values and not carried: the colour the rule gave is. No rule
+        //! gives a plain tab a hover, pressed or focus look, a margin, padding, edge or size but the width bound.
+        const TabElement Plain{
+            .m_name = "Global.Tab.Plain",
+            .m_barFill = Grey444,                                           // TabWidget.qss:10
+            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
+            .m_basePalette = Grey444,                                       // TabWidget.qss:10
+        };
+
         // ------------------------------------------------------------------------------
         // Registry
         // ------------------------------------------------------------------------------
@@ -204,6 +223,34 @@ namespace AzQtComponents
                     return Style::hasClass(tabBar, QStringLiteral("Bordered")) ? &SecondaryBordered : &Secondary;
                 }
                 return &Primary;
+            }
+            // Any other QTabBar is a plain one; a widget that is none is not ours
+            return tabBar->inherits("QTabBar") ? &Plain : nullptr;
+        }
+
+        //! The element kept on a bar (resolved at its polish; now, if it was asked before), null for none
+        const TabElement* tabElementOf(const QWidget* tabBar)
+        {
+            if (!tabBar)
+            {
+                return nullptr;
+            }
+            const QVariant stored = tabBar->property(ElementProperty);
+            return stored.isValid() ? reinterpret_cast<const TabElement*>(stored.value<quintptr>()) : TabElement::resolve(tabBar);
+        }
+
+        //! The bar of a tab widget, null for none
+        const QWidget* tabBarOf(const QWidget* tabWidget)
+        {
+            if (tabWidget)
+            {
+                for (const QObject* child : tabWidget->children())
+                {
+                    if (child->isWidgetType() && child->inherits("QTabBar"))
+                    {
+                        return static_cast<const QWidget*>(child);
+                    }
+                }
             }
             return nullptr;
         }
@@ -237,8 +284,20 @@ namespace AzQtComponents
     const TabElement::TabFace& TabElement::face(const QStyleOption* option) const
     {
         const bool enabled = option->state.testFlag(QStyle::State_Enabled);
-        const bool hover = enabled && (option->state.testFlag(QStyle::State_MouseOver) || option->state.testFlag(QStyle::State_Sunken));
-        if (option->state.testFlag(QStyle::State_Selected))
+        const bool pressed = enabled && option->state.testFlag(QStyle::State_Sunken);
+        const bool hover = enabled && (option->state.testFlag(QStyle::State_MouseOver) || pressed);
+        const bool selected = option->state.testFlag(QStyle::State_Selected);
+
+        // Pressed and focus are states of the current tab (m_pressed, m_focus); the later rule wins (PM.qss:122-143)
+        if (selected && option->state.testFlag(QStyle::State_HasFocus) && m_focus.isSet())
+        {
+            return m_focus;
+        }
+        if (selected && pressed && m_pressed.isSet())
+        {
+            return m_pressed;
+        }
+        if (selected)
         {
             return hover ? m_selectedHover : m_selected;
         }
@@ -247,32 +306,37 @@ namespace AzQtComponents
 
     QSize TabElement::tabSize(const QSize& contents) const
     {
-        // QStyleSheetStyle CT_TabBarTab: max-width bounds the contents, then padding and border
+        // QStyleSheetStyle CT_TabBarTab: the size rules bound the contents (the maximum first, the minimum over
+        // it, and a height rule replaces the text's: QRenderRule::adjustSize), then margin, padding and border
         // are added around them.
         int width = contents.width();
         if (m_maxContentWidth > 0)
         {
             width = qMin(width, m_maxContentWidth);
         }
-        return QSize(width + m_padding.left() + m_padding.right() + horizontal(m_idle.m_edges),
-            contents.height() + m_padding.top() + m_padding.bottom() + vertical(m_idle.m_edges));
+        width = qMax(width, m_minContentWidth);
+        const int height = (m_contentHeight > 0) ? m_contentHeight : contents.height();
+        return QSize(width + m_margin.left() + m_margin.right() + m_padding.left() + m_padding.right() + horizontal(m_idle.m_edges),
+            height + m_margin.top() + m_margin.bottom() + m_padding.top() + m_padding.bottom() + vertical(m_idle.m_edges));
     }
 
     QRect TabElement::contentsRect(const QRect& tabRect) const
     {
         const Edges& edges = m_idle.m_edges;
-        return tabRect.adjusted(edges.m_left.m_width + m_padding.left(), edges.m_top.m_width + m_padding.top(),
-            -(edges.m_right.m_width + m_padding.right()), -(edges.m_bottom.m_width + m_padding.bottom()));
+        return tabRect.adjusted(m_margin.left() + edges.m_left.m_width + m_padding.left(), m_margin.top() + edges.m_top.m_width + m_padding.top(),
+            -(m_margin.right() + edges.m_right.m_width + m_padding.right()), -(m_margin.bottom() + edges.m_bottom.m_width + m_padding.bottom()));
     }
 
     void TabElement::drawTab(QPainter* painter, const QStyleOption* option) const
     {
+        // The stylesheet drew the background and the border in the tab's box: its rect inside the margin
         const TabFace& tabFace = face(option);
+        const QRect tabBox = option->rect.marginsRemoved(m_margin);
         if (tabFace.m_fill.isValid())
         {
-            painter->fillRect(option->rect, tabFace.m_fill);
+            painter->fillRect(tabBox, tabFace.m_fill);
         }
-        drawEdges(painter, option->rect, tabFace.m_edges);
+        drawEdges(painter, tabBox, tabFace.m_edges);
     }
 
     void TabElement::drawClose(QPainter* painter, const QStyleOption* option) const
@@ -298,23 +362,44 @@ namespace AzQtComponents
 
     void TabElement::drawEdges(QPainter* painter, const QRect& rect, const Edges& edges)
     {
-        // Qt's qDrawBorder order (bottom, right, left, top): a later edge takes the corner.
+        // QRenderRule::drawBorder draws the edges antialiased (qstylesheetstyle.cpp:1282-1285), each a strip as long as its side, in qDrawBorder's
+        // order (bottom, right, left, top: a later edge takes the corner; qcssutil.cpp:313-369, qDrawEdge :165-195). At a fractional device
+        // ratio a 1px edge is 1.5 device pixels wide: a full row and a blended one, where a fill with no antialiasing covers one row or two
+        // (n2 Gallery 27_tab-widget: the tab edges are #111111 over #444444 as 17, 42, not 17, 17). Qt draws an edge wider than 1px that meets
+        // a visible edge of another colour as a trapezoid (qDrawEdge :165-195, paintsOver :296-311): no element has one.
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(Qt::NoPen);
+        const QRectF box(rect);
         if (edges.m_bottom.m_width > 0)
         {
-            painter->fillRect(QRect(rect.left(), rect.bottom() - edges.m_bottom.m_width + 1, rect.width(), edges.m_bottom.m_width), edges.m_bottom.m_color);
+            painter->setBrush(edges.m_bottom.m_color);
+            painter->drawRect(QRectF(box.left(), box.bottom() - edges.m_bottom.m_width, box.width(), edges.m_bottom.m_width));
         }
         if (edges.m_right.m_width > 0)
         {
-            painter->fillRect(QRect(rect.right() - edges.m_right.m_width + 1, rect.top(), edges.m_right.m_width, rect.height()), edges.m_right.m_color);
+            painter->setBrush(edges.m_right.m_color);
+            painter->drawRect(QRectF(box.right() - edges.m_right.m_width, box.top(), edges.m_right.m_width, box.height()));
         }
         if (edges.m_left.m_width > 0)
         {
-            painter->fillRect(QRect(rect.left(), rect.top(), edges.m_left.m_width, rect.height()), edges.m_left.m_color);
+            painter->setBrush(edges.m_left.m_color);
+            painter->drawRect(QRectF(box.left(), box.top(), edges.m_left.m_width, box.height()));
         }
         if (edges.m_top.m_width > 0)
         {
-            painter->fillRect(QRect(rect.left(), rect.top(), rect.width(), edges.m_top.m_width), edges.m_top.m_color);
+            painter->setBrush(edges.m_top.m_color);
+            painter->drawRect(QRectF(box.left(), box.top(), box.width(), edges.m_top.m_width));
         }
+        painter->restore();
+    }
+
+    void TabElement::applyPalette(QPalette& palette) const
+    {
+        // QRenderRule::configurePalette: a rule's background-color is the palette's Base, Button and Window, in every group
+        palette.setColor(QPalette::Base, m_basePalette);
+        palette.setColor(QPalette::Button, m_basePalette);
+        palette.setColor(QPalette::Window, m_basePalette);
     }
 
     // ----------------------------------------------------------------------------------
@@ -324,6 +409,34 @@ namespace AzQtComponents
     void TabElement::registerElement(const TabElement* element, Matcher matcher)
     {
         registrations().append({ element, matcher });
+        if (!StyleManager::stylesheetsDisabled())
+        {
+            return;
+        }
+
+        // A module builds some windows before it registers its elements: the bars resolved before this call are
+        // resolved again (a null kept, too, or a cached element), and those polished are polished again with
+        // their tab widget when the element changed. A bar not polished yet resolves at its polish.
+        const QWidgetList widgets = QApplication::allWidgets();
+        for (QWidget* widget : widgets)
+        {
+            if (!widget->inherits("QTabBar"))
+            {
+                continue;
+            }
+            const QVariant before = widget->property(ElementProperty);
+            widget->setProperty(ElementProperty, QVariant());
+            if (!widget->testAttribute(Qt::WA_WState_Polished))
+            {
+                continue;
+            }
+            resolve(widget);
+            if (widget->property(ElementProperty) != before)
+            {
+                polish(widget);
+                polish(widget->parentWidget());
+            }
+        }
     }
 
     const TabElement* TabElement::resolve(const QWidget* tabBar)
@@ -346,34 +459,93 @@ namespace AzQtComponents
             element = globalElement(tabBar);
         }
         // Kept on the widget: draws and metrics read it back without resolving again (a null
-        // element is kept too, so a plain tab bar is not resolved on every paint).
+        // element is kept too, so a widget that is no tab bar is not resolved on every paint).
         const_cast<QWidget*>(tabBar)->setProperty(ElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
         return element;
     }
 
     const TabElement* TabElement::forTabBar(const QWidget* tabBar)
     {
-        if (!tabBar)
-        {
-            return nullptr;
-        }
-        const QVariant stored = tabBar->property(ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const TabElement*>(stored.value<quintptr>()) : resolve(tabBar);
+        const TabElement* element = tabElementOf(tabBar);
+        return (element && !element->isPlain()) ? element : nullptr;
     }
 
     const TabElement* TabElement::forTabWidget(const QWidget* tabWidget)
     {
-        if (!tabWidget)
+        return forTabBar(tabBarOf(tabWidget));
+    }
+
+    const TabElement* TabElement::plainForTabBar(const QWidget* tabBar)
+    {
+        const TabElement* element = tabElementOf(tabBar);
+        return (element && element->isPlain()) ? element : nullptr;
+    }
+
+    const TabElement* TabElement::plainForTabWidget(const QWidget* tabWidget)
+    {
+        return plainForTabBar(tabBarOf(tabWidget));
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Polish
+    // ----------------------------------------------------------------------------------
+
+    void TabElement::polish(QWidget* widget)
+    {
+        if (auto tabBar = qobject_cast<QTabBar*>(widget))
         {
-            return nullptr;
-        }
-        for (const QObject* child : tabWidget->children())
-        {
-            if (child->isWidgetType() && child->inherits("QTabBar"))
+            // Resolved once, here: adding or removing a class tag polishes again, and so does a module that registers
+            // an element after this bar was polished (registerElement)
+            const TabElement* element = resolve(tabBar);
+            if (!element)
             {
-                return forTabBar(static_cast<const QWidget*>(child));
+                return;
+            }
+            // The bar and its tab widget paint their own boxes through PE_Widget (the sheet's rule gave them a
+            // background; a plain bar's fill is its sheet's background-color, TabWidget.qss:10)
+            tabBar->setAttribute(Qt::WA_StyledBackground, true);
+            tabBar->setAutoFillBackground(false);
+            if (element->isPlain())
+            {
+                return;
+            }
+            tabBar->setDrawBase(false);
+            // The stylesheet set the minimum outright (replacing a code-set one, e.g. the DockTabBar's fixed 32), as
+            // min-height plus the bar's own edges; an element no rule gives one leaves the widget's own
+            if (element->m_barMinHeight > 0)
+            {
+                tabBar->setMinimumHeight(element->m_barMinHeight + element->m_barEdges.m_top.m_width + element->m_barEdges.m_bottom.m_width);
+            }
+            // QTabBar follows the hovered tab only while it has WA_Hover (qtabbar.cpp:1687-1718); the stylesheet engine
+            // switched it on for a bar with a :hover rule (qstylesheetstyle.cpp:2894-2905)
+            if (element->m_hover.isSet())
+            {
+                tabBar->setAttribute(Qt::WA_Hover, true);
             }
         }
-        return nullptr;
+        else if (auto tabWidget = qobject_cast<QTabWidget*>(widget))
+        {
+            const TabElement* element = forTabWidget(tabWidget);
+            if (!element)
+            {
+                return;
+            }
+            tabWidget->setAttribute(Qt::WA_StyledBackground, true);
+            tabWidget->setAutoFillBackground(false);
+            if (element->m_widgetHeight > 0)
+            {
+                // height + max-height in the stylesheet: the widget is that tall
+                tabWidget->setMinimumHeight(element->m_widgetHeight);
+                tabWidget->setMaximumHeight(element->m_widgetHeight);
+            }
+            // The action toolbar container in the top-right corner: min-height plus
+            // margin-bottom make its height, and its contents sit above the margin
+            QWidget* corner = tabWidget->cornerWidget(Qt::TopRightCorner);
+            if (corner && corner->inherits("AzQtComponents::TabWidgetActionToolBarContainer") && element->m_cornerMinHeight > 0)
+            {
+                corner->setMinimumHeight(element->m_cornerMinHeight + element->m_cornerMarginBottom);
+                corner->setContentsMargins(0, 0, 0, element->m_cornerMarginBottom);
+            }
+        }
     }
 } // namespace AzQtComponents

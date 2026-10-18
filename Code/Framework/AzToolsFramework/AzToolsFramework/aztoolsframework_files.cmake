@@ -1027,6 +1027,8 @@ set(FILES
     UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
+    UI/Outliner/EntityOutlinerFlatSheet.h
+    UI/Outliner/EntityOutlinerFlatSheet.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx

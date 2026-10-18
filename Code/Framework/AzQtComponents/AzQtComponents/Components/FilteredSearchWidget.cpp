@@ -128,14 +128,8 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
-        if (StyleManager::stylesheetsDisabled())
-        {
-            // FilteredSearchWidget.qss QPushButton#closeTag: close_x.svg 10x10, flat, 16x16
-            // TOKENIZE: TagCloseIcon, TagCloseButtonSize
-            button->setIcon(QIcon(QStringLiteral(":/stylesheet/img/close_x.svg")));
-            button->setIconSize(QSize(10, 10));
-            button->setFixedSize(16, 16);
-        }
+        // FilteredSearchWidget.qss QPushButton#closeTag (the icon, its size, the box of 16 by 16 at most) is the Global box element
+        // Global.Box.CloseTag (ControlElements.cpp), applied when the button is polished
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);
@@ -206,14 +200,8 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
-        if (StyleManager::stylesheetsDisabled())
-        {
-            // FilteredSearchWidget.qss QPushButton#closeTag: close_x.svg 10x10, flat, 16x16
-            // TOKENIZE: TagCloseIcon, TagCloseButtonSize
-            button->setIcon(QIcon(QStringLiteral(":/stylesheet/img/close_x.svg")));
-            button->setIconSize(QSize(10, 10));
-            button->setFixedSize(16, 16);
-        }
+        // FilteredSearchWidget.qss QPushButton#closeTag (the icon, its size, the box of 16 by 16 at most) is the Global box element
+        // Global.Box.CloseTag (ControlElements.cpp), applied when the button is polished
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);

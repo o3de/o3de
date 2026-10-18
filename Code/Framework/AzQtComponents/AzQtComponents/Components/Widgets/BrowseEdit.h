@@ -130,6 +130,10 @@ namespace AzQtComponents
 
         static bool drawFrame(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
 
+        //! Flattened GUI only: the panel of the line edit inside a BrowseEdit (BrowseEdit.qss:15-29), which is flagged to ignore the style
+        //! and so reaches this through Style::drawPrimitive's door ahead of that flag. False: not such a line edit.
+        static bool drawFlattenedField(const QStyleOption* option, QPainter* painter, const QWidget* widget);
+
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BrowseEdit::m_data': class 'QScopedPointer<AzQtComponents::BrowseEdit::InternalData,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'AzQtComponents::BrowseEdit'
         QScopedPointer<InternalData> m_data;
         AZ_POP_DISABLE_WARNING

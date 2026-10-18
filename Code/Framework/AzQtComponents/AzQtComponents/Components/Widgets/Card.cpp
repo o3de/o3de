@@ -12,6 +12,7 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
@@ -404,13 +405,8 @@ namespace AzQtComponents
                 card->m_rootLayout->setContentsMargins(0, 0, 0, 0);
                 card->m_mainLayout->setContentsMargins(0, 0, 0, 0);
 
-                // .separator { color: #999999 } on the QFrame::HLine: a Plain shadow
-                // paints the line with WindowText. TOKENIZE: CardSeparatorColor
-                card->m_separator->setFrameShadow(QFrame::Plain);
-                card->m_separator->setLineWidth(1);
-                QPalette separatorPalette = card->m_separator->palette();
-                separatorPalette.setColor(QPalette::WindowText, QColor(0x99, 0x99, 0x99));
-                card->m_separator->setPalette(separatorPalette);
+                // .separator { color: #999999 } on the QFrame::HLine (Plain, line width 1: QFrame's defaults) is the
+                // frame element Global.Frame.Separator (FrameElement.cpp), resolved when the class tag is added
             }
 
             style->repolishOnSettingsChange(card);
@@ -425,11 +421,11 @@ namespace AzQtComponents
                 // Card.qss header, one layer. The header fill is painted by
                 // CardHeader::paintEvent; #Background stays transparent and gets its
                 // 2/7/3/7 padding + 1px border as the frame box (8, 3, 8, 3) from
-                // Card::shapedFrameContents. The per-child 4px margins (#Expander,
-                // #Icon, #WarningIcon, #Help) collapse into one layout spacing.
-                // TOKENIZE: CardHeaderItemSpacing
+                // Card::shapedFrameContents. The per-child margins (#Expander, #Icon,
+                // #WarningIcon, #Help) are the boxes of the Global elements of
+                // PropertyEditorElements.cpp: the layout has no spacing, as in Native
+                // (CardHeader.cpp:152).
                 cardHeader->m_backgroundFrame->setAutoFillBackground(false);
-                cardHeader->m_backgroundLayout->setSpacing(4);
                 cardHeader->m_backgroundLayout->setContentsMargins(0, 0, 0, 0);
 
                 // #Title { font-weight: bold }, normal inside a palette card: TextElement CardTitle, applied when
@@ -443,21 +439,23 @@ namespace AzQtComponents
                 {
                     titlePalette.setColor(QPalette::WindowText, QColor(0xE5, 0x78, 0x29));
                 }
+                // Card.qss:272 `AzQtComponents--Card QLabel:disabled { color: #999999 }` (two type selectors and a pseudo-class: it outranks the
+                // line above, an attribute, a type and `*`): the title of a disabled card, mock disabled or not, is #999999 either way. The
+                // title is polished before its header sits in a card (ElidingLabel::elide polishes it while the header is built), so the
+                // polish of the label (Style's applyFlattenedDisabledText) did not find the card, and this palette replaces whatever it set.
+                // TOKENIZE: CardDisabledTextColor
+                if (TextElement::withinClass(cardHeader, "AzQtComponents::Card"))
+                {
+                    for (const QPalette::ColorRole role : { QPalette::WindowText, QPalette::Text, QPalette::ButtonText })
+                    {
+                        titlePalette.setColor(QPalette::Disabled, role, QColor(0x99, 0x99, 0x99));
+                    }
+                }
                 cardHeader->m_titleLabel->setPalette(titlePalette);
 
                 // #ContextMenu / #ContextMenuPlusIcon / #Help: qproperty-icon, iconSize,
-                // flat, max-width/max-height. TOKENIZE: CardHeaderMenuIcon, CardHeaderHelpIcon
-                const bool plusIcon = cardHeader->m_contextMenuButton->objectName() == QLatin1String("ContextMenuPlusIcon");
-                cardHeader->m_contextMenuButton->setIcon(QIcon(plusIcon
-                    ? QStringLiteral(":/Gallery/Add.svg")
-                    : QStringLiteral(":/Cards/img/UI20/Cards/menu_ico.svg")));
-                cardHeader->m_contextMenuButton->setIconSize(QSize(18, 18));
-                cardHeader->m_contextMenuButton->setFlat(true);
-                cardHeader->m_contextMenuButton->setMaximumSize(plusIcon ? QSize(18, 18) : QSize(28, 18));
-                cardHeader->m_helpButton->setIcon(QIcon(QStringLiteral(":/Cards/img/UI20/Cards/help.svg")));
-                cardHeader->m_helpButton->setIconSize(QSize(16, 16));
-                cardHeader->m_helpButton->setFlat(true);
-                cardHeader->m_helpButton->setMaximumSize(QSize(16, 16));
+                // flat, max-width/max-height are the Global elements' too, applied
+                // when each button is polished (PropertyEditorElements.cpp).
             }
             else
             {

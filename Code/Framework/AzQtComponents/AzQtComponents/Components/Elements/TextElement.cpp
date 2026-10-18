@@ -11,8 +11,13 @@
 
 #include <AzCore/Debug/Trace.h>
 
+#include <QAbstractScrollArea>
+#include <QAbstractSpinBox>
 #include <QApplication>
+#include <QComboBox>
 #include <QFont>
+#include <QLineEdit>
+#include <QPalette>
 #include <QStringList>
 #include <QVariant>
 #include <QVector>
@@ -268,6 +273,65 @@ namespace AzQtComponents
             }
             return codeFont ? classElement(widget) : nullptr;
         }
+
+        // ------------------------------------------------------------------------------
+        // Colour
+        // ------------------------------------------------------------------------------
+
+        //! The name of the dynamic property that keeps the element whose colour the polish applies last. Only a widget
+        //! whose element has a colour carries it.
+        constexpr const char* ColorElementProperty = "_o3de_textColorElement";
+
+        bool hasColor(const TextElement* element)
+        {
+            return element && (element->m_color.isValid() || element->m_disabledColor.isValid());
+        }
+
+        void keepColorElement(QWidget* widget, const TextElement* element)
+        {
+            if (hasColor(element))
+            {
+                widget->setProperty(ColorElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
+            }
+            else if (widget->property(ColorElementProperty).isValid())
+            {
+                widget->setProperty(ColorElementProperty, QVariant());
+            }
+        }
+
+        //! The widget inside that the sheet gave the same palette (QStyleSheetStyle's embeddedWidget,
+        //! qstylesheetstyle.cpp:2440-2462): the line edit of an editable combo box or of a spin box, the viewport
+        //! of a scroll area
+        QWidget* embeddedWidget(QWidget* widget)
+        {
+            if (auto* comboBox = qobject_cast<QComboBox*>(widget))
+            {
+                return comboBox->isEditable() ? comboBox->lineEdit() : widget;
+            }
+            if (qobject_cast<QAbstractSpinBox*>(widget))
+            {
+                return widget->findChild<QLineEdit*>();
+            }
+            if (auto* scrollArea = qobject_cast<QAbstractScrollArea*>(widget))
+            {
+                return scrollArea->viewport();
+            }
+            return widget;
+        }
+
+        //! A `color` in one colour group, as QRenderRule::configurePalette set it (qstylesheetstyle.cpp:1454-1464): the
+        //! text roles, the foreground role of the embedded widget, and the placeholder at half the alpha. Whatever the
+        //! palette had there before (setDefault, qstylesheetstyle.cpp:1424-1432).
+        void setForeground(QPalette& palette, QPalette::ColorGroup group, const QColor& color, const QWidget* embedded)
+        {
+            palette.setColor(group, QPalette::ButtonText, color);
+            palette.setColor(group, embedded->foregroundRole(), color);
+            palette.setColor(group, QPalette::WindowText, color);
+            palette.setColor(group, QPalette::Text, color);
+            QColor placeholder(color);
+            placeholder.setAlpha((color.alpha() + 1) / 2);
+            palette.setColor(group, QPalette::PlaceholderText, placeholder);
+        }
     } // namespace TextElementInternal
 
     // ----------------------------------------------------------------------------------
@@ -338,6 +402,7 @@ namespace AzQtComponents
             if (widget->testAttribute(Qt::WA_WState_Polished) && widget->metaObject()->inherits(widgetClass))
             {
                 apply(widget);
+                applyColor(widget);
             }
         }
     }
@@ -354,6 +419,7 @@ namespace AzQtComponents
             "The class fonts of the flattened GUI were cleared by QApplication::setFont: call it before QApplication::setStyle.");
 
         const TextElement* element = TextElementInternal::resolve(widget, classFont);
+        TextElementInternal::keepColorElement(widget, element);
         if (!element)
         {
             return;
@@ -363,6 +429,41 @@ namespace AzQtComponents
         if (element->overlay(font))
         {
             widget->setFont(font);
+        }
+    }
+
+    void TextElement::applyColor(QWidget* widget)
+    {
+        const QVariant kept = widget->property(TextElementInternal::ColorElementProperty);
+        if (!kept.isValid())
+        {
+            return;
+        }
+        const TextElement* element = reinterpret_cast<const TextElement*>(kept.value<quintptr>());
+        QWidget* embedded = TextElementInternal::embeddedWidget(widget);
+        if (!embedded)
+        {
+            embedded = widget;                  // a spin box without its line edit yet
+        }
+
+        // Each colour group as the sheet built it from the rules of its state, into the widget's own palette, and the
+        // same palette to the widget inside (QStyleSheetStyle::setPalette, qstylesheetstyle.cpp:2680-2727): Active and
+        // Inactive from the enabled rules, Disabled from :disabled
+        const QColor disabled = element->m_disabledColor.isValid() ? element->m_disabledColor : element->m_color;
+        QPalette palette = widget->palette();
+        if (element->m_color.isValid())
+        {
+            TextElementInternal::setForeground(palette, QPalette::Active, element->m_color, embedded);
+            TextElementInternal::setForeground(palette, QPalette::Inactive, element->m_color, embedded);
+        }
+        if (disabled.isValid())
+        {
+            TextElementInternal::setForeground(palette, QPalette::Disabled, disabled, embedded);
+        }
+        widget->setPalette(palette);
+        if (embedded != widget)
+        {
+            embedded->setPalette(palette);
         }
     }
 

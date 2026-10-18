@@ -41,10 +41,12 @@ namespace AzQtComponents
                     case QEvent::DynamicPropertyChange:
                     {
                         // ignore properties coming from inside the style sheet system itself, which are all by convention
-                        // prefixed with _q_
+                        // prefixed with _q_, and the ones the flattened GUI keeps on its widgets (_o3de_, as ComboBox.cpp and
+                        // SpinBox.cpp do): ItemViewElement sets one on every tree it polishes and one when the tree is first shown,
+                        // and no selector reads them, so the unpolish and polish below would run for every tree of the application
                         QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
                         QString propertyName = QString::fromUtf8(eventFull->propertyName());
-                        if (!propertyName.startsWith(QStringLiteral("_q_")))
+                        if (!propertyName.startsWith(QStringLiteral("_q_")) && !propertyName.startsWith(QStringLiteral("_o3de_")))
                         {
                             auto widget = qobject_cast<QWidget*>(obj);
                             auto styleSheet = StyleManager::styleSheetStyle(widget);

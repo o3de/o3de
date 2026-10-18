@@ -35,6 +35,7 @@
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerFlatSheet.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
@@ -189,6 +190,9 @@ namespace AzToolsFramework
         // developers with the file on disk will be able to modify the style and have it automatically
         // reloaded.
         AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString(), engineRootPath);
+
+        // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget
+        AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("outliner:EntityOutliner.qss"), &EntityOutliner::RegisterFlatSheetElements);
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("outliner:EntityOutliner.qss"));
 
         m_listModel = aznew EntityOutlinerListModel(this);

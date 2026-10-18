@@ -29,6 +29,16 @@
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/StatusBar.h>
+#include <AzQtComponents/Components/Elements/ColorPickerElements.h>
+#include <AzQtComponents/Components/Elements/ComboPopupElement.h>
+#include <AzQtComponents/Components/Elements/ControlElements.h>
+#include <AzQtComponents/Components/Elements/SpinBoxElement.h>
+#include <AzQtComponents/Components/Elements/IndicatorElement.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
+#include <AzQtComponents/Components/Elements/FrameElement.h>
+#include <AzQtComponents/Components/Elements/ItemViewElement.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/PropertyEditorElements.h>
 #include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
@@ -250,6 +260,16 @@ namespace AzQtComponents
     static const int g_headerSectionPaddingLeft = 7;
     static const int g_headerSectionTextSize = 12;
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened item views (GUI flattening): the metrics of the base style
+    //
+    // The legacy sheet style laid an item's parts out through ITSELF (its own check box room, TableView.qss:78-85, CheckBox.qss:23-28),
+    // but asked the BASE style for the item's size and for the rect of a part the item does not have (qstylesheetstyle.cpp:5557-5564,
+    // 6254-6256): the base style's own check box room (Fusion's 14px) was in those. While this is set, an item option's
+    // PM_IndicatorWidth and PM_IndicatorHeight are the base style's.
+    //////////////////////////////////////////////////////////////////////////
+    static int s_itemViewBaseIndicator = 0;
+
     static bool hasFlattenedHeaderSection(const QWidget* widget)
     {
         return qobject_cast<const QHeaderView*>(widget)
@@ -257,31 +277,56 @@ namespace AzQtComponents
                 || StyleHelpers::findParent<QTreeView>(widget));
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened search fields (GUI flattening)
+    //
+    // FilteredSearchWidget.qss:9-13 gave each line edit inside a
+    // FilteredSearchWidget a width of 260px, the contents width of its size
+    // hint (the box of LineEdit.qss is added around it), and a frame (set at
+    // the line edit's polish). LineEdit.qss:42-48 gave the action buttons of a
+    // line edit (search, clear, error) a min and max size of 16px; the sheet's
+    // box adds a tool button's native border to it, 1px a side
+    // (qstylesheetstyle_default.cpp `QPushButton, QToolButton { border-style:
+    // native }`, filled by qstylesheetstyle.cpp:1124-1160 with
+    // PM_DefaultFrameWidth, qfusionstyle.cpp:2851, through :1721-1757): 18px.
+    // TOKENIZE: SearchFieldWidth, LineEditActionButtonSize
+    //////////////////////////////////////////////////////////////////////////
+    static const int g_searchFieldContentsWidth = 260;
+    static const int g_lineEditActionButtonSize = 16 + 2 * 1;
+
+    //! The line edit the breadcrumbs show while their path is edited: the second page of the stack beside the label (BreadCrumbs.cpp:93-102)
+    static bool isBreadCrumbsPathEdit(const QWidget* widget)
+    {
+        const QWidget* stack = widget->parentWidget();
+        return widget->inherits("QLineEdit") && stack && stack->inherits("QStackedWidget")
+            && stack->parentWidget() && stack->parentWidget()->inherits("AzQtComponents::BreadCrumbs");
+    }
+
     QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget) const
     {
-        // SegmentBar buttons carry flagToIgnore (hasStyle == false) - size them before
-        // the gate. SegmentControl.qss: height 28, padding 16/16, min-width 68.
-        if (StyleManager::stylesheetsDisabled() && type == CT_PushButton && widget
-            && (hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"))
-                || hasClass(widget, QStringLiteral("TabMiddle")) || hasClass(widget, QStringLiteral("TabLast"))))
+        // SegmentBar buttons carry flagToIgnore (hasStyle == false) - size them before the gate (SegmentControl.qss:14-33)
+        if (StyleManager::stylesheetsDisabled() && type == CT_PushButton)
         {
-            // Legacy capture (page 20): 30 tall (28 + the 1px borders), 4px wider than this
-            // formula gave for the leading segment, 3px for the others (margin-left -1);
-            // vertical bars: 30 for the leading segment, 29 for the rest (margin-top -1).
-            // TOKENIZE: SegmentHeight, SegmentPadding
-            QSize segmentSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-            const bool leading = hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"));
-            const QWidget* bar = widget->parentWidget();
-            const bool verticalBar = bar && bar->property("orientation").toInt() == 2;
-            segmentSize.setHeight((verticalBar && !leading) ? 29 : 30);
-            segmentSize.setWidth(qMax(segmentSize.width() + 16, 70) + (leading ? 4 : 3));
-            return segmentSize;
+            const QSize segmentSize = ControlElements::segmentButtonSize(size, widget);
+            if (segmentSize.isValid())
+            {
+                return segmentSize;
+            }
         }
 
         // BrowseEdit's line edit carries flagToIgnore (hasStyle == false); BrowseEdit.qss
         // QLineEdit { height: 16px; border-width: 0 }. TOKENIZE: BrowseEditLineEditHeight
         if (StyleManager::stylesheetsDisabled() && type == CT_LineEdit && widget && widget->parentWidget()
             && widget->parentWidget()->inherits("AzQtComponents::BrowseEdit"))
+        {
+            QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+            lineEditSize.setHeight(16);
+            return lineEditSize;
+        }
+
+        // The path edit of the breadcrumbs carries flagToIgnore too: LineEdit.qss:13 gave it height: 16px, BreadCrumbs.qss:26-31 no border,
+        // and the padding of LineEdit.qss:19-20 (top -1px, bottom 1px) adds up to nothing
+        if (StyleManager::stylesheetsDisabled() && type == CT_LineEdit && widget && isBreadCrumbsPathEdit(widget))
         {
             QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
             lineEditSize.setHeight(16);
@@ -297,10 +342,36 @@ namespace AzQtComponents
         {
             switch (type)
             {
+                case CT_ScrollBar:
+                {
+                    // ScrollBar.qss:10-25: 8px thick inside a 2px border. QScrollBar::sizeHint asks for twice
+                    // PM_ScrollBarExtent plus PM_ScrollBarSliderMin along the bar, and the legacy style answered
+                    // the extent with the rule's BOX (8 + 2 * 2px: qstylesheetstyle.cpp:5143-5150 over :558) before
+                    // it set the thickness back to the declared 8px (CT_ScrollBar returns adjustSize, :5420-5422 over
+                    // :560-571): 8 x 56 (horizontal 56 x 8), where Fusion's extent gives 8 x 48. Every scroll area's
+                    // minimum size hint follows (QAbstractScrollArea::minimumSizeHint: 64 x 64 for a view in the
+                    // Native dumps, 56 x 56 in the flattened ones before).
+                    // TOKENIZE: ScrollBarBorder
+                    const int border = 2;
+                    QSize scrollBarSize = size;
+                    if (auto sliderOption = qstyleoption_cast<const QStyleOptionSlider*>(option))
+                    {
+                        (sliderOption->orientation == Qt::Horizontal ? scrollBarSize.rwidth() : scrollBarSize.rheight()) += 2 * 2 * border;
+                    }
+                    return scrollBarSize;
+                }
                 case CT_ItemViewItem:
                 {
-                    // qss-era item view row floor (24px)
+                    // TableView.qss:31-40 `::item { height: 24px; padding-left: 4px }` (the item view element, qstylesheetstyle.cpp:5557-5564)
+                    const ItemViewElement* items = ItemViewElement::forWidget(widget);
+                    ++s_itemViewBaseIndicator;
                     QSize itemSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    --s_itemViewBaseIndicator;
+                    if (items)
+                    {
+                        return items->itemSize(itemSize);
+                    }
+                    // qss-era item view row floor (24px) of the views no element covers (the list of a combo box popup)
                     itemSize.setHeight(qMax(itemSize.height(), 24));
                     return itemSize;
                 }
@@ -310,6 +381,52 @@ namespace AzQtComponents
                     if (const TabElement* tabElement = TabElement::forTabBar(widget))
                     {
                         return tabElement->tabSize(size);
+                    }
+                    // A plain tab keeps Qt's size, its width bound by the legacy rule (TabWidget.qss:16)
+                    if (const TabElement* plain = TabElement::plainForTabBar(widget))
+                    {
+                        return QProxyStyle::sizeFromContents(type, option, plain->tabSize(size), widget);
+                    }
+                }
+                break;
+                case CT_PushButton:
+                {
+                    // The element sizes a button as its rule did (qstylesheetstyle.cpp:5336-5350): the box around the contents
+                    // within the declared size where the rule has a box or a border of its own, else the base style does
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
+                    {
+                        const QSize contents = box->adjustSize(size);
+                        return box->ownsBox(option) ? box->boxSize(option, widget, contents)
+                                                    : PushButton::sizeFromContents(this, type, option, contents, widget, m_data->pushButtonConfig);
+                    }
+                }
+                break;
+                case CT_CheckBox:
+                case CT_RadioButton:
+                {
+                    // The element boxes the indicator element as its rule did (qstylesheetstyle.cpp:5399-5414): the size of the label within
+                    // the declared size, the indicator and the label spacing added, the box around it all
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
+                    {
+                        if (const IndicatorElement* indicator = IndicatorElement::forWidget(widget))
+                        {
+                            const int spacing = pixelMetric(type == CT_RadioButton ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, option, widget);
+                            return box->boxSize(option, widget, indicator->sizeFromContents(box->adjustSize(size), spacing));
+                        }
+                    }
+                }
+                break;
+                case CT_ToolButton:
+                {
+                    // The element sizes a tool button as its rule did (qstylesheetstyle.cpp:5332-5350): the box around the contents
+                    // within the declared size, and the 3 x 3 Qt adds for a rule with a box ("broken QToolButton"), where the rule has a
+                    // box or a border of its own, else the component does. UNVERIFIED: Qt adds the 3 x 3 for a gradient or an image under
+                    // the style's own border as well, and sizes it by QWindowsStyle (:5333-5349); no drafted element has one.
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && qobject_cast<const QToolButton*>(widget))
+                    {
+                        const QSize contents = box->adjustSize(size);
+                        return box->ownsBox(option) ? box->boxSize(option, widget, contents + QSize(3, 3))
+                                                    : ToolButton::sizeFromContents(this, type, option, contents, widget, m_data->toolButtonConfig);
                     }
                 }
                 break;
@@ -321,37 +438,64 @@ namespace AzQtComponents
                     break;
                 case CT_LineEdit:
                 {
-                    // LineEdit.qss: height 16 + 2px border -> 20; SpinBox.qss line edits 19;
-                    // editable-combo line edits 16. The legacy box is 2px wider than Fusion's.
-                    // TOKENIZE: LineEditHeight, SpinBoxLineEditHeight, ComboBoxLineEditHeight
-                    QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
                     const QWidget* parent = widget ? widget->parentWidget() : nullptr;
-                    int height = 20;
                     if (parent && parent->inherits("QAbstractSpinBox"))
                     {
-                        height = 19;
+                        // A spin box line edit has the box of the spin box: the sheet returned its contents size
+                        // as it was (qstylesheetstyle.cpp:5389-5393)
+                        return size;
                     }
-                    else if (parent && parent->inherits("QComboBox"))
+
+                    // The element sizes its field as its rule did (qstylesheetstyle.cpp:5389-5397): the box around the contents
+                    // within the declared size where the rule has a box or a border of its own, else the base style does
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
                     {
-                        height = 16;
+                        const QSize contents = box->adjustSize(size);
+                        return box->ownsBox(option) ? box->boxSize(option, widget, contents)
+                                                    : QProxyStyle::sizeFromContents(type, option, contents, widget);
                     }
-                    lineEditSize.setHeight(height);
-                    lineEditSize.rwidth() += 2;
+
+                    // LineEdit.qss: height 16 + 2px border -> 20; editable-combo line edits 16. The legacy box is
+                    // 2px wider than Fusion's, less the padding-left -6px of a search field (LineEdit.qss:22-26).
+                    // TOKENIZE: LineEditHeight, ComboBoxLineEditHeight
+                    QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    lineEditSize.setHeight((parent && parent->inherits("QComboBox")) ? 16 : 20);
+                    lineEditSize.rwidth() += 2 + LineEdit::flattenedPaddingLeft(widget);
+
+                    // FilteredSearchWidget.qss:12 `width: 260px` is the contents width: the box (border and
+                    // padding) goes around it, for the minimum size hint as well (qstylesheetstyle.cpp:560-571, 5389-5399)
+                    if (StyleHelpers::findParent<FilteredSearchWidget>(widget))
+                    {
+                        const QMargins box = LineEdit::flattenedFieldBox(widget);
+                        lineEditSize.setWidth(g_searchFieldContentsWidth + box.left() + box.right());
+                    }
                     return lineEditSize;
                 }
                 case CT_SpinBox:
                 {
-                    // SpinBox.qss: height 16 + margin 2 + padding -> 23 (legacy capture, page 23)
+                    // SpinBox.qss: the sheet style started from the base style's size (qstylesheetstyle.cpp:5311-5312) and added the up
+                    // button and the box of the rule around the contents (SpinBoxElement::extraWidth, qstylesheetstyle.cpp:5313-5329):
+                    // 22 more than the flattened box asked for (n2 Gallery 23_spin-box: 80 where the hint was 58); height 16 + margin 2
+                    // + padding -> 23 (legacy capture, page 23)
                     // TOKENIZE: SpinBoxHeight
                     QSize spinSize = QProxyStyle::sizeFromContents(type, option, size, widget);
+                    spinSize.rwidth() += qMax(0, SpinBoxElement::extraWidth(widget));
                     spinSize.setHeight(23);
                     return spinSize;
                 }
                 case CT_MenuBarItem:
+                    // The bar's rule gives an item its height and the item's rule its padding; contents that are not there stay not
+                    // there, which makes Qt leave the item out (LuaIDE's menu without a title took a slot of 27px)
+                    return MenuBarElement::global().itemSize(size);
+                case CT_MenuItem:
                 {
-                    // MenuBar.qss: QMenuBar height 28 + border-bottom 2px = 30; ::item padding
-                    // left/right 14px (legacy capture: bar 30 tall). TOKENIZE: MenuBarHeight, MenuBarItemPadding
-                    return QSize(size.width() + 28, 30);
+                    // QMenu::separator is the sheet's box; every other item is the base style's size, as in the legacy GUI
+                    auto menuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+                    if (menuItem && menuItem->menuItemType == QStyleOptionMenuItem::Separator)
+                    {
+                        return QSize(size.width(), MenuElement::forMenu(widget).separatorHeight());
+                    }
+                    break;
                 }
                 case CT_HeaderSection:
                 {
@@ -437,36 +581,9 @@ namespace AzQtComponents
     {
         QScopedValueRollback<const QWidget*> rollbackDrawControl(m_drawControlWidget, widget);
 
-        // SegmentBar buttons carry flagToIgnore (hasStyle == false), so their flattened
-        // look must be handled BEFORE the gate.
-        if (StyleManager::stylesheetsDisabled() && element == CE_PushButtonBevel && widget
-            && (hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"))
-                || hasClass(widget, QStringLiteral("TabMiddle")) || hasClass(widget, QStringLiteral("TabLast"))))
+        // SegmentBar buttons carry flagToIgnore (hasStyle == false), so their flattened look is drawn BEFORE the gate
+        if (StyleManager::stylesheetsDisabled() && ControlElements::drawSegmentButton(this, element, option, painter, widget))
         {
-            // SegmentControl.qss: flat #333333, hover #444444, selected #555555, #222222 border
-            QColor segmentFill(0x33, 0x33, 0x33);
-            if (option->state.testFlag(QStyle::State_On) || option->state.testFlag(QStyle::State_Sunken))
-            {
-                segmentFill = QColor(0x55, 0x55, 0x55);
-            }
-            else if (option->state.testFlag(QStyle::State_MouseOver))
-            {
-                segmentFill = QColor(0x44, 0x44, 0x44);
-            }
-            // SegmentControl.qss: seamless bar - each button has a 1px #222222 border
-            // and non-first buttons carry margin-left:-1px so adjacent borders OVERLAP
-            // into a single line. Mirror that by extending the border rect 1px left
-            // for every non-leading segment.
-            QRect borderRect = option->rect;
-            const bool leadingSegment = hasClass(widget, QStringLiteral("TabOne")) || hasClass(widget, QStringLiteral("TabFirst"));
-            if (!leadingSegment)
-            {
-                borderRect.adjust(-1, 0, 0, 0);
-            }
-
-            painter->fillRect(option->rect, segmentFill);
-            painter->setPen(QColor(0x22, 0x22, 0x22));
-            painter->drawRect(borderRect.adjusted(0, 0, -1, -1));
             return;
         }
 
@@ -481,6 +598,23 @@ namespace AzQtComponents
         {
             case CE_ShapedFrame:
             {
+                // The element frames its widget as its rule did (qstylesheetstyle.cpp:4502-4512): a border of its own is drawn
+                // with the fill (PE_Widget), the style's own by the base style inside the margin, over the palette of the fill
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
+                    {
+                        if (auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option); frameOption && box->hasNativeBorder(option))
+                        {
+                            QStyleOptionFrame inset(*frameOption);
+                            inset.rect = box->borderRect(option);
+                            BoxElement::configurePalette(inset.palette, box->face(option));
+                            QProxyStyle::drawControl(element, &inset, painter, widget);
+                        }
+                        return;
+                    }
+                }
+
                 // FilteredSearchWidget.qss tag chips: dark blocks rgb(46,46,46),
                 // 1px #808080 border, 2px radius
                 if (StyleManager::stylesheetsDisabled() && widget
@@ -515,56 +649,25 @@ namespace AzQtComponents
                     painter->restore();
                     return;
                 }
-                if (StyleManager::stylesheetsDisabled() && widget
-                    && QString::fromLatin1(widget->metaObject()->className()) == QLatin1String("QFrame"))
+                // The frame element: what the legacy sheets gave a QFrame's line, box or panel and the frame of a scroll
+                // area, drawn by the base style from the palette their background derived (FrameElement.h). Behind the
+                // picker's separator above: that frame has borders, which the sheet drew itself.
+                if (StyleManager::stylesheetsDisabled() && widget)
                 {
-                    if (auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option))
+                    const auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option);
+                    const FrameElement* frameElement =
+                        (frameOption && frameOption->frameShape != QFrame::NoFrame) ? FrameElement::forFrame(widget) : nullptr;
+                    if (frameElement)
                     {
-                        // BaseStyleSheet.qss `.QFrame[frameShape="1|2|4|5|6"] { background-color:
-                        // #444444 }` (exact QFrame only): the sheet's box replaced the native
-                        // frame, so Box / Panel / StyledPanel frames show no line (the Inspector
-                        // asset details frame), and HLine / VLine draw a 1px line in the text
-                        // colour the universal rule gave them. TOKENIZE: PlainFrameFace, PlainFrameLine
-                        const int shape = frameOption->frameShape;
-                        if (shape == QFrame::Box || shape == QFrame::Panel || shape == QFrame::StyledPanel)
-                        {
-                            painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
-                            return;
-                        }
-                        if (shape == QFrame::HLine || shape == QFrame::VLine)
-                        {
-                            const QRect r = option->rect;
-                            const QRect line = (shape == QFrame::HLine)
-                                ? QRect(r.left(), r.center().y(), r.width(), 1)
-                                : QRect(r.center().x(), r.top(), 1, r.height());
-                            painter->fillRect(r, QColor(0x44, 0x44, 0x44));
-                            painter->fillRect(line, option->palette.color(QPalette::WindowText));
-                            return;
-                        }
+                        QStyleOptionFrame framed(*frameOption);
+                        frameElement->apply(&framed, painter, widget);
+                        QProxyStyle::drawControl(element, &framed, painter, widget);
+                        return;
                     }
                 }
-                if (StyleManager::stylesheetsDisabled() && widget && widget->parentWidget()
-                    && widget->parentWidget()->inherits("AzQtComponents::VectorElement") && widget->inherits("QLabel"))
+                // VectorInput.qss:9-16, :37-55: the fill of the coordinate label of a vector element
+                if (StyleManager::stylesheetsDisabled() && VectorElement::drawFlattenedLabel(option, painter, widget))
                 {
-                    // VectorInput.qss VectorElement[Coordinate=X|Y|Z|W] QLabel background
-                    // #E25243 / #58BC61 / #4285F4 / #E57829, left corners 2px.
-                    // TOKENIZE: VectorXColor, VectorYColor, VectorZColor, VectorWColor
-                    const QString coordinate = widget->parentWidget()->property("Coordinate").toString();
-                    QColor fill;
-                    if (coordinate == QLatin1String("X")) fill = QColor(0xE2, 0x52, 0x43);
-                    else if (coordinate == QLatin1String("Y")) fill = QColor(0x58, 0xBC, 0x61);
-                    else if (coordinate == QLatin1String("Z")) fill = QColor(0x42, 0x85, 0xF4);
-                    else if (coordinate == QLatin1String("W")) fill = QColor(0xE5, 0x78, 0x29);
-                    if (fill.isValid())
-                    {
-                        painter->save();
-                        painter->setRenderHint(QPainter::Antialiasing, true);
-                        painter->setPen(Qt::NoPen);
-                        painter->setBrush(fill);
-                        painter->drawRoundedRect(QRectF(option->rect), 2.0, 2.0);
-                        painter->drawRect(QRectF(option->rect).adjusted(2.0, 0.0, 0.0, 0.0)); // square right corners
-                        painter->restore();
-                    }
                     return;
                 }
                 if (BrowseEdit::drawFrame(this, option, painter, widget, m_data->browseEditConfig))
@@ -576,8 +679,11 @@ namespace AzQtComponents
 
             case CE_Splitter:
             {
-                // Splitter.qss: a 1px #222222 line (hover #1E70EB) in the middle of the 5px
-                // handle; QMainWindow::separator (dock gaps): #111111 across the whole gap.
+                // Splitter.qss:9-11, :21-24: the handle's rect (the contents of QSplitterHandle, the 1px between the
+                // panes: PM_SplitterWidth) is filled #222222, #1E70EB under the pointer, as a rule fills its background
+                // (qstylesheetstyle.cpp:1348-1370); QMainWindow::separator (dock gaps): #111111 across the whole gap.
+                // The 26 handles of n2 (Asset Processor, Editor, Gallery, the Atom tools) are all at rest: the colour under the pointer is
+                // carried from the rule, UNVERIFIED.
                 // TOKENIZE: SplitterLineColor, SplitterHoverColor, DockSeparatorColor
                 if (StyleManager::stylesheetsDisabled())
                 {
@@ -586,15 +692,18 @@ namespace AzQtComponents
                         painter->fillRect(option->rect, QColor(0x11, 0x11, 0x11));
                         return;
                     }
-                    const QColor line = option->state.testFlag(QStyle::State_MouseOver) ? QColor(0x1E, 0x70, 0xEB) : QColor(0x22, 0x22, 0x22);
-                    if (option->state.testFlag(QStyle::State_Horizontal))
-                    {
-                        painter->fillRect(QRect(option->rect.center().x(), option->rect.top(), 1, option->rect.height()), line);
-                    }
-                    else
-                    {
-                        painter->fillRect(QRect(option->rect.left(), option->rect.center().y(), option->rect.width(), 1), line);
-                    }
+                    painter->fillRect(option->rect, option->state.testFlag(QStyle::State_MouseOver) ? QColor(0x1E, 0x70, 0xEB) : QColor(0x22, 0x22, 0x22));
+                    return;
+                }
+            }
+            break;
+
+            case CE_ToolBar:
+            {
+                // The toolbar element's panel instead of the base style's bevel (Fusion draws one for the toolbars of a QMainWindow
+                // and none for the others, which QCommonStyle sends to PE_PanelToolBar)
+                if (StyleManager::stylesheetsDisabled() && ControlElements::drawToolBarPanel(option, painter, widget))
+                {
                     return;
                 }
             }
@@ -610,18 +719,26 @@ namespace AzQtComponents
                         tabElement->drawTab(painter, option);
                         return;
                     }
+                    // A plain tab is the base style's, drawn over the palette the legacy sheet gave it
+                    const TabElement* plain = TabElement::plainForTabBar(widget);
+                    auto tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
+                    if (plain && tabOption)
+                    {
+                        QStyleOptionTab plainOption = *tabOption;
+                        plain->applyPalette(plainOption.palette);
+                        QProxyStyle::drawControl(element, &plainOption, painter, widget);
+                        return;
+                    }
                 }
             }
             break;
 
             case CE_MenuBarEmptyArea:
             {
-                // MenuBar.qss QMenuBar: window face with a 2px #111111 bottom border.
-                // TOKENIZE: MenuBarBorderColor
+                // The legacy bar drew nothing here but its border: the bar is transparent over its window (BaseStyleSheet.qss:17)
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
-                    painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
+                    MenuBarElement::global().drawBorder(painter, option->rect);
                     return;
                 }
             }
@@ -629,31 +746,43 @@ namespace AzQtComponents
 
             case CE_MenuBarItem:
             {
-                // MenuBar.qss ::item:selected #555555, ::item:pressed #222222, white text; the
-                // 2px #111111 bottom border runs under the items too.
-                // TOKENIZE: MenuBarItemHoverColor, MenuBarItemPressedColor
                 if (StyleManager::stylesheetsDisabled())
                 {
                     if (auto menuBarItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
                     {
-                        const QRect box = option->rect.adjusted(0, 0, 0, -2);
-                        const bool pressed = option->state.testFlag(QStyle::State_Sunken);
-                        const bool selected = option->state.testFlag(QStyle::State_Selected) && option->state.testFlag(QStyle::State_Enabled);
-                        painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
-                        if (pressed)
+                        // As the legacy sheet style drew it (qstylesheetstyle.cpp:4006-4016): an item with a fill (hovered or pressed)
+                        // is filled by its own rule and labelled by QCommonStyle, the base style bypassed; an idle item is the base
+                        // style's, which lays its label out one pixel higher
+                        const MenuBarElement& menuBar = MenuBarElement::global();
+                        const QColor fill = menuBar.itemFill(option);
+                        const QStyleOptionMenuItem label = menuBar.labelOption(*menuBarItem);
+                        if (fill.isValid())
                         {
-                            painter->fillRect(box, QColor(0x22, 0x22, 0x22));
+                            painter->fillRect(option->rect, fill);
+                            QCommonStyle::drawControl(element, &label, painter, widget);
                         }
-                        else if (selected)
+                        else
                         {
-                            painter->fillRect(box, QColor(0x55, 0x55, 0x55));
+                            QProxyStyle::drawControl(element, &label, painter, widget);
                         }
-                        painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
-                        QPalette textPalette = option->palette;
-                        textPalette.setColor(QPalette::ButtonText, QColor(0xFF, 0xFF, 0xFF));
-                        drawItemText(painter, box, Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine,
-                            textPalette, option->state.testFlag(QStyle::State_Enabled), menuBarItem->text, QPalette::ButtonText);
                         return;
+                    }
+                }
+            }
+            break;
+
+            case CE_MenuItem:
+            {
+                // The items of a popup menu: QWindowsStyle's, over the menu element's palette (the legacy sheet style handed them to it,
+                // qstylesheetstyle.cpp:3980-3989). Only a QMenu's own: a combo box in menu mode keeps the base style's.
+                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QMenu*>(widget))
+                {
+                    if (auto menuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
+                    {
+                        if (MenuElement::forMenu(widget).drawItem(painter, *menuItem, widget))
+                        {
+                            return;
+                        }
                     }
                 }
             }
@@ -661,20 +790,34 @@ namespace AzQtComponents
 
             case CE_TabBarTabLabel:
             {
-                // The tab element: the label is laid out inside the tab's contents box (the
-                // stylesheet passed Qt the rect minus edges and padding) in the state's text color
+                // The tab element: the label is laid out inside the tab's contents box (the stylesheet
+                // passed Qt the rect minus margin, edges and padding) in the state's text color and
+                // weight, and without Qt's focus rectangle where the stylesheet gave none
                 if (StyleManager::stylesheetsDisabled())
                 {
                     const TabElement* tabElement = TabElement::forTabBar(widget);
                     auto tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
                     if (tabElement && tabOption)
                     {
+                        const TabElement::TabFace& tabFace = tabElement->face(option);
                         QStyleOptionTab labelOption = *tabOption;
                         labelOption.rect = tabElement->contentsRect(option->rect);
-                        const QColor text = tabElement->face(option).m_text;
-                        labelOption.palette.setColor(QPalette::WindowText, text);
-                        labelOption.palette.setColor(QPalette::ButtonText, text);
+                        labelOption.palette.setColor(QPalette::WindowText, tabFace.m_text);
+                        labelOption.palette.setColor(QPalette::ButtonText, tabFace.m_text);
+                        if (tabElement->m_hideFocusRect)
+                        {
+                            labelOption.state &= ~QStyle::State_HasFocus;
+                        }
+                        // The rule's font-weight over the painter's font, put back after the label (qstylesheetstyle.cpp:4434-4445)
+                        const QFont painterFont = painter->font();
+                        if (tabFace.m_weight > 0)
+                        {
+                            QFont labelFont = painterFont;
+                            labelFont.setWeight(static_cast<QFont::Weight>(tabFace.m_weight));
+                            painter->setFont(labelFont);
+                        }
                         QProxyStyle::drawControl(CE_TabBarTabLabel, &labelOption, painter, widget);
+                        painter->setFont(painterFont);
                         return;
                     }
                 }
@@ -683,22 +826,110 @@ namespace AzQtComponents
 
             case CE_DockWidgetTitle:
             {
-                // QDockWidget.qss backup path: title strip #333333 (raw QDockWidgets in gems)
+                // QDockWidget.qss:20-23 backup path: title strip #333333 (raw QDockWidgets in gems). The legacy style
+                // drew that fill and then the title text itself (qstylesheetstyle.cpp:4459-4501): in the base style's
+                // title text rect (the title area less the buttons, 4px in from the left: qfusionstyle.cpp:3473-3487,
+                // qcommonstyle.cpp:3022-3075), left aligned from the top, elided to the rect, in the dock widget's
+                // WindowText. BaseStyleSheet.qss:60-66 gave QDockWidget #cccccc in every state. The palette of the dock
+                // stays white, as one set on it would reach the widgets inside (a rule of their own held them to white),
+                // so the colour is carried here. Horizontal title bars: no dock widget of the engine has a vertical one.
+                // TOKENIZE: DockTitleFillColor, DockTitleTextColor
                 if (StyleManager::stylesheetsDisabled())
                 {
                     painter->fillRect(option->rect, QColor(0x33, 0x33, 0x33));
-                    if (auto dockOption = qstyleoption_cast<const QStyleOptionDockWidget*>(option))
+                    auto dockOption = qstyleoption_cast<const QStyleOptionDockWidget*>(option);
+                    if (dockOption && !dockOption->title.isEmpty())
                     {
-                        painter->setPen(QColor(Qt::white));
-                        painter->drawText(option->rect.adjusted(8, 0, -8, 0), Qt::AlignVCenter | Qt::AlignLeft, dockOption->title);
+                        const QRect textRect = QProxyStyle::subElementRect(SE_DockWidgetTitleBarText, option, widget);
+                        QPalette titlePalette = dockOption->palette;
+                        titlePalette.setColor(QPalette::WindowText, QColor(0xCC, 0xCC, 0xCC));
+                        int textFlags = Qt::AlignLeft;
+                        textFlags |= Qt::TextHideMnemonic;
+                        drawItemText(painter, textRect, textFlags, titlePalette, dockOption->state.testFlag(QStyle::State_Enabled),
+                            painter->fontMetrics().elidedText(dockOption->title, Qt::ElideRight, textRect.width()), QPalette::WindowText);
                     }
                     return;
                 }
             }
             break;
 
+            case CE_PushButton:
+            {
+                // A button with an element is drawn as Native drew it (qstylesheetstyle.cpp:3642-3650, qcommonstyle.cpp:1294-1307):
+                // the bevel, then the label in the contents rect of the box, in the colour of the state. Fusion lays the label out
+                // in the rect it asks of itself (qfusionstyle.cpp:1598-1605), which the box would not reach.
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    const BoxElement* box = BoxElement::forWidget(widget);
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (box && buttonOption)
+                    {
+                        drawControl(CE_PushButtonBevel, option, painter, widget);
+                        QStyleOptionButton labelOption(*buttonOption);
+                        labelOption.rect = subElementRect(SE_PushButtonContents, option, widget);
+                        if (const QColor text = box->face(option).m_text; text.isValid())
+                        {
+                            labelOption.palette.setColor(QPalette::ButtonText, text);
+                        }
+                        drawControl(CE_PushButtonLabel, &labelOption, painter, widget);
+                        return;
+                    }
+                }
+            }
+            break;
+
+            case CE_PushButtonLabel:
+            {
+                // A rule with a text-align has a position, and the sheet style laid the label of its push buttons out itself: the icon and
+                // the text 4px apart where the base style's are 2px (qstylesheetstyle.cpp:3688-3783, qcommonstyle.cpp:1362-1377)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    const BoxElement* box = BoxElement::forWidget(widget);
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (box && buttonOption && box->drawPushButtonLabel(this, buttonOption, painter, widget))
+                    {
+                        return;
+                    }
+                }
+            }
+            break;
+
             case CE_PushButtonBevel:
             {
+                // The element's bevel (qstylesheetstyle.cpp:3651-3686)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    const BoxElement* box = BoxElement::forWidget(widget);
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (box && buttonOption && !box->hasNativeBorder(option))
+                    {
+                        // A border of its own, or the none of a flat button: the element draws the face
+                        box->draw(painter, option, widget);
+                        if (buttonOption->features.testFlag(QStyleOptionButton::HasMenu))
+                        {
+                            // the menu indicator: the style's arrow in a square of its size at the bottom right of the padding
+                            // box (qstylesheetstyle.cpp:2218-2233, 2272-2300, 3674-3686)
+                            const int extent = pixelMetric(PM_MenuButtonIndicator, nullptr, widget);
+                            QStyleOptionButton arrowOption(*buttonOption);
+                            arrowOption.rect = QStyle::alignedRect(option->direction, Qt::AlignRight | Qt::AlignBottom, QSize(extent, extent),
+                                box->contentsRect(option, widget).marginsAdded(box->m_padding));
+                            drawPrimitive(PE_IndicatorArrowDown, &arrowOption, painter, widget);
+                        }
+                        return;
+                    }
+                    if (box && buttonOption && box->ownsBox(option))
+                    {
+                        // The style's own bevel, inside the margin of the box
+                        QStyleOptionButton innerOption(*buttonOption);
+                        innerOption.rect = box->borderRect(option);
+                        if (!PushButton::drawPushButtonBevel(this, &innerOption, painter, widget, m_data->pushButtonConfig))
+                        {
+                            QProxyStyle::drawControl(element, &innerOption, painter, widget);
+                        }
+                        return;
+                    }
+                }
+
                 if (qobject_cast<const QPushButton*>(widget))
                 {
                     if (PushButton::drawPushButtonBevel(this, option, painter, widget, m_data->pushButtonConfig))
@@ -711,6 +942,16 @@ namespace AzQtComponents
 
             case CE_CheckBox:
             {
+                // The box of the element around the indicator element of a check box (qstylesheetstyle.cpp:3789-3794)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && buttonOption && box->drawIndicatorButton(this, buttonOption, painter, widget))
+                    {
+                        return;
+                    }
+                }
+
                 if (qobject_cast<const QCheckBox*>(widget))
                 {
                     if (CheckBox::drawCheckBox(this, option, painter, widget, m_data->checkBoxConfig))
@@ -735,6 +976,16 @@ namespace AzQtComponents
 
             case CE_RadioButton:
             {
+                // The box of the element around the indicator element of a radio button (qstylesheetstyle.cpp:3789-3794)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && buttonOption && box->drawIndicatorButton(this, buttonOption, painter, widget))
+                    {
+                        return;
+                    }
+                }
+
                 if (qobject_cast<const QRadioButton*>(widget))
                 {
                     if (RadioButton::drawRadioButton(this, option, painter, widget, m_data->radioButtonConfig))
@@ -773,12 +1024,15 @@ namespace AzQtComponents
                     // The legacy draw was QCommonStyle's CE_Header over the section rule (qcommonstyle.cpp:2158-2178):
                     // clipped to the section, the rule's fill (TableView.qss:69), the label in the rule's content box
                     // (padding only, no border: qstylesheetstyle.cpp:6264-6270), then the base style's sort arrow.
-                    // A header whose sections were made transparent by a local sheet
-                    // (property "SectionBackground" = "transparent") shows the window colour.
+                    // The fill of the section is the item view element's (TableView.qss:69 #2d2d2d, the sheet of a module's own colour); a section
+                    // declared transparent (a local sheet, or the property "SectionBackground" = "transparent") paints nothing and shows the
+                    // background behind the header.
                     painter->save();
                     painter->setClipRect(option->rect);
-                    const bool transparentSections = widget->property("SectionBackground").toString() == QLatin1String("transparent");
-                    painter->fillRect(option->rect, transparentSections ? QColor(0x44, 0x44, 0x44) : QColor(0x2D, 0x2D, 0x2D));
+                    if (const QColor sectionFill = ItemViewElement::headerFillOf(widget); sectionFill.alpha() > 0)
+                    {
+                        painter->fillRect(option->rect, sectionFill);
+                    }
                     if (auto headerOption = qstyleoption_cast<const QStyleOptionHeader*>(option))
                     {
                         // font-size: 12px, font-style: normal (TableView.qss:72-73) over the painter's font, as
@@ -812,6 +1066,17 @@ namespace AzQtComponents
             }
             break;
 
+            case CE_HeaderEmptyArea:
+            {
+                // The legacy header had a background (the '*' rule, BaseStyleSheet.qss:15-21: transparent), and the sheet style then drew nothing
+                // for the area beyond the last section (qstylesheetstyle.cpp:4152-4155): what is behind the header shows
+                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QHeaderView*>(widget))
+                {
+                    return;
+                }
+            }
+            break;
+
             case CE_ComboBoxLabel:
             {
                 if (qobject_cast<const QComboBox*>(widget))
@@ -826,6 +1091,32 @@ namespace AzQtComponents
 
             case CE_ItemViewItem:
             {
+                // The popup list of a combo box paints each item from its element, not from the palette Qt hands
+                // the view (the combo box replaces that, qcombobox.cpp:1430-1448): fill, text color, no outline
+                if (StyleManager::stylesheetsDisabled() && ComboPopupElement::coversView(widget))
+                {
+                    if (auto popupOption = qstyleoption_cast<const QStyleOptionViewItem*>(option))
+                    {
+                        QStyleOptionViewItem popupItem = *popupOption;
+                        ComboPopupElement::global().prepareItem(popupItem, painter);
+                        return QProxyStyle::drawControl(element, &popupItem, painter, widget);
+                    }
+                }
+
+                // The legacy sheet drew an item through the common style, with the palette of the item's rule (qstylesheetstyle.cpp:4363-4373):
+                // the colour of the rule's text over the palette the view hands the item. The model's background and the base style's
+                // selection fill are not drawn (PE_PanelItemViewItem, above); the item view element is the whole of the look.
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto elementOption = qstyleoption_cast<const QStyleOptionViewItem*>(option);
+                    if (const ItemViewElement* items = elementOption ? ItemViewElement::forWidget(widget) : nullptr)
+                    {
+                        QStyleOptionViewItem item(*elementOption);
+                        items->prepareItem(&item);
+                        return QProxyStyle::drawControl(element, &item, painter, widget);
+                    }
+                }
+
                 // For styling QTableView and QListView
                 auto tableView = qobject_cast<const QTableView*>(widget);
                 auto listView = qobject_cast<const QListView*>(widget);
@@ -875,6 +1166,21 @@ namespace AzQtComponents
                         copy.rect.adjust(treeView->indentation(), 0, 0, 0);
                         return QProxyStyle::drawControl(element, &copy, painter, widget);
                     }
+                }
+
+                // TableView.qss:99-102 `QTreeView::item:disabled { color: #777777 }` (118 tree views, an AzQtComponents::TableView
+                // among them): the legacy style laid the item rule's palette over the option of a disabled item, or of an item
+                // in a disabled view, before it called the base style (qstylesheetstyle.cpp:4363-4373): the colour reaches
+                // Text, or HighlightedText for a selected item. The view's own roles stay white, as in the dumps. A
+                // BranchDelegate tree with branch lines (the Gallery's) takes the branch above.
+                // UNVERIFIED: no capture holds a disabled item with text (the two disabled trees of LuaIDE are empty).
+                // TOKENIZE: DisabledItemTextColor
+                if (StyleManager::stylesheetsDisabled() && treeView && itemOption && !itemOption->state.testFlag(QStyle::State_Enabled))
+                {
+                    QStyleOptionViewItem disabledItem = *itemOption;
+                    disabledItem.palette.setColor(QPalette::Text, QColor(0x77, 0x77, 0x77));
+                    disabledItem.palette.setColor(QPalette::HighlightedText, QColor(0x77, 0x77, 0x77));
+                    return QProxyStyle::drawControl(element, &disabledItem, painter, widget);
                 }
             }
             break;
@@ -952,7 +1258,10 @@ namespace AzQtComponents
         if (widget && Style::hasClass(widget, QStringLiteral("Expander")))
         {
             QString name = checked ? QStringLiteral("caret-down") : QStringLiteral("caret-right");
-            if (!enabled)
+            // CheckBox.qss:130-132, :137-139 gave a disabled expander the faded caret; in a card header Card.qss:277-287 (`AzQtComponents--
+            // CardHeader QCheckBox.Expander::indicator:unchecked:disabled`, one more type selector) takes it back to the full one, "at
+            // full opacity even when card is disabled"
+            if (!enabled && !TextElement::withinClass(widget, "AzQtComponents::CardHeader"))
             {
                 name += QStringLiteral("-disabled");
             }
@@ -1036,6 +1345,29 @@ namespace AzQtComponents
         painter->restore();
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened plain dock widgets (GUI flattening)
+    //
+    // QDockWidget.qss:14-31 is a backup style for the QDockWidget class itself,
+    // "not derived classes" (:9-12): `.QDockWidget` is the class selector, which
+    // matches the exact class name of a widget that has no class tag
+    // (qstylesheetstyle.cpp:1545-1551). It gives the title strip (:20-23, drawn by
+    // CE_DockWidgetTitle), the title icons (:16-17, Style::standardIcon) and
+    // frameless transparent title buttons (:26-31, PE_PanelButtonTool). A title
+    // button is a QDockWidgetTitleButton, which the legacy style matched as its
+    // dock widget (qstylesheetstyle.cpp:1806-1820).
+    //////////////////////////////////////////////////////////////////////////
+    static bool isFlattenedPlainDockWidget(const QWidget* widget)
+    {
+        return widget && QString::fromLatin1(widget->metaObject()->className()) == QLatin1String("QDockWidget");
+    }
+
+    static bool isFlattenedPlainDockTitleButton(const QWidget* widget)
+    {
+        return widget && QString::fromLatin1(widget->metaObject()->className()) == QLatin1String("QDockWidgetTitleButton")
+            && isFlattenedPlainDockWidget(widget->parentWidget());
+    }
+
     void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
     {
         if (element == PE_IndicatorDockWidgetResizeHandle)
@@ -1074,6 +1406,12 @@ namespace AzQtComponents
             return QProxyStyle::drawPrimitive(element, option, painter, widget);
         }
 
+        // The line edit inside a BrowseEdit carries flagToIgnore (hasStyle == false); BrowseEdit.qss:15-29 gave it a field of its own
+        if (element == PE_PanelLineEdit && StyleManager::stylesheetsDisabled() && BrowseEdit::drawFlattenedField(option, painter, widget))
+        {
+            return;
+        }
+
         if (!hasStyle(widget))
         {
             QProxyStyle::drawPrimitive(element, option, painter, widget);
@@ -1085,13 +1423,19 @@ namespace AzQtComponents
         {
             case PE_Widget:
             {
-                // The tab element's bar and tab widget boxes (the stylesheet drew a widget's own
-                // background and border here, for widgets with WA_StyledBackground)
+                // The tab element's bar and tab widget boxes, and the fill of a widget hosted in a menu while it is hovered
+                // (the stylesheet drew a widget's own background and border here, for widgets with WA_StyledBackground)
                 if (StyleManager::stylesheetsDisabled() && widget)
                 {
                     if (widget->inherits("QTabBar"))
                     {
-                        if (const TabElement* tabElement = TabElement::forTabBar(widget))
+                        // The bar of an element, or a plain bar's (its sheet's background-color, TabWidget.qss:10)
+                        const TabElement* tabElement = TabElement::forTabBar(widget);
+                        if (!tabElement)
+                        {
+                            tabElement = TabElement::plainForTabBar(widget);
+                        }
+                        if (tabElement)
                         {
                             if (tabElement->m_barFill.isValid())
                             {
@@ -1114,12 +1458,84 @@ namespace AzQtComponents
                             return;
                         }
                     }
+                    else if (MenuElement::drawHostedWidget(painter, option, widget))
+                    {
+                        return;
+                    }
+
+                    // The element of any other widget (qstylesheetstyle.cpp:4681-4725): its fill, image and border
+                    if (const BoxElement* boxElement = BoxElement::forWidget(widget); boxElement && boxElement->draw(painter, option, widget))
+                    {
+                        return;
+                    }
+
+                    // What the element took the autofill of is painted in its background role where it draws nothing (:4682-4691)
+                    if (BoxElement::fillsBackgroundRole(widget, option))
+                    {
+                        painter->fillRect(option->rect, option->palette.brush(widget->backgroundRole()));
+                        return;
+                    }
+                }
+            }
+            break;
+
+            case PE_Frame:
+            {
+                // The border of the element over what a picker frame has painted (qstylesheetstyle.cpp:4639-4650)
+                if (StyleManager::stylesheetsDisabled() && ColorPickerElements::drawFrame(option, painter, widget))
+                {
+                    return;
                 }
             }
             break;
 
             case PE_PanelLineEdit:
             {
+                // The element frames its field as its rule did (qstylesheetstyle.cpp:4651-4679): a border of its own is drawn with
+                // the fill; the style's own by the base style inside the margin, over the palette of the fill. A line edit inside a
+                // combo box or a spin box has no panel of its own where the container draws its border or a fill the base style cannot
+                // (:4655-4661). The State_Sunken of a field says its frame is sunken, not that it is pressed (:2121-2123).
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    const QWidget* container = BoxElement::containerOf(widget);
+                    auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option);
+                    if (const BoxElement* box = BoxElement::forWidget(container); box && frameOption)
+                    {
+                        QStyleOptionFrame field(*frameOption);
+                        field.state &= ~QStyle::State_Sunken;
+                        const BoxElement::Face& face = box->face(&field);
+                        if (!box->hasNativeBorder(&field))
+                        {
+                            if (container == widget)
+                            {
+                                box->draw(painter, &field, widget);
+                            }
+                            return;
+                        }
+                        const bool baseDraws = BoxElement::baseStyleCanDraw(face, container);
+                        if (container != widget && !baseDraws)
+                        {
+                            return;
+                        }
+                        QStyleOptionFrame inset(field);
+                        inset.rect = box->borderRect(&field);
+                        BoxElement::configurePalette(inset.palette, face);
+                        if (baseDraws)
+                        {
+                            QProxyStyle::drawPrimitive(element, &inset, painter, widget);
+                        }
+                        else
+                        {
+                            box->draw(painter, &field, widget);
+                            if (inset.lineWidth > 0)
+                            {
+                                QProxyStyle::drawPrimitive(PE_FrameLineEdit, &inset, painter, widget);
+                            }
+                        }
+                        return;
+                    }
+                }
+
                 if (LineEdit::drawFrame(this, option, painter, widget, m_data->lineEditConfig))
                 {
                     return;
@@ -1147,6 +1563,13 @@ namespace AzQtComponents
 
             case PE_PanelButtonTool:
             {
+                // QDockWidget.qss:26-31: the title buttons of a plain dock widget have no border and a transparent
+                // background in every state, where Fusion raises a panel under the mouse. UNVERIFIED: no capture
+                // holds the pointer over one.
+                if (StyleManager::stylesheetsDisabled() && isFlattenedPlainDockTitleButton(widget))
+                {
+                    return;
+                }
                 if (PushButton::drawPushButtonBevel(this, option, painter, widget, m_data->pushButtonConfig))
                 {
                     return;
@@ -1189,6 +1612,22 @@ namespace AzQtComponents
                 // Flatten FIRST: the BranchDelegate path below delegates to raw Fusion
                 // baseStyle() (massive native arrows); in flatten mode the caret SVGs
                 // own this for every tree. TableView hides branches (qss).
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    // The item view element draws the branch cell as its rule did: a fill by state, and the caret fitted into the cell
+                    // less the rule's padding (TableView.qss:42-60, 87-97); a TableView's element has no caret (:104-108)
+                    auto branchOption = qstyleoption_cast<const QStyleOptionViewItem*>(option);
+                    if (const ItemViewElement* items = branchOption ? ItemViewElement::forWidget(widget) : nullptr)
+                    {
+                        if (!items->drawBranch(this, branchOption, painter, widget))
+                        {
+                            // The rule has nothing for this cell: the sheet style asked the base style, which draws the connecting lines of a tree
+                            // with a BranchDelegate (qstylesheetstyle.cpp:4783-4785) and nothing for any other tree
+                            TreeView::drawBranchIndicator(this, option, painter, widget, m_data->treeViewConfig);
+                        }
+                        return;
+                    }
+                }
                 if (StyleManager::stylesheetsDisabled() && !qobject_cast<const TableView*>(widget))
                 {
                     if (option->state.testFlag(QStyle::State_Children))
@@ -1224,8 +1663,11 @@ namespace AzQtComponents
                             return;
                         }
                     }
-                    // Item view check boxes share the CheckBox.qss indicator images
-                    drawFlattenedIndicator(flattenedCheckBoxIndicatorPath(option, widget), painter, option->rect);
+                    // Item view check boxes share the CheckBox.qss indicator images, drawn in the rect their rule's margin leaves
+                    // (TableView.qss:78-85, CheckBox.qss:23-28: a tree pulls the box 3px to the left, qstylesheetstyle.cpp:1349-1353)
+                    const ItemViewElement* items = ItemViewElement::forWidget(widget);
+                    drawFlattenedIndicator(flattenedCheckBoxIndicatorPath(option, widget), painter,
+                        items ? items->indicatorImageRect(option->rect) : option->rect);
                     return;
                 }
             }
@@ -1255,9 +1697,15 @@ namespace AzQtComponents
 
             case PE_FrameDockWidget:
             {
-                // StyledDockWidget.qss: no frame when docked; 1px black when floating
+                // StyledDockWidget.qss:9-18: the border of the rule a StyledDockWidget was polished with, none for one polished docked
+                // (ControlElements.cpp). Another dock widget with a title bar of its own keeps a black line while it floats (UNVERIFIED: no
+                // capture holds one).
                 if (StyleManager::stylesheetsDisabled())
                 {
+                    if (ControlElements::drawDockFrame(option, painter, widget))
+                    {
+                        return;
+                    }
                     const QDockWidget* dockWidget = qobject_cast<const QDockWidget*>(widget);
                     if (dockWidget && dockWidget->isFloating())
                     {
@@ -1273,13 +1721,6 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    if (qobject_cast<const QMenu*>(widget))
-                    {
-                        // Fusion asks for a check BOX on checkable menu items; the sheet left the
-                        // base style's plain check MARK (white, no box). TOKENIZE: MenuCheckMark
-                        QProxyStyle::drawPrimitive(PE_IndicatorMenuCheckMark, option, painter, widget);
-                        return;
-                    }
                     if (widget && widget->inherits("AzToolsFramework::EntityOutlinerCheckBox"))
                     {
                         // EntityOutliner.qss: the outliner's visibility / lock toggles are check
@@ -1351,15 +1792,19 @@ namespace AzQtComponents
             case PE_PanelToolBar:
             {
                 // ToolBar.qss QToolBar { background-color: #444444; border: 0 none };
-                // MainWindow QToolBar { border-bottom: 2px solid #111111 }. TOKENIZE: ToolBarBottomBorder
-                if (StyleManager::stylesheetsDisabled())
+                // MainWindow QToolBar { border-bottom: 2px solid #111111 }: the toolbar element's panel (ControlElements.cpp)
+                if (StyleManager::stylesheetsDisabled() && ControlElements::drawToolBarPanel(option, painter, widget))
                 {
-                    painter->fillRect(option->rect, QColor(0x44, 0x44, 0x44));
-                    const QWidget* parent = widget ? widget->parentWidget() : nullptr;
-                    if (parent && QString::fromLatin1(parent->metaObject()->className()) == QLatin1String("MainWindow"))
-                    {
-                        painter->fillRect(QRect(option->rect.left(), option->rect.bottom() - 1, option->rect.width(), 2), QColor(0x11, 0x11, 0x11));
-                    }
+                    return;
+                }
+            }
+            break;
+
+            case PE_IndicatorToolBarHandle:
+            {
+                // ToolBar.qss QToolBar::handle: the sheet's image in the padding of its rule, not the base style's dots
+                if (StyleManager::stylesheetsDisabled() && ControlElements::drawToolBarHandle(option, painter, widget))
+                {
                     return;
                 }
             }
@@ -1405,8 +1850,8 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    // Menu.qss QMenu { background-color: #222222 }, no frame. TOKENIZE: MenuSurfaceColor
-                    painter->fillRect(option->rect, QColor(0x22, 0x22, 0x22));
+                    // Menu.qss:12 QMenu { background-color }, no frame (the menu element's surface)
+                    painter->fillRect(option->rect, MenuElement::forMenu(widget).m_surface);
                     return;
                 }
             }
@@ -1421,24 +1866,44 @@ namespace AzQtComponents
             }
             break;
 
-            case PE_PanelButtonCommand:
-            {
-                // Fusion sinks a panel behind the icon of a checked menu item; the sheet drew none.
-                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QMenu*>(widget))
-                {
-                    return;
-                }
-            }
-            break;
-
             case PE_FrameTabWidget:
             {
-                // The tab element's pane edges, on the pane rect (SE_TabWidgetTabPane)
+                // The tab element's pane fill and edges, on the pane rect (SE_TabWidgetTabPane)
                 if (StyleManager::stylesheetsDisabled())
                 {
                     if (const TabElement* tabElement = TabElement::forTabWidget(widget))
                     {
+                        if (tabElement->m_paneFill.isValid())
+                        {
+                            painter->fillRect(option->rect, tabElement->m_paneFill);
+                        }
                         TabElement::drawEdges(painter, option->rect, tabElement->m_paneEdges);
+                        return;
+                    }
+                    // A plain pane is the base style's, drawn over the palette the legacy sheet gave the tab widget
+                    const TabElement* plain = TabElement::plainForTabWidget(widget);
+                    auto frameOption = qstyleoption_cast<const QStyleOptionTabWidgetFrame*>(option);
+                    if (plain && frameOption)
+                    {
+                        QStyleOptionTabWidgetFrame plainOption = *frameOption;
+                        plain->applyPalette(plainOption.palette);
+                        QProxyStyle::drawPrimitive(element, &plainOption, painter, widget);
+                        return;
+                    }
+                }
+            }
+            break;
+
+            case PE_PanelButtonCommand:
+            {
+                // A flat push button has no face in any state: `QPushButton:flat { border: none; background-color: transparent }`
+                // (PushButton.qss:48-52) left the sheet style nothing to draw over it, a pressed or checked one included, where Fusion draws
+                // the face of a button that is down (qcommonstyle.cpp:1316-1322, qfusionstyle.cpp:713-724). The menu indicator of a flat button is the bevel's, not the panel's.
+                if (StyleManager::stylesheetsDisabled() && qobject_cast<const QPushButton*>(widget))
+                {
+                    auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                    if (buttonOption && buttonOption->features.testFlag(QStyleOptionButton::Flat))
+                    {
                         return;
                     }
                 }
@@ -1449,13 +1914,9 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
-                    // The focus variant carries its own 18px ring; grow the 16px rect so the ring is not cropped
-                    QRect indicatorRect = option->rect;
-                    if (option->state.testFlag(QStyle::State_HasFocus) && option->state.testFlag(QStyle::State_Enabled))
-                    {
-                        indicatorRect.adjust(-1, -1, 1, 1);
-                    }
-                    drawFlattenedIndicator(flattenedRadioButtonIndicatorPath(option), painter, indicatorRect);
+                    // The rect is the radio button element's image rect (IndicatorElement::imageRect), which is
+                    // the 18px of the focus variant (RadioButton.qss:31-32) while the button has the focus
+                    drawFlattenedIndicator(flattenedRadioButtonIndicatorPath(option), painter, option->rect);
                     return;
                 }
             }
@@ -1483,16 +1944,48 @@ namespace AzQtComponents
                  *
                  * So here we just flip the Alternate flag before letting the base style fill the item background.
                  **/
-                if (auto* tableView = qobject_cast<const TableView*>(widget))
+                auto rowOption = qstyleoption_cast<const QStyleOptionViewItem*>(option);
+                auto* tableView = qobject_cast<const TableView*>(widget);
+                const bool flipped = tableView && tableView->alternatingRowColors() && rowOption;
+                if (StyleManager::stylesheetsDisabled() && rowOption)
                 {
-                    if (tableView->alternatingRowColors())
+                    // The panel of a row as the sheet drew it (qstylesheetstyle.cpp:4852-4884): the base style's (the alternate colour, the
+                    // selection), then the rule of the item over it in the state of the row. The rule is not asked for the empty
+                    // space of the view (a position the view does not give).
+                    if (const ItemViewElement* items = ItemViewElement::forWidget(widget))
                     {
-                        if (auto itemOption = qstyleoption_cast<const QStyleOptionViewItem*>(option))
+                        auto copy = *rowOption;
+                        if (flipped)
                         {
-                            auto copy = *itemOption;
                             copy.features ^= QStyleOptionViewItem::Alternate;
-                            return QProxyStyle::drawPrimitive(element, &copy, painter, widget);
                         }
+                        QProxyStyle::drawPrimitive(element, &copy, painter, widget);
+                        if (rowOption->viewItemPosition != QStyleOptionViewItem::Invalid)
+                        {
+                            items->drawFill(painter, &copy);
+                        }
+                        return;
+                    }
+                }
+                if (flipped)
+                {
+                    auto copy = *rowOption;
+                    copy.features ^= QStyleOptionViewItem::Alternate;
+                    return QProxyStyle::drawPrimitive(element, &copy, painter, widget);
+                }
+            }
+            break;
+
+            case PE_PanelItemViewItem:
+            {
+                // The sheet drew the item's own panel from its rule alone, no model background and no selection of the base style
+                // (qstylesheetstyle.cpp:4881-4883, :4912-4916, QRenderRule::drawRule)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    if (const ItemViewElement* items = ItemViewElement::forWidget(widget))
+                    {
+                        items->drawFill(painter, option);
+                        return;
                     }
                 }
             }
@@ -1532,6 +2025,15 @@ namespace AzQtComponents
                 break;
 
             case CC_ToolButton:
+                // The element draws a tool button whose border is its own as its rule did (qstylesheetstyle.cpp:3308-3354)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto toolOption = qstyleoption_cast<const QStyleOptionToolButton*>(option);
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && toolOption && box->drawToolButton(this, toolOption, painter, widget))
+                    {
+                        return;
+                    }
+                }
                 if (DockBarButton::drawDockBarButton(this, option, painter, widget, m_data->dockBarButtonConfig))
                 {
                     return;
@@ -1608,6 +2110,19 @@ namespace AzQtComponents
             {
                 if (auto comboBoxOption = qstyleoption_cast<const QStyleOptionComboBox*>(option))
                 {
+                    // The element boxes a combo box as its rule did (qstylesheetstyle.cpp:5799-5824): the frame inside the margin, the
+                    // edit field and the drop-down in its contents; the base style's rects for the rest
+                    if (StyleManager::stylesheetsDisabled())
+                    {
+                        const BoxElement* box = BoxElement::forWidget(widget);
+                        if (box && box->ownsBox(option) && (subControl == SC_ComboBoxFrame || subControl == SC_ComboBoxEditField || subControl == SC_ComboBoxArrow))
+                        {
+                            return subControl == SC_ComboBoxFrame ? box->borderRect(option)
+                                 : subControl == SC_ComboBoxEditField ? box->editFieldRect(option, widget)
+                                                                      : box->dropDownRect(option, widget);
+                        }
+                    }
+
                     switch (subControl)
                     {
                     case SC_ComboBoxListBoxPopup:
@@ -1712,10 +2227,13 @@ namespace AzQtComponents
                         auto doubleSpinBox = qobject_cast<const DoubleSpinBox*>(widget);
                         auto vectorElement = qobject_cast<const VectorElement*>(widget->parent());
 
-                        if (StyleManager::stylesheetsDisabled() && (spinBox || doubleSpinBox))
+                        if (StyleManager::stylesheetsDisabled() && (qobject_cast<const QSpinBox*>(widget) || qobject_cast<const QDoubleSpinBox*>(widget)))
                         {
                             // Flatten: one box for plain and vector spin boxes (SpinBox.qss +
-                            // VectorInput.qss resolved inside SpinBox::editFieldRect).
+                            // VectorInput.qss resolved inside SpinBox::editFieldRect), for every QSpinBox and QDoubleSpinBox: the rules
+                            // named the Qt classes (SpinBox.qss:9-10), so the spin boxes of a form that are not ours (the Gallery's
+                            // svg label page) have the box as well. Fusion put their line edit at (3, 3) in a 343 x 17 field, where the
+                            // sheet's is 341 x 19 at (2, 1).
                             r = SpinBox::editFieldRect(this, option, widget, m_data->spinBoxConfig);
                         }
                         else if (vectorElement && doubleSpinBox)
@@ -1742,6 +2260,31 @@ namespace AzQtComponents
 
             case CC_ToolButton:
             {
+                // The element boxes a tool button as its rule did (qstylesheetstyle.cpp:5961-5982): the button inside the margin, the
+                // menu button at its right, the base style's rects for the rest in the rect inside the margin
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto toolOption = qstyleoption_cast<const QStyleOptionToolButton*>(option);
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && toolOption && qobject_cast<const QToolButton*>(widget) && box->ownsBox(option))
+                    {
+                        if (subControl == SC_ToolButton || subControl == SC_ToolButtonMenu)
+                        {
+                            return box->toolButtonRect(toolOption, subControl, ToolButton::menuButtonIndicatorWidth(this, option, widget, m_data->toolButtonConfig));
+                        }
+                        QStyleOptionToolButton inset(*toolOption);
+                        inset.rect = box->borderRect(option);
+                        return QProxyStyle::subControlRect(control, &inset, subControl, widget);
+                    }
+                }
+
+                // ToolButton::subControlRect insets the rect by PM_ButtonMargin on every side for any tool button
+                // option. Only a QToolButton has that margin (ToolButton::buttonMargin): the title buttons of a dock
+                // widget are QAbstractButtons whose 18x14 rect it left a 6x2 label box (QCommonStyle gives the base
+                // style's rect to the label, qcommonstyle.cpp:3438-3470), so their glyphs were never drawn.
+                if (StyleManager::stylesheetsDisabled() && widget && !qobject_cast<const QToolButton*>(widget))
+                {
+                    break;
+                }
                 return ToolButton::subControlRect(this, option, subControl, widget, m_data->toolButtonConfig);
             }
         }
@@ -1785,9 +2328,11 @@ namespace AzQtComponents
             // VectorInput.qss: VectorElement QLabel { margin-top: 2px; margin-bottom: 2px }
             return option->rect.adjusted(0, 2, 0, -2);
         }
-        if (widget->objectName() == QLatin1String("title") && parent && parent->inherits("AzQtComponents::TitleBar"))
+        if (TextElement::named(widget, "title") && TextElement::withinClass(widget, "AzQtComponents::TitleBar"))
         {
-            // TitleBar.qss #title { margin-left: 10px; margin-right: 16px } + the QLabel 1px
+            // TitleBar.qss:31-37 `AzQtComponents--TitleBar #title { margin-left: 10px; margin-right: 16px }` and
+            // Text.qss:93-94 QLabel { margin-top: 1px; margin-bottom: 1px }. The label sits in a container of the
+            // bar, not directly in it (Titlebar.cpp:150, 161-162): the selector matches at any depth.
             return option->rect.adjusted(10, 1, -16, -1);
         }
 
@@ -1829,6 +2374,14 @@ namespace AzQtComponents
             {
                 if (StyleManager::stylesheetsDisabled())
                 {
+                    // The element is the whole definition of its frame (qstylesheetstyle.cpp:6176-6182): its contents rect where
+                    // the rule has a box or a border of its own, else Qt's. None of the emulations below is the element's.
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
+                    {
+                        return box->ownsBox(option) ? visualRect(option->direction, option->rect, box->contentsRect(option, widget))
+                                                    : QProxyStyle::subElementRect(element, option, widget);
+                    }
+
                     // The qss box (margin/border/padding) of a QFrame reached Qt through
                     // this element; the flattened boxes come back through the same door.
                     QRect r = Card::shapedFrameContents(option, widget);
@@ -1849,6 +2402,12 @@ namespace AzQtComponents
                         // SegmentControl.qss SegmentBar { margin-bottom: 15px }. TOKENIZE: SegmentBarBottomMargin
                         r = option->rect.adjusted(0, 0, 0, -15);
                     }
+                    if (r.isNull() && widget && widget->inherits("AzQtComponents::WindowDecorationWrapper"))
+                    {
+                        // WindowDecorationWrapper.qss:9-11 `border: 1px solid black`: the box of the window frame, whose
+                        // line WindowDecorationWrapper::paintEvent draws. TOKENIZE: WindowFrameWidth
+                        r = option->rect.adjusted(1, 1, -1, -1);
+                    }
                     if (r.isNull())
                     {
                         r = flattenedLabelFrameContents(option, widget);
@@ -1857,6 +2416,53 @@ namespace AzQtComponents
                     {
                         return r;
                     }
+                }
+            }
+            break;
+            case SE_CheckBoxIndicator:
+            case SE_RadioButtonIndicator:
+            case SE_CheckBoxContents:
+            case SE_RadioButtonContents:
+            {
+                // The indicator element in the box of the element (qstylesheetstyle.cpp:6184-6207): the indicator at the left of the
+                // contents, centered vertically, and the label after it and the label spacing
+                const BoxElement* box = StyleManager::stylesheetsDisabled() ? BoxElement::forWidget(widget) : nullptr;
+                const IndicatorElement* indicator = box ? IndicatorElement::forWidget(widget) : nullptr;
+                if (indicator)
+                {
+                    const QRect area = box->contentsRect(option, widget);
+                    if (element == SE_CheckBoxIndicator || element == SE_RadioButtonIndicator)
+                    {
+                        return QStyle::alignedRect(option->direction, Qt::AlignLeft | Qt::AlignVCenter, indicator->boxSize(), area);
+                    }
+                    const int spacing = pixelMetric(element == SE_RadioButtonContents ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, nullptr, widget);
+                    return indicator->contentsRect(area, spacing, option->direction);
+                }
+            }
+            break;
+            case SE_CheckBoxClickRect:
+            {
+                // Where a click toggles a check box: its box and its label's text, laid out as the legacy sheet's
+                // indicator and contents were (qstylesheetstyle.cpp:6222-6224 leaves it to qcommonstyle.cpp:2660-2663), inside the
+                // box of its element
+                const IndicatorElement* indicator = StyleManager::stylesheetsDisabled() ? IndicatorElement::forWidget(widget) : nullptr;
+                auto buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option);
+                if (indicator && buttonOption)
+                {
+                    // QCommonStyle lays the focus rectangle on SE_CheckBoxContents, which asks the spacing with no option (:6200)
+                    const BoxElement* box = BoxElement::forWidget(widget);
+                    return indicator->clickRect(this, *buttonOption, pixelMetric(PM_CheckBoxLabelSpacing, nullptr, widget),
+                        box ? box->contentsRect(option, widget) : option->rect);
+                }
+            }
+            break;
+            case SE_RadioButtonClickRect:
+            {
+                // A radio button whose indicator the sheet boxes (RadioButton.qss:24-33) is clicked anywhere in its
+                // rectangle, with a label or without: qstylesheetstyle.cpp:6215-6220 returns the widget's rect
+                if (StyleManager::stylesheetsDisabled() && IndicatorElement::forWidget(widget))
+                {
+                    return option->rect;
                 }
             }
             break;
@@ -1898,20 +2504,44 @@ namespace AzQtComponents
                 }
             }
             break;
-            case SE_ItemViewItemText:       // intentional fall-through
-            case SE_ItemViewItemDecoration: // intentional fall-through
+            case SE_ItemViewItemCheckIndicator: // intentional fall-through
+            case SE_ItemViewItemText:           // intentional fall-through
+            case SE_ItemViewItemDecoration:     // intentional fall-through
             case SE_ItemViewItemFocusRect:
             {
-                if (StyleManager::stylesheetsDisabled() && element == SE_ItemViewItemText
-                    && widget && StyleHelpers::findParent<QComboBox>(widget))
+                // The item's box (TableView.qss:31-40 `::item { padding-left: 4px }`) leaves a rect for the check box, the icon and the
+                // text, which the base style lays out as it does the whole rect (qstylesheetstyle.cpp:6227-6256). Only a part the item has
+                // is laid out in it: an icon or a check box the item lacks is where the base style puts it.
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    auto viewOption = qstyleoption_cast<const QStyleOptionViewItem*>(option);
+                    const ItemViewElement* items = viewOption ? ItemViewElement::forWidget(widget) : nullptr;
+                    if (items
+                        && (element == SE_ItemViewItemText || element == SE_ItemViewItemFocusRect
+                            || (element == SE_ItemViewItemDecoration && viewOption->features.testFlag(QStyleOptionViewItem::HasDecoration))
+                            || (element == SE_ItemViewItemCheckIndicator && viewOption->features.testFlag(QStyleOptionViewItem::HasCheckIndicator))))
+                    {
+                        QStyleOptionViewItem inner(*viewOption);
+                        inner.rect = items->itemContentsRect(viewOption->rect);
+                        return QProxyStyle::subElementRect(element, &inner, widget);
+                    }
+                    if (items)
+                    {
+                        ++s_itemViewBaseIndicator;
+                        const QRect baseRect = QProxyStyle::subElementRect(element, option, widget);
+                        --s_itemViewBaseIndicator;
+                        return baseRect;
+                    }
+                }
+                if (StyleManager::stylesheetsDisabled() && element == SE_ItemViewItemText && ComboPopupElement::coversView(widget))
                 {
                     // ComboBox.qss QComboBox QAbstractItemView::item { padding-left: 24px;
-                    // padding-right: 24px } (room for the delegate's check mark).
-                    // TOKENIZE: ComboBoxPopupItemPadding
-                    return QProxyStyle::subElementRect(element, option, widget).adjusted(24, 0, -24, 0);
+                    // padding-right: 24px } (room for the delegate's check mark), from the popup element.
+                    const ComboPopupElement& popup = ComboPopupElement::global();
+                    return QProxyStyle::subElementRect(element, option, widget).adjusted(popup.m_itemPaddingLeft, 0, -popup.m_itemPaddingRight, 0);
                 }
                 auto optionItemView = qstyleoption_cast<const QStyleOptionViewItem*>(option);
-                if (qobject_cast<const TableView*>(widget) && optionItemView)
+                if (element != SE_ItemViewItemCheckIndicator && qobject_cast<const TableView*>(widget) && optionItemView)
                 {
                     QRect r = TableView::itemViewItemRect(this, element, optionItemView, widget, m_data->tableViewConfig);
                     if (!r.isNull())
@@ -1921,8 +2551,30 @@ namespace AzQtComponents
                 }
             }
             break;
+            case SE_PushButtonContents:     // intentional fall-through
+            case SE_PushButtonFocusRect:
+            {
+                // The label box and the focus rect of a button whose box the element owns (qstylesheetstyle.cpp:6155-6173)
+                const BoxElement* box = StyleManager::stylesheetsDisabled() ? BoxElement::forWidget(widget) : nullptr;
+                if (box && box->ownsBox(option))
+                {
+                    return visualRect(option->direction, option->rect, box->contentsRect(option, widget));
+                }
+            }
+            break;
             case SE_LineEditContents:
             {
+                // The element is the whole definition of its field (qstylesheetstyle.cpp:6176-6182): its contents rect where the rule
+                // has a box or a border of its own, else Qt's. QLineEdit lays its text out in it.
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    if (const BoxElement* box = BoxElement::forWidget(widget))
+                    {
+                        return box->ownsBox(option) ? visualRect(option->direction, option->rect, box->contentsRect(option, widget))
+                                                    : QProxyStyle::subElementRect(element, option, widget);
+                    }
+                }
+
                 QRect r = LineEdit::lineEditContentsRect(this, element, option, widget, m_data->lineEditConfig);
                 if (!r.isNull())
                 {
@@ -1970,18 +2622,52 @@ namespace AzQtComponents
                         return 0;
                     }
                     break;
+                case PM_MenuButtonIndicator:
+                    // A tool button whose rule has a box or a border of its own has no room for the indicator in its hint
+                    // (qstylesheetstyle.cpp:5006-5011)
+                    if (const BoxElement* box = BoxElement::forWidget(widget); box && qobject_cast<const QToolButton*>(widget) && box->ownsBox(option))
+                    {
+                        return 0;
+                    }
+                    break;
+                case PM_CheckBoxLabelSpacing:
+                case PM_RadioButtonLabelSpacing:
+                    // The `spacing` of the rule of the state (qstylesheetstyle.cpp:5125-5139): of a check box and of a radio button; a group
+                    // asks the check box metric too and reads its title's spacing (:5136-5139), which no element carries
+                    if (const BoxElement* box = BoxElement::forWidget(widget);
+                        box && (metric == PM_RadioButtonLabelSpacing || qobject_cast<const QCheckBox*>(widget)))
+                    {
+                        if (const int labelSpacing = box->spacing(option); labelSpacing != BoxElement::Unset)
+                        {
+                            return labelSpacing;
+                        }
+                    }
+                    break;
                 case PM_IndicatorWidth:
-                    return (widget && hasClass(widget, QStringLiteral("ToggleSwitch"))) ? 32 : 16;
                 case PM_IndicatorHeight:
+                    // The check box of an item is the room its rule makes: the image and the margin around it (CheckBox.qss:23-28,
+                    // TableView.qss:78-85; qstylesheetstyle.cpp:5041-5050)
+                    if (qstyleoption_cast<const QStyleOptionViewItem*>(option))
+                    {
+                        if (s_itemViewBaseIndicator > 0)
+                        {
+                            break;
+                        }
+                        if (const ItemViewElement* items = ItemViewElement::forWidget(widget))
+                        {
+                            return metric == PM_IndicatorWidth ? items->indicatorBox().width() : items->indicatorBox().height();
+                        }
+                    }
+                    return (metric == PM_IndicatorWidth && widget && hasClass(widget, QStringLiteral("ToggleSwitch"))) ? 32 : 16;
                 case PM_ExclusiveIndicatorWidth:
                 case PM_ExclusiveIndicatorHeight:
                     return 16;
                 case PM_MenuHMargin:
-                    // Menu.qss QMenu padding: 4px 2px (horizontal component)
-                    return 2;
+                    // Menu.qss:13 QMenu padding: 4px 2px (the left padding), in the menu element
+                    return MenuElement::forMenu(widget).m_paddingH;
                 case PM_MenuVMargin:
-                    // Menu.qss QMenu padding: 4px 2px (vertical component)
-                    return 4;
+                    // Menu.qss:13 (the top padding)
+                    return MenuElement::forMenu(widget).m_paddingV;
                 case PM_ScrollBarExtent:
                     // ScrollBar.qss QScrollBar:vertical width / :horizontal height
                     return 8;
@@ -1989,18 +2675,43 @@ namespace AzQtComponents
                     // ScrollBar.qss handle min-height/min-width
                     return 32;
                 case PM_SplitterWidth:
-                    // Legacy capture: the handle widget is 5px wide and Splitter.qss draws a
-                    // 1px #222222 line in it (CE_Splitter). TOKENIZE: SplitterHandleWidth
-                    return 5;
+                    // QSplitter asks with no option, and Qt's sheet style then reads the handle rule in the state of a
+                    // vertical handle (qstylesheetstyle.cpp:5110-5121, 1783-1786): Splitter.qss:17-19 `height: 1px`. The
+                    // panes are 1px apart; QSplitterHandle widens its widget to 5px with contents margins of 2, grabbing
+                    // the panes at its sides (qsplitter.cpp:204-229), and paints the 1px between them (CE_Splitter).
+                    // TOKENIZE: SplitterHandleWidth
+                    return 1;
                 case PM_ToolBarSeparatorExtent:
                     // ToolBar.qss QToolBar::separator { width: 1px }  TOKENIZE: ToolBarSeparatorWidth
                     return 1;
+                case PM_ToolBarHandleExtent:
+                {
+                    // ToolBar.qss QToolBar::handle: the image and the padding of the winning rule, 10px for most
+                    // toolbars (the base style's is 9)
+                    const int extent = ControlElements::toolBarHandleExtent(option, widget);
+                    if (extent >= 0)
+                    {
+                        return extent;
+                    }
+                    break;
+                }
+                case PM_DockWidgetFrameWidth:
+                {
+                    // StyledDockWidget.qss:9-18: what a floating dock without a native frame reserves around its contents is the border of the rule
+                    // it was polished with (0 for a dock polished docked: the Gallery's floating docks, Native's no inset)
+                    const int frameWidth = ControlElements::dockFrameWidth(widget);
+                    if (frameWidth >= 0)
+                    {
+                        return frameWidth;
+                    }
+                    break;
+                }
                 case PM_MenuBarVMargin:
                 case PM_MenuBarHMargin:
                 case PM_MenuBarItemSpacing:
                 case PM_MenuBarPanelWidth:
-                    // MenuBar.qss QMenuBar { margin: 0; spacing: 0 }; the item box carries the
-                    // padding (CT_MenuBarItem) and the 2px bottom border (CE_MenuBar*).
+                    // MenuBar.qss:15-16 QMenuBar { margin: 0; spacing: 0 }; the item box carries the padding
+                    // (CT_MenuBarItem) and the bar its bottom border (CE_MenuBarEmptyArea).
                     return 0;
                 case PM_ToolBarIconSize:
                     // ToolBar.qss qproperty-iconSize tiers: default 16, IconLarge 20,
@@ -2163,7 +2874,6 @@ namespace AzQtComponents
 
     // Defined with the application-polish section further down.
     static QPalette buildO3DEBasePalette();
-    static QPalette buildO3DEMenuPalette(const QPalette& basePalette);
 
     //////////////////////////////////////////////////////////////////////////
     // Flattened typography (GUI flattening)
@@ -2281,6 +2991,120 @@ namespace AzQtComponents
         widget->setPalette(entryPalette);
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened disabled text (GUI flattening)
+    //
+    // BaseStyleSheet.qss:15-21 gave every widget `color: white`, and only a
+    // :disabled rule of a widget's own class takes it back: QStyleSheetStyle
+    // configures the Active, Disabled and Inactive groups from the rules that
+    // match each state (qstylesheetstyle.cpp:2682-2712), and a colour sets
+    // WindowText, Text and ButtonText together (QRenderRule::configurePalette,
+    // :1455-1458). The Native dumps agree (n2, 17346 widgets): disabled
+    // WindowText / Text / ButtonText are white except on the classes below, the
+    // menus (Menu.qss:23-26, ComboBox.qss:108; the menu palette), and the labels
+    // and fields of the app sheets. The application palette keeps the white
+    // (buildO3DEBasePalette); each class with a :disabled colour is carried here,
+    // last in Style::polish so that the class tags a component's polish adds are
+    // known (a default push button is tagged Primary by PushButton::polish). The
+    // items of a tree view are the exception: their colour belongs to the item rule,
+    // not to the widget (the dumps hold white), and is carried at CE_ItemViewItem.
+    // TOKENIZE: DisabledTextColor, DisabledPrimaryTextColor
+    //////////////////////////////////////////////////////////////////////////
+    static void setFlattenedDisabledColor(QWidget* widget, const QColor& color, std::initializer_list<QPalette::ColorRole> roles)
+    {
+        QPalette palette = widget->palette();
+        bool changed = false;
+        for (const QPalette::ColorRole role : roles)
+        {
+            if (palette.color(QPalette::Disabled, role) != color)
+            {
+                palette.setColor(QPalette::Disabled, role, color);
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+            widget->setPalette(palette);
+        }
+    }
+
+    static void applyFlattenedDisabledText(QWidget* widget)
+    {
+        const QColor disabledGrey(0x99, 0x99, 0x99);
+        if (auto pushButton = qobject_cast<QPushButton*>(widget))
+        {
+            // PushButton.qss:43 QPushButton:disabled { color: #999999 } (510 push buttons in the dumps); :60
+            // QPushButton.Primary:disabled and QPushButton:default:disabled { color: #BBBBBB } (14), the later rule
+            const bool primary = pushButton->isDefault() || TextElement::tagged(widget, "Primary");
+            setFlattenedDisabledColor(widget, primary ? QColor(0xBB, 0xBB, 0xBB) : disabledGrey,
+                { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
+        }
+        else if (widget->inherits("QCheckBox") || widget->inherits("QRadioButton"))
+        {
+            // CheckBox.qss:18 QCheckBox:disabled, RadioButton.qss:17 QRadioButton:disabled { color: #999999 }
+            setFlattenedDisabledColor(widget, disabledGrey, { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
+        }
+        else if (widget->inherits("QLineEdit") || widget->inherits("QTextEdit") || widget->inherits("QPlainTextEdit")
+            || widget->inherits("QSpinBox") || widget->inherits("QDoubleSpinBox") || widget->inherits("QComboBox"))
+        {
+            // LineEdit.qss:28-35 (QLineEdit, QTextEdit, QPlainTextEdit), SpinBox.qss:69-74 (QSpinBox, QDoubleSpinBox),
+            // ComboBox.qss:53-57 `color: #999999`: nothing names the other QAbstractSpinBox classes. The field (and
+            // Disabled Text) of these classes is applyFlattenedTextEntryPalette's; the line edits inside a BrowseEdit or
+            // a spin box are left to their own polish, and take the colour here.
+            setFlattenedDisabledColor(widget, disabledGrey, { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
+        }
+        else if (widget->inherits("QLabel") && TextElement::withinClass(widget, "AzQtComponents::Card"))
+        {
+            // Card.qss:272 `AzQtComponents--Card QLabel:disabled { color: #999999 }` (474 labels in the dumps), more
+            // specific than a colour tag such as `.secondaryText` (Text.qss:16-19)
+            setFlattenedDisabledColor(widget, disabledGrey, { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened parented item views (GUI flattening)
+    //
+    // BaseStyleSheet.qss:23-30 gave a QTableView, QListView or QTreeView #444444
+    // and :32-38 reset it to transparent for a view whose parent is a widget
+    // (`QWidget > QTreeView`: the child combinator follows the QObject parent,
+    // qstylesheetstyle.cpp:1496-1505, 1608-1609). Only a view without a parent,
+    // a completer popup, kept the fill (the resolver: the transparent rule wins on
+    // 111 of the 118 tree views captured). A transparent rule leaves the viewport's
+    // background role (Base) a null brush, which the dumps print as black, and Window
+    // transparent (QRenderRule::configurePalette on the embedded viewport,
+    // qstylesheetstyle.cpp:1434-1449), and takes the viewport's own fill away
+    // (:2952-2959). The application palette holds the opaque value, so a parented
+    // view gets the rule's here.
+    //
+    // A view whose Base is not the application's was given its fill by code, or by
+    // a more specific rule carried as an element, and keeps it: the Add Component
+    // tree (Editor.qss:38-41; ComponentPaletteWidget.cpp:88-107) and the popup list of a combo
+    // box (the menu palette). A QHeaderView is a QAbstractItemView, but not a
+    // class the rule names; its palette is carried with it (Style::polish).
+    // TOKENIZE: ParentedItemViewFill
+    //////////////////////////////////////////////////////////////////////////
+    static void applyFlattenedParentedItemView(QAbstractItemView* itemView)
+    {
+        if (!qobject_cast<QWidget*>(itemView->parent())
+            || !(itemView->inherits("QTableView") || itemView->inherits("QListView") || itemView->inherits("QTreeView")))
+        {
+            return;
+        }
+        if (itemView->palette().color(QPalette::Active, QPalette::Base) != QApplication::palette().color(QPalette::Active, QPalette::Base))
+        {
+            return;
+        }
+
+        QPalette palette = itemView->palette();
+        for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
+        {
+            palette.setBrush(group, QPalette::Base, QBrush(Qt::NoBrush));
+            palette.setColor(group, QPalette::Window, Qt::transparent);
+        }
+        itemView->setPalette(palette);
+        itemView->viewport()->setAutoFillBackground(false);
+    }
+
     void Style::polish(QWidget* widget)
     {
         static QWidget* alreadyStyling = nullptr;
@@ -2297,24 +3121,56 @@ namespace AzQtComponents
             // Qt gives it. Under an inline style sheet too: QStyleSheetStyle::polish calls this style's polish first.
             TextElement::apply(widget);
 
+            // Frames: the frame element of a QFrame, a scroll area or a module's frame, resolved once here (adding or
+            // removing a class tag re-polishes, so it is resolved again)
+            FrameElement::resolve(widget);
+
             applyFlattenedTextEntryPalette(widget);
 
-            // Combo box popups share the menu chrome (Menu.qss #222222); the
-            // container's palette propagates to the popup list view inside it.
-            if (widget->inherits("QComboBoxPrivateContainer"))
+            // The popup of a combo box: its container and the list view inside each take the element's palette
+            // (ComboBox.qss:79-117). A combo box hands its own palette to its container whenever that changes
+            // (qcombobox.cpp:1430-1448, 3295-3297) and so replaces the container's palette whole, but a role
+            // the view set on itself stays.
+            if (ComboPopupElement::covers(widget))
             {
-                widget->setPalette(buildO3DEMenuPalette(widget->palette()));
+                widget->setPalette(ComboPopupElement::global().palette(widget->palette()));
+            }
+
+            // LineEdit.qss:42-48: the action buttons of a line edit have the box of the flattened search fields
+            if (widget->inherits("QLineEditIconButton"))
+            {
+                widget->setFixedSize(g_lineEditActionButtonSize, g_lineEditActionButtonSize);
+            }
+
+            // A QFrame reads its frame box (SE_ShapedFrameContents) while it is constructed, before its own class is
+            // known to the style: read again, for the frames whose box the sheet gave them
+            if (widget->inherits("AzQtComponents::WindowDecorationWrapper"))
+            {
+                if (auto frame = qobject_cast<QFrame*>(widget))
+                {
+                    frame->setFrameStyle(frame->frameStyle());
+                }
             }
 
             // TableView.qss: QTableView/QListView/QTreeView { border: none } and
             // QTableView { qproperty-showGrid: false }. TOKENIZE: ItemViewFrame, TableViewGrid
             if (auto itemView = qobject_cast<QAbstractItemView*>(widget))
             {
-                itemView->setFrameShape(QFrame::NoFrame);
+                // The rule names those three classes, and ColorPicker.qss:97 `AzQtComponents--ColorPicker AzQtComponents--PaletteView
+                // { border: none }` the palette of the color picker (it is always inside one: contents margins 0 in the Native dumps).
+                // A view of another kind (the thumbnails of the asset folder: a QAbstractItemView of their own) kept the frame Qt's
+                // default sheet gave every QFrame, a native border 1px wide (qstylesheetstyle_default.cpp:171-184), which insets its
+                // viewport by 1px (contents margins 1 in the Native dumps); a header has none of its own (qheaderview.cpp:332).
+                if (itemView->inherits("QTableView") || itemView->inherits("QListView") || itemView->inherits("QTreeView")
+                    || qobject_cast<PaletteView*>(itemView))
+                {
+                    itemView->setFrameShape(QFrame::NoFrame);
+                }
                 if (auto tableView = qobject_cast<QTableView*>(widget))
                 {
                     tableView->setShowGrid(false);
                 }
+                applyFlattenedParentedItemView(itemView);
             }
 
             // ScrollBar.qss: QAbstractScrollArea > .QWidget { background: none } -- a plain
@@ -2393,49 +3249,37 @@ namespace AzQtComponents
                 widget->setAutoFillBackground(true);
             }
 
-            // Tab elements: resolved once here (adding or removing a class tag re-polishes);
-            // the bar and its tab widget paint their own boxes through PE_Widget.
-            if (widget->inherits("QTabBar"))
+            // Tab elements: a tab bar resolves its element here, once (adding or removing a class tag
+            // re-polishes; a module registering an element later has TabElement polish the bars again),
+            // and the bar and its tab widget get what the element sets on them.
+            TabElement::polish(widget);
+
+            // SegmentControl.qss:14-77: what the sheet set on the buttons of a segment bar when it polished them (ControlElements.cpp)
+            ControlElements::polishSegmentBar(widget);
+
+            // MenuBar.qss:11-12 QMenuBar { min-height: 28px } inside its 2px border: the bar is not lower than that, whatever
+            // its items need (the sheet style set it as the minimum, qstylesheetstyle.cpp:2570-2603)
+            if (widget->inherits("QMenuBar"))
             {
-                if (const TabElement* tabElement = TabElement::resolve(widget))
-                {
-                    static_cast<QTabBar*>(widget)->setDrawBase(false);
-                    widget->setAttribute(Qt::WA_StyledBackground, true);
-                    widget->setAutoFillBackground(false);
-                    // The stylesheet set the minimum outright (replacing a code-set one, e.g. the
-                    // DockTabBar's fixed 32), as min-height plus the bar's own edges
-                    widget->setMinimumHeight(tabElement->m_barMinHeight + tabElement->m_barEdges.m_top.m_width
-                        + tabElement->m_barEdges.m_bottom.m_width);
-                }
+                widget->setMinimumHeight(MenuBarElement::global().minHeight());
             }
-            if (widget->inherits("QTabWidget"))
+
+            // Menu.qss:18 `QMenu::item .WidgetAction:hover`: a widget a menu hosts is filled while it is hovered
+            // (MenuElement::drawHostedWidget, at PE_Widget). The sheet style gave such a widget a styled background
+            // and hover (qstylesheetstyle.cpp:2894-2905, 2925-2950). UNVERIFIED: no capture shows one hovered.
+            if (TextElement::tagged(widget, "WidgetAction") && TextElement::withinClass(widget, "QMenu"))
             {
-                if (const TabElement* tabElement = TabElement::forTabWidget(widget))
-                {
-                    widget->setAttribute(Qt::WA_StyledBackground, true);
-                    widget->setAutoFillBackground(false);
-                    if (tabElement->m_widgetHeight > 0)
-                    {
-                        // height + max-height in the stylesheet: the widget is that tall
-                        widget->setMinimumHeight(tabElement->m_widgetHeight);
-                        widget->setMaximumHeight(tabElement->m_widgetHeight);
-                    }
-                    // The action toolbar container in the top-right corner: min-height plus
-                    // margin-bottom make its height, and its contents sit above the margin
-                    QWidget* corner = static_cast<QTabWidget*>(widget)->cornerWidget(Qt::TopRightCorner);
-                    if (corner && corner->inherits("AzQtComponents::TabWidgetActionToolBarContainer") && tabElement->m_cornerMinHeight > 0)
-                    {
-                        corner->setMinimumHeight(tabElement->m_cornerMinHeight + tabElement->m_cornerMarginBottom);
-                        corner->setContentsMargins(0, 0, 0, tabElement->m_cornerMarginBottom);
-                    }
-                }
+                widget->setAttribute(Qt::WA_StyledBackground, true);
+                widget->setAttribute(Qt::WA_Hover, true);
             }
 
             // Headers: TableView.qss flat #2d2d2d sections (Fusion draws from Button)
             if (widget->inherits("QHeaderView"))
             {
                 QPalette headerPalette = widget->palette();
-                headerPalette.setColor(QPalette::Button, QColor(0x2D, 0x2D, 0x2D));
+                // The colour of the section rule: the view's element has it (a module's header is its own colour), and fills the
+                // area of the header beyond its sections too (ItemViewElement::apply does the same when the view resolves)
+                headerPalette.setColor(QPalette::Button, ItemViewElement::headerFillOf(widget));
                 // The section rule sets no colour: the '*' rule's white (BaseStyleSheet.qss:18) reached the label
                 // (ButtonText) and the sort arrow (WindowText) in every state, disabled included (the legacy
                 // palette dump of LuaIDE's two disabled headers has both white in its disabled group)
@@ -2446,6 +3290,12 @@ namespace AzQtComponents
                 headerPalette.setColor(QPalette::Window, QColor(0x44, 0x44, 0x44));
                 headerPalette.setColor(QPalette::Base, QColor(0x44, 0x44, 0x44));
                 widget->setPalette(headerPalette);
+                // The legacy header and its viewport were transparent (the '*' rule, BaseStyleSheet.qss:15-21): the sections paint their own
+                // fill, and what lies beyond the last one is what is behind the header
+                if (auto header = qobject_cast<QHeaderView*>(widget))
+                {
+                    header->viewport()->setAutoFillBackground(false);
+                }
             }
 
             // Text.qss class-driven label box and text colors
@@ -2506,7 +3356,25 @@ namespace AzQtComponents
             polishedAlready = polishedAlready || ScrollBar::polish(this, widget, m_data->scrollBarConfig);
         }
 
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // Last: the class tags the component polish above adds (Primary) are known now
+            applyFlattenedDisabledText(widget);
+        }
+
         QProxyStyle::polish(widget);
+
+        // The elements go last, over what the base style and the components set (the sheet applied its geometry after:
+        // qstylesheetstyle.cpp:2875-2890), and the text colour of a module's rule over the Global palettes above
+        if (StyleManager::stylesheetsDisabled())
+        {
+            BoxElement::apply(widget);
+            ItemViewElement::apply(widget);
+            ScrollBar::applyBackgroundColor(widget);        // a console's colour: the inline sheet it had outranked every rule above
+            TextElement::applyColor(widget);
+            // The widgets under a color picker resolved again, the header of a palette card polished again (ColorPickerElements.h)
+            ColorPickerElements::polished(widget);
+        }
     }
 
     void Style::unpolish(QWidget* widget)
@@ -2603,6 +3471,11 @@ namespace AzQtComponents
                 return QIcon(QStringLiteral(":/Application/titlebar-minimize.svg"));
 
             case QStyle::SP_TitleBarNormalButton:
+                // QDockWidget.qss:17 titlebar-normal-icon: the float button of a plain dock widget shows the pop-out glyph
+                if (StyleManager::stylesheetsDisabled() && isFlattenedPlainDockWidget(widget))
+                {
+                    return QIcon(QStringLiteral(":/Application/titlebar-popout-small.svg"));
+                }
                 return QIcon(QStringLiteral(":/Application/titlebar-restore.svg"));
 
             case QStyle::SP_TitleBarMaxButton:
@@ -2754,6 +3627,25 @@ namespace AzQtComponents
                 }
             }
             break;
+
+            case QEvent::DynamicPropertyChange:
+            {
+                // Flattened GUI only. A class tag a label gets after its polish (a .ui file sets it in retranslateUi, after the layout of
+                // the form polished the labels through QSplitter::addWidget: the Gallery's spin box page, `secondaryText`) was read by the
+                // sheet style when the form was reparented, which polished its widgets again (QWidgetPrivate::inheritStyle, setStyle_helper,
+                // qwidget.cpp:2706-2712, under an application style sheet). The label is polished again here, as addClass does it.
+                if (StyleManager::stylesheetsDisabled() && static_cast<QDynamicPropertyChangeEvent*>(ev)->propertyName() == "class"
+                    && watched->isWidgetType() && watched->inherits("QLabel"))
+                {
+                    auto* label = static_cast<QWidget*>(watched);
+                    if (label->testAttribute(Qt::WA_WState_Polished))
+                    {
+                        label->style()->unpolish(label);
+                        label->style()->polish(label);
+                    }
+                }
+            }
+            break;
         }
 
         const bool flagToContinueProcessingEvent = false;
@@ -2900,6 +3792,12 @@ namespace AzQtComponents
     // (LineEdit.qss:28-35, SpinBox.qss:69-74, ComboBox.qss:53-57), so a view
     // keeps its enabled Base when disabled (BaseStyleSheet.qss:23-38 has no
     // :disabled rule); the #666666 belongs to applyFlattenedTextEntryPalette.
+    //
+    // So do the disabled text roles: the '*' rule's white (BaseStyleSheet.qss:15-21)
+    // reached the Disabled group too, and only the classes that have a :disabled
+    // colour differ (applyFlattenedDisabledText), so WindowText, Text, ButtonText
+    // and HighlightedText stay white when disabled. Only the placeholder keeps the
+    // entry classes' grey.
     //////////////////////////////////////////////////////////////////////////
     static QPalette buildO3DEBasePalette()
     {
@@ -2909,7 +3807,7 @@ namespace AzQtComponents
         const QColor viewBase(0x44, 0x44, 0x44);        // parentless QTableView/QListView/QTreeView background-color: #444444
         const QColor alternateBase(0x4D, 0x4D, 0x4D);   // TableView.qss alternate-background-color: rgb(77,77,77)
         const QColor textWhite(0xFF, 0xFF, 0xFF);       // global '*' rule color: white
-        const QColor disabledText(0x99, 0x99, 0x99);    // QLineEdit:disabled color: #999999
+        const QColor disabledText(0x99, 0x99, 0x99);    // QLineEdit:disabled color: #999999 (the placeholder only, see above)
 
         // Buttons and the 3D bevel ladder (Fusion derives frame/bevel shading from these)
         const QColor button(0x55, 0x55, 0x55);          // mid button surface (Original shared palette)
@@ -2957,13 +3855,13 @@ namespace AzQtComponents
 
         // Disabled group
         palette.setColor(QPalette::Disabled, QPalette::Window, window);
-        palette.setColor(QPalette::Disabled, QPalette::WindowText, disabledText);
+        palette.setColor(QPalette::Disabled, QPalette::WindowText, textWhite);  // '*' color: white, every state (BaseStyleSheet.qss:18)
         palette.setColor(QPalette::Disabled, QPalette::Base, viewBase);     // views: no :disabled rule (BaseStyleSheet.qss:23-38)
         palette.setColor(QPalette::Disabled, QPalette::AlternateBase, alternateBase);
-        palette.setColor(QPalette::Disabled, QPalette::Text, disabledText);
+        palette.setColor(QPalette::Disabled, QPalette::Text, textWhite);
         palette.setColor(QPalette::Disabled, QPalette::PlaceholderText, disabledText);
         palette.setColor(QPalette::Disabled, QPalette::Button, button);
-        palette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledText);
+        palette.setColor(QPalette::Disabled, QPalette::ButtonText, textWhite);
         palette.setColor(QPalette::Disabled, QPalette::BrightText, textWhite);
         palette.setColor(QPalette::Disabled, QPalette::Light, light);
         palette.setColor(QPalette::Disabled, QPalette::Midlight, midlight);
@@ -2971,53 +3869,13 @@ namespace AzQtComponents
         palette.setColor(QPalette::Disabled, QPalette::Dark, dark);
         palette.setColor(QPalette::Disabled, QPalette::Shadow, shadow);
         palette.setColor(QPalette::Disabled, QPalette::Highlight, highlight);
-        palette.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledText);
+        palette.setColor(QPalette::Disabled, QPalette::HighlightedText, highlightedText);   // white in every group of the Native dumps
         palette.setColor(QPalette::Disabled, QPalette::ToolTipBase, toolTipBase);
         palette.setColor(QPalette::Disabled, QPalette::ToolTipText, toolTipText);
         palette.setColor(QPalette::Disabled, QPalette::Link, link);
         palette.setColor(QPalette::Disabled, QPalette::LinkVisited, link);
 
         return palette;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Menu popups are core chrome that appears everywhere, so their dark
-    // surface (Menu.qss: QMenu background-color #222222, selected item
-    // #444444) is owned here as a QMenu class palette rather than waiting
-    // for the Menu family batch. Applied AFTER the global setPalette call,
-    // which clears class palettes.
-    //////////////////////////////////////////////////////////////////////////
-    static QPalette buildO3DEMenuPalette(const QPalette& basePalette)
-    {
-        QPalette menuPalette = basePalette;
-        const QColor menuSurface(0x22, 0x22, 0x22);     // Menu.qss QMenu background-color: #222222
-        const QColor menuHighlight(0x44, 0x44, 0x44);   // Menu.qss selected item background: #444444
-        const QColor menuText(0xFF, 0xFF, 0xFF);
-        const QColor menuDisabledText(0x55, 0x55, 0x55);    // Menu.qss disabled item color: #555555
-
-        for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
-        {
-            menuPalette.setColor(group, QPalette::Window, menuSurface);
-            menuPalette.setColor(group, QPalette::Base, menuSurface);
-            menuPalette.setColor(group, QPalette::Highlight, menuHighlight);
-        }
-
-        // Force text roles: popups can inherit a light text-entry palette (combo box
-        // popup containers inherit from the combo box), which would leave near-black
-        // text on the dark menu surface.
-        for (const auto group : { QPalette::Active, QPalette::Inactive })
-        {
-            menuPalette.setColor(group, QPalette::Text, menuText);
-            menuPalette.setColor(group, QPalette::WindowText, menuText);
-            menuPalette.setColor(group, QPalette::ButtonText, menuText);
-            menuPalette.setColor(group, QPalette::HighlightedText, menuText);
-        }
-        menuPalette.setColor(QPalette::Disabled, QPalette::Text, menuDisabledText);
-        menuPalette.setColor(QPalette::Disabled, QPalette::WindowText, menuDisabledText);
-        menuPalette.setColor(QPalette::Disabled, QPalette::ButtonText, menuDisabledText);
-        menuPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, menuDisabledText);
-
-        return menuPalette;
     }
 
     void Style::polish(QApplication* application)
@@ -3041,24 +3899,26 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
-            // Class palettes must be applied after the global setPalette (which clears them)
-            application->setPalette(buildO3DEMenuPalette(m_data->palette), "QMenu");
+            // The Global box elements of the small controls (TitleBar.qss, FilteredSearchWidget.qss): once, whatever the number of
+            // setStyle calls
+            ControlElements::registerGlobal();
 
-            // Menu bar strip: dark surface (user-verified vs baseline), selected item
-            // #555555 (MenuBar.qss)
-            QPalette menuBarPalette = m_data->palette;
-            const QColor menuBarSurface(0x22, 0x22, 0x22);
-            for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
-            {
-                menuBarPalette.setColor(group, QPalette::Window, menuBarSurface);
-                menuBarPalette.setColor(group, QPalette::Base, menuBarSurface);
-                menuBarPalette.setColor(group, QPalette::Button, menuBarSurface);
-                menuBarPalette.setColor(group, QPalette::Highlight, QColor(0x55, 0x55, 0x55));
-            }
-            application->setPalette(menuBarPalette, "QMenuBar");
+            // No class palettes for QMenu and QMenuBar: one set through QApplication::setPalette goes through polish(QPalette&) and comes
+            // out as the base palette (qapplication.cpp:1190-1198), so they never took effect. The menu and menu bar elements carry the
+            // colours of both (MenuElement.cpp).
 
             // Class fonts: Qt rebuilt them from the platform in this setStyle, right before this polish
             TextElement::installClassFonts();
+
+            // The Global box elements of the color picker and the color label (ColorPicker.qss, ColorLabel.qss): once, whatever the
+            // number of setStyle calls
+            ColorPickerElements::registerGlobal();
+
+            // The Global box elements of the property editor (ReflectedPropertyEditor.qss, Card.qss): once, whatever the number of setStyle calls
+            PropertyEditorElements::registerGlobal();
+
+            // The Global box elements of the combo box (ComboBox.qss): once, whatever the number of setStyle calls
+            ComboBox::registerFlatElements();
         }
 
         // need to listen to and fix tooltips so that they wrap

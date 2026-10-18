@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QApplication>
+#include <QComboBox>
 #include <QDateTimeEdit>
 #include <QLabel>
 #include <QLineEdit>
@@ -265,5 +266,116 @@ namespace AzQtComponents
         polishAndApply(&label);
 
         EXPECT_EQ(label.font().pixelSize(), 20);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // T4: the colour of a module's element, as the sheet put it into the palette
+    // ----------------------------------------------------------------------------------
+
+    namespace
+    {
+        // The looks of ProjectManager.qss:997-1001 (#CountLabel, #94d2ff) and :299-306 with :262 (a #formFrame field:
+        // white, #aaaaaa disabled), under names of the tests' own
+        const TextElement TestModuleLink{ .m_name = "Test.Text.ModuleLink", .m_color = QColor(0x94, 0xD2, 0xFF) };
+        const TextElement TestModuleField{
+            .m_name = "Test.Text.ModuleField", .m_color = QColor(0xFF, 0xFF, 0xFF), .m_disabledColor = QColor(0xAA, 0xAA, 0xAA) };
+
+        bool isTestModuleLink(const QWidget* widget)
+        {
+            return TextElement::named(widget, "textElementTestsModuleLink");
+        }
+
+        bool isTestModuleField(const QWidget* widget)
+        {
+            return TextElement::named(widget, "textElementTestsModuleField");
+        }
+
+        //! The text roles a `color` sets in one group, and the placeholder at half the alpha (qstylesheetstyle.cpp:1454-1464)
+        void expectForeground(const QPalette& palette, QPalette::ColorGroup group, const QColor& color)
+        {
+            EXPECT_TRUE(palette.color(group, QPalette::WindowText) == color);
+            EXPECT_TRUE(palette.color(group, QPalette::Text) == color);
+            EXPECT_TRUE(palette.color(group, QPalette::ButtonText) == color);
+            QColor placeholder(color);
+            placeholder.setAlpha(128);
+            EXPECT_TRUE(palette.color(group, QPalette::PlaceholderText) == placeholder);
+        }
+    } // namespace
+
+    TEST_F(TextElementTests, Color_EveryGroupTakesTheColourOfARuleWithoutDisabled)
+    {
+        TextElement::registerElement(&TestModuleLink, &QLabel::staticMetaObject, &isTestModuleLink);
+
+        QLabel label;
+        label.setObjectName(QStringLiteral("textElementTestsModuleLink"));
+        polishAndApply(&label);
+        TextElement::applyColor(&label);
+
+        const QColor link(0x94, 0xD2, 0xFF);
+        expectForeground(label.palette(), QPalette::Active, link);
+        expectForeground(label.palette(), QPalette::Inactive, link);
+        expectForeground(label.palette(), QPalette::Disabled, link);
+    }
+
+    TEST_F(TextElementTests, Color_DisabledColourIsTheDisabledGroupsOnly)
+    {
+        TextElement::registerElement(&TestModuleField, &QLineEdit::staticMetaObject, &isTestModuleField);
+
+        QLineEdit field;
+        field.setObjectName(QStringLiteral("textElementTestsModuleField"));
+        polishAndApply(&field);
+        TextElement::applyColor(&field);
+
+        expectForeground(field.palette(), QPalette::Active, QColor(0xFF, 0xFF, 0xFF));
+        expectForeground(field.palette(), QPalette::Inactive, QColor(0xFF, 0xFF, 0xFF));
+        expectForeground(field.palette(), QPalette::Disabled, QColor(0xAA, 0xAA, 0xAA));
+    }
+
+    TEST_F(TextElementTests, Color_AnElementWithoutOneLeavesThePalette)
+    {
+        TextElement::installClassFonts();
+        TextElement::registerElement(&TestModuleTitle, &QLabel::staticMetaObject, &isTestModuleTitle);
+
+        QLabel label;
+        label.setObjectName(QStringLiteral("textElementTestsModuleTitle"));
+        const QPalette before = label.palette();
+        polishAndApply(&label);
+        TextElement::applyColor(&label);
+
+        EXPECT_FALSE(label.testAttribute(Qt::WA_SetPalette));
+        EXPECT_TRUE(label.palette() == before);
+    }
+
+    TEST_F(TextElementTests, Color_WiredLastOverTheGlobalPaletteOfTheFlattenedPolish)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled()); // the test environment sets it (AzQtComponentTests.cpp)
+        QApplication::setStyle(new Style(QStyleFactory::create(QStringLiteral("Fusion"))));
+        TextElement::registerElement(&TestModuleField, &QLineEdit::staticMetaObject, &isTestModuleField);
+
+        // The flattened polish gives an entry the black text of LineEdit.qss; the module's rule won over it in the sheet
+        QLineEdit plain;
+        plain.ensurePolished();
+        ASSERT_TRUE(plain.palette().color(QPalette::Active, QPalette::Text) == QColor(Qt::black));
+
+        QLineEdit field;
+        field.setObjectName(QStringLiteral("textElementTestsModuleField"));
+        field.ensurePolished();
+        expectForeground(field.palette(), QPalette::Active, QColor(0xFF, 0xFF, 0xFF));
+        expectForeground(field.palette(), QPalette::Disabled, QColor(0xAA, 0xAA, 0xAA));
+    }
+
+    TEST_F(TextElementTests, Color_TheEditableComboBoxsLineEditTakesTheSamePalette)
+    {
+        TextElement::registerElement(&TestModuleField, &QComboBox::staticMetaObject, &isTestModuleField);
+
+        QComboBox comboBox;
+        comboBox.setEditable(true);
+        comboBox.setObjectName(QStringLiteral("textElementTestsModuleField"));
+        polishAndApply(&comboBox);
+        TextElement::applyColor(&comboBox);
+
+        ASSERT_TRUE(comboBox.lineEdit() != nullptr);
+        expectForeground(comboBox.lineEdit()->palette(), QPalette::Active, QColor(0xFF, 0xFF, 0xFF));
+        expectForeground(comboBox.lineEdit()->palette(), QPalette::Disabled, QColor(0xAA, 0xAA, 0xAA));
     }
 } // namespace AzQtComponents

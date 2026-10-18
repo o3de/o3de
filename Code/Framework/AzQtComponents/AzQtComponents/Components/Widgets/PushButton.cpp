@@ -106,7 +106,15 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
     }
     else if (pushButton != nullptr)
     {
-        widget->setMaximumHeight(config.defaultFrame.height);
+        // BrowseEdit.qss:55-58 `#attached-button { max-width, min-width, max-height, min-height: 16px }`: in Native the sheet's
+        // geometry came after this and replaced the maximum height (qstylesheetstyle.cpp:2875-2890). The flattened BrowseEdit
+        // fixed the button at 16x16 (BrowseEdit.cpp:78), which the maximum of the default frame must not raise again.
+        const bool browseEditButton = StyleManager::stylesheetsDisabled() && pushButton->objectName() == QLatin1String("attached-button")
+            && pushButton->parentWidget() && pushButton->parentWidget()->inherits("AzQtComponents::BrowseEdit");
+        if (!browseEditButton)
+        {
+            widget->setMaximumHeight(config.defaultFrame.height);
+        }
         return true;
     }
 
@@ -137,14 +145,6 @@ QSize PushButton::sizeFromContents(const Style* style, QStyle::ContentsType type
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
     const QPushButton* pushButton = qobject_cast<const QPushButton*>(widget);
-    if (StyleManager::stylesheetsDisabled() && pushButton && style->hasClass(widget, QStringLiteral("CardHeaderMenu")))
-    {
-        // Card.qss #ContextMenu / #Help: flat icon-only buttons whose qss box was the
-        // icon plus 4px of width; max-width/max-height (set by Card::polish) then clamp
-        // the layout size. Legacy capture: 18px icon -> 22x18, 16px icon -> 16x16.
-        // TOKENIZE: CardHeaderButtonPadding
-        return pushButton->iconSize() + QSize(4, 0);
-    }
     if (style->hasClass(widget, g_smallIconClass))
     {
         sz.setHeight(config.smallIcon.frame.height);

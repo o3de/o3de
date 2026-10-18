@@ -10,6 +10,7 @@
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QColor>
+#include <QMargins>
 #include <QPointer>
 #include <QSize>
 #include <QStyleOption>
@@ -135,6 +136,14 @@ namespace AzQtComponents
         static QIcon clearButtonIcon(const QStyleOption* option, const QWidget* widget, const Config& config);
 
         static QRect lineEditContentsRect(const Style* style, QStyle::SubElement element, const QStyleOption* option, const QWidget* widget, const Config& config);
+
+        // ---- flattened mode (the legacy box LineEdit.qss gave a field)
+        //! A line edit inside a spin box or a combo box, which has the box of its container
+        static bool isEmbedded(const QWidget* lineEdit);
+        //! The left padding of a field: 0, or -6 with a search action
+        static int flattenedPaddingLeft(const QWidget* lineEdit);
+        //! The border and padding around the text of a field
+        static QMargins flattenedFieldBox(const QWidget* lineEdit);
     };
 
 } // namespace AzQtComponents

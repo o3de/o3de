@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
+#include <QColor>
 #endif
 
 class QFont;
@@ -31,6 +32,10 @@ namespace AzQtComponents
     //! - widget elements: an element for the widgets a matcher picks, applied when a widget is polished.
     //! Global elements are defined in TextElement.cpp; a window or feature module defines its own and
     //! registers them, checked before the Global ones (as TabElement::registerElement works).
+    //!
+    //! A widget element may also carry the colour its rules gave the text. The colour goes into the widget's
+    //! palette as the sheet put it there, so it reaches the widget's children as a palette does: give one
+    //! to the widgets that draw the text (a label, a button, an entry), not to a container.
     struct AZ_QT_COMPONENTS_API TextElement
     {
         const char* m_name = "";                //!< Scope.Text.Look
@@ -38,6 +43,10 @@ namespace AzQtComponents
         int m_pixelSize = 0;                    //!< 0: no rule sets it
         int m_weight = 400;                     //!< BaseStyleSheet.qss:20. TOKENIZE: TextWeight
         int m_italic = -1;                      //!< -1: no rule sets it
+
+        // ---- colour: the `color` of the element's rules (invalid: no rule sets one, the widget keeps its palette)
+        QColor m_color;                         //!< the enabled states (the Active and Inactive colour groups)
+        QColor m_disabledColor;                 //!< the Disabled group; invalid: m_color reaches it, as a rule without :disabled does
 
         //! The attributes this element sets, over the font. True if the font changed.
         bool overlay(QFont& font) const;
@@ -55,6 +64,9 @@ namespace AzQtComponents
         static void registerElement(const TextElement* element, const QMetaObject* widgetClass, Matcher matcher);
         //! From Style::polish(QWidget*), first: the element of the widget, over its font.
         static void apply(QWidget* widget);
+        //! From Style::polish(QWidget*), last: the colour of the element apply found, over the palettes the rest of the
+        //! flattened polish set (a module's rule won over the Global ones in the sheet's cascade).
+        static void applyColor(QWidget* widget);
 
         // ---- selectors for matchers (the QSS each stands for)
         static bool named(const QWidget* widget, const char* objectName);              // #name

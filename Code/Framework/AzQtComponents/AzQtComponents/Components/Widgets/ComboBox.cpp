@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
@@ -38,6 +39,102 @@ namespace AzQtComponents
     // Minimum height, in pixels, of a dropdown item. Drives the popup row geometry from the delegate
     // so it stays in sync with the rendered item regardless of the combo box font size.
     static constexpr int g_minItemHeight = 24;
+
+    //! The arrow of a flattened combo box (ComboBox.qss:64-75): 16 x 16, with its upper left corner at the point, painted as the sheet
+    //! painted the `image` of a rule (QRenderRule::drawImage, qstylesheetstyle.cpp:1379-1384: QIcon::paint), which renders the SVG
+    //! for the device ratio of the painter, not of the widget's screen
+    static void drawFlattenedComboArrow(QPainter* painter, const QPoint& topLeft, bool enabled)
+    {
+        QIcon(enabled
+            ? QStringLiteral(":/stylesheet/img/UI20/combobox-arrow.svg")
+            : QStringLiteral(":/stylesheet/img/UI20/combobox-arrow-disabled.svg")).paint(painter, QRect(topLeft, QSize(16, 16)));
+    }
+
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins
+    //! this file with others into one translation unit, where anonymous namespaces merge.
+    namespace ComboBoxFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The look of a combo box: ComboBox.qss over the entry rule of BaseStyleSheet.qss:68-84. The rule is computed for each state
+        // (QRenderRule, qstylesheetstyle.cpp:1860-2128) and the later of two rules of equal specificity wins a property: :hover
+        // (:22-29), :focus and an open popup (:31-42), [HasError=true] (:44-51), :disabled (:53-57). The face of a state is therefore
+        // the idle one with what its rule sets, and a margin, a border and a radius of its own where the rule changes them.
+        // TOKENIZE: ComboBoxFieldColor, ComboBoxFocusFieldColor, ComboBoxDisabledFieldColor, ComboBoxTextColor, ComboBoxDisabledTextColor,
+        //           ComboBoxHoverBorder, ComboBoxFocusBorder, ComboBoxErrorBorder
+        // ------------------------------------------------------------------------------
+        const QColor Field(0xCC, 0xCC, 0xCC);               // ComboBox.qss:19 (BaseStyleSheet.qss:76)
+        const QColor FocusField(0xFF, 0xFF, 0xFF);          // ComboBox.qss:41
+        const QColor DisabledField(0x66, 0x66, 0x66);       // ComboBox.qss:55
+        const QColor Text(0x00, 0x00, 0x00);                // BaseStyleSheet.qss:77
+        const QColor DisabledText(0x99, 0x99, 0x99);        // ComboBox.qss:56
+        const QColor HoverBorder(0, 0, 0, 50);              // ComboBox.qss:28
+        const QColor FocusBorder(0x94, 0xD2, 0xFF);         // ComboBox.qss:39
+        const QColor ErrorBorder(0xE2, 0x52, 0x43);         // ComboBox.qss:50
+
+        constexpr QMargins NoMargin(0, 0, 0, 0);
+
+        //! QComboBox, and :hover, :focus, an open popup and :disabled of it. The box: margin 1px (ComboBox.qss:17), padding-left 4px (:16),
+        //! contents 16px high (:15), radius 2px and no border (BaseStyleSheet.qss:79-80: a radius is a border of the rule's own).
+        //! :hover and :focus take the margin away for a 1px border and a radius of 3px (:24-28, :35-39); a popup that is open is
+        //! `QComboBox[HasPopupOpen=true]` (:32-33), a property the combo box keeps while it shows its popup, which the style sees as the
+        //! state QStyle::State_On (qcombobox.cpp:1499-1500). The captures hold the idle, :focus (the Gallery's page selector has the focus in
+        //! n2/03_button), :disabled and error faces. UNVERIFIED against a capture: :hover (no combo box is under the pointer in any), an
+        //! open popup (none is shown in a capture of a page) and the error box in a state of its own.
+        const BoxElement Combo{
+            .m_name = "Global.Box.ComboBox",
+            .m_margin = QMargins(1, 1, 1, 1),               // ComboBox.qss:17
+            .m_padding = QMargins(4, 0, 0, 0),              // ComboBox.qss:16
+            .m_nativeBorder = false,                        // BaseStyleSheet.qss:79-80
+            .m_radius = 2,                                  // BaseStyleSheet.qss:79
+            .m_size = QSize(-1, 16),                        // ComboBox.qss:15
+            .m_idle = { .m_fill = QBrush(Field), .m_text = Text },
+            .m_stateFaces = {
+                { BoxElement::Hover, {
+                    .m_fill = QBrush(Field), .m_edges = BoxElement::border(1, HoverBorder), .m_text = Text,
+                    .m_margin = NoMargin, .m_radius = 3 } },                                                          // :22-29
+                { BoxElement::Focus, {
+                    .m_fill = QBrush(FocusField), .m_edges = BoxElement::border(1, FocusBorder), .m_text = Text,
+                    .m_margin = NoMargin, .m_radius = 3 } },                                                          // :31-42
+                { BoxElement::Checked, {
+                    .m_fill = QBrush(FocusField), .m_edges = BoxElement::border(1, FocusBorder), .m_text = Text,
+                    .m_margin = NoMargin, .m_radius = 3 } },                                                          // :32-42
+                { BoxElement::Disabled, { .m_fill = QBrush(DisabledField), .m_text = DisabledText } },                // :53-57
+            },
+        };
+
+        //! QComboBox[HasError=true]: margin 0, a 2px border of #E25243, radius 4px (ComboBox.qss:44-51), over the box above. The rules of
+        //! the other states set no margin, border or radius that outranks it (:22-42 come before it), so the border holds in them, with
+        //! the fill of :focus and :disabled; an open popup (`[HasPopupOpen=true][HasPopupOpen=true]`, :33, one attribute more) outranks it.
+        const BoxElement ComboError{
+            .m_name = "Global.Box.ComboBox.Error",
+            .m_margin = NoMargin,                           // ComboBox.qss:46
+            .m_padding = QMargins(4, 0, 0, 0),              // ComboBox.qss:16
+            .m_hasBox = true,                               // a margin of 0 is a margin
+            .m_nativeBorder = false,                        // ComboBox.qss:47-48
+            .m_radius = 4,                                  // ComboBox.qss:49
+            .m_size = QSize(-1, 16),                        // ComboBox.qss:15
+            .m_idle = { .m_fill = QBrush(Field), .m_edges = BoxElement::border(2, ErrorBorder), .m_text = Text },   // :47-50
+            .m_stateFaces = {
+                { BoxElement::Focus, { .m_fill = QBrush(FocusField), .m_edges = BoxElement::border(2, ErrorBorder), .m_text = Text } },
+                { BoxElement::Checked, {
+                    .m_fill = QBrush(FocusField), .m_edges = BoxElement::border(1, FocusBorder), .m_text = Text, .m_radius = 3 } },
+                { BoxElement::Disabled, { .m_fill = QBrush(DisabledField), .m_edges = BoxElement::border(2, ErrorBorder), .m_text = DisabledText } },
+            },
+        };
+
+        //! The look of a combo box that has no element of a module: the error one while it is in error
+        const BoxElement* lookOf(const QWidget* comboBox)
+        {
+            return (comboBox && comboBox->property(HasError).toBool()) ? &ComboError : &Combo;
+        }
+
+        //! The element of a combo box, where the polish has not resolved one yet
+        const BoxElement* elementOf(const QWidget* widget)
+        {
+            const BoxElement* resolved = BoxElement::forWidget(widget);
+            return resolved ? resolved : (qobject_cast<const QComboBox*>(widget) ? lookOf(widget) : nullptr);
+        }
+    } // namespace ComboBoxFlat
 
     ComboBoxValidator::ComboBoxValidator(QObject* parent)
         : QValidator(parent)
@@ -146,14 +243,25 @@ namespace AzQtComponents
                     case QEvent::DynamicPropertyChange:
                     {
                         // ignore properties coming from inside the style sheet system itself, which are all by convention
-                        // prefixed with _q_
+                        // prefixed with _q_, and those the flattened elements keep on a widget while the style polishes it (_o3de_)
                         QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
                         QString propertyName = QString::fromUtf8(eventFull->propertyName());
-                        if (!propertyName.startsWith(QStringLiteral("_q_")))
+                        if (!propertyName.startsWith(QStringLiteral("_q_")) && !propertyName.startsWith(QStringLiteral("_o3de_")))
                         {
-                            auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
-                            styleSheet->unpolish(cbWidget);
-                            styleSheet->polish(cbWidget);
+                            if (StyleManager::stylesheetsDisabled())
+                            {
+                                // The flattened GUI has no style sheet style to polish the combo box again, and what a property changes
+                                // in it is its element (a combo box in error is another element): resolved again, as the polish ends
+                                // with it. A whole polish would also connect the signals and replace the item delegate again, each
+                                // time the popup opens or closes (the property HasPopupOpen).
+                                BoxElement::apply(cbWidget);
+                            }
+                            // None before the StyleManager exists, as in the unit tests (ScrollBar.cpp and TreeView.cpp guard the same call)
+                            else if (auto styleSheet = StyleManager::styleSheetStyle(cbWidget))
+                            {
+                                styleSheet->unpolish(cbWidget);
+                                styleSheet->polish(cbWidget);
+                            }
                         }
                     }
                     break;
@@ -281,6 +389,24 @@ namespace AzQtComponents
     private:
         QPointer<QComboBox> m_combo;
     };
+
+    void ComboBox::registerFlatElements()
+    {
+        static bool registered = false;
+        if (registered || !StyleManager::stylesheetsDisabled())
+        {
+            return;
+        }
+        registered = true;
+
+        // The look of every combo box (a module's own element is checked before these), the error one first: the rules of
+        // [HasError=true] outrank the others (ComboBoxFlat). The element is resolved at polish, and a property that changes resolves it
+        // again (ComboBoxWatcher).
+        constexpr BoxElement::Scope global = BoxElement::Scope::Global;
+        BoxElement::registerElement(&ComboBoxFlat::ComboError, &QComboBox::staticMetaObject,
+            [](const QWidget* w) { return w->property(HasError).toBool(); }, global);
+        BoxElement::registerElement(&ComboBoxFlat::Combo, &QComboBox::staticMetaObject, [](const QWidget*) { return true; }, global);
+    }
 
     ComboBox::Config ComboBox::loadConfig(QSettings& settings)
     {
@@ -418,18 +544,21 @@ namespace AzQtComponents
     {
         Q_UNUSED(config);
 
-        QSize comboBoxSize = style->QProxyStyle::sizeFromContents(type, option, size, widget);
-
+        // The element sizes its combo box as its rule did (qstylesheetstyle.cpp:5336-5347): the box around the contents within the
+        // declared size, the drop-down and the 2px QCommonStyle keeps in the label, where the rule has a box or a border of its own, else
+        // the base style does. The element is a module's, else the look of the sheet's own rules (ComboBoxFlat), the Native one: not the
+        // base style's size, which grows with QComboBox::frame (a frameless combo box was 2px too narrow).
         if (StyleManager::stylesheetsDisabled())
         {
-            // ComboBox.qss: height 16 + margin 1 -> 18; [HasError=true] margin 0 + 2px border -> 20.
-            // The legacy box is 3px narrower than Fusion's for the same text (capture 2026-09-24).
-            // TOKENIZE: ComboBoxHeight, ComboBoxErrorHeight, ComboBoxWidthAdjust
-            const bool hasError = widget && widget->property(HasError).toBool();
-            comboBoxSize.setHeight(hasError ? 20 : 18);
-            comboBoxSize.rwidth() -= 3;
-            return comboBoxSize;
+            if (const BoxElement* box = ComboBoxFlat::elementOf(widget))
+            {
+                const QSize contents = box->adjustSize(size);
+                return box->ownsBox(option) ? box->comboBoxSize(option, widget, contents)
+                                            : style->QProxyStyle::sizeFromContents(type, option, contents, widget);
+            }
         }
+
+        QSize comboBoxSize = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
         if (opt && opt->frame)
@@ -457,59 +586,21 @@ namespace AzQtComponents
 
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
 
+        // The element frames its combo box as its rule did (qstylesheetstyle.cpp:3067-3086): the rule over the whole rect, then the arrow in
+        // its drop-down. The element is a module's, else the look of the sheet's own rules (ComboBoxFlat). UNVERIFIED: a fill under the
+        // style's own border (:3053-3066) stays with the base style below; no element has one. Frameless combo boxes (setFrame(false))
+        // render the same box.
         if (StyleManager::stylesheetsDisabled() && opt)
         {
-            // ComboBox.qss resolved to one layer (legacy capture 2026-09-24, page 08):
-            //   QComboBox           : field #CCCCCC inset by the 1px margin, no border
-            //   :hover              : margin 0, 1px rgba(0,0,0,50) border, radius 3
-            //   :focus / popup open : margin 0, 1px #94D2FF border, radius 3, field #FFFFFF
-            //   [HasError=true]     : margin 0, 2px #E25243 border, radius 4
-            //   :disabled           : field #666666
-            //   ::down-arrow        : combobox-arrow(-disabled).svg 16x16, 4px from the right edge
-            // Frameless combos (setFrame(false)) render the same box.
-            // TOKENIZE: ComboBoxFieldColor, ComboBoxFocusFieldColor, ComboBoxDisabledFieldColor,
-            //           ComboBoxHoverBorder, ComboBoxFocusBorder, ComboBoxErrorBorder, ComboBoxArrow
-            const bool enabled = opt->state.testFlag(QStyle::State_Enabled);
-            const bool hover = enabled && opt->state.testFlag(QStyle::State_MouseOver);
-            const bool popupOpen = widget && widget->property(HasPopupOpen).toBool();
-            const bool focus = enabled && (opt->state.testFlag(QStyle::State_HasFocus) || popupOpen);
-            const bool hasError = widget && widget->property(HasError).toBool();
-            const QRect rect = opt->rect;
-            const QColor field = enabled ? QColor(0xCC, 0xCC, 0xCC) : QColor(0x66, 0x66, 0x66);
-
-            painter->save();
-            painter->setRenderHint(QPainter::Antialiasing, true);
-            if (hasError)
+            if (const BoxElement* box = ComboBoxFlat::elementOf(widget); box && !box->hasNativeBorder(option))
             {
-                painter->setPen(QPen(QColor(0xE2, 0x52, 0x43), 2.0));
-                painter->setBrush(field);
-                painter->drawRoundedRect(QRectF(rect).adjusted(1.0, 1.0, -1.0, -1.0), 4.0, 4.0);
+                box->draw(painter, option, widget);
+                if (opt->subControls & QStyle::SC_ComboBoxArrow)
+                {
+                    drawFlattenedComboArrow(painter, box->arrowRect(option, widget).topLeft(), opt->state.testFlag(QStyle::State_Enabled));
+                }
+                return true;
             }
-            else if (focus)
-            {
-                painter->setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
-                painter->setBrush(QColor(0xFF, 0xFF, 0xFF));
-                painter->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), 3.0, 3.0);
-            }
-            else if (hover)
-            {
-                painter->setPen(QPen(QColor(0, 0, 0, 50), 1.0));
-                painter->setBrush(field);
-                painter->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), 3.0, 3.0);
-            }
-            else
-            {
-                painter->setRenderHint(QPainter::Antialiasing, false);
-                painter->fillRect(rect.adjusted(1, 1, -1, -1), field);
-            }
-
-            const qreal devicePixelRatio = widget ? widget->devicePixelRatioF() : 1.0;
-            const QPixmap arrow = QIcon(enabled
-                ? QStringLiteral(":/stylesheet/img/UI20/combobox-arrow.svg")
-                : QStringLiteral(":/stylesheet/img/UI20/combobox-arrow-disabled.svg")).pixmap(QSize(16, 16), devicePixelRatio);
-            painter->drawPixmap(QPoint(rect.right() - 18, rect.top() + (rect.height() - 16) / 2), arrow);
-            painter->restore();
-            return true;
         }
 
         if (!opt || opt->frame)
@@ -526,16 +617,13 @@ namespace AzQtComponents
     {
         auto opt = qstyleoption_cast<const QStyleOptionComboBox*>(option);
 
+        // The element lays the label out in its edit field as its rule did (qstylesheetstyle.cpp:4021-4056)
         if (StyleManager::stylesheetsDisabled() && opt)
         {
-            // Text black, :disabled #999999 (ComboBox.qss / BaseStyleSheet input rule), framed
-            // or not. TOKENIZE: ComboBoxTextColor, ComboBoxDisabledTextColor
-            QStyleOptionComboBox cb(*opt);
-            const QColor text = opt->state.testFlag(QStyle::State_Enabled) ? QColor(Qt::black) : QColor(0x99, 0x99, 0x99);
-            cb.palette.setColor(QPalette::ButtonText, text);
-            cb.palette.setColor(QPalette::Text, text);
-            style->QProxyStyle::drawControl(QStyle::CE_ComboBoxLabel, &cb, painter, widget);
-            return true;
+            if (const BoxElement* box = ComboBoxFlat::elementOf(widget); box && box->drawComboBoxLabel(style, opt, painter, widget))
+            {
+                return true;
+            }
         }
 
         if (!opt || opt->frame)

@@ -100,7 +100,7 @@ namespace AzToolsFramework
             bgColor = Qt::white;
             AzQtComponents::ScrollBar::applyDarkStyle(ui->SCRIPT_OUTPUT);
         }
-        ui->SCRIPT_OUTPUT->setStyleSheet(QString("background: %1 ").arg(bgColor.name(QColor::HexRgb)));
+        AzQtComponents::ScrollBar::setBackgroundColor(ui->SCRIPT_OUTPUT, bgColor);
 
         // Clear out the console text when we change our background color since
         // some of the previous text colors may not be appropriate for the

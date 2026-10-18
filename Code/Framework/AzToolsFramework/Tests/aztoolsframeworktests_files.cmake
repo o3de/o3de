@@ -185,6 +185,7 @@ set(FILES
     TransformComponent.cpp
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
+    UI/EntityOutlinerFlatSheetTests.cpp
     UI/EntityPropertyEditorTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp

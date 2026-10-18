@@ -44,6 +44,8 @@ set(FILES
     source/ui/EditSeedDialog.h
     source/ui/EditSeedDialog.cpp
     source/ui/EditSeedDialog.ui
+    source/ui/FlatElements.h
+    source/ui/FlatElements.cpp
     source/ui/GenerateBundlesModal.h
     source/ui/GenerateBundlesModal.cpp
     source/ui/GenerateBundlesModal.ui

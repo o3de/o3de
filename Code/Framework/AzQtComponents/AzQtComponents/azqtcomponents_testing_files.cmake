@@ -8,17 +8,42 @@
 
 set(FILES
     Tests/AzQtComponentTests.cpp
+    Tests/BoxElementDoorTests.cpp
+    Tests/BoxElementFaceTests.cpp
+    Tests/BoxElementTests.cpp
     Tests/BrowseEditTests.cpp
+    Tests/ChromeTwinTests.cpp
     Tests/ColorControllerTests.cpp
+    Tests/ColorPickerElementTests.cpp
+    Tests/ComboPopupElementTests.cpp
+    Tests/ControlElementTests.cpp
+    Tests/FieldBrowseEditTests.cpp
+    Tests/FieldCardTests.cpp
+    Tests/FieldComboBoxTests.cpp
+    Tests/FieldLabelClassTests.cpp
+    Tests/FieldSpinBoxTests.cpp
+    Tests/FieldTwins.h
+    Tests/FieldVectorLabelTests.cpp
     Tests/FileDialogTests.cpp
     Tests/FlatFramePaintTests.cpp
+    Tests/FlatPaletteTests.cpp
+    Tests/FlatWidgetTests.cpp
     Tests/FloatToStringConversionTests.cpp
     Tests/HeaderSectionTests.cpp
     Tests/HexParsingTests.cpp
+    Tests/IndicatorElementTests.cpp
+    Tests/ItemViewElementTests.cpp
+    Tests/LineEditFieldTests.cpp
+    Tests/MenuElementTests.cpp
+    Tests/PropertyEditorElementTests.cpp
+    Tests/SpinBoxEditFieldTests.cpp
     Tests/StyleManagerTests.cpp
     Tests/StyleSheetCacheTests.cpp
+    Tests/TabElementTests.cpp
     Tests/TextElementTests.cpp
     Tests/WindowDecoratorWrapperTests.cpp
+    Tests/WindowFrameTests.cpp
+    Tests/AppCarrierTests.cpp
     Tests/qrc1.qrc
     Tests/qrc2.qrc
     Tests/qrc1/sheet1.qss

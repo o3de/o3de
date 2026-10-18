@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/Elements/SpinBoxElement.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -527,14 +528,18 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         case QEvent::DynamicPropertyChange:
         {
             // ignore properties coming from inside the style sheet system itself, which are all by convention
-            // prefixed with _q_
+            // prefixed with _q_, and those the flattened elements keep on a widget while the style polishes it (_o3de_)
             QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
             QString propertyName = QString::fromUtf8(eventFull->propertyName());
-            if (!propertyName.startsWith(QStringLiteral("_q_")))
+            if (!propertyName.startsWith(QStringLiteral("_q_")) && !propertyName.startsWith(QStringLiteral("_o3de_")))
             {
-                auto styleSheet = StyleManager::styleSheetStyle(spinBox);
-                styleSheet->unpolish(spinBox);
-                styleSheet->polish(spinBox);
+                // None before the StyleManager exists, as in the unit tests (ComboBox.cpp, ScrollBar.cpp and TreeView.cpp guard the
+                // same call)
+                if (auto styleSheet = StyleManager::styleSheetStyle(spinBox))
+                {
+                    styleSheet->unpolish(spinBox);
+                    styleSheet->polish(spinBox);
+                }
             }
             break;
         }
@@ -981,6 +986,19 @@ void SpinBox::registerLabelToWatcher(QLabel* label, bool shouldRegister)
         label->removeEventFilter(s_spinBoxWatcher);
 }
 
+// A color picker's spin boxes have no up/down buttons: ColorPicker.qss:74-81 `width: 0px`.
+static bool spinBoxFlattenedInsideColorPicker(const QWidget* widget)
+{
+    for (const QWidget* ancestor = widget; ancestor; ancestor = ancestor->parentWidget())
+    {
+        if (ancestor->inherits("AzQtComponents::ColorPicker"))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const SpinBox::Config& config)
 {
     Q_UNUSED(config);
@@ -989,9 +1007,16 @@ bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, 
     {
         if (StyleManager::stylesheetsDisabled())
         {
-            // SpinBox.qss resolved to one layer (legacy capture 2026-09-24, page 23 + colour
-            // picker): field #CCCCCC inset by the 2px margin, no border (:disabled #666666);
-            // the up/down glyphs only appear while hovered, as before.
+            // A QSpinBox or a QDoubleSpinBox: the spin box element, the face the cascade of SpinBox.qss, VectorInput.qss and
+            // ColorPicker.qss gave its state, and the glyphs of its buttons
+            if (SpinBoxElement::draw(styleOption, painter, widget))
+            {
+                return true;
+            }
+
+            // Any other spin box (a date or time edit, which the sheet's rules do not name): SpinBox.qss resolved to one layer
+            // (legacy capture 2026-09-24, page 23 + colour picker): field #CCCCCC inset by the 2px margin, no border (:disabled
+            // #666666); the up/down glyphs only appear while hovered, as before.
             // TOKENIZE: SpinBoxFieldColor, SpinBoxDisabledFieldColor, SpinBoxMargin
             const bool enabled = styleOption->state & QStyle::State_Enabled;
             // VectorInput.qss: VectorElement spin boxes have margin-left 0 (flush with the
@@ -1018,16 +1043,7 @@ bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, 
             // SpinBox.qss ::down-button (arrowLeftHover.svg, right: 8px) and ::up-button
             // (arrowRightHover.svg, right: 2px), 6x10, shown at rest on enabled spin boxes.
             // ColorPicker.qss gives its spin boxes 0px buttons. TOKENIZE: SpinBoxArrowGlyphs
-            bool insideColorPicker = false;
-            for (const QWidget* ancestor = widget; ancestor; ancestor = ancestor->parentWidget())
-            {
-                if (ancestor->inherits("AzQtComponents::ColorPicker"))
-                {
-                    insideColorPicker = true;
-                    break;
-                }
-            }
-            if (enabled && !insideColorPicker)
+            if (enabled && !spinBoxFlattenedInsideColorPicker(widget))
             {
                 const qreal devicePixelRatio = widget ? widget->devicePixelRatioF() : 1.0;
                 const int glyphTop = styleOption->rect.top() + (styleOption->rect.height() - 10) / 2;
@@ -1076,12 +1092,17 @@ QRect SpinBox::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex
     {
         if (StyleManager::stylesheetsDisabled())
         {
-            // SpinBox.qss margin 2 (VectorElement: margin-left 0), padding-top -1 / bottom 1,
-            // padding-right 12: the legacy line edit sits at (x+2, y+1, w-22, 19).
-            // TOKENIZE: SpinBoxEditInset
+            // The edit field is the spin box rule's contents rect less the widest button on the right
+            // (qstylesheetstyle.cpp:5846-5869): margin 2 (SpinBox.qss:13; VectorInput.qss:25 margin-left 0 in a
+            // VectorElement), padding-top -1 and padding-bottom 1 (:19, :18), so it starts 1 below the box's top and
+            // ends 3 above its bottom: 4 less than the box is tall, whatever height a layout gives it (23 by default,
+            // 18 in an inspector row). Padding-right 12 (:16) and the 6px up/down buttons (:81, none in a color
+            // picker) take the right side. TOKENIZE: SpinBoxEditInset
             const bool vectorElement = widget && widget->parentWidget() && widget->parentWidget()->inherits("AzQtComponents::VectorElement");
             const int left = vectorElement ? 0 : 2;
-            return QRect(option->rect.left() + left, option->rect.top() + 1, option->rect.width() - left - 20, 19);
+            const int buttonWidth = spinBoxFlattenedInsideColorPicker(widget) ? 0 : 6;
+            const int right = 2 + 12 + buttonWidth;
+            return QRect(option->rect.left() + left, option->rect.top() + 1, option->rect.width() - left - right, option->rect.height() - 4);
         }
 
         // Long values should run off the right side of the spinbox, so extend the SC_SpinBoxEditField
@@ -1137,6 +1158,15 @@ bool SpinBox::polish(QProxyStyle* style, QWidget* widget, const SpinBox::Config&
 
         if (StyleManager::stylesheetsDisabled())
         {
+            // The :hover faces (SpinBox.qss:24-25, :33-40): the sheet style gave a widget with such a rule the hover attribute, and
+            // its embedded widget (the line edit) with mouse tracking (qstylesheetstyle.cpp:2894-2905)
+            spinBox->setAttribute(Qt::WA_Hover, true);
+            if (QLineEdit* embedded = spinBox->findChild<QLineEdit*>())
+            {
+                embedded->setAttribute(Qt::WA_Hover, true);
+                embedded->setMouseTracking(true);
+            }
+
             // The spin box line edit paints no field of its own in the sheet; the box comes
             // from SpinBox::drawSpinBox. TOKENIZE: SpinBoxLineEditField
             if (QLineEdit* lineEdit = spinBox->findChild<QLineEdit*>())
@@ -1145,6 +1175,10 @@ bool SpinBox::polish(QProxyStyle* style, QWidget* widget, const SpinBox::Config&
                 lineEditPalette.setColor(QPalette::Base, Qt::transparent);
                 lineEditPalette.setColor(QPalette::Text, Qt::black);
                 lineEditPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(0x99, 0x99, 0x99));
+                // `color: black` (BaseStyleSheet.qss:77, :disabled #999999 SpinBox.qss:73) reaches WindowText too
+                // (qstylesheetstyle.cpp:1455-1458); nothing paints a line edit with it, but the legacy palette has it
+                lineEditPalette.setColor(QPalette::WindowText, Qt::black);
+                lineEditPalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(0x99, 0x99, 0x99));
                 lineEdit->setPalette(lineEditPalette);
             }
         }

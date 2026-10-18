@@ -7,7 +7,10 @@
  */
 
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
@@ -18,6 +21,7 @@
 #include <QHelpEvent>
 #include <QToolTip>
 #include <QPainter>
+#include <QPainterPath>
 #include <QStyleOption>
 #include <QToolButton>
 #include <QTimer>
@@ -26,6 +30,33 @@
 namespace AzQtComponents
 {
     static char g_enableClearButtonWhenReadOnly[] = "EnableClearButtonWhenReadOnly";
+
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins
+    //! this file with others into one translation unit, where anonymous namespaces merge.
+    namespace LineEditFlat
+    {
+        //! The frame of a line edit: BaseStyleSheet.qss:68-84 (the rule of the entry controls: fill #CCCCCC, radius 2px,
+        //! border colour #e9e9e9) under LineEdit.qss:11-20 (border width 2px, style solid, so the border is the rule's own),
+        //! :disabled fill #666666 (LineEdit.qss:28-35). Drawn as a rule draws it (BoxElement::draw): the fill over the border
+        //! box, a path through the middle of the border, antialiased, then the edges as strips with the arcs of the corners,
+        //! so at a fractional device ratio the rows at the edges blend as they did.
+        //! TOKENIZE: LineEditFieldColor, LineEditDisabledFieldColor, LineEditBorderColor
+        const BoxElement Frame{
+            .m_name = "Global.Box.LineEdit.Frame",
+            .m_nativeBorder = false,                                // LineEdit.qss:17 (border-style: solid)
+            .m_radius = 2,                                          // BaseStyleSheet.qss:79
+            .m_idle = {
+                .m_fill = QBrush(QColor(0xCC, 0xCC, 0xCC)),         // BaseStyleSheet.qss:76
+                .m_edges = BoxElement::border(2, QColor(0xE9, 0xE9, 0xE9)),   // LineEdit.qss:16 (width), BaseStyleSheet.qss:81 (colour)
+            },
+            .m_stateFaces = {
+                { BoxElement::Disabled, {
+                    .m_fill = QBrush(QColor(0x66, 0x66, 0x66)),     // LineEdit.qss:33
+                    .m_edges = BoxElement::border(2, QColor(0xE9, 0xE9, 0xE9)),
+                } },
+            },
+        };
+    } // namespace LineEditFlat
 
     class LineEditWatcher : public QObject
     {
@@ -594,6 +625,31 @@ namespace AzQtComponents
             pal.setColor(QPalette::PlaceholderText, config.placeHolderTextColor);
 #endif // !defined(AZ_PLATFORM_LINUX)
 
+            if (StyleManager::stylesheetsDisabled())
+            {
+                if (!isEmbedded(lineEdit))
+                {
+                    // `color: black` (BaseStyleSheet.qss:77; :disabled #999999, LineEdit.qss:34) gave the placeholder
+                    // the text color at half alpha (qstylesheetstyle.cpp:1459-1463): #80000000, and #80999999 when
+                    // disabled. A line edit inside a spin box or a combo box kept the config's color.
+                    // TOKENIZE: LineEditPlaceholderAlpha
+                    for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
+                    {
+                        QColor placeholder = pal.color(group, QPalette::Text);
+                        placeholder.setAlpha((placeholder.alpha() + 1) / 2);
+                        pal.setColor(group, QPalette::PlaceholderText, placeholder);
+                    }
+                }
+
+                // FilteredSearchWidget.qss:11 `FilteredSearchWidget QLineEdit { qproperty-frame: true }`: the .ui
+                // (FilteredSearchWidget.ui:37-39) and the type selector's field (FilteredSearchWidget.cpp:271) leave
+                // it false
+                if (StyleHelpers::findParent<FilteredSearchWidget>(lineEdit))
+                {
+                    lineEdit->setFrame(true);
+                }
+            }
+
             s_lineEditWatcher->storeHoverAttributeState(lineEdit);
             lineEdit->setAttribute(Qt::WA_Hover, true);
 
@@ -669,15 +725,12 @@ namespace AzQtComponents
         {
             if (StyleManager::stylesheetsDisabled())
             {
-                // LineEdit.qss + BaseStyleSheet input rule resolved to one layer (legacy capture
-                // 2026-09-24, page 13): 2px #E9E9E9 border, square corners, field #CCCCCC
-                // (:disabled #666666). The legacy plain QLineEdit shows NO error border and NO
-                // drop-target frame (only the error icon), so none is drawn here.
-                // TOKENIZE: LineEditBorderColor, LineEditFieldColor, LineEditDisabledFieldColor
-                const bool enabled = option->state.testFlag(QStyle::State_Enabled);
-                painter->fillRect(option->rect, QColor(0xE9, 0xE9, 0xE9));
-                painter->fillRect(option->rect.adjusted(2, 2, -2, -2), enabled ? QColor(0xCC, 0xCC, 0xCC) : QColor(0x66, 0x66, 0x66));
-                return true;
+                // LineEdit.qss + BaseStyleSheet input rule resolved to one layer (legacy capture 2026-09-24, page 13): the frame
+                // element, a 2px #E9E9E9 border (LineEdit.qss:16-17, BaseStyleSheet.qss:81) with the outer corners rounded by the
+                // sheet's radius of 2px (BaseStyleSheet.qss:79; its inner corners are square, 2 - 2 = 0), the field #CCCCCC (:disabled
+                // #666666), drawn as the sheet drew them. The legacy plain QLineEdit shows NO error border and NO drop-target
+                // frame (only the error icon), so none is drawn here.
+                return LineEditFlat::Frame.draw(painter, option, widget);
             }
 
             const bool hasError = lineEdit->property(HasError).toBool();
@@ -769,6 +822,14 @@ namespace AzQtComponents
             return QRect();
         }
 
+        // The legacy text rect of a framed field is the rect inside the sheet's border and padding
+        // (qstylesheetstyle.cpp:6176-6181, the same box the ring is drawn around). QLineEdit takes the room of its
+        // side widgets off it itself (QLineEdit::paintEvent), so no button is looked at here.
+        if (StyleManager::stylesheetsDisabled() && lineEdit->hasFrame() && !isEmbedded(lineEdit))
+        {
+            return option->rect.marginsRemoved(flattenedFieldBox(lineEdit));
+        }
+
         // first check what the base style would do
         QRect r = style->baseStyle()->subElementRect(element, option, widget);
 
@@ -798,6 +859,37 @@ namespace AzQtComponents
         }
 
         return r;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened line edit field (GUI flattening)
+    //
+    // LineEdit.qss gave every QLineEdit a box: a 2px border and a padding
+    // around its text (the border is the ring that drawFrame draws). A line
+    // edit inside a spin box or a combo box is not boxed on its own: the
+    // sheet gave it the box of its container.
+    //////////////////////////////////////////////////////////////////////////
+    bool LineEdit::isEmbedded(const QWidget* lineEdit)
+    {
+        const QWidget* parent = lineEdit ? lineEdit->parentWidget() : nullptr;
+        return parent && (parent->inherits("QAbstractSpinBox") || parent->inherits("QComboBox"));
+    }
+
+    int LineEdit::flattenedPaddingLeft(const QWidget* lineEdit)
+    {
+        // LineEdit.qss:15 padding-left: 0, and :22-26 `QLineEdit[HasSearchAction=true] { padding-left: -6px }`.
+        // TOKENIZE: LineEditPaddingLeft, LineEditSearchPaddingLeft
+        return (lineEdit && lineEdit->property(HasSearchAction).toBool()) ? -6 : 0;
+    }
+
+    QMargins LineEdit::flattenedFieldBox(const QWidget* lineEdit)
+    {
+        // LineEdit.qss:16 border-width: 2px; :19 padding-top: -1px, :18 padding-bottom: 1px, no padding on the
+        // right. TOKENIZE: LineEditBorderWidth, LineEditPaddingTop, LineEditPaddingBottom
+        const int border = 2;
+        const int paddingTop = -1;
+        const int paddingBottom = 1;
+        return QMargins(border + flattenedPaddingLeft(lineEdit), border + paddingTop, border, border + paddingBottom);
     }
 
 } // namespace AzQtComponents

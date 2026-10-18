@@ -31,7 +31,8 @@ GradientSlider::GradientSlider(Qt::Orientation orientation, QWidget* parent)
     setMouseTracking(true);
 
     m_colorFunction = [](qreal value) {
-        return QColor::fromRgbF(value, value, value);
+        const float grey = static_cast<float>(value);
+        return QColor::fromRgbF(grey, grey, grey);
     };
 
     m_toolTipFunction = [this](qreal value) {

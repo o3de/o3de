@@ -12,6 +12,7 @@
 #include "native/resourcecompiler/rccontroller.h"
 #include "native/FileServer/fileServer.h"
 #include "native/AssetManager/assetScanner.h"
+#include "native/ui/FlatElements.h"
 #include <native/utilities/PlatformConfiguration.h>
 
 #include <QApplication>
@@ -221,6 +222,9 @@ bool GUIApplicationManager::Run()
     const bool restoreOnFirstShow = true;
     wrapper->enableSaveRestoreGeometry(GetOrganizationName(), GetApplicationName(), "MainWindow", restoreOnFirstShow);
 
+    // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget, which is the next line
+    // (the window sets it on its detail panels later, in MainWindow::Activate, MainWindow.cpp:432-434)
+    AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:AssetProcessor.qss"), &AssetProcessor::RegisterFlatElements);
     AzQtComponents::StyleManager::setStyleSheet(m_mainWindow, QStringLiteral("style:AssetProcessor.qss"));
 
     auto refreshStyleSheets = [styleManager]()

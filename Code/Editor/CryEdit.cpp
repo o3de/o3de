@@ -91,6 +91,7 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
+#include "EditorFlatSheet.h"
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
@@ -1569,6 +1570,8 @@ bool CCryEditApp::InitInstance()
         engineRoot.filePath(QStringLiteral("Code/Editor/Style")),
         QStringLiteral(":/Assets/Editor/Style"),
         engineRootPath);
+    // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget
+    AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:Editor.qss"), &EditorFlatSheet::RegisterElements);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
     // Connect to the AssetProcessor at this point

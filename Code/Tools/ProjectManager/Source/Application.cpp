@@ -7,6 +7,7 @@
  */
 
 #include <Application.h>
+#include <FlatElements.h>
 #include <ProjectUtils.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -240,6 +241,9 @@ namespace O3DE::ProjectManager
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
         const auto qrcPath = QStringLiteral(":/ProjectManager/style");
         AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRoot);
+
+        // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget
+        AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:ProjectManager.qss"), &RegisterFlatElements);
 
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
