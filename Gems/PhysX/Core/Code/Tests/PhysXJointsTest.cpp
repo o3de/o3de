@@ -228,8 +228,8 @@ namespace PhysX
 
     TEST_F(PhysXJointsTest, Joint_BallJoint_BreaksUnderForce)
     {
-        // Place a follower below a heavy lead body, configure a breakable ball joint,
-        // and give the follower an initial lateral velocity. The joint should break.
+        /* Place a follower below a heavy lead body, configure a breakable ball joint,
+        and give the follower an initial lateral velocity. The joint should break. */
         const AZ::Vector3 followerPosition(0.0f, 0.0f, -1.0f);
         const AZ::Vector3 followerInitialLinearVelocity(5.0f, 2.0f, 0.0f);
 
