@@ -368,6 +368,7 @@ namespace OpenParticle
             m_distribution.GetDistributionIndex(emitterInfo->m_eventModules);
             m_distribution.GetDistributionIndex(emitterInfo->m_renderConfig);
         }
+        m_distribution.SplitSharedCurves();
         m_distribution.SortDistributionIndex();
         m_distribution.RebuildDistribution();
         m_distribution.RebuildDistributionIndex();

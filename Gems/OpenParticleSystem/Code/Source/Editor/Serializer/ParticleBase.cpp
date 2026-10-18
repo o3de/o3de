@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <Serializer/ParticleBase.h>
 #include <Serializer/ParticleSourceData.h>
 #include "core/math/Constants.h"
@@ -555,6 +556,61 @@ namespace OpenParticle
     void Distribution::ClearDistributionIndex()
     {
         distInfos.Clear();
+    }
+
+    void Distribution::SplitSharedCurves()
+    {
+        // Stashed indexes refer to positions in the curve list that are about to move, so they are left to the normal rebuild.
+        if (!stashedCurveIndexes.empty())
+        {
+            return;
+        }
+
+        AZStd::unordered_set<size_t> seenIndexes;
+        bool shared = false;
+        for (const ParamDistInfo& info : distInfos.curveIndexInfos)
+        {
+            if (info.distIndex != 0 && !seenIndexes.insert(info.distIndex).second)
+            {
+                shared = true;
+            }
+        }
+        if (!shared)
+        {
+            return;
+        }
+
+        // The used curves move to the front in the order the settings are listed, each setting getting a curve of its own, and the unused ones are dropped.
+        AZStd::unordered_set<Curve*> taken;
+        AZStd::vector<Curve*> compact;
+        for (ParamDistInfo& info : distInfos.curveIndexInfos)
+        {
+            if (info.distIndex == 0 || info.distIndex > curves.size())
+            {
+                continue;
+            }
+            Curve* source = curves[info.distIndex - 1];
+            Curve* use = taken.insert(source).second ? source : aznew Curve(*source);
+            compact.emplace_back(use);
+            info.distIndex = compact.size();
+        }
+
+        AZStd::unordered_set<Curve*> cached;
+        for (const auto& cache : curveCaches)
+        {
+            for (Curve* curve : cache.second.curves)
+            {
+                cached.insert(curve);
+            }
+        }
+        for (Curve* curve : curves)
+        {
+            if (taken.find(curve) == taken.end() && cached.find(curve) == cached.end())
+            {
+                delete curve;
+            }
+        }
+        curves = compact;
     }
 
     void SortIndex(AZStd::vector<ParamDistInfo>& indexInfo)

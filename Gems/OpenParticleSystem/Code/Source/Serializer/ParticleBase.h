@@ -138,6 +138,8 @@ namespace OpenParticle
         float duration = 2.f;
         SimuCore::ParticleCore::SimulateType type = SimuCore::ParticleCore::SimulateType::CPU;
         bool loop = true;
+        // Unchecked keeps the emitter in the graph but stops it simulating and drawing. Files from before this setting load as enabled.
+        bool enabled = true;
     };
 
     struct SingleBurst
@@ -795,6 +797,9 @@ namespace OpenParticle
         void GetDistributionIndex(AZStd::list<AZStd::any>& dist);
         void GetDistributionIndex(AZStd::any& dist);
         void ClearDistributionIndex();
+        // Gives every parameter that shares a curve with another its own copy, so a file where two settings point at one index (an emitter copied by an older
+        // editor) renumbers correctly instead of failing the index check or silently pointing at the wrong curves.
+        void SplitSharedCurves();
         void SortDistributionIndex();
         void RebuildDistribution();
         void RebuildDistributionIndex();
