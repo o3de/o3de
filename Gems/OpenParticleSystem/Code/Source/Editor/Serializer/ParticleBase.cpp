@@ -636,6 +636,10 @@ namespace OpenParticle
             {
                 static_cast<ValueObjVec4*>(indexInfo[index].valueObjPtr)->distIndex[indexInfo[index].paramIndex] = index + 1;
             }
+            if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjColor>())
+            {
+                static_cast<ValueObjColor*>(indexInfo[index].valueObjPtr)->distIndex[indexInfo[index].paramIndex] = index + 1;
+            }
             if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjLinear>())
             {
                 static_cast<ValueObjLinear*>(indexInfo[index].valueObjPtr)->distIndex[indexInfo[index].paramIndex] = index + 1;
