@@ -882,6 +882,8 @@ namespace OpenParticle
             UpdateRandomIndexes(emitterInfo->m_spawnModules);
             UpdateRandomIndexes(emitterInfo->m_updateModules);
             UpdateRandomIndexes(emitterInfo->m_eventModules);
+            // The renderer settings hold distributions too (a ribbon's width), and have to follow the list like the modules do.
+            UpdateRandomIndexes(emitterInfo->m_renderConfig);
         }
     }
 
@@ -896,48 +898,59 @@ namespace OpenParticle
             UpdateCurveIndexes(emitterInfo->m_spawnModules);
             UpdateCurveIndexes(emitterInfo->m_updateModules);
             UpdateCurveIndexes(emitterInfo->m_eventModules);
+            UpdateCurveIndexes(emitterInfo->m_renderConfig);
         }
     }
 
     void ParticleSourceData::UpdateRandomIndexes(AZStd::list<AZStd::any>& list)
     {
         // refresh indexes of other item in list
+        for (auto& any : list)
+        {
+            UpdateRandomIndexes(any);
+        }
+    }
+
+    void ParticleSourceData::UpdateRandomIndexes(AZStd::any& any)
+    {
         for (auto removedIndex : m_distribution.stashedRandomIndexes)
         {
-            for (auto& any : list)
+            DistInfos distInfosToRefresh;
+            DataConvertor::GetDistIndex(any, distInfosToRefresh);
+            for (auto& info : distInfosToRefresh.randomIndexInfos)
             {
-                DistInfos distInfosToRefresh;
-                DataConvertor::GetDistIndex(any, distInfosToRefresh);
-                for (auto& info : distInfosToRefresh.randomIndexInfos)
+                if (info.distIndex > removedIndex)
                 {
-                    if (info.distIndex > removedIndex)
-                    {
-                        info.distIndex -= 1;
-                    }
+                    info.distIndex -= 1;
                 }
-                DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
             }
+            DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
         }
     }
 
     void ParticleSourceData::UpdateCurveIndexes(AZStd::list<AZStd::any>& list)
     {
         // refresh indexes of other item in list
+        for (auto& any : list)
+        {
+            UpdateCurveIndexes(any);
+        }
+    }
+
+    void ParticleSourceData::UpdateCurveIndexes(AZStd::any& any)
+    {
         for (auto removedIndex : m_distribution.stashedCurveIndexes)
         {
-            for (auto& any : list)
+            DistInfos distInfosToRefresh;
+            DataConvertor::GetDistIndex(any, distInfosToRefresh);
+            for (auto& info : distInfosToRefresh.curveIndexInfos)
             {
-                DistInfos distInfosToRefresh;
-                DataConvertor::GetDistIndex(any, distInfosToRefresh);
-                for (auto& info : distInfosToRefresh.curveIndexInfos)
+                if (info.distIndex > removedIndex)
                 {
-                    if (info.distIndex > removedIndex)
-                    {
-                        info.distIndex -= 1;
-                    }
+                    info.distIndex -= 1;
                 }
-                DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
             }
+            DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
         }
     }
 
