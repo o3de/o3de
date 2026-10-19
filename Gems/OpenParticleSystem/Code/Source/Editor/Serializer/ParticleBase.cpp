@@ -558,29 +558,12 @@ namespace OpenParticle
         distInfos.Clear();
     }
 
-    void Distribution::SplitSharedCurves()
+    void Distribution::NormalizeCurves()
     {
-        // Stashed indexes refer to positions in the curve list that are about to move, so they are left to the normal rebuild.
-        if (!stashedCurveIndexes.empty())
-        {
-            return;
-        }
-
-        AZStd::unordered_set<size_t> seenIndexes;
-        bool shared = false;
-        for (const ParamDistInfo& info : distInfos.curveIndexInfos)
-        {
-            if (info.distIndex != 0 && !seenIndexes.insert(info.distIndex).second)
-            {
-                shared = true;
-            }
-        }
-        if (!shared)
-        {
-            return;
-        }
-
-        // The used curves move to the front in the order the settings are listed, each setting getting a curve of its own, and the unused ones are dropped.
+        // The used curves move to the front in the order the settings are listed, each setting getting a curve of its own. Renumbering afterwards
+        // (RebuildDistributionIndex) takes a setting's position in the sorted list as its curve index, which only holds when the curve list is
+        // exactly the used curves. Curves nobody uses (left behind by turning modules off and on, or by an emitter copy) sit between them and made a
+        // module that was turned on again pick up one of them, so its gradient changed every time.
         AZStd::unordered_set<Curve*> taken;
         AZStd::vector<Curve*> compact;
         for (ParamDistInfo& info : distInfos.curveIndexInfos)
@@ -605,9 +588,10 @@ namespace OpenParticle
         }
         for (Curve* curve : curves)
         {
+            // The caches of the editor may still point at an unused curve, so it is kept alive (and freed with the distribution) instead of deleted.
             if (taken.find(curve) == taken.end() && cached.find(curve) == cached.end())
             {
-                delete curve;
+                retiredCurves.emplace_back(curve);
             }
         }
         curves = compact;

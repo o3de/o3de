@@ -783,6 +783,11 @@ namespace OpenParticle
                 delete curve;
                 curve = nullptr;
             }
+            for (auto curve : retiredCurves)
+            {
+                delete curve;
+            }
+            retiredCurves.clear();
             randoms.clear();
             curves.clear();
             distInfos.Clear();
@@ -797,9 +802,9 @@ namespace OpenParticle
         void GetDistributionIndex(AZStd::list<AZStd::any>& dist);
         void GetDistributionIndex(AZStd::any& dist);
         void ClearDistributionIndex();
-        // Gives every parameter that shares a curve with another its own copy, so a file where two settings point at one index (an emitter copied by an older
-        // editor) renumbers correctly instead of failing the index check or silently pointing at the wrong curves.
-        void SplitSharedCurves();
+        // Makes the curve list exactly the curves the enabled settings use, in order, giving every setting its own copy (a file where two settings point at
+        // one curve index, from an emitter copied by an older editor) and setting aside curves nothing uses, so renumbering cannot point a setting at the wrong curve.
+        void NormalizeCurves();
         void SortDistributionIndex();
         void RebuildDistribution();
         void RebuildDistributionIndex();
@@ -816,6 +821,8 @@ namespace OpenParticle
 
         AZStd::vector<size_t> stashedRandomIndexes;
         AZStd::vector<size_t> stashedCurveIndexes;
+        // Curves no setting uses any more, owned here so a cache that still points at one never dangles.
+        AZStd::vector<Curve*> retiredCurves;
     };
 } // namespace OpenParticle
 

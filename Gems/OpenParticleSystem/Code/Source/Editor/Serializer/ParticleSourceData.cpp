@@ -368,9 +368,10 @@ namespace OpenParticle
             m_distribution.GetDistributionIndex(emitterInfo->m_eventModules);
             m_distribution.GetDistributionIndex(emitterInfo->m_renderConfig);
         }
-        m_distribution.SplitSharedCurves();
-        m_distribution.SortDistributionIndex();
+        // Turned off modules leave the list first, so the numbering of the rest matches the list again before it is made exact.
         m_distribution.RebuildDistribution();
+        m_distribution.NormalizeCurves();
+        m_distribution.SortDistributionIndex();
         m_distribution.RebuildDistributionIndex();
     }
 
