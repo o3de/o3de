@@ -2331,6 +2331,16 @@ LUA_API const Node* lua_getDummyNode()
         // Method bind helper
         namespace Internal
         {
+            // True when byteSize at alignment no longer fits in what is left of the temp buffer (whose start is 16-byte aligned).
+            inline bool ExceedsTempStorage(const ScriptContext::StackVariableAllocator& tempAllocator, size_t byteSize, size_t alignment)
+            {
+                const size_t slack = alignment > 16 ? alignment - 16 : 0;
+                return AZ::SizeAlignUp(tempAllocator.get_allocated_size(), alignment) + slack + byteSize > tempAllocator.max_size();
+            }
+
+            // Native values have no BehaviorClass to recall their alignment when freed, so their backup allocations use this one.
+            constexpr size_t NativeBackupAlignment = 16;
+
             template<class T>
             bool AllocateTempStorageLuaNative(BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator& tempAllocator, AZStd::allocator* backupAllocator = nullptr)
             {
@@ -2348,9 +2358,10 @@ LUA_API const Node* lua_getDummyNode()
                 else // even references are stored by value as we need to convert from lua native type, i.e. there is not real reference for NativeTypes (numbers, strings, etc.)
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && sizeof(T) > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
+                    if (backupAllocator != nullptr && ExceedsTempStorage(tempAllocator, sizeof(T), AZStd::alignment_of<T>::value))
                     {
-                        value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value);
+                        static_assert(AZStd::alignment_of<T>::value <= NativeBackupAlignment, "Native type needs a larger backup alignment");
+                        value.m_value = backupAllocator->allocate(sizeof(T), NativeBackupAlignment);
                         usedBackupAlloc = true;
                     }
                     else
@@ -2382,7 +2393,7 @@ LUA_API const Node* lua_getDummyNode()
                 else // it's a value type
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && valueClass->m_size > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
+                    if (backupAllocator != nullptr && ExceedsTempStorage(tempAllocator, valueClass->m_size, valueClass->m_alignment))
                     {
                         value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment);
                         usedBackupAlloc = true;
@@ -3577,7 +3588,7 @@ LUA_API const Node* lua_getDummyNode()
                         if (thisPtr->m_resultClass && thisPtr->m_resultClass->m_destructor && (result.m_traits & AZ::BehaviorParameter::TR_POINTER) == 0)
                         {
                             void* valueAddress = result.GetValueAddress();
-                            if (tempData.inrange(valueAddress))
+                            if (usedBackupAlloc || tempData.inrange(valueAddress))
                             {
                                 thisPtr->m_resultClass->m_destructor(valueAddress, thisPtr->m_resultClass->m_userData);
                             }
@@ -3593,7 +3604,9 @@ LUA_API const Node* lua_getDummyNode()
                 // free temp memory and call any dtors
                 if (usedBackupAlloc)
                 {
-                    backupAllocator.deallocate(result.m_value, thisPtr->m_resultClass->m_size, thisPtr->m_resultClass->m_alignment);
+                    // Native results have no class; the system allocator looks their size up itself.
+                    const BehaviorClass* resultClass = thisPtr->m_resultClass;
+                    backupAllocator.deallocate(result.m_value, resultClass ? resultClass->m_size : 0, resultClass ? resultClass->m_alignment : Internal::NativeBackupAlignment);
                 }
                 for (int i = 0; i < numArguments; ++i)
                 {
