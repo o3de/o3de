@@ -68,6 +68,7 @@ set(FILES
     Tests/BlendTreeMaskNodeTests.cpp
     Tests/BlendTreeMirrorPoseNodeTests.cpp
     Tests/BlendTreeMotionFrameNodeTests.cpp
+    Tests/BlendTreePoseSubtractNodeTests.cpp
     Tests/BlendTreeRagdollNodeTests.cpp
     Tests/BlendTreeRangeRemapperNodeTests.cpp
     Tests/BlendTreeRotationMath2NodeTests.cpp
