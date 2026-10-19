@@ -1325,23 +1325,34 @@ namespace AzToolsFramework
     {
         const Qt::CheckState checkState = item->checkState(0);
 
-        if (item->IsConflicted())
+        // Keep track and protect against recursive calls that will cause a stack overflow
+        static bool in_call{ false };
+
+        if (!in_call)
         {
-            item->setIcon(0, m_iconConflictedDataItem);
-        }
-        else
-        {
-            if (checkState != Qt::CheckState::Checked && item->HasPotentialConflicts())
+            // The item->setIcon calls below will trigger a OnFieldDataChanged event which will
+            // recursively call this function again. Setting the method-level static flag will
+            // prevent this
+            in_call = true;
+            if (item->IsConflicted())
             {
-                item->setIcon(0, m_iconConflictedDisabledDataItem);
+                item->setIcon(0, m_iconConflictedDataItem);
             }
             else
             {
-                QVariant iconVariant = item->data(0, s_iconStorageRole);
-                QIcon icon = iconVariant.value<QIcon>();
-                item->setIcon(0, icon);
+                if (checkState != Qt::CheckState::Checked && item->HasPotentialConflicts())
+                {
+                    item->setIcon(0, m_iconConflictedDisabledDataItem);
+                }
+                else
+                {
+                    QVariant iconVariant = item->data(0, s_iconStorageRole);
+                    QIcon icon = iconVariant.value<QIcon>();
+                    item->setIcon(0, icon);
+                }
             }
         }
+        in_call = false;
     }
 
     //=========================================================================
