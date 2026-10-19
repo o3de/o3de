@@ -10,6 +10,8 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/GuiPerfCounters.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Widgets/DialogButtonBox.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
@@ -302,8 +304,25 @@ namespace AzQtComponents
             && stack->parentWidget() && stack->parentWidget()->inherits("AzQtComponents::BreadCrumbs");
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // Passthrough (GuiPerfFloor, the last rung of the ladder)
+    //
+    // Every override of QProxyStyle below starts with the same few lines: at
+    // the passthrough rung (--style-passthrough) it hands the call to the base
+    // style and returns, so the flattened styling of this class takes no part
+    // and what remains is the cost of the base style (Fusion) alone. Style
+    // stays the application style all the same: code casts the application
+    // style to it (EntityPropertyEditor.cpp, PropertiesContainer.cpp of the
+    // LyShine editor) and calls drawDragIndicator, which needs no override.
+    //////////////////////////////////////////////////////////////////////////
+
     QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::sizeFromContents(type, option, size, widget);
+        }
+
         // SegmentBar buttons carry flagToIgnore (hasStyle == false) - size them before the gate (SegmentControl.qss:14-33)
         if (StyleManager::stylesheetsDisabled() && type == CT_PushButton)
         {
@@ -579,6 +598,12 @@ namespace AzQtComponents
 
     void Style::drawControl(QStyle::ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            QProxyStyle::drawControl(element, option, painter, widget);
+            return;
+        }
+
         QScopedValueRollback<const QWidget*> rollbackDrawControl(m_drawControlWidget, widget);
 
         // SegmentBar buttons carry flagToIgnore (hasStyle == false), so their flattened look is drawn BEFORE the gate
@@ -1370,6 +1395,12 @@ namespace AzQtComponents
 
     void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            QProxyStyle::drawPrimitive(element, option, painter, widget);
+            return;
+        }
+
         if (element == PE_IndicatorDockWidgetResizeHandle)
         {
             // BaseStyleSheet.qss QMainWindow::separator { background-color: #111111 }
@@ -1997,6 +2028,12 @@ namespace AzQtComponents
 
     void Style::drawComplexControl(QStyle::ComplexControl element, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            QProxyStyle::drawComplexControl(element, option, painter, widget);
+            return;
+        }
+
         if (!hasStyle(widget))
         {
             QProxyStyle::drawComplexControl(element, option, painter, widget);
@@ -2075,6 +2112,11 @@ namespace AzQtComponents
 
     QPixmap Style::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::generatedIconPixmap(iconMode, pixmap, option);
+        }
+
         if ((qobject_cast<const TableView*>(m_drawControlWidget) ||
             qobject_cast<const QListWidget*>(m_drawControlWidget)) && iconMode == QIcon::Mode::Selected)
         {
@@ -2099,6 +2141,11 @@ namespace AzQtComponents
 
     QRect Style::subControlRect(ComplexControl control, const QStyleOptionComplex* option, SubControl subControl, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::subControlRect(control, option, subControl, widget);
+        }
+
         if (!hasStyle(widget))
         {
             return QProxyStyle::subControlRect(control, option, subControl, widget);
@@ -2363,6 +2410,11 @@ namespace AzQtComponents
 
     QRect Style::subElementRect(SubElement element, const QStyleOption* option, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::subElementRect(element, option, widget);
+        }
+
         if (!hasStyle(widget))
         {
             return QProxyStyle::subElementRect(element, option, widget);
@@ -2601,6 +2653,11 @@ namespace AzQtComponents
     int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption* option,
         const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::pixelMetric(metric, option, widget);
+        }
+
         if (!hasStyle(widget))
         {
             return QProxyStyle::pixelMetric(metric, option, widget);
@@ -3107,6 +3164,14 @@ namespace AzQtComponents
 
     void Style::polish(QWidget* widget)
     {
+        GuiPerfCounters::PolishScope perfScope(widget);     // counts and times this call, if O3DE_UI_PERF_COUNTERS is set
+
+        if (GuiPerfFloor::isPassthrough())
+        {
+            QProxyStyle::polish(widget);
+            return;
+        }
+
         static QWidget* alreadyStyling = nullptr;
         if (alreadyStyling == widget)
         {
@@ -3379,6 +3444,14 @@ namespace AzQtComponents
 
     void Style::unpolish(QWidget* widget)
     {
+        GuiPerfCounters::UnpolishScope perfScope(widget);   // counts and times this call, if O3DE_UI_PERF_COUNTERS is set
+
+        if (GuiPerfFloor::isPassthrough())
+        {
+            QProxyStyle::unpolish(widget);
+            return;
+        }
+
         static QWidget* alreadyUnStyling = nullptr;
         if (alreadyUnStyling == widget)
         {
@@ -3419,6 +3492,11 @@ namespace AzQtComponents
     {
         QProxyStyle::polish(palette);
 
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return;
+        }
+
         if (StyleManager::stylesheetsDisabled())
         {
             // Every palette Qt derives (including system color-scheme changes)
@@ -3435,11 +3513,21 @@ namespace AzQtComponents
 
     QPalette Style::standardPalette() const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::standardPalette();
+        }
+
         return m_data->palette;
     }
 
     QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption* option, const QWidget* widget) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::standardIcon(standardIcon, option, widget);
+        }
+
         if (!hasStyle(widget))
         {
             return QProxyStyle::standardIcon(standardIcon, option, widget);
@@ -3491,6 +3579,11 @@ namespace AzQtComponents
 
     int Style::styleHint(QStyle::StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData) const
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::styleHint(hint, option, widget, returnData);
+        }
+
         if (hint == QStyle::SH_SpinBox_StepModifier)
         {
             return Qt::ShiftModifier;
@@ -3617,6 +3710,11 @@ namespace AzQtComponents
 
     bool Style::eventFilter(QObject* watched, QEvent* ev)
     {
+        if (GuiPerfFloor::isPassthrough())
+        {
+            return QProxyStyle::eventFilter(watched, ev);
+        }
+
         switch (ev->type())
         {
             case QEvent::ToolTipChange:
@@ -3665,6 +3763,17 @@ namespace AzQtComponents
         return classList.contains(className, Qt::CaseInsensitive);
     }
 
+    //! A change of the class tags polishes the widget again, for the rules and elements that read them. At passthrough nothing reads
+    //! them, and the pair would only make the base style do its work twice for every tag a widget is given when it is built.
+    static void repolishAfterClassChange(QWidget* widget)
+    {
+        if (!GuiPerfFloor::isPassthrough())
+        {
+            widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
+        }
+    }
+
     void Style::addClass(QWidget* button, const QString& className)
     {
         QVariant buttonClassVariant = button->property("class");
@@ -3679,8 +3788,7 @@ namespace AzQtComponents
             button->setProperty("class", classText);
         }
 
-        button->style()->unpolish(button);
-        button->style()->polish(button);
+        repolishAfterClassChange(button);
     }
 
     void Style::removeClass(QWidget* button, const QString& className)
@@ -3702,8 +3810,7 @@ namespace AzQtComponents
             if (changed)
             {
                 button->setProperty("class", classList.join(QLatin1Char(' ')));
-                button->style()->unpolish(button);
-                button->style()->polish(button);
+                repolishAfterClassChange(button);
             }
         }
     }
@@ -3880,7 +3987,15 @@ namespace AzQtComponents
 
     void Style::polish(QApplication* application)
     {
-        Q_UNUSED(application);
+        // Passthrough: none of what follows. No palette of ours (the application keeps the one the base style gave it), no elements, no
+        // class fonts, no tooltip filter. The application font is not set here: StyleManager set it before the style, and it stays, so
+        // that the text metrics of the rungs stay comparable. The combo box animation is a setting of the application, not of a style.
+        if (GuiPerfFloor::isPassthrough())
+        {
+            application->setEffectEnabled(Qt::UI_AnimateCombo, false);
+            QProxyStyle::polish(application);
+            return;
+        }
 
         if (StyleManager::stylesheetsDisabled())
         {

@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -388,7 +389,8 @@ void VectorInput::setLabelStyle(int index, const QString& qss)
         "This control handles only %i controls", m_elementCount);
     if (index < m_elementCount)
     {
-        m_elements[index]->getLabelWidget()->setStyleSheet(qss);
+        // an inline sheet of every vector label that has a style (StyleForX..W): the GuiPerfFloor noop and passthrough rungs leave it out
+        AzQtComponents::GuiPerfFloor::setInlineStyleSheet(m_elements[index]->getLabelWidget(), qss);
     }
 }
 

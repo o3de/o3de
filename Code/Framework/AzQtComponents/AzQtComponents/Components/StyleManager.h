@@ -84,7 +84,14 @@ namespace AzQtComponents
         //! was launched with --disable-stylesheets (GUI flattening work). In that mode no Qt style
         //! sheets are installed anywhere and widgets render through the plain style chain
         //! (Style -> Fusion base), driven by the palette instead of .qss rules.
+        //! The noop and passthrough rungs of the GuiPerfFloor ladder (--stylesheets-noop, --style-passthrough)
+        //! imply it: it is true at flat, noop and passthrough.
         static bool stylesheetsDisabled();
+
+        //! True when the flattened GUI's own styling is in effect: stylesheetsDisabled(), and not the passthrough
+        //! rung of the GuiPerfFloor ladder, where Style hands every call to its base style and the widgets leave out
+        //! what they set on themselves in place of a rule (palettes, sizes, their own painting).
+        static bool flatStylingActive();
 
         explicit StyleManager(QObject* parent);
         ~StyleManager() override;

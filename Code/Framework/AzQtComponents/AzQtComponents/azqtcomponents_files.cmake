@@ -111,6 +111,10 @@ set(FILES
     Components/StyleSheetCache.h
     Components/StylesheetPreprocessor.cpp
     Components/StylesheetPreprocessor.h
+    Components/GuiPerfCounters.cpp
+    Components/GuiPerfCounters.h
+    Components/GuiPerfFloor.cpp
+    Components/GuiPerfFloor.h
     Components/UiCaptureHarness.cpp
     Components/UiCaptureHarness.h
     Components/TagSelector.cpp

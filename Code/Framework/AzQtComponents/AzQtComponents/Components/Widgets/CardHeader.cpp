@@ -466,7 +466,8 @@ namespace AzQtComponents
 
     void CardHeader::paintEvent(QPaintEvent* event)
     {
-        if (!StyleManager::stylesheetsDisabled())
+        // Not the flattened painting at the passthrough rung either: the frame as the style draws it
+        if (!StyleManager::flatStylingActive())
         {
             QFrame::paintEvent(event);
             return;

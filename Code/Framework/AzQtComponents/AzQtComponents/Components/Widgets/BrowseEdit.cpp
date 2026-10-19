@@ -106,7 +106,9 @@ namespace AzQtComponents
 
         m_data->m_attachedButton = new QPushButton(this);
         m_data->m_attachedButton->setObjectName("attached-button");
-        if (StyleManager::stylesheetsDisabled())
+        // Not at the passthrough rung: the sizes, frame and margins the sheet gave are styling, and a line edit and a button as the style
+        // makes them are what that rung measures
+        if (StyleManager::flatStylingActive())
         {
             // BrowseEdit.qss: #attached-button flat, 16x16, icon 12x12; the inner QLineEdit has
             // border-width 0 (its field colour comes from the palette, the frame from

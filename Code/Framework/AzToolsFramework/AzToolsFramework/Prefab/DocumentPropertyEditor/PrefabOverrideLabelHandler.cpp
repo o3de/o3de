@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
 namespace AzToolsFramework::Prefab
@@ -34,7 +35,9 @@ namespace AzToolsFramework::Prefab
         }
 
         m_textLabel->setProperty(OverriddenPropertyName, false);
-        m_textLabel->setStyleSheet(QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
+        // an inline sheet of every label of a prefab property row: the GuiPerfFloor noop and passthrough rungs leave it out
+        AzQtComponents::GuiPerfFloor::setInlineStyleSheet(
+            m_textLabel, QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
 
         QHBoxLayout* layout = new QHBoxLayout(this);
         layout->setContentsMargins(0, 0, 0, 0);

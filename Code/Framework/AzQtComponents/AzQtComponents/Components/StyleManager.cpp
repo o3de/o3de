@@ -28,6 +28,8 @@ AZ_POP_DISABLE_WARNING
 #include <QWidget>
 
 #include <AzQtComponents/Components/AutoCustomWindowDecorations.h>
+#include <AzQtComponents/Components/GuiPerfCounters.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
@@ -61,19 +63,27 @@ namespace AzQtComponents
     // switch exists to capture the visual breakage catalog and the
     // no-stylesheet performance floor. Inline widget->setStyleSheet() calls
     // outside StyleManager are not affected by this switch.
+    //
+    // The switch is the flat rung of the GuiPerfFloor ladder (GuiPerfFloor.h):
+    // the noop rung (--stylesheets-noop) and the passthrough rung
+    // (--style-passthrough) imply it, and go on to take the inline sheets and
+    // the styling of Style away. GuiPerfFloor reads the flags and variables
+    // once; the answer is the rung.
     //////////////////////////////////////////////////////////////////////////
     static bool areStyleSheetsDisabled()
     {
-        // Cached on first use; every caller runs after QApplication exists
-        static const bool disabled = qEnvironmentVariableIsSet("O3DE_DISABLE_STYLESHEETS")
-            || (QCoreApplication::instance()
-                && QCoreApplication::arguments().contains(QStringLiteral("--disable-stylesheets"), Qt::CaseInsensitive));
-        return disabled;
+        // Every caller runs after QApplication exists
+        return GuiPerfFloor::rung() != GuiPerfFloor::Rung::Qss;
     }
 
     bool StyleManager::stylesheetsDisabled()
     {
         return areStyleSheetsDisabled();
+    }
+
+    bool StyleManager::flatStylingActive()
+    {
+        return areStyleSheetsDisabled() && !GuiPerfFloor::isPassthrough();
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -342,6 +352,14 @@ namespace AzQtComponents
 
         // HARNESS (flatten capture, not product code): no-op unless O3DE_UI_CAPTURE_DIR is set.
         UiCaptureHarness::installIfRequested(application);
+
+        // GUI performance floor (not product code): writes the rung line, and at the noop and passthrough rungs installs the filter that
+        // clears inline style sheets. BEFORE the counters on purpose: Qt asks the filter installed last first, so the counters still see
+        // the inline sheet of a widget at its first polish, and the floor clears it after.
+        GuiPerfFloor::initialize(application);
+
+        // GUI performance counters (not product code): no-op unless O3DE_UI_PERF_COUNTERS is set.
+        GuiPerfCounters::installIfRequested(application);
     }
 
     void StyleManager::cleanupStyles()

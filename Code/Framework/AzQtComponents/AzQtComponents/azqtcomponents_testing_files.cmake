@@ -29,6 +29,8 @@ set(FILES
     Tests/FlatPaletteTests.cpp
     Tests/FlatWidgetTests.cpp
     Tests/FloatToStringConversionTests.cpp
+    Tests/GuiPerfCountersTests.cpp
+    Tests/GuiPerfFloorTests.cpp
     Tests/HeaderSectionTests.cpp
     Tests/HexParsingTests.cpp
     Tests/IndicatorElementTests.cpp

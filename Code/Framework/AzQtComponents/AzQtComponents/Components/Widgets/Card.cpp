@@ -13,6 +13,7 @@
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
@@ -98,7 +99,9 @@ namespace AzQtComponents
 
         // has to be done here, otherwise it will affect all tooltips
         // as tooltips do not support any kind of css matchers other than QToolTip
-        m_header->setStyleSheet(QStringLiteral("QToolTip { padding: %1px; }").arg(defaultConfigValues.toolTipPaddingInPixels));
+        // (an inline sheet of every card header: the GuiPerfFloor noop and passthrough rungs leave it out)
+        GuiPerfFloor::setInlineStyleSheet(
+            m_header, QStringLiteral("QToolTip { padding: %1px; }").arg(defaultConfigValues.toolTipPaddingInPixels));
 
         m_rootLayout = new QVBoxLayout(this);
         m_rootLayout->setSizeConstraint(QLayout::SetMinimumSize);
@@ -551,7 +554,8 @@ namespace AzQtComponents
 
     void Card::paintEvent(QPaintEvent* event)
     {
-        if (!StyleManager::stylesheetsDisabled())
+        // Not the flattened painting at the passthrough rung either: the frame as the style draws it
+        if (!StyleManager::flatStylingActive())
         {
             QFrame::paintEvent(event);
             return;
