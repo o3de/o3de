@@ -9,7 +9,7 @@
 #pragma once
 
 // Description : Defines File version structure.
-
+#include <AzCore/StringFunc/StringFunc.h>
 
 //////////////////////////////////////////////////////////////////////////
 /** This class keeps file version information.
@@ -34,38 +34,24 @@ struct SFileVersion
     {
         v[0] = v[1] = v[2] = v[3] = 0;
 
-        char t[50];
-        const size_t len = (std::min)(strlen(s), sizeof(t) - 1);
-        memcpy(t, s, len);
-        t[len] = 0;
-
-        char* p;
-        [[maybe_unused]] char* next = nullptr;
-        [[maybe_unused]] size_t strmax = sizeof(t);
-        p = azstrtok(t, &strmax, ".", &next);
-        if (!p)
+        AZStd::vector<AZStd::string> tokens;
+        AZ::StringFunc::Tokenize(s, tokens, '.', true, true);
+        if (tokens.size()>0)
         {
-            return;
+            v[0] = AZ::StringFunc::ToInt(tokens[0].c_str());
         }
-        v[3] = atoi(p);
-        p = azstrtok(nullptr, &strmax, ".", &next);
-        if (!p)
+        if (tokens.size()>1)
         {
-            return;
+            v[1] = AZ::StringFunc::ToInt(tokens[1].c_str());
         }
-        v[2] = atoi(p);
-        p = azstrtok(nullptr, &strmax, ".", &next);
-        if (!p)
+        if (tokens.size()>2)
         {
-            return;
+            v[2] = AZ::StringFunc::ToInt(tokens[2].c_str());
         }
-        v[1] = atoi(p);
-        p = azstrtok(nullptr, &strmax, ".", &next);
-        if (!p)
+        if (tokens.size()>3)
         {
-            return;
+            v[3] = AZ::StringFunc::ToInt(tokens[3].c_str());
         }
-        v[0] = atoi(p);
     }
 
     explicit SFileVersion(const char* s)
