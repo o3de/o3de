@@ -19,6 +19,7 @@
 #include <Editor/InspectorBus.h>
 #include <Editor/Plugins/ColliderWidgets/JointPropertyWidget.h>
 #include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/Socket/SocketHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QBoxLayout>
@@ -69,6 +70,7 @@ namespace EMotionFX
         m_addCollidersButton->setObjectName("EMotionFX.SkeletonOutlinerPlugin.JointPropertyWidget.addCollidersButton");
         connect(m_addCollidersButton, &AddCollidersButton::AddCollider, this, &JointPropertyWidget::OnAddCollider);
         connect(m_addCollidersButton, &AddCollidersButton::AddToRagdoll, this, &JointPropertyWidget::OnAddToRagdoll);
+        connect(m_addCollidersButton, &AddCollidersButton::AddSocket, this, &JointPropertyWidget::OnAddSocket);
         auto* marginLayout = new QVBoxLayout;
         marginLayout->setContentsMargins(10, 10, 10, 10);
         marginLayout->addWidget(m_addCollidersButton);
@@ -203,6 +205,16 @@ namespace EMotionFX
         }
     }
 
+    void JointPropertyWidget::OnAddSocket()
+    {
+        AZ::Outcome<QModelIndexList> indicesOutcome;
+        SkeletonOutlinerRequestBus::BroadcastResult(indicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
+        if (indicesOutcome.IsSuccess())
+        {
+            SocketHelpers::AddSocketsToJoints(indicesOutcome.GetValue());
+        }
+    }
+
     void JointPropertyWidget::OnSearchTextChanged()
     {
         m_filterString = m_filterEntityBox->text();
@@ -230,7 +242,8 @@ namespace EMotionFX
         ConfigType = Qt::UserRole + 2,
         CopyFromType = Qt::UserRole + 3,
         PasteCopiedCollider = Qt::UserRole + 4,
-        CopyToType = Qt::UserRole + 5
+        CopyToType = Qt::UserRole + 5,
+        AddSocketItem = Qt::UserRole + 6
     };
     struct AddCollidersPallete : public QTreeView
     {
@@ -327,6 +340,10 @@ namespace EMotionFX
             ragdollItem->setData(PhysicsSetup::ColliderConfigType::Ragdoll, ItemRoles::ConfigType);
         }
 
+        auto* socketItem = new QStandardItem{ "Add Socket" };
+        socketItem->setData(true, ItemRoles::AddSocketItem);
+        model->appendRow(socketItem);
+
         // Copy from other collider type
         for (const auto& section : sections)
         {
@@ -394,6 +411,12 @@ namespace EMotionFX
         const QModelIndexList selectedRowIndices = selectedRowIndicesOutcome.GetValue();
         if (selectedRowIndices.empty())
         {
+            return;
+        }
+
+        if (index.data(ItemRoles::AddSocketItem).value<bool>())
+        {
+            emit AddSocket();
             return;
         }
 
