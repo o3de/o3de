@@ -497,10 +497,24 @@ namespace CommandSystem
             return false;
         }
 
+        m_oldAttributesString.clear();
         if (parameters.CheckIfHasParameter("attributesString"))
         {
             const AZStd::string attributesString = parameters.GetValue("attributesString", this);
-            MCore::ReflectionSerializer::Deserialize(node, MCore::CommandLine(attributesString));
+            const MCore::CommandLine attributes(attributesString);
+
+            // Remember the current values of the changed members so undo can restore them.
+            for (size_t i = 0; i < attributes.GetNumParameters(); ++i)
+            {
+                const AZStd::string& memberName = attributes.GetParameterName(i);
+                const AZ::Outcome<AZStd::string> oldValue = MCore::ReflectionSerializer::SerializeMember(node, memberName.c_str());
+                if (oldValue.IsSuccess())
+                {
+                    m_oldAttributesString += AZStd::string::format("-%s {%s} ", memberName.c_str(), oldValue.GetValue().c_str());
+                }
+            }
+
+            MCore::ReflectionSerializer::Deserialize(node, attributes);
         }
 
         // get the x and y pos
@@ -641,6 +655,11 @@ namespace CommandSystem
 
             // get the parameter mask attribute and update the mask
             parameterNode->SetParameters(m_oldParameterMask);
+        }
+
+        if (!m_oldAttributesString.empty())
+        {
+            MCore::ReflectionSerializer::Deserialize(node, MCore::CommandLine(m_oldAttributesString));
         }
 
         // set the dirty flag back to the old value

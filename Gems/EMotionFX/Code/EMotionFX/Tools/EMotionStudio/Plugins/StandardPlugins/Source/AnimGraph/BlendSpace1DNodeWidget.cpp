@@ -7,17 +7,23 @@
  */
 
 #include "BlendSpace1DNodeWidget.h"
+#include <AzCore/Memory/SystemAllocator.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <AzCore/std/math.h>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QContextMenuEvent>
+#include <QKeyEvent>
 #include <QFontMetrics>
 
 namespace EMStudio
 {
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace1DNodeWidget, AZ::SystemAllocator)
+
     const int   BlendSpace1DNodeWidget::s_motionPointCircleWidth = 4;
     const int   BlendSpace1DNodeWidget::s_leftMargin = 35;
     const int   BlendSpace1DNodeWidget::s_rightMargin = 15;
-    const int   BlendSpace1DNodeWidget::s_topMargin = 15;
+    const int   BlendSpace1DNodeWidget::s_topMargin = 50;
     const int   BlendSpace1DNodeWidget::s_bottomMargin = 35;
     const int   BlendSpace1DNodeWidget::s_maxTextDim = 1000; // maximum height/width of text. Used in creating the rectangle for drawText.
     const int   BlendSpace1DNodeWidget::s_textWidthMargin = 60;
@@ -48,6 +54,7 @@ namespace EMStudio
 
         m_gridPen.setColor(QColor(61, 61, 61));
         m_subgridPen.setColor(QColor(55, 55, 55));
+        m_divisionPen.setColor(QColor(90, 90, 90));
 
         color.setRgb(0xBB, 0xBB, 0xBB);
         m_axisLabelPen.setColor(color);
@@ -74,20 +81,27 @@ namespace EMStudio
 
         setFocusPolicy((Qt::FocusPolicy)(Qt::ClickFocus | Qt::WheelFocus));
         setMouseTracking(true);
+        InitializePreviewControls(this);
     }
 
     BlendSpace1DNodeWidget::~BlendSpace1DNodeWidget()
     {
         UnregisterForPerFrameCallback();
+        ResetPreview();
         delete m_infoTextFontMetrics;
     }
 
     void BlendSpace1DNodeWidget::SetCurrentNode(EMotionFX::AnimGraphNode* node)
     {
+        EndMotionDrag();
+        m_selectedPointIndex = MCORE_INVALIDINDEX32;
         if (m_currentNode)
         {
             m_currentNode->SetInteractiveMode(false);
         }
+        ResetPreview();
+        m_renderPoints.clear();
+        m_hoverMotionIndex = MCORE_INVALIDINDEX32;
         m_currentNode = nullptr;
 
         if (node)
@@ -103,6 +117,7 @@ namespace EMStudio
                 if (uniqueData)
                 {
                     m_currentNode->SetCurrentPosition(uniqueData->m_currentPosition);
+                    SetPreviewPosition(AZ::Vector2(uniqueData->m_currentPosition, 0.0f));
                 }
             }
             else
@@ -137,47 +152,24 @@ namespace EMStudio
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setRenderHint(QPainter::TextAntialiasing);
 
-        const EMotionFX::AnimGraphInstance* animGraphInstance = m_modelIndex.data(AnimGraphModel::ROLE_ANIM_GRAPH_INSTANCE).value<EMotionFX::AnimGraphInstance*>();
-        if (!animGraphInstance)
-        {
-            painter.drawText(rect(), Qt::AlignCenter, "No anim graph active.");
-        }
-
         EMotionFX::BlendSpace1DNode::UniqueData* uniqueData = GetUniqueData();
         if (!uniqueData)
         {
+            m_renderPoints.clear();
+            m_hoverMotionIndex = MCORE_INVALIDINDEX32;
+            painter.drawText(rect(), Qt::AlignCenter | Qt::TextWordWrap, GetPreviewStatus());
             return;
         }
         m_zoomScale = AZ::Lerp(1.0f, s_maxZoomScale, m_zoomFactor);
         
-        // Detect if the node is in an active blend tree. Checking if the parent is ready is
-        // more stable since a non-connected blend space node wont be ready
-        EMotionFX::AnimGraphNode* nodeThatShouldBeReady = m_currentNode->GetParentNode()
-            ? m_currentNode->GetParentNode()
-            : m_currentNode;
-
         const AZStd::vector<float>& points = uniqueData->m_motionCoordinates;
         const size_t numPoints = points.size();
+        UpdateDisplayRange(uniqueData);
 
-        if (animGraphInstance
-            && m_currentNode
-            && !animGraphInstance->GetIsOutputReady(nodeThatShouldBeReady->GetObjectIndex()))
+        if (!GetCurrentNode()->GetValidCalculationMethodAndEvaluator())
         {
-            PrepareForDrawing(uniqueData);
-            if (m_scale.GetX() <= 0)
-            {
-                // This happens if the window is so small that there is no space to draw after leaving margins
-                return;
-            }
-
-            DrawBoundRect(painter, uniqueData);
-            DrawBlendSpaceInfoText(painter, "The blend tree containing this blend space node is currently not in active state. "
-                "To be able to interactively visualize the operation of this blend space, set the blend tree containing this node "
-                "to active state.");
-        }
-        else if (uniqueData->m_motionCoordinates.empty()
-                 || !GetCurrentNode()->GetValidCalculationMethodAndEvaluator())
-        {
+            m_renderPoints.clear();
+            m_hoverMotionIndex = MCORE_INVALIDINDEX32;
             PrepareForDrawing(uniqueData);
             if (m_scale(0) <= 0)
             {
@@ -197,7 +189,7 @@ namespace EMStudio
             DrawGrid(painter);
             m_warningBoundRect.setRect(0, 0, 0, 0);
 
-            if (numPoints < 2) 
+            if (numPoints == 1)
             {
                 DrawBlendSpaceWarningText(painter, "At least two motion coordinates are required.");
             }
@@ -205,6 +197,10 @@ namespace EMStudio
             {
                 DrawBlendSpaceWarningText(painter, "Two or more motions are sharing the same coordinates, which might cause inaccurate blended "
                     "animations. Please check the coordinates and try again.");
+            }
+            else if (HasMotionsOutsideCustomRange(uniqueData))
+            {
+                DrawBlendSpaceWarningText(painter, "Some motions lie outside the custom axis range. Drag them into the highlighted area or widen the range.");
             }
 
             PrepareForDrawing(uniqueData);
@@ -223,10 +219,17 @@ namespace EMStudio
                 m_renderPoints[i].setY(transformedPt.GetY());
             }
 
+            DrawAxisGrid(painter);
             DrawAxisLabels(painter, uniqueData);
+            if (numPoints == 0)
+            {
+                DrawBlendSpaceInfoText(painter, "Right-click the grid to add a motion at that position.");
+                return;
+            }
             DrawMotionsLine(painter, uniqueData);
             DrawPoints(painter, uniqueData);
             DrawCurrentPointAndBlendingInfluence(painter, uniqueData);
+            DrawSelectedMotion(painter);
             DrawHoverMotionInfo(painter, uniqueData);
         }
     }
@@ -237,9 +240,22 @@ namespace EMStudio
         {
             return;
         }
-        if (event->buttons() &  Qt::LeftButton)
+        if (event->button() == Qt::LeftButton)
         {
-            SetCurrentSamplePosition(event->position().x(), event->position().y());
+            const int windowX = aznumeric_cast<int>(event->position().x());
+            const int windowY = aznumeric_cast<int>(event->position().y());
+
+            // Clicking a motion selects it and starts dragging it, clicking elsewhere moves the sample point.
+            const AZ::u32 pointIndex = FindPointAt(windowX, windowY);
+            if (pointIndex != MCORE_INVALIDINDEX32 && BeginMotionDrag(m_currentNode, pointIndex))
+            {
+                setCursor(Qt::SizeHorCursor);
+                update();
+                return;
+            }
+
+            m_selectedPointIndex = MCORE_INVALIDINDEX32;
+            SetCurrentSamplePosition(windowX, windowY);
             setCursor(Qt::ClosedHandCursor);  // dragging the hotspot
         }
         else
@@ -250,13 +266,56 @@ namespace EMStudio
 
     void BlendSpace1DNodeWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        OnMouseMove(event->position().x(), event->position().y());
+        if (event->button() == Qt::LeftButton && IsDraggingMotion())
+        {
+            EndMotionDrag();
+        }
+        OnMouseMove(aznumeric_cast<int>(event->position().x()), aznumeric_cast<int>(event->position().y()));
+        update();
+    }
+
+    void BlendSpace1DNodeWidget::contextMenuEvent(QContextMenuEvent* event)
+    {
+        if (!m_currentNode || IsDraggingMotion() || !GetUniqueData() || !m_currentNode->GetValidCalculationMethodAndEvaluator())
+        {
+            return;
+        }
+        const QPoint pos = event->pos();
+        const AZ::u32 pointIndex = FindPointAt(pos.x(), pos.y());
+        if (pointIndex == MCORE_INVALIDINDEX32 && !m_drawRect.contains(pos))
+        {
+            return;
+        }
+        m_selectedPointIndex = pointIndex;
+        update();
+        ShowGridContextMenu(m_currentNode, event->globalPos(), pointIndex, AZ::Vector2(GridCoordinateAt(pos.x(), pos.y()), 0.0f));
+        update();
+    }
+
+    void BlendSpace1DNodeWidget::keyPressEvent(QKeyEvent* event)
+    {
+        const bool deleteKey = event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace;
+        if (deleteKey && m_currentNode && !IsDraggingMotion() && m_selectedPointIndex < m_renderPoints.size())
+        {
+            RemoveMotionAtPoint(m_currentNode, m_selectedPointIndex);
+            update();
+            event->accept();
+            return;
+        }
+        AnimGraphNodeWidget::keyPressEvent(event);
     }
 
     void BlendSpace1DNodeWidget::mouseMoveEvent(QMouseEvent* event)
     {
         if (!m_currentNode)
         {
+            return;
+        }
+        if (IsDraggingMotion())
+        {
+            const int windowX = aznumeric_cast<int>(event->position().x());
+            UpdateMotionDrag(AZ::Vector2(GridCoordinateAt(windowX, aznumeric_cast<int>(event->position().y())), 0.0f));
+            update();
             return;
         }
         const AZ::u32 prevHoverMotionIndex = m_hoverMotionIndex;
@@ -277,10 +336,93 @@ namespace EMStudio
         }
     }
 
-    void BlendSpace1DNodeWidget::PrepareForDrawing(EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
+    void BlendSpace1DNodeWidget::UpdateDisplayRange(const EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
     {
-        const float max = uniqueData->GetRangeMax();
-        const float min = uniqueData->GetRangeMin();
+        // Keep the view still while a motion is dragged, so the grid does not rescale under the cursor.
+        if (IsDraggingMotion())
+        {
+            return;
+        }
+        float minValue = 0.0f;
+        float maxValue = 1.0f;
+        const bool hasMotions = !uniqueData->m_motionCoordinates.empty();
+        m_customRange = m_currentNode->GetAxis().GetCustomRange(minValue, maxValue);
+        const float motionMin = hasMotions ? uniqueData->GetRangeMin() : minValue;
+        const float motionMax = hasMotions ? uniqueData->GetRangeMax() : maxValue;
+        if (m_customRange)
+        {
+            m_gridMin = minValue;
+            m_gridMax = maxValue;
+
+            // Grow past the custom range only as far as needed to show the motions outside it.
+            const float padding = (maxValue - minValue) * 0.05f;
+            if (motionMin < minValue)
+            {
+                minValue = motionMin - padding;
+            }
+            if (motionMax > maxValue)
+            {
+                maxValue = motionMax + padding;
+            }
+        }
+        else
+        {
+            if (hasMotions)
+            {
+                // Fit the motions, with room around them to place or drag motions further out.
+                const float padding = motionMax > motionMin ? (motionMax - motionMin) * 0.1f : 0.5f;
+                minValue = motionMin - padding;
+                maxValue = motionMax + padding;
+            }
+            m_gridMin = minValue;
+            m_gridMax = maxValue;
+        }
+        m_displayMin = minValue;
+        m_displayMax = maxValue;
+    }
+
+    AZStd::vector<float> BlendSpace1DNodeWidget::GetGridLines(int& outLabelStride) const
+    {
+        AZStd::vector<float> lines;
+        outLabelStride = 1;
+        const AZ::u32 divisions = AZStd::max<AZ::u32>(m_currentNode->GetAxis().m_gridDivisions, 1);
+        const float step = (m_gridMax - m_gridMin) / divisions;
+        const float displaySpan = m_displayMax - m_displayMin;
+        if (step <= 0.0f || displaySpan <= 0.0f)
+        {
+            return lines;
+        }
+
+        // Keep the grid spacing past a custom range, thinning the lines if motions lie far outside it.
+        const int first = aznumeric_cast<int>(AZStd::ceil((m_displayMin - m_gridMin) / step - 0.001f));
+        const int last = aznumeric_cast<int>(AZStd::floor((m_displayMax - m_gridMin) / step + 0.001f));
+        const int lineStride = AZStd::max(1, (last - first) / 200 + 1);
+        // Start on a multiple of the stride so the custom range edges keep their lines.
+        const int start = first + ((-first % lineStride) + lineStride) % lineStride;
+        for (int i = start; i <= last; i += lineStride)
+        {
+            lines.push_back(m_gridMin + i * step);
+        }
+
+        const float pixelsPerLine = m_drawRect.width() * step * lineStride / displaySpan;
+        outLabelStride = pixelsPerLine >= 40.0f ? 1 : aznumeric_cast<int>(AZStd::ceil(40.0f / AZStd::max(pixelsPerLine, 0.001f)));
+        return lines;
+    }
+
+    bool BlendSpace1DNodeWidget::HasMotionsOutsideCustomRange(const EMotionFX::BlendSpace1DNode::UniqueData* uniqueData) const
+    {
+        if (!m_customRange || uniqueData->m_motionCoordinates.empty())
+        {
+            return false;
+        }
+        const float tolerance = (m_gridMax - m_gridMin) * 0.0001f;
+        return uniqueData->GetRangeMin() < m_gridMin - tolerance || uniqueData->GetRangeMax() > m_gridMax + tolerance;
+    }
+
+    void BlendSpace1DNodeWidget::PrepareForDrawing([[maybe_unused]] EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
+    {
+        const float max = m_displayMax;
+        const float min = m_displayMin;
 
         const float rangeX = std::max(1e-8f, max - min);
         const float rangeY = 2; // always from -1 to +1
@@ -302,6 +444,59 @@ namespace EMStudio
         const float centerX = (min + max) / 2;
         m_scale.Set(scaleX, scaleY);
         m_shift.Set(m_drawCenterX - centerX * scaleX, aznumeric_cast<float>(m_drawCenterY));
+    }
+
+    void BlendSpace1DNodeWidget::DrawAxisGrid(QPainter& painter)
+    {
+        painter.setPen(m_divisionPen);
+        painter.setBrush(Qt::NoBrush);
+        int labelStride = 1;
+        for (const float value : GetGridLines(labelStride))
+        {
+            const float screenX = TransformToScreenCoords(value).GetX();
+            painter.drawLine(QPointF(screenX, m_drawRect.top()), QPointF(screenX, m_drawRect.bottom()));
+        }
+    }
+
+    void BlendSpace1DNodeWidget::DrawSelectedMotion(QPainter& painter)
+    {
+        if (m_selectedPointIndex >= m_renderPoints.size())
+        {
+            return;
+        }
+        painter.setPen(m_highlightedEdgePen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(m_renderPoints[m_selectedPointIndex], s_motionPointCircleWidth + 4, s_motionPointCircleWidth + 4);
+    }
+
+    AZ::u32 BlendSpace1DNodeWidget::FindPointAt(int windowX, int windowY) const
+    {
+        float minDistSqr = 36.0f;
+        AZ::u32 closestMotionIdx = MCORE_INVALIDINDEX32;
+        for (AZ::u32 i = 0; i < m_renderPoints.size(); ++i)
+        {
+            const float diffX = aznumeric_cast<float>(windowX - m_renderPoints[i].x());
+            const float diffY = aznumeric_cast<float>(windowY - m_renderPoints[i].y());
+            const float distSqr = diffX * diffX + diffY * diffY;
+            if (distSqr < minDistSqr)
+            {
+                minDistSqr = distSqr;
+                closestMotionIdx = i;
+            }
+        }
+        return closestMotionIdx;
+    }
+
+    float BlendSpace1DNodeWidget::GridCoordinateAt(int windowX, int windowY)
+    {
+        float value = TransformFromScreenCoords(AZ::Vector2(aznumeric_cast<float>(windowX), aznumeric_cast<float>(windowY)));
+        value = AZ::GetClamp(value, m_gridMin, m_gridMax);
+        const EMotionFX::BlendSpaceNode::BlendSpaceAxis& axisSettings = m_currentNode->GetAxis();
+        if (axisSettings.m_snapToGrid)
+        {
+            value = axisSettings.SnapToGrid(value, m_gridMin, m_gridMax);
+        }
+        return value;
     }
 
     void BlendSpace1DNodeWidget::DrawGrid(QPainter& painter)
@@ -357,13 +552,12 @@ namespace EMStudio
         painter.setTransform(QTransform()); // set the transform back to identity
     }
 
-    void BlendSpace1DNodeWidget::DrawAxisLabels(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
+    void BlendSpace1DNodeWidget::DrawAxisLabels(QPainter& painter, [[maybe_unused]] EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
     {
         painter.setPen(m_axisLabelPen);
 
-        const int rectLeft = m_drawRect.left();
-        const int rectRight = m_drawRect.right();
-        const int xAxisLabelTop = m_drawCenterY + 15;
+        const int valueTop = m_drawRect.bottom() + 4;
+        const int xAxisLabelTop = m_drawRect.bottom() + 18;
         const char numFormat = 'g';
         const int  numPrecision = 4;
 
@@ -371,24 +565,32 @@ namespace EMStudio
         const char* axislabel = m_currentNode->GetAxisLabel();
         painter.drawText(QRect(m_drawCenterX - s_maxTextDim / 2, xAxisLabelTop, s_maxTextDim, s_maxTextDim), axislabel, Qt::AlignHCenter | Qt::AlignTop);
 
-        // if we are in a situation without points, we want to draw reference axis from 0 to 1
-        const bool referenceAxis = uniqueData->m_motionCoordinates.empty();
-
-        // x axis values
-        const AZ::Vector2 axisLimits = referenceAxis ? AZ::Vector2(0.0f, 1.0f) : AZ::Vector2(uniqueData->GetRangeMin(), uniqueData->GetRangeMax());
-
+        // x axis values, skipping grid lines that are too close together to label
+        int labelStride = 1;
+        const AZStd::vector<float> lines = GetGridLines(labelStride);
         QString tempStr;
-        tempStr.setNum(axisLimits(0), numFormat, numPrecision);
-        painter.drawText(QRect(rectLeft - s_maxTextDim / 2, xAxisLabelTop, s_maxTextDim, s_maxTextDim), tempStr, Qt::AlignHCenter | Qt::AlignTop);
-        tempStr.setNum(axisLimits(1), numFormat, numPrecision);
-        painter.drawText(QRect(rectRight - s_maxTextDim / 2, xAxisLabelTop, s_maxTextDim, s_maxTextDim), tempStr, Qt::AlignHCenter | Qt::AlignTop);
+        for (size_t i = 0; i < lines.size(); i += labelStride)
+        {
+            const float value = lines[i];
+            const int screenX = aznumeric_cast<int>(TransformToScreenCoords(value).GetX());
+            tempStr.setNum(value, numFormat, numPrecision);
+            painter.drawText(QRect(screenX - s_maxTextDim / 2, valueTop, s_maxTextDim, s_maxTextDim), tempStr, Qt::AlignHCenter | Qt::AlignTop);
+        }
     }
 
     void BlendSpace1DNodeWidget::DrawBoundRect(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* /* uniqueData */)
     {
         painter.setPen(Qt::NoPen);
         painter.setBrush(m_backgroundRectBrush);
-        painter.drawRect(m_drawRect);
+        if (!m_customRange)
+        {
+            painter.drawRect(m_drawRect);
+            return;
+        }
+        // Highlight the custom range, so motions outside it stand out.
+        const float left = TransformToScreenCoords(m_gridMin).GetX();
+        const float right = TransformToScreenCoords(m_gridMax).GetX();
+        painter.drawRect(QRectF(QPointF(left, m_drawRect.top()), QPointF(right, m_drawRect.bottom())));
     }
 
     void BlendSpace1DNodeWidget::DrawMotionsLine(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
@@ -470,7 +672,7 @@ namespace EMStudio
 
     void BlendSpace1DNodeWidget::DrawHoverMotionInfo(QPainter& painter, EMotionFX::BlendSpace1DNode::UniqueData* uniqueData)
     {
-        if (m_hoverMotionIndex != MCORE_INVALIDINDEX32)
+        if (m_hoverMotionIndex < m_renderPoints.size() && m_hoverMotionIndex < uniqueData->m_motionInfos.size())
         {
             m_tempStrArray.clear();
             EMotionFX::MotionInstance* motionInstance = uniqueData->m_motionInfos[m_hoverMotionIndex].m_motionInstance;
@@ -527,7 +729,7 @@ namespace EMStudio
 
     void BlendSpace1DNodeWidget::DrawBlendSpaceWarningText(QPainter& painter, const char* warningText)
     {
-        const QRect warningRect(10, 10, width() - 20, height() - 20);
+        const QRect warningRect(10, 45, width() - 20, height() - 55);
         QString offsetWarningText(s_warningOffsetForIcon); // some space for the warning icon
         offsetWarningText.append(warningText);
 
@@ -558,9 +760,8 @@ namespace EMStudio
 
     void BlendSpace1DNodeWidget::SetCurrentSamplePosition(int windowX, int windowY)
     {
-        EMotionFX::AnimGraphInstance* animGraphInstance = m_modelIndex.data(AnimGraphModel::ROLE_ANIM_GRAPH_INSTANCE).value<EMotionFX::AnimGraphInstance*>();
         EMotionFX::BlendSpace1DNode::UniqueData* uniqueData = GetUniqueData();
-        if (!uniqueData || !animGraphInstance)
+        if (!uniqueData || m_renderPoints.empty() || !m_drawRect.contains(windowX, windowY))
         {
             return;
         }
@@ -570,39 +771,21 @@ namespace EMStudio
         if (currentPosition != uniqueData->m_currentPosition)
         {
             m_currentNode->SetCurrentPosition(currentPosition);
+            SetPreviewPosition(AZ::Vector2(currentPosition, 0.0f));
             update();
         }
     }
 
     void BlendSpace1DNodeWidget::OnMouseMove(int windowX, int windowY)
     {
-        float minDistSqr = FLT_MAX;
-        AZ::u32 closestMotionIdx = MCORE_INVALIDINDEX32;
-
-        const AZ::u32 numMotions = (AZ::u32)m_renderPoints.size();
-        for (AZ::u32 i = 0; i < numMotions; ++i)
-        {
-            const float diffX = aznumeric_cast<float>(windowX - m_renderPoints[i].x());
-            const float diffY = aznumeric_cast<float>(windowY - m_renderPoints[i].y());
-            const float distSqr = diffX * diffX + diffY * diffY;
-            if (distSqr < minDistSqr)
-            {
-                minDistSqr = distSqr;
-                closestMotionIdx = i;
-            }
-        }
-
-        if ((closestMotionIdx != MCORE_INVALIDINDEX32) && (minDistSqr < 36.0f))
-        {
-            m_hoverMotionIndex = closestMotionIdx;
-        }
-        else
-        {
-            m_hoverMotionIndex = MCORE_INVALIDINDEX32;
-        }
+        m_hoverMotionIndex = FindPointAt(windowX, windowY);
 
         EMotionFX::BlendSpace1DNode::UniqueData* uniqueData = GetUniqueData();
-        if (uniqueData && m_drawRect.contains(windowX, windowY))    // Otherwise we cannot change the hotspot therefore keep the cursor as arrow
+        if (m_hoverMotionIndex != MCORE_INVALIDINDEX32)
+        {
+            setCursor(Qt::SizeHorCursor); // indicates that the motion can be dragged
+        }
+        else if (uniqueData && m_drawRect.contains(windowX, windowY))    // Otherwise we cannot change the hotspot therefore keep the cursor as arrow
         {
             AZ::Vector2 transformedPt = TransformToScreenCoords(uniqueData->m_currentPosition);
             const QRectF regionForHotspotCursor(
@@ -649,27 +832,15 @@ namespace EMStudio
         return m_currentNode;
     }
 
-    EMotionFX::BlendSpace1DNode::UniqueData* BlendSpace1DNodeWidget::GetUniqueData() const
+    void BlendSpace1DNodeWidget::hideEvent(QHideEvent* event)
     {
-        EMotionFX::BlendSpace1DNode* blendSpaceNode = GetCurrentNode();
-        if (!blendSpaceNode)
-        {
-            return nullptr;
-        }
+        EndMotionDrag();
+        StopPreviewPlayback();
+        AnimGraphNodeWidget::hideEvent(event);
+    }
 
-        EMotionFX::AnimGraphInstance* animGraphInstance = m_modelIndex.data(AnimGraphModel::ROLE_ANIM_GRAPH_INSTANCE).value<EMotionFX::AnimGraphInstance*>();
-        if (!animGraphInstance)
-        {
-            return nullptr;
-        }
-        
-        // Check that we are looking at the correct animgrah instance
-        const EMotionFX::AnimGraphNode* thisNode = animGraphInstance->GetAnimGraph()->RecursiveFindNodeById(blendSpaceNode->GetId());
-        if (thisNode != blendSpaceNode)
-        {
-            return nullptr;
-        }
-
-        return static_cast<EMotionFX::BlendSpace1DNode::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(blendSpaceNode));
+    EMotionFX::BlendSpace1DNode::UniqueData* BlendSpace1DNodeWidget::GetUniqueData()
+    {
+        return static_cast<EMotionFX::BlendSpace1DNode::UniqueData*>(GetBlendSpaceData(m_currentNode, m_modelIndex));
     }
 } // namespace EMStudio

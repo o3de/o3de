@@ -128,6 +128,7 @@ namespace EMotionFX
 
         bool GetValidCalculationMethodsAndEvaluators() const;
         const char* GetAxisLabel(int axisIndex) const;
+        const BlendSpaceAxis& GetAxis(int axisIndex) const { return axisIndex == 0 ? m_axisX : m_axisY; }
 
         // AnimGraphNode overrides
         bool    GetSupportsVisualization() const override { return true; }
@@ -149,6 +150,9 @@ namespace EMotionFX
 
         //! Called to set the current position from GUI.
         void SetCurrentPosition(const AZ::Vector2& point);
+
+        //! Calculate editor preview weights without evaluating graph inputs or advancing motion playback.
+        void UpdatePreviewPosition(UniqueData& uniqueData, const AZ::Vector2& position);
 
         void SetSyncLeaderMotionId(const AZStd::string& syncLeaderMotionId);
         const AZStd::string& GetSyncLeaderMotionId() const;
@@ -215,6 +219,7 @@ namespace EMotionFX
         AZ::Crc32 GetEvaluatorXVisibility() const;
         AZ::Crc32 GetEvaluatorYVisibility() const;
         AZ::Crc32 GetSyncOptionsVisibility() const;
+        void OnAxisChanged();
 
         AZStd::vector<BlendSpaceMotion> m_motions;
         AZStd::string                   m_syncLeaderMotionId;
@@ -226,6 +231,8 @@ namespace EMotionFX
         ECalculationMethod              m_calculationMethodY = ECalculationMethod::AUTO;
         ESyncMode                       m_syncMode = ESyncMode::SYNCMODE_DISABLED;
         EBlendSpaceEventMode            m_eventFilterMode = EBlendSpaceEventMode::BSEVENTMODE_MOST_ACTIVE_MOTION;
+        BlendSpaceAxis                  m_axisX;
+        BlendSpaceAxis                  m_axisY;
         AZ::Vector2                     m_currentPositionSetInteractively = AZ::Vector2::CreateZero();
 
         static const float s_epsilonForBarycentricCoords;

@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/math.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/BlendSpaceNode.h>
@@ -21,6 +22,7 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode, AnimGraphAllocator)
     AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode::BlendSpaceMotion, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode::BlendSpaceAxis, AnimGraphAllocator)
 
     BlendSpaceNode::BlendSpaceMotion::BlendSpaceMotion()
         : m_coordinates(0.0f, 0.0f)
@@ -618,9 +620,91 @@ namespace EMotionFX
     }
 
 
+    void BlendSpaceNode::UpdateAxisPortName(size_t portIndex, const BlendSpaceAxis& axis, const char* defaultName)
+    {
+        const char* name = axis.m_name.empty() ? defaultName : axis.m_name.c_str();
+        if (GetInputPort(portIndex).GetNameString() != name)
+        {
+            SetInputPortName(portIndex, name);
+        }
+    }
+
+
+    bool BlendSpaceNode::BlendSpaceAxis::GetCustomRange(float& outMin, float& outMax) const
+    {
+        if (!m_useCustomRange || m_maximum <= m_minimum)
+        {
+            return false;
+        }
+        outMin = m_minimum;
+        outMax = m_maximum;
+        return true;
+    }
+
+
+    float BlendSpaceNode::BlendSpaceAxis::SnapToGrid(float value, float rangeMin, float rangeMax) const
+    {
+        const float cellSize = (rangeMax - rangeMin) / static_cast<float>(AZStd::max<AZ::u32>(m_gridDivisions, 1));
+        if (cellSize <= 0.0f)
+        {
+            return value;
+        }
+        return rangeMin + AZStd::round((value - rangeMin) / cellSize) * cellSize;
+    }
+
+
+    AZ::Crc32 BlendSpaceNode::BlendSpaceAxis::GetRangeVisibility() const
+    {
+        return m_useCustomRange ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+
+    void BlendSpaceNode::BlendSpaceAxis::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<BlendSpaceAxis>()
+            ->Version(1)
+            ->Field("name", &BlendSpaceAxis::m_name)
+            ->Field("useCustomRange", &BlendSpaceAxis::m_useCustomRange)
+            ->Field("minimum", &BlendSpaceAxis::m_minimum)
+            ->Field("maximum", &BlendSpaceAxis::m_maximum)
+            ->Field("gridDivisions", &BlendSpaceAxis::m_gridDivisions)
+            ->Field("snapToGrid", &BlendSpaceAxis::m_snapToGrid)
+        ;
+
+        AZ::EditContext* editContext = serializeContext->GetEditContext();
+        if (!editContext)
+        {
+            return;
+        }
+
+        editContext->Class<BlendSpaceAxis>("Axis", "Blend space axis settings")
+            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_name, "Name", "Label shown on the blend space grid. Empty uses the evaluator name.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_useCustomRange, "Custom range", "Use a fixed grid range instead of fitting the grid to the motion coordinates.")
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_minimum, "Minimum", "Lowest value shown on the grid.")
+            ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpaceAxis::GetRangeVisibility)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_maximum, "Maximum", "Highest value shown on the grid.")
+            ->Attribute(AZ::Edit::Attributes::Visibility, &BlendSpaceAxis::GetRangeVisibility)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_gridDivisions, "Grid divisions", "Number of grid cells along this axis.")
+            ->Attribute(AZ::Edit::Attributes::Min, 1)
+            ->Attribute(AZ::Edit::Attributes::Max, 100)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendSpaceAxis::m_snapToGrid, "Snap to grid", "Snap motions to the grid lines when adding or dragging them on the grid.")
+        ;
+    }
+
+
     void BlendSpaceNode::Reflect(AZ::ReflectContext* context)
     {
         BlendSpaceMotion::Reflect(context);
+        BlendSpaceAxis::Reflect(context);
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
