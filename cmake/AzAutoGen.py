@@ -162,7 +162,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                     dataInputSet[dataInputFile] = xml.getroot()
                     treeRoots.append(xml.getroot())
                 else:
-                    with open(dataInputFile) as jsonFile:
+                    with open(dataInputFile, encoding='utf-8') as jsonFile:
                         jsonData = json.load(jsonFile)
                         dataInputSet[dataInputFile] = jsonData
                         treeRoots.append(jsonData)
@@ -256,21 +256,21 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
             raise
     try:
         if os.path.isfile(outputFile):
-            with open(outputFile, 'r+') as currentFile:
+            with open(outputFile, 'r+', encoding='utf-8') as currentFile:
                 currentFileStringData = currentFile.read()
                 if currentFileStringData == compareFD.getvalue():
                     if autogenConfig.verbose == True:
                         print('Generated file %s is unchanged, skipping' % (outputFile))
                 else:
                     currentFile.truncate()
-                    with open(outputFile, 'w+') as currentFile:
+                    with open(outputFile, 'w+', encoding='utf-8') as currentFile:
                         currentFile.write(compareFD.getvalue())
                         if autogenConfig.verbose == True:
                             print(f'Generated {outputFile} with template {templateFile} and inputs, '.join(dataInputFiles))
                         else:
                             print('Generated %s' % (os.path.basename(outputFile)))
         else:
-            with open(outputFile, 'w+') as outputFD:
+            with open(outputFile, 'w+', encoding='utf-8') as outputFD:
                 outputFD.write(compareFD.getvalue())
                 if autogenConfig.verbose == True:
                     print(f'Generated {outputFile} using template {templateFile} and inputs, '.join(dataInputFiles))
