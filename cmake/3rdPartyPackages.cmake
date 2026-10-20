@@ -746,23 +746,6 @@ function(ly_package_is_newer_than package_name reference_file output_variable)
     endif()
 endfunction()
 
-# if we're in script mode, we dont want to declare package associations
-if (NOT CMAKE_SCRIPT_MODE_FILE)
-    # include the built in 3rd party packages that are for every platform.
-    # you can put your package associations anywhere, but this provides
-    # a good starting point.
-    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
-endif()
-
-get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
-    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
-    # Load the pinned FreeType target first so Qt and later targets share it.
-    ly_parse_third_party_dependencies(3rdParty::Freetype)
-    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
-    ly_parse_third_party_dependencies(3rdParty::Qt)
-endif()
-
 # Wrapper around FetchContent_Declare that tries url-based download first, and falls back to git clone if all urls fail.
 #
 # At least one of URL or GIT must be provided.
@@ -925,3 +908,16 @@ function(o3de_fetch_content arg_NAME)
 
     message(STATUS "${status_msg}")
 endfunction()
+
+if(NOT CMAKE_SCRIPT_MODE_FILE)
+    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
+endif()
+
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
+    # Load the pinned FreeType target first so Qt and later targets share it.
+    ly_parse_third_party_dependencies(3rdParty::Freetype)
+    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
+    ly_parse_third_party_dependencies(3rdParty::Qt)
+endif()
