@@ -11,6 +11,7 @@
 #include <OpenParticleSystem/ParticleEditorRequestBus.h>
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
@@ -20,6 +21,7 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Instance/InstanceDatabase.h>
@@ -119,6 +121,10 @@ namespace OpenParticle
     void ParticleSystem::SetObjectId(const AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId& id)
     {
         m_objectId = id;
+        for (auto& [emitter, instance] : m_emitterInstances)
+        {
+            instance.ConfigureObjectSrg(m_objectId.GetIndex());
+        }
     }
 
     void ParticleSystem::SetTransform(AZ::Transform transform)
@@ -300,6 +306,25 @@ namespace OpenParticle
 
         m_drawPacket.clear();
 
+        for (auto emitter : m_particleSystem->GetVisibleEmitters())
+        {
+            if (emitter == nullptr)
+            {
+                continue;
+            }
+            auto& instance = m_emitterInstances[emitter];
+            if (instance.m_needsPipelineRebuild)
+            {
+                instance.TryRebuildPipeline();
+            }
+            if (instance.m_objSrg && instance.m_objSrgDirty)
+            {
+                instance.ReconfigureObjectSrg();
+                instance.m_objSrg->Compile();
+                instance.m_objSrgDirty = false;
+            }
+        }
+
         for (auto& view : packet.m_views)
         {
             auto transform = view->GetCameraTransform();
@@ -320,10 +345,6 @@ namespace OpenParticle
                 const AZ::u32 emitterId = emitter->GetEmitterId();
                 auto& instance = m_emitterInstances[emitter];
 
-                if (instance.m_needsPipelineRebuild)
-                {
-                    instance.TryRebuildPipeline();
-                }
                 if (instance.m_shaders.empty())
                 {
                     continue;
@@ -365,6 +386,11 @@ namespace OpenParticle
 
                     {
                         AZ_PROFILE_SCOPE(AzCore, "ParticleSystem::shader compile");
+                        auto* currentLayout = shader.m_shader->GetAsset()->GetShaderOptionGroupLayout();
+                        if (efd.optionGroup.GetShaderOptionLayout() != currentLayout)
+                        {
+                            efd.optionGroup = AZ::RPI::ShaderOptionGroup{ currentLayout, efd.optionGroup.GetShaderVariantId() };
+                        }
                         AZ::RPI::ShaderOptionGroup& shaderOptions = efd.optionGroup;
                         SetOption(shaderOptions, item);
                         auto variant = shader.m_shader->GetVariant(shaderOptions.GetShaderVariantId());
@@ -494,14 +520,8 @@ namespace OpenParticle
                 if (it != m_emitterInstances.end())
                 {
                     AZ::Data::Asset<AZ::RPI::MaterialAsset> typedAsset(asset);
+                    it->second.ConfigureObjectSrg(m_objectId.GetIndex());
                     it->second.Setup(typedAsset, archive.m_emitterInfos[emitter.first].m_materialOverrides);
-
-                    AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
-                    if (it->second.m_objSrg != nullptr)
-                    {
-                        it->second.m_objSrg->SetConstant(objectIdIndex, m_objectId.GetIndex());
-                        it->second.m_objSrg->Compile();
-                    }
                 }
             }
         }
@@ -937,8 +957,9 @@ namespace OpenParticle
             }
         }
         drawPacketBuilder.SetGeometryView(&geometryView);
-        drawPacketBuilder.AddShaderResourceGroup(instance.m_material->GetRHIShaderResourceGroup());
-        AZ_Assert(instance.m_material->GetRHIShaderResourceGroup(), "Emitter %u: material SRG nullptr", emitterId);
+        auto* matSrg = instance.m_material->GetRHIShaderResourceGroup();
+        drawPacketBuilder.AddShaderResourceGroup(matSrg);
+        AZ_Assert(matSrg, "Emitter %u: material SRG nullptr", emitterId);
 
         m_scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
@@ -966,6 +987,14 @@ namespace OpenParticle
         }
 
         drawRequest.m_streamIndices = geometryView.GetFullStreamBufferIndices();
+
+        if (drawKey.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)
+        {
+            AZ::RHI::DrawFilterTag pipelineTag = m_scene->GetDrawFilterTagRegistry()->AcquireTag(drawKey.m_materialPipelineName);
+            AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", drawKey.m_materialPipelineName.GetCStr());
+            drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
+        }
+
         drawPacketBuilder.AddDrawItem(drawRequest);
 
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> drawPacket = drawPacketBuilder.End();
@@ -1025,6 +1054,7 @@ namespace OpenParticle
             auto it = m_emitterInstances.emplace(emitter.second, EmitterInstance());
             auto& efd = it.first->second;
             efd.m_scene = m_scene;
+            efd.m_lightingChannelMask = AZ::Render::LightingChannelConfiguration{}.GetLightingChannelMask();
             if (archive.m_emitterInfos[emitter.first].m_render.first == azrtti_typeid<SimuCore::ParticleCore::MeshConfig>())
             {
                 auto& modelAsset = archive.m_emitterInfos[emitter.first].m_model;
@@ -1044,6 +1074,8 @@ namespace OpenParticle
             }
 
             HandleSkeletonModel(*emitter.second);
+            efd.ConfigureObjectSrg(m_objectId.GetIndex());
+
             auto& materialAsset = archive.m_emitterInfos[emitter.first].m_material;
             const auto& materialOverrides = archive.m_emitterInfos[emitter.first].m_materialOverrides;
             if (materialAsset && materialAsset->IsReady())
@@ -1055,13 +1087,6 @@ namespace OpenParticle
                 // Remember the overrides now so they are applied as soon as OnAssetReady runs Setup.
                 efd.m_materialOverrides = materialOverrides;
                 AZ::Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
-            }
-
-            AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
-            if (efd.m_objSrg != nullptr)
-            {
-                efd.m_objSrg->SetConstant(objectIdIndex, m_objectId.GetIndex());
-                efd.m_objSrg->Compile();
             }
         }
 
