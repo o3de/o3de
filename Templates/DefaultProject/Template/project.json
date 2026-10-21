@@ -20,6 +20,7 @@
     "restricted": "${Name}",
     "gem_names": [
         "${Name}",
+        "AssImp",
         "Atom",
         "AudioSystem",
         "CameraFramework",

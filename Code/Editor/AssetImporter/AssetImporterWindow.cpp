@@ -240,11 +240,17 @@ void AssetImporterWindow::Init()
         // Hide the initial browse container so we can show the error (it will be shown again when the overlay pops)
         ui->m_initialBrowseContainer->hide();
 
-        QMessageBox::critical(this, "No Extensions Detected",
-            "No importable file types were detected. This likely means an internal error has taken place which has broken the "
-            "registration of valid import types (e.g. FBX). This type of issue requires engineering support.");
+        QMessageBox::critical(this, "No Importable File Types Detected",
+            "No importable file types were detected for this project.\n\n"
+            "This can happen when no scene importer gems are enabled, or when "
+            "an importer failed to register its supported file types. If you intend "
+            "to import scene files (such as FBX or glTF), enable a compatible scene "
+            "importer gem in Project Manager or run:\n\n"
+            "o3de enable-gem -gn AssImp -pp <project-path>\n\n"
+            "If an importer gem is already enabled, check the Editor and Asset "
+            "Processor logs for registration errors.");
     }
-    
+
     QObject::connect(&m_qtFileWatcher, &QFileSystemWatcher::fileChanged, this, &AssetImporterWindow::FileChanged);
 }
 

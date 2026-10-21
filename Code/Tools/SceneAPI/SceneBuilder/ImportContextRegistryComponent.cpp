@@ -7,7 +7,6 @@
  */
 
 #include "ImportContextRegistryComponent.h"
-#include "ImportContexts/AssImpImportContextProvider.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -21,19 +20,6 @@ namespace AZ
         {
             void ImportContextRegistryComponent::Activate()
             {
-                // Get the import context registy
-                if (auto* registry = ImportContextRegistryInterface::Get())
-                {
-                    // Create and register the ImportContextProvider for AssImp
-                    // It should be always present and be used as a fallback if no specialized provider is available
-                    auto assImpContextProvider = aznew AssImpImportContextProvider();
-                    registry->RegisterContextProvider(assImpContextProvider);
-                    AZ_Info("SceneAPI", "AssImp Import Context was registered.\n");
-                }
-                else
-                {
-                    AZ_Error("SceneAPI", false, "ImportContextRegistryInterface not found. AssImp Import Context was not registered.");
-                }
             }
 
             void ImportContextRegistryComponent::Deactivate()

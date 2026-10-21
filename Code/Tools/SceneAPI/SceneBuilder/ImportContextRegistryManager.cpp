@@ -8,8 +8,6 @@
 
 #include "ImportContextRegistryManager.h"
 
-#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.h>
-
 namespace AZ
 {
     namespace SceneAPI
@@ -30,6 +28,10 @@ namespace AZ
 
             void ImportContextRegistryManager::UnregisterContextProvider(ImportContextProvider* provider)
             {
+                if (!provider)
+                {
+                    return;
+                }
                 AZ_TracePrintf("SceneAPI", "Unregistered ImportContextProvider %s", provider->GetImporterName().data());
                 for (auto it = m_importContextProviders.begin(); it != m_importContextProviders.end(); ++it)
                 {
@@ -64,6 +66,14 @@ namespace AZ
                         fileExtension.data());
                 }
                 return nullptr; // No provider found
+            }
+
+            void ImportContextRegistryManager::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const
+            {
+                for (const auto& provider : m_importContextProviders)
+                {
+                    provider->GetSupportedFileExtensions(extensions);
+                }
             }
         } // namespace SceneBuilder
     } // namespace SceneAPI
