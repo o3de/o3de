@@ -44,50 +44,9 @@
                 {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput"
-                },
-                {
-                    "Name": "SceneColorOutput",
-                    "SlotType": "Output"
-                }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "SceneColorCopy",
-                    "Lifetime": "Transient",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "InputOutput"
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "This",
-                        "Attachment": "InputOutput"
-                    }
                 }
             ],
             "PassRequests": [
-                {
-                    "Name": "SceneColorCopyPass",
-                    "TemplateName": "FullscreenCopyTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "InputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "SceneColorCopy"
-                            }
-                        }
-                    ]
-                },
                 {
                     "Name": "TransparentPass",
                     "TemplateName": "TransparentPassTemplate",
@@ -143,13 +102,6 @@
                                 "Attachment": "InputLinearDepth"
                             }
                         },
-                        {
-                            "LocalSlot": "SceneColorInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "SceneColorCopy"
-                            }
-                        },
                         // Input/Outputs...
                         {
                             "LocalSlot": "DepthStencil",
@@ -174,15 +126,6 @@
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "SceneColorOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "SceneColorCopy"
                     }
                 }
             ]

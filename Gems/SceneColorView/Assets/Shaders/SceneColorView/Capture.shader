@@ -1,9 +1,7 @@
 {
-    "Source": "SceneColorDistortionTest.azsl",
-    "DrawList": "sceneColor",
-    "RasterState": { "CullMode": "None" },
+    "Source": "Capture.azsl",
     "DepthStencilState": {
-        "Depth": { "Enable": true, "WriteMask": "Zero", "CompareFunc": "GreaterEqual" },
+        "Depth": { "Enable": false },
         "Stencil": { "Enable": false }
     },
     "ProgramSettings": {

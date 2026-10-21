@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{26801F61-57B8-4981-B702-FB24C89F39AC}",
+        "category": "View",
+        "title": "Scene Color (View SRG)",
+        "subTitle": "SceneColorView Gem - Transparent Pixels",
+        "titlePaletteName": "SceneNodeTitlePalette",
+        "description": "Samples the optional SceneColorView capture. Automatic screen UV plus UV Offset. Requires project View SRG integration and enabled scene settings. Returns black when unavailable. Distinct from the original Scene Color node.",
+        "settings": {
+            "includePaths": ["SceneColorView/SceneColor.azsli"],
+            "instructions": [
+                "SLOTTYPE(outColor) outColor = SampleSceneColorViewFromWorld(O3DE_MC_POSITION_WS, (float2)inOffset);",
+                "SLOTTYPE(outRGB) outRGB = outColor.rgb;",
+                "SLOTTYPE(outAvailable) outAvailable = HasSceneColorView() ? 1.0 : 0.0;"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inOffset",
+                "displayName": "UV Offset",
+                "description": "Offset in normalized screen coordinates. Zero samples the current screen position.",
+                "supportedDataTypeRegex": "float2",
+                "defaultDataType": "float2",
+                "defaultValue": {"$type": "Vector2", "Value": [0.0, 0.0]},
+                "settings": {"instructions": ["SLOTTYPE SLOTNAME = SLOTVALUE;"]}
+            }
+        ],
+        "outputSlots": [
+            {"name": "outColor", "displayName": "Color", "supportedDataTypeRegex": "float4", "defaultDataType": "float4", "editableOnNode": false},
+            {"name": "outRGB", "displayName": "RGB", "supportedDataTypeRegex": "float3", "defaultDataType": "float3", "editableOnNode": false},
+            {"name": "outAvailable", "displayName": "Available", "supportedDataTypeRegex": "float", "defaultDataType": "float", "editableOnNode": false}
+        ]
+    }
+}
