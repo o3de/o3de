@@ -9,6 +9,7 @@
 
 #include <PxPhysicsAPI.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/PhysXLocks.h>
 #include <Scene/PhysXScene.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXCpuDispatcher.h>
@@ -22,6 +23,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/parallel/thread.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -169,6 +171,11 @@ namespace PhysX
             return;
         }
 
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
+        }
+
         RemoveAllScenes();
 
         m_accumulatedTime = 0.0f;
@@ -183,6 +190,26 @@ namespace PhysX
         {
             AZ_Warning("PhysXSystem", false, "Call Simulate when PhysX system is not initialized");
             return;
+        }
+        const bool freeRunning = ShouldRunFreeThreaded();
+
+        //! Free-running: the simulation thread owns stepping and its own clock, so the main tick
+        //! only publishes whatever it has produced since last frame.
+        if (freeRunning)
+        {
+            if (!m_simulationThread)
+            {
+                StartSimulationThread();
+            }
+
+            PublishSimulationResults();
+            return;
+        }
+
+        //! Leaving game mode, or the config turned off, hands stepping back to the main thread below.
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
         }
 
         auto simulateScenes = [this](float timeStep)
@@ -257,7 +284,155 @@ namespace PhysX
             }
         }
 
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr != nullptr && scenePtr->IsEnabled())
+            {
+                static_cast<PhysXScene*>(scenePtr.get())->SignalSimulationSynchronizedWithTick();
+            }
+        }
+
         m_postSimulateEvent.Signal(tickTime);
+    }
+
+    void PhysXSystem::SimulateScenes(float timeStep, AZ::u32 numSubSteps)
+    {
+        AZ_PROFILE_FUNCTION(Physics);
+
+        for (AZ::u32 subStep = 0; subStep < numSubSteps; subStep++)
+        {
+            for (auto& scenePtr : m_sceneList)
+            {
+                if (scenePtr != nullptr && scenePtr->IsEnabled())
+                {
+                    //! One write lock for the whole step, so the main tick's publication lock waits
+                    //! it out. The locks inside recurse on this thread, which PhysX allows.
+                    PHYSX_SCENE_WRITE_LOCK(static_cast<physx::PxScene*>(scenePtr->GetNativePointer()));
+                    scenePtr->StartSimulation(timeStep);
+                    scenePtr->FinishSimulation();
+                }
+            }
+        }
+    }
+
+    bool PhysXSystem::ShouldRunFreeThreaded() const
+    {
+        if (!m_systemConfig.m_runSimulationInThread)
+        {
+            return false;
+        }
+
+        //! Prevent free-running simulation in Editor
+        for (const auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr != nullptr && scenePtr->IsEnabled() &&
+                scenePtr->GetConfiguration().m_sceneName != AzPhysics::EditorPhysicsSceneName)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void PhysXSystem::StartSimulationThread()
+    {
+        if (m_simulationThread)
+        {
+            return;
+        }
+        //! Constructed in place: the atomic members make SimulationThread non-movable.
+        m_simulationThread.emplace();
+
+        AZStd::thread_desc threadDesc;
+        threadDesc.m_name = "PhysX Simulate"; //!< 16 character limit on Linux.
+        m_simulationThread->m_thread = AZStd::thread(
+            threadDesc,
+            [this]()
+            {
+                FreeRunningSimulationLoop();
+            });
+    }
+
+    void PhysXSystem::StopSimulationThread()
+    {
+        if (!m_simulationThread || !m_simulationThread->m_thread.joinable())
+        {
+            return;
+        }
+
+        //! The loop checks m_exit once per step, so this returns within one step period.
+        m_simulationThread->m_exit = true;
+        m_simulationThread->m_thread.join();
+        m_simulationThread.reset();
+
+        //! Publish what the last steps produced, so nothing is lost handing stepping back. Reset
+        //! first: the scene is no longer threaded, so these take their own locks as usual.
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr != nullptr && scenePtr->IsEnabled())
+            {
+                auto* physxScene = static_cast<PhysXScene*>(scenePtr.get());
+                physxScene->FlushTransformSync();
+                physxScene->SignalSimulationSynchronizedWithTick();
+            }
+        }
+    }
+
+    void PhysXSystem::FreeRunningSimulationLoop()
+    {
+        auto nextStepTime = AZStd::chrono::steady_clock::now();
+
+        while (!m_simulationThread->m_exit)
+        {
+            //! Config changes are rare, and a one-step-stale timestep is harmless.
+            const float fixedTimestep = m_systemConfig.m_fixedTimestep > 0.0f
+                ? m_systemConfig.m_fixedTimestep
+                : AzPhysics::SystemConfiguration::DefaultFixedTimestep;
+
+            SimulateScenes(fixedTimestep, 1);
+
+            constexpr float realTimeFactor = 1.0f;
+
+            const auto stepBudget = AZStd::chrono::duration_cast<AZStd::chrono::steady_clock::duration>(
+                AZStd::chrono::duration<float>(fixedTimestep / realTimeFactor));
+            nextStepTime += stepBudget;
+
+            //! Running late simply skips the sleep, so the loop steps back to back until it catches up.
+            const auto now = AZStd::chrono::steady_clock::now();
+            if (now < nextStepTime)
+            {
+                AZStd::this_thread::sleep_for(
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(nextStepTime - now));
+            }
+        }
+    }
+
+    void PhysXSystem::PublishSimulationResults()
+    {
+        if (!m_simulationThread)
+        {
+            return;
+        }
+        AZ_PROFILE_FUNCTION(Physics);
+
+        //! Publish what the simulation thread produced, on the main thread. The write lock waits
+        //! out an in-flight step and lets the handlers below take scene locks of their own.
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr != nullptr && scenePtr->IsEnabled())
+            {
+                auto* physxScene = static_cast<PhysXScene*>(scenePtr.get());
+                {
+                    PHYSX_SCENE_WRITE_LOCK(static_cast<physx::PxScene*>(physxScene->GetNativePointer()));
+                    physxScene->FlushTransformSync();
+                }
+
+                //! Signaled outside the scene lock: its handlers are main-thread systems whose work
+                //! must not stall the simulation thread.
+                physxScene->SignalSimulationSynchronizedWithTick();
+            }
+        }
     }
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)
@@ -266,6 +441,11 @@ namespace PhysX
         {
             AZ_Error("PhysXSystem", false, "AddScene: Trying to Add a scene without a name. SceneConfiguration::m_sceneName must have a value");
             return AzPhysics::InvalidSceneHandle;
+        }
+
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
         }
 
         if (!m_freeSceneSlots.empty()) //fill any free slots first before increasing the size of the scene list vector.
@@ -365,6 +545,10 @@ namespace PhysX
         {
             return;
         }
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
+        }
 
         AZ::u64 index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(handle);
         if (index < m_sceneList.size() )
@@ -392,6 +576,10 @@ namespace PhysX
 
     void PhysXSystem::RemoveAllScenes()
     {
+        if (IsSimulationThreadRunning())
+        {
+            StopSimulationThread();
+        }
         m_sceneList.clear();
 
         //clear the free slots queue
