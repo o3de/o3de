@@ -31,6 +31,7 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 // Editor
 #include "Settings.h"
@@ -73,6 +74,52 @@ static const char* kBackupOrTempFolders[] =
 
 namespace Internal
 {
+    // Saving the level to a backup or hold path retargets the root prefab template there and clears its dirty flag, so put both back afterwards.
+    class ScopedRootTemplateRestore
+    {
+    public:
+        ScopedRootTemplateRestore(
+            AzToolsFramework::PrefabEditorEntityOwnershipInterface* ownership,
+            AzToolsFramework::Prefab::PrefabSystemComponentInterface* prefabSystem)
+            : m_ownership(ownership)
+            , m_prefabSystem(prefabSystem)
+        {
+            if (m_ownership && m_prefabSystem)
+            {
+                if (auto rootInstance = m_ownership->GetRootPrefabInstance())
+                {
+                    m_templateId = rootInstance->get().GetTemplateId();
+                    m_sourcePath = rootInstance->get().GetTemplateSourcePath();
+                    m_wasDirty = m_prefabSystem->IsTemplateDirty(m_templateId);
+                    m_valid = true;
+                }
+            }
+        }
+
+        ~ScopedRootTemplateRestore()
+        {
+            if (!m_valid)
+            {
+                return;
+            }
+
+            if (auto rootInstance = m_ownership->GetRootPrefabInstance())
+            {
+                rootInstance->get().SetTemplateSourcePath(m_sourcePath);
+            }
+            m_prefabSystem->UpdateTemplateFilePath(m_templateId, m_sourcePath);
+            m_prefabSystem->SetTemplateDirtyFlag(m_templateId, m_wasDirty);
+        }
+
+    private:
+        AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_ownership = nullptr;
+        AzToolsFramework::Prefab::PrefabSystemComponentInterface* m_prefabSystem = nullptr;
+        AzToolsFramework::Prefab::TemplateId m_templateId = AzToolsFramework::Prefab::InvalidTemplateId;
+        AZ::IO::Path m_sourcePath;
+        bool m_wasDirty = false;
+        bool m_valid = false;
+    };
+
     bool SaveLevel()
     {
         if (!GetIEditor()->GetDocument()->DoSave(GetIEditor()->GetDocument()->GetActivePathName(), true))
@@ -1003,7 +1050,10 @@ void CCryEditDoc::Hold(const QString& holdName, const QString& relativeHoldPath)
     // never auto-backup while we're trying to hold.
     bool oldBackup = gSettings.bBackupOnSave;
     gSettings.bBackupOnSave = false;
-    SaveLevel(holdFilename);
+    {
+        Internal::ScopedRootTemplateRestore restoreRootTemplate(m_prefabEditorEntityOwnershipInterface, m_prefabSystemComponentInterface);
+        SaveLevel(holdFilename);
+    }
     gSettings.bBackupOnSave = oldBackup;
 
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
@@ -1228,7 +1278,10 @@ void CCryEditDoc::SaveAutoBackup(bool bForce)
 
     QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
     QString filename = autoBackupPath + "/" + subFolder + "/" + levelName + "/" + levelName + GetIEditor()->GetGameEngine()->GetLevelExtension();
-    SaveLevel(filename);
+    {
+        Internal::ScopedRootTemplateRestore restoreRootTemplate(m_prefabEditorEntityOwnershipInterface, m_prefabSystemComponentInterface);
+        SaveLevel(filename);
+    }
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
     isInProgress = false;
