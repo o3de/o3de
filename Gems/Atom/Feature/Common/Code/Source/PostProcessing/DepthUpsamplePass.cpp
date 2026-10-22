@@ -49,8 +49,8 @@ namespace AZ
 
             AZ_Assert(inputAttachment != nullptr, "DepthUpsamplePass: Input binding has no attachment!");
             AZ_Assert(outputAttachment != nullptr, "DepthUpsamplePass: Output binding has no attachment!");
-            RHI::Size inputSize = inputAttachment->m_descriptor.m_image.m_size;
-            RHI::Size outputSize = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size inputSize = inputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size outputSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             upsampleConstants.m_inputPixelSize[0] = 1.0f / float(inputSize.m_width);
             upsampleConstants.m_inputPixelSize[1] = 1.0f / float(inputSize.m_height);
