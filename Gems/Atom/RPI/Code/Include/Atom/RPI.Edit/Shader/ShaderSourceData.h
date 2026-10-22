@@ -68,6 +68,9 @@ namespace AZ
             // as most of the time this all they customize in terms of shader compilation arguments.
             AZStd::vector<AZStd::string> m_definitions;
 
+            //! When true, #included files aren't registered as source dependencies; whoever sets this must trigger rebuilds itself.
+            bool m_skipIncludeFileDependencies = false;
+
             // This can override the default shader option values specified in the shader code.
             ShaderOptionValuesSourceData m_shaderOptionValues;
 

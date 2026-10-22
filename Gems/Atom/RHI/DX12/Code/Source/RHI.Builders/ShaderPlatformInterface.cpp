@@ -241,18 +241,6 @@ namespace AZ
             // Running DX12 on PC with DXIL shaders requires modern GPUs and at least Windows 10 Build 1803 or later for Shader Model 6.2
             // https://github.com/Microsoft/DirectXShaderCompiler/wiki/Running-Shaders
 
-            // -Fo "Output object file"
-            AZStd::string shaderOutputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputFile.c_str(), shaderOutputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderOutputFile, "dxil.bin");
-
-            // -Fh "Output header file containing object code", used for counting dynamic branches
-            AZStd::string objectCodeOutputFile;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), objectCodeOutputFile);
-            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), objectCodeOutputFile.c_str(), objectCodeOutputFile);
-            AzFramework::StringFunc::Path::ReplaceExtension(objectCodeOutputFile, "dxil.txt");
-
             // Stage profile name parameter
             // Note: RayTracing shaders must be compiled with version 6_3, while the rest of the stages
             // are compiled with version 6_2, so RayTracing cannot share the version constant.
@@ -272,6 +260,27 @@ namespace AZ
                 return false;
             }
 
+            // Intermediates are named per entry point (profile for RayTracing) so parallel stages don't write the same files.
+            AZStd::string sourceFileStem;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), sourceFileStem);
+            const AZStd::string stageTag = entryPoint.empty() ? profileIt->second : entryPoint;
+
+            const auto makeStageTempPath = [&tempFolder, &sourceFileStem, &stageTag](const char* extension)
+            {
+                AZStd::string path;
+                AzFramework::StringFunc::Path::Join(
+                    tempFolder.c_str(),
+                    AZStd::string::format("%s.%s.%s", sourceFileStem.c_str(), stageTag.c_str(), extension).c_str(),
+                    path);
+                return path;
+            };
+
+            // -Fo "Output object file"
+            AZStd::string shaderOutputFile = makeStageTempPath("dxil.bin");
+
+            // -Fh "Output header file containing object code", used for counting dynamic branches
+            AZStd::string objectCodeOutputFile = makeStageTempPath("dxil.txt");
+
             const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
 
             // Compilation parameters
@@ -287,6 +296,8 @@ namespace AZ
             args.m_prependFile = PlatformShaderHeader;
             args.m_destinationFolder = tempFolder.c_str();
             args.m_digest = &sha1;
+            // Suffixed like the outputs: dxc holds this input open, and parallel entry points would otherwise share the path.
+            args.m_addSuffixToFileName = stageTag.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash
             // -Fd "Write debug information to the given file, or automatically named file in directory when ending in '\\'"
@@ -338,14 +349,8 @@ namespace AZ
                 // Need to patch the shader so it can be used with specialization constants.
                 const auto dxscRelativePath = RHI::GetDirectXShaderCompilerPath("Builders/DirectXShaderCompiler/dxsc.exe");
 
-                AZStd::string shaderOutputCommon;
-                AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputCommon);
-                AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputCommon.c_str(), shaderOutputCommon);
-
-                AZStd::string patchedShaderOutput = shaderOutputCommon;
-                AzFramework::StringFunc::Path::ReplaceExtension(patchedShaderOutput, "dxil.patched.bin");
-                AZStd::string offsetsOutput = shaderOutputCommon;
-                AzFramework::StringFunc::Path::ReplaceExtension(offsetsOutput, "offsets.json");
+                AZStd::string patchedShaderOutput = makeStageTempPath("dxil.patched.bin");
+                AZStd::string offsetsOutput = makeStageTempPath("offsets.json");
 
                 const auto dxscCommandOptions = AZStd::string::format(
                     //   1.sentinel    3.offsets_output   

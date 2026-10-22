@@ -35,6 +35,7 @@ namespace AZ
 
                 serializeContext->Class<MaterialPipelineSourceData>()
                     ->Version(5)    // Draw Srg Additions
+                    ->Field("materialPipelineTag", &MaterialPipelineSourceData::m_materialPipelineTag)
                     ->Field("shaderTemplates", &MaterialPipelineSourceData::m_shaderTemplates)
                     ->Field("runtime", &MaterialPipelineSourceData::m_runtimeControls)
                     ->Field("pipelineScript", &MaterialPipelineSourceData::m_pipelineScript)

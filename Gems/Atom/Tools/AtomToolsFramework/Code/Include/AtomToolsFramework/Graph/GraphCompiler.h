@@ -11,6 +11,8 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <GraphModel/Model/Graph.h>
 
 namespace AtomToolsFramework
@@ -45,9 +47,11 @@ namespace AtomToolsFramework
             Failed
         };
 
-        //! Reset attempts to cancel the current compilation by setting the state to cancel. Compilation steps will look for the cancelled
-        //! state so that they can return early. This is necessary if the graph compilation is happening on a separate thread.
+        //! Reserves the compiler if idle; otherwise requests cancellation and returns false, leaving the replacement queued.
         virtual bool Reset();
+
+        //! Requests cooperative cancellation of the active compilation without reserving a new one.
+        virtual void Cancel();
 
         //! Assign the current graph compiler state.
         using StateChangeHandler = AZStd::function<void(const GraphCompiler*)>;
@@ -72,6 +76,24 @@ namespace AtomToolsFramework
         //! Dysfunction initiates and executes the graph compile, changing states accordingly.
         virtual bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath);
 
+        //! Whether the next compile should also produce full production output, not just the preview; set before the job starts.
+        void SetProductionOutputRequested(bool requested)
+        {
+            m_productionOutputRequested = requested;
+        }
+
+        //! See SetProductionOutputRequested. Read from the compile worker thread.
+        bool IsProductionOutputRequested() const
+        {
+            return m_productionOutputRequested;
+        }
+
+        //! True when the separate production output is stale as of the last compile; single-output compilers return false.
+        virtual bool IsProductionOutputStale() const
+        {
+            return false;
+        }
+
     protected:
         // Helper function to log and report status messages.
         void ReportStatus(const AZStd::string& statusMessage);
@@ -79,6 +101,15 @@ namespace AtomToolsFramework
         // Requests and reports job status of generated files from the AP
         // Return true if generation and processing is complete. Otherwise, return falss
         bool ReportGeneratedFileStatus();
+
+        //! Whether a generated file should block completion while its AP jobs settle; derived compilers can exclude async files.
+        virtual bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const;
+
+        //! Returns true after another graph edit has requested that the active compilation stop.
+        bool IsCancelRequested() const;
+
+        //! Publishes one terminal state (cancellation wins) and releases the reservation; the callback runs only on success.
+        bool FinishCompile(State finalState, AZStd::function<void()> completionCallback = {});
 
         const AZ::Crc32 m_toolId = {};
 
@@ -100,6 +131,15 @@ namespace AtomToolsFramework
 
         // Current state of the graph compiler
         AZStd::atomic<State> m_state = State::Idle;
+
+        // Serializes reservation, cancellation, completion and release; workers read the atomics without it.
+        mutable AZStd::mutex m_compileLifecycleMutex;
+        AZStd::atomic_bool m_compileInProgress = false;
+        AZStd::atomic_bool m_cancelRequested = false;
+
+        // True when this compile was asked for the full production output. See SetProductionOutputRequested.
+        AZStd::atomic_bool m_productionOutputRequested = false;
+        bool m_compileReserved = false;
 
         // Optional function for handling state changes
         StateChangeHandler m_stateChangeHandler;

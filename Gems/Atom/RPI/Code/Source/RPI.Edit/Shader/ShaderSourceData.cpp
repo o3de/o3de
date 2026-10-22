@@ -36,6 +36,7 @@ namespace AZ
                     ->Field("Definitions", &ShaderSourceData::m_definitions)
                     ->Field("ShaderOptions", &ShaderSourceData::m_shaderOptionValues)
                     ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
+                    ->Field("SkipIncludeFileDependencies", &ShaderSourceData::m_skipIncludeFileDependencies)
                     ->Field("Supervariants", &ShaderSourceData::m_supervariants)
                     ->Field("KeepTempFolder", &ShaderSourceData::m_keepTempFolder)
                     ;
