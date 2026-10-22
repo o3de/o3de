@@ -21,7 +21,7 @@ namespace SceneColorView
                 ->Version(0)->Field("Configuration", &EditorSceneColorViewComponent::m_configuration);
             if (auto* ec = sc->GetEditContext())
             {
-                ec->Class<EditorSceneColorViewComponent>("Scene Color", "Optional scene-color capture through ViewSrg. Keep one settings entity per scene.")
+                ec->Class<EditorSceneColorViewComponent>("Scene Color View Capture", "Optional scene-color capture through ViewSrg. Keep one settings entity per scene.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Rendering")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
