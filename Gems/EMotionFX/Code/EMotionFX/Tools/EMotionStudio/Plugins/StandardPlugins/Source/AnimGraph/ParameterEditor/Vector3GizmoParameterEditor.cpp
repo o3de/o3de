@@ -10,6 +10,9 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/Parameter/Vector3Parameter.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -83,7 +86,30 @@ namespace EMStudio
             const EMotionFX::Vector3Parameter* parameter = static_cast<const EMotionFX::Vector3Parameter*>(m_valueParameter);
             m_currentValue = parameter->GetDefaultValue();
         }
+        UpdateManipulatorSpace();
         m_translationManipulators.SetLocalPosition(m_currentValue);
+    }
+
+    void Vector3GizmoParameterEditor::UpdateManipulatorSpace()
+    {
+        // A local value is relative to the character, so the gizmo sits on it and its drags come back in the character's space.
+        AZ::Transform space = AZ::Transform::CreateIdentity();
+        const EMotionFX::Vector3Parameter* parameter = static_cast<const EMotionFX::Vector3Parameter*>(m_valueParameter);
+        if (m_animGraph && !m_attributes.empty() && parameter->GetSpace() == EMotionFX::Vector3Parameter::Space::Local)
+        {
+            const AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndex(m_valueParameter);
+            for (size_t i = 0; parameterIndex.IsSuccess() && i < m_animGraph->GetNumAnimGraphInstances(); ++i)
+            {
+                // Use the character whose value this editor shows.
+                const EMotionFX::AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
+                if (animGraphInstance->GetParameterValue(parameterIndex.GetValue()) == m_attributes[0])
+                {
+                    space = animGraphInstance->GetActorInstance()->GetWorldSpaceTransform().ToAZTransform();
+                    break;
+                }
+            }
+        }
+        m_translationManipulators.SetSpace(space);
     }
 
     void Vector3GizmoParameterEditor::setIsReadOnly(bool isReadOnly)
@@ -167,6 +193,7 @@ namespace EMStudio
         }
         else
         {
+            UpdateManipulatorSpace();
             m_translationManipulators.Register(g_animManipulatorManagerId);
         }
 
