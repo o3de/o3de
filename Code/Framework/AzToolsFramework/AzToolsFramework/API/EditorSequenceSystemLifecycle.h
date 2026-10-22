@@ -47,16 +47,16 @@ namespace AzToolsFramework
         virtual void OnBeginGameMode() = 0;
 
         //! Called after the in-game flag is set and before PIE entities start.
-        virtual void OnGameModeStarted() = 0;
+        virtual void OnBeforePlayInEditorStart() = 0;
 
         //! Called after PIE entities stop and before viewport and camera restoration.
-        virtual void OnGameModeStopped() = 0;
+        virtual void OnAfterPlayInEditorStop() = 0;
 
         //! Called before the in-game flag is cleared and before the general end-game-mode notification.
         virtual void OnEndGameMode(bool simulationMode) = 0;
 
         //! Called before the general simulation-mode notification and before the simulation flag changes.
-        virtual void OnSimulationModeChanged(bool enabled) = 0;
+        virtual void OnSimulationModeChanging(bool enabled) = 0;
     };
 
     using EditorSequenceSystemLifecycleInterface = AZ::Interface<IEditorSequenceSystemLifecycle>;

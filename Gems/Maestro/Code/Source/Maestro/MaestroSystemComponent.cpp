@@ -114,7 +114,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void MaestroSystemComponent::OnSystemCVarRegistry()
+    void MaestroSystemComponent::OnRegisterSystemCVars()
     {
         if (m_console || !gEnv || !gEnv->pConsole)
         {

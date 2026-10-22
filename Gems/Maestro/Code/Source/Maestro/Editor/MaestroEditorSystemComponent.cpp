@@ -196,7 +196,7 @@ namespace Maestro
         }
     }
 
-    void MaestroEditorSystemComponent::OnGameModeStarted()
+    void MaestroEditorSystemComponent::OnBeforePlayInEditorStart()
     {
         if (IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get())
         {
@@ -204,7 +204,7 @@ namespace Maestro
         }
     }
 
-    void MaestroEditorSystemComponent::OnGameModeStopped()
+    void MaestroEditorSystemComponent::OnAfterPlayInEditorStop()
     {
         if (IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get())
         {
@@ -224,7 +224,7 @@ namespace Maestro
         }
     }
 
-    void MaestroEditorSystemComponent::OnSimulationModeChanged(bool enabled)
+    void MaestroEditorSystemComponent::OnSimulationModeChanging(bool enabled)
     {
         if (IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get())
         {
