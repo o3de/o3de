@@ -6,7 +6,7 @@ SceneColorView is an optional C++ rendering Gem. It captures HDR scene color imm
 
 1. Enable **Scene Color** in Project Manager and configure/build the project's Editor and launcher. The Gem is available from the engine Gem catalog but is not enabled by default.
 2. Close Editor, Material Canvas and Asset Processor before configuration. CMake installs the shared layout described below. Restart the tools after the build and let affected shaders finish processing.
-3. Add **Rendering > Scene Color** to one entity in the level. Choose full, half or quarter width/height and enable capture. Capture is off by default. Half width/height is 25% of full-resolution pixels; quarter is 6.25%.
+3. Add **Rendering > Scene Color View Capture** to one entity in the level. Choose full, half or quarter width/height and enable capture. Capture is off by default. Half width/height is 25% of full-resolution pixels; quarter is 6.25%.
 4. In Material Canvas, use **Scene Color (View SRG)** under View in a transparent material. Leave UV Offset at zero for normal sampling: the node already computes screen UVs. To reproduce the captured color without lighting it a second time, connect RGB to Emissive, set Base Color black and specular/clear coat to zero.
 
 Custom AZSL shaders can include:
