@@ -60,7 +60,6 @@ namespace Maestro
         void InitializeAnimationContext();
         void DestroyEditorServices();
 
-        IEditor* m_editor = nullptr;
         AZStd::unique_ptr<CTrackViewSequenceManager> m_sequenceManager;
         AZStd::unique_ptr<CAnimationContext> m_animationContext;
         bool m_editorInitialized = false;
