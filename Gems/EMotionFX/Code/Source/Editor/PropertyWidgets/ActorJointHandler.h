@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QLineEdit>
 #include <QWidget>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)

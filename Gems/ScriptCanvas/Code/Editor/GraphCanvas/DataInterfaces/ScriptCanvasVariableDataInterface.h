@@ -167,7 +167,8 @@ namespace ScriptCanvasEditor
 
                 if (sourceModel())
                 {
-                    QSortFilterProxyModel::invalidateFilter();
+                    QSortFilterProxyModel::beginFilterChange();
+                    QSortFilterProxyModel::endFilterChange();
                 }
             }
         }
@@ -176,7 +177,8 @@ namespace ScriptCanvasEditor
         {
             if (sourceModel())
             {
-                QSortFilterProxyModel::invalidateFilter();
+                QSortFilterProxyModel::beginFilterChange();
+                QSortFilterProxyModel::endFilterChange();
             }
         }
 

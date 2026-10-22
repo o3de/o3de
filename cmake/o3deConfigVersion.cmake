@@ -13,7 +13,7 @@
 set(PACKAGE_VERSION_COMPATIBLE FALSE)
 set(PACKAGE_VERSION_EXACT FALSE)
 
-# Store the project.json with any overrides from <project>/user/project.json 
+# Store the project.json with any overrides from <project>/user/project.json
 # in a global property to avoid the performance hit of loading multiple times
 # The project's CMake will likely have already set this for us, but just in case
 get_property(o3de_project_json GLOBAL PROPERTY O3DE_PROJECT_JSON)
@@ -27,11 +27,18 @@ if(NOT o3de_project_json)
         if(EXISTS ${O3DE_USER_PROJECT_JSON_PATH})
             file(READ "${O3DE_USER_PROJECT_JSON_PATH}" o3de_user_project_json)
             string(JSON user_project_engine ERROR_VARIABLE json_error GET ${o3de_user_project_json} engine)
+            if(json_error)
+                string(JSON user_project_engine ERROR_VARIABLE json_error GET ${o3de_user_project_json} engine_path)
+            endif()
             if(user_project_engine AND NOT json_error)
-                string(JSON o3de_project_json SET "${o3de_project_json}" engine "\"${user_project_engine}\"" )
+                # The user has taken some action to set what engine to use.
+                # Trust the user that the engine is compatible.
+                message(VERBOSE "The user has specified an engine to use. Trust the user.")
+                set(PACKAGE_VERSION_COMPATIBLE TRUE)
+                return()
             elseif(json_error AND ${user_project_engine} STREQUAL "NOTFOUND")
                 # When the value is just NOTFOUND that means there is a JSON
-                # parsing error, and not simply a missing key 
+                # parsing error, and not simply a missing key
                 message(WARNING "Unable to read 'engine' from '${O3DE_USER_PROJECT_JSON_PATH}'\nError: ${json-error}")
             endif()
         endif()
@@ -65,7 +72,7 @@ string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} en
 if(json_error OR NOT project_engine)
     if(NOT project_engine)
         # Check if the project folder is a subdirectory of this engine and would
-        # be found using scan up logic 
+        # be found using scan up logic
         cmake_path(IS_PREFIX this_engine_path "${CMAKE_CURRENT_SOURCE_DIR}" NORMALIZE is_in_engine_tree)
         if(is_in_engine_tree)
             message(VERBOSE "The project folder is a subdirectory of this engine.")
@@ -78,7 +85,7 @@ if(json_error OR NOT project_engine)
     return()
 endif()
 
-# Split the engine field into engine name and version specifier 
+# Split the engine field into engine name and version specifier
 unset(project_engine_name)
 unset(project_engine_op)
 unset(project_engine_version)
@@ -125,13 +132,13 @@ if(project_engine_op AND project_engine_version)
     elseif(op STREQUAL "===" AND version STREQUAL specifier_version)
         set(contains_version TRUE)
     elseif(op STREQUAL "~=")
-        # compatible versions have an equivalent combination of >= and == 
+        # compatible versions have an equivalent combination of >= and ==
         # e.g. ~=2.2 is equivalent to >=2.2,==2.*
         if(version VERSION_GREATER_EQUAL specifier_version)
             string(REPLACE "." ";" specifer_version_part_list ${specifier_version})
             list(LENGTH specifer_version_part_list list_length)
             if(list_length LESS 2)
-                # truncating would leave nothing to compare 
+                # truncating would leave nothing to compare
                 set(contains_version TRUE)
             else()
                 # trim the last version part because CMake doesn't support '*'

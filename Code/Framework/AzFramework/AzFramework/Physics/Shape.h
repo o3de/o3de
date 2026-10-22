@@ -36,7 +36,9 @@ namespace Physics
             MaterialSelection = 1 << 1,
             IsTrigger = 1 << 2,
             IsVisible = 1 << 3, ///< @deprecated This property will be removed in a future release.
-            Offset = 1 << 4 ///< Whether the rotation and position offsets should be visible.
+            Offset = 1 << 4, ///< Whether the rotation and position offsets should be visible.
+            Tag = 1 << 5, ///< Whether the collider tag should be visible.
+            ContactOffset = 1 << 6 ///< Whether rest and contact offset values should be visible.
         };
 
         // Delta to ensure that contact offset is slightly larger than rest offset.
@@ -53,6 +55,8 @@ namespace Physics
         AZ::Crc32 GetCollisionLayerVisibility() const;
         AZ::Crc32 GetMaterialSlotsVisibility() const;
         AZ::Crc32 GetOffsetVisibility() const;
+        AZ::Crc32 GetTagVisibility() const;
+        AZ::Crc32 GetContactOffsetVisibility() const;
 
         AzPhysics::CollisionLayer m_collisionLayer; ///< Which collision layer is this collider on.
         AzPhysics::CollisionGroups::Id m_collisionGroupId; ///< Which layers does this collider collide with.
@@ -142,7 +146,7 @@ namespace Physics
         //! If vertices are returned but not indices you may assume the vertices are in triangle list format.
         //! @param vertices A buffer to be filled with vertices
         //! @param indices A buffer to be filled with indices
-        //! @param optionalBounds Optional AABB that, if provided, will limit the mesh returned to that AABB.  
+        //! @param optionalBounds Optional AABB that, if provided, will limit the mesh returned to that AABB.
         //!                       Currently only supported by the heightfield shape.
         virtual void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
             const AZ::Aabb* optionalBounds = nullptr) const = 0;

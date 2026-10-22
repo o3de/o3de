@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# Import the Editor API to test the PySide2 & Qt 5.12.x integration
+# Import the Editor API to test the PySide & Qt integration
 import azlmbr.bus
 import azlmbr.editor as editor
 import azlmbr.legacy.general as general
@@ -23,13 +23,13 @@ def printOrExcept(expression, message):
 
 printOrExcept(azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive'), 'QtForPython Is Ready')
 
-# the PySide2 and shiboken2 libraries should import cleanly
+# the PySide and shiboken libraries should import cleanly
 try:
-    from shiboken2 import wrapInstance, getCppPointer
-    from PySide2 import QtWidgets
-    from PySide2 import QtGui
+    from shiboken6 import wrapInstance, getCppPointer
+    from PySide6 import QtWidgets
+    from PySide6 import QtGui
 except:
-    printOrExcept(False, 'Importing PySide2 and Shiboken2')
+    printOrExcept(False, 'Importing PySide and Shiboken')
 
 allWindows = QtGui.QGuiApplication.allWindows()
 printOrExcept(len(allWindows) > 0, 'Value allWindows greater than zero')

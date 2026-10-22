@@ -12,6 +12,7 @@
 #include <AzCore/base.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
@@ -63,19 +64,19 @@ namespace Vegetation
                     ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugComponent::OnDumpDataToFile)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Dump Performance Log")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("Vegetation", "Dump Performance Log"))
                     ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugComponent::OnClearReport)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Clear Performance Log")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("Vegetation", "Clear Performance Log"))
                     ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugComponent::OnRefreshAllAreas)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Refresh All Areas")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("Vegetation", "Refresh All Areas"))
                     ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugComponent::OnClearAllAreas)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Clear All Areas")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("Vegetation", "Clear All Areas"))
                     ;
             }
         }

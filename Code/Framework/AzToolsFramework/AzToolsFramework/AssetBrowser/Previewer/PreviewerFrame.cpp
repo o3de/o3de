@@ -80,4 +80,3 @@ namespace AzToolsFramework
     } // AssetBrowser
 } // AzToolsFramework
 
-#include <AssetBrowser/Previewer/moc_PreviewerFrame.cpp>

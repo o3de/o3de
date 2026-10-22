@@ -47,8 +47,8 @@ namespace AZ::MeshBuilder
 
         void BuildCube(const bool useSharedNormals)
         {
-            constexpr AZStd::array m_cubeVertexIndices = {
-                size_t(0),1,2,
+            constexpr AZStd::array m_cubeVertexIndices = AZStd::to_array<size_t>({
+                0,1,2,
                 0,2,3,
                 1,5,6,
                 1,6,2,
@@ -59,8 +59,8 @@ namespace AZ::MeshBuilder
                 1,0,4,
                 1,4,5,
                 3,2,6,
-                3,6,7
-            };
+                3,6,7,
+            });
 
             const AZStd::array m_cubeOriginalVertices = {
                 AZ::Vector3(-0.5f, -0.5f, -0.5f),
@@ -217,12 +217,12 @@ namespace AZ::MeshBuilder
         EXPECT_EQ(vertexDupeRatio, expectedRatio) << "Duplicated vertex ratio does not match expected ratio.";
     }
 
-    static constexpr AZStd::array meshVerticesTestData = {
-        size_t(1) /* number of triangles in a triangle fan*/,
+    static constexpr AZStd::array meshVerticesTestData = AZStd::to_array<size_t>({
+        1 /* number of triangles in a triangle fan*/,
         3,
         6,
-        9
-    };
+        9,
+    });
 
     INSTANTIATE_TEST_SUITE_P(TriangleFanZVertexDedupTests,
         TriangleFanMeshVerticesTestsFixture,

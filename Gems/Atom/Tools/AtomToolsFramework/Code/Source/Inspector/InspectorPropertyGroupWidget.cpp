@@ -65,4 +65,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Inspector/moc_InspectorPropertyGroupWidget.cpp>

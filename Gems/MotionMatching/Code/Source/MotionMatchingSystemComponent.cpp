@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -29,7 +30,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CVAR(bool, mm_debugDraw, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(bool, mm_debugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Global flag for motion matching debug drawing. Feature-wise debug drawing can be enabled or disabled in the anim graph itself.");
 
     AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -58,7 +59,9 @@ namespace EMotionFX::MotionMatching
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MotionMatchingSystemComponent>("MotionMatching", "[Description of functionality provided by this System Component]")
+                ec->Class<MotionMatchingSystemComponent>(
+                    QT_TRANSLATE_NOOP("MotionMatching", "MotionMatching"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

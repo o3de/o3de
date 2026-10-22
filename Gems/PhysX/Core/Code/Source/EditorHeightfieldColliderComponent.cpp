@@ -17,6 +17,7 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -52,7 +53,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorHeightfieldColliderComponent>(
-                    "PhysX Heightfield Collider", "Creates geometry in the PhysX simulation based on an attached heightfield component")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Heightfield Collider"), QT_TRANSLATE_NOOP("PhysX", "Creates geometry in the PhysX simulation based on an attached heightfield component"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXHeightfieldCollider.svg")
@@ -62,35 +63,35 @@ namespace PhysX
                             AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/heightfield-collider/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_colliderConfig, "Collider configuration",
-                        "Configuration of the collider")
+                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_colliderConfig, QT_TRANSLATE_NOOP("PhysX", "Collider configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration of the collider"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnConfigurationChanged)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorHeightfieldColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings",
-                        "Debug draw settings")
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw settings"),
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw settings"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, "Use Baked Heightfield",
-                        "Selects between a dynamically generated heightfield or a prebaked one. "
+                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, QT_TRANSLATE_NOOP("PhysX", "Use Baked Heightfield"),
+                        QT_TRANSLATE_NOOP("PhysX", "Selects between a dynamically generated heightfield or a prebaked one. "
                         "A prebaked one will remain unchanged at game time even if the heightfield provider changes its data. "
-                        "A dynamic one will change with heightfield provider changes.")
+                        "A dynamic one will change with heightfield provider changes."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnToggleBakedHeightfield)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorHeightfieldColliderComponent::IsHeightfieldInvalid)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::MultiLineEdit, &EditorHeightfieldColliderComponent::m_bakedHeightfieldRelativePath,
-                        "Baked Heightfield Relative Path", "Path to the baked heightfield asset")
+                        QT_TRANSLATE_NOOP("PhysX", "Baked Heightfield Relative Path"), QT_TRANSLATE_NOOP("PhysX", "Path to the baked heightfield asset"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Heightfield", "Bake Heightfield")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("PhysX", "Bake Heightfield"), QT_TRANSLATE_NOOP("PhysX", "Bake Heightfield"))
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Heightfield")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("PhysX", "Bake Heightfield"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::RequestHeightfieldBaking)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
                     ;

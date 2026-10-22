@@ -41,6 +41,12 @@ namespace AzQtComponents
 
     AZ_QT_COMPONENTS_API void bringWindowToTop(QWidget* widget);
 
+    //! If the widget that currently holds keyboard focus is \p parent or one of its descendants, clear its
+    //! focus. This commits an in-progress field edit (the editor writes its value and undo entry on focus-out)
+    //! before an action such as save runs. It is a no-op when focus is outside \p parent or when \p parent is
+    //! null. Returns true if a focused descendant was found and cleared.
+    AZ_QT_COMPONENTS_API bool ClearFocusWithin(QWidget* parent);
+
     inline bool isWin10()
     {
         return QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10);

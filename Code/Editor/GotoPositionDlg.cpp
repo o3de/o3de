@@ -138,4 +138,3 @@ void GotoPositionDialog::accept()
     QDialog::accept();
 }
 
-#include <moc_GotoPositionDlg.cpp>

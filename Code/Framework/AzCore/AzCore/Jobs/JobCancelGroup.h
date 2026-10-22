@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBCANCELGROUP_H
-#define AZCORE_JOBS_JOBCANCELGROUP_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -133,6 +133,3 @@ namespace AZ
     }
 #endif
 }
-
-#endif
-#pragma once

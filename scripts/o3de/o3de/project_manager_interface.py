@@ -339,7 +339,7 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
         project_gem_paths = [pathlib.PurePath(path) for path in manifest.get_project_gems(project_path, recurse, all_gem_json_data)]
 
     # convert all_gem_json_data to have gem names as keys with values that are gem version lists
-    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_keys=['gem_name', 'gem_alt_name'], replaced_key_name='path', place_values_in_list=True)
 
     # flatten into a single list
     all_gem_json_data_list = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
@@ -472,7 +472,7 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:
         all_gem_json_data[i] = gem_json_data
     
     # convert all_gem_json_data to have gem names as keys with values that are gem version lists
-    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_keys=['gem_name', 'gem_alt_name'], replaced_key_name='path', place_values_in_list=True)
 
     # do general compatibility checks - dependency resolution is too slow for now
     for i, gem_json_data in enumerate(remote_gem_json_data_list):

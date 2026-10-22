@@ -30,7 +30,7 @@ namespace AzQtComponents
 
     int StyledDetailsTableModel::AddColumn(const QString& name, StyledDetailsTableModel::ColumnStyle style)
     {
-        const int pos = m_columns.size();
+        const int pos = static_cast<int>(m_columns.size());
         beginInsertColumns({}, pos, pos);
         m_columns.resize(pos + 1);
         auto& col = m_columns.last();
@@ -96,7 +96,7 @@ namespace AzQtComponents
 
         const auto sortColName = GetColumnName(m_sortColumn);
         int pos;
-        for (pos = m_entries.size() - 1; pos >= 0; --pos)
+        for (pos = static_cast<int>(m_entries.size()) - 1; pos >= 0; --pos)
         {
             if (!AppearsAbove(&internalEntry, m_entries.at(pos), sortColName, m_sortOrder))
             {
@@ -120,7 +120,7 @@ namespace AzQtComponents
 
     void StyledDetailsTableModel::RemovePrioritizedKey(const QString& key)
     {
-        const int index = m_prioritizedKeys.indexOf(key);
+        const int index = static_cast<int>(m_prioritizedKeys.indexOf(key));
         if (index != -1)
         {
             m_prioritizedKeys.removeAt(index);
@@ -139,7 +139,7 @@ namespace AzQtComponents
 
     void StyledDetailsTableModel::RemoveDeprioritizedKey(const QString& key)
     {
-        const int index = m_deprioritizedKeys.indexOf(key);
+        const int index = static_cast<int>(m_deprioritizedKeys.indexOf(key));
         if (index != -1)
         {
             m_deprioritizedKeys.removeAt(index);
@@ -225,8 +225,8 @@ namespace AzQtComponents
 
         std::stable_sort(m_entries.begin(), m_entries.end(), compare);
 
-        const int colCount = m_columns.size();
-        for (int newRow = 0, endPos = m_entries.size(); newRow < endPos; ++newRow)
+        const int colCount = static_cast<int>(m_columns.size());
+        for (int newRow = 0, endPos = static_cast<int>(m_entries.size()); newRow < endPos; ++newRow)
         {
             const auto oldRow = oldEntries.indexOf(m_entries[newRow]);
             if (newRow == oldRow)
@@ -235,7 +235,7 @@ namespace AzQtComponents
             }
             for (int col = 0; col < colCount; ++col)
             {
-                changePersistentIndex(index(oldRow, col), index(newRow, col));
+                changePersistentIndex(index(static_cast<int>(oldRow), col), index(newRow, col));
             }
         }
 
@@ -313,12 +313,12 @@ namespace AzQtComponents
 
     int StyledDetailsTableModel::columnCount(const QModelIndex& index) const
     {
-        return index.isValid() ? 0 : m_columns.size();
+        return index.isValid() ? 0 : static_cast<int>(m_columns.size());
     }
 
     int StyledDetailsTableModel::rowCount(const QModelIndex& index) const
     {
-        return index.isValid() ? 0 : m_entries.size();
+        return index.isValid() ? 0 : static_cast<int>(m_entries.size());
     }
 
     bool StyledDetailsTableModel::removeRows(int row, int count, const QModelIndex& parent)
@@ -345,5 +345,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_StyledDetailsTableModel.cpp"

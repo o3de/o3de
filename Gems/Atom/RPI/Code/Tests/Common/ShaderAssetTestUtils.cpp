@@ -24,9 +24,9 @@ namespace UnitTest
     {
         for (const auto& shaderInput : shaderInputs)
         {
-            bindingInfo.m_resourcesRegisterMap.insert(
-                { shaderInput.m_name.GetStringView(),
-                  AZ::RHI::ResourceBindingInfo{ AZ::RHI::ShaderStageMask::Vertex, shaderInput.m_registerId, shaderInput.m_spaceId } });
+            bindingInfo.m_resourcesRegisterMap.emplace(
+                shaderInput.m_name.GetStringView(),
+                AZ::RHI::ResourceBindingInfo{ AZ::RHI::ShaderStageMask::Vertex, shaderInput.m_registerId, shaderInput.m_spaceId });
         }
     }
 

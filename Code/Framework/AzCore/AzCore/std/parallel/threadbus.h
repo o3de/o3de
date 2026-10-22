@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_THREAD_BUS_H
-#define AZSTD_THREAD_BUS_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -34,6 +34,3 @@ namespace AZStd
 
     typedef AZ::EBus<ThreadEvents> ThreadEventBus;
 }
-
-#endif // AZSTD_THREAD_BUS_H
-#pragma once

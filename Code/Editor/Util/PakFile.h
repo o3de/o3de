@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_PAKFILE_H
-#define CRYINCLUDE_EDITOR_UTIL_PAKFILE_H
 #pragma once
-
 
 #include <AzFramework/Archive/INestedArchive.h>
 
@@ -56,5 +52,3 @@ private:
     AZStd::intrusive_ptr<AZ::IO::INestedArchive> m_pArchive;
     AZ::IO::IArchive* m_pCryPak;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_PAKFILE_H

@@ -1,0 +1,8 @@
+int class InlineClass { int Method(); } :: Method() { return 2; }
+
+// Semantic Error 1: line 1::0 'scope InlineClass for method Method not found'
+// #EC 35
+
+// explanation: because the validation of the whole method definition expression is done
+//              uppon entry of the expression: that's the first token "int" on the left.
+//              at this time, the InlineClass type is not registered yet.

@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
-#include <QSortFilterProxyModel>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
-#endif
 
+#include <QSortFilterProxyModel>
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 

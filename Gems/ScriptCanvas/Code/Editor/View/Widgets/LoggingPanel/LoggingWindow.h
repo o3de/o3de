@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QButtonGroup>
 #include <QScopedPointer>
 
@@ -17,7 +16,6 @@
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
-#endif
 
 namespace Ui
 {

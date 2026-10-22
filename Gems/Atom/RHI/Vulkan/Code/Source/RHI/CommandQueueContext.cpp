@@ -96,8 +96,9 @@ namespace AZ
             auto supportsPresentation = [&swapchain, &device, &vkPhysicalDevice](uint32_t familyIndex)
             {
                 VkBool32 supported = VK_FALSE;
-                AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceSupportKHR(
-                    vkPhysicalDevice, familyIndex, swapchain.GetSurface().GetNativeSurface(), &supported));
+                [[maybe_unused]] VkResult result = device.GetContext().GetPhysicalDeviceSurfaceSupportKHR(
+                    vkPhysicalDevice, familyIndex, swapchain.GetSurface().GetNativeSurface(), &supported);
+                VK_RESULT_ASSERT(result);
                 return supported == VK_TRUE;
             };
 
@@ -114,9 +115,9 @@ namespace AZ
             uint32_t familyIndex = 0;
             uint32_t commandQueueIndex = 0;
             if (SelectQueueFamily(device, familyIndex, RHI::HardwareQueueClassMask::None, supportsPresentation))
-            {                
+            {
                 [[maybe_unused]] RHI::ResultCode result = CreateQueue(device, commandQueueIndex, familyIndex, "Presentation queue");
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to create presentation queue");                
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to create presentation queue");
             }
             else
             {
@@ -214,7 +215,7 @@ namespace AZ
                 // Compute or Graphic queue.
                 { RHI::HardwareQueueClassMask::Copy, RHI::HardwareQueueClassMask::Compute, RHI::HardwareQueueClassMask::Graphics }
             };
-            
+
             RHI::ResultCode result;
             for (uint32_t hardwareQueueIndex = 0; hardwareQueueIndex < RHI::HardwareQueueClassCount; ++hardwareQueueIndex)
             {
@@ -230,7 +231,7 @@ namespace AZ
                         m_queueClassMapping[hardwareQueueIndex] = static_cast<uint32_t>(commandQueueIndex);
                         break;
                     }
-                }                
+                }
             }
 
             return RHI::ResultCode::Success;

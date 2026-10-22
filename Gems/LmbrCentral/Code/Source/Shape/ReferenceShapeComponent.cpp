@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -27,11 +28,13 @@ namespace LmbrCentral
             if (edit)
             {
                 edit->Class<ReferenceShapeConfig>(
-                    "Shape Reference", "")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Shape Reference"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ReferenceShapeConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to reference.")
+                    ->DataElement(0, &ReferenceShapeConfig::m_shapeEntityId,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Shape Entity Id"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Entity with shape component to reference."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
             }

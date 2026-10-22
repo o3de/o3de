@@ -94,10 +94,12 @@ ly_add_source_properties(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::O3DEMiniAudio)
 ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::O3DEMiniAudio)
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::O3DEMiniAudio)
 
 # For the Client and Server variants of MiniAudio Gem, an alias to the MiniAudio.API target will be made
 ly_create_alias(NAME ${gem_name}.Clients.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 ly_create_alias(NAME ${gem_name}.Servers.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 
 # If we are on a host platform, we want to add the host tools targets like the MiniAudio.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

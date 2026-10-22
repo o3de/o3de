@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Script/ScriptProperty.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEventData
 {
@@ -89,7 +90,8 @@ namespace ScriptEventData
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<VersionedProperty>("VersionedProperty", "")
+                editContext->Class<VersionedProperty>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "VersionedProperty"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &VersionedProperty::GetLabel)
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)

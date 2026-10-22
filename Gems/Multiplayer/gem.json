@@ -23,6 +23,7 @@
         "Multiplayer_ScriptCanvas"
     ],
     "dependencies": [
+        "PhysX",
         "CertificateManager",
         "Atom_Feature_Common",
         "ImGui"

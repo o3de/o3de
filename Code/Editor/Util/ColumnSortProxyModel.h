@@ -5,14 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNSORTPROXYMODEL_H
-#define COLUMNSORTPROXYMODEL_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QAbstractProxyModel>
-
 #include <QVector>
-#endif
 
 class ColumnGroupProxyModel;
 
@@ -80,5 +77,3 @@ private:
     QVector<Column> m_columns;
     QVector<int> m_mappingToSource;
 };
-
-#endif //COLUMNSORTPROXYMODEL_H

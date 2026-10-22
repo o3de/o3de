@@ -6,14 +6,9 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEWFBXIMPORTPREVIEWDIALOG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEWFBXIMPORTPREVIEWDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
-#endif
 
 namespace Ui
 {
@@ -48,5 +43,3 @@ private:
     TItemsMap m_fBXItemNames;
     QScopedPointer<Ui::TrackViewFBXImportPreviewDialog> m_ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEWFBXIMPORTPREVIEWDIALOG_H

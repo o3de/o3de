@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -98,9 +99,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DiskShapeConfig>("Configuration", "Disk shape configuration parameters")
+                editContext->Class<DiskShapeConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Disk shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DiskShapeConfig::m_radius, "Radius", "Radius of disk")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DiskShapeConfig::m_radius,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius of disk"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.05f)

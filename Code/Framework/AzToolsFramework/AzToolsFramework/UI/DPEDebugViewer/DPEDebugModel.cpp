@@ -24,12 +24,12 @@ namespace AzToolsFramework
 
     int DPEModelNode::GetRowChildCount() const
     {
-        return m_rowChildren.size();
+        return static_cast<int>(m_rowChildren.size());
     }
 
     int DPEModelNode::GetColumnChildCount() const
     {
-        return m_columnChildren.size();
+        return static_cast<int>(m_columnChildren.size());
     }
 
     DPEModelNode* DPEModelNode::GetParentNode() const
@@ -151,12 +151,12 @@ namespace AzToolsFramework
 
     int DPEModelNode::RowOfChild(DPEModelNode* const childNode) const
     {
-        return m_rowChildren.indexOf(childNode);
+        return static_cast<int>(m_rowChildren.indexOf(childNode));
     }
 
     int DPEModelNode::ColumnOfChild(DPEModelNode* const childNode) const
     {
-        return m_columnChildren.indexOf(childNode);
+        return static_cast<int>(m_columnChildren.indexOf(childNode));
     }
 
     void DPEModelNode::SetValue(const AZ::Dom::Value& domVal, bool notifyView)
@@ -260,7 +260,7 @@ namespace AzToolsFramework
         if (childNode->IsColumn())
         {
             m_columnChildren.push_back(childNode);
-            const int numCols = m_columnChildren.size() + 1;
+            const int numCols = static_cast<int>(m_columnChildren.size()) + 1;
             auto* theModel = GetModel();
             if (theModel->GetMaxColumns() < numCols)
             {

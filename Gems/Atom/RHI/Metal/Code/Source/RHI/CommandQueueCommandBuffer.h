@@ -50,7 +50,7 @@ namespace AZ
             id<MTLCommandQueue> m_hwQueue = nil;
             
             // Used to cache the status of the Command Buffer after execution is finished
-            MTLCommandBufferStatus m_statusAfterExecution;
+            MTLCommandBufferStatus m_statusAfterExecution = MTLCommandBufferStatusNotEnqueued;
         };
     }
 }

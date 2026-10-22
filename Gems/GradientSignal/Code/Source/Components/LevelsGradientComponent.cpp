@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Util.h>
 
 namespace GradientSignal
@@ -35,26 +36,26 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<LevelsGradientConfig>(
-                    "Levels Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Levels Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMid, "Input Mid", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMid, QT_TRANSLATE_NOOP("GradientSignal", "Input Mid"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMin, "Input Min", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMin, QT_TRANSLATE_NOOP("GradientSignal", "Input Min"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMax, "Input Max", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_inputMax, QT_TRANSLATE_NOOP("GradientSignal", "Input Max"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_outputMin, "Output Min", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_outputMin, QT_TRANSLATE_NOOP("GradientSignal", "Output Min"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_outputMax, "Output Max", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_outputMax, QT_TRANSLATE_NOOP("GradientSignal", "Output Max"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &LevelsGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be transformed in relation to threshold.")
+                    ->DataElement(0, &LevelsGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

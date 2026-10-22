@@ -211,7 +211,7 @@ namespace AzQtComponents
 
         void OverlayWidgetLayer::ButtonClicked(size_t index)
         {
-            AZ_Assert(index < m_buttons.size(), "Invalid index for button in overlay layer.");
+            AZ_Assert(index < static_cast<size_t>(m_buttons.size()), "Invalid index for button in overlay layer.");
 
             Button& button = m_buttons[static_cast<int>(index)];
             if (button.m_enabledCheck)
@@ -260,4 +260,3 @@ namespace AzQtComponents
     } // namespace Internal
 } // namespace AzQtComponents
 
-#include "Components/Widgets/Internal/moc_OverlayWidgetLayer.cpp"

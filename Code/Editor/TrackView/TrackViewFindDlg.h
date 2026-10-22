@@ -10,10 +10,8 @@
 
 // TrackViewFindDlg.h : header file
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
-#endif
 
 #include <AzCore/std/containers/vector.h>
 

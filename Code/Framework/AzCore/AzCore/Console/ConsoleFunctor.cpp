@@ -80,7 +80,9 @@ namespace AZ
         : m_name(other.m_name)
         , m_desc(other.m_desc)
         , m_flags(other.m_flags)
+        , m_typeId(other.m_typeId)
         , m_console(other.m_console)
+        , m_argumentAutoCompleteCallback(AZStd::move(other.m_argumentAutoCompleteCallback))
         , m_isDeferred(other.m_isDeferred)
     {
         if (m_console)
@@ -101,7 +103,9 @@ namespace AZ
         m_name = other.m_name;
         m_desc = other.m_desc;
         m_flags = other.m_flags;
+        m_typeId = other.m_typeId;
         m_console = other.m_console;
+        m_argumentAutoCompleteCallback = AZStd::move(other.m_argumentAutoCompleteCallback);
         m_isDeferred = other.m_isDeferred;
 
         if (m_console)
@@ -171,5 +175,23 @@ namespace AZ
     GetValueResult ConsoleFunctorBase::GetValueAsString(CVarFixedString&) const
     {
         return GetValueResult::NotImplemented;
+    }
+
+    void ConsoleFunctorBase::SetArgumentAutoCompleteCallback(ArgumentAutoCompleteCallback callback)
+    {
+        m_argumentAutoCompleteCallback = AZStd::move(callback);
+    }
+
+    bool ConsoleFunctorBase::HasArgumentAutoCompleteCallback() const
+    {
+        return static_cast<bool>(m_argumentAutoCompleteCallback);
+    }
+
+    void ConsoleFunctorBase::AutoCompleteArguments(AZStd::string_view arguments, AZStd::vector<AZStd::string>& matches) const
+    {
+        if (m_argumentAutoCompleteCallback)
+        {
+            m_argumentAutoCompleteCallback(arguments, matches);
+        }
     }
 }

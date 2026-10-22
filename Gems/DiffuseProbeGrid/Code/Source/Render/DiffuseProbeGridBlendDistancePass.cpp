@@ -24,7 +24,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridBlendDistancePass> DiffuseProbeGridBlendDistancePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridBlendDistancePass> pass = aznew DiffuseProbeGridBlendDistancePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridBlendDistancePass::DiffuseProbeGridBlendDistancePass(const RPI::PassDescriptor& descriptor)

@@ -63,8 +63,9 @@ namespace AZ
                 serializeContext->RegisterGenericType<DeprecatedMaterialAssignmentMap>();
 
                 serializeContext->Class<MaterialComponentConfig, ComponentConfig>()
-                    ->Version(3, MaterialComponentConfigVersionConverter)
+                    ->Version(4, MaterialComponentConfigVersionConverter)
                     ->Field("materials", &MaterialComponentConfig::m_materials)
+                    ->Field("materialsByLabel", &MaterialComponentConfig::m_materialsByLabel)
                     ;
             }
 
@@ -77,6 +78,7 @@ namespace AZ
                     ->Constructor()
                     ->Constructor<const MaterialComponentConfig&>()
                     ->Property("materials", BehaviorValueProperty(&MaterialComponentConfig::m_materials))
+                    ->Property("materialsByLabel", BehaviorValueProperty(&MaterialComponentConfig::m_materialsByLabel))
                     ;
             }
         }

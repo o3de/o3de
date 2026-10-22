@@ -8,19 +8,18 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <AzCore/std/containers/vector.h>
 #include "../StandardPluginsConfig.h"
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/Event.h>
 #include "TimeTrack.h"
-
 #include <QWidget>
+
+#include <QPen>
 #include <QFont>
 #include <QBrush>
 #include <QRect>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QBrush)
 

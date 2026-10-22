@@ -1,0 +1,29 @@
+int g_func(int i)
+{
+    return i;
+}
+
+float g_func(float f)
+{
+    return f > 0 ? 0 : 1;
+}
+
+float4 main() : SV_Target0
+{
+    int   i = g_func((int)1); // reference to symbol at line 1
+    float f = g_func(1.5);  // reference to symbol at line 6 (because 1.5 is a float in HLSL)
+    float f2 = g_func(1.5L);  // L is the suffix for double in HLSL. DXC may be able to do the implicit conversion, but AZSLc cannot.
+                              // hence, the reference here will fallback to the overload-set (unsolved symbol representing the g_func family)
+
+    return float4(f,0,0,1);
+}
+
+void f(int,float);
+void f(int);
+
+void g()
+{
+    f();  // fallback
+    f(1+1);  // matches l22 by arity
+    f(1+1, lerp(0.0, 1.0, 0.5));  // matches l21 by arity
+}

@@ -65,7 +65,7 @@ namespace EMotionFX
 
     bool SimulatedObjectWidget::Init()
     {
-        m_noSelectionWidget = new QLabel("Add a simulated object first, then add the joints you want to simulate to the object and customize the simulation settings.");
+        m_noSelectionWidget = new QLabel(tr("Add a simulated object first, then add the joints you want to simulate to the object and customize the simulation settings."));
         m_noSelectionWidget->setWordWrap(true);
 
         m_simulatedObjectModel = AZStd::make_unique<SimulatedObjectModel>();
@@ -112,7 +112,7 @@ namespace EMotionFX
             }
         });
 
-        m_addSimulatedObjectButton = new QPushButton("Add simulated object");
+        m_addSimulatedObjectButton = new QPushButton(tr("Add simulated object"));
         m_addSimulatedObjectButton->setObjectName("addSimulatedObjectButton");
 
         connect(m_addSimulatedObjectButton, &QPushButton::clicked, this, [this]()
@@ -133,11 +133,11 @@ namespace EMotionFX
 
 
         // Add to simulated object button
-        AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton("Add to simulated object", m_dock);
+        AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton(tr("Add to simulated object"), m_dock);
         selectionLayout->addWidget(addObjectButtonn);
 
         // Add collider button
-        AddColliderButton* addColliderButton = new AddColliderButton("Add simulated object collider", m_dock,
+        AddColliderButton* addColliderButton = new AddColliderButton(tr("Add simulated object collider"), m_dock,
                                                                      PhysicsSetup::ColliderConfigType::SimulatedObjectCollider,
                                                                      { azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
                                                                        azrtti_typeid<Physics::SphereShapeConfiguration>() });
@@ -146,9 +146,9 @@ namespace EMotionFX
         connect(addColliderButton, &AddColliderButton::AddCollider, this, &SimulatedObjectWidget::OnAddColliderByType);
         selectionLayout->addWidget(addColliderButton);
 
-        m_instruction1 = new QLabel("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above", m_dock);
+        m_instruction1 = new QLabel(tr("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above"), m_dock);
         m_instruction1->setWordWrap(true);
-        m_instruction2 = new QLabel("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object", m_dock);
+        m_instruction2 = new QLabel(tr("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object"), m_dock);
         m_instruction2->setWordWrap(true);
         selectionLayout->addWidget(m_instruction1);
         selectionLayout->addWidget(m_instruction2);
@@ -159,7 +159,7 @@ namespace EMotionFX
 
         m_dock->setWidget(m_mainWidget);
 
-        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget("Simulated Object Inspector", m_dock);
+        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget(tr("Simulated Object Inspector"), m_dock);
         m_simulatedObjectInspectorDock->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         m_simulatedObjectInspectorDock->setObjectName("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
         m_simulatedJointWidget = new SimulatedJointWidget(this);
@@ -279,21 +279,21 @@ namespace EMotionFX
         {
             if (selectedIndices.count() == 1)
             {
-                QAction* removeJoint = contextMenu->addAction("Remove joint");
+                QAction* removeJoint = contextMenu->addAction(tr("Remove joint"));
                 connect(removeJoint, &QAction::triggered, [this, currentIndex]() { OnRemoveSimulatedJoint(currentIndex, false); });
 
-                QAction* removeJointAndChildren = contextMenu->addAction("Remove joint and children");
+                QAction* removeJointAndChildren = contextMenu->addAction(tr("Remove joint and children"));
                 connect(removeJointAndChildren, &QAction::triggered, [this, currentIndex]() { OnRemoveSimulatedJoint(currentIndex, true); });
             }
             else
             {
-                QAction* removeJoints = contextMenu->addAction("Remove joints");
+                QAction* removeJoints = contextMenu->addAction(tr("Remove joints"));
                 connect(removeJoints, &QAction::triggered, [this, selectedIndices]() { OnRemoveSimulatedJoints(selectedIndices); });
             }
         }
         else
         {
-            QAction* removeObject = contextMenu->addAction("Remove object");
+            QAction* removeObject = contextMenu->addAction(tr("Remove object"));
             connect(removeObject, &QAction::triggered, [this, currentIndex]() { OnRemoveSimulatedObject(currentIndex); });
         }
 
@@ -394,7 +394,7 @@ namespace EMotionFX
             }
         }
 
-        QMenu* addToSimulatedObjectMenu = menu->addMenu("Add to simulated object");
+        QMenu* addToSimulatedObjectMenu = menu->addMenu(tr("Add to simulated object"));
         if (!addToCandidates.empty())
         {
             for (const SimulatedObject* object : addToCandidates)
@@ -402,15 +402,15 @@ namespace EMotionFX
                 QAction* openItem = addToSimulatedObjectMenu->addAction(object->GetName().c_str());
                 connect(openItem, &QAction::triggered, [this, selectedRowIndices, simulatedObjectSetup, object]() {
                     const bool addChildren = (QMessageBox::question(this->GetDockWidget(),
-                        "Add children of joints?", "Add all children of selected joints to the simulated object?") == QMessageBox::Yes);
+                        tr("Add children of joints?"), tr("Add all children of selected joints to the simulated object?")) == QMessageBox::Yes);
                     SimulatedObjectHelpers::AddSimulatedJoints(selectedRowIndices, simulatedObjectSetup->FindSimulatedObjectIndex(object).GetValue(), addChildren);
                 });
             }
             addToSimulatedObjectMenu->addSeparator();
         }
-        connect(addToSimulatedObjectMenu->addAction("New simulated object..."), &QAction::triggered, this, [this, selectedRowIndices]() {
+        connect(addToSimulatedObjectMenu->addAction(tr("New simulated object...")), &QAction::triggered, this, [this, selectedRowIndices]() {
             const bool addChildren = (QMessageBox::question(this->GetDockWidget(),
-                "Add children of joints?", "Add all children of selected joints to the simulated object?") == QMessageBox::Yes);
+                tr("Add children of joints?"), tr("Add all children of selected joints to the simulated object?")) == QMessageBox::Yes);
             m_actionManager->OnAddNewObjectAndAddJoints(m_actor, selectedRowIndices, addChildren, m_dock);
         });
         menu->addSeparator();
@@ -425,13 +425,13 @@ namespace EMotionFX
         {
             if (selectedRowIndices.count() > 0)
             {
-                QMenu* addColliderMenu = menu->addMenu("Add collider");
+                QMenu* addColliderMenu = menu->addMenu(tr("Add collider"));
 
-                QAction* addCapsuleAction = addColliderMenu->addAction("Capsule");
+                QAction* addCapsuleAction = addColliderMenu->addAction(tr("Capsule"));
                 addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
                 connect(addCapsuleAction, &QAction::triggered, this, &SimulatedObjectWidget::OnAddCollider);
 
-                QAction* addSphereAction = addColliderMenu->addAction("Sphere");
+                QAction* addSphereAction = addColliderMenu->addAction(tr("Sphere"));
                 addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
                 connect(addSphereAction, &QAction::triggered, this, &SimulatedObjectWidget::OnAddCollider);
 
@@ -446,7 +446,7 @@ namespace EMotionFX
 
             if (anySelectedJointHasCollider)
             {
-                QAction* removeCollidersAction = menu->addAction("Remove colliders");
+                QAction* removeCollidersAction = menu->addAction(tr("Remove colliders"));
                 removeCollidersAction->setObjectName("EMFX.SimulatedObjectWidget.RemoveCollidersAction");
                 connect(removeCollidersAction, &QAction::triggered, this, &SimulatedObjectWidget::OnClearColliders);
             }

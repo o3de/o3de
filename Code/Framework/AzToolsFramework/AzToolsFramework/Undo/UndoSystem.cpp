@@ -74,9 +74,28 @@ namespace AzToolsFramework
                 return this;
             }
 
-            for (ChildVec::iterator it = m_children.begin(); it != m_children.end(); ++it)
+            for (auto &child : m_children)
             {
-                URSequencePoint* cmd = (*it)->Find(id, typeOfCommand);
+                URSequencePoint* cmd = child->Find(id, typeOfCommand);
+                if (cmd)
+                {
+                    return cmd;
+                }
+            }
+
+            return nullptr;
+        }
+
+        URSequencePoint* URSequencePoint::Find(URSequencePoint* expected)
+        {
+            if (this == expected)
+            {
+                return this;
+            }
+
+            for (auto &child : m_children)
+            {
+                URSequencePoint* cmd = child->Find(expected);
                 if (cmd)
                 {
                     return cmd;

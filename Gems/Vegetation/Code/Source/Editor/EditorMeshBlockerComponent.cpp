@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 
 
@@ -39,7 +40,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Category, s_categoryName)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorMeshBlockerComponent::m_drawDebugBounds, "Draw Debug Bounds", "Show the settings to debug the mesh blocker")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorMeshBlockerComponent::m_drawDebugBounds, QT_TRANSLATE_NOOP("Vegetation", "Draw Debug Bounds"), QT_TRANSLATE_NOOP("Vegetation", "Show the settings to debug the mesh blocker"))
                     ;
             }
         }

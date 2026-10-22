@@ -10,6 +10,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <Source/EditorFixedJointComponent.h>
@@ -30,14 +31,14 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorFixedJointComponent>(
-                    "PhysX Fixed Joint",
-                    "A dynamic joint constraint that constrains a rigid body to the joint with no free translation or rotation on any axis.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Fixed Joint"),
+                    QT_TRANSLATE_NOOP("PhysX", "A dynamic joint constraint that constrains a rigid body to the joint with no free translation or rotation on any axis."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/fixed-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorFixedJointComponent::m_componentModeDelegate, "Component Mode", "Fixed Joint Component Mode.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorFixedJointComponent::m_componentModeDelegate, QT_TRANSLATE_NOOP("PhysX", "Component Mode"), QT_TRANSLATE_NOOP("PhysX", "Fixed Joint Component Mode."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

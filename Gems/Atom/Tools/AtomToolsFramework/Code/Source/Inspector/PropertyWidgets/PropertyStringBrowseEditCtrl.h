@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QWidget>
-#endif
 
 namespace AzQtComponents
 {

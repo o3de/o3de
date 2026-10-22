@@ -19,27 +19,27 @@ namespace EMStudio
     {
         m_loopForeverAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Loop.svg"),
-            "Loop forever", toolbar, &TimeViewToolBar::UpdateMotions);
+            tr("Loop forever"), toolbar, &TimeViewToolBar::UpdateMotions);
         m_loopForeverAction->setCheckable(true);
 
         m_mirrorAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Mirror.svg"),
-            "Mirror", toolbar, &TimeViewToolBar::UpdateMotions);
+            tr("Mirror"), toolbar, &TimeViewToolBar::UpdateMotions);
         m_mirrorAction->setCheckable(true);
 
         m_backwardAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/MoveBackward.svg"),
-            "Move backward", toolbar, &TimeViewToolBar::UpdateMotions);
+            tr("Move backward"), toolbar, &TimeViewToolBar::UpdateMotions);
         m_backwardAction->setCheckable(true);
 
         m_inPlaceAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/InPlace.svg"),
-            "In place", toolbar, &TimeViewToolBar::UpdateMotions);
+            tr("In place"), toolbar, &TimeViewToolBar::UpdateMotions);
         m_inPlaceAction->setCheckable(true);
 
         m_retargetAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Retarget.svg"),
-            "Retarget", toolbar, &TimeViewToolBar::UpdateMotions);
+            tr("Retarget"), toolbar, &TimeViewToolBar::UpdateMotions);
         m_retargetAction->setCheckable(true);
 
         m_separatorSpeed = toolbar->addSeparator();

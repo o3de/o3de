@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_BINARY_SEMAPHORE_H
-#define AZSTD_BINARY_SEMAPHORE_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/chrono/chrono.h>
@@ -196,6 +196,3 @@ namespace AZStd
 #endif //
     };
 }
-
-#endif // AZSTD_SEMAPHORE_H
-#pragma once

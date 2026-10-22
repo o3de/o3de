@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/ui_EmptyPreviewer.h>
-#endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 

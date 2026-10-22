@@ -20,7 +20,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
-    ARCH=
+    ARCH=$( uname -m )
 elif [[ "$OSTYPE" = "msys" ]];
 then
     PAL=Windows
@@ -31,17 +31,21 @@ else
 fi
 
 if ! [ -x "$(command -v cmake)" ]; then
-    if [ -z ${LY_CMAKE_PATH} ]; then
-        echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
-        echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
-        exit 1
-    fi
-
-    export PATH=$LY_CMAKE_PATH:$PATH
+    export PATH=/Applications/CMake.app/Contents/bin:$PATH
     if ! [ -x "$(command -v cmake)" ]; then
-        echo "ERROR: Could not find cmake on the PATH or at the known location: $LY_CMAKE_PATH"
-        echo "Please add cmake to the environment PATH or place it at the above known location."
-        exit 1
+
+        if [ -z ${LY_CMAKE_PATH} ]; then
+            echo "ERROR: Could not find cmake on the PATH (${PATH}) and LY_CMAKE_PATH is not defined, cannot continue."
+            echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
+            exit 1
+        fi
+
+        export PATH=$LY_CMAKE_PATH:$PATH
+        if ! [ -x "$(command -v cmake)" ]; then
+            echo "ERROR: Could not find cmake on the PATH or at the known location: $LY_CMAKE_PATH"
+            echo "Please add cmake to the environment PATH or place it at the above known location."
+            exit 1
+        fi
     fi
 fi
 

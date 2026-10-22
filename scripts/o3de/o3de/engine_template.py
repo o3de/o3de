@@ -422,6 +422,25 @@ def _execute_restricted_template_json(template_json_data: dict,
             else:
                 shutil.copy(in_file, out_file)
 
+# DRY principle - given a folder path, read the template out of it.
+def _read_template_json(template_path: pathlib.Path) -> dict:
+    if not os.path.isdir(template_path):
+            logger.error(f'Expected a path "{template_path}" to be a directory, but it does not appear to be one, or does not exist')
+            return None
+    
+    # the template.json should be in the template_path, make sure it is valid
+    template_json_file_path = template_path / 'template.json'
+    if not validation.valid_o3de_template_json(template_json_file_path):
+        logger.error(f'Template json file {template_json_file_path} is invalid.')
+        return None
+
+    # read in the template.json
+    with open(template_json_file_path) as s:
+        try:
+            return json.load(s)
+        except Exception as e:
+            logger.error(f'Could not read template json {template_json_file_path}: {str(e)}.')
+    return None
 
 def _instantiate_template(template_json_data: dict,
                           destination_name: str,
@@ -458,6 +477,19 @@ def _instantiate_template(template_json_data: dict,
         because most customers will not want license text in their instances, but we may want to keep them.
     :return: 0 for success or non 0 failure code
     """
+    inherited_templates = template_json_data.get('inherits', None)
+    local_ret = _instantiate_inherited_templates(inherited_templates,
+                                    destination_name = destination_name,
+                                    destination_path = destination_path,
+                                    destination_restricted_path = destination_restricted_path,
+                                    template_restricted_path = template_restricted_path,
+                                    destination_restricted_platform_relative_path = destination_restricted_platform_relative_path,
+                                    template_restricted_platform_relative_path = template_restricted_platform_relative_path,
+                                    replacements = replacements,
+                                    keep_restricted_in_instance = keep_restricted_in_instance,
+                                    keep_license_text = keep_license_text)
+    if local_ret != 0:
+        return local_ret
     # execute the template json
     # this will filter out any restricted platforms in the template
     logger.info(f'Instantiating template: `{template_name}` into `{destination_path}`...')
@@ -468,7 +500,7 @@ def _instantiate_template(template_json_data: dict,
                            keep_license_text,
                            keep_restricted_in_instance)
 
-    # we execute the jason data again if there are any restricted platforms in the main template and
+    # we execute the json data again if there are any restricted platforms in the main template and
     # execute any restricted platform jsons if separate
 
     for restricted_platform in restricted_platforms:
@@ -508,6 +540,89 @@ def _instantiate_template(template_json_data: dict,
 
     return 0
 
+# its not allowed for a template to appear in the `inherits` tree more than once
+# as this would cause order-dependent or cyclic behavior, ie, files overwriting other files in arbitrary order
+# depending on tree visit.
+def _validate_inheritance_tree(inherited_templates : list) -> bool:
+    to_process = inherited_templates.copy()
+
+    used_already = []
+
+    while to_process:
+        current_check = to_process.pop()
+        if current_check in used_already:
+            used_already.append(current_check)
+            logger.error(f'Template {current_check} appears in the inheritance tree more than once.')
+            current_map = '->'.join(map(str, used_already))
+            logger.error(f'Current tree: {current_map} (again)')
+            return False
+        used_already.append(current_check)
+        template_path = manifest.get_registered(template_name=current_check)
+        if not template_path:
+            continue # we'll find this error later during template validation
+        template_json_data = _read_template_json(template_path)
+        if template_json_data is None:
+            continue
+
+        inherits = template_json_data.get('inherits', None)
+        if inherits is None:
+            continue
+        if type(inherits) is str:
+            inherits = [inherits]
+
+        for inherited_template in inherits:
+            to_process.append(inherited_template)
+
+    return True
+        
+
+def _instantiate_inherited_templates(inherited_templates, 
+
+                                     destination_name: str,
+                                     destination_path: pathlib.Path,
+                                     destination_restricted_path: pathlib.Path,
+                                     template_restricted_path: pathlib.Path,
+                                     destination_restricted_platform_relative_path: pathlib.Path,
+                                     template_restricted_platform_relative_path: pathlib.Path,
+                                     replacements: list,
+                                     keep_restricted_in_instance: bool = False,
+                                     keep_license_text: bool = False) -> int:
+    if inherited_templates is None:
+        return 0  #its optional, so its not a failure if its not present.
+
+    if type(inherited_templates) is str:
+        inherited_templates = [inherited_templates]
+        
+    if not _validate_inheritance_tree(inherited_templates):
+        return 1
+    
+    for inherited_template in inherited_templates:
+        # recursive call
+        template_path = manifest.get_registered(template_name=inherited_template)
+        if not template_path:
+            logger.error(f'Could not find the inherited template path using name \'{inherited_template}\'.\n'
+                            f'Has the engine been registered yet. It can be registered via the "o3de.py register --this-engine" command')
+            return 1
+
+        template_json_data = _read_template_json(template_path)
+        if template_json_data is None:
+            return 1
+        
+        subprocess_call_retval = _instantiate_template(template_json_data,
+                        destination_name,
+                        template_name = inherited_template,
+                        destination_path = destination_path,
+                        template_path = template_path,
+                        destination_restricted_path = destination_restricted_path,
+                        template_restricted_path = template_restricted_path,
+                        destination_restricted_platform_relative_path = destination_restricted_platform_relative_path,
+                        template_restricted_platform_relative_path = template_restricted_platform_relative_path,
+                        replacements = replacements,
+                        keep_restricted_in_instance = keep_restricted_in_instance,
+                        keep_license_text = keep_license_text)
+        if subprocess_call_retval != 0:
+            return subprocess_call_retval
+    return 0
 
 def create_template(source_path: pathlib.Path,
                     template_path: pathlib.Path,

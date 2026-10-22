@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <QPushButton>
 #include <QWidget>
 #include <QHBoxLayout>
 #include <EventHandlerWidget.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

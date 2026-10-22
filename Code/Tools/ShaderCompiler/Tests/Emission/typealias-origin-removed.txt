@@ -1,0 +1,4 @@
+"struct Func_vd_Real"
+"typedef float Func_vd_Real1"
+"void Func ( )"
+":: Func_vd_Real1 r , g , b ;"

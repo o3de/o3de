@@ -152,51 +152,51 @@ namespace AZStd
 
         // Below are the 7 implementations of INVOKE bullet point
         // 1.1
-        template<class Fn, class Arg0, class... Args, typename = AZStd::enable_if_t<
-            AZStd::is_member_function_pointer<AZStd::decay_t<Fn>>::value
-            && AZStd::is_base_of<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0, class... Args>
+            requires AZStd::is_member_function_pointer_v<AZStd::decay_t<Fn>>
+                && AZStd::is_base_of_v<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0, Args&&... args) -> decltype((InvokeTraits::forward<Arg0>(arg0).*f)(InvokeTraits::forward<Args>(args)...))
         {
             return (InvokeTraits::forward<Arg0>(arg0).*f)(InvokeTraits::forward<Args>(args)...);
         }
         // 1.2
-        template<class Fn, class Arg0, class... Args, typename = AZStd::enable_if_t<
-                AZStd::is_member_function_pointer<AZStd::decay_t<Fn>>::value
-                && AZStd::is_reference_wrapper<AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0, class... Args>
+            requires AZStd::is_member_function_pointer_v<AZStd::decay_t<Fn>>
+                && AZStd::is_reference_wrapper_v<AZStd::decay_t<Arg0>>
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0, Args&&... args) -> decltype((arg0.get().*f)(InvokeTraits::forward<Args>(args)...))
         {
             return (arg0.get().*f)(InvokeTraits::forward<Args>(args)...);
         }
         // 1.3
-        template<class Fn, class Arg0, class... Args, typename = AZStd::enable_if_t<
-                AZStd::is_member_function_pointer<AZStd::decay_t<Fn>>::value
-                && !AZStd::is_base_of<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>::value
-                && !AZStd::is_reference_wrapper<AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0, class... Args>
+            requires AZStd::is_member_function_pointer_v<AZStd::decay_t<Fn>>
+                && (!AZStd::is_base_of_v<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>)
+                && (!AZStd::is_reference_wrapper_v<AZStd::decay_t<Arg0>>)
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0, Args&&... args) -> decltype(((*InvokeTraits::forward<Arg0>(arg0)).*f)(InvokeTraits::forward<Args>(args)...))
         {
             return ((*InvokeTraits::forward<Arg0>(arg0)).*f)(InvokeTraits::forward<Args>(args)...);
         }
         // 1.4
-        template<class Fn, class Arg0, typename = AZStd::enable_if_t<
-                AZStd::is_member_object_pointer<AZStd::decay_t<Fn>>::value
-                && AZStd::is_base_of<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0>
+            requires AZStd::is_member_object_pointer_v<AZStd::decay_t<Fn>>
+                && AZStd::is_base_of_v<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0) -> decltype(InvokeTraits::forward<Arg0>(arg0).*f)
         {
             return InvokeTraits::forward<Arg0>(arg0).*f;
         }
         // 1.5
-        template<class Fn, class Arg0, typename = AZStd::enable_if_t<
-                AZStd::is_member_object_pointer<AZStd::decay_t<Fn>>::value
-                && AZStd::is_reference_wrapper<AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0>
+            requires AZStd::is_member_object_pointer_v<AZStd::decay_t<Fn>>
+                && AZStd::is_reference_wrapper_v<AZStd::decay_t<Arg0>>
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0) -> decltype(arg0.get().*f)
         {
             return arg0.get().*f;
         }
         // 1.6
-        template<class Fn, class Arg0, typename = AZStd::enable_if_t<
-                AZStd::is_member_object_pointer<AZStd::decay_t<Fn>>::value
-                && !AZStd::is_base_of<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>::value
-                && !AZStd::is_reference_wrapper<AZStd::decay_t<Arg0>>::value>>
+        template<class Fn, class Arg0>
+            requires AZStd::is_member_object_pointer_v<AZStd::decay_t<Fn>>
+                && (!AZStd::is_base_of_v<member_pointer_class_type_t<AZStd::decay_t<Fn>>, AZStd::decay_t<Arg0>>)
+                && (!AZStd::is_reference_wrapper_v<AZStd::decay_t<Arg0>>)
             constexpr auto INVOKE(Fn&& f, Arg0&& arg0) -> decltype((*InvokeTraits::forward<Arg0>(arg0)).*f)
         {
             return (*InvokeTraits::forward<Arg0>(arg0)).*f;
@@ -217,8 +217,8 @@ namespace AZStd
             static nat try_call(...);
 
             using result_type = decltype(try_call<Fn, ArgTypes...>(0));
-            using type = AZStd::conditional_t<!AZStd::is_same<result_type, nat>::value,
-                AZStd::conditional_t<!AZStd::is_void<R>::value, AZStd::is_convertible<result_type, R>, AZStd::true_type>,
+            using type = AZStd::conditional_t<!AZStd::is_same_v<result_type, nat>,
+                AZStd::conditional_t<!AZStd::is_void_v<R>, AZStd::is_convertible<result_type, R>, AZStd::true_type>,
                 AZStd::false_type>;
             static constexpr bool value = type::value;
         };

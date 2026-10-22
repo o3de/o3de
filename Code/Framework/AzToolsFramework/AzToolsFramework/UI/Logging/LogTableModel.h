@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
@@ -20,7 +19,6 @@ AZ_POP_DISABLE_WARNING
 #include <QVector>
 #include <QAbstractTableModel>
 #include <QIcon>
-#endif
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 

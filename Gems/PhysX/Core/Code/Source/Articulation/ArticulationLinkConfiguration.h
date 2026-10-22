@@ -89,6 +89,18 @@ namespace PhysX
         bool m_startAsleep = false;
         bool m_gravityEnabled = true;
 
+        // Inertia tensor compute flag.
+        // Default: false to preserve existing project behavior (PhysX native default inertia (1,1,1)).
+        // Set to true to auto-compute inertia from collider shapes via setMassAndUpdateInertia.
+        bool m_computeInertiaTensor = false;      //!< If true, inertia is auto-computed from collider shapes.
+
+        //! Inertia tensor used when m_computeInertiaTensor is false.
+        //! Defaults to identity matrix matching PhysX PxRigidBody default.
+        AZ::Matrix3x3 m_inertiaTensor = AZ::Matrix3x3::CreateIdentity();
+
+        // Edit context visibility helper.
+        AZ::Crc32 GetInertiaVisibility() const;
+
         // PhysX specific Rigid Body configuration
 
         AZ::u8 m_solverPositionIterations = 4; //!< Higher values can improve stability at the cost of performance.

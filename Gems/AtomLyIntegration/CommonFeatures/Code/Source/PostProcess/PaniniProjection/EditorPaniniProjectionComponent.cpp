@@ -8,6 +8,7 @@
 
 #include <PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorPaniniProjectionComponent>("Panini Projection", "Controls the Panini Projection")
+                    editContext->Class<EditorPaniniProjectionComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Panini Projection"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Panini Projection"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -46,10 +47,10 @@ namespace AZ
 
                     editContext->Class<PaniniProjectionComponentConfig>("PaniniProjectionComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &PaniniProjectionComponentConfig::m_enabled, "Enable Panini Projection", "Enable Panini Projection.")
+                            Edit::UIHandlers::CheckBox, &PaniniProjectionComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Panini Projection"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Panini Projection."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &PaniniProjectionComponentConfig::m_depth, "Depth", "Depth of focal point")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &PaniniProjectionComponentConfig::m_depth, QT_TRANSLATE_NOOP("AtomLyIntegration", "Depth"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Depth of focal point"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.f)
@@ -57,7 +58,7 @@ namespace AZ
                         ->Attribute(Edit::Attributes::ReadOnly, &PaniniProjectionComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

@@ -1,0 +1,10 @@
+ShaderResourceGroupSemantic sem { FrequencyId = 0; ShaderVariantFallback = 128; }
+ShaderResourceGroup SRG : sem {}
+
+static float g_adjustment = 1.0f;
+static const int g_two = 2;
+static const float4x4 g_zero;
+rootconstant int g_rc;
+rootconstant const int g_rc2;  // warning const ignored
+option const bool g_bc;
+option bool g_b = false;

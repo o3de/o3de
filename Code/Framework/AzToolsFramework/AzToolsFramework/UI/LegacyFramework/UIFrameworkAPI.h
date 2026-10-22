@@ -6,12 +6,9 @@
  *
  */
 
-#ifndef UIFRAMEWORKAPI_H
-#define UIFRAMEWORKAPI_H
+#pragma once
 
 #include <AzCore/base.h>
-
-#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
@@ -122,5 +119,3 @@ namespace AzToolsFramework
         virtual void ApplicationCensusReply(bool isOpen) = 0;
     };
 }
-
-#endif

@@ -38,5 +38,3 @@ namespace ${SanitizedCppName}
         setLayout(mainLayout);
     }
 }
-
-#include <moc_${Name}Widget.cpp>

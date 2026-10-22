@@ -8,6 +8,7 @@
 
 #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorChromaticAberrationComponent>("Chromatic Aberration", "Controls the Chromatic Aberration")
+                    editContext->Class<EditorChromaticAberrationComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Chromatic Aberration"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Chromatic Aberration"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -46,24 +47,24 @@ namespace AZ
 
                     editContext->Class<ChromaticAberrationComponentConfig>("ChromaticAberrationComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &ChromaticAberrationComponentConfig::m_enabled, "Enable Chromatic Aberration", "Enable Chromatic Aberration.")
+                            Edit::UIHandlers::CheckBox, &ChromaticAberrationComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Chromatic Aberration"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Chromatic Aberration."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_strength, "Strength", "Strength of effect")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_strength, QT_TRANSLATE_NOOP("AtomLyIntegration", "Strength"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Strength of effect"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &ChromaticAberrationComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_blend, "Blend", "Factor for additive blending with original image")
+                            AZ::Edit::UIHandlers::Slider, &ChromaticAberrationComponentConfig::m_blend, QT_TRANSLATE_NOOP("AtomLyIntegration", "Blend"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor for additive blending with original image"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &ChromaticAberrationComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

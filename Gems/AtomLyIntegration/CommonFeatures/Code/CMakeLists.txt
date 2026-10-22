@@ -146,7 +146,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::Editor.Headers
-                Legacy::EditorCommon
                 Legacy::CryCommon
         RUNTIME_DEPENDENCIES
             3rdParty::OpenImageIO::Tools::Binaries
@@ -169,8 +168,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::${gem_name}.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Legacy::EditorCommon
     )
 
     # Add alias that references the "AtomLyIntegration_CommonFeatures.Editor" for backwards compatibility

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_TYPE_TRAITS_CONFIG_INCLUDED
-#define AZSTD_TYPE_TRAITS_CONFIG_INCLUDED
+
+#pragma once
 
 #include <AzCore/std/base.h>
 
@@ -57,8 +57,3 @@ namespace AZStd
     //using std::is_trivially_destructible; still not implemented in GCC 4.9 Android
 
 } // namespace AZStd
-
-
-#endif // AZSTD_TYPE_TRAITS_CONFIG_INCLUDED
-#pragma once
-

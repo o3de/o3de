@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "ReflectedVar.h"
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
@@ -16,7 +15,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <QPointer>
 #include <QWidget>
-#endif
 
 class MotionPropertyWidgetHandler : QObject,
                                     public AzToolsFramework::PropertyHandler<CReflectedVarMotion, AzToolsFramework::PropertyAssetCtrl>

@@ -62,7 +62,7 @@ namespace GradientSignal
         return size();
     }
 
-    void GradientPreviewWidget::enterEvent(QEvent* event)
+    void GradientPreviewWidget::enterEvent(QEnterEvent* event)
     {
         QWidget::enterEvent(event);
 
@@ -99,4 +99,3 @@ namespace GradientSignal
     }
 } //namespace GradientSignal
 
-#include "UI/moc_GradientPreviewWidget.cpp"

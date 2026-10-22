@@ -144,6 +144,5 @@ namespace ScriptCanvasEditor
             AddVisibilityActions(this, BuildSlotList(graphCanvasNodeId));
         }
 
-        #include <Editor/View/Widgets/moc_PropertyGridContextMenu.cpp>
     }
 }

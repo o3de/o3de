@@ -27,6 +27,7 @@
 #include "Core/QtEditorApplication.h"
 #include "CheckOutDialog.h"
 #include "GameEngine.h"
+#include "LevelRoots.h"
 #include "ViewManager.h"
 #include "EditorViewportCamera.h"
 
@@ -115,41 +116,54 @@ namespace
 
         if (!QFile::exists(levelPath))
         {
-            // if the input path can't be found, let's automatically add on the game folder and the levels
-            QString levelsDir = QString("%1/%2").arg(Path::GetEditingGameDataFolder().c_str()).arg("Levels");
+            const QString originalInput = levelPath;
 
-            // now let's check if they pre-pended directories (Samples/SomeLevelName)
-            QString levelFileName = levelPath;
-            QStringList splitLevelPath = levelPath.contains('/') ? levelPath.split('/') : levelPath.split('\\');
-            if (splitLevelPath.length() > 1)
+            // Compose a candidate "<root>/<input>/<basename>[.ext]" against
+            // a given root. Returns the file path that exists on disk, or
+            // an empty string if neither extension matches.
+            auto resolveAgainstRoot = [&](const QString& rootAbsolute) -> QString
             {
-                // take the last one as the level directory name and the level file name in that directory
-                levelFileName = splitLevelPath.last();
+                QString candidate = originalInput;
+                QString fileName = candidate;
+                const QStringList split = candidate.contains('/') ? candidate.split('/') : candidate.split('\\');
+                if (split.length() > 1)
+                {
+                    // pre-pended directories ("Samples/SomeLevelName"); the trailing
+                    // segment is both the level folder name and the file basename.
+                    fileName = split.last();
+                }
+
+                candidate = rootAbsolute / candidate / fileName;
+
+                if (!fileName.endsWith(oldExtension) && !fileName.endsWith(defaultExtension))
+                {
+                    const QString newPath = candidate + defaultExtension;
+                    const QString oldPath = candidate + oldExtension;
+                    candidate = QFileInfo(oldPath).exists() ? oldPath : newPath;
+                }
+
+                return QFile::exists(candidate) ? candidate : QString();
+            };
+
+            // Try the project's Levels folder first, then walk every gem
+            // root that exposes a Levels folder. The first hit wins.
+            QString resolved;
+            const QVector<LevelRoots::Root> roots = LevelRoots::Enumerate();
+            for (const LevelRoots::Root& root : roots)
+            {
+                resolved = resolveAgainstRoot(root.absolutePath);
+                if (!resolved.isEmpty())
+                {
+                    break;
+                }
             }
 
-            levelPath = levelsDir / levelPath / levelFileName;
-
-            // make sure the level path includes the cry extension, if needed
-            if (!levelFileName.endsWith(oldExtension) && !levelFileName.endsWith(defaultExtension))
-            {
-                QString newLevelPath = levelPath + defaultExtension;
-                QString oldLevelPath = levelPath + oldExtension;
-
-                // Check if there is a .cry file, otherwise assume it is a new .ly file
-                if (QFileInfo(oldLevelPath).exists())
-                {
-                    levelPath = oldLevelPath;
-                }
-                else
-                {
-                    levelPath = newLevelPath;
-                }
-            }
-
-            if (!QFile::exists(levelPath))
+            if (resolved.isEmpty())
             {
                 return false;
             }
+
+            levelPath = resolved;
         }
         const bool addToMostRecentFileList = false;
         auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(),
@@ -211,11 +225,6 @@ namespace
         static AZ::IO::FixedMaxPathString tempLevelPath;
         tempLevelPath = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
         return tempLevelPath.c_str();
-    }
-
-    void Command_LoadPlugins()
-    {
-        GetIEditor()->LoadPlugins();
     }
 
     AZ::Vector3 PyGetCurrentViewPosition()
@@ -414,7 +423,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_current_level_name", PyGetCurrentLevelName, nullptr, "Gets the name of the current level."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_path", PyGetCurrentLevelPath, nullptr, "Gets the fully specified path of the current level."));
 
-            addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));

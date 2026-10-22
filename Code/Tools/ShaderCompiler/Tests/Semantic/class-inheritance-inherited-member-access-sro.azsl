@@ -1,0 +1,18 @@
+class A
+{
+	int a;
+};
+
+class B : A
+{
+};
+
+// access through scope resolution operator, but looked up from current scope
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(B::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'int'\n");
+
+// same with full qualification (current scope ignored)
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(::B::a), __azslc_prtsym_least_qualified);
+__azslc_print_message(" == 'int'\n");

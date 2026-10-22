@@ -24,11 +24,11 @@ namespace EMStudio
     {
         m_clearRecordAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Clear.svg"),
-            "Clear recording", toolbar, &TimeViewToolBar::OnClearRecordButton);
+            tr("Clear recording"), toolbar, &TimeViewToolBar::OnClearRecordButton);
 
         m_recordAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/RecordButton.svg"),
-            "Clear recording", toolbar, &TimeViewToolBar::OnRecordButton);
+            tr("Clear recording"), toolbar, &TimeViewToolBar::OnRecordButton);
 
         m_recordOptionsAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Settings.svg"), "");
@@ -67,25 +67,25 @@ namespace EMStudio
 
         m_displayOptionsAction = toolbar->addAction(
             MysticQt::GetMysticQt()->FindIcon("Images/Icons/Visualization.svg"),
-            "Show display and visual options");
+            tr("Show display and visual options"));
         {
             QMenu* contextMenu = new QMenu(toolbar);
 
             contextMenu->addAction(tr("Display"))->setEnabled(false);
 
-            m_displayOptionNodeActivity = contextMenu->addAction("Node Activity", toolbar, [=] {
+            m_displayOptionNodeActivity = contextMenu->addAction(tr("Node Activity"), toolbar, [=] {
                 plugin->SetRedrawFlag();
                 });
             m_displayOptionNodeActivity->setCheckable(true);
             m_displayOptionNodeActivity->setChecked(true);
 
-            m_displayOptionMotionEvents = contextMenu->addAction("Motion Events", [=] {
+            m_displayOptionMotionEvents = contextMenu->addAction(tr("Motion Events"), [=] {
                 plugin->SetRedrawFlag();
                 });
             m_displayOptionMotionEvents->setCheckable(true);
             m_displayOptionMotionEvents->setChecked(true);
 
-            m_displayOptionRelativeGraph = contextMenu->addAction("Relative Graph", [=] {
+            m_displayOptionRelativeGraph = contextMenu->addAction(tr("Relative Graph"), [=] {
                 plugin->SetRedrawFlag();
                 });
             m_displayOptionRelativeGraph->setCheckable(true);
@@ -95,25 +95,25 @@ namespace EMStudio
 
             contextMenu->addAction(tr("Visual Options"))->setEnabled(false);
 
-            m_sortNodeActivity = contextMenu->addAction("Sort Node Activity", [=] {
+            m_sortNodeActivity = contextMenu->addAction(tr("Sort Node Activity"), [=] {
                 plugin->SetRedrawFlag();
                 });
             m_sortNodeActivity->setCheckable(true);
             m_sortNodeActivity->setChecked(true);
 
-            m_useNoteTypeColors = contextMenu->addAction("Use Node Type Colors", [=] {
+            m_useNoteTypeColors = contextMenu->addAction(tr("Use Node Type Colors"), [=] {
                 plugin->SetRedrawFlag();
                 });
             m_useNoteTypeColors->setCheckable(true);
             m_useNoteTypeColors->setChecked(false);
 
-            m_detailedNodes = contextMenu->addAction("Detailed Nodes", [=] {
+            m_detailedNodes = contextMenu->addAction(tr("Detailed Nodes"), [=] {
                 toolbar->OnDetailedNodes();
                 });
             m_detailedNodes->setCheckable(true);
             m_detailedNodes->setChecked(false);
 
-            m_limitGraphHeightAction = contextMenu->addAction("Limit Graph Height", [=] {
+            m_limitGraphHeightAction = contextMenu->addAction(tr("Limit Graph Height"), [=] {
                 plugin->SetRedrawFlag();
                 });
             m_limitGraphHeightAction->setCheckable(true);
@@ -152,12 +152,12 @@ namespace EMStudio
             if (isRecording)
             {
                 m_recordAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/StopRecorder.svg"));
-                m_recordAction->setToolTip("Stop recording");
+                m_recordAction->setToolTip(tr("Stop recording"));
             }
             else
             {
                 m_recordAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/RecordButton.svg"));
-                m_recordAction->setToolTip("Start recording");
+                m_recordAction->setToolTip(tr("Start recording"));
             }
         }
 

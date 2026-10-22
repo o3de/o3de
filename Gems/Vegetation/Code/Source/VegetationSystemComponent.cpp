@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Vegetation/DescriptorListAsset.h>
 #include <Vegetation/AreaComponentBase.h>
@@ -96,7 +97,7 @@ namespace Vegetation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<VegetationSystemComponent>("Vegetation System", "Reflects types and defines required services for dynamic vegetation systems to function")
+                editContext->Class<VegetationSystemComponent>(QT_TRANSLATE_NOOP("Vegetation", "Vegetation System"), QT_TRANSLATE_NOOP("Vegetation", "Reflects types and defines required services for dynamic vegetation systems to function"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

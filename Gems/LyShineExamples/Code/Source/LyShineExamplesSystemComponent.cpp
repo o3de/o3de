@@ -14,6 +14,7 @@
 
 #include "UiDynamicContentDatabase.h"
 #include "LyShineExamplesCppExample.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LyShineExamples
 {
@@ -31,7 +32,7 @@ namespace LyShineExamples
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<LyShineExamplesSystemComponent>("LyShineExamples", "This provides example code using LyShine and code used by sample UI canvases and levels")
+                ec->Class<LyShineExamplesSystemComponent>(QT_TRANSLATE_NOOP("LyShineExamples", "LyShineExamples"), QT_TRANSLATE_NOOP("LyShineExamples", "This provides example code using LyShine and code used by sample UI canvases and levels"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "UI")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

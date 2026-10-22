@@ -39,7 +39,7 @@ namespace AZ
         RPI::Ptr<NewDepthOfFieldParentPass> NewDepthOfFieldParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<NewDepthOfFieldParentPass> pass = aznew NewDepthOfFieldParentPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         NewDepthOfFieldParentPass::NewDepthOfFieldParentPass(const RPI::PassDescriptor& descriptor)
@@ -102,7 +102,7 @@ namespace AZ
         RPI::Ptr<NewDepthOfFieldTileReducePass> NewDepthOfFieldTileReducePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<NewDepthOfFieldTileReducePass> pass = aznew NewDepthOfFieldTileReducePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         NewDepthOfFieldTileReducePass::NewDepthOfFieldTileReducePass(const RPI::PassDescriptor& descriptor)
@@ -134,7 +134,7 @@ namespace AZ
         RPI::Ptr<NewDepthOfFieldFilterPass> NewDepthOfFieldFilterPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<NewDepthOfFieldFilterPass> pass = aznew NewDepthOfFieldFilterPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         NewDepthOfFieldFilterPass::NewDepthOfFieldFilterPass(const RPI::PassDescriptor& descriptor)

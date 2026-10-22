@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Util.h>
@@ -43,62 +44,62 @@ namespace GradientSignal
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<GradientSampler>("Gradient Sampler", "")
+                edit->Class<GradientSampler>(QT_TRANSLATE_NOOP("GradientSignal", "Gradient Sampler"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &GradientSampler::m_gradientId, "Gradient Entity Id", "Entity with attached gradient component")
+                    ->DataElement(0, &GradientSampler::m_gradientId, QT_TRANSLATE_NOOP("GradientSignal", "Gradient Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Entity with attached gradient component"))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &GradientSampler::ValidatePotentialEntityId)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_opacity, "Opacity", "Factor multiplied by the current gradient before mixing.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_opacity, QT_TRANSLATE_NOOP("GradientSignal", "Opacity"), QT_TRANSLATE_NOOP("GradientSignal", "Factor multiplied by the current gradient before mixing."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Advanced"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
-                    ->DataElement(0, &GradientSampler::m_invertInput, "Invert Input", "")
+                    ->DataElement(0, &GradientSampler::m_invertInput, QT_TRANSLATE_NOOP("GradientSignal", "Invert Input"), "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientSampler::ChangeNotify)
 
-                    ->GroupElementToggle("Enable Transform", &GradientSampler::m_enableTransform)
+                    ->GroupElementToggle(QT_TRANSLATE_NOOP("GradientSignal", "Enable Transform"), &GradientSampler::m_enableTransform)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientSampler::m_translate, "Translate", "")
+                    ->DataElement(0, &GradientSampler::m_translate, QT_TRANSLATE_NOOP("GradientSignal", "Translate"), "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
-                    ->DataElement(0, &GradientSampler::m_scale, "Scale", "")
+                    ->DataElement(0, &GradientSampler::m_scale, QT_TRANSLATE_NOOP("GradientSignal", "Scale"), "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
-                    ->DataElement(0, &GradientSampler::m_rotate, "Rotate", "Rotation in degrees.")
+                    ->DataElement(0, &GradientSampler::m_rotate, QT_TRANSLATE_NOOP("GradientSignal", "Rotate"), QT_TRANSLATE_NOOP("GradientSignal", "Rotation in degrees."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreTransformSettingsDisabled)
 
-                    ->GroupElementToggle("Enable Levels", &GradientSampler::m_enableLevels)
+                    ->GroupElementToggle(QT_TRANSLATE_NOOP("GradientSignal", "Enable Levels"), &GradientSampler::m_enableLevels)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMid, "Input Mid", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMid, QT_TRANSLATE_NOOP("GradientSignal", "Input Mid"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMin, "Input Min", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMin, QT_TRANSLATE_NOOP("GradientSignal", "Input Min"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMax, "Input Max", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_inputMax, QT_TRANSLATE_NOOP("GradientSignal", "Input Max"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMin, "Output Min", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMin, QT_TRANSLATE_NOOP("GradientSignal", "Output Min"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMax, "Output Max", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSampler::m_outputMax, QT_TRANSLATE_NOOP("GradientSignal", "Output Max"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientSampler::AreLevelSettingsDisabled)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview (Inbound)")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Preview (Inbound)"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->UIElement("GradientPreviewer", "Previewer")
+                    ->UIElement("GradientPreviewer", QT_TRANSLATE_NOOP("GradientSignal", "Previewer"))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ_CRC_CE("GradientSampler"), &GradientSampler::GetSampler)
                     ;

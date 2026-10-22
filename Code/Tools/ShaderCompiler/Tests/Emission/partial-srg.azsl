@@ -1,0 +1,32 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 0;
+};
+
+partial ShaderResourceGroup SRG : sem
+{
+    int m_i;
+    int GetI()
+    {
+        return m_i;
+    }
+};
+
+int GetZero() { return 0; }
+static const int zero = 0;
+
+// more of SRG
+partial ShaderResourceGroup SRG
+{
+    float4 m_f4;
+    float4 GetF()
+    {
+        return m_f4 + GetZero() + zero;
+    }
+
+    struct CloudLayer
+    {
+        float4 p1, p2;
+    };
+    ConstantBuffer<CloudLayer> clouds;
+};

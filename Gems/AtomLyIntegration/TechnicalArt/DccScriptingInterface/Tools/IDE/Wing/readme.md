@@ -193,7 +193,7 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
 
   - O3DE python is in a location such as: `c:\path\to\o3de\python\*`
 
-- O3DE builds it's own Qt dlls (and other binaries), provides it's own access to PySide2, installs python package dependencies during cmake configuration; we need to ensure we are bootstrapping access to these things, so we are developing and testing code with the same interpreter, using the same packages and code access, and operating in an environment similar to the editor! (and there are other ways to operate, like creating a standalone PySide2 gui application. A topic for another time perhaps.)
+- O3DE builds it's own Qt dlls (and other binaries), provides it's own access to PySide, installs python package dependencies during cmake configuration; we need to ensure we are bootstrapping access to these things, so we are developing and testing code with the same interpreter, using the same packages and code access, and operating in an environment similar to the editor! (and there are other ways to operate, like creating a standalone PySide gui application. A topic for another time perhaps.)
 
 - We also want to interface with a number of DCC applications, each with their own python interpreters and configuration concerns.  So we might want to use those python.exe's as the IDE interpreter, access their APIs, and manage compatible package dependencies; we might have common shared code running across these tools ... things can get out of hand and rather confusing quickly (this IDE integration attempts to solve some of this nightmare for you.)
 
@@ -365,7 +365,7 @@ python Tools\IDE\Wing\start.py
 
 # Revision Info:
 
-- This is the second working Proof of Concept. The first was a windows only .bat file based env and launchers. This new integration replaces that with data-driven configuration and settings, with python scripting to bootstrap and launch. (this provides a path to starting from within the main o3de Editor via a PySide2 menu)
+- This is the second working Proof of Concept. The first was a windows only .bat file based env and launchers. This new integration replaces that with data-driven configuration and settings, with python scripting to bootstrap and launch. (this provides a path to starting from within the main o3de Editor via a PySide menu)
 
 - This iteration is developer focused, such as a Technical Artist. It does not have some of the end-user functionality or creature comforts that you might want or expect, yet.
 

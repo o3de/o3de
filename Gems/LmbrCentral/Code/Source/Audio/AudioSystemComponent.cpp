@@ -16,6 +16,7 @@
 #include <LmbrCentral/Audio/AudioTriggerComponentBus.h>
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <IAudioSystem.h>
 using namespace Audio;
@@ -56,7 +57,9 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<AudioSystemComponent>("Audio System", "Provides access to audio system features without the need for an Entity")
+                editContext->Class<AudioSystemComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio System"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Provides access to audio system features without the need for an Entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

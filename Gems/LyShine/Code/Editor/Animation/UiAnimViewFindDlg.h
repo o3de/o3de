@@ -9,12 +9,8 @@
 
 #pragma once
 
-// UiAnimViewFindDlg.h : header file
-//
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
-#endif
 
 class CUiAnimViewDialog;
 

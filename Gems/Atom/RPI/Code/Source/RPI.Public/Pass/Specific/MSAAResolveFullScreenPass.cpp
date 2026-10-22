@@ -17,7 +17,7 @@ namespace AZ
         RPI::Ptr<MSAAResolveFullScreenPass> MSAAResolveFullScreenPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<MSAAResolveFullScreenPass> pass = aznew MSAAResolveFullScreenPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         MSAAResolveFullScreenPass::MSAAResolveFullScreenPass(const RPI::PassDescriptor& descriptor)

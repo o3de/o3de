@@ -17,6 +17,7 @@
         "MinimalProject"
     ],
     "icon_path": "preview.png",
+    "inherits": "EngineFinder",
     "copyFiles": [
         {
             "file": ".gitignore",
@@ -33,10 +34,6 @@
         {
             "file": "CMakePresets.json",
             "isTemplated": true
-        },
-        {
-            "file": "cmake/EngineFinder.cmake",
-            "isTemplated": false
         },
         {
             "file": "Config/shader_global_build_options.json",
@@ -401,9 +398,6 @@
         },
         {
             "dir": "Assets"
-        },
-        {
-            "dir": "cmake"
         },
         {
             "dir": "Config"

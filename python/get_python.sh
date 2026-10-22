@@ -20,7 +20,7 @@ cd $DIR
 
 install_dependencies () {
     echo installing via pip...
-    $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
+    $DIR/pip.sh install --no-deps -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failed to install the packages listed in $DIR/requirements.txt.  Check the log above!"
@@ -67,6 +67,17 @@ if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
     CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
+
+    MAC_HOST_ARCHITECTURE=$( uname -m )
+    if [[ "$MAC_HOST_ARCHITECTURE" == "arm64" ]]; then
+        PAL_ARCH="_arm64"
+    elif [[ "$MAC_HOST_ARCHITECTURE" == "x86_64" ]]; then
+        PAL_ARCH="_x86_64"
+    else
+        echo "Mac host architecture ${MAC_HOST_ARCHITECTURE} not supported."
+        exit 1
+    fi
+
 elif [[ "$OSTYPE" == "msys" ]]; then #git bash
     PAL=Windows
     CMAKE_FOLDER_RELATIVE_TO_ROOT=bin

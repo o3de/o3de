@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -221,7 +222,7 @@ namespace PhysX
                 //       can open the asset with the preferred asset editor (Scene Settings).
                 if (auto* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<MeshAsset>("PhysX Mesh Asset", "")
+                    editContext->Class<MeshAsset>(QT_TRANSLATE_NOOP("PhysX", "PhysX Mesh Asset"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ;
                 }

@@ -1,0 +1,21 @@
+
+// Number of triangles that will be rendered on screen
+
+
+
+
+#line 16 "D:/Atom/dev/BaseViewer/Shaders/RHI/TrianglesConstantBuffer.azsl"
+struct InstanceInfo
+{
+    column_major float4x4 m_matrix;
+    float4 m_colorMultiplier;
+// NOTE: This actually shouldn't be required, but the current validation will give a false positive
+
+// when the stride isn't the same size as the stride defined on the applicaiton side.
+
+// This assumes 256 alignment, which is standard for DX12, but is variable in Vulkan
+
+
+#line 23 "D:/Atom/dev/BaseViewer/Shaders/RHI/TrianglesConstantBuffer.azsl"
+    float padding0[44];
+};

@@ -11,7 +11,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -19,7 +18,6 @@
 #include <QWidget>
 
 #include "PropertyEditorAPI.h"
-#endif
 
 namespace AzQtComponents
 {

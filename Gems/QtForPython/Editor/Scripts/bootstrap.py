@@ -24,9 +24,9 @@ if len(params.qtBinaryFolder) and sys.platform.startswith('win'):
     newPath += params.qtBinaryFolder + os.pathsep
     newPath += path
     os.environ['PATH'] = newPath
-    print('PySide2 bootstrapped PATH for Windows.')
+    print('PySide bootstrapped PATH for Windows.')
 
-    # Once PySide2 has been bootstrapped, register our Object Tree visualizer with the Editor
+    # Once PySide has been bootstrapped, register our Object Tree visualizer with the Editor
     try:
         import az_qt_helpers
         from show_object_tree import ObjectTreeDialog

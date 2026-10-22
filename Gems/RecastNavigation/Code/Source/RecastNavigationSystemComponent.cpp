@@ -6,14 +6,20 @@
  *
  */
 
-#include <RecastNavigationSystemComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
+#include <RecastNavigation/DetourCrowdAgentParams.h>
+#include <RecastNavigation/DetourObstacleAvoidanceParams.h>
+#include <RecastNavigationSystemComponent.h>
 
 namespace RecastNavigation
 {
     void RecastNavigationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        DetourCrowdAgentParams::Reflect(context);
+        DetourObstacleAvoidanceParams::Reflect(context);
+
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationSystemComponent, AZ::Component>()
@@ -22,7 +28,9 @@ namespace RecastNavigation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<RecastNavigationSystemComponent>("RecastNavigation", "[System Component for the Recast Navigation gem]")
+                editContext->Class<RecastNavigationSystemComponent>(
+                    QT_TRANSLATE_NOOP("RecastNavigation", "RecastNavigation"),
+                    QT_TRANSLATE_NOOP("RecastNavigation", "[System Component for the Recast Navigation gem]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

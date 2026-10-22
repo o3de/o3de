@@ -14,6 +14,15 @@
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzFramework/Translation/TranslationDef.h>
+
+namespace EditorPreferencesAWSStrings
+{
+    static const char* OptionsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageAWS", "Options");
+    static const char* AWSAttributionEnabledName = QT_TRANSLATE_NOOP("EditorPreferencesPageAWS", "Allow <a href=\"https://aws.amazon.com/privacy/\">O3DE</a> to send information about your use of AWS Core Gem to AWS");
+    static const char* AWSPreferencesClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageAWS", "AWS Preferences");
+    static const char* AWSDataCollectionName = QT_TRANSLATE_NOOP("EditorPreferencesPageAWS", "AWS Data Collection and Use");
+}
 
 void CEditorPreferencesPage_AWS::Reflect(AZ::SerializeContext& serialize)
 {
@@ -28,14 +37,15 @@ void CEditorPreferencesPage_AWS::Reflect(AZ::SerializeContext& serialize)
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
     {
-        editContext->Class<UsageOptions>("Options", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, "Allow <a href=\"https://aws.amazon.com/privacy/\">O3DE</a> to send information about your use of AWS Core Gem to AWS",
-            "");
+        using namespace EditorPreferencesAWSStrings;
 
-        editContext->Class<CEditorPreferencesPage_AWS>("AWS Preferences", "AWS Preferences")
+        editContext->Class<UsageOptions>(OptionsClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, AWSAttributionEnabledName, "");
+
+        editContext->Class<CEditorPreferencesPage_AWS>(AWSPreferencesClassName, AWSPreferencesClassName)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_AWS::m_usageOptions, "AWS Data Collection and Use", "AWS Data Collection and Use");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_AWS::m_usageOptions, AWSDataCollectionName, AWSDataCollectionName);
     }
 }
 
@@ -54,7 +64,7 @@ CEditorPreferencesPage_AWS::~CEditorPreferencesPage_AWS()
 
 const char* CEditorPreferencesPage_AWS::GetTitle()
 {
-    return "Cloud";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Cloud");
 }
 
 QIcon& CEditorPreferencesPage_AWS::GetIcon()

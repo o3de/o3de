@@ -86,7 +86,7 @@ namespace EMotionFX
             // QTest::mouseMove uses QCursor::setPos to generate a MouseMove
             // event to send to the resulting widget. This won't happen if the
             // widget isn't visible. So we need to send the event directly.
-            QMouseEvent moveEvent(QMouseEvent::MouseMove, end, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+            QMouseEvent moveEvent(QMouseEvent::MouseMove, end, end, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
             moveEvent.setTimestamp(QTest::lastMouseTimestamp += QTest::defaultMouseDelay());
             QApplication::instance()->notify(blendGraphWidget, &moveEvent);
         }

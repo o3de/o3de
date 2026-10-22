@@ -10,6 +10,7 @@
 
 #include "EditorWhiteBoxComponentMode.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
+#include "SubComponentModes/WhiteBoxNumericInput.h"
 #include "Viewport/WhiteBoxManipulatorViews.h"
 
 #include <AzCore/Math/Quaternion.h>
@@ -75,15 +76,27 @@ namespace WhiteBox
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay);
 
-        bool HandleMouseInteraction(
-            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-            const AZ::EntityComponentIdPair& entityComponentIdPair,
-            const AZStd::optional<EdgeIntersection>& edgeIntersection,
-            const AZStd::optional<PolygonIntersection>& polygonIntersection,
-            const AZStd::optional<VertexIntersection>& vertexIntersection);
+        bool HandleMouseInteraction(const ModeMouseInteraction& mouse);
 
         // EditorWhiteBoxTransformModeRequestBus overrides ...
         void ChangeTransformType(TransformType subModeType) override;
+
+        // Numeric input bus overrides
+        void NumericBeginMove()         override { if (m_whiteBoxSelection) m_numericInput.Begin(NumericOpMode::Move);   }
+        void NumericBeginRotate()       override { if (m_whiteBoxSelection) m_numericInput.Begin(NumericOpMode::Rotate); }
+        void NumericBeginScale()        override { if (m_whiteBoxSelection) m_numericInput.Begin(NumericOpMode::Scale);  }
+        void NumericSetAxisX()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::X); }
+        void NumericSetAxisY()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Y); }
+        void NumericSetAxisZ()          override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Z); }
+        void NumericConfirm()           override { ApplyNumericTransform(); }
+        void NumericCancel()            override { m_numericInput.Reset(); }
+        void NumericBackspace()         override { if (m_numericInput.IsActive()) m_numericInput.Backspace(); }
+        void NumericDecimal()           override { if (m_numericInput.IsActive()) m_numericInput.AppendDecimal(); }
+        void NumericNegate()             override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('-'); }
+        void NumericAppendDigit(char d)  override { if (m_numericInput.IsActive()) m_numericInput.AppendDigit(d); }
+        void NumericAppendOperatorPlus() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('+'); }
+        void NumericAppendOperatorMult() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('*'); }
+        void NumericAppendOperatorDiv()  override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('/'); }
 
     private:
         //! shared data that is used between the different transformation modes Translation/Rotation/Scale.
@@ -103,6 +116,9 @@ namespace WhiteBox
         void RefreshManipulator();
         void DestroyManipulators();
 
+        //! Apply the current numeric input state to the selected geometry, then reset the state.
+        void ApplyNumericTransform();
+
         AZ::EntityComponentIdPair m_entityComponentIdPair; //!< The entity and component id this modifier is associated with.
 
         AZStd::shared_ptr<AzToolsFramework::Manipulators> m_manipulator = nullptr;
@@ -113,6 +129,10 @@ namespace WhiteBox
         AZStd::optional<VertexIntersection> m_vertexIntersection = AZStd::nullopt;
 
         TransformType m_transformType = TransformType::Translation;
+
+        //! Blender-style numeric input state (G/R/S + optional X/Y/Z + digits + Enter/Escape).
+        NumericInputState m_numericInput;
+
         AzToolsFramework::ViewportUi::ClusterId m_transformClusterId;
         AzToolsFramework::ViewportUi::ButtonId m_transformTranslateButtonId;
         AzToolsFramework::ViewportUi::ButtonId m_transformRotateButtonId;

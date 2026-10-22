@@ -148,7 +148,7 @@ struct PSOutput
 // First pass of PPLL implementation
 // Builds up the linked list of hair fragments
 [earlydepthstencil]
-void PPLLFillPS(PS_INPUT_HAIR input)
+float4 PPLLFillPS(PS_INPUT_HAIR input) : SV_Target0
 {
     // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read 
     // from texture in the vertex shader for base color along with modulation by the tip color  
@@ -197,4 +197,7 @@ void PPLLFillPS(PS_INPUT_HAIR input)
         strandColor.xyz, 
         input.Position.z
     );
+
+    // Keep `float4`. The value is unused here, but PS stages are expected to return a color value.
+    return float4(0.0, 0.0, 0.0, 0.0);
 }

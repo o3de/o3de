@@ -33,7 +33,7 @@ namespace AzFramework
     //! Fundamental component that describes the entity in 3D space.
     class AZF_API TransformComponent
         : public AZ::Component
-        , public AZ::EntityBus::Handler
+        , public AZ::EntityBus::MultiHandler
         , public AZ::TransformBus::Handler
         , public AZ::TransformNotificationBus::Handler
         , private AZ::TransformHierarchyInformationBus::Handler
@@ -151,11 +151,10 @@ namespace AzFramework
         void OnTransformChanged(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM) override;
 
         // EntityBus
-        //! Called when the parent entity activates.
-        //! Called when the parent entity is going to be destroyed.
-        void OnEntityActivated(const AZ::EntityId& parentEntityId) override;
-        void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
-        void OnEntityDestruction(const AZ::EntityId& parentEntityId) override;
+        void OnEntityExists(const AZ::EntityId& entityId) override;
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
+        void OnEntityDeactivated(const AZ::EntityId& entityId) override;
+        void OnEntityDestruction(const AZ::EntityId& entityId) override;
         //! @}
 
         //////////////////////////////////////////////////////////////////////////

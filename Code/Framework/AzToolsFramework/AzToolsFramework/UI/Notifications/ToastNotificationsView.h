@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QPoint>
 #include <QPointF>
@@ -17,7 +16,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
-#endif
 
 namespace AzQtComponents
 {

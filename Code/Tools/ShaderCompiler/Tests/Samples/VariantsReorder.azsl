@@ -1,0 +1,48 @@
+/*
+ * Demonstrates the use of shader variants (options)
+ *
+ * This is a more advanced test which checks the emission order is correct
+ */
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+option enum class Direction { Left, Right, Up, Down } o_wobbleDirection;
+
+//[GFX TODO][ATOM-1581] Once we have support for integer range options, update this to be an int.
+option enum class Stack { Num0, Num1, Num2, Num3 } o_stackNumber;
+int GetStackNumberOption()
+{
+    switch (o_stackNumber)
+    {
+    case Stack::Num0: return 0;
+    case Stack::Num1: return 1;
+    case Stack::Num2: return 2;
+    case Stack::Num3: return 3;
+    default: return 0;
+    }
+}
+
+struct VertexInput  { float3 m_position : POSITION; };
+
+struct VertexOutput { float4 m_position : SV_Position; };
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+float4 MainPS() : SV_Target0
+{
+    return float4(0, 0, 0, 0);
+}

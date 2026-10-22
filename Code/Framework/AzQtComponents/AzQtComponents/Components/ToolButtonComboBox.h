@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/ToolButtonWithWidget.h>
-#endif
 
 class QComboBox;
 

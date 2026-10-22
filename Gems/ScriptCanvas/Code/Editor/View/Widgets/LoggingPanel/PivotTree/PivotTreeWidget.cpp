@@ -286,10 +286,10 @@ namespace ScriptCanvasEditor
 
     void PivotTreeSortProxyModel::SetFilter(const QString& filter)
     {
+        beginFilterChange();
         m_filter = filter;
         m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
-
-        invalidateFilter();
+        endFilterChange();
     }
 
     void PivotTreeSortProxyModel::ClearFilter()
@@ -418,5 +418,4 @@ namespace ScriptCanvasEditor
         }
     }
 
-#include <Editor/View/Widgets/LoggingPanel/PivotTree/moc_PivotTreeWidget.cpp>
 }

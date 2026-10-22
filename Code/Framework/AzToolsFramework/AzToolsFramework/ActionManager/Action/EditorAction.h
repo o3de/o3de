@@ -13,10 +13,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#endif
 
 #include <QIcon>
 #include <QObject>

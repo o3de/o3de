@@ -48,7 +48,7 @@ namespace AZ::Render
     void AtomRenderOptionsActionHandler::OnMenuRegistrationHook()
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Render Options";
+        menuProperties.m_name = QObject::tr("Render Options").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(RenderOptionsMenuIdentifier, menuProperties);
     }
 

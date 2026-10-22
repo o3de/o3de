@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
@@ -23,8 +22,8 @@
 #include <Editor/ActorEditorBus.h>
 
 #include <AzQtComponents/Components/DockMainWindow.h>
+
 #include <QDialog>
-#endif
 
 // forward declarations
 QT_FORWARD_DECLARE_CLASS(QPushButton)

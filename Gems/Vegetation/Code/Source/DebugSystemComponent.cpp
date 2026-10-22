@@ -8,6 +8,7 @@
 #include "DebugSystemComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <CrySystemBus.h>
@@ -39,7 +40,7 @@ namespace Vegetation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<DebugSystemComponent>("Vegetation Debug System", "Stores and manages vegetation debug data")
+                editContext->Class<DebugSystemComponent>(QT_TRANSLATE_NOOP("Vegetation", "Vegetation Debug System"), QT_TRANSLATE_NOOP("Vegetation", "Stores and manages vegetation debug data"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

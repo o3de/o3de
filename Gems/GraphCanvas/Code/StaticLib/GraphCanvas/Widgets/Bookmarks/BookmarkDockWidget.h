@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAction>
 #include <QTimer>
-#include <qlabel.h>
-#include <qitemselectionmodel.h>
+#include <QLabel>
+#include <QItemSelectionModel>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -24,7 +23,6 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.h>
 #include <GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h>
-#endif
 
 class QSortFilterProxyModel;
 

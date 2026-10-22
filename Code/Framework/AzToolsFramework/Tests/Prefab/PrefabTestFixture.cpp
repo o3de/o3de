@@ -69,10 +69,6 @@ namespace UnitTest
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
         AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
-
-        // This ensures that the flag (if root prefab is assigned) in prefab editor entity ownership service is set to true.
-        // Public prefab operations like "create prefab" will fail if the flag is off.
-        CreateRootPrefab();
     }
 
     void PrefabTestFixture::TearDownEditorFixtureImpl()
@@ -85,28 +81,6 @@ namespace UnitTest
     AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()
     {
         return AZStd::make_unique<PrefabTestToolsApplication>("PrefabTestApplication");
-    }
-
-    void PrefabTestFixture::CreateRootPrefab()
-    {
-        m_prefabEditorEntityOwnershipInterface->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
-
-        InstanceOptionalReference rootInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-        ASSERT_TRUE(rootInstance.has_value());
-        
-        EntityOptionalReference rootContainerEntity = rootInstance->get().GetContainerEntity();
-        ASSERT_TRUE(rootContainerEntity.has_value());
-        if (rootContainerEntity->get().GetState() == AZ::Entity::State::Constructed)
-        {
-            rootContainerEntity->get().Init();
-        }
-
-        // Focus on root prefab instance.
-        auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-        EXPECT_TRUE(prefabFocusPublicInterface != nullptr);
-        PrefabFocusOperationResult focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(
-            rootContainerEntity->get().GetId());
-        EXPECT_TRUE(focusResult.IsSuccess());
     }
 
     void PrefabTestFixture::PropagateAllTemplateChanges()

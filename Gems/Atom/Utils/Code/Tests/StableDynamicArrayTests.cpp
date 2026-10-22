@@ -29,7 +29,7 @@ namespace UnitTest
         void TearDown() override
         {
             handles = AZStd::vector<AZ::StableDynamicArray<TestItem>::Handle>(); // force memory deallocation.
-            
+
             LeakDetectionFixture::TearDown();
         }
 
@@ -657,8 +657,8 @@ namespace UnitTest
         using SourceHandle = AZ::StableDynamicArrayHandle<SourceTestItemType>;
         using DestinationHandle = AZ::StableDynamicArrayHandle<DestinationTestItemType>;
     public:
-        MoveTests() 
-        { 
+        MoveTests()
+        {
             AZ_Assert(SourceTestItemType::RTTI_IsContainType(DestinationTestItemType::RTTI_Type()) || DestinationTestItemType::RTTI_IsContainType(SourceTestItemType::RTTI_Type()), "These tests expect the transfer of ownership from one handle to the other will succeed, and should only be called with compatible types.");
         }
 
@@ -725,7 +725,7 @@ namespace UnitTest
         {
             {
                 StableDynamicArrayOwner owner;
-                
+
                 SourceHandle source;
                 DestinationHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
@@ -803,7 +803,7 @@ namespace UnitTest
                         SourceHandle source = owner.AcquireItem(123);
                         destination = AZStd::move(source);
                     }
-                    // Letting the invalid source item go out of scope should be a no-op 
+                    // Letting the invalid source item go out of scope should be a no-op
                     EXPECT_EQ(StableDynamicArrayHandleTests::s_testItemsConstructed, 2);
                     EXPECT_EQ(StableDynamicArrayHandleTests::s_testItemsDestructed, 1);
                     EXPECT_EQ(StableDynamicArrayHandleTests::s_testItemsModified, 0);
@@ -974,7 +974,8 @@ namespace UnitTest
         handle->SetValue(testValue);
 
         // Self assignment should not invalidate the handle
-        handle = AZStd::move(handle);
+        TestItemHandle& handleAlias = handle;
+        handle = AZStd::move(handleAlias);
         EXPECT_TRUE(handle.IsValid());
         EXPECT_FALSE(handle.IsNull());
         EXPECT_EQ(handle->GetValue(), testValue);

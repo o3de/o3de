@@ -1,0 +1,4 @@
+interface I {};
+interface J {};
+
+void func<T : I, U : J, F>(F f, T t, U u);

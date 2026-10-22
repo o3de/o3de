@@ -12,6 +12,7 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
                         "ModelPreset", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_modelAsset, "Model Asset", "Model asset reference")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ModelPreset::m_modelAsset, QT_TRANSLATE_NOOP("Atom::Feature", "Model Asset"), QT_TRANSLATE_NOOP("Atom::Feature", "Model asset reference"))
                         ;
                 }
             }

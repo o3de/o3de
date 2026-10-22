@@ -9,6 +9,7 @@
 #include <BuilderSettings/MipmapSettings.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ImageProcessingAtom
 {
@@ -34,15 +35,15 @@ namespace ImageProcessingAtom
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<MipmapSettings>("Mipmap Setting", "")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MipmapSettings::m_type, "Type", "")
-                    ->EnumAttribute(MipGenType::point, "Point")
-                    ->EnumAttribute(MipGenType::box, "Average")
-                    ->EnumAttribute(MipGenType::triangle, "Linear")
-                    ->EnumAttribute(MipGenType::quadratic, "Bilinear")
-                    ->EnumAttribute(MipGenType::gaussian, "Gaussian")
-                    ->EnumAttribute(MipGenType::blackmanHarris, "BlackmanHarris")
-                    ->EnumAttribute(MipGenType::kaiserSinc, "KaiserSinc")
+                editContext->Class<MipmapSettings>(QT_TRANSLATE_NOOP("Atom::Asset", "Mipmap Setting"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MipmapSettings::m_type, QT_TRANSLATE_NOOP("Atom::Asset", "Type"), "")
+                    ->EnumAttribute(MipGenType::point, QT_TRANSLATE_NOOP("Atom::Asset", "Point"))
+                    ->EnumAttribute(MipGenType::box, QT_TRANSLATE_NOOP("Atom::Asset", "Average"))
+                    ->EnumAttribute(MipGenType::triangle, QT_TRANSLATE_NOOP("Atom::Asset", "Linear"))
+                    ->EnumAttribute(MipGenType::quadratic, QT_TRANSLATE_NOOP("Atom::Asset", "Bilinear"))
+                    ->EnumAttribute(MipGenType::gaussian, QT_TRANSLATE_NOOP("Atom::Asset", "Gaussian"))
+                    ->EnumAttribute(MipGenType::blackmanHarris, QT_TRANSLATE_NOOP("Atom::Asset", "BlackmanHarris"))
+                    ->EnumAttribute(MipGenType::kaiserSinc, QT_TRANSLATE_NOOP("Atom::Asset", "KaiserSinc"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                 ;
             }

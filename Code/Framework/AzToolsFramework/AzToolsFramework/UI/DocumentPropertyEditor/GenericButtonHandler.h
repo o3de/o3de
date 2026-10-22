@@ -21,8 +21,9 @@ namespace AzToolsFramework
     public:
         GenericButtonHandler();
 
-        virtual void SetValueFromDom(const AZ::Dom::Value& node) override;
-        virtual bool ResetToDefaults() override
+        void SetValueFromDom(const AZ::Dom::Value& node) override;
+        void RefreshUI() override;
+        bool ResetToDefaults() override
         {
             m_node.SetNull();
             return true;

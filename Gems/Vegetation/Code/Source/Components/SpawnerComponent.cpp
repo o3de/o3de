@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <Vegetation/Ebuses/AreaDebugBus.h>
 #include <Vegetation/Ebuses/AreaInfoBus.h>
@@ -54,15 +55,15 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SpawnerConfig>(
-                    "Vegetation Layer Spawner", "Vegetation spawner")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Layer Spawner"), QT_TRANSLATE_NOOP("Vegetation", "Vegetation spawner"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SpawnerConfig::m_inheritBehavior, "Inherit Behavior", "Allow shapes, modifiers, filters of a parent to affect this area.")
-                    ->DataElement(0, &SpawnerConfig::m_allowEmptyMeshes, "Allow Empty Assets", "Allow unspecified asset references in the Descriptors to claim space and block other vegetation.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SpawnerConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
+                    ->DataElement(0, &SpawnerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
+                    ->DataElement(0, &SpawnerConfig::m_allowEmptyMeshes, QT_TRANSLATE_NOOP("Vegetation", "Allow Empty Assets"), QT_TRANSLATE_NOOP("Vegetation", "Allow unspecified asset references in the Descriptors to claim space and block other vegetation."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SpawnerConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
                     ;
             }
         }

@@ -44,8 +44,8 @@ def Pane_HappyPath_DocksProperly():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide2 import QtCore, QtWidgets
-    from PySide2.QtCore import Qt
+    from PySide6 import QtCore, QtWidgets
+    from PySide6.QtCore import Qt
 
     PANE_WIDGET = "NodePalette"  # Chosen most commonly used pane
     DOCKAREAS = [Qt.TopDockWidgetArea, Qt.BottomDockWidgetArea, Qt.RightDockWidgetArea, Qt.LeftDockWidgetArea]

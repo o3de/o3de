@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_EDITOR_CORE_UTIL_UNDO_UTIL_H
-#define CRYINCLUDE_EDITOR_CORE_UTIL_UNDO_UTIL_H
+
 #pragma once
 
 #include "Include/EditorCoreAPI.h"
@@ -46,5 +45,3 @@ public:
 
     ~CUndoSuspend();
 };
-
-#endif // CRYINCLUDE_EDITOR_CORE_UTIL_UNDO_UTIL_H

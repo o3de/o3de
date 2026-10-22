@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractNativeEventFilter>
 #include <QColor>
 #include <QMap>
@@ -19,7 +18,6 @@
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <IEditor.h>
 #include <AzQtComponents/Application/AzQtApplication.h>
-#endif
 
 class QFileInfo;
 typedef QList<QFileInfo> QFileInfoList;

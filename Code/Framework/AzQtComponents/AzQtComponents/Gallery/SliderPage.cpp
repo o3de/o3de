@@ -151,4 +151,3 @@ SliderPage::~SliderPage()
 {
 }
 
-#include "Gallery/moc_SliderPage.cpp"

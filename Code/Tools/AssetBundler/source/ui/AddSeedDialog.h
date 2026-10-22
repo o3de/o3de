@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include <QDialog>
 #include <QSharedPointer>
-#endif
 
 namespace Ui
 {

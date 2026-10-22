@@ -48,7 +48,7 @@ def ScriptCanvasTools_Toggle_OpenCloseSuccess():
     :return: None
     """
 
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     from utils import Report
     from utils import TestHelper as helper

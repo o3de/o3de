@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Editor/LineEditValidatable.h>
-#endif
 
 namespace EMotionFX
 {

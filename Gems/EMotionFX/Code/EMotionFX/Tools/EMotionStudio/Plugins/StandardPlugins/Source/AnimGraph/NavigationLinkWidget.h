@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/std/containers/vector.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
 #include <QWidget>
-#endif
+#include <QModelIndex>
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 

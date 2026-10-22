@@ -44,8 +44,8 @@ class TestAutomation(EditorTestSuite):
         from Atom.tests import hydra_AtomEditorComponents_SkyAtmosphereAdded as test_module
 
     @pytest.mark.test_case_id("C36525666")
-    class AtomEditorComponents_SSAOAdded(EditorBatchedTest):
-        from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
+    class AtomEditorComponents_AOAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_AOAdded as test_module
 
     class AtomEditorComponents_StarsAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_StarsAdded as test_module

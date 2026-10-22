@@ -35,6 +35,8 @@ namespace AzToolsFramework::Prefab
         //! @param value The value holding the override label property in the DPE DOM
         void SetValueFromDom(const AZ::Dom::Value& value) override;
 
+        void RefreshUI() override;
+
         bool ResetToDefaults() override;
 
         void SetFilter(const QString& filter) override;

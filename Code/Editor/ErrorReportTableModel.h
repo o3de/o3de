@@ -5,15 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ERRORREPORTTABLEMODEL_H
-#define ERRORREPORTTABLEMODEL_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include "Util/AbstractSortModel.h"
 
 #include <QMetaType>
 #include <QPixmap>
-#endif
 
 
 class CErrorReport;
@@ -67,6 +65,4 @@ private:
     QVector<QIcon> m_imageList;
 };
 
-Q_DECLARE_METATYPE(const CErrorRecord*)
-
-#endif
+Q_DECLARE_OPAQUE_POINTER(const CErrorRecord*)

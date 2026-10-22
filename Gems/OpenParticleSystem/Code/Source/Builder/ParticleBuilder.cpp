@@ -112,18 +112,37 @@ namespace OpenParticle
             descriptor.m_critical = false;
             descriptor.m_priority = 1; // since this is an entry point asset, we should prioritize it above the background
 
-            // make it depend on the materials it references.
-            // We didn't actually load them since we only need their assetid, not their data, at this stage.
-            // We need to load it during job processing to check if its the right material type, but not now.
+            // Declare a JobDependency on each emitter's referenced material so
+            // the material is baked before this particle job runs. Two forms
+            // for the dependency identification are supported, in priority order:
+            //
+            // 1. AssetId UUID: present when the deserializer's catalog lookup
+            //    succeeded (warm cache, or object-form material reference in the
+            //    .particle JSON).
+            // 2. Asset hint string: a path preserved by the deserializer when the
+            //    legacy string-form material reference could not yet be resolved
+            //    against the asset catalog (cold cache). Without this fallback,
+            //    the JobDependency would be silently skipped on a cold cache and
+            //    the particle's ProcessJob would fail with "no material assigned
+            //    to render in emitter ..." -- a class of error that previously
+            //    required a second AP pass to clear.
             for (const auto& emitter : sourceData.m_emitters)
             {
+                AssetBuilderSDK::SourceFileDependency dep;
                 if (emitter->m_material.GetId().IsValid())
                 {
-                    AssetBuilderSDK::SourceFileDependency dep;
                     dep.m_sourceFileDependencyUUID = emitter->m_material.GetId().m_guid;
-                    descriptor.m_jobDependencyList.push_back(AssetBuilderSDK::JobDependency(
-                        "Material Builder", platformInfo.m_identifier, AssetBuilderSDK::JobDependencyType::Order, dep));
                 }
+                else if (!emitter->m_material.GetHint().empty())
+                {
+                    dep.m_sourceFileDependencyPath = emitter->m_material.GetHint();
+                }
+                else
+                {
+                    continue;
+                }
+                descriptor.m_jobDependencyList.push_back(AssetBuilderSDK::JobDependency(
+                    "Material Builder", platformInfo.m_identifier, AssetBuilderSDK::JobDependencyType::Order, dep));
             }
             response.m_createJobOutputs.push_back(descriptor);
         }

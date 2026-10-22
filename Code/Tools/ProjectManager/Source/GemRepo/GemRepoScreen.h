@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

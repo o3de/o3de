@@ -334,4 +334,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <RowWidgets/moc_NodeTreeSelectionWidget.cpp>

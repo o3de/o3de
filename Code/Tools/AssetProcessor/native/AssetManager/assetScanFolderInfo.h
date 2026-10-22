@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETSCANFOLDERINFO_H
-#define ASSETSCANFOLDERINFO_H
+
+#pragma once
 
 #include <QString>
 #include <QDateTime>
@@ -118,10 +118,8 @@ namespace AssetProcessor
         bool m_isDirectory{};
     };
 
-    inline uint qHash(const AssetFileInfo& item)
+    inline size_t qHash(const AssetFileInfo& item)
     {
         return qHash(item.m_filePath);
     }
 } // end namespace AssetProcessor
-
-#endif //ASSETSCANFOLDERINFO_H

@@ -45,7 +45,7 @@ namespace EMStudio
         m_plugin = plugin;
 
         // set the window title
-        setWindowTitle("Mirror Setup");
+        setWindowTitle(tr("Mirror Setup"));
 
         // set the minimum size
         setMinimumWidth(800);
@@ -1183,4 +1183,3 @@ namespace EMStudio
 
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/moc_MirrorSetupWindow.cpp>

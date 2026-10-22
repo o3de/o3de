@@ -13,8 +13,10 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
@@ -166,7 +168,7 @@ namespace UnitTest
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             // do our best to build a key sequence
             // note: this will not handle more complex multi-key shortcuts at this time
-            const auto keySequence = QKeySequence(keyEvent->modifiers() + keyEvent->key());
+            const auto keySequence = QKeySequence(keyEvent->modifiers() | keyEvent->key());
             // lookup the action that corresponds to this key event
             const auto actionIt = AZStd::find_if(
                 cachedActions.begin(), cachedActions.end(), [keySequence](QAction* action)
@@ -230,7 +232,7 @@ namespace UnitTest
         if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-            m_mouseGlobalPosition = mouseEvent->globalPos();
+            m_mouseGlobalPosition = mouseEvent->globalPosition().toPoint();
             m_mouseLocalPosition = mouseEvent->pos();
         }
 
@@ -525,46 +527,111 @@ namespace UnitTest
         ASSERT_TRUE(m_connected);
     }
 
-    AZ::EntityId CreateDefaultEditorEntity(const char* name, AZ::Entity** outEntity /*= nullptr*/)
+    AZ::EntityId CreateDefaultEditorEntity(const char* name, AZ::Entity** outEntity /*= nullptr*/, AZ::EntityId parentId /*= AZ::EntityId()*/)
     {
         AZ::EntityId entityId;
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-            entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
+        AZ::Entity* entity = nullptr;
 
-        if (!entityId.IsValid())
+        using AzToolsFramework::EditorEntityContextRequestBus;
+        using AzToolsFramework::Prefab::PrefabPublicInterface;
+        using AzToolsFramework::PrefabEditorEntityOwnershipInterface;
+        using AzToolsFramework::ToolsApplicationRequestBus;
+
+        // If the prefab system is active and running, use it to make the entity, otherwise make a simple one
+
+        auto* prefabPublicHandler = AZ::Interface<PrefabPublicInterface>::Get();
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        if ((prefabPublicHandler) &&
+            (prefabEditorEntityOwnershipInterface) &&
+            (prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
         {
-            AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
-            return AZ::EntityId();
+            if (!parentId.IsValid())
+            {
+                parentId = GetRootInstanceEntityId();
+            }
+
+            auto createResult = prefabPublicHandler->CreateEntity(parentId, AZ::Vector3::CreateZero());
+            if (createResult.IsSuccess())
+            {
+                entityId = createResult.GetValue();
+            }
+            else
+            {
+                AZ_Error("CreateDefaultEditorEntity", false, "Failed to create entity %s for test - Prefab CreateEntity failed", name)
+                return AZ::EntityId();
+            }
+
+            entity = GetEntityById(entityId);
+            if (!entity)
+            {
+                AZ_Error("CreateDefaultEditorEntity", false, "Failed to create entity %s for test - Could not GetEntityById", name);
+                return AZ::EntityId();
+            }
+
+            entity->Deactivate();
+            entity->SetName(name);
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+            entity->Activate();
+
+            AzToolsFramework::ScopedUndoBatch undoBatch("Create and configure entity");
+            prefabPublicHandler->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, undoBatch.GetUndoBatch());
+
+            // Don't keep the entities selected (which is the default for "create new entity" in editor.
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{});
         }
-
-        AZ::Entity* entity = GetEntityById(entityId);
-
-        if (!entity)
+        else
         {
-            AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
-            return AZ::EntityId();
+            // we are in a simple, basic test, which does not have the prefab system enabled, make basic entity
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
+
+            if (!entityId.IsValid())
+            {
+                AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
+                return AZ::EntityId();
+            }
+            entity = GetEntityById(entityId);
+
+            if (!entity)
+            {
+                AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
+                return AZ::EntityId();
+            }
+
+            entity->Deactivate();
+
+            // Add required components for the Editor entity if they are not added.
+            CreateComponentIfMissing<Components::TransformComponent>(entity);
+            CreateComponentIfMissing<Components::EditorLockComponent>(entity);
+            CreateComponentIfMissing<Components::EditorVisibilityComponent>(entity);
+
+            // This is necessary to prevent a warning in the undo system.
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entity->GetId());
+
+            entity->Activate();
         }
-
-        entity->Deactivate();
-
-        // Add required components for the Editor entity if they are not added.
-        CreateComponentIfMissing<Components::TransformComponent>(entity);
-        CreateComponentIfMissing<Components::EditorLockComponent>(entity);
-        CreateComponentIfMissing<Components::EditorVisibilityComponent>(entity);
-
-        // This is necessary to prevent a warning in the undo system.
-        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity,
-            entity->GetId());
-
-        entity->Activate();
-
+        
         if (outEntity)
         {
             *outEntity = entity;
         }
 
-        return entity->GetId();
+        AZ_Assert(GetEntityById(entityId) != nullptr, "Failed to create entity '%s'", name);
+
+        return entityId;
+    }
+
+    AZ::EntityId GetRootInstanceEntityId()
+    {
+        if (auto* ownership = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get(); ownership)
+        {
+            if (auto instanceRef = ownership->GetRootPrefabInstance(); instanceRef.has_value())
+            {
+                return instanceRef->get().GetContainerEntityId();
+            }
+        }
+        return AZ::EntityId();
     }
 
     AZ::Data::AssetId SaveAsSlice(
@@ -632,4 +699,3 @@ namespace UnitTest
     }
 } // namespace UnitTest
 
-#include <moc_AzToolsFrameworkTestHelpers.cpp>

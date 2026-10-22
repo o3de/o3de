@@ -112,4 +112,3 @@ BreadCrumbsPage::~BreadCrumbsPage()
 {
 }
 
-#include "Gallery/moc_BreadCrumbsPage.cpp"

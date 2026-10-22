@@ -44,6 +44,16 @@ namespace AZ::Render
         return nullptr;
     }
 
+    inline AZStd::string ImGuiPassTree::GetPassDisplayName(AZ::RPI::Pass* pass) const
+    {
+        if (pass->HasDrawListTag())
+        {
+            AZ::Name tagName = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->GetName(pass->GetDrawListTag());
+            return AZStd::string::format("%s [DrawListTag: %s]", pass->GetName().GetCStr(), tagName.GetCStr());
+        }
+        return AZStd::string::format("%s", pass->GetName().GetCStr());
+    }
+
     inline void ImGuiPassTree::Draw(bool& draw, AZ::RPI::Pass* rootPass)
     {
         using namespace AZ;
@@ -87,6 +97,8 @@ namespace AZ::Render
             }
 
             Scriptable_ImGui::Checkbox("Expand All Passes", &m_expandAllPasses);
+
+            Scriptable_ImGui::Checkbox("Show Disabled Passes", &m_showDisabledPasses);
 
             if (m_showAttachments)
             {
@@ -270,9 +282,15 @@ namespace AZ::Render
 
         AZ::RPI::ParentPass* asParent = pass->AsParent();
 
+        AZStd::string passLabel = GetPassDisplayName(pass);
         bool enabled = pass->IsEnabled();
         if (!enabled)
         {
+            if (!m_showDisabledPasses)
+            {
+                return;
+            }
+
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
         }
         if (!asParent)
@@ -281,7 +299,7 @@ namespace AZ::Render
             if (!m_showAttachments)
             {
                 // Only draw the leaf pass as selectable if we are not showing attachments as its children
-                if (Scriptable_ImGui::Selectable(pass->GetName().GetCStr(), m_selectedPassPath == pass->GetPathName()))
+                if (Scriptable_ImGui::Selectable(passLabel.c_str(), m_selectedPassPath == pass->GetPathName()))
                 {
                     m_selectedPassPath = pass->GetPathName();
                     m_attachmentId = AZ::RHI::AttachmentId{};
@@ -296,7 +314,7 @@ namespace AZ::Render
                     | (m_expandAllPasses ? ImGuiTreeNodeFlags_DefaultOpen : 0)
                     | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
-                bool nodeOpen = Scriptable_ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
+                bool nodeOpen = Scriptable_ImGui::TreeNodeEx(passLabel.c_str(), flags);
 
 
                 AZ::RPI::RasterPass* asRasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
@@ -328,12 +346,12 @@ namespace AZ::Render
         }
         else
         {
-            // For a ParentPasse, draw it as a tree node 
+            // For a ParentPass, draw it as a tree node 
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
                 | (m_expandAllPasses ? ImGuiTreeNodeFlags_DefaultOpen : 0)
                 | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
-            bool nodeOpen = ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
+            bool nodeOpen = ImGui::TreeNodeEx(passLabel.c_str(), flags);
 
             if (ImGui::IsItemClicked())
             {
@@ -372,7 +390,7 @@ namespace AZ::Render
 
     inline bool ImGuiPassTree::GetFilteredPassNames(AZ::RPI::Pass* pass, AZStd::unordered_set<Name>& filteredPassNames) const
     {
-        bool anyChildMatch = m_passFilter.PassFilter(pass->GetName().GetCStr());
+        bool anyChildMatch = m_passFilter.PassFilter(GetPassDisplayName(pass).c_str());
 
         if (RPI::ParentPass* asParent = pass->AsParent())
         {

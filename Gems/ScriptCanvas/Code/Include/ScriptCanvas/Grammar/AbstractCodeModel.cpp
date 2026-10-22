@@ -1194,7 +1194,7 @@ namespace ScriptCanvas
             }
             else
             {
-                output->m_datum = AZStd::move(Datum(outputSlot.GetDataType(), Datum::eOriginality::Copy));
+                output->m_datum = Datum(outputSlot.GetDataType(), Datum::eOriginality::Copy);
             }
             output->m_sourceSlotId = outputSlot.GetId();
             output->m_name = execution->ModScope()->AddVariableName(slotNameOverride.empty() ? outputSlot.GetName().c_str() : slotNameOverride.data(), suffix);

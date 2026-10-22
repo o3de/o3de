@@ -8,6 +8,7 @@
 
 
 #include <AzCore/std/containers/set.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Editor/Nodes/NodeUtils.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -44,13 +45,21 @@ namespace ScriptCanvas::Developer
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<SlotConfig>("SlotConfig", "Configuration for slot")
+                    editContext->Class<SlotConfig>(
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "SlotConfig"),
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Configuration for slot"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SlotConfig::m_name, "Slot Name", "Slot Name")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SlotConfig::m_name,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Slot Name"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Slot Name"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SlotConfig::OnSlotNameChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SlotConfig::m_toolTip, "Slot Tooltip", "Slot Tooltip")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SlotConfig::m_toolTip,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Slot Tooltip"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Slot Tooltip"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SlotConfig::OnSlotToolTipChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SlotConfig::m_type, "Slot Type", "The Data Type represented by this slot")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SlotConfig::m_type,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Slot Type"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "The Data Type represented by this slot"))
                         ->Attribute(AZ::Edit::Attributes::GenericValueList, &SlotConfig::GetCreatableTypes)
                         ->Attribute(AZ::Edit::Attributes::PostChangeNotify, &SlotConfig::OnSlotDataTypeChanged)
                         ;
@@ -246,21 +255,37 @@ namespace ScriptCanvas::Developer
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<Mock>("Mock", "Node for mocking node visuals")
+                    editContext->Class<Mock>(
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Mock"),
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node for mocking node visuals"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_nodeTitle, "Node Title", "Node Title for this mock node")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_nodeTitle,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node Title"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node Title for this mock node"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnNodeTitleChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_nodeSubTitle, "Node Sub Title", "Node Sub Title for this mock node")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_nodeSubTitle,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node Sub Title"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node Sub Title for this mock node"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnNodeSubTitleChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_dataInConfigArray, "Data Input Slot Configuration", "Configuration array of adding/removing Mock data input slots")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_dataInConfigArray,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Data Input Slot Configuration"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Configuration array of adding/removing Mock data input slots"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnDataInSlotArrayChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_dataOutConfigArray, "Data Output Slot Configuration", "Configuration array of adding/removing Mock data output slots")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_dataOutConfigArray,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Data Output Slot Configuration"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Configuration array of adding/removing Mock data output slots"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnDataOutSlotArrayChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_executionInConfigArray, "Execution Input Slot Configuration", "Configuration array of adding/removing Mock execution input slots")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_executionInConfigArray,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Execution Input Slot Configuration"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Configuration array of adding/removing Mock execution input slots"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnExecutionInSlotArrayChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_executionOutConfigArray, "Execution Output Slot Configuration", "Configuration array of adding/removing Mock execution output slots")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Mock::m_executionOutConfigArray,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Execution Output Slot Configuration"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Configuration array of adding/removing Mock execution output slots"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnExecutionOutSlotArrayChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Mock::m_nodeColorPaletteOverride, "Node Color Palette Override", "Updates the node color from one of the possible palettes")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Mock::m_nodeColorPaletteOverride,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node Color Palette Override"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Updates the node color from one of the possible palettes"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &Mock::GetColorPaletteList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Mock::OnNodeColorPaletteChanged)
                         ;

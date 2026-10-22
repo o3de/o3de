@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -61,8 +60,6 @@
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
 #endif//#if SCRIPTCANVAS_EDITOR
-
-#endif//#if !defined(Q_MOC_RUN)
 
 namespace GraphCanvas
 {

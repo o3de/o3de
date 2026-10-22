@@ -1,0 +1,44 @@
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+
+ShaderResourceGroup MySRG : freq
+{
+    Buffer<float> m_b;
+    Sampler       m_sampler {};
+
+    struct Inner
+    {
+        float2x1 m_mat;
+        struct Deep
+        {
+            half m_h;
+        } m_deep;
+    };
+    StructuredBuffer<Inner> m_stb;  // ref to Inner
+    float4x4 m_worldMatrix;
+};
+
+struct SData
+{
+    float4 clr;
+    MySRG::Inner inn;  // ref to ::MySRG and ref to ::MySRG::Inner
+};
+
+float4 main() : SV_TARGET0
+{
+    MySRG::Inner inn = MySRG::m_stb[0];  // ref to ::MySRG, to ::MySRG::Inner, to ::MySRG again at column 24, and m_stb and column 31.
+    typeof(MySRG::Inner::m_mat) f21 = inn.m_mat;  // ref to MySRG, ref to MySRG::Inner, ref to MySRG::Inner::m_mat, ref to (local) inn, ref to ::MySRG::Inner::m_mat
+    typeof(::MySRG :: Inner ::
+                    Deep :: m_h) inner_h = inn.m_deep.m_h;  // check deeply nested-name-specifiers. and token line:column difficulty
+    float f = MySRG::m_b[0];   // 2 refs
+
+    sampler s = MySRG::m_sampler;   // 2 refs
+    SData d;  // ref to SData
+    d.clr = s.fetch(uv);  // ref d, ref clr, ref s.  uv unresolved
+
+    float3 proj = mul(float3(1,1,1), (float3x3)MySRG::m_worldMatrix); // ref MySRG, ref m_worldMatrix
+
+    return float4(MySRG::m_b, f, (float)MySRG::m_stb[0].m_mat._11, 1);  // ref to MySRG, ref to MySRG::m_b, ref to f, ref to MySRG, ref to MySRG::m_stb, ref to MySRG::Inner::m_mat
+}
+
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

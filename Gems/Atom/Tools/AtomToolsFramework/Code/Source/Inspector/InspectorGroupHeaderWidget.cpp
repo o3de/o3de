@@ -71,4 +71,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Inspector/moc_InspectorGroupHeaderWidget.cpp>

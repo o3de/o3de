@@ -8,29 +8,45 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <Editor/Core/QtEditorApplication.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Editor/Core/QtEditorApplication.h>
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+using xcb_connection_t = struct xcb_connection_t;
 #endif
 
-using xcb_connection_t = struct xcb_connection_t;
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+#include "AzFramework/WaylandConnectionManager.h"
+#endif
+
 
 namespace Editor
 {
-    class EditorQtApplicationXcb
+    class EditorQtApplicationLinux
         : public EditorQtApplication
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    {
-        Q_OBJECT
-    public:
-        EditorQtApplicationXcb(int& argc, char** argv)
-            : EditorQtApplication(argc, argv)
-        {
-            // Connect bus to listen for OnStart/StopPlayInEditor events
-            AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        }
+        , public AZ::TickBus::Handler
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        , public AzFramework::WaylandDisplayProvider
+#endif
 
+    {
+    public:
+        EditorQtApplicationLinux(int& argc, char** argv);
+
+        int GetTickOrder() override;
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        wl_display* GetWaylandDisplayFromQt() const;
+        wl_display* GetWaylandDisplay() const override;
+        int GetDisplayFD() const override;
+#endif
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         xcb_connection_t* GetXcbConnectionFromQt();
+#endif
 
         ///////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorEntityContextNotificationBus overrides
@@ -38,6 +54,8 @@ namespace Editor
         void OnStopPlayInEditor() override;
 
         // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
+
+        bool m_wayland = false;
     };
 } // namespace Editor

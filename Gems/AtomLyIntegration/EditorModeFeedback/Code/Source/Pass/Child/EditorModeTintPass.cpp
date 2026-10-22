@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <Pass/Child/EditorModeTintPass.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -24,20 +24,20 @@ namespace AZ
         RPI::Ptr<EditorModeTintPass> EditorModeTintPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<EditorModeTintPass> pass = aznew EditorModeTintPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         EditorModeTintPass::EditorModeTintPass(const RPI::PassDescriptor& descriptor)
             : EditorModeFeedbackChildPassBase(descriptor)
         {
         }
-        
+
         void EditorModeTintPass::InitializeInternal()
         {
             EditorModeFeedbackChildPassBase::InitializeInternal();
             m_tintAmountIndex.Reset();
         }
-        
+
         void EditorModeTintPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();

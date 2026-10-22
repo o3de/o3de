@@ -99,6 +99,11 @@ namespace AZ
             void OnSystemTick() override;
 
             void LoadMaterials();
+            //! Project entries from m_configuration.m_materialsByLabel into m_configuration.m_materials by
+            //! resolving each label string against the live material consumer's slot labels. Called from
+            //! LoadMaterials() once m_defaultMaterialMap has been refreshed. Non-destructive: entries in
+            //! m_materialsByLabel are kept so the mapping re-resolves after future mesh swaps.
+            void ResolveMaterialsByLabel();
             // Typically called from thread context of Data::AssetBus::MultiHandler::OnAssetXXX.
             void InitializeMaterialInstance(Data::Asset<Data::AssetData> asset);
             // Must be called on main thread.

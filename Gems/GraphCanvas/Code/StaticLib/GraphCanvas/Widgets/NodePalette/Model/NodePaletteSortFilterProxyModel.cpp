@@ -132,6 +132,13 @@ namespace GraphCanvas
 
         NodePaletteTreeItem* currentItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(index.internalPointer());
 
+        if (!currentItem)
+        {
+            // index() can return an invalid index (hasIndex fails, or FindChildByRow misses),
+            // which leaves a null internalPointer(). Guard the dereferences below.
+            return false;
+        }
+
         if (m_hasSourceSlotFilter && m_sourceSlotFilter.count(currentItem) == 0)
         {
             return false;
@@ -148,11 +155,11 @@ namespace GraphCanvas
         
         bool showRow = false;
         QRegularExpressionMatch match = m_filterRegex.match(test);
-        if (match.isValid())
+        if (match.isValid() && match.hasMatch())
         {
             showRow = true;
             
-            AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
+            AZStd::pair<int, int> highlight(static_cast<int>(match.capturedStart()), static_cast<int>(match.capturedLength()));
             currentItem->SetHighlight(highlight);
         }
         else
@@ -240,7 +247,7 @@ namespace GraphCanvas
         // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
-            result = AZStd::min(result, sourceString.size());
+            result = AZStd::min<int>(result, static_cast<int>(sourceString.size()));
         }
         return result;
     }
@@ -282,15 +289,16 @@ namespace GraphCanvas
     {
         if (m_hasSourceSlotFilter)
         {
+            beginFilterChange();
             m_hasSourceSlotFilter = false;
             m_sourceSlotFilter.clear();
-
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
     void NodePaletteSortFilterProxyModel::FilterForSourceSlot(const AZ::EntityId& /*sceneId*/, const AZ::EntityId& /*sourceSlotId*/)
     {
+        beginFilterChange();
         m_hasSourceSlotFilter = true;
         m_sourceSlotAutoCompleteModel->beginResetModel();
         m_sourceSlotAutoCompleteModel->ClearAvailableItems();
@@ -326,7 +334,7 @@ namespace GraphCanvas
         }
 
         m_sourceSlotAutoCompleteModel->endResetModel();
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool NodePaletteSortFilterProxyModel::HasFilter() const
@@ -336,26 +344,40 @@ namespace GraphCanvas
 
     void NodePaletteSortFilterProxyModel::SetFilter(const QString& filter)
     {
+        beginFilterChange();
         // Remove whitespace and escape() so every regexp special character is escaped with a backslash
         // Then ignore all whitespace by adding \s* (regex optional whitespace match) in between every other character.
         // We use \s* instead of simply removing all whitespace from the filter and node-names in order to preserve the node-name and accurately highlight the matching portion.
         // Example: "OnGraphStart" or "On Graph Start"
         m_filter = filter.simplified().replace(" ", "");
-        
-        QString regExIgnoreWhitespace = QRegularExpression::escape(QString(m_filter[0]));
-        for (int i = 1; i < m_filter.size(); ++i)
+
+        // Guard the empty case: clearing the search box routes empty text here (OnFilterTextChanged
+        // -> UpdateFilter -> SetFilter("")), and m_filter[0] on an empty string is an out-of-bounds
+        // read. An empty regex matches everything, which is the intended "no filter" behavior.
+        QString regExIgnoreWhitespace;
+        if (!m_filter.isEmpty())
         {
-            regExIgnoreWhitespace.append("\\s*");
-            regExIgnoreWhitespace.append(QRegularExpression::escape(QString(m_filter[i])));
+            regExIgnoreWhitespace = QRegularExpression::escape(QString(m_filter[0]));
+            for (int i = 1; i < m_filter.size(); ++i)
+            {
+                regExIgnoreWhitespace.append("\\s*");
+                regExIgnoreWhitespace.append(QRegularExpression::escape(QString(m_filter[i])));
+            }
         }
-        
+
         m_filterRegex = QRegularExpression(regExIgnoreWhitespace, QRegularExpression::PatternOption::CaseInsensitiveOption);
+        endFilterChange();
     }
 
     void NodePaletteSortFilterProxyModel::ClearFilter()
     {
+        // Qt6: bracket the filter change with begin/endFilterChange rather than relying on a
+        // caller-side invalidate(). A raw invalidate() rebuilds all mappings and crashes in
+        // QSortFilterProxyModelPrivate::create_mapping_recursive while remapping persistent indexes.
+        beginFilterChange();
         m_filter.clear();
         m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
+        endFilterChange();
     }
 
     QCompleter* NodePaletteSortFilterProxyModel::GetCompleter()
@@ -392,5 +414,4 @@ namespace GraphCanvas
         }
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/NodePalette/Model/moc_NodePaletteSortFilterProxyModel.cpp>
 }

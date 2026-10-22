@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_DYNAMIC_SERIALIZABLE_FIELD_H
-#define AZCORE_DYNAMIC_SERIALIZABLE_FIELD_H
+
+#pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/Memory.h>
@@ -62,5 +62,3 @@ namespace AZ
         Uuid m_typeId;
     };
 }   // namespace AZ
-
-#endif

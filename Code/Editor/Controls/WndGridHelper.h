@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_WNDGRIDHELPER_H
-#define CRYINCLUDE_EDITOR_CONTROLS_WNDGRIDHELPER_H
 #pragma once
 
 #include <QPoint>
@@ -171,5 +168,3 @@ public:
         return (nGridLineY * step.GetY());
     }
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_WNDGRIDHELPER_H

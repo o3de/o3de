@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/function/function_fwd.h>
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <GemCatalog/GemModel.h>
@@ -18,7 +17,6 @@
 
 #include <QFrame>
 #include <QScrollArea>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QLabel)

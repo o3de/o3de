@@ -9,6 +9,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
@@ -36,22 +37,22 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorProxyPhysicsAsset>("EditorProxyPhysicsAsset", "PhysX Asset.")
+                editContext->Class<EditorProxyPhysicsAsset>(QT_TRANSLATE_NOOP("PhysX", "EditorProxyPhysicsAsset"), QT_TRANSLATE_NOOP("PhysX", "PhysX Asset."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorProxyPhysicsAsset::m_pxAsset,
-                        "PhysX Mesh",
-                        "Specifies the PhysX mesh collider asset for this PhysX collider component.")
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX Mesh"),
+                        QT_TRANSLATE_NOOP("PhysX", "Specifies the PhysX mesh collider asset for this PhysX collider component."))
                     ->Attribute(AZ_CRC_CE("EditButton"), "")
-                    ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                    ->Attribute(AZ_CRC_CE("EditDescription"), QT_TRANSLATE_NOOP("PhysX", "Open in Scene Settings"))
                     ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorProxyPhysicsAsset::m_configuration,
-                        "Configuration",
-                        "PhysX mesh asset collider configuration.")
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX mesh asset collider configuration."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
@@ -71,21 +72,21 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyAssetShapeConfig", "PhysX asset collider.")
+                editContext->Class<EditorProxyAssetShapeConfig>(QT_TRANSLATE_NOOP("PhysX", "EditorProxyAssetShapeConfig"), QT_TRANSLATE_NOOP("PhysX", "PhysX asset collider."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorProxyAssetShapeConfig::m_physicsAsset,
-                        "Asset",
-                        "Configuration of asset shape.")
+                        QT_TRANSLATE_NOOP("PhysX", "Asset"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration of asset shape."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyAssetShapeConfig::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorProxyAssetShapeConfig::PhysXMeshAssetShapeTypeName)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorProxyAssetShapeConfig::m_subdivisionLevel,
-                        "Subdivision level",
-                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.")
+                        QT_TRANSLATE_NOOP("PhysX", "Subdivision level"),
+                        QT_TRANSLATE_NOOP("PhysX", "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling."))
                     ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
                     ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyAssetShapeConfig::ShowingSubdivisionLevel)
@@ -239,7 +240,7 @@ namespace PhysX
             {
                 editContext
                     ->Class<EditorMeshColliderComponent>(
-                    "PhysX Mesh Collider", "Creates geometry in the PhysX simulation using geometry from an asset.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Mesh Collider"), QT_TRANSLATE_NOOP("PhysX", "Creates geometry in the PhysX simulation using geometry from an asset."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXMeshCollider.svg")
@@ -247,27 +248,27 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/mesh-collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshColliderComponent::m_configuration, QT_TRANSLATE_NOOP("PhysX", "Collider Configuration"), QT_TRANSLATE_NOOP("PhysX", "Configuration of the collider."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshColliderComponent::OnConfigurationChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorMeshColliderComponent::m_proxyShapeConfiguration,
-                        "Shape Configuration",
-                        "Configuration of physics asset shape.")
+                        QT_TRANSLATE_NOOP("PhysX", "Shape Configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration of physics asset shape."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshColliderComponent::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::RemoveNotify, &EditorMeshColliderComponent::ValidateRigidBodyMeshGeometryType)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorMeshColliderComponent::m_componentModeDelegate,
-                        "Component Mode",
-                        "Collider Component Mode.")
+                        QT_TRANSLATE_NOOP("PhysX", "Component Mode"),
+                        QT_TRANSLATE_NOOP("PhysX", "Collider Component Mode."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorMeshColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings.")
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw settings"), QT_TRANSLATE_NOOP("PhysX", "Debug draw settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

@@ -7,17 +7,16 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QCursor>
 #include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QPointer>
-#endif
 
 class QAction;
 class QLineEdit;
+class QLabel;
 class QMenu;
 class QPainter;
 class QProxyStyle;
@@ -48,6 +47,7 @@ namespace AzQtComponents
         Q_PROPERTY(bool redoAvailable READ isRedoAvailable)
     public:
         static unsigned int s_watcherReferenceCount;
+        static constexpr const char* s_draggableLabelName = "SpinboxDragLabel";
 
         //! Style configuration for the SpinBox class.
         struct Config
@@ -89,6 +89,11 @@ namespace AzQtComponents
 
         //! Sets whether the initial value was initialized. False prompts reinitialization.
         void setInitialValueWasSetting(bool b);
+
+        //! Returns true when the current spinbox value differs from the value
+        //! captured at focus-in, meaning the user has an uncommitted local edit.
+        bool hasInProgressEdit() const;
+
     Q_SIGNALS:
         //! Triggered when the value begins changing, for example when the control starts being dragged.
         void valueChangeBegan();
@@ -125,6 +130,7 @@ namespace AzQtComponents
         
         static void initializeWatcher();
         static void uninitializeWatcher();
+        static void registerLabelToWatcher(QLabel* label, bool shouldRegister);
 
         static bool drawSpinBox(const QProxyStyle* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
         static QRect editFieldRect(const QProxyStyle* style, const QStyleOptionComplex* option, const QWidget* widget, const Config& config);
@@ -141,6 +147,7 @@ namespace AzQtComponents
 
         internal::SpinBoxLineEdit* m_lineEdit = nullptr;
         int m_lastValue = 0;
+        int m_valueOnFocusIn = 0;
         QString m_lastSuffix;
         QSize m_lastMinimumSize;
 
@@ -208,6 +215,10 @@ namespace AzQtComponents
         //! Sets whether the initial value was initialized. False prompts reinitialization.
         void setInitialValueWasSetting(bool b);
 
+        //! Returns true when the current spinbox value differs from the value
+        //! captured at focus-in, meaning the user has an uncommitted local edit.
+        bool hasInProgressEdit() const;
+
     Q_SIGNALS:
         //! Triggered when the value begins changing, for example when the control starts being dragged.
         void valueChangeBegan();
@@ -245,6 +256,7 @@ namespace AzQtComponents
 
         internal::SpinBoxLineEdit* m_lineEdit = nullptr;
         double m_lastValue = 0.0;
+        double m_valueOnFocusIn = 0.0;
         QString m_lastSuffix;
         QSize m_lastMinimumSize;
         int m_displayDecimals;
@@ -273,6 +285,9 @@ namespace AzQtComponents
         Q_SIGNALS:
             void globalUndoTriggered();
             void globalRedoTriggered();
+            //! Emitted when Ctrl+Z is pressed while the user has made local edits.
+            //! The parent spinbox should revert to its pre-edit value and clear focus.
+            void editCancelTriggered();
 
             void selectAllTriggered();
             void cutTriggered();

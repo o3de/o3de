@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    InitializeEmbeddedPyside2.h
+    InitializeEmbeddedPyside.h
 )

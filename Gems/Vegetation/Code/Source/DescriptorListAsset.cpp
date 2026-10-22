@@ -9,6 +9,7 @@
 #include <Vegetation/DescriptorListAsset.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Vegetation
@@ -31,8 +32,8 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DescriptorListAsset>(
-                    "Vegetation Descriptor List", "Contains an ordered list of vegetation descriptors used to create instances")
-                    ->DataElement(0, &DescriptorListAsset::m_descriptors, "Assets", "Set of vegetation descriptors.")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Descriptor List"), QT_TRANSLATE_NOOP("Vegetation", "Contains an ordered list of vegetation descriptors used to create instances"))
+                    ->DataElement(0, &DescriptorListAsset::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, &Descriptor::GetDescriptorName)

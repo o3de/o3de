@@ -26,6 +26,8 @@
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // UiInteractableStateAction class
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,14 +148,14 @@ void UiInteractableStateColor::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiInteractableStateColor>("Color", "Overrides the color tint on the target element.");
+            auto editInfo = ec->Class<UiInteractableStateColor>(QT_TRANSLATE_NOOP("LyShine", "Color"), QT_TRANSLATE_NOOP("LyShine", "Overrides the color tint on the target element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("ComboBox", &UiInteractableStateColor::m_targetEntity, "Target", "The target element.")
+            editInfo->DataElement("ComboBox", &UiInteractableStateColor::m_targetEntity, QT_TRANSLATE_NOOP("LyShine", "Target"), QT_TRANSLATE_NOOP("LyShine", "The target element."))
                 ->Attribute("EnumValues", &UiInteractableStateColor::PopulateTargetEntityList);
-            editInfo->DataElement("Color", &UiInteractableStateColor::m_color, "Color", "The color tint.");
+            editInfo->DataElement("Color", &UiInteractableStateColor::m_color, QT_TRANSLATE_NOOP("LyShine", "Color"), QT_TRANSLATE_NOOP("LyShine", "The color tint."));
         }
     }
 }
@@ -241,14 +243,14 @@ void UiInteractableStateAlpha::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiInteractableStateAlpha>("Alpha", "Overrides the alpha on the target element.");
+            auto editInfo = ec->Class<UiInteractableStateAlpha>(QT_TRANSLATE_NOOP("LyShine", "Alpha"), QT_TRANSLATE_NOOP("LyShine", "Overrides the alpha on the target element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("ComboBox", &UiInteractableStateAlpha::m_targetEntity, "Target", "The target element.")
+            editInfo->DataElement("ComboBox", &UiInteractableStateAlpha::m_targetEntity, QT_TRANSLATE_NOOP("LyShine", "Target"), QT_TRANSLATE_NOOP("LyShine", "The target element."))
                 ->Attribute("EnumValues", &UiInteractableStateAlpha::PopulateTargetEntityList);
-            editInfo->DataElement("Slider", &UiInteractableStateAlpha::m_alpha, "Alpha", "The opacity.")
+            editInfo->DataElement("Slider", &UiInteractableStateAlpha::m_alpha, QT_TRANSLATE_NOOP("LyShine", "Alpha"), QT_TRANSLATE_NOOP("LyShine", "The opacity."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
         }
@@ -400,19 +402,19 @@ void UiInteractableStateSprite::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiInteractableStateSprite>("Sprite", "Overrides the sprite on the target element.");
+            auto editInfo = ec->Class<UiInteractableStateSprite>(QT_TRANSLATE_NOOP("LyShine", "Sprite"), QT_TRANSLATE_NOOP("LyShine", "Overrides the sprite on the target element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("ComboBox", &UiInteractableStateSprite::m_targetEntity, "Target", "The target element.")
+            editInfo->DataElement("ComboBox", &UiInteractableStateSprite::m_targetEntity, QT_TRANSLATE_NOOP("LyShine", "Target"), QT_TRANSLATE_NOOP("LyShine", "The target element."))
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateTargetEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiInteractableStateSprite::OnTargetElementChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement("Sprite", &UiInteractableStateSprite::m_spritePathname, "Sprite", "The sprite.")
+            editInfo->DataElement("Sprite", &UiInteractableStateSprite::m_spritePathname, QT_TRANSLATE_NOOP("LyShine", "Sprite"), QT_TRANSLATE_NOOP("LyShine", "The sprite."))
                 ->Attribute("ChangeNotify", &UiInteractableStateSprite::OnSpritePathnameChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiInteractableStateSprite::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiInteractableStateSprite::m_spriteSheetCellIndex, QT_TRANSLATE_NOOP("LyShine", "Index"), QT_TRANSLATE_NOOP("LyShine", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiInteractableStateSprite::IsSpriteSheet)
                 ->Attribute("EnumValues", &UiInteractableStateSprite::PopulateIndexStringList);
         }
@@ -651,17 +653,17 @@ void UiInteractableStateFont::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiInteractableStateFont>("Font", "Overrides the font on the target element.");
+            auto editInfo = ec->Class<UiInteractableStateFont>(QT_TRANSLATE_NOOP("LyShine", "Font"), QT_TRANSLATE_NOOP("LyShine", "Overrides the font on the target element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_targetEntity, "Target", "The target element.")
+            editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_targetEntity, QT_TRANSLATE_NOOP("LyShine", "Target"), QT_TRANSLATE_NOOP("LyShine", "The target element."))
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateTargetEntityList);
-            editInfo->DataElement("SimpleAssetRef", &UiInteractableStateFont::m_fontFilename, "Font path", "The font asset pathname.")
+            editInfo->DataElement("SimpleAssetRef", &UiInteractableStateFont::m_fontFilename, QT_TRANSLATE_NOOP("LyShine", "Font path"), QT_TRANSLATE_NOOP("LyShine", "The font asset pathname."))
                 ->Attribute("ChangeNotify", &UiInteractableStateFont::OnFontPathnameChange)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_fontEffectIndex, "Font effect", "The font effect (from font file).")
+            editInfo->DataElement("ComboBox", &UiInteractableStateFont::m_fontEffectIndex, QT_TRANSLATE_NOOP("LyShine", "Font effect"), QT_TRANSLATE_NOOP("LyShine", "The font effect (from font file)."))
                 ->Attribute("EnumValues", &UiInteractableStateFont::PopulateFontEffectList);
         }
     }

@@ -6,15 +6,14 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <AzCore/base.h>
-#include <QWidget>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/unordered_set.h>
-#endif
 
-#pragma once
+#include <QWidget>
 
 namespace LUAEditor
 {

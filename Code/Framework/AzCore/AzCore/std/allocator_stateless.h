@@ -14,28 +14,43 @@
 
 namespace AZStd
 {
-    class AZCORE_API stateless_allocator
+    struct stateless_allocator
     {
-    public:
         AZ_TYPE_INFO(stateless_allocator, "{E4976C53-0B20-4F39-8D41-0A76F59A7D68}");
 
         AZ_ALLOCATOR_DEFAULT_TRAITS
 
-        pointer allocate(size_type byteSize, align_type alignment = 1);
-        void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0);
-        pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1);
-        size_type resize(pointer ptr, size_type newSize);
+        [[nodiscard]] AZCORE_API pointer allocate(size_type byteSize, align_type alignment = 1);
+        AZCORE_API void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0);
+        [[nodiscard]] AZCORE_API pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1);
 
-        size_type max_size() const
+        constexpr size_type resize(
+            [[maybe_unused]] pointer ptr,
+            [[maybe_unused]] size_type newSize) const
+        {
+            return 0;
+        }
+
+        constexpr size_type max_size() const
         {
             return AZ_TRAIT_OS_MEMORY_MAX_ALLOCATOR_SIZE;
         }
 
-        bool is_lock_free();
-        bool is_stale_read_allowed();
-        bool is_delayed_recycling();
-    };
+        constexpr bool is_lock_free() const
+        {
+            return false;
+        }
 
-    AZCORE_API bool operator==(const stateless_allocator& left, const stateless_allocator& right);
-    AZCORE_API bool operator!=(const stateless_allocator& left, const stateless_allocator& right);
+        constexpr bool is_stale_read_allowed() const
+        {
+            return false;
+        }
+
+        constexpr bool is_delayed_recycling() const
+        {
+            return false;
+        }
+
+        friend bool operator==(const stateless_allocator&, const stateless_allocator&) = default;
+    };
 }

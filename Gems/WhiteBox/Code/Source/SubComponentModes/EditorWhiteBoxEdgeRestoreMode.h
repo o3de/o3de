@@ -59,12 +59,7 @@ namespace WhiteBox
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Transform& worldFromLocal,
             const IntersectionAndRenderData& renderData, const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay);
-        bool HandleMouseInteraction(
-            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-            const AZ::EntityComponentIdPair& entityComponentIdPair,
-            const AZStd::optional<EdgeIntersection>& edgeIntersection,
-            const AZStd::optional<PolygonIntersection>& polygonIntersection,
-            const AZStd::optional<VertexIntersection>& vertexIntersection);
+        bool HandleMouseInteraction(const ModeMouseInteraction& mouse);
 
     private:
         AZStd::optional<EdgeIntersection> m_edgeIntersection; //!< The hovered edge if one exists.

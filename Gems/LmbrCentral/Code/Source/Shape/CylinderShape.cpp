@@ -17,6 +17,7 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Sfmt.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeDisplay.h>
 
 #include <random>
@@ -36,9 +37,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CylinderShape>("Cylinder Shape", "Cylinder shape configuration parameters")
+                editContext->Class<CylinderShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Cylinder Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Cylinder shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShape::m_cylinderShapeConfig, "Cylinder Configuration", "Cylinder shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShape::m_cylinderShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Cylinder Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Cylinder shape configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

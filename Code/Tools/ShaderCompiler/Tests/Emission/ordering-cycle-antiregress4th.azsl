@@ -1,0 +1,482 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+/*
+* The AzslcHeader is not preprocessed and should not include any preprocessing directives
+* In addition, the AzslcHeader is added per platform, so platform-independant modules
+* like the SRG Layout, the InputAssembly or the OutputMerger will not benefit from it
+*/
+
+static const float4 s_AzslDebugColor = float4(16.0 / 255.0, 124.0 / 255.0, 16.0 / 255.0, 1);
+
+ShaderResourceGroupSemantic SRG_PerMaterial
+{
+FrequencyId = 1;
+};
+ShaderResourceGroupSemantic SRG_PerObject
+{
+FrequencyId = 0;
+};
+ShaderResourceGroupSemantic SRG_PerPass
+{
+FrequencyId = 3;
+};
+ShaderResourceGroupSemantic SRG_PerSubPass
+{
+FrequencyId = 2;
+};
+ShaderResourceGroupSemantic SRG_PerDraw
+{
+FrequencyId = 6;
+ShaderVariantFallback = 128;
+};
+ShaderResourceGroupSemantic SRG_PerScene
+{
+FrequencyId = 5;
+};
+ShaderResourceGroupSemantic SRG_PerView
+{
+FrequencyId = 4;
+};
+ShaderResourceGroupSemantic SRG_Single
+{
+FrequencyId = 0;
+ShaderVariantFallback = 128;
+};
+ShaderResourceGroup ViewSrg: SRG_PerView
+{
+
+    row_major float4x4 m_viewProjectionMatrix;
+    row_major float4x4 m_viewMatrix;
+    row_major float4x4 m_viewMatrixInverse;
+    row_major float4x4 m_projectionMatrix;
+    row_major float4x4 m_projectionMatrixInverse;
+
+    float3 m_worldPosition;
+
+    float4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+
+    float GetNearZ()
+    {
+        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.x;
+    }
+
+    float GetFarZ()
+    {
+        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.y;
+    }
+
+    float GetFarZTimesNearZ()
+    {
+        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.z;
+    }
+
+    float GetFarZMinusNearZ()
+    {
+        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.w;
+    }
+ 
+    struct Decal
+    {
+        float3 m_position;
+        float m_opacity;
+        float4 m_quaternion;
+        float3 m_halfSize;
+        float m_angleAttenuation;
+    };
+
+    StructuredBuffer<Decal> m_decals;
+    uint m_decalCount;  
+ 
+    // Light visibility grid is this wide 
+    // e.g. if the screen resolution is 1904 x 800 with 16x16 bins then grid width is 1904/16 = 119 
+    uint m_tileGridWidth;
+
+    // Point lights
+
+    struct PointLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_rgbIntensity;
+        float m_bulbRadius;
+    };
+
+    StructuredBuffer<PointLight> m_pointLights;
+    uint m_pointLightCount;
+
+    // Spot Lights
+    
+    // [GFX TODO][ATOM-4049] separate SRG for lights and shadows.
+    struct SpotLight
+    {
+        float4x4 m_depthBiasMatrix;
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+
+        float3 m_rgbIntensity;
+        float m_innerConeAngle; // cosine of the angle from the direction axis at which this light starts to fall off.
+
+        float3 m_direction; // the direction of the spot light
+        float m_outerConeAngle; // cosine of the angle from the direction axis at which this light no longer has an effect.
+
+        float m_penumbraBias; // bias of the falloff curve between inner and outer cone angles.
+
+        ////////////////////
+        // shadow
+        uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
+        uint2 m_shadowmapOriginInSlice; // shadowmap origin in the slice of the atlas.
+        uint m_shadowmapSize; // width and height of shadowmap
+        float3 m_padding; // explicit padding at the end
+    };
+
+    StructuredBuffer<SpotLight> m_spotLights;
+    uint m_spotLightCount;
+
+    uint m_shadowmapAtlasSize; // image size of shadowmap atlas. width and height has the same value.
+
+    // Directional Light shadows
+
+    static const uint MaxCascadeCount = 4;
+    struct DirectionalLightShadow
+    {
+        float4x4 m_depthBiasMatrices[MaxCascadeCount];
+        float4x4 m_lightViewToShadowmapMatrices[MaxCascadeCount];
+        float4x4 m_worldToLightViewMatrices[MaxCascadeCount];
+        float m_lightDistancesOfCameraViewFrustum[MaxCascadeCount];
+        float m_boundaryScale;
+        uint m_shadowmapSize; // width and height of shadowmap
+        uint m_cascadeCount;
+        uint m_predictionSampleCount;
+        uint m_filteringSampleCount;
+        bool m_isDebugColoringEnabled;
+        uint m_shadowFilterMethod;
+        float m_padding; // explicit padding at the end
+    };
+
+    enum ShadowFilterMethod
+    {
+        ShadowFilterMethodNone = 0,
+        ShadowFilterMethodPcf,
+        ShadowFilterMethodEsm,
+        ShadowFilterMethodEsmPcf
+    };
+
+    StructuredBuffer<DirectionalLightShadow> m_directionalLightShadows;
+    uint m_directionalLightCount;
+    uint m_shadowIndexDirectionalLight;
+
+    // Disk Lights
+    
+    struct DiskLight
+    {
+        float3 m_position;
+        float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
+        float3 m_direction;
+        float m_bothDirectionsFactor; // 0.0f for one direction, -1.0f for both.
+        float3 m_rgbIntensity;
+        float m_diskRadius;
+    };
+
+    StructuredBuffer<DiskLight> m_diskLights;
+    uint m_diskLightCount;
+    
+    // Capsule Lights
+    
+    struct CapsuleLight
+    {
+        float3 m_startPoint;   // One of the end points of the capsule
+        float m_radius;        // Radius of the capsule, ie distance from line segment to surface.
+        float3 m_direction;    // normalized vector from m_startPoint towards the other end point.
+        float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
+        float3 m_rgbIntensity; // total rgb luminous intensity of the capsule in candela
+        float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+    };
+
+    StructuredBuffer<CapsuleLight> m_capsuleLights;
+    uint m_capsuleLightCount;
+
+    // Shared data in PostProcessing
+
+    // Depth Of Field
+    struct DepthOfFieldData
+    {
+        // 0 : off, 1 : on
+        bool m_enabled;
+        bool m_enabledDebugColoring;
+
+        // x : viewFar, y : viewNear, z : focalDistance
+        float3 m_cameraParameters;
+
+        // scale / offset to convert DofFactor to blend ratio for back buffer.
+        float2 m_backBlendFactorDivision2;
+        float2 m_backBlendFactorDivision4;
+        float2 m_backBlendFactorDivision8;
+        // scale / offset to convert DofFactor to blend ratio for front buffer.
+        float2 m_frontBlendFactorDivision2;
+        float2 m_frontBlendFactorDivision4;
+        float2 m_frontBlendFactorDivision8;
+
+        // Used to determine the pencilMap texture coordinates from depth.
+        float m_pencilMapTexcoordToCocRadius;
+        float m_pencilMapFocusPointTexcoordU;
+
+        // circle of confusion to screen ratio;
+        float m_cocToScreenRatio;
+    };
+
+    DepthOfFieldData m_dof;
+
+    struct EyeAdaptation
+    {
+        // This is a parameter containing the exposure control values calculated by the current frame.
+        // x = calculated exposure value
+        // y = exposure control speed
+        float2 m_exposureParams;
+    
+        // This is the luminance history buffer.
+        // x = average luminance value by direct metering
+        // y = smoothed value using previous buffer value
+        float2 m_luminanceHistory[32];
+    };
+
+    // This is a parameter containing the eye adaptation feature related parameters. This buffer will be updated in the eye adaptation pass
+    StructuredBuffer<EyeAdaptation> m_eyeAdaptationData;
+
+    struct ExposureControlParameters
+    {
+        // This parameter contains indices for exposure control buffer.
+        // x = history buffer index for current frame
+        // y = history buffer index for previous frame
+        // z = History buffer index for delayed reference frame.
+        // w = History buffer index for next delayed reference frame.
+        uint4 m_bufferIndices;
+
+        // Light/Dark adaptation scale parameter. X is the light adaptation parameter, Y is the dark adaptation parameter.
+        float2 m_adaptationScale_light_dark;
+    
+        // Light/Dark adaptation sensitivity parameter. X is the light adaptation parameter, Y is the dark adaptation parameter.
+        float2 m_adaptationSensitivity_light_dark;
+    
+        // Light/Dark adaptation speed limit parameter. X is the light adaptation parameter, Y is the dark adaptation parameter.
+        float2 m_adaptationSpeedLimitLog2_light_dark;
+    
+        // Min/Max exposure value used by the eye adaptation feature. X is the minimum value, Y the maximum value.
+        float2 m_exposureMinMaxLog2;
+    
+        // Eye adaptation exposure border parameter.
+        float m_lightDarkExposureBorderLog2;
+    
+        // Manual exposure compensation value
+        float m_exposureValueCompensation;
+    
+        // Interpolation ratio between two elements of the history buffer.
+        float m_subFrameInterpolationRatio;
+    
+        // Luminance metering sub frame unit time used by smoothing history buffer.
+        float m_delaySubFrameUnitTime;
+    
+        // Eye adaptation feature flag.
+        bool m_eyeAdaptationEnabled;
+    
+        // Flag to trigger an invalidation.
+        bool m_needUpdateEyeAdaptationHistoryBuffer;
+    
+        // Explicit padding at the end
+        float2 m_padding;
+    };
+
+    ConstantBuffer<ExposureControlParameters> m_exposureControl;
+    
+    float GetExposureValueCompensation()
+    {
+        return m_exposureControl.m_exposureValueCompensation;
+    }
+
+    float GetCurrentFrameAutoExposureValue()
+    {
+        return m_eyeAdaptationData[0].m_exposureParams.x;
+    }
+
+}
+
+  
+
+ShaderResourceGroup SceneSrg: SRG_PerScene
+{
+
+    float m_time;
+    float m_deltaTime;
+
+    // Parameters definition can be found in SkyBoxSystem.h and SkyBoxBus.h
+    struct PhysicalSkyData
+    {
+        float4 m_physicalSkyParameterA;
+        float4 m_physicalSkyParameterB;
+        float4 m_physicalSkyParameterC;
+        float4 m_physicalSkyParameterD;
+        float4 m_physicalSkyParameterE;
+        float4 m_physicalSkyParameterF;
+        float4 m_physicalSkyParameterG;
+        float4 m_physicalSkyParameterH;
+        float4 m_physicalSkyParameterI;
+        float4 m_physicalSkyParameterZ;
+        float4 m_physicalSkySunParameters;
+        float4 m_physicalSkySunDirection;
+        float4 m_physicalSkySunRGB;
+        float4 m_physicalSkyAndSunIntensity;
+    };
+
+    bool m_enable;
+
+    ConstantBuffer<PhysicalSkyData> m_physicalSkyData;
+    bool m_physicalSky;
+    
+    TextureCube m_skyboxCubemap;
+    float4x4 m_cubemapRotationMatrix;
+    float m_cubemapExposure;
+ 
+    struct DirectionalLight
+    {
+        float3 m_direction;
+        float m_angularRadius;
+        float3 m_rgbIntensity;
+        float padding2; // explicit padding between float3s, can use this for other data later.
+    };
+
+    StructuredBuffer<DirectionalLight> m_directionalLights;
+    uint m_directionalLightCount;
+
+    Texture2D<float3> m_dofPencilMap;
+
+
+    struct ObjectToWorld
+    {
+        row_major float3x4 m_transform;
+    };
+    
+    struct NormalToWorld
+    {
+        row_major float3x4 m_transform;
+    };
+
+    StructuredBuffer<ObjectToWorld> m_objectToWorldBuffer;
+    StructuredBuffer<NormalToWorld> m_objectToWorldInverseTransposeBuffer;
+    
+    TextureCube m_specularEnvMap;
+    TextureCube m_diffuseEnvMap;
+    float m_iblExposure;
+    
+    Sampler m_samplerEnv
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    
+    float4x4 GetObjectToWorldMatrix(uint objectId)
+    {
+        return float4x4(
+            m_objectToWorldBuffer[objectId].m_transform[0],
+            m_objectToWorldBuffer[objectId].m_transform[1],
+            m_objectToWorldBuffer[objectId].m_transform[2],
+            float4(0, 0, 0, 1));
+    }
+    
+    // Used for transforming normals, handles non-uniform scale correctly.
+    float3x3 GetObjectToWorldInverseTransposeMatrix(uint objectId)
+    {
+        return float3x3(
+            m_objectToWorldInverseTransposeBuffer[objectId].m_transform[0].xyz,
+            m_objectToWorldInverseTransposeBuffer[objectId].m_transform[1].xyz,
+            m_objectToWorldInverseTransposeBuffer[objectId].m_transform[2].xyz
+        );
+    }
+}
+
+
+
+
+
+
+
+
+
+#line 1 "D:/Atom/dev/BaseViewer/Shaders/InlineConstantsExample/ColorMesh.azsl"
+#line 1 "D:/Atom/dev/BaseViewer/Shaders/InlineConstantsExample/ColorMesh.azsl"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+
+
+
+#line 13 "D:/Atom/dev/BaseViewer/Shaders/InlineConstantsExample/ColorMesh.azsl"
+#pragma import ViewSrg
+
+
+#line 14 "D:/Atom/dev/BaseViewer/Shaders/InlineConstantsExample/ColorMesh.azsl"
+#pragma import SceneSrg
+
+ShaderResourceGroupSemantic SRG_PerGroup
+{
+    FrequencyId = 0;
+};
+
+struct MaterialInfo
+{
+    float4 m_color;
+};
+
+ShaderResourceGroup MaterialGroupSrg : SRG_PerGroup
+{
+    MaterialInfo m_materials[10];
+}
+
+rootconstant float4x4 s_objectMatrix;
+rootconstant uint s_materialIndex;
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal: NORMAL;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color: COLOR;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    OUT.m_position = mul(mul(ViewSrg::m_viewProjectionMatrix, s_objectMatrix), float4(vsInput.m_position, 1.0));
+    float3 normal = mul(s_objectMatrix, float4(vsInput.m_normal, 0.0)).xyz;
+    float intensity = saturate(dot(normalize(normal), normalize(float3(-1.0, -1.0, -1.0))));
+    OUT.m_color = saturate(MaterialGroupSrg::m_materials[s_materialIndex].m_color * intensity);
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput vsOutput)
+{
+    PSOutput OUT;
+    OUT.m_color = vsOutput.m_color;
+    return OUT;
+}

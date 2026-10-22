@@ -8,14 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
 
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
-#endif
 
 class QWidget;
 

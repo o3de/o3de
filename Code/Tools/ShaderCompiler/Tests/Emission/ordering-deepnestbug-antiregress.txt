@@ -1,0 +1,4 @@
+"struct MySRGOne_S"
+"class InClass"
+"enum ICSpec"
+"bool Func ( :: MySRGOne_S :: InClass :: ICSpec a_spec )"

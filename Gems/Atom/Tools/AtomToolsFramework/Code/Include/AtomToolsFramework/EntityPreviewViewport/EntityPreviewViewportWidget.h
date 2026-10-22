@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
@@ -18,7 +17,6 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#endif
 
 namespace AtomToolsFramework
 {

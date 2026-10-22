@@ -28,7 +28,7 @@ namespace EMotionFX
             AZStd::unique_ptr<ActorT> actor = ActorFactory::CreateAndInit<ActorT>(AZStd::forward<Args>(args)...);
             AZ::Data::Asset<Integration::ActorAsset> actorAsset = TestActorAssets::GetAssetFromActor(assetId, AZStd::move(actor));
             GetEMotionFX().GetActorManager()->RegisterActor(actorAsset);
-            return AZStd::move(actorAsset);
+            return actorAsset;
         }
     };
 } // namespace EMotionFX

@@ -9,13 +9,12 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Source/BuilderSettings/BuilderSettingManager.h>
 #include <Source/Editor/EditorCommon.h>
 #include <Editor/PresetInfoPopup.h>
-#endif
 
 class QCheckBox;
 namespace Ui

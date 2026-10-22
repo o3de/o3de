@@ -1,0 +1,42 @@
+// test generic composed type
+
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+
+struct PassVars
+{
+    float4x4 mat;
+    float4 stuff;
+};
+
+typealias StructBuf = StructuredBuffer<PassVars>;
+
+ShaderResourceGroup MySRG : freq
+{
+    typealias FloatBuf = Buffer<float>;
+    FloatBuf m_buf;
+    StructBuf m_s;
+    struct F4 { float4 f; };
+
+    float4 Get()
+    {
+        typedef F4 StuffT;
+        StuffT s = { m_s[0].stuff };
+        return s.f;
+    }
+
+    struct Inner { dword d; };
+
+    typedef ConsumeStructuredBuffer<Inner> DistributionQueue;
+
+    DistributionQueue m_dist;
+
+    dword GetMyBatch()
+    {
+        return m_dist.Consume().d;
+    }
+
+    typealias HV = vector<half,4>;
+
+    HV m_compactHdr;
+}

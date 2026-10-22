@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/ranges/ranges.h>
@@ -12,22 +13,18 @@
 
 namespace AZStd::ranges
 {
-    template<class R, class = void>
-    class ref_view;
-
-    template<class R>
-    class ref_view<R, enable_if_t<ranges::range<R> && is_object_v<R>>>
+    template<ranges::range R>
+        requires is_object_v<R>
+    class ref_view
         : public ranges::view_interface<ref_view<R>>
     {
     private:
         static void bindable_to_range(R&);
         static void bindable_to_range(R&&) = delete;
     public:
-        template<class T, class = enable_if_t<conjunction_v<
-            bool_constant<Internal::different_from<T, ref_view>>,
-            bool_constant<convertible_to<T, R&>>,
-            Internal::sfinae_trigger<decltype(bindable_to_range(declval<T>()))>
-            >>>
+        template<Internal::different_from<ref_view> T>
+            requires convertible_to<T, R&>
+                && requires { bindable_to_range(declval<T>()); }
         constexpr ref_view(T&& t)
             : m_range{ addressof(static_cast<R&>(AZStd::forward<T>(t))) }
         {}
@@ -47,19 +44,22 @@ namespace AZStd::ranges
         }
 
         template<class Rn = R>
-        constexpr auto empty() const -> enable_if_t<Internal::sfinae_trigger_v<decltype(ranges::empty(*declval<Rn*>()))>, bool>
+            requires requires { ranges::empty(*declval<Rn*>()); }
+        constexpr bool empty() const
         {
             return ranges::empty(*m_range);
         }
 
         template<class Rn = R>
-        constexpr auto size() const -> enable_if_t<sized_range<R>, decltype(ranges::size(*declval<Rn*>()))>
+            requires sized_range<R>
+        constexpr auto size() const -> decltype(ranges::size(*declval<Rn*>()))
         {
             return ranges::size(*m_range);
         }
 
         template<class Rn = R>
-        constexpr auto data() const -> enable_if_t<contiguous_range<R>, decltype(ranges::data(*declval<Rn*>()))>
+            requires contiguous_range<R>
+        constexpr auto data() const -> decltype(ranges::data(*declval<Rn*>()))
         {
             return ranges::data(*m_range);
         }

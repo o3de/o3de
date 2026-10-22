@@ -11,11 +11,9 @@
 #include <ProjectInfo.h>
 #include <ProjectManagerDefs.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QMessageBox>
 #include <QProcessEnvironment>
-#endif
 
 #include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>

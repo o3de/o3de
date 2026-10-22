@@ -145,7 +145,7 @@ void FileWatcher::PlatformImplementation::ConsumeEvents(size_t numEvents, const 
                 if (!m_sentCreateAlready.contains(fileAndPath))
                 {
                     DEBUG_FILEWATCHER("    - sending rawFileAdded\n");
-                    m_watcher->rawFileAdded(fileAndPath, {});
+                    m_watcher->rawFileAdded(fileAndPath);
                     m_sentCreateAlready.insert(fileAndPath);
                 }
                 
@@ -154,13 +154,13 @@ void FileWatcher::PlatformImplementation::ConsumeEvents(size_t numEvents, const 
             if (eventFlags[i] & kFSEventStreamEventFlagItemModified)
             {
                 DEBUG_FILEWATCHER("    - sending rawFileModified\n");
-                m_watcher->rawFileModified(fileAndPath, {});
+                m_watcher->rawFileModified(fileAndPath);
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved)
             {
                 DEBUG_FILEWATCHER("    - sending rawFileRemoved\n");
-                m_watcher->rawFileRemoved(fileAndPath, {});
+                m_watcher->rawFileRemoved(fileAndPath);
                 m_sentCreateAlready.remove(fileAndPath);
             }
 
@@ -171,7 +171,7 @@ void FileWatcher::PlatformImplementation::ConsumeEvents(size_t numEvents, const 
                     if (!m_sentCreateAlready.contains(fileAndPath))
                     {
                         DEBUG_FILEWATCHER("    - renamed sending rawFileAdded\n");
-                        m_watcher->rawFileAdded(fileAndPath, {});
+                        m_watcher->rawFileAdded(fileAndPath);
                         m_sentCreateAlready.insert(fileAndPath);
                     }
 
@@ -179,18 +179,18 @@ void FileWatcher::PlatformImplementation::ConsumeEvents(size_t numEvents, const 
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
                     DEBUG_FILEWATCHER("    - renamed - sending rawFileModified for parent dir\n");
-                    m_watcher->rawFileModified(fileInfo.absolutePath(), {});
+                    m_watcher->rawFileModified(fileInfo.absolutePath());
                 }
                 else
                 {
-                    m_watcher->rawFileRemoved(fileAndPath, {});
+                    m_watcher->rawFileRemoved(fileAndPath);
                     m_sentCreateAlready.remove(fileAndPath);
 
                     // macOS does not send out an event for the directory being
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
                     DEBUG_FILEWATCHER("    - renamed - sending rawFileModified for parent dir\n");
-                    m_watcher->rawFileModified(fileInfo.absolutePath(), {});
+                    m_watcher->rawFileModified(fileInfo.absolutePath());
                     
                 }
             }

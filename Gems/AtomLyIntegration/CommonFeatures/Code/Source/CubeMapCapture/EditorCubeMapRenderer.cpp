@@ -25,7 +25,7 @@ namespace AZ
         AZ::u32 EditorCubeMapRenderer::RenderCubeMap(
             AZStd::function<void(RenderCubeMapCallback, AZStd::string&)> renderCubeMapFn,
             const AZStd::string dialogText,
-            const AZ::Entity* entity,
+            const AZ::Entity* entityRequestingRender,
             const AZStd::string& folderName,
             AZStd::string& relativePath,
             CubeMapCaptureType captureType,
@@ -35,12 +35,13 @@ namespace AZ
             {
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
+            
+            AZ::EntityId entityId = entityRequestingRender->GetId();
 
             // retrieve entity visibility
             bool isHidden = false;
             AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
-                isHidden,
-                entity->GetId(),
+                isHidden, entityId,
                 &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsHidden);
 
             // the entity must be visible in order to capture
@@ -95,7 +96,7 @@ namespace AZ
                     fileSuffix = CubeMapDiffuseFileSuffix;
                 }
 
-                cubeMapRelativePath = folderName + "/" + entity->GetName() + "_" + uuidString + fileSuffix;
+                cubeMapRelativePath = folderName + "/" + entityRequestingRender->GetName() + "_" + uuidString + fileSuffix;
 
                 // replace any invalid filename characters
                 auto invalidCharacters = [](char letter)
@@ -139,6 +140,7 @@ namespace AZ
                 // write the cubemap data to the .dds file
                 WriteOutputFile(cubeMapFullPath.c_str(), cubeMapFaceTextureData, cubeMapTextureFormat);
                 m_renderInProgress = false;
+               
             };
 
             // initiate the cubemap bake, this will invoke the buildCubeMapCallback when the cubemap data is ready

@@ -299,7 +299,7 @@ namespace ScriptCanvasEditor
 
             m_spacer = new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-            setWindowTitle(name);
+            setWindowTitle(tr(name));
             setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
             m_scrollArea = new QScrollArea(this);
@@ -765,6 +765,5 @@ namespace ScriptCanvasEditor
             }
         }
 
-#include <Editor/View/Widgets/moc_PropertyGrid.cpp>
     }
 }

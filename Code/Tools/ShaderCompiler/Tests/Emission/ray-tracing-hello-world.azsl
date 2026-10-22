@@ -1,0 +1,122 @@
+// AZSL version of the example raytracing shader found here:
+// https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/Desktop/D3D12Raytracing/src/D3D12RaytracingHelloWorld/Raytracing.hlsl
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ List of intrinsic declarations used in this shader:
+
+struct RayDesc
+{
+    float3 Origin;
+    float  TMin;
+    float3 Direction;
+    float  TMax;
+};
+
+uint3 DispatchRaysIndex();
+
+uint3 DispatchRaysDimensions();
+
+Template<payload_t>
+void TraceRay(RaytracingAccelerationStructure AccelerationStructure,
+              uint RayFlags,
+              uint InstanceInclusionMask,
+              uint RayContributionToHitGroupIndex,
+              uint MultiplierForGeometryContributionToHitGroupIndex,
+              uint MissShaderIndex,
+              RayDesc Ray,
+              inout payload_t Payload);
+
+struct BuiltInTriangleIntersectionAttributes
+{
+    float2 barycentrics;
+};
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+ShaderResourceGroupSemantic RaySemantic
+{
+    FrequencyId = 0u;
+};
+
+struct Viewport
+{
+    float left;
+    float top;
+    float right;
+    float bottom;
+};
+
+struct RayGenConstantBuffer
+{
+    Viewport viewport;
+    Viewport stencil;
+};
+
+ShaderResourceGroup RaySRG : RaySemantic
+{
+    RaytracingAccelerationStructure Scene;                   // : register(t0, space0);
+    RWTexture2D<float4> RenderTarget;                        // : register(u0);
+    ConstantBuffer<RayGenConstantBuffer> g_rayGenCB;         // : register(b0);
+};
+
+typedef BuiltInTriangleIntersectionAttributes MyAttributes;
+
+struct RayPayload
+{
+    float4 color;
+};
+
+bool IsInsideViewport(float2 p, Viewport viewport)
+{
+    return (p.x >= viewport.left && p.x <= viewport.right)
+        && (p.y >= viewport.top && p.y <= viewport.bottom);
+}
+
+[shader("raygeneration")]
+void MyRaygenShader()
+{
+    float2 lerpValues = (float2)DispatchRaysIndex() / (float2)DispatchRaysDimensions();
+
+    // Orthographic projection since we're raytracing in screen space.
+    float3 rayDir = float3(0, 0, 1);
+    float3 origin = float3(
+        lerp(RaySRG::g_rayGenCB.viewport.left, RaySRG::g_rayGenCB.viewport.right, lerpValues.x),
+        lerp(RaySRG::g_rayGenCB.viewport.top, RaySRG::g_rayGenCB.viewport.bottom, lerpValues.y),
+        0.0f);
+
+    if (IsInsideViewport(origin.xy, RaySRG::g_rayGenCB.stencil))
+    {
+        // Trace the ray.
+        // Set the ray's extents.
+        RayDesc ray;
+        ray.Origin = origin;
+        ray.Direction = rayDir;
+        // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
+        // TMin should be kept small to prevent missing geometry at close contact areas.
+        ray.TMin = 0.001;
+        ray.TMax = 10000.0;
+        RayPayload Payload = { float4(0, 0, 0, 0) };
+        TraceRay(RaySRG::Scene, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, ray, Payload);
+
+        // Write the raytraced color to the output texture.
+        RaySRG::RenderTarget[DispatchRaysIndex().xy] = Payload.color;
+    }
+    else
+    {
+        // Render interpolated DispatchRaysIndex outside the stencil window
+        RaySRG::RenderTarget[DispatchRaysIndex().xy] = float4(lerpValues, 0, 1);
+    }
+}
+
+[shader("closesthit")]
+void MyClosestHitShader(inout RayPayload a_payload, in MyAttributes attr)
+{
+    float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
+    a_payload.color = float4(barycentrics, 1);
+}
+
+[shader("miss")]
+void MyMissShader(inout RayPayload a_payload)
+{
+    a_payload.color = float4(0, 0, 0, 1);
+}

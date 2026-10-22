@@ -146,7 +146,7 @@ namespace AZ
             {
                 ConversionLookupTable lookupTable;
 
-                for (size_t i = 0; i < lookupTable.array_size; ++i)
+                for (size_t i = 0; i < lookupTable.size(); ++i)
                 {
                     float srgbValue = i / static_cast<float>(AZStd::numeric_limits<AZ::u8>::max());
                     lookupTable[i] = AZ::Color::ConvertSrgbGammaToLinear(srgbValue);

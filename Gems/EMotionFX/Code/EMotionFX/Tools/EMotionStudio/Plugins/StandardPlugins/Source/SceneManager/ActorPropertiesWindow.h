@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <Editor/ActorJointBrowseEdit.h>
 #include "../../../../EMStudioSDK/Source/NodeSelectionWindow.h"
+
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 

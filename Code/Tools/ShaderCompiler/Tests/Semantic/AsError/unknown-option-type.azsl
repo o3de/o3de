@@ -1,0 +1,27 @@
+// This file should not compile because the type of
+// the shader option 'o_myOption' is undefined.
+// #EC 49
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 64;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 m_color;
+};
+
+option WhatAmI o_myOption; 
+
+float4 MainPS() : SV_Target0
+{
+    float4 color = ExampleSRG::m_color;
+    if (o_myOption)
+    {
+        color += float4(1, 0, 0, 0);
+    }
+    return color;
+}
+

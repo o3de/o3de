@@ -1,0 +1,19 @@
+// Error: Root_Constants is a reserved name
+
+class Root_Constants
+{
+    int m_number;
+};
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Symbol Error 515:  Root_Constants is a reserved name
+// #EC 515

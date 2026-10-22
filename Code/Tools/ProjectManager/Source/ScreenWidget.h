@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
 #include <ScreensCtrl.h>
@@ -15,7 +14,6 @@
 #include <QWidget>
 #include <QStyleOption>
 #include <QPainter>
-#endif
 
 namespace O3DE::ProjectManager
 {

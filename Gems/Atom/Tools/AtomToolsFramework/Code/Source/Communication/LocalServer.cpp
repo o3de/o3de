@@ -101,4 +101,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Communication/moc_LocalServer.cpp>

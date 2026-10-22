@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
@@ -43,18 +44,18 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<MeshBlockerConfig>(
-                    "Vegetation Layer Blocker (Mesh)", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Layer Blocker (Mesh)"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &MeshBlockerConfig::m_inheritBehavior, "Inherit Behavior", "Allow shapes, modifiers, filters of a parent to affect this area.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMin, "Mesh Height Percent Min", "The percentage of the mesh height (from the bottom up) used as the lower bound for intersection tests")
+                    ->DataElement(0, &MeshBlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMin, QT_TRANSLATE_NOOP("Vegetation", "Mesh Height Percent Min"), QT_TRANSLATE_NOOP("Vegetation", "The percentage of the mesh height (from the bottom up) used as the lower bound for intersection tests"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMax, "Mesh Height Percent Max", "The percentage of the mesh height (from the bottom up) used as the upper bound for intersection tests")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshBlockerConfig::m_meshHeightPercentMax, QT_TRANSLATE_NOOP("Vegetation", "Mesh Height Percent Max"), QT_TRANSLATE_NOOP("Vegetation", "The percentage of the mesh height (from the bottom up) used as the upper bound for intersection tests"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &MeshBlockerConfig::m_blockWhenInvisible, "Block When Invisible", "Continue to block vegetation even if the mesh is invisible.")
+                    ->DataElement(0, &MeshBlockerConfig::m_blockWhenInvisible, QT_TRANSLATE_NOOP("Vegetation", "Block When Invisible"), QT_TRANSLATE_NOOP("Vegetation", "Continue to block vegetation even if the mesh is invisible."))
                     ;
             }
         }
