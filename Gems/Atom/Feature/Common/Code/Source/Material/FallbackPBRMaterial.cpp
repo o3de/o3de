@@ -48,7 +48,6 @@ namespace AZ::Render
                 return defaultValue;
             }
 
-            template<>
             RHI::Ptr<const RHI::ImageView> GetProperty(const AZ::Name& propertyName, const RHI::Ptr<const RHI::ImageView> defaultValue)
             {
                 auto image = GetProperty<Data::Instance<RPI::Image>>(propertyName, nullptr);
@@ -126,14 +125,14 @@ namespace AZ::Render
             }
 
             convertedMaterial.m_baseColorImageView =
-                util.GetProperty<RHI::Ptr<const RHI::ImageView>>(AZ_NAME_LITERAL("baseColor.textureMap"));
-            convertedMaterial.m_normalImageView = util.GetProperty<RHI::Ptr<const RHI::ImageView>>(AZ_NAME_LITERAL("normal.textureMap"));
+                util.GetProperty(AZ_NAME_LITERAL("baseColor.textureMap"), RHI::Ptr<const RHI::ImageView>{});
+            convertedMaterial.m_normalImageView = util.GetProperty(AZ_NAME_LITERAL("normal.textureMap"), RHI::Ptr<const RHI::ImageView>{});
             convertedMaterial.m_metallicImageView =
-                util.GetProperty<RHI::Ptr<const RHI::ImageView>>(AZ_NAME_LITERAL("metallic.textureMap"));
+                util.GetProperty(AZ_NAME_LITERAL("metallic.textureMap"), RHI::Ptr<const RHI::ImageView>{});
             convertedMaterial.m_roughnessImageView =
-                util.GetProperty<RHI::Ptr<const RHI::ImageView>>(AZ_NAME_LITERAL("roughness.textureMap"));
+                util.GetProperty(AZ_NAME_LITERAL("roughness.textureMap"), RHI::Ptr<const RHI::ImageView>{});
             convertedMaterial.m_emissiveImageView =
-                util.GetProperty<RHI::Ptr<const RHI::ImageView>>(AZ_NAME_LITERAL("emissive.textureMap"));
+                util.GetProperty(AZ_NAME_LITERAL("emissive.textureMap"), RHI::Ptr<const RHI::ImageView>{});
 
             auto irradianceColorSource =
                 util.GetEnumValueName(AZ_NAME_LITERAL("irradiance.irradianceColorSource"), AZ_NAME_LITERAL("Manual"));
