@@ -6,11 +6,25 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/utility/move.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzTest/AzTest.h>
+#include <AnimKey.h>
+#include <NullAudioSystem.h>
 #include <Mocks/IConsoleMock.h>
+#include <Mocks/ICVarMock.h>
 #include <Mocks/ISystemMock.h>
+#include <Maestro/Bus/SequenceComponentBus.h>
+#include <Maestro/Types/AnimNodeType.h>
+#include <Maestro/Types/AnimParamType.h>
 #include <Maestro/Types/SequenceType.h>
+
+#include <cstring>
 
 // This file is deliberately shared, unchanged, with the pre-extraction worktree.
 // Only the physical include location differs. Assertions must not vary by revision.
@@ -22,6 +36,50 @@
 
 namespace Maestro::MigrationParity
 {
+    class RecordingAudioSystem final : public Audio::NullAudioSystem
+    {
+    public:
+        static constexpr Audio::TAudioControlID TriggerId = 417;
+
+        Audio::TAudioControlID GetAudioTriggerID(const char* triggerName) const override
+        {
+            m_resolvedTriggerNames.emplace_back(triggerName);
+            if (std::strcmp(triggerName, "ParitySound") == 0)
+            {
+                return TriggerId;
+            }
+            return INVALID_AUDIO_CONTROL_ID;
+        }
+
+        void PushRequest(Audio::AudioRequestVariant&& request) override
+        {
+            m_requests.push_back(AZStd::move(request));
+        }
+
+        AZStd::vector<Audio::AudioRequestVariant> m_requests;
+        mutable AZStd::vector<AZStd::string> m_resolvedTriggerNames;
+    };
+
+    class TrackEventRecorder final : public SequenceComponentNotificationBus::Handler
+    {
+    public:
+        ~TrackEventRecorder() override
+        {
+            BusDisconnect();
+        }
+
+        void OnTrackEventTriggered(const char* eventName, const char* eventValue) override
+        {
+            ++m_count;
+            m_name = eventName;
+            m_value = eventValue;
+        }
+
+        int m_count = 0;
+        AZStd::string m_name;
+        AZStd::string m_value;
+    };
+
     class MoviePlaybackTests
         : public ::testing::Test
         , public IMovieListener
@@ -34,6 +92,9 @@ namespace Maestro::MigrationParity
             m_environment.pConsole = &m_console;
             m_environment.pSystem = &m_system;
             gEnv = &m_environment;
+            ON_CALL(m_console, RegisterString(::testing::StrEq("mov_overrideCam"), ::testing::_, ::testing::_, ::testing::_, ::testing::_))
+                .WillByDefault(::testing::Return(&m_overrideCam));
+            ON_CALL(m_overrideCam, GetString()).WillByDefault(::testing::Return(""));
             ON_CALL(m_time, GetLastSimulationTickTime()).WillByDefault([this]() { return AZ::TimeUs{m_frame}; });
             ON_CALL(m_time, GetSimulationTickDeltaOverride()).WillByDefault(::testing::Return(AZ::Time::ZeroTimeUs));
             m_movie = aznew CMovieSystem(&m_system);
@@ -63,6 +124,7 @@ namespace Maestro::MigrationParity
         }
 
         ::testing::NiceMock<ConsoleMock> m_console;
+        ::testing::NiceMock<CVarMock> m_overrideCam;
         ::testing::NiceMock<SystemMock> m_system;
         ::testing::NiceMock<AZ::MockTimeSystem> m_time;
         SSystemGlobalEnvironment m_environment{};
@@ -229,5 +291,118 @@ namespace Maestro::MigrationParity
         m_events.clear();
         EXPECT_TRUE(m_movie->AbortSequence(m_sequence, true));
         EXPECT_EQ(m_events, (AZStd::vector<EMovieEvent>{eMovieEvent_Aborted}));
+    }
+
+    TEST_F(MoviePlaybackTests, EventNodeSendsOneNotificationForCrossedKey)
+    {
+        IAnimNode* eventNode = m_sequence->CreateNode(AnimNodeType::Event);
+        ASSERT_NE(eventNode, nullptr);
+        IAnimTrack* eventTrack = eventNode->CreateTrack(AnimParamType::TrackEvent);
+        ASSERT_NE(eventTrack, nullptr);
+        eventTrack->SetNumKeys(1);
+
+        IEventKey eventKey;
+        eventKey.time = 0.25f;
+        eventKey.event = "ParityEvent";
+        eventKey.eventValue = "payload";
+        eventTrack->SetKey(0, &eventKey);
+
+        TrackEventRecorder recorder;
+        recorder.BusConnect(AZ::EntityId(42));
+        m_movie->PlaySequence(m_sequence);
+
+        Frame(0.1f);
+        EXPECT_EQ(recorder.m_count, 0);
+        Frame(0.2f);
+        EXPECT_EQ(recorder.m_count, 1);
+        EXPECT_EQ(recorder.m_name, "ParityEvent");
+        EXPECT_EQ(recorder.m_value, "payload");
+        Frame(0.2f);
+        EXPECT_EQ(recorder.m_count, 1);
+    }
+
+    TEST_F(MoviePlaybackTests, DirectorEvaluatesEntityReferencedSubsequenceEvent)
+    {
+        IAnimSequence* child = m_movie->CreateSequence(
+            "MigrationParityChild", false, 0, SequenceType::SequenceComponent, AZ::EntityId(43));
+        ASSERT_NE(child, nullptr);
+        child->SetTimeRange(Range(0.0f, 4.0f));
+
+        IAnimNode* childEventNode = child->CreateNode(AnimNodeType::Event);
+        ASSERT_NE(childEventNode, nullptr);
+        IAnimTrack* childEventTrack = childEventNode->CreateTrack(AnimParamType::TrackEvent);
+        ASSERT_NE(childEventTrack, nullptr);
+        childEventTrack->SetNumKeys(1);
+        IEventKey childEventKey;
+        childEventKey.time = 0.25f;
+        childEventKey.event = "ChildEvent";
+        childEventKey.eventValue = "child payload";
+        childEventTrack->SetKey(0, &childEventKey);
+
+        IAnimNode* director = m_sequence->CreateNode(AnimNodeType::Director);
+        ASSERT_NE(director, nullptr);
+        IAnimTrack* sequenceTrack = director->CreateTrack(AnimParamType::Sequence);
+        ASSERT_NE(sequenceTrack, nullptr);
+        sequenceTrack->SetNumKeys(1);
+        ISequenceKey sequenceKey;
+        sequenceKey.time = 0.5f;
+        sequenceKey.sequenceEntityId = AZ::EntityId(43);
+        sequenceTrack->SetKey(0, &sequenceKey);
+
+        TrackEventRecorder recorder;
+        recorder.BusConnect(AZ::EntityId(43));
+        ASSERT_EQ(m_movie->FindSequence(AZ::EntityId(43)), child);
+        m_movie->PlaySequence(m_sequence);
+        EXPECT_FALSE(m_movie->IsPlaying(child));
+
+        Frame(0.25f);
+        EXPECT_EQ(recorder.m_count, 0);
+        Frame(0.5f);
+        EXPECT_EQ(recorder.m_count, 1);
+        EXPECT_EQ(recorder.m_name, "ChildEvent");
+        EXPECT_EQ(recorder.m_value, "child payload");
+        EXPECT_FALSE(m_movie->IsPlaying(child));
+        Frame(0.1f);
+        EXPECT_EQ(recorder.m_count, 1);
+    }
+
+    TEST_F(MoviePlaybackTests, DirectorSoundTrackDispatchesStartAndStopAudioRequests)
+    {
+        ASSERT_EQ(AZ::Interface<Audio::IAudioSystem>::Get(), nullptr);
+        RecordingAudioSystem audioSystem;
+
+        IAnimNode* director = m_sequence->CreateNode(AnimNodeType::Director);
+        ASSERT_NE(director, nullptr);
+        IAnimTrack* soundTrack = director->CreateTrack(AnimParamType::Sound);
+        ASSERT_NE(soundTrack, nullptr);
+        soundTrack->SetNumKeys(1);
+
+        ISoundKey soundKey;
+        soundKey.time = 0.25f;
+        soundKey.fDuration = 0.5f;
+        soundKey.sStartTrigger = "ParitySound";
+        soundTrack->SetKey(0, &soundKey);
+
+        m_movie->PlaySequence(m_sequence);
+        Frame(0.1f);
+        EXPECT_TRUE(audioSystem.m_requests.empty());
+        Frame(0.2f);
+        ASSERT_EQ(audioSystem.m_requests.size(), 1);
+        const auto* startRequest = AZStd::get_if<Audio::ObjectRequest::ExecuteTrigger>(&audioSystem.m_requests[0]);
+        ASSERT_NE(startRequest, nullptr);
+        EXPECT_EQ(startRequest->m_triggerId, RecordingAudioSystem::TriggerId);
+        EXPECT_EQ(startRequest->m_owner, director);
+
+        Frame(0.5f);
+        ASSERT_EQ(audioSystem.m_requests.size(), 2);
+        const auto* stopRequest = AZStd::get_if<Audio::ObjectRequest::StopTrigger>(&audioSystem.m_requests[1]);
+        ASSERT_NE(stopRequest, nullptr);
+        EXPECT_EQ(stopRequest->m_triggerId, RecordingAudioSystem::TriggerId);
+        EXPECT_EQ(stopRequest->m_owner, director);
+        EXPECT_EQ(audioSystem.m_resolvedTriggerNames,
+            (AZStd::vector<AZStd::string>{ "ParitySound", "ParitySound" }));
+
+        Frame(0.1f);
+        EXPECT_EQ(audioSystem.m_requests.size(), 2);
     }
 }
