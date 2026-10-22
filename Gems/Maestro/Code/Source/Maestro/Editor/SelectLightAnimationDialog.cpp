@@ -13,6 +13,7 @@
 
 #include "EditorDefs.h"
 
+#include <Maestro/IMovieSystem.h>
 #include <Maestro/Types/AnimNodeType.h>   // for AnimNodeType
 
 //////////////////////////////////////////////////////////////////////////

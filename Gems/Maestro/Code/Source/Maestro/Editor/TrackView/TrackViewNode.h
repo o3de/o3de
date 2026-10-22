@@ -15,6 +15,8 @@ class XmlNodeRef;
 struct IKey;
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
 
 class CTrackViewKeyConstHandle
 {
