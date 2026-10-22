@@ -934,7 +934,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
             if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
             {
-                sequenceSystem->OnSystemCVarRegistry();
+                sequenceSystem->OnRegisterSystemCVars();
             }
 
             // Register any AZ CVar commands created above with the AZ Console system.

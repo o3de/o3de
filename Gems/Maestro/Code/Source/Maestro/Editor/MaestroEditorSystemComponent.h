@@ -51,10 +51,10 @@ namespace Maestro
         void OnEditorUpdate() override;
         void OnBeginSceneOpen() override;
         void OnBeginGameMode() override;
-        void OnGameModeStarted() override;
-        void OnGameModeStopped() override;
+        void OnBeforePlayInEditorStart() override;
+        void OnAfterPlayInEditorStop() override;
         void OnEndGameMode(bool simulationMode) override;
-        void OnSimulationModeChanged(bool enabled) override;
+        void OnSimulationModeChanging(bool enabled) override;
 
         void CreateEditorServices(IEditor* editor);
         void InitializeAnimationContext();

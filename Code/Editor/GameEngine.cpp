@@ -509,7 +509,7 @@ void CGameEngine::SwitchToInGame()
 
     if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        sequenceSystem->OnGameModeStarted();
+        sequenceSystem->OnBeforePlayInEditorStart();
     }
 
     // Transition to runtime entity context.
@@ -533,7 +533,7 @@ void CGameEngine::SwitchToInEditor()
 
     if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        sequenceSystem->OnGameModeStopped();
+        sequenceSystem->OnAfterPlayInEditorStop();
     }
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
@@ -647,7 +647,7 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
     {
-        sequenceSystem->OnSimulationModeChanged(enabled);
+        sequenceSystem->OnSimulationModeChanging(enabled);
     }
 
     if (enabled)

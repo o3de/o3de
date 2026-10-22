@@ -29,7 +29,7 @@ namespace AzFramework
         }
 
         //! Called after the host registers its CVars and before console-created callbacks and configuration loading.
-        virtual void OnSystemCVarRegistry() = 0;
+        virtual void OnRegisterSystemCVars() = 0;
 
         //! Called once system initialization is complete and before the general CrySystem initialized notification.
         virtual void OnSystemInitialized(bool skipSequenceSystem) = 0;

@@ -60,7 +60,7 @@ namespace Maestro
         ////////////////////////////////////////////////////////////////////////
 
         // AzFramework::ISequenceSystemLifecycle
-        void OnSystemCVarRegistry() override;
+        void OnRegisterSystemCVars() override;
         void OnSystemInitialized(bool skipSequenceSystem) override;
         void OnSystemShutdown() override;
         void OnPreUpdate(bool isEditorUpdate) override;

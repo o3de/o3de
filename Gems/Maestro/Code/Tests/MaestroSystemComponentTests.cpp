@@ -22,7 +22,7 @@ namespace Maestro
         : public AzFramework::ISequenceSystemLifecycle
     {
     public:
-        void OnSystemCVarRegistry() override {}
+        void OnRegisterSystemCVars() override {}
         void OnSystemInitialized(bool) override {}
         void OnSystemShutdown() override {}
         void OnPreUpdate(bool) override {}
@@ -37,7 +37,7 @@ namespace Maestro
     public:
         using MaestroSystemComponent::Activate;
         using MaestroSystemComponent::Deactivate;
-        using MaestroSystemComponent::OnSystemCVarRegistry;
+        using MaestroSystemComponent::OnRegisterSystemCVars;
         using MaestroSystemComponent::OnSystemInitialized;
         using MaestroSystemComponent::OnSystemShutdown;
         using MaestroSystemComponent::OnPreUpdate;
@@ -101,7 +101,7 @@ namespace Maestro
                 true));
 
         TestMaestroSystemComponent component;
-        component.OnSystemCVarRegistry();
+        component.OnRegisterSystemCVars();
         component.OnSystemInitialized(true);
 
         {
@@ -136,7 +136,7 @@ namespace Maestro
                 0.1f, VF_NULL, ::testing::_, ConsoleVarFunc{}, true))
                 .WillOnce(::testing::DoAll(::testing::SaveArg<1>(&m_maxDelta), ::testing::Return(nullptr)));
             m_component.Activate();
-            m_component.OnSystemCVarRegistry();
+            m_component.OnRegisterSystemCVars();
             ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(&m_console));
             m_component.OnSystemInitialized(false);
             m_movie = AZ::Interface<IMovieSystem>::Get();

@@ -34,10 +34,10 @@ namespace
         void OnEditorUpdate() override {}
         void OnBeginSceneOpen() override {}
         void OnBeginGameMode() override {}
-        void OnGameModeStarted() override {}
-        void OnGameModeStopped() override {}
+        void OnBeforePlayInEditorStart() override {}
+        void OnAfterPlayInEditorStop() override {}
         void OnEndGameMode(bool) override {}
-        void OnSimulationModeChanged(bool) override {}
+        void OnSimulationModeChanging(bool) override {}
     };
 }
 
