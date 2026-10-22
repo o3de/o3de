@@ -239,7 +239,6 @@ namespace Maestro
             return;
         }
 
-        m_editor = editor;
         m_editorInitialized = m_editorInitialized || editor->IsInitialized();
         m_sequenceManager = AZStd::make_unique<CTrackViewSequenceManager>();
         Editor::SetSequenceManager(m_sequenceManager.get());
@@ -295,6 +294,5 @@ namespace Maestro
         m_animationContextInitialized = false;
         m_editorInitialized = false;
         m_gameEngineInitialized = false;
-        m_editor = nullptr;
     }
 }
