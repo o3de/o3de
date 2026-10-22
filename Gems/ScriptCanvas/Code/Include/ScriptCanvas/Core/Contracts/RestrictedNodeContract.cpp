@@ -16,6 +16,51 @@
 
 namespace ScriptCanvas
 {
+    namespace
+    {
+        bool IsRestrictedNodeOrTransparentPath(const Slot& slot, const AZ::EntityId& restrictedNodeId)
+        {
+            if (slot.GetNodeId() == restrictedNodeId)
+            {
+                return true;
+            }
+
+            ScriptCanvasId scriptCanvasId;
+            NodeRequestBus::EventResult(
+                scriptCanvasId, slot.GetNodeId(), &NodeRequests::GetOwningScriptCanvasId);
+
+            Node* node = nullptr;
+            GraphRequestBus::EventResult(node, scriptCanvasId, &GraphRequests::FindNode, slot.GetNodeId());
+            if (!node || !node->IsConnectionTransparentForTranslation())
+            {
+                return false;
+            }
+
+            CombinedSlotType oppositeSlotType = CombinedSlotType::None;
+            if (slot.IsData())
+            {
+                oppositeSlotType = slot.IsInput() ? CombinedSlotType::DataOut : CombinedSlotType::DataIn;
+            }
+            else if (slot.IsExecution())
+            {
+                oppositeSlotType = slot.IsInput() ? CombinedSlotType::ExecutionOut : CombinedSlotType::ExecutionIn;
+            }
+
+            for (const Slot* oppositeSlot : node->GetSlotsByType(oppositeSlotType))
+            {
+                for (const EndpointResolved& endpoint : node->GetConnectedNodesForTranslation(*oppositeSlot))
+                {
+                    if (endpoint.first && endpoint.first->GetEntityId() == restrictedNodeId)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    } // namespace
+
     RestrictedNodeContract::RestrictedNodeContract(AZ::EntityId nodeId) 
         : m_nodeId{ nodeId }
     {}
@@ -43,6 +88,6 @@ namespace ScriptCanvas
         AZ::Outcome<void, AZStd::string> outcome(AZStd::unexpect, AZStd::string::format("Connection cannot be created between source slot"
             R"( "%s" and target slot "%s". Connections to source slot can be only be made from a node with node ID)"
             R"([%s])", sourceSlot.GetName().c_str(), targetSlot.GetName().c_str(), m_nodeId.ToString().c_str()));
-        return targetSlot.GetNodeId() == m_nodeId ? AZ::Success() : outcome;
+        return IsRestrictedNodeOrTransparentPath(targetSlot, m_nodeId) ? AZ::Success() : outcome;
     }
 }

@@ -290,6 +290,26 @@ namespace EMStudio
             m_parentPlugin->GetGraphWidget()->DeleteSelectedItems();
         });
 
+        m_actions[EDIT_REROUTE] = new QAction(tr("Reroute Selected Connection"), this);
+        m_actions[EDIT_REROUTE]->setShortcut(Qt::Key_R);
+        shortcutManager->RegisterKeyboardShortcut(
+            m_actions[EDIT_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(
+            m_actions[EDIT_REROUTE],
+            &QAction::triggered,
+            m_parentPlugin->GetGraphWidget(),
+            &BlendGraphWidget::InsertRerouteOnSelectedConnections);
+
+        m_actions[EDIT_REMOVE_REROUTE] = new QAction(tr("Remove Reroute From Selection"), this);
+        m_actions[EDIT_REMOVE_REROUTE]->setShortcut(0x0 | Qt::Key_R | Qt::ShiftModifier);
+        shortcutManager->RegisterKeyboardShortcut(
+            m_actions[EDIT_REMOVE_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(
+            m_actions[EDIT_REMOVE_REROUTE],
+            &QAction::triggered,
+            m_parentPlugin->GetGraphWidget(),
+            &BlendGraphWidget::RemoveRerouteFromSelection);
+
         for (QAction* action : m_actions)
         {
             action->setShortcutContext(Qt::WidgetShortcut);
@@ -529,6 +549,9 @@ namespace EMStudio
         SetOptionEnabled(EDIT_COPY, actionFilter.m_copyAndPaste && anySelection);
         SetOptionEnabled(EDIT_PASTE, actionFilter.m_copyAndPaste && isEditable && m_parentPlugin->GetActionManager().GetIsReadyForPaste());
         SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
+        // Shortcut-only actions re-check the selection on trigger; probing it here dereferences objects that can already be freed.
+        SetOptionEnabled(EDIT_REROUTE, isEditable && anySelection);
+        SetOptionEnabled(EDIT_REMOVE_REROUTE, isEditable && anySelection);
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)
