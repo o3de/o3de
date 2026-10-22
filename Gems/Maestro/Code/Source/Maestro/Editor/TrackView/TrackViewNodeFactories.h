@@ -11,6 +11,9 @@
 class CTrackViewAnimNode;
 class CTrackViewNode;
 class CTrackViewTrack;
+struct IAnimNode;
+struct IAnimSequence;
+struct IAnimTrack;
 
 class CTrackViewAnimNodeFactory
 {
