@@ -9,9 +9,12 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
+#include <AzFramework/Input/Contexts/InputContext.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
 namespace UnitTest
 {
@@ -133,6 +136,31 @@ namespace UnitTest
         inline static const int PixelMotionDelta90Degrees = 1570;
         inline static const int PixelMotionDelta135Degrees = 2356;
     };
+
+    TEST(CameraInput, BuildInputEventScalesMouseMotionToRenderResolution)
+    {
+        AzFramework::InputContext inputContext("CameraInputTest");
+        auto positionData = AZStd::make_shared<AzFramework::InputChannel::PositionData2D>();
+        positionData->m_normalizedPositionDelta = AZ::Vector2(0.025f, -0.05f);
+        AzFramework::InputChannelDeltaWithSharedPosition2D horizontalInputChannel(
+            AzFramework::InputDeviceMouse::Movement::X, inputContext, positionData);
+        AzFramework::InputChannelDeltaWithSharedPosition2D verticalInputChannel(
+            AzFramework::InputDeviceMouse::Movement::Y, inputContext, positionData);
+        horizontalInputChannel.ProcessRawInputEvent(5.0f);
+        verticalInputChannel.ProcessRawInputEvent(-5.0f);
+
+        const auto horizontalState = AzFramework::BuildInputEvent(
+            horizontalInputChannel, AzFramework::ModifierKeyStates{}, AzFramework::WindowSize{ 400, 200 });
+        const auto verticalState = AzFramework::BuildInputEvent(
+            verticalInputChannel, AzFramework::ModifierKeyStates{}, AzFramework::WindowSize{ 400, 200 });
+        const auto* horizontalEvent = AZStd::get_if<AzFramework::HorizontalMotionEvent>(&horizontalState.m_inputEvent);
+        const auto* verticalEvent = AZStd::get_if<AzFramework::VerticalMotionEvent>(&verticalState.m_inputEvent);
+
+        ASSERT_NE(horizontalEvent, nullptr);
+        ASSERT_NE(verticalEvent, nullptr);
+        EXPECT_EQ(horizontalEvent->m_delta, 10);
+        EXPECT_EQ(verticalEvent->m_delta, -10);
+    }
 
     TEST_F(CameraInputFixture, BeginAndEndOrbitCameraInputConsumesCorrectEvents)
     {
@@ -650,5 +678,44 @@ namespace UnitTest
             BoostModifierKeyStates(m_translateCameraInputChannelIds.m_boostChannelId, false) });
 
         EXPECT_THAT(m_firstPersonTranslateCamera->Boosting(), ::testing::IsFalse());
+    }
+    TEST_F(CameraInputFixture, MotionDeltasAccumulateAcrossEventsWithinAFrame)
+    {
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+
+        const int halfDelta = PixelMotionDelta90Degrees / 2;
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ halfDelta }, AzFramework::ModifierKeyStates{} });
+        Update();
+
+        const float expectedYaw = AzFramework::WrapYawRotation(-2.0f * halfDelta * 0.001f);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
+    }
+
+    TEST_F(CameraInputFixture, MotionDeltasAreUsedInsteadOfCursorPositionWhileCursorIsCaptured)
+    {
+        AzFramework::ed_cameraSystemUseCursor = true;
+
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 }, true },
+                                             AzFramework::ModifierKeyStates{} });
+        HandleEvent(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ PixelMotionDelta90Degrees },
+                                             AzFramework::ModifierKeyStates{} });
+        Update();
+        HandleEvent(AzFramework::InputState{ AzFramework::CursorEvent{ AzFramework::ScreenPoint{ 100, 100 }, true },
+                                             AzFramework::ModifierKeyStates{} });
+        Update();
+
+        const float expectedYaw = AzFramework::WrapYawRotation(-AZ::Constants::HalfPi);
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(m_camera.m_yaw, FloatNear(expectedYaw, 0.001f));
     }
 } // namespace UnitTest
