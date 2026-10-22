@@ -13,6 +13,8 @@
 
 #include <AzFramework/Entity/EntityContextBus.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
+
 namespace AzToolsFramework
 {
     //! An entity registered as read-only cannot be altered in the editor.

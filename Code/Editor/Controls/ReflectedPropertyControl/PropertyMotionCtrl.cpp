@@ -57,5 +57,3 @@ bool MotionPropertyWidgetHandler::ReadValuesIntoGUI(
 
     return false;
 }
-
-#include <Controls/ReflectedPropertyControl/moc_PropertyMotionCtrl.cpp>

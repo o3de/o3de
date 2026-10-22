@@ -101,7 +101,7 @@ struct IFileUtil
         int AddItem(const QString& name)
         {
             names.push_back(name);
-            return names.size() - 1;
+            return static_cast<int>(names.size()) - 1;
         }
     };
 

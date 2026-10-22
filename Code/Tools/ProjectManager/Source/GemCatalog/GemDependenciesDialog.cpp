@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
             if (GemModel::WasPreviouslyAddedDependency(gem))
             {
                 QCheckBox* checkBox = new QCheckBox(GemModel::GetName(gem));
-                connect(checkBox, &QCheckBox::stateChanged, this,
+                connect(checkBox, &QCheckBox::checkStateChanged, this,
                     [=](int state)
                     {
                         GemModel::SetIsAdded(*gemModel, gem, /*isAdded=*/state == Qt::Checked);

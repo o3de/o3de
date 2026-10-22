@@ -1,0 +1,2 @@
+rootconstant float4x4 s_objectMatrix;
+rootconstant uint s_materialIndex;

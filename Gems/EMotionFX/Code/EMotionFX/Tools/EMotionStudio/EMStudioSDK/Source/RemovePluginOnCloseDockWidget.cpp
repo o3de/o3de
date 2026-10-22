@@ -26,4 +26,3 @@ namespace EMStudio
     }
 }
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/moc_RemovePluginOnCloseDockWidget.cpp>

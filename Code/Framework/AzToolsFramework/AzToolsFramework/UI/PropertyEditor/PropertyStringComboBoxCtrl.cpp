@@ -162,4 +162,3 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-#include "UI/PropertyEditor/moc_PropertyStringComboBoxCtrl.cpp"

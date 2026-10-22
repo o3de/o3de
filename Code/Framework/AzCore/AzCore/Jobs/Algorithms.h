@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_ALGORITHMS_H
-#define AZCORE_JOBS_ALGORITHMS_H 1
+
+#pragma once
 
 #include <AzCore/Jobs/task_group.h>
 #include <AzCore/std/allocator_stack.h>
@@ -763,6 +763,3 @@ namespace AZ
         group.run_and_wait(f8);
     }
 }
-
-#endif
-#pragma once

@@ -13,6 +13,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Asset/AssetManager.h>
+
+#include <AzCore/i18n/TranslationMacros.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
@@ -180,7 +182,8 @@ namespace AZ
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<AssetManagerComponent>(
-                    "Asset Database", "Asset database system functionality")
+                    QT_TRANSLATE_NOOP("AzCore", "Asset Database"),
+                    QT_TRANSLATE_NOOP("AzCore", "Asset database system functionality"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                     ;

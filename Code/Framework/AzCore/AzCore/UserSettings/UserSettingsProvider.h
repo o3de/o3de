@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_USER_SETTINGS_PROVIDER_H
-#define AZCORE_USER_SETTINGS_PROVIDER_H
+
+#pragma once
 
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Memory/Memory.h>
@@ -132,6 +132,3 @@ namespace AZ
         UserSettingsContainer   m_settings;
     };
 }   // namespace AZ
-
-#endif  // AZCORE_USER_SETTINGS_PROVIDER_H
-#pragma once

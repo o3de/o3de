@@ -186,17 +186,28 @@ namespace AZ
         virtual void Init();
 
         //! Activates the entity and its components.
-        //! This function can be called multiple times throughout the lifetime of an 
-        //! entity. Before activating the components, this function verifies that all 
-        //! component dependency requirements are met, and that components are sorted 
-        //! so that each can be activated before the components that depend on it. 
-        //! If these requirements are met, this function calls the Activate function 
+        //! This function can be called multiple times throughout the lifetime of an
+        //! entity. Before activating the components, this function verifies that all
+        //! component dependency requirements are met, and that components are sorted
+        //! so that each can be activated before the components that depend on it.
+        //! If these requirements are met, this function calls the Activate function
         //! of each component.
+        //!
+        //! Activate()/Deactivate() are the low-level activation PRIMITIVES. They run the
+        //! components and fire the EntityBus, but they do NOT touch the active-state bitmask
+        //! (see m_activeStateByType). The higher-level activation LAYER -
+        //! SetEntityActive()/SetEffectiveActiveLayerByTypeIndex() to set intent, then
+        //! ApplyEffectiveActiveState() to realize it - sits on top of these and is what
+        //! ApplyEffectiveActiveState() calls internally. Prefer the layer for driving
+        //! activation: calling Activate()/Deactivate() directly bypasses the bitmask and can
+        //! leave intent (the mask) out of sync with reality (the State), which a later
+        //! ApplyEffectiveActiveState() will then "correct" by toggling the entity.
         virtual void Activate();
 
         //! Deactivates the entity and its components.
         //! This function can be called multiple times throughout the lifetime of an
         //! entity. This function calls the Deactivate function of each component.
+        //! Low-level primitive; see Activate() for the primitive-vs-layer relationship.
         virtual void Deactivate();
 
         //! Creates a component and attaches the component to the entity. 

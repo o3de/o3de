@@ -137,7 +137,7 @@ def set_json_data(target_path: Path, json_data: Box):
 def get_database(database_path: str) -> sqlite3.Connection:
     try:
         db = sqlite3.connect(database_path)
-        _LOGGER.info(f'DB Connection Made: {sqlite3.version}')
+        _LOGGER.info(f'DB Connection Made: {sqlite3.sqlite_version}')
         return db
     except Error as e:
         _LOGGER.info(f'Database connection failed. Error: {e}')
@@ -185,5 +185,3 @@ def get_database_values(cursor: sqlite3.Cursor, tables: list) -> dict:
         table_values = cursor.fetchall()
         database_values[table] = table_values
     return database_values
-
-

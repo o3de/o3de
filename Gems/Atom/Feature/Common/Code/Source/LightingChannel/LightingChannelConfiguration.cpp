@@ -11,6 +11,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -27,12 +28,12 @@ namespace AZ
                 
                 if (auto* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<AZ::Render::LightingChannelConfiguration>("Lighting Channel Config", "")
+                    editContext->Class<AZ::Render::LightingChannelConfiguration>(QT_TRANSLATE_NOOP("Atom::Feature", "Lighting Channel Config"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &AZ::Render::LightingChannelConfiguration::m_lightingChannelFlags,
-                            "Lighting Channels", "Lights can only shine the objects in the same lighting channel with the light.")
+                            QT_TRANSLATE_NOOP("Atom::Feature", "Lighting Channels"), QT_TRANSLATE_NOOP("Atom::Feature", "Lights can only shine the objects in the same lighting channel with the light."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)

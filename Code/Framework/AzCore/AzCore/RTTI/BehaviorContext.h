@@ -2355,7 +2355,7 @@ namespace AZ
     BehaviorContext::GlobalMethodBuilder BehaviorContext::Method(const char* name, Function f, const char* deprecatedName, BehaviorValues* defaultValues, const char* dbgDesc)
     {
         BehaviorParameterOverridesArray<Function> parameterOverrides;
-        InitializeParameterOverrides(defaultValues, parameterOverrides.begin(), parameterOverrides.size());
+        InitializeParameterOverrides(defaultValues, parameterOverrides.data(), parameterOverrides.size());
         return Method(name, f, deprecatedName, parameterOverrides, dbgDesc);
     }
 
@@ -2383,7 +2383,7 @@ namespace AZ
         BehaviorMethod* method = aznew AZ::Internal::BehaviorMethodImpl(static_cast<FunctionCastType>(f), this, name);
         method->m_debugDescription = dbgDesc;
 
-        if (!MethodImpl(method, name, args.begin(), args.size(), deprecatedName))
+        if (!MethodImpl(method, name, args.data(), args.size(), deprecatedName))
         {
             AZ_Error("Reflection", false, "Method '%s' is already registered in the global context!", name);
             return GlobalMethodBuilder(this, nullptr, nullptr);

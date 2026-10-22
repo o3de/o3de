@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETPROCESSOR_RCQUEUESORTMODEL_H
-#define ASSETPROCESSOR_RCQUEUESORTMODEL_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QSortFilterProxyModel>
 #include <QSet>
 #include <QString>
@@ -17,7 +16,6 @@
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include <AzCore/std/containers/unordered_map.h>
 #include "native/assetprocessor.h"
-#endif
 
 class RCcontrollerUnitTests;
 
@@ -82,5 +80,3 @@ namespace AssetProcessor
         void ProcessPlatformChangeMessage(QString platformName, bool connected);
     };
 } // namespace AssetProcessor
-
-#endif //ASSETPROCESSOR_RCQUEUESORTMODEL_H

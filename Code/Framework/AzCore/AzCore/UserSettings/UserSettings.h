@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_USER_SETTINGS_H
-#define AZCORE_USER_SETTINGS_H
+
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -155,6 +155,3 @@ namespace AZ
         ptr = nullptr;
     }
 }   // namespace AZ
-
-#endif  // AZCORE_USER_SETTINGS_H
-#pragma once

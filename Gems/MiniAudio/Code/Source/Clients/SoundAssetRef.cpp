@@ -9,6 +9,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MiniAudio/SoundAssetRef.h>
 
 namespace MiniAudio
@@ -29,14 +30,17 @@ namespace MiniAudio
             {
                 editContext
                     ->Class<SoundAssetRef>(
-                        "SoundAssetRef", "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "SoundAssetRef"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SoundAssetRef::m_asset, "asset", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SoundAssetRef::m_asset,
+                        QT_TRANSLATE_NOOP("MiniAudio", "asset"), "")
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
                     ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
-                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "MiniAudio Sound Asset")
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle,
+                        QT_TRANSLATE_NOOP("MiniAudio", "MiniAudio Sound Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SoundAssetRef::OnSpawnAssetChanged);
             }
         }

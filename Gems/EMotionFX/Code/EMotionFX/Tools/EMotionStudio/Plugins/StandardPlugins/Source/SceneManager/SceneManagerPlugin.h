@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
@@ -17,7 +16,6 @@
 #include "ActorsWindow.h"
 
 #include <EMotionFX/Source/EventHandler.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 

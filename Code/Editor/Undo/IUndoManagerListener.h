@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_EDITORCORE_UNDO_IUNDOMANAGERLISTENER_H
-#define CRYINCLUDE_EDITORCORE_UNDO_IUNDOMANAGERLISTENER_H
+
 #pragma once
 
 struct IUndoManagerListener
@@ -18,5 +17,3 @@ struct IUndoManagerListener
     virtual void SignalNumUndoRedo([[maybe_unused]] const unsigned int& numUndo, [[maybe_unused]] const unsigned int& numRedo){}
     virtual void UndoStackFlushed() {}
 };
-
-#endif // CRYINCLUDE_EDITORCORE_UNDO_IUNDOMANAGERLISTENER_H

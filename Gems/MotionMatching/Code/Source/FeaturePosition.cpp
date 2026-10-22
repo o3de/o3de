@@ -18,6 +18,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -89,7 +90,9 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeaturePosition>("FeaturePosition", "Matches joint positions.")
+        editContext->Class<FeaturePosition>(
+            QT_TRANSLATE_NOOP("MotionMatching", "FeaturePosition"),
+            QT_TRANSLATE_NOOP("MotionMatching", "Matches joint positions."))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ;

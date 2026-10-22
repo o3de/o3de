@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+
+    "_README_": [
+        "${Name}.pass",
+        "----------------------------------------------------------------",
+        "PassAsset consumed by Atom's PassSystem.",
+        "",
+        "PassClass : ${Name}Pass",
+        "    Must match the AZ::Name registered with PassSystemInterface->",
+        "    AddPassCreator inside ${GemName}RenderingSystemComponent::Activate().",
+        "",
+        "PassData.$type : FullscreenTrianglePassData",
+        "    Required by RPI::FullscreenTrianglePass to know which shader to bind.",
+        "",
+        "ShaderAsset.FilePath",
+        "    Source-relative path to the .shader. AssetProcessor turns the .shader",
+        "    into a .azshader at runtime; FullscreenTrianglePass::LoadShader uses",
+        "    this path to look up that azshader by AssetCatalog.",
+        "",
+        "Slots",
+        "    InputColor   - the color buffer to read (sampled in the pixel shader)",
+        "    OutputColor  - the color buffer to write to (the pass output)",
+        "    Names match the SRG declarations in ${Name}.azsl."
+    ],
+
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "${PassTemplateName}",
+            "PassClass": "${Name}Pass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/${Name}.shader"
+                }
+            }
+        }
+    }
+}

@@ -216,4 +216,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <SceneWidgets/moc_ManifestWidget.cpp>

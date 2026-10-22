@@ -464,16 +464,16 @@ namespace OpenParticleSystemEditor
         QMouseEvent* releaseEvent = nullptr;
         QMouseEvent* moveEvent = nullptr;
 
-        pressEvent = new QMouseEvent(QEvent::MouseButtonPress, oldPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        pressEvent = new QMouseEvent(QEvent::MouseButtonPress, oldPoint, oldPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         QCoreApplication::postEvent(this, pressEvent);
 
         if (needMove)
         {
-            moveEvent = new QMouseEvent(QEvent::MouseMove, newPoint, Qt::NoButton, Qt::MouseButtons(Qt::LeftButton), Qt::NoModifier);
+            moveEvent = new QMouseEvent(QEvent::MouseMove, newPoint, newPoint, Qt::NoButton, Qt::MouseButtons(Qt::LeftButton), Qt::NoModifier);
             QCoreApplication::postEvent(this, moveEvent);
         }
 
-        releaseEvent = new QMouseEvent(QEvent::MouseButtonRelease, newPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        releaseEvent = new QMouseEvent(QEvent::MouseButtonRelease, newPoint, newPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
         QCoreApplication::postEvent(this, releaseEvent);
     }
 

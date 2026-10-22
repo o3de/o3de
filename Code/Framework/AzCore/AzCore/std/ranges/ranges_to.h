@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/iterator.h>
@@ -16,61 +17,50 @@ namespace AZStd::ranges
 {
     namespace Internal
     {
-        template<class Container, class = void>
-        constexpr bool has_reserve = false;
         template<class Container>
-        constexpr bool has_reserve<Container, enable_if_t<
-            sfinae_trigger_v<decltype(declval<Container&>().reserve(declval<range_size_t<Container>>()))>
-            >> = true;
+        concept has_reserve = requires(Container& container, range_size_t<Container> size)
+        {
+            container.reserve(size);
+        };
 
-        template<class Container, class = void>
-        constexpr bool has_capacity = false;
         template<class Container>
-        constexpr bool has_capacity<Container, enable_if_t<
-            same_as<decltype(declval<Container&>().capacity()), range_size_t<Container>>
-            >> = true;
+        concept has_capacity = requires(Container& container)
+        {
+            { container.capacity() } -> same_as<range_size_t<Container>>;
+        };
 
-        template<class Container, class = void>
-        constexpr bool has_max_size = false;
         template<class Container>
-        constexpr bool has_max_size<Container, enable_if_t<
-            same_as<decltype(declval<Container&>().max_size()), range_size_t<Container>>
-            >> = true;
+        concept has_max_size = requires(Container& container)
+        {
+            { container.max_size() } -> same_as<range_size_t<Container>>;
+        };
 
-        template<class Container, class = void>
-        constexpr bool reservable_container = false;
         template<class Container>
-        constexpr bool reservable_container<Container, enable_if_t<conjunction_v<
-            bool_constant<sized_range<Container>>,
-            bool_constant<has_reserve<Container>>,
-            bool_constant<has_capacity<Container>>,
-            bool_constant<has_max_size<Container>>
-            >>> = true;
+        concept reservable_container =
+            sized_range<Container>
+            && has_reserve<Container>
+            && has_capacity<Container>
+            && has_max_size<Container>;
 
-        template<class Container, class Ref, class = void>
-        constexpr bool has_push_back = false;
         template<class Container, class Ref>
-        constexpr bool has_push_back<Container, Ref, enable_if_t<
-            sfinae_trigger_v<decltype(declval<Container&>().push_back(declval<Ref&&>()))>
-            >> = true;
+        concept has_push_back = requires(Container& container, Ref&& ref)
+        {
+            container.push_back(AZStd::forward<Ref>(ref));
+        };
 
-        template<class Container, class Ref, class = void>
-        constexpr bool has_insert = false;
         template<class Container, class Ref>
-        constexpr bool has_insert<Container, Ref, enable_if_t<
-            sfinae_trigger_v<decltype(declval<Container&>().insert(declval<Container&>().end(), declval<Ref&&>()))>
-            >> = true;
+        concept has_insert = requires(Container& container, Ref&& ref)
+        {
+            container.insert(container.end(), AZStd::forward<Ref>(ref));
+        };
 
-        template<class Container, class Ref, class = void>
-        constexpr bool container_insertable = false;
         // Disjunction is used here as the condition is a logical-or
         // most of the concept conditions have been logical-and until now
         // https://eel.is/c++draft/range.utility.conv#general-4
         template<class Container, class Ref>
-        constexpr bool container_insertable<Container, Ref, enable_if_t<disjunction_v<
-            bool_constant<has_push_back<Container, Ref>>,
-            bool_constant<has_insert<Container, Ref>>
-            >>> = true;
+        concept container_insertable =
+            has_push_back<Container, Ref>
+            || has_insert<Container, Ref>;
 
         template<class Ref, class Container>
         constexpr auto container_inserter(Container& c)
@@ -86,47 +76,23 @@ namespace AZStd::ranges
         }
 
 
-        struct container_range_direct_constructible
-        {
-            template<template<class...> class C, class R, class... Args>
-            constexpr false_type operator()(...);
-            
-            template<template<class...> class C, class R, class... Args>
-            constexpr auto operator()(int) -> enable_if_t<
-                sfinae_trigger_v<decltype(C(declval<R>(), declval<Args>()...))>,
-                true_type>;
-        };
         template<template<class...> class C, class R, class... Args>
-        constexpr bool container_range_direct_constructible_v =
-            decltype(container_range_direct_constructible{}.operator()<C, R, Args...>(0))::value;
-
-        struct container_range_tag_type_constructible
+        concept container_range_direct_constructible = requires
         {
-            template<template<class...> class C, class R, class... Args>
-            constexpr false_type operator()(...);
-            template<template<class...> class C, class R, class... Args>
-            constexpr auto operator()(int) -> enable_if_t<
-                sfinae_trigger_v<decltype(C(from_range, declval<R>(), declval<Args>()...))>,
-                true_type>;
+            C(declval<R>(), declval<Args>()...);
         };
+
         template<template<class...> class C, class R, class... Args>
-        constexpr bool container_range_tag_type_constructible_v =
-            decltype(container_range_tag_type_constructible{}.operator()<C, R, Args...>(0))::value;
-        
-        struct container_range_common_iterator_constructible
+        concept container_range_tag_type_constructible = requires
         {
-            template<template<class...> class C, class I, class... Args>
-            constexpr false_type operator()(...);
-            template<template<class...> class C, class I, class... Args>
-            constexpr auto operator()(int) -> enable_if_t<
-                sfinae_trigger_v<decltype(C(declval<I>(), declval<I>(), declval<Args>()...))>,
-                true_type>;
-
+            C(from_range, declval<R>(), declval<Args>()...);
         };
+
         template<template<class...> class C, class I, class... Args>
-        constexpr bool container_range_common_iterator_constructible_v =
-            decltype(container_range_common_iterator_constructible{}.operator()<C, I, Args...>(0))::value;
-        
+        concept container_range_common_iterator_constructible = requires
+        {
+            C(declval<I>(), declval<I>(), declval<Args>()...);
+        };
 
         // Exposition only type for deducing the template argument for the container template C
         // https://eel.is/c++draft/range.utility.conv#to-2
@@ -149,21 +115,22 @@ namespace AZStd::ranges
         struct deduce_expr_impl
         {
             template<template<class...> class C, class R, class... Args>
-            constexpr auto operator()() const -> enable_if_t<container_range_direct_constructible_v<C, R>,
-                decltype(C(declval<R>(), declval<Args>()...))>;
+            constexpr auto operator()() const
+                -> decltype(C(declval<R>(), declval<Args>()...))
+               requires container_range_direct_constructible<C, R, Args...>;
 
             template<template<class...> class C, class R, class... Args>
-            constexpr auto operator()() const ->enable_if_t<
-                container_range_tag_type_constructible_v<C, R, Args...>
-                && !container_range_direct_constructible_v<C, R>,
-                decltype(C(from_range, declval<R>(), declval<Args>()...))>;
+            constexpr auto operator()() const
+                -> decltype(C(from_range, declval<R>(), declval<Args>()...))
+               requires container_range_tag_type_constructible<C, R, Args...>
+                   && (!container_range_direct_constructible<C, R, Args...>);
 
             template<template<class...> class C, class R, class... Args>
-            constexpr auto operator()() const ->enable_if_t<
-                container_range_common_iterator_constructible_v<C, range_input_iterator<R>, Args...>
-                && !container_range_direct_constructible_v<C, R>
-                && !container_range_tag_type_constructible_v<C, R, Args...>,
-                decltype(C(declval<range_input_iterator<R>>(), declval<range_input_iterator<R>>(), declval<Args>()...))>;
+            constexpr auto operator()() const
+                -> decltype(C(declval<range_input_iterator<R>>(), declval<range_input_iterator<R>>(), declval<Args>()...))
+               requires container_range_common_iterator_constructible<C, range_input_iterator<R>, Args...>
+                   && (!container_range_direct_constructible<C, R, Args...>)
+                   && (!container_range_tag_type_constructible<C, R, Args...>);
         };
 
         template<template<class...> class C, class R, class... Args>
@@ -174,10 +141,9 @@ namespace AZStd::ranges
     //https://eel.is/c++draft/range.utility.conv#to
     template<class C, class R, class... Args>
     [[nodiscard]] constexpr auto to(R&& r, Args&&... args)
-        -> enable_if_t<conjunction_v<
-        bool_constant<input_range<R>>,
-        bool_constant<!view<C>>
-        >, C>
+        -> C
+       requires input_range<R>
+           && (!view<C>)
     {
         if constexpr (convertible_to<range_reference_t<R>, range_value_t<C>>)
         {
@@ -195,7 +161,7 @@ namespace AZStd::ranges
             // The Range is a common range(i.e has the same iterator and sentinel type)
             // and the Container C has a legacy iterator constructor that construct C
             // from begin and end iterators
-            else if constexpr (common_range<R> && cpp17_input_iterator<iterator_t<R>>
+            else if constexpr (common_range<R> && input_iterator<iterator_t<R>>
                 && constructible_from<C, iterator_t<R>, sentinel_t<R>, Args...>)
             {
                 if constexpr (is_lvalue_reference_v<R>)
@@ -251,8 +217,7 @@ namespace AZStd::ranges
         }
     }
 
-    template<template<class...> class C, class R, class... Args,
-        class = enable_if_t<input_range<R>>>
+    template<template<class...> class C, input_range R, class... Args>
     [[nodiscard]] constexpr auto to(R&& r, Args&&... args)
     {
         return to<Internal::DEDUCE_EXPR<C, R, Args...>>(AZStd::forward<R>(r), AZStd::forward<Args>(args)...);
@@ -260,7 +225,8 @@ namespace AZStd::ranges
 
     // ranges::to adapators
     // https://eel.is/c++draft/range.utility.conv#adaptors
-    template<class C, class... Args, class = enable_if_t<!view<C>>>
+    template<class C, class... Args>
+        requires (!view<C>)
     constexpr auto to(Args&&... args)
     {
         auto to_forwarder = [](auto&& r, auto&&... boundArgs) constexpr

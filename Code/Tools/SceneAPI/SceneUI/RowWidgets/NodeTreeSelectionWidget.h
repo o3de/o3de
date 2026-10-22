@@ -8,8 +8,8 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -18,7 +18,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
 #include <SceneAPI/SceneUI/SceneWidgets/SceneGraphWidget.h>
-#endif
 
 namespace AZ
 {

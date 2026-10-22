@@ -242,6 +242,61 @@ namespace AZ
             return command;
         }
 
+        constexpr AZStd::string_view commandSeparators = " \t\n\r";
+        const size_t argumentSeparator = command.find_first_of(commandSeparators);
+        if (argumentSeparator != AZStd::string_view::npos)
+        {
+            const AZStd::string_view commandName = command.substr(0, argumentSeparator);
+            const AZStd::string_view arguments = command.substr(argumentSeparator + 1);
+            if (!commandName.empty())
+            {
+                if (ConsoleFunctorBase* functor = FindCommand(commandName); functor != nullptr && functor->HasArgumentAutoCompleteCallback())
+                {
+                    AZStd::vector<AZStd::string> argumentMatches;
+                    functor->AutoCompleteArguments(arguments, argumentMatches);
+
+                    AZStd::vector<AZStd::string> commandMatches;
+                    commandMatches.reserve(argumentMatches.size());
+                    ConsoleCommandContainer commandMatchViews;
+                    commandMatchViews.reserve(argumentMatches.size());
+                    const AZStd::string commandPrefix(command.substr(0, argumentSeparator + 1));
+                    for (const AZStd::string& argumentMatch : argumentMatches)
+                    {
+                        AZStd::string commandMatch = commandPrefix + argumentMatch;
+                        AZLOG_INFO("- %s", commandMatch.c_str());
+                        commandMatches.push_back(AZStd::move(commandMatch));
+                        commandMatchViews.push_back(commandMatches.back());
+                    }
+
+                    if (matches != nullptr)
+                    {
+                        matches->insert(matches->end(), commandMatches.begin(), commandMatches.end());
+                    }
+
+                    AZStd::string largestSubstring = command;
+                    if (!largestSubstring.empty() && !commandMatches.empty())
+                    {
+                        const uint32_t totalCount = CountMatchingPrefixes(command, commandMatchViews);
+
+                        for (size_t index = largestSubstring.length(); index < commandMatches.front().length(); ++index)
+                        {
+                            const AZStd::string nextSubstring = largestSubstring + commandMatches.front()[index];
+                            const uint32_t count = CountMatchingPrefixes(nextSubstring, commandMatchViews);
+
+                            if (count < totalCount)
+                            {
+                                break;
+                            }
+
+                            largestSubstring = nextSubstring;
+                        }
+                    }
+
+                    return largestSubstring;
+                }
+            }
+        }
+
         ConsoleCommandContainer commandSubset;
 
         for (const auto& functor : m_commands)

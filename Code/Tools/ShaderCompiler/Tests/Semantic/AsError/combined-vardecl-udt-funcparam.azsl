@@ -1,0 +1,6 @@
+// new behavior 1.5+: inline type introduction cannot work anymore with extended function signatures.
+// previous comment: "// AZSL OK. Though this is semantically forbidden by clang and FXC can't parse it. We extract S and emit it in a nice form for them."
+void f(struct S {} s)  // #EC 40
+{
+}
+// line 3::7 '(3): introducing new type (S) within function arguments is ill-formed'

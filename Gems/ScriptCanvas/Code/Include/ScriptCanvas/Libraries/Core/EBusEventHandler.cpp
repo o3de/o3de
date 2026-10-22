@@ -54,7 +54,7 @@ namespace ScriptCanvas
 
             void EBusEventHandler::OnActivate()
             {
-                // Set the auto connect value to the serialized value to give the setter 
+                // Set the auto connect value to the serialized value to give the setter
                 // the chance to overrule it if the node's Connect slot is manually connected.
                 SetAutoConnectToGraphOwner(m_autoConnectToGraphOwner);
             }
@@ -78,7 +78,7 @@ namespace ScriptCanvas
                         variableIds.insert(scopedVariableId->m_identifier);
                     }
                 }
-                
+
                 Node::CollectVariableReferences(variableIds);
             }
 
@@ -466,7 +466,7 @@ namespace ScriptCanvas
                         {
                             Data::Type busIdType(AZ::BehaviorContextHelper::IsStringParameter(m_ebus->m_idParam) ? Data::Type::String() : Data::FromAZType(busId));
 
-                            config.ConfigureDatum(AZStd::move(Datum(busIdType, Datum::eOriginality::Original)));
+                            config.ConfigureDatum(Datum(busIdType, Datum::eOriginality::Original));
                         }
 
                         AddSlot(config);
@@ -527,7 +527,7 @@ namespace ScriptCanvas
                     resultConfiguration.SetConnectionType(ConnectionType::Input);
                     resultConfiguration.m_addUniqueSlotByNameAndType = false;
 
-                    resultConfiguration.ConfigureDatum(AZStd::move(Datum(inputType, Datum::eOriginality::Original)));
+                    resultConfiguration.ConfigureDatum(Datum(inputType, Datum::eOriginality::Original));
 
                     ebusEventEntry.m_resultSlotId = AddSlot(resultConfiguration);
                 }

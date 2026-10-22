@@ -6,20 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CRYEDIT_H
-#define CRYINCLUDE_EDITOR_CRYEDIT_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include "CryEditDoc.h"
 #include "ViewPane.h"
 
 #include <QSettings>
-
-#endif
 
 class CCryDocManager;
 class CCryEditDoc;
@@ -29,6 +23,9 @@ class CConsoleDialog;
 class QAction;
 class MainWindow;
 class QSharedMemory;
+class ComponentEntityEditorTool;
+class ProjectSettingsEditorTool;
+class AssetImporterTool;
 
 namespace AzToolsFramework
 {
@@ -127,14 +124,20 @@ public:
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
-    ECreateLevelResult CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName);
+    // levelsRootAbsolutePath: absolute path of the "Levels" container the
+    // new level should live inside. Empty (default) means the project's
+    // own "Levels" folder, preserving legacy behaviour for all existing
+    // callers (including Python). The New Level dialog passes a gem root
+    // through this parameter when the user picks a non-project root.
+    ECreateLevelResult CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName, const QString& levelsRootAbsolutePath = QString());
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
     AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
     void CreateSplashScreen();
-    void InitPlugins();
+    void InitEditorTools();
+    void ShutdownEditorTools();
     bool InitGame();
 
     bool InitConsole();
@@ -306,6 +309,10 @@ private:
 
     CCryDocManager* m_pDocManager = nullptr;
 
+    AZStd::unique_ptr<ComponentEntityEditorTool> m_componentEntityEditor;
+    AZStd::unique_ptr<ProjectSettingsEditorTool> m_projectSettingsTool;
+    AZStd::unique_ptr<AssetImporterTool> m_assetImporter;
+
 // Disable warning for dll export since this member won't be used outside this class
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
 
@@ -396,7 +403,6 @@ private:
     const QMetaObject* m_documentClass = nullptr;
 };
 
-class CDocTemplate;
 class CCryDocManager
 {
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
@@ -406,8 +412,7 @@ public:
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();
-    virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
-        DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
+    virtual bool DoPromptFileName(QString& fileName, bool bOpenFileDialog);
     virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
@@ -450,5 +455,3 @@ namespace AzToolsFramework
 
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
-
-#endif // CRYINCLUDE_EDITOR_CRYEDIT_H

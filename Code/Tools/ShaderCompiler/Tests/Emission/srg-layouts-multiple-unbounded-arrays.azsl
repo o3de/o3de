@@ -1,0 +1,46 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroupSemantic slot2
+{
+    FrequencyId = 2;
+};
+
+struct MyStruct
+{
+    float4 m_a;
+    float4 m_b;
+};
+
+
+ShaderResourceGroup SRG1 : slot1
+{
+
+    Texture2D<float4>        m_texSRVa[];      // t0+, space1000
+    Texture2D<float4>        m_texSRVb[];      // t0+, space1001
+    Texture2D<float4>        m_texSRVc;        // t0+, space0
+    Texture2D<float4>        m_texSRVd;        // t1+, space0
+    RWTexture2D<float4>      m_texUAVa[];      // u0+, space1002
+    RWTexture2D<float4>      m_texUAVb[];      // u0+, space1003
+    Sampler                  m_samplera[];     // s0+, space1004
+    Sampler                  m_samplerb[];     // s0+, space1005
+    ConstantBuffer<MyStruct> m_structArraya[]; // b0+, space1006
+    ConstantBuffer<MyStruct> m_structArrayb[]; // b0+, space1007
+};
+
+ShaderResourceGroup SRG2 : slot2
+{
+
+    Texture2D<float4>        m_texSRVa[];      // t0+, space1008
+    Texture2D<float4>        m_texSRVb[];      // t0+, space1009
+    Texture2D<float4>        m_texSRVc;        // t0+, space1
+    Texture2D<float4>        m_texSRVd;        // t1+, space1
+    RWTexture2D<float4>      m_texUAVa[];      // u0+, space1010
+    RWTexture2D<float4>      m_texUAVb[];      // u0+, space1011
+    Sampler                  m_samplera[];     // s0+, space1012
+    Sampler                  m_samplerb[];     // s0+, space1013
+    ConstantBuffer<MyStruct> m_structArraya[]; // b0+, space1014
+    ConstantBuffer<MyStruct> m_structArrayb[]; // b0+, space1015
+};

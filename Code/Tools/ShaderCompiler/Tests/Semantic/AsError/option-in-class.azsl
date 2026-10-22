@@ -1,0 +1,7 @@
+class C
+{
+    option bool optC;
+};
+
+// Semantic Error 11: line 3::16 'option qualifier is only valid for top level constants and SRG constants!'
+// #EC 11

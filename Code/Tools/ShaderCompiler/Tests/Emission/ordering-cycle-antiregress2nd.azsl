@@ -1,0 +1,22 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InStruct
+    {
+        float4 m_diffuse;
+        enum class ESpec { Gloss, Rough } m_spec;
+
+        class InClass
+        {
+            static const int N = 2;
+            int f() { return N; }
+            int g() { return f(); }
+            static const int M = 1;
+            enum class En { Z, Y = M };
+        };
+    };
+};

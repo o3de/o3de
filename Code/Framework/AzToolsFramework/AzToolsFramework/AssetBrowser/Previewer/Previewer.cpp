@@ -19,4 +19,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <AssetBrowser/Previewer/moc_Previewer.cpp>

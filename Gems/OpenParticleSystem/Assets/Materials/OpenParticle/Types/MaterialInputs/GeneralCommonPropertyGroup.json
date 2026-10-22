@@ -76,6 +76,17 @@
             }
         },
         {
+            "name": "vertexColorFactor",
+            "displayName": "",
+            "description": "",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_vertexColorFactor"
+            }
+        },
+        {
             "name": "forwardPassIBLSpecular",
             "displayName": "Forward Pass IBL Specular",
             "description": "Whether to apply IBL specular in the forward pass.",
@@ -84,14 +95,6 @@
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_materialUseForwardPassIBLSpecular"
-            }
-        }
-    ],
-    "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/OpenParticle/Types/StandardPBR_HandleOpacityDoubleSided.lua"
             }
         }
     ]

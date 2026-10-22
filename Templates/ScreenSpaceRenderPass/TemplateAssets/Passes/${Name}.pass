@@ -1,0 +1,110 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+
+    "_README_": [
+        "${Name}.pass",
+        "----------------------------------------------------------------",
+        "PassAsset consumed by Atom's PassSystem.",
+        "",
+        "PassClass : ${Name}Pass",
+        "    Must match the AZ::Name registered with PassSystemInterface->",
+        "    AddPassCreator inside ${GemName}RenderingSystemComponent::Activate().",
+        "",
+        "PassData.$type : FullscreenTrianglePassData",
+        "    Required by RPI::FullscreenTrianglePass to know which shader to bind.",
+        "",
+        "ShaderAsset.FilePath",
+        "    Source-relative path to the .shader. AssetProcessor turns the .shader",
+        "    into a .azshader at runtime; FullscreenTrianglePass::LoadShader uses",
+        "    this path to look up that azshader by AssetCatalog.",
+        "",
+        "EFFECT MODEL : sample-and-transform (owned output) ----------------",
+        "    This template uses the canonical sample model, matching the engine's",
+        "    Gems/Atom/Feature/Common/Assets/Passes/ConvertToAcescg.pass:",
+        "      * InputColor  (Input, Shader)        - sampled in the pixel shader",
+        "                                             as PassSrg::m_framebuffer.",
+        "      * OutputColor (Output, RenderTarget) - written by the shader. It is",
+        "                                             backed by an OWNED transient",
+        "                                             image (OutputColorAttachment,",
+        "                                             below) sized/formatted from",
+        "                                             InputColor. Owning the output",
+        "                                             is what makes this pass a",
+        "                                             complete, schedulable render",
+        "                                             pass on its own -- a render",
+        "                                             target slot with no attachment",
+        "                                             fails to build.",
+        "    A pass cannot sample and render-target the SAME texture in one draw,",
+        "    so the source and destination are distinct buffers. Whatever runs",
+        "    after this pass in the pipeline must therefore read OutputColor (the",
+        "    new buffer), not the original input -- that downstream routing is the",
+        "    pipeline integration step (see ${GemName}PostProcessRegistry.setreg).",
+        "",
+        "    ALTERNATIVE -- in-place model: if your effect only needs to write or",
+        "    blend over the existing color buffer (and does NOT need to sample it",
+        "    as a texture), copy the in-place shape from DeferredFog.pass instead:",
+        "    a single InputOutput slot with ScopeAttachmentUsage RenderTarget and",
+        "    LoadAction Load. In-place passes are visible the moment they are",
+        "    spliced into a pipeline (they overwrite the buffer everything",
+        "    downstream already reads) -- no output routing required -- but the",
+        "    shader loses the ability to read the source color.",
+        "",
+        "Slots",
+        "    InputColor   - the color buffer to read (sampled in the pixel shader)",
+        "    OutputColor  - the color buffer to write to (the pass output)",
+        "    Names match the SRG declarations in ${Name}.azsl."
+    ],
+
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "${PassTemplateName}",
+            "PassClass": "${Name}Pass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputColorAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputColorAttachment"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/${Name}.shader"
+                }
+            }
+        }
+    }
+}

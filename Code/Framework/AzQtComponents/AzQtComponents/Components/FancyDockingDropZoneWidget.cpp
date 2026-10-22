@@ -332,5 +332,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_FancyDockingDropZoneWidget.cpp"

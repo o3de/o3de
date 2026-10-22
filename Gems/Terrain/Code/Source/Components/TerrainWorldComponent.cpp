@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Terrain
 {
@@ -80,29 +81,35 @@ namespace Terrain
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<TerrainWorldConfig>("Terrain World Component", "Data required for the terrain system to run")
+                edit->Class<TerrainWorldConfig>(
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain World Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Data required for the terrain system to run"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_minHeight, "Min Height", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_minHeight,
+                        QT_TRANSLATE_NOOP("Terrain", "Min Height"), "")
                         ->Attribute(AZ::Edit::Attributes::SoftMin, -1000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateHeightMin)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_maxHeight, "Max Height", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_maxHeight,
+                        QT_TRANSLATE_NOOP("Terrain", "Max Height"), "")
                         ->Attribute(AZ::Edit::Attributes::SoftMin, -1000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateHeightMax)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
+                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution,
+                        QT_TRANSLATE_NOOP("Terrain", "Height Query Resolution (m)"), "")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_surfaceDataQueryResolution, "Surface Data Query Resolution (m)", "")
+                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_surfaceDataQueryResolution,
+                        QT_TRANSLATE_NOOP("Terrain", "Surface Data Query Resolution (m)"), "")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ;
             }

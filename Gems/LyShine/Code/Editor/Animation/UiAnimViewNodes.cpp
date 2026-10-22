@@ -49,7 +49,7 @@ CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CUiAnimViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -143,7 +143,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CUiAnimViewNode* pNode = v.value<CUiAnimViewNodePtr>();
+                CUiAnimViewNode* pNode = v.value<CUiAnimViewNode*>();
                 if (pNode && pNode->GetNodeType() == eUiAVNT_AnimNode)
                 {
                     nodes << (CUiAnimViewAnimNode*)pNode;
@@ -156,13 +156,13 @@ private:
     CUiAnimViewNodesCtrl*   m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CUiAnimViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CUiAnimViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CUiAnimViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CUiAnimViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -237,8 +237,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
+    qRegisterMetaType<CUiAnimViewNode*>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();
@@ -633,7 +632,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
         pSequence->ClearSelection();
 
         QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
-        int nCount = items.count();
+        int nCount = static_cast<int>(items.count());
         for (int i = 0; i < nCount; i++)
         {
             CRecord* pRecord = (CRecord*)items.at(i);
@@ -976,8 +975,8 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
     // only want this item on sequence node
     if (pAnimNode->GetNodeType() == eUiAVNT_Sequence)
     {
-        contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
-        contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
+        contextMenu.main.addAction(tr("Add Selected UI Element(s)"))->setData(eMI_AddSelectedUiElements);
+        contextMenu.main.addAction(tr("Add Event Node"))->setData(eMI_AddEvent);
     }
 }
 
@@ -1018,7 +1017,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
 
     if (bOnNode || bOnSequence || bOnTrackNotSub)
     {
-        contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
+        contextMenu.main.addAction(tr("Delete"))->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
         bAppended = true;
     }
 
@@ -1026,9 +1025,9 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     {
         // Copy & paste keys
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Copy Keys")->setData(eMI_CopyKeys);
-        contextMenu.main.addAction("Copy Selected Keys")->setData(eMI_CopySelectedKeys);
-        contextMenu.main.addAction("Paste Keys")->setData(eMI_PasteKeys);
+        contextMenu.main.addAction(tr("Copy Keys"))->setData(eMI_CopyKeys);
+        contextMenu.main.addAction(tr("Copy Selected Keys"))->setData(eMI_CopySelectedKeys);
+        contextMenu.main.addAction(tr("Paste Keys"))->setData(eMI_PasteKeys);
         bAppended = true;
     }
 
@@ -1039,7 +1038,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         if (!bOnSequence)
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            QAction* a = contextMenu.main.addAction("Disabled");
+            QAction* a = contextMenu.main.addAction(tr("Disabled"));
             a->setData(eMI_Disable);
             a->setCheckable(true);
             a->setChecked(pNode->IsDisabled());
@@ -1063,7 +1062,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     if (bOnSequence || pNode->IsGroupNode() && !bIsLightAnimationSet)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);
+        contextMenu.main.addAction(tr("Edit Events..."))->setData(eMI_EditEvents);
         bAppended = true;
     }
 
@@ -1086,7 +1085,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(QString::fromUtf8(pAnimNode->GetName().c_str()));
+        QString string = tr("%1 Tracks").arg(QString::fromUtf8(pAnimNode->GetName().c_str()));
         contextMenu.main.addAction(string)->setEnabled(false);
 
         bool bAppendedTrackFlag = false;
@@ -1134,12 +1133,12 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuMultiSelection(UiAnimContextMenu& context
         }
     }
 
-    contextMenu.main.addAction("Remove Selected Nodes/Tracks")->setData(eMI_RemoveSelected);
+    contextMenu.main.addAction(tr("Remove Selected Nodes/Tracks"))->setData(eMI_RemoveSelected);
 
     if (bNodeSelected)
     {
         contextMenu.main.addSeparator();
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
+        contextMenu.main.addAction(tr("Select In Viewport"))->setData(eMI_SelectInViewport);
     }
 
     return 0;
@@ -1191,7 +1190,7 @@ void CUiAnimViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = menu->actions().size();
+    UINT count = static_cast<int>(menu->actions().size());
     for (UINT i = 0; i < count; ++i)
     {
         QAction* a = menu->actions().at(i);
@@ -1273,7 +1272,7 @@ void CUiAnimViewNodesCtrl::OnFilterChange(const QString& text)
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -1325,7 +1324,7 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -1671,4 +1670,3 @@ void CUiAnimViewNodesCtrl::EraseNodeRecordRec(CUiAnimViewNode* pNode)
     }
 }
 
-#include <Animation/moc_UiAnimViewNodes.cpp>

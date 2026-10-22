@@ -40,6 +40,7 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
 #include <AzToolsFramework/API/PythonLoader.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // this is called the first time a Python script contains "import azlmbr"
 PYBIND11_EMBEDDED_MODULE(azlmbr, m)
@@ -343,7 +344,9 @@ namespace EditorPythonBindings
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
+                ec->Class<PythonSystemComponent>(
+                    QT_TRANSLATE_NOOP("EditorPythonBindings", "PythonSystemComponent"),
+                    QT_TRANSLATE_NOOP("EditorPythonBindings", "The Python interpreter"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -84,4 +84,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_Swatch.cpp"

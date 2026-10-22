@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_MATH_REFLECTION_H
-#define AZCORE_MATH_REFLECTION_H 1
+
+#pragma once
 
 #include <AzCore/RTTI/ReflectContext.h>
 
@@ -17,6 +17,3 @@ namespace AZ
      */
     AZCORE_API void MathReflect(ReflectContext* context);
 }
-
-#endif //AZCORE_MATH_REFLECTION_H
-#pragma once

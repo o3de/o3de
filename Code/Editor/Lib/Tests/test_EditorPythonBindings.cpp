@@ -220,7 +220,7 @@ namespace EditorPythonBindingsUnitTests
             args[0].Set(&testCvar);
             args[1].Set(&intArg);
 
-            context->m_methods.find("set_cvar_integer")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
+            context->m_methods.find("set_cvar_integer")->second->Call(args.data(), static_cast<unsigned int>(args.size()));
             EXPECT_EQ(1, testInt);
         });
     }
@@ -239,7 +239,7 @@ namespace EditorPythonBindingsUnitTests
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
-            context->m_methods.find("set_cvar_float")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
+            context->m_methods.find("set_cvar_float")->second->Call(args.data(), static_cast<unsigned int>(args.size()));
             EXPECT_FLOAT_EQ(1.234f, testFloat);
         });
     }
@@ -258,7 +258,7 @@ namespace EditorPythonBindingsUnitTests
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
-            context->m_methods.find("set_cvar_string")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
+            context->m_methods.find("set_cvar_string")->second->Call(args.data(), static_cast<unsigned int>(args.size()));
             EXPECT_STREQ("testvalue", testString.c_str());
         });
     }
@@ -282,7 +282,7 @@ namespace EditorPythonBindingsUnitTests
             AZ::BehaviorArgument result;
             result.Set(&obj);
 
-            context->m_methods.find("get_cvar")->second->Call(args.begin(), static_cast<unsigned int>(args.size()), &result);
+            context->m_methods.find("get_cvar")->second->Call(args.data(), static_cast<unsigned int>(args.size()), &result);
             EXPECT_STREQ("atestvalue", reinterpret_cast<const char*>(obj.m_address));
         });
     }
@@ -300,7 +300,7 @@ namespace EditorPythonBindingsUnitTests
             AZStd::array<AZ::BehaviorArgument, 1> args;
             args[0].Set(&testCvar);
 
-            context->m_methods.find("run_console")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
+            context->m_methods.find("run_console")->second->Call(args.data(), static_cast<unsigned int>(args.size()));
             EXPECT_STREQ(testCvar, data.c_str());
         });
     }

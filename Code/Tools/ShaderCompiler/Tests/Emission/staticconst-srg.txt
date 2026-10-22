@@ -1,0 +1,3 @@
+"static const uint PassSrg_MaxCascadeCount = 4 ;"
+"struct PassSrg_DirectionalLight"
+"float4x4 m_depthBiasMatrix [ :: PassSrg_MaxCascadeCount ] ;"

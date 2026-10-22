@@ -1,10 +1,17 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Features/SrgSemantics.azsli>
 
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
+#include "ParticleMeshStructuredBuffer.azsli"
 
 #include <Atom/Features/InstancedTransforms.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
@@ -38,16 +45,11 @@ struct VSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
+    float4 m_tangent : TANGENT;
     float3 m_bitangent : BITANGENT;
     float2 m_uv0 : UV0;
     float2 m_uv1 : UV1;
-    float3 m_offset : OFFSET;
-    float4 m_color : COLOR;
-    float4 m_rotation : INITROTATION;
-    float4 m_rotateVector : ROTATEVECTOR;
-    float3 m_scale : SCALE;
-    uint m_instanceId : SV_InstanceID;  // Needed for intance draw
+    uint m_instanceId : SV_InstanceID;
 };
 
 struct VSOutput
@@ -56,8 +58,8 @@ struct VSOutput
     // "centroid" is needed for SV_Depth to compile
     linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float3 m_tangent : TANGENT;
+    float3 m_bitangent : BITANGENT;
     float3 m_worldPosition : UV0;
 
     // Extended fields (only referenced in this azsl file)...
@@ -75,7 +77,6 @@ struct VSOutput
 #include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
-#include <OpenParticle/ParticleCommon.azsli>
 
 #include "ParticleMeshMaterialParameters.azsli"
 #include <Atom/Features/Materials/SingleMaterialSrg.azsli>
@@ -92,13 +93,10 @@ VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
 
+    ParticleMeshInstanceData instanceData = LoadInstanceData(IN.m_instanceId);
     float4x4 objectToWorld = GetObjectToWorldMatrix(IN.m_instanceId);
-    float3x3 localRotation = AxisRadianToMatrix(IN.m_rotation);
-    float3 localPosition = mul(localRotation, IN.m_position * IN.m_scale);
-    localPosition = mul(QuaternionToMatrix(QuatNormalize(IN.m_rotateVector)), localPosition);
+    float3 worldPosition = ComputeParticleWorldPosition(IN.m_position, instanceData, objectToWorld);
 
-    float3 worldPosition = mul(objectToWorld, float4(localPosition, 1.0)).xyz;
-    worldPosition += IN.m_offset;
     OUT.m_worldPosition = worldPosition;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 
@@ -107,8 +105,8 @@ VSOutput MainVS(VSInput IN)
 
     float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId);
     ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
-    
-    OUT.m_color = IN.m_color;
+
+    OUT.m_color = instanceData.m_color;
     OUT.m_instanceId = IN.m_instanceId;
     return OUT;
 }

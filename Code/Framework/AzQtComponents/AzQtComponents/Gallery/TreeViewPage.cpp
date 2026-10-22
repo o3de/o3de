@@ -292,5 +292,4 @@ AzQtComponents::TreeView::setBranchLinesEnabled(treeView, true);
 TreeViewPage::~TreeViewPage()
 {
 }
-#include <Gallery/moc_TreeViewPage.cpp>
 

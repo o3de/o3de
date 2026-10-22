@@ -193,4 +193,3 @@ namespace AZ
     } // SceneAPI
 } // AZ
 
-#include <RowWidgets/moc_NodeListSelectionHandler.cpp>

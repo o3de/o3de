@@ -8,4 +8,7 @@
 
 set(FILES
     Include/Stars/StarsFeatureProcessorInterface.h
+    Include/Stars/StarsTypeIds.h
+    Include/Stars/StarsBus.h
+    Include/Stars/StarsComponentBus.h
 )

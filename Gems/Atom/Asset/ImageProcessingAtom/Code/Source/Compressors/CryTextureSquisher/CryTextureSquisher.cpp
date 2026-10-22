@@ -15,7 +15,6 @@
 
 #include <AzCore/std/parallel/mutex.h>
 
-
 #if defined(__clang__)
 #   pragma clang diagnostic push
 #   pragma clang diagnostic ignored "-Wnull-dereference"
@@ -26,10 +25,14 @@
 #if AZ_TRAIT_IMAGEPROCESSING_SQUISH_DO_NOT_USE_FASTCALL
 #define  __fastcall
 #define  _fastcall
-#define __assume(x)
 #endif
 
 #include <squish-ccr/squish.h>
+
+// Creates issues with qassert.h
+#ifdef assume
+#undef assume
+#endif
 
 #if defined(__clang__)
 #   pragma clang diagnostic pop
@@ -353,8 +356,7 @@ namespace ImageProcessingAtom
             datatype = squish::sqio::dtp::DT_F23;
             break;
         default:
-            __assume(0);
-            break;
+            return;
         }
 
         if (compress.perceptual && (flags & squish::kColourMetricPerceptual))
@@ -518,8 +520,7 @@ namespace ImageProcessingAtom
             datatype = squish::sqio::dtp::DT_F23;
             break;
         default:
-            __assume(0);
-            break;
+            return;
         }
 
         const struct squish::sqio sqio = squish::GetSquishIO(w, h, datatype, flags);

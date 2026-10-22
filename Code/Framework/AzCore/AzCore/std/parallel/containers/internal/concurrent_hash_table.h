@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/hash.h> //for primes list
@@ -23,10 +24,10 @@ namespace AZStd
         /**
          * Storage helper class for concurrent_hash_table, this is the dynamic storage specialization
          */
-        template<class Traits, bool IsDynamic = Traits::is_dynamic>
+        template<class Traits>
         class concurrent_hash_table_storage
         {
-            typedef concurrent_hash_table_storage<Traits, IsDynamic> this_type;
+            typedef concurrent_hash_table_storage<Traits> this_type;
 
         public:
             typedef typename Traits::allocator_type allocator_type;
@@ -146,9 +147,10 @@ namespace AZStd
          * Storage helper class for concurrent_hash_table, this is the static storage specialization
          */
         template<class Traits>
-        class concurrent_hash_table_storage<Traits, false>
+            requires (!Traits::is_dynamic)
+        class concurrent_hash_table_storage<Traits>
         {
-            typedef concurrent_hash_table_storage<Traits, false> this_type;
+            typedef concurrent_hash_table_storage<Traits> this_type;
 
         public:
             typedef static_pool_concurrent_allocator<typename Internal::list_node<typename Traits::value_type>,Traits::fixed_num_elements> element_allocator_type;

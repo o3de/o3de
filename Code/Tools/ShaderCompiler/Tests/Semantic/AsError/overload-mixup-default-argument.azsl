@@ -1,0 +1,3 @@
+int f();
+int f(int = 0);  // #EC 38
+// Semantic Error 38: line 2::4 'can't use default arguments in conjunction with function overloading. (function /f(?int) has defaults arguments, but overloads exist)'

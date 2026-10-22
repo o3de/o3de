@@ -533,4 +533,3 @@ void RGBSliders::setBlue(qreal blue)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorComponentSliders.cpp"

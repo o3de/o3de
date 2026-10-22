@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzCore/std/functional.h>
@@ -17,7 +16,6 @@
 #include <QStyledItemDelegate>
 #include <QColor>
 #include <QPointer>
-#endif
 
 class QSettings;
 

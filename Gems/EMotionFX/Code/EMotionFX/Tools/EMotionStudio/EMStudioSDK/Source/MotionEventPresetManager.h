@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -16,7 +15,6 @@
 
 #include <EMotionFX/Source/Event.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
-#endif
 
 
 namespace EMStudio

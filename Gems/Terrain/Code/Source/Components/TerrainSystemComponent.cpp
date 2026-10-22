@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <TerrainSystem/TerrainSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -29,7 +30,9 @@ namespace Terrain
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TerrainSystemComponent>("Terrain", "The Terrain System Component enables Terrain.")
+                ec->Class<TerrainSystemComponent>(
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain"),
+                    QT_TRANSLATE_NOOP("Terrain", "The Terrain System Component enables Terrain."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

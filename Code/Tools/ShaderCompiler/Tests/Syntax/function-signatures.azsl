@@ -1,0 +1,18 @@
+int func1();
+void func2();
+float func3(int arg1);
+snorm float func4(int);
+MyT func5();
+MyT func6(MyT);
+MyT func7(MyT arg1);
+float4x4 func8(unorm double arg1, float3x3 arg2, int, bool);
+uint64_t func9(int32_t arg1, int64_t arg2, uint32_t arg3, uint64_t arg4);
+bool func10(in out int);
+bool func11(in out int i);
+bool func12(inout int i);
+float4 func13() : SV_Target0;
+float4 func14(in float2 : TEXCOORD0) : SV_Target0;
+float4 func15(in float2 uv : TEXCOORD0) : SV_Target0;
+[shader( "raygeneration" )]
+void func16();
+float4 main( TriVertex in_ ) : SV_POSITION;

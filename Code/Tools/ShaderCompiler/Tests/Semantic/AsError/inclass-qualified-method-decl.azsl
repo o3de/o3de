@@ -1,0 +1,7 @@
+class C
+{
+    int C::v();
+};
+
+// Semantic Error 6: line 3::11 'intC::v() is overly qualified. In-class declarations spawn new identifiers, and don't have to refer to existing symbols.'
+// #EC 6

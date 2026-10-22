@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -26,7 +27,9 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorAudioEnvironmentComponent>("Audio Environment", "The Audio Environment component provides access to features of the Audio Translation Layer (ATL) environments to apply environmental effects such as reverb or echo")
+                editContext->Class<EditorAudioEnvironmentComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Environment"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Environment component provides access to features of the Audio Translation Layer (ATL) environments to apply environmental effects such as reverb or echo"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioEnvironment.svg")
@@ -34,7 +37,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/environment/")
-                    ->DataElement("AudioControl", &EditorAudioEnvironmentComponent::m_defaultEnvironment, "Default Environment", "Name of the default ATL Environment control to use")
+                    ->DataElement("AudioControl", &EditorAudioEnvironmentComponent::m_defaultEnvironment,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default Environment"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Name of the default ATL Environment control to use"))
                     ;
             }
         }

@@ -128,4 +128,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_ComponentEditorHeader.cpp"

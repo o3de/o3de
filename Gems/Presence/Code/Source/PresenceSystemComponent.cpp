@@ -11,6 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Presence
 {
@@ -49,7 +50,9 @@ namespace Presence
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<PresenceDetails>("PresenceDetails", "Struct to hold platform agnostic presence details for query results")
+                ec->Class<PresenceDetails>(
+                    QT_TRANSLATE_NOOP("Presence", "PresenceDetails"),
+                    QT_TRANSLATE_NOOP("Presence", "Struct to hold platform agnostic presence details for query results"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
@@ -86,7 +89,9 @@ namespace Presence
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<PresenceSystemComponent>("Presence", "Platform agnostic interface for Presence API requests")
+                ec->Class<PresenceSystemComponent>(
+                    QT_TRANSLATE_NOOP("Presence", "Presence"),
+                    QT_TRANSLATE_NOOP("Presence", "Platform agnostic interface for Presence API requests"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

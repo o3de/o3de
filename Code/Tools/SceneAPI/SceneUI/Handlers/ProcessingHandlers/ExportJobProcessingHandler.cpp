@@ -80,4 +80,3 @@ namespace AZ
     }
 }
 
-#include <Handlers/ProcessingHandlers/moc_ExportJobProcessingHandler.cpp>

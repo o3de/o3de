@@ -542,4 +542,3 @@ namespace EMotionFX
     }
 } // namespace EMotionFX
 
-#include <Source/Editor/PropertyWidgets/moc_MotionSetMotionIdHandler.cpp>

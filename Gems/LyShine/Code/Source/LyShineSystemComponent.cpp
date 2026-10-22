@@ -51,6 +51,7 @@
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
 #include "LyShinePass.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LyShine
 {
@@ -72,12 +73,12 @@ namespace LyShine
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                auto editInfo = ec->Class<LyShineSystemComponent>("LyShine", "In-game User Interface System");
+                auto editInfo = ec->Class<LyShineSystemComponent>(QT_TRANSLATE_NOOP("LyShine", "LyShine"), QT_TRANSLATE_NOOP("LyShine", "In-game User Interface System"));
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &LyShineSystemComponent::m_cursorImagePathname, "CursorImagePath", "The cursor image path.")
+                editInfo->DataElement(0, &LyShineSystemComponent::m_cursorImagePathname, QT_TRANSLATE_NOOP("LyShine", "CursorImagePath"), QT_TRANSLATE_NOOP("LyShine", "The cursor image path."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &LyShineSystemComponent::BroadcastCursorImagePathname);
             }
         }

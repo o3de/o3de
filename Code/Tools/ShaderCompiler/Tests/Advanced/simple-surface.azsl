@@ -1,0 +1,28 @@
+[[global::dx::verbatim("#include \"simple-surface-dx.azsli\"")]]
+[[global::gdx::verbatim("#include \"simple-surface-dx.azsli\"")]]
+[[global::pv::verbatim("#include \"simple-surface-ps.azsli\"")]]
+[[global::mt::verbatim("#include \"simple-surface-mt.azsli\"")]]
+[[global::gl::verbatim("#include \"simple-surface-mt.azsli\"")]]
+
+struct VertexInput  { float3 m_position : POSITION; };
+
+struct VertexOutput { float4 m_position : SV_Position; };
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+float4 MainPS() : SV_Target0
+{
+    return VerbatimColor(ExampleSRG::exampleColor); // Gets injected with the verbatim code
+}

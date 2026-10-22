@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QSortFilterProxyModel>
+
 #include <AzCore/base.h>
-#endif
 
 namespace AzQtComponents
 {

@@ -8,11 +8,9 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneUI/RowWidgets/ManifestNameWidget.h>
-#endif
 
 class QWidget;
 

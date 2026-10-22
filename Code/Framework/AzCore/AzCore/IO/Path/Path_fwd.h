@@ -12,14 +12,14 @@
 
 namespace AZStd
 {
-    class allocator;
+    struct allocator;
 
     template <class Element>
     struct char_traits;
 
     template <class Element, class Traits, class Allocator>
     class basic_string;
-    
+
     template <class Element, size_t MaxElementCount, class Traits>
     class basic_fixed_string;
 

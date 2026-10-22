@@ -221,7 +221,7 @@ namespace ScriptCanvas
             auto iter = m_baseNameToCount.find(name);
             if (iter == m_baseNameToCount.end())
             {
-                iter = m_baseNameToCount.insert({ name, count }).first;
+                iter = m_baseNameToCount.emplace(name, count).first;
             }
 
             // increment the latest count

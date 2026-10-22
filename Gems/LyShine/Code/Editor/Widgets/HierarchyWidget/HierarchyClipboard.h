@@ -19,6 +19,7 @@
 
 class HierarchyWidget;
 class EditorWindow;
+class QMimeData;
 
 class HierarchyClipboard
 {
@@ -40,6 +41,12 @@ public:
     static void CopySelectedItemsToClipboard(HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems);
     static void CreateElementsFromClipboard(
         HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems, bool createAsChildOfSelection);
+
+    //! Serialize the selected items to mime data (no clipboard); returns null if empty, caller owns the result.
+    static QMimeData* CreateMimeDataForSelection(HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems);
+    //! Create elements from the given mime data, without reading the clipboard (used by duplicate).
+    static void CreateElementsFromMimeData(
+        HierarchyWidget* widget, const QMimeData* mimeData, const QTreeWidgetItemRawPtrQList& selectedItems, bool createAsChildOfSelection);
 
     //-------------------------------------------------------------------------------
 

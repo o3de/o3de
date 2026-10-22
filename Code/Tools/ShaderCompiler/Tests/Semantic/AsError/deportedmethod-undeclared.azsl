@@ -1,0 +1,10 @@
+class C
+{
+};
+
+void C::M()
+{
+}
+
+// Semantic Error 4: line 5::0 'class /C doesn't have a declaration for M'
+// #EC 4

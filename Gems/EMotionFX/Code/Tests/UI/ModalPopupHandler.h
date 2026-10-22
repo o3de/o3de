@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Tests/SystemComponentFixture.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+
 #include <QDialogButtonBox>
 #include <QtTest>
 #include <QPushButton>
 #include <QMessageBox>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QWidget)
 QT_FORWARD_DECLARE_CLASS(QAction)

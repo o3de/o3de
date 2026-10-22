@@ -295,10 +295,9 @@ namespace AtomToolsFramework
             menu.addAction("Collapse", [this, groupName]() { CollapseGroup(groupName); })->setEnabled(IsGroupExpanded(groupName));
             menu.addAction("Expand All", [this]() { ExpandAll(); });
             menu.addAction("Collapse All", [this]() { CollapseAll(); });
-            menu.exec(event->globalPos());
+            menu.exec(event->globalPosition().toPoint());
             return;
         }
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/Inspector/moc_InspectorWidget.cpp>

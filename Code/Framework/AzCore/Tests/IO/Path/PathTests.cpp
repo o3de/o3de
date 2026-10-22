@@ -19,6 +19,8 @@ namespace UnitTest
         : public LeakDetectionFixture
     {};
 
+    // TODO: Remove when we switch to a newer version of the Android NDK
+#if !defined(NDK_REV_MAJOR) || NDK_REV_MAJOR >= 26
     TEST_F(PathFixture, AppendWithFixedPath_IsConstexpr_Compiles)
     {
         using path = AZ::IO::FixedMaxPath;
@@ -33,6 +35,7 @@ namespace UnitTest
         static_assert(normalPath.Native() == expected);
         EXPECT_STREQ(expected, normalPath.c_str());
     }
+#endif
 
     TEST_F(PathFixture, AppendInplaceWithFixedPath_IsConstexpr_Compiles)
     {

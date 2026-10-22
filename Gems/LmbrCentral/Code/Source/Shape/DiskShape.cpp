@@ -14,6 +14,7 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/DiskShapeComponentBus.h>
 #include <Shape/ShapeDisplay.h>
 
@@ -32,9 +33,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DiskShape>("Disk Shape", "Disk shape configuration parameters")
+                editContext->Class<DiskShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Disk Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Disk shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DiskShape::m_diskShapeConfig, "Disk Configuration", "Disk shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DiskShape::m_diskShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Disk Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Disk shape configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

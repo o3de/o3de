@@ -319,4 +319,3 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-#include "UI/Slice/moc_SliceRelationshipWidget.cpp"

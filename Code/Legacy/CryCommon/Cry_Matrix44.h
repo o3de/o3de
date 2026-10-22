@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Common matrix class
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_MATRIX44_H
-#define CRYINCLUDE_CRYCOMMON_CRY_MATRIX44_H
-#pragma once
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -785,7 +782,3 @@ ILINE Vec4 operator*(const Vec4& v, const Matrix44_tpl<F2>& m)
         v.x * m.m02 + v.y * m.m12 + v.z * m.m22 + v.w * m.m32,
         v.x * m.m03 + v.y * m.m13 + v.z * m.m23 + v.w * m.m33);
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_CRY_MATRIX44_H
-

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -28,30 +29,30 @@ namespace GradientSignal
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<GradientPreviewer>("Previewer", "")
+                    ->Class<GradientPreviewer>(QT_TRANSLATE_NOOP("GradientSignal", "Previewer"), "")
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Preview"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
-                    ->UIElement(AZ_CRC_CE("GradientPreviewer"), "Previewer")
+                    ->UIElement(AZ_CRC_CE("GradientPreviewer"), QT_TRANSLATE_NOOP("GradientSignal", "Previewer"))
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                         ->Attribute(AZ_CRC_CE("GradientEntity"), &GradientPreviewer::GetGradientEntityId)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview Settings")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Preview Settings"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_boundsEntityId, "Pin Preview to Shape",
-                        "The entity whose shape represents the bounds to render the gradient preview")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_boundsEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Pin Preview to Shape"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "The entity whose shape represents the bounds to render the gradient preview"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::PreviewSettingsAndSettingsVisibilityChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewCenter, "Preview Position",
-                        "Center of the preview bounds")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewCenter, QT_TRANSLATE_NOOP("GradientSignal", "Preview Position"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Center of the preview bounds"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewPositionVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewExtents, "Preview Size", "Size of the preview bounds")
+                        AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewExtents, QT_TRANSLATE_NOOP("GradientSignal", "Preview Size"), QT_TRANSLATE_NOOP("GradientSignal", "Size of the preview bounds"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSizeVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_constrainToShape, "Constrain to Shape",
-                        "If checked, only renders the parts of the gradient inside the component's shape and not its entire bounding box")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_constrainToShape, QT_TRANSLATE_NOOP("GradientSignal", "Constrain to Shape"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "If checked, only renders the parts of the gradient inside the component's shape and not its entire bounding box"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewConstrainToShapeVisibility)
                     ->EndGroup()

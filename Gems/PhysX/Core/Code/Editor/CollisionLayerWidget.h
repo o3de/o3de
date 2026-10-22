@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
-#endif
 
 namespace PhysX
 {

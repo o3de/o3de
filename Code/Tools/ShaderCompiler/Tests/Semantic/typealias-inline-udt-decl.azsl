@@ -1,0 +1,12 @@
+// verify that inline declarations of new user defined type, within the typealias statement, are possible.
+typealias NewStruct = struct S {};
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(NewStruct), __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '/S'\n");
+
+typedef struct S2 {} NewS2;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(NewS2), __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '/S2'\n");

@@ -7,17 +7,11 @@
 #
 # -------------------------------------------------------------------------
 #
-"""! Pyside2uic utilities
+"""! Pyside uic utilities
 
 :file: < DCCsi >/azpy/shared/ui/puic_utils.py
 :Status: Prototype
 :Version: 0.0.1
-
-Notice: This module requires the pyside2uic from PySide2-tools,
-These are not installed by O3DE or the DCCsi directly.
-See the READ.me in this pkgs folder for help.
-
-URL: https://github.com/pyside/pyside2-tools
 """
 from pathlib import Path
 import logging as _logging
@@ -37,26 +31,48 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 import DccScriptingInterface.config as dccsi_core_config
 
 # this is currently disabled while trying to get wing to boot from o3de
-# Qt/PySide2 envars are propogating from o3de and cause a wing boot failure
+# Qt/PySide envars are propogating from o3de and cause a wing boot failure
 # _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
-#                                                        enable_o3de_pyside2=True,
+#                                                        enable_o3de_pyside=True,
 #                                                        set_env=True)
 
-# ensure api access to the optional inclusion of pyside2tools
 from DccScriptingInterface.azpy.shared.ui import PATH_DCCSI_PYTHON_LIB
-from pyside2tools import pyside2uic
+import subprocess
+import sys
+import shutil
+import PySide6
+from pathlib import Path
 
 # this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
 from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
+def compileUi(ui_file, pyfile):
+    """
+    Replacement for pyside2uic.compileUi for PySide6.
+
+    ui_file: path to .ui file
+    pyfile: file-like object opened for writing
+    """
+
+    uic = shutil.which("pyside6-uic")
+    if not uic:
+        raise RuntimeError("pyside6-uic not found")
+
+    cmd = [
+        sys.executable,
+        uic,
+        str(ui_file),
+        "-o",
+        pyfile
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    pyfile.write(result.stdout)
 
 # -------------------------------------------------------------------------
-# This was refactored from utils, as it requires pyside2uic pkg
-# The code itself has not been refactored and cleaned up, that can
-# occur in a future PR
 def from_ui_generate_form_and_base_class(filename, return_output=False):
-    """! Parse a Qt Designer .ui file and return Pyside2 Form and Base Class
+    """! Parse a Qt Designer .ui file and return Pyside Form and Base Class
     Usage:
             import azpy.shared.ui as azpyui
             form_class, base_class = azpyui.from_ui_generate_form_and_class(r'C:\my\filepath\tool.ui')
@@ -94,13 +110,8 @@ def from_ui_generate_form_and_base_class(filename, return_output=False):
         stream = StringIO()  # create a file io stream
         frame = {}
 
-        _uic_compiler_path = Path(settings.DCCSI_PYSIDE2_TOOLS)
-        site.addsitedir(_uic_compiler_path)
-
-        import pyside2uic
-
         # compile the .ui file as a .pyc represented in steam
-        pyside2uic.compileUi(ui_file, stream, indent=4)
+        compileUi(ui_file, stream)
         # compile the .pyc bytecode from stream
         pyc = compile(stream.getvalue(), '', 'exec')
         # execute the .pyc bytecode
@@ -147,5 +158,5 @@ if __name__ == '__main__':
     # can run local tests
     if DCCSI_TESTS: # from DccScriptingInterface.globals
         # this will validate pyside bootstrapping
-        foo = dccsi_core_config.test_pyside2(exit = False)
+        foo = dccsi_core_config.test_pyside(exit = False)
         pass

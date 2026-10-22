@@ -8,7 +8,6 @@
 
 #include "LUAEditorGoToLineDialog.hxx"
 
-#include <Source/LUA/moc_LUAEditorGoToLineDialog.cpp>
 #include <Source/LUA/ui_LUAEditorGoToLineDialog.h>
 
 #include <QDialogButtonBox>

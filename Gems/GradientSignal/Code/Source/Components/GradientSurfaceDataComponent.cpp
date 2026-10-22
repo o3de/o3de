@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <SurfaceData/MixedStackHeapAllocator.h>
@@ -34,19 +35,19 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<GradientSurfaceDataConfig>(
-                    "Gradient Surface Tag Emitter", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Gradient Surface Tag Emitter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientSurfaceDataConfig::m_shapeConstraintEntityId, "Surface Bounds", "Optionally constrain surface data to the shape on the selected entity")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientSurfaceDataConfig::m_shapeConstraintEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Surface Bounds"), QT_TRANSLATE_NOOP("GradientSignal", "Optionally constrain surface data to the shape on the selected entity"))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMin, "Threshold Min", "Minimum value accepted from input gradient that allows tags to be applied.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMin, QT_TRANSLATE_NOOP("GradientSignal", "Threshold Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum value accepted from input gradient that allows tags to be applied."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMax, "Threshold Max", "Maximum value accepted from input gradient that allows tags to be applied.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMax, QT_TRANSLATE_NOOP("GradientSignal", "Threshold Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum value accepted from input gradient that allows tags to be applied."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &GradientSurfaceDataConfig::m_modifierTags, "Extended Tags", "Surface tags to add to contained points")
+                    ->DataElement(0, &GradientSurfaceDataConfig::m_modifierTags, QT_TRANSLATE_NOOP("GradientSignal", "Extended Tags"), QT_TRANSLATE_NOOP("GradientSignal", "Surface tags to add to contained points"))
                     ;
             }
         }

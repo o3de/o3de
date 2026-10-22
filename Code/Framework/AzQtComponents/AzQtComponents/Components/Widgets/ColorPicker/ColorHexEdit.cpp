@@ -298,4 +298,3 @@ void ColorHexEdit::showContextMenu(const QPoint& pos)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorHexEdit.cpp"

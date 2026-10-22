@@ -8,10 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
+
 #include <QWidget>
-#endif
 
 namespace EMotionFX
 {

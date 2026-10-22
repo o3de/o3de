@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/function/invoke.h>
@@ -62,13 +63,13 @@ namespace AZStd::HasMemberInternal
     {                                                                                              \
     };                                                                                             \
     template<class T>                                                                              \
-    class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                             \
+        requires (AZStd::is_invocable_r_v<                                                         \
             _ResultType,                                                                           \
             decltype(::AZStd::HasMemberInternal::direct_member_box<AZStd::remove_cvref_t<T>,       \
                 _ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature _Qual,                  \
                 &AZStd::remove_cvref_t<T>::_FunctionName                                           \
-                AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>)>                  \
-    >>                                                                                             \
+                AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>)>)                 \
+    class Has##_HasName<T, void>                                                                   \
          : public AZStd::true_type                                                                 \
     {                                                                                              \
     };                                                                                             \
@@ -100,12 +101,12 @@ namespace AZStd::HasMemberInternal
     {                                                                                            \
     };                                                                                           \
     template<class T>                                                                            \
-    class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                           \
-        _ResultType,                                                                             \
-        decltype(static_cast<_ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature _Qual>(&AZStd::remove_cvref_t<T>::_FunctionName)), \
-        AZStd::remove_cvref_t<T>                                                                 \
-        AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>                          \
-    >>                                                                                           \
+        requires (AZStd::is_invocable_r_v<                                                       \
+            _ResultType,                                                                         \
+            decltype(static_cast<_ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature _Qual>(&AZStd::remove_cvref_t<T>::_FunctionName)), \
+            AZStd::remove_cvref_t<T>                                                             \
+            AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>)                     \
+    class Has##_HasName<T, void>                                                                 \
          : public AZStd::true_type                                                               \
     {                                                                                            \
     };                                                                                           \
@@ -139,11 +140,11 @@ namespace AZStd::HasMemberInternal
     {                                                                                        \
     };                                                                                       \
     template<class T>                                                                        \
-    class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_invocable_r_v<                       \
+        requires (AZStd::is_invocable_r_v<                                                   \
             _ResultType,                                                                     \
             decltype(static_cast<_ResultType (*) _ParamsSignature>(&AZStd::remove_cvref_t<T>::_FunctionName)) \
-            AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>                  \
-    >>                                                                                       \
+            AZ_FOR_EACH_UNWRAP(AZ_PREFIX_ARG_WITH_COMMA, _ParamsSignature)>)                 \
+    class Has##_HasName<T, void>                                                             \
          : public AZStd::true_type                                                           \
     {                                                                                        \
     };                                                                                       \

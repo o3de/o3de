@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_STRING_ALPHANUM_H
-#define AZSTD_STRING_ALPHANUM_H
+
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/functional_basic.h>
@@ -62,6 +62,3 @@ namespace AZStd
         }
     };
 } // namespace AZStd
-
-#endif // AZSTD_STRING_ALPHANUM_H
-

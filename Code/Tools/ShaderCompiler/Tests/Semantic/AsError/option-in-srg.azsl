@@ -1,0 +1,14 @@
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 64;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    option enum class ShadeT {Light, Gray, Dark} Shade = ShadeT::Gray;
+};
+
+// If we decide to allow them, this test should move to the Semantic folder
+// Semantic Error 11: line 11::49 'option qualifier is only accepted on top level declarations'
+// #EC 11

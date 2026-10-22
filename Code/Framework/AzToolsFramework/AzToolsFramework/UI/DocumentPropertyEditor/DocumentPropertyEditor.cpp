@@ -7,10 +7,13 @@
  */
 #include "DocumentPropertyEditor.h"
 
+#include <QAbstractSpinBox>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -31,7 +34,15 @@ AZ_CVAR(
     true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental DPE-based CVar Editor");
+    "If set, enables DPE-based CVar Editor");
+
+AZ_CVAR(
+    bool,
+    ed_enableDPEWidgetPooling,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, DPE will use widget pooling to attempt to improve performance.");
 
 static constexpr const char* GetHandlerPropertyName()
 {
@@ -423,7 +434,7 @@ namespace AzToolsFramework
         m_expanderWidget = new QCheckBox(parentWidget());
         m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
         AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
-        connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+        connect(m_expanderWidget, &QCheckBox::checkStateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
     void DPELayout::SetAsStartOfNewColumn(size_t widgetIndex)
@@ -450,22 +461,45 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
-                    childWidget->hide();
-                    m_columnLayout->removeWidget(childWidget);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        // try to put the widget back in the pooling, which means removing it from the layout, and hiding it
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
+                    }
+                    GetDPE()->ClearDirtyHandler(handlerInfo.handlerInterface);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
-                else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
+                else if (auto* rowWidget = qobject_cast<DPERowWidget*>(childWidget); rowWidget)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowWidget);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowWidget);
+                    }
+                    else
+                    {
+                        delete rowWidget;
+                    }
                 }
-                else // if it's not a row or a PropertyHandler, it must be a label
+                else if (auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget); label)
                 {
-                    auto* label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                    AZ_Assert(label, "unknown widget in DPERowWidget!");
-                    if (label)
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                     {
                         DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
                     }
+                    else
+                    {
+                        delete label;
+                    }
+                }
+                else
+                {
+                    // likely someone introduced a new type of widget but hasn't handled all the cases
+                    // for its housekeeping.
+                    AZ_Assert(false, "unknown widget type discovered in DPE row.");
+                    // we still have a valid childWidget pointer, though, so we can at least delete it
+                    // to avoid memory leak.
+                    delete childWidget;
                 }
             }
         }
@@ -603,26 +637,48 @@ namespace AzToolsFramework
                 }
                 if (!newOwner)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                    }
+                    else
+                    {
+                        delete rowToRemove;
+                    }
                 }
             }
             else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
             {
-                childWidget->hide();
-                m_columnLayout->removeWidget(childWidget);
-                RemoveCachedAttributes(childIndex);
+                // if `newOwner` is not null we are moving the widget, not removing it, so don't release the handler
                 if (!newOwner)
                 {
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        // remove it from the layout and hide it so we can reuse it later.
+                        childWidget->hide();
+                        m_columnLayout->removeWidget(childWidget);
+                    }
+
+                    GetDPE()->ClearDirtyHandler(handlerInfo.handlerInterface);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
+                
+                RemoveCachedAttributes(childIndex);
             }
             else // not a row, not a PropertyHandler, must be a label
             {
-                auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                AZ_Assert(label, "not a label, unknown widget discovered!");
-                if (label && !newOwner)
+                if (DocumentPropertyEditor::ShouldUseWidgetPooling())
                 {
-                    DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                    auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                    AZ_Assert(label, "not a label, unknown widget discovered!");
+                    if (label && !newOwner)
+                    {
+                        DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                    }
+                }
+                else
+                {
+                    delete childWidget;
                 }
             }
         }
@@ -912,6 +968,7 @@ namespace AzToolsFramework
                                 {
                                     m_domOrderedChildren[childIndex] = replacementWidget;
                                     AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                                    theDPE->AddDirtyHandler(theDPE->GetInfoFromWidget(replacementWidget).handlerInterface);
                                 }
                             }
                             else if (AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled())
@@ -934,8 +991,14 @@ namespace AzToolsFramework
                         // check if this patch has morphed the PropertyHandler into a different type
                         if (handlerId != handlerInfo.handlerId)
                         {
-                            childWidget->hide();
-                            m_columnLayout->removeWidget(childWidget);
+                            if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                            {
+                                // remove the existing handler widget from the layout and hide it so we can reuse it later.
+                                childWidget->hide();
+                                m_columnLayout->removeWidget(childWidget);
+                            }
+
+                            theDPE->ClearDirtyHandler(handlerInfo.handlerInterface);
                             DocumentPropertyEditor::ReleaseHandler(handlerInfo);
 
                             // Replace the existing handler widget with one appropriate for the new type
@@ -948,7 +1011,7 @@ namespace AzToolsFramework
                             // handler is the same, set the existing handler with the new value
                             RemoveCachedAttributes(childIndex);
                             SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
-                            handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
+                            handlerInfo.handlerInterface->SetValueFromDom_Internal(valueAtSubPath, theDPE);
                         }
                     }
                     else
@@ -1005,7 +1068,6 @@ namespace AzToolsFramework
         }
 
         SetPropertyEditorAttributes(domIndex, domValue, columnWidget);
-
         // insert after the found index; even if nothing were found and priorIndex is -1,
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
@@ -1220,7 +1282,14 @@ namespace AzToolsFramework
                 DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(currentChild);
                 if (rowChild)
                 {
-                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowChild);
+                    if (DocumentPropertyEditor::ShouldUseWidgetPooling())
+                    {
+                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowChild);
+                    }
+                    else
+                    {
+                        delete rowChild;
+                    }
                     currentChild = nullptr;
                 }
             }
@@ -1244,6 +1313,10 @@ namespace AzToolsFramework
                     m_domOrderedChildren.erase(m_domOrderedChildren.begin() + valueIndex);
                     AddChildFromDomValue(myValue[valueIndex], valueIndex);
                 }
+            }
+            if ((!expandRecursively) || (initialRecursiveExpander))
+            {
+                dpe->UpdateDirtyHandlers(); // this flushes all pending ui updates.
             }
             if (initialRecursiveExpander)
             {
@@ -1337,6 +1410,13 @@ namespace AzToolsFramework
             });
         m_adapter->ConnectResetHandler(m_resetHandler);
 
+        m_resetQueuedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler(
+            [this]()
+            {
+                this->RequestExecuteQueuedReset();
+            });
+        m_adapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
+
         m_changedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
             [this](const AZ::Dom::Patch& patch)
             {
@@ -1369,7 +1449,15 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::Clear()
     {
-        m_rowPool->RecycleInstance(m_rootNode);
+        m_dirtyHandlers.clear();
+        if (ShouldUseWidgetPooling())
+        {
+            m_rowPool->RecycleInstance(m_rootNode);
+        }
+        else
+        {
+            delete m_rootNode;
+        }
         m_rootNode = nullptr;
     }
 
@@ -1403,6 +1491,60 @@ namespace AzToolsFramework
             hint.setHeight(m_layout->sizeHint().height() + margins.top() + margins.bottom());
         }
         return hint;
+    }
+
+    // =========================================================================
+    // Tab Navigation for DPE
+    // =========================================================================
+    // Skips non-input widgets (QToolButton indicators, expanders, etc.) that
+    // clutter the tab chain. Only stops on actual input widgets.
+
+    static bool IsInputWidget(QWidget* w)
+    {
+        if (!w)
+        {
+            return false;
+        }
+        // Input widgets that should receive tab focus
+        if (qobject_cast<QAbstractSpinBox*>(w))  return true;  // SpinBox, DoubleSpinBox
+        if (qobject_cast<QComboBox*>(w))          return true;
+        if (qobject_cast<QCheckBox*>(w))          return true;
+        if (qobject_cast<QLineEdit*>(w))          return true;  // EntityIdQLineEdit, BrowseEdit line
+        if (qobject_cast<QPushButton*>(w))        return true;  // Browse buttons, action buttons
+        return false;
+    }
+
+    bool DocumentPropertyEditor::focusNextPrevChild(bool next)
+    {
+        QWidget* before = focusWidget();
+
+        // Try up to 50 hops to find the next input widget, skipping
+        // QToolButtons, expanders, and other non-input widgets.
+        for (int hops = 0; hops < 50; ++hops)
+        {
+            bool result = QScrollArea::focusNextPrevChild(next);
+            if (!result)
+            {
+                return false;
+            }
+
+            QWidget* after = focusWidget();
+            if (!after || after == before)
+            {
+                return result;
+            }
+
+            if (IsInputWidget(after))
+            {
+                return true;
+            }
+
+            // Not an input widget -- continue hopping
+            before = after;
+        }
+
+        // Safety: give up after too many hops
+        return false;
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
@@ -1448,6 +1590,16 @@ namespace AzToolsFramework
     {
         m_dpeSettings.reset();
         Clear();
+    }
+
+    void DocumentPropertyEditor::InvalidateAll([[maybe_unused]] const char* filter)
+    {
+        // If the DPE is a standalone control, this is not going to be called by anyone.  However if its part of a larger
+        // control cluster (like an entity inspector that has multiple DPEs in it) then the parent control can *optionally*
+        // call this when it rebuilds itself to synchronize all the rebuilds all at once.  When that happens, it should be
+        // happening from a "short" call stack - ie, not from inside a deep call stack inside a value change operation.
+        m_executeQueuedResetAlreadyQueued = false;
+        m_adapter->ExecuteQueuedReset();
     }
 
     void DocumentPropertyEditor::SetFilterString(AZStd::string str)
@@ -1545,7 +1697,10 @@ namespace AzToolsFramework
             }
         };
 
-        applyExpansionRecursively(m_rootNode, AZ::Dom::Path(), this, applyExpansionRecursively);
+        if (m_rootNode)
+        {
+            applyExpansionRecursively(m_rootNode, AZ::Dom::Path(), this, applyExpansionRecursively);
+        }
     }
 
     void DocumentPropertyEditor::ExpandAll()
@@ -1596,6 +1751,16 @@ namespace AzToolsFramework
             console->GetCvarValue(GetEnableCVarEditorName(), dpeCVarEditorEnabled);
         }
         return dpeCVarEditorEnabled;
+    }
+
+    bool DocumentPropertyEditor::ShouldUseWidgetPooling()
+    {
+        bool dpeShouldUseWidgetPooling = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableDPEWidgetPooling", dpeShouldUseWidgetPooling);
+        }
+        return dpeShouldUseWidgetPooling;
     }
 
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
@@ -1680,6 +1845,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        UpdateDirtyHandlers();
         updateGeometry();
         emit RequestSizeUpdate();
     }
@@ -1717,9 +1883,44 @@ namespace AzToolsFramework
             }
             else
             {
+                UpdateDirtyHandlers();
                 updateGeometry();
             }
         }
+        m_dirtyHandlers.clear();
+
+    }
+
+    void DocumentPropertyEditor::AddDirtyHandler(PropertyHandlerWidgetInterface* dirtyHandler)
+    {
+        if (dirtyHandler)
+        {
+            m_dirtyHandlers.insert(dirtyHandler);
+        }
+    }
+
+    void DocumentPropertyEditor::ClearDirtyHandler(PropertyHandlerWidgetInterface* toClear)
+    {
+        m_dirtyHandlers.erase(toClear);
+    }
+
+    void DocumentPropertyEditor::UpdateDirtyHandlers()
+    {
+        AZStd::unordered_set<PropertyHandlerWidgetInterface*> dirtyHandlers;
+        m_dirtyHandlers.swap(dirtyHandlers);
+
+        for (PropertyHandlerWidgetInterface* dirtyHandler : dirtyHandlers)
+        {
+            dirtyHandler->RefreshUI();
+        }
+
+        // additional check - this above loop should not cause any other handlers to be dirty
+        // if it does, it means that someone is setting UI values without blocking signals.
+        AZ_Assert(
+            m_dirtyHandlers.empty(),
+            "DocumentPropertyEditor::UpdateDirtyHandlers - dirty handlers were added during refreshUI."
+            "it means that a handler is setting values without blocking signals.  Ensure that if you "
+            "are calling UI functions like setText / setValue / etc, you are blocking signals.");
     }
 
     void DocumentPropertyEditor::HandleDomMessage(
@@ -1798,6 +1999,31 @@ namespace AzToolsFramework
             showQuerySubclassDialog);
     }
 
+    void DocumentPropertyEditor::RequestExecuteQueuedReset()
+    {
+        if (m_executeQueuedResetAlreadyQueued)
+        {
+            return;
+        }
+
+        m_executeQueuedResetAlreadyQueued = true;
+
+        // When a value changes, we'd like to queue the execution of any property editor tree updates.
+        // However, we want it to happen when we're not still inside the deep callstack of a property editor change
+        // callback.  So queue it to happen when we return to the message pump:
+        QMetaObject::invokeMethod(this, &DocumentPropertyEditor::ExecuteQueuedReset, Qt::QueuedConnection);
+    }
+
+    void DocumentPropertyEditor::ExecuteQueuedReset()
+    {
+        // debounce this, in case something else reset before we got here:
+        if (m_executeQueuedResetAlreadyQueued)
+        {
+            m_executeQueuedResetAlreadyQueued = false;
+            m_adapter->ExecuteQueuedReset();
+        }
+    }
+
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
         AZ_Assert(
@@ -1866,7 +2092,7 @@ namespace AzToolsFramework
             RegisterHandlerPool(handlerName, handlerPool);
 
             auto handler = handlerPool->GetInstance();
-            handler->SetValueFromDom(domValue);
+            handler->SetValueFromDom_Internal(domValue, this);
             createdWidget = handler->GetWidget();
             createdWidget->setEnabled(true);
         }
@@ -1875,16 +2101,19 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
     {
-        if (handler.handlerInterface->ResetToDefaults())
+        if (ShouldUseWidgetPooling())
         {
-            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = GetNameForHandlerId(handler.handlerId);
-            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-
-            if (handlerPool)
+            if (handler.handlerInterface->ResetToDefaults())
             {
-                handlerPool->RecycleInstance(handler.handlerInterface);
-                return;
+                auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+                auto handlerName = GetNameForHandlerId(handler.handlerId);
+                auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
+                if (handlerPool)
+                {
+                    handlerPool->RecycleInstance(handler.handlerInterface);
+                    return;
+                }
             }
         }
 

@@ -7,6 +7,7 @@
  */
 
 #include "InputChannelGesturePinch.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -24,7 +25,9 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TypeAndConfig>("Pinch", "Gesture recognizer for pinches.")
+                ec->Class<TypeAndConfig>(
+                    QT_TRANSLATE_NOOP("Gestures", "Pinch"),
+                    QT_TRANSLATE_NOOP("Gestures", "Gesture recognizer for pinches."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

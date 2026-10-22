@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -15,7 +14,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QPointer>
 #include <QStyle>
 #include <QValidator>
-#endif
 AZ_POP_DISABLE_WARNING
 
 class QComboBox;
@@ -94,7 +92,6 @@ namespace AzQtComponents
         static bool drawComboBox(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config);
         static bool drawComboBoxLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
         static bool drawIndicatorArrow(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
-        static bool drawItemCheckIndicator(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
 
         static void addErrorButton(QComboBox* cb, const Config& config);
     };

@@ -25,6 +25,7 @@
 #include "EditorDebugDrawObbComponent.h"
 #include "EditorDebugDrawTextComponent.h"
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
 #include <Atom/RHI/RHIUtils.h>
@@ -56,7 +57,9 @@ namespace DebugDraw
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<DebugDrawSystemComponent>("DebugDraw", "Provides game runtime debug visualization.")
+                ec->Class<DebugDrawSystemComponent>(
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Provides game runtime debug visualization."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -18,6 +18,7 @@
 
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -34,7 +35,7 @@ namespace AZ
                 if (auto* editContext = serialize->GetEditContext())
                 {
                     editContext->Class<EditorModeFeedbackSystemComponent>(
-                        "Editor Mode Feedback System", "Manages discovery of Editor Mode Feedback effects")
+                        QT_TRANSLATE_NOOP("EditorModeFeedback", "Editor Mode Feedback System"), QT_TRANSLATE_NOOP("EditorModeFeedback", "Manages discovery of Editor Mode Feedback effects"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

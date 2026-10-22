@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -18,7 +17,6 @@
 #include <AzCore/std/string/string.h>
 
 #include <QAbstractItemModel>
-#endif
 
 //! Model for items in the "Find Entity" tree view.
 //! Each item represents an Entity.

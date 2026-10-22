@@ -1,0 +1,13 @@
+ShaderResourceGroupSemantic SRG_PerView
+{
+    FrequencyId = 4;
+};
+
+ShaderResourceGroup ViewSrg : SRG_PerView
+{
+    static const uint MaxCascadeCount = 4;
+    struct DirectionalLightShadow
+    {
+        float4x4 m_depthBiasMatrices[MaxCascadeCount];
+    };
+}

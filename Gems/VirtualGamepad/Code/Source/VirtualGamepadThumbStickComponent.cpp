@@ -15,6 +15,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/std/sort.h>
 
@@ -69,27 +70,34 @@ namespace VirtualGamepad
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<VirtualGamepadThumbStickComponent>("VirtualGamepadThumbStick", "A component that designates this entity as a virtual gamepad thumb-stick")
+                ec->Class<VirtualGamepadThumbStickComponent>(
+                    QT_TRANSLATE_NOOP("VirtualGamepad", "VirtualGamepadThumbStick"),
+                    QT_TRANSLATE_NOOP("VirtualGamepad", "A component that designates this entity as a virtual gamepad thumb-stick"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiVirtualThumbStick.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiVirtualThumbStick.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadThumbStickComponent::m_assignedInputChannelName,
-                        "Input Channel", "The input channel that will be updated when the user interacts with this virtual control")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Input Channel"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "The input channel that will be updated when the user interacts with this virtual control"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &VirtualGamepadThumbStickComponent::GetAssignableInputChannelNames)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadThumbStickComponent::m_thumbStickImageCentre,
-                        "Thumb Stick Image Centre", "The child element that will be positioned at the centre of the virtual thumb-stick.")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Thumb Stick Image Centre"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "The child element that will be positioned at the centre of the virtual thumb-stick."))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &VirtualGamepadThumbStickComponent::GetChildEntityIdNamePairs)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadThumbStickComponent::m_thumbStickImageRadial,
-                        "Thumb Stick Image Radial", "The child element that will be positioned under the user's finger while the virtual thumb-stick is active.\n"
-                                                    "The position of this image will always be clamped to the radial edge of the virtual thumb-stick centre image.")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Thumb Stick Image Radial"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "The child element that will be positioned under the user's finger while the virtual thumb-stick is active.\n"
+                                                    "The position of this image will always be clamped to the radial edge of the virtual thumb-stick centre image."))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &VirtualGamepadThumbStickComponent::GetChildEntityIdNamePairs)
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &VirtualGamepadThumbStickComponent::m_centreWhenPressed,
-                        "Centre When Pressed", "Whether or not to centre the virtual thumb-stick when it is pressed.")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Centre When Pressed"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Whether or not to centre the virtual thumb-stick when it is pressed."))
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &VirtualGamepadThumbStickComponent::m_adjustPositionWhilePressed,
-                        "Adjust Position While Pressed", "Whether or not to adjust the position of the virtual thumb-stick while it is active,\n"
-                                                         "such that it will track the user's finger when it moves outside the thumb-stick radius.")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Adjust Position While Pressed"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Whether or not to adjust the position of the virtual thumb-stick while it is active,\n"
+                                                         "such that it will track the user's finger when it moves outside the thumb-stick radius."))
                 ;
             }
         }

@@ -21,6 +21,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Integration/Editor/Components/EditorActorComponent.h>
 #include <Integration/AnimGraphComponentBus.h>
@@ -67,47 +68,47 @@ namespace EMotionFX
                 if (editContext)
                 {
 
-                    editContext->Class<ActorComponent::BoundingBoxConfiguration>("Actor Bounding Box Config", "")
+                    editContext->Class<ActorComponent::BoundingBoxConfiguration>(QT_TRANSLATE_NOOP("EMotionFX", "Actor Bounding Box Config"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ActorComponent::BoundingBoxConfiguration::m_boundsType,
-                                      "Bounds type",
-                                      "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute.")
-                            ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static (Recommended)")
-                            ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
-                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Mesh vertex-based (VERY EXPENSIVE)")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Bounds type"),
+                                      QT_TRANSLATE_NOOP("EMotionFX", "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute."))
+                            ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, QT_TRANSLATE_NOOP("EMotionFX", "Static (Recommended)"))
+                            ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, QT_TRANSLATE_NOOP("EMotionFX", "Bone position-based"))
+                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, QT_TRANSLATE_NOOP("EMotionFX", "Mesh vertex-based (VERY EXPENSIVE)"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_expandBy,
-                            "Expand by",
-                            "Percentage that the calculated bounding box should be automatically expanded with. "
+                            QT_TRANSLATE_NOOP("EMotionFX", "Expand by"),
+                            QT_TRANSLATE_NOOP("EMotionFX", "Percentage that the calculated bounding box should be automatically expanded with. "
                             "This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early. "
-                            "A static bounding box together with the expansion is the recommended way for maximum performance. (Default = 25%)")
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                            "A static bounding box together with the expansion is the recommended way for maximum performance. (Default = 25%)"))
+                            ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("EMotionFX", " %"))
                             ->Attribute(AZ::Edit::Attributes::Min, -100.0f + AZ::Constants::Tolerance)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
-                                      "Automatically update bounds?",
-                                      "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Automatically update bounds?"),
+                                      QT_TRANSLATE_NOOP("EMotionFX", "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateTimeFrequency,
-                                      "Update frequency",
-                                      "How often to update bounds automatically")
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Update frequency"),
+                                      QT_TRANSLATE_NOOP("EMotionFX", "How often to update bounds automatically"))
+                            ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("EMotionFX", " Hz"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, FLT_MAX)
                             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateItemFrequency,
-                                      "Update item skip factor",
-                                      "How many items (bones or vertices) to skip when automatically updating bounds."
-                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item...")
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " items")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Update item skip factor"),
+                                      QT_TRANSLATE_NOOP("EMotionFX", "How many items (bones or vertices) to skip when automatically updating bounds."
+                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item..."))
+                            ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("EMotionFX", " items"))
                             ->Attribute(AZ::Edit::Attributes::Min, (AZ::u32)1)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
                         ;
 
-                    editContext->Class<EditorActorComponent>("Actor", "The Actor component manages an instance of an Actor")
+                    editContext->Class<EditorActorComponent>(QT_TRANSLATE_NOOP("EMotionFX", "Actor"), QT_TRANSLATE_NOOP("EMotionFX", "The Actor component manages an instance of an Actor"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "Animation")
+                        ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("EMotionFX", "Animation"))
                         ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<ActorAsset>())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/ActorComponent.svg")
@@ -115,65 +116,65 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/animation/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
-                            "Actor asset", "Assigned actor asset")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Actor asset"), QT_TRANSLATE_NOOP("EMotionFX", "Assigned actor asset"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute("EditButton", "")
-                        ->Attribute("EditDescription", "Open in Animation Editor")
+                        ->Attribute("EditDescription", QT_TRANSLATE_NOOP("EMotionFX", "Open in Animation Editor"))
                         ->Attribute("EditCallback", &EditorActorComponent::LaunchAnimationEditor)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Render options")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("EMotionFX", "Render options"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorActorComponent::m_lightingChannelConfig,
-                                      "Lighting Channels", "")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Lighting Channels"), "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
-                            "Draw character", "Toggles rendering of character mesh.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Draw character"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles rendering of character mesh."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderSkeleton,
-                            "Draw skeleton", "Toggles rendering of skeleton.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Draw skeleton"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles rendering of skeleton."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
-                        ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "Draw the World Space AABBs. <br>Teal: Static. <br>Red: Bone position-based. <br>Blue: Mesh vertex-based.")
+                        ->DataElement(0, &EditorActorComponent::m_renderBounds, QT_TRANSLATE_NOOP("EMotionFX", "Draw bounds"), QT_TRANSLATE_NOOP("EMotionFX", "Draw the World Space AABBs. <br>Teal: Static. <br>Red: Bone position-based. <br>Blue: Mesh vertex-based."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_rayTracingEnabled,
-                            "Enable Raytracing", "Toggles adding this actor to the raytracing acceleration structure.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Enable Raytracing"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles adding this actor to the raytracing acceleration structure."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnEnableRaytracingChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
-                            "Skinning method", "Choose the skinning method this actor is using")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Skinning method"), QT_TRANSLATE_NOOP("EMotionFX", "Choose the skinning method this actor is using"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
-                        ->EnumAttribute(SkinningMethod::DualQuat, "Dual quat skinning")
-                        ->EnumAttribute(SkinningMethod::Linear, "Linear skinning")
-                        ->EnumAttribute(SkinningMethod::None, "Disabled")
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_excludeFromReflectionCubeMaps, "Exclude from reflection cubemaps", "Actor will not be visible in baked reflection probe cubemaps")
+                        ->EnumAttribute(SkinningMethod::DualQuat, QT_TRANSLATE_NOOP("EMotionFX", "Dual quat skinning"))
+                        ->EnumAttribute(SkinningMethod::Linear, QT_TRANSLATE_NOOP("EMotionFX", "Linear skinning"))
+                        ->EnumAttribute(SkinningMethod::None, QT_TRANSLATE_NOOP("EMotionFX", "Disabled"))
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_excludeFromReflectionCubeMaps, QT_TRANSLATE_NOOP("EMotionFX", "Exclude from reflection cubemaps"), QT_TRANSLATE_NOOP("EMotionFX", "Actor will not be visible in baked reflection probe cubemaps"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnExcludeFromReflectionCubeMapsChanged)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Attach To")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("EMotionFX", "Attach To"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_attachmentType,
-                            "Attachment type", "Type of attachment to use when attaching to the target entity.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Attachment type"), QT_TRANSLATE_NOOP("EMotionFX", "Type of attachment to use when attaching to the target entity."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAttachmentTypeChanged)
-                        ->EnumAttribute(AttachmentType::None, "None")
-                        ->EnumAttribute(AttachmentType::SkinAttachment, "Skin attachment")
+                        ->EnumAttribute(AttachmentType::None, QT_TRANSLATE_NOOP("EMotionFX", "None"))
+                        ->EnumAttribute(AttachmentType::SkinAttachment, QT_TRANSLATE_NOOP("EMotionFX", "Skin attachment"))
                         ->DataElement(0, &EditorActorComponent::m_attachmentTarget,
-                            "Target entity", "Entity Id whose actor instance we should attach to.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Target entity"), QT_TRANSLATE_NOOP("EMotionFX", "Entity Id whose actor instance we should attach to."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("EMotionFXActorService"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::AttachmentTargetVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAttachmentTargetChanged)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Out of view")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("EMotionFX", "Out of view"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorActorComponent::m_forceUpdateJointsOOV,
-                            "Force update joints", "Force update the joint transforms of actor, even when the character is out of the camera view.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Force update joints"), QT_TRANSLATE_NOOP("EMotionFX", "Force update the joint transforms of actor, even when the character is out of the camera view."))
 
                         ->DataElement(0, &EditorActorComponent::m_bboxConfig,
-                                      "Bounding box configuration", "")
+                                      QT_TRANSLATE_NOOP("EMotionFX", "Bounding box configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("EMotionFX", "Add Material Component"), QT_TRANSLATE_NOOP("EMotionFX", "Add Material Component"))
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("EMotionFX", "Add Material Component"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::GetEditorMaterialComponentVisibility)
                         ;

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
@@ -21,7 +20,6 @@
 #include <ScriptCanvas/Core/GraphBus.h>
 
 #include "PropertyGridBus.h"
-#endif
 
 class QSpacerItem;
 class QScrollArea;

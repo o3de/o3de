@@ -139,7 +139,6 @@ public:
     const QColor& GetColorByName(const QString& name) override;
 
     //////////////////////////////////////////////////////////////////////////
-    CPluginManager* GetPluginManager() override { return m_pPluginManager; }
     CViewManager* GetViewManager() override;
     CViewport* GetActiveView() override;
     void SetActiveView(CViewport* viewport) override;
@@ -181,9 +180,6 @@ public:
     void RestoreUndo(bool undo) override;
     void AcceptUndo(const QString& name) override;
     void CancelUndo() override;
-    void SuperBeginUndo() override;
-    void SuperAcceptUndo(const QString& name) override;
-    void SuperCancelUndo() override;
     void SuspendUndo() override;
     void ResumeUndo() override;
     void Undo() override;
@@ -218,9 +214,6 @@ public:
     SSystemGlobalEnvironment* GetEnv() override;
     SEditorSettings* GetEditorSettings() override;
 
-    void UnloadPlugins() override;
-    void LoadPlugins() override;
-
 protected:
 
     AZStd::string LoadProjectIdFromProjectData();
@@ -235,7 +228,6 @@ protected:
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
     CEditorCommandManager* m_pCommandManager;
-    CPluginManager* m_pPluginManager;
     CViewManager*   m_pViewManager;
     CUndoManager* m_pUndoManager;
     AxisConstrains m_selectedAxis;
@@ -282,7 +274,6 @@ protected:
     AzAssetBrowserRequestHandler* m_pAssetBrowserRequestHandler;
     AssetEditorRequestsHandler* m_assetEditorRequestsHandler;
 
-    AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
 };
 

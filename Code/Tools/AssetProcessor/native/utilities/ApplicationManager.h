@@ -8,18 +8,18 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Application/ToolsApplication.h>
 
 #include <type_traits>
+
 #include <QList>
 #include <QString>
 #include <QObject>
 #include <QDir>
 #include <QTimer>
 #include <QDateTime>
+
 #include "native/assetprocessor.h"
-#endif
 
 class QCoreApplication;
 

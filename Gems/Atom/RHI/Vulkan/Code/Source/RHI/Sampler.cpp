@@ -131,7 +131,7 @@ namespace AZ
 
             const VkResult result =
                 device.GetContext().CreateSampler(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSampler);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return ConvertResult(result);
         }

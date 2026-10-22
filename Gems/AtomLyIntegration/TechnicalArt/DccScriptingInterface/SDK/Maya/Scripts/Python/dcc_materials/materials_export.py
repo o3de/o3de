@@ -47,8 +47,8 @@ to use the specified python versions
 
 """
 
-from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtWidgets import QApplication
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtWidgets import QApplication
 from model import MaterialsModel, TreeNode
 import subprocess
 import json

@@ -7,7 +7,6 @@
  */
 
 #include <QApplication>
-#include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
@@ -119,24 +118,13 @@ namespace AzToolsFramework
         }
         case QEvent::Shortcut:
         {
-            // QActions default "autoRepeat" to true, which is not an ideal user experience.
-            // We globally disable that behavior here - in the unlikely event a shortcut needs to
-            // replicate it, its owner can instead implement a keyEvent handler
-            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
+            auto* shortcutEvent = static_cast<QShortcutEvent*>(event);
+            QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+
+            if (TriggerActiveActionsWithShortcut(
+                    m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
             {
-                event->accept();
                 return true;
-            }
-
-            if (auto shortcutEvent = static_cast<QShortcutEvent*>(event))
-            {
-                QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-
-                if (TriggerActiveActionsWithShortcut(
-                        m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
-                {
-                    return true;
-                }
             }
             break;
         }
@@ -547,7 +535,7 @@ namespace AzToolsFramework
             ));
         }
 
-        m_actionUpdaters.insert({ actionUpdaterIdentifier, {} });
+        m_actionUpdaters.try_emplace(actionUpdaterIdentifier);
         return AZ::Success();
     }
 
@@ -841,7 +829,7 @@ namespace AzToolsFramework
                 actionContextIdentifier.c_str()));
         }
 
-        return AZ::Success(AZStd::move(actionContextIterator->second->GetActiveMode()));
+        return AZ::Success(actionContextIterator->second->GetActiveMode());
     }
 
     QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)

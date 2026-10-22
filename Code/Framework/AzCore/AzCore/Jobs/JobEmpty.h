@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBEMPTY_H
-#define AZCORE_JOBS_JOBEMPTY_H 1
+
+#pragma once
 
 #include <AzCore/Jobs/Job.h>
 
@@ -30,6 +30,3 @@ namespace AZ
         virtual void Process()  {}
     };
 }
-
-#endif
-#pragma once

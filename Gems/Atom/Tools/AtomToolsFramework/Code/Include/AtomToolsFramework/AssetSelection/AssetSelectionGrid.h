@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#endif
 
 #include <QDialog>
 #include <QString>

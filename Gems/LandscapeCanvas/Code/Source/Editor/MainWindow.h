@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <CrySystemBus.h>
 
 // AZ
@@ -30,7 +29,6 @@
 
 // LandscapeCanvas
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
-#endif
 
 namespace AzToolsFramework
 {

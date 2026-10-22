@@ -67,7 +67,7 @@ _spec_dccsi_config.loader.exec_module(_dccsi_config)
 from dynaconf import settings
 
 try:
-    from PySide2.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication
 except:
     _dccsi_config.init_o3de_pyside(settings.O3DE_DEV)  # init for standalone
     # running in the editor if the QtForPython Gem is enabled
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     _LOGGER.info('_PROJECT_MATERIALS_PATH: {}'.format(_PROJECT_MATERIALS_PATH))
 
     if _DCCSI_GDEBUG:
-        _dccsi_config.test_pyside2()  # runs a small PySdie2 test
+        _dccsi_config.test_pyside()  # runs a small PySide test
     
     # remove the logger
     del _LOGGER

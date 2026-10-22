@@ -102,7 +102,7 @@ public:
             fileHandle = GetNextHandle();
 
             // Construct a new SystemFile in the map (SystemFiles don't copy/move very well).
-            auto newPair = m_openFiles.emplace(fileHandle);
+            auto newPair = m_openFiles.try_emplace(fileHandle);
             // Check for successful insert
             if (!newPair.second)
             {
@@ -367,7 +367,7 @@ public:
 
     AZ::IO::Result DestroyPath(const char* ) override
     {
-        return AZ::IO::ResultCode::Error;        
+        return AZ::IO::ResultCode::Error;
     }
 
     bool ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const override

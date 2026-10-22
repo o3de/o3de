@@ -22,6 +22,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Multiplayer
 {
@@ -42,7 +43,8 @@ namespace Multiplayer
             if (editContext)
             {
                 editContext->Class<NetBindComponent>(
-                    "Network Binding", "The Network Binding component marks an entity as able to be replicated across the network")
+                    QT_TRANSLATE_NOOP("Multiplayer", "Network Binding"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The Network Binding component marks an entity as able to be replicated across the network"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/NetworkBinding.svg")
@@ -464,7 +466,7 @@ namespace Multiplayer
         for (size_t i = 0; i < multiplayerComponentSize; ++i)
         {
             const NetComponentId netComponentId = m_multiplayerInputComponentVector[i]->GetNetComponentId();
-            AZStd::unique_ptr<IMultiplayerComponentInput> componentInput = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(netComponentId));
+            AZStd::unique_ptr<IMultiplayerComponentInput> componentInput = GetMultiplayerComponentRegistry()->AllocateComponentInput(netComponentId);
 
             if (componentInput != nullptr)
             {

@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -28,11 +29,11 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<ReferenceGradientConfig>(
-                    "Reference Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Reference Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ReferenceGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be transformed in relation to threshold.")
+                    ->DataElement(0, &ReferenceGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

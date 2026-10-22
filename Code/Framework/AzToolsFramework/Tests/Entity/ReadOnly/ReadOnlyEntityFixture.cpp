@@ -66,11 +66,6 @@ namespace AzToolsFramework
     ReadOnlyHandlerAlwaysTrue::~ReadOnlyHandlerAlwaysTrue()
     {
         ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
-
-        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
-        {
-            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
-        }
     }
 
     void ReadOnlyHandlerAlwaysTrue::IsReadOnly([[maybe_unused]] const AZ::EntityId& entityId, bool& isReadOnly)
@@ -89,11 +84,6 @@ namespace AzToolsFramework
     ReadOnlyHandlerAlwaysFalse::~ReadOnlyHandlerAlwaysFalse()
     {
         ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
-
-        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
-        {
-            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
-        }
     }
 
     ReadOnlyHandlerEntityId::ReadOnlyHandlerEntityId(AZ::EntityId entityId)
@@ -108,11 +98,6 @@ namespace AzToolsFramework
     ReadOnlyHandlerEntityId::~ReadOnlyHandlerEntityId()
     {
         ReadOnlyEntityQueryRequestBus::Handler::BusDisconnect();
-
-        if (auto readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get())
-        {
-            readOnlyEntityQueryInterface->RefreshReadOnlyStateForAllEntities();
-        }
     }
 
     void ReadOnlyHandlerEntityId::IsReadOnly(const AZ::EntityId& entityId, bool& isReadOnly)

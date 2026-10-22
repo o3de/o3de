@@ -105,6 +105,11 @@ namespace PhysX
                 sceneDesc.flags &= ~physx::PxSceneFlag::eENABLE_PCM;
             }
 
+            if (config.m_enableEnhancedDeterminism)
+            {
+                sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+            }
+
             if (config.m_kinematicFiltering)
             {
                 sceneDesc.kineKineFilteringMode = physx::PxPairFilteringMode::eKEEP;

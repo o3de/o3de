@@ -16,6 +16,8 @@ namespace EMotionFX
     class ReselectingTreeView
         : public QTreeView
     {
+        Q_OBJECT
+
     public:
         void focusInEvent(QFocusEvent* event) override;
 

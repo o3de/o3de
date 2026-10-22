@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <MCore/Source/Command.h>
-#include <QModelIndex>
-#endif
 
+#include <QModelIndex>
 
 QT_FORWARD_DECLARE_CLASS(QComboBox)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
@@ -58,7 +56,7 @@ namespace EMotionFX
 
     private slots:
         void OnJointTypeChanged(int index);
-        void OnHasLimitStateChanged(int state);
+        void OnHasLimitStateChanged(Qt::CheckState state);
         void OnCardContextMenu(const QPoint& position);
 
     private:

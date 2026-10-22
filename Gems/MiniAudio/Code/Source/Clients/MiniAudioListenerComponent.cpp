@@ -39,31 +39,17 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Module, "MiniAudio")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
 
-            AZ::BehaviorParameterOverrides GetChannelCountParam = { "Channel Count", "Get Channel Count" };
-            AZ::BehaviorParameterOverrides GetGlobalVolumeParam = { "Global Volume", "Get Global Volume Percent" };
             AZ::BehaviorParameterOverrides SetGlobalVolumeParam = { "Global Volume", "Set Global Volume Percent" };
-            AZ::BehaviorParameterOverrides GetGlobalVolumeDecibelsParam = { "Global Volume Decibels", "Get Global Volume Decibels" };
             AZ::BehaviorParameterOverrides SetGlobalVolumeDecibelsParam = { "Global Volume Decibels", "Set Global Volume Decibels" };
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = { "Inner Cone Angle In Radians",
-                                                                               "Get Inner Cone Angle In Radians" };
             AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = { "Inner Cone Angle In Radians",
                                                                                "Set Inner Cone Angle In Radians" };
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = { "Inner Cone Angle In Degrees",
-                                                                               "Get Inner Cone Angle In Degrees" };
             AZ::BehaviorParameterOverrides SetInnerConeAngleInDegreesParam = { "Inner Cone Angle In Degrees",
                                                                                "Set Inner Cone Angle In Degrees" };
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInRadiansParam = { "Outer Cone Angle In Radians",
-                                                                               "Get Outer Cone Angle In Radians" };
             AZ::BehaviorParameterOverrides SetOuterConeAngleInRadiansParam = { "Outer Cone Angle In Radians",
                                                                                "Set Outer Cone Angle In Radians" };
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInDegreesParam = { "Outer Cone Angle In Degrees",
-                                                                               "Get Outer Cone Angle In Degrees" };
             AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = { "Outer Cone Angle In Degrees",
                                                                                "Set Outer Cone Angle In Degrees" };
-            AZ::BehaviorParameterOverrides GetOuterVolumeParam = { "Outer Volume", "Get Volume Percent Outside Outer Cone" };
             AZ::BehaviorParameterOverrides SetOuterVolumeParam = { "Outer Volume", "Set Volume Percent Outside Outer Cone" };
-            AZ::BehaviorParameterOverrides GetOuterVolumeDecibelsParam = { "Outer Volume Decibels",
-                                                                           "Get Volume Decibels Outside Outer Cone" };
             AZ::BehaviorParameterOverrides SetOuterVolumeDecibelsParam = { "Outer Volume Decibels",
                                                                            "Set Volume Decibels Outside Outer Cone" };
             behaviorContext->EBus<MiniAudioListenerRequestBus>("MiniAudioListenerRequestBus")
@@ -72,30 +58,26 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Category, "MiniAudio Listener")
                 ->Event("SetPosition", &MiniAudioListenerRequests::SetPosition)
                 ->Event("SetFollowEntity", &MiniAudioListenerRequests::SetFollowEntity)
-                ->Event("GetChannelCount", &MiniAudioListenerRequests::GetChannelCount, { GetChannelCountParam })
-                ->Event("GetGlobalVolumePercentage", &MiniAudioListenerRequests::GetGlobalVolumePercentage, { GetGlobalVolumeParam })
+                ->Event("GetChannelCount", &MiniAudioListenerRequests::GetChannelCount)
+                ->Event("GetGlobalVolumePercentage", &MiniAudioListenerRequests::GetGlobalVolumePercentage)
                 ->Event("SetGlobalVolumePercentage", &MiniAudioListenerRequests::SetGlobalVolumePercentage, { SetGlobalVolumeParam })
-                ->Event("GetGlobalVolumeDecibels", &MiniAudioListenerRequests::GetGlobalVolumeDecibels, { GetGlobalVolumeDecibelsParam })
+                ->Event("GetGlobalVolumeDecibels", &MiniAudioListenerRequests::GetGlobalVolumeDecibels)
                 ->Event("SetGlobalVolumeDecibels", &MiniAudioListenerRequests::SetGlobalVolumeDecibels, { SetGlobalVolumeDecibelsParam })
-                ->Event(
-                    "GetInnerConeAngleInRadians", &MiniAudioListenerRequests::GetInnerAngleInRadians, { GetInnerConeAngleInRadiansParam })
+                ->Event("GetInnerConeAngleInRadians", &MiniAudioListenerRequests::GetInnerAngleInRadians)
                 ->Event(
                     "SetInnerConeAngleInRadians", &MiniAudioListenerRequests::SetInnerAngleInRadians, { SetInnerConeAngleInRadiansParam })
-                ->Event(
-                    "GetInnerConeAngleInDegrees", &MiniAudioListenerRequests::GetInnerAngleInDegrees, { GetInnerConeAngleInDegreesParam })
+                ->Event("GetInnerConeAngleInDegrees", &MiniAudioListenerRequests::GetInnerAngleInDegrees)
                 ->Event(
                     "SetInnerConeAngleInDegrees", &MiniAudioListenerRequests::SetInnerAngleInDegrees, { SetInnerConeAngleInDegreesParam })
-                ->Event(
-                    "GetOuterConeAngleInRadians", &MiniAudioListenerRequests::GetOuterAngleInRadians, { GetOuterConeAngleInRadiansParam })
+                ->Event("GetOuterConeAngleInRadians", &MiniAudioListenerRequests::GetOuterAngleInRadians)
                 ->Event(
                     "SetOuterConeAngleInRadians", &MiniAudioListenerRequests::SetOuterAngleInRadians, { SetOuterConeAngleInRadiansParam })
-                ->Event(
-                    "GetOuterConeAngleInDegrees", &MiniAudioListenerRequests::GetOuterAngleInDegrees, { GetOuterConeAngleInDegreesParam })
+                ->Event("GetOuterConeAngleInDegrees", &MiniAudioListenerRequests::GetOuterAngleInDegrees)
                 ->Event(
                     "SetOuterConeAngleInDegrees", &MiniAudioListenerRequests::SetOuterAngleInDegrees, { SetOuterConeAngleInDegreesParam })
-                ->Event("GetOuterVolumePercentage", &MiniAudioListenerRequests::GetOuterVolumePercentage, { GetOuterVolumeParam })
+                ->Event("GetOuterVolumePercentage", &MiniAudioListenerRequests::GetOuterVolumePercentage)
                 ->Event("SetOuterVolumePercentage", &MiniAudioListenerRequests::SetOuterVolumePercentage, { SetOuterVolumeParam })
-                ->Event("GetOuterVolumeDecibels", &MiniAudioListenerRequests::GetOuterVolumeDecibels, { GetOuterVolumeDecibelsParam })
+                ->Event("GetOuterVolumeDecibels", &MiniAudioListenerRequests::GetOuterVolumeDecibels)
                 ->Event("SetOuterVolumeDecibels", &MiniAudioListenerRequests::SetOuterVolumeDecibels, { SetOuterVolumeDecibelsParam });
 
             behaviorContext->Class<MiniAudioListenerComponent>()->RequestBus("MiniAudioListenerRequestBus");

@@ -11,6 +11,8 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace Render
@@ -27,7 +29,8 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorGridComponent>(
-                        "Grid", "Adds grid to the scene")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Grid"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Adds grid to the scene"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Other")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -41,7 +44,8 @@ namespace AZ
                         "GridComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -49,19 +53,34 @@ namespace AZ
                         "GridComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_gridSize, "Grid Size", "Grid width and depth")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_gridSize,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Grid Size"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Grid width and depth"))
                             ->Attribute(AZ::Edit::Attributes::Min, GridComponentController::MinGridSize)
                             ->Attribute(AZ::Edit::Attributes::Max, GridComponentController::MaxGridSize)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_primarySpacing, "Primary Grid Spacing", "Amount of space between grid lines")
+                            ->Attribute(AZ::Edit::Attributes::Suffix,
+                                " m")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_primarySpacing,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Primary Grid Spacing"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Amount of space between grid lines"))
                             ->Attribute(AZ::Edit::Attributes::Min, GridComponentController::MinSpacing)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_secondarySpacing, "Secondary Grid Spacing", "Amount of space between sub-grid lines")
+                            ->Attribute(AZ::Edit::Attributes::Suffix,
+                                " m")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponentConfig::m_secondarySpacing,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Secondary Grid Spacing"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Amount of space between sub-grid lines"))
                             ->Attribute(AZ::Edit::Attributes::Min, GridComponentController::MinSpacing)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_axisColor, "Axis Color", "Color of the grid axis")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_primaryColor, "Primary Color", "Color of the primary grid lines")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_secondaryColor, "Secondary Color", "Color of the secondary grid lines")
+                            ->Attribute(AZ::Edit::Attributes::Suffix,
+                                " m")
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_axisColor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Axis Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color of the grid axis"))
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_primaryColor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Primary Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color of the primary grid lines"))
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &GridComponentConfig::m_secondaryColor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Secondary Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color of the secondary grid lines"))
                         ;
                 }
             }

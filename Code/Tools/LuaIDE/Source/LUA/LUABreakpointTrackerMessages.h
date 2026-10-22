@@ -6,14 +6,11 @@
  *
  */
 
-#ifndef LUAEDITOR_LUABREAKPOINTTRACKERMESSAGES_H
-#define LUAEDITOR_LUABREAKPOINTTRACKERMESSAGES_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
-
-#pragma once
 
 namespace AZ { class ReflectContext; }
 
@@ -84,5 +81,3 @@ namespace LUAEditor
         virtual ~LUABreakpointRequestMessages() {}
     };
 }
-
-#endif//LUAEDITOR_LUABREAKPOINTTRACKERMESSAGES_H

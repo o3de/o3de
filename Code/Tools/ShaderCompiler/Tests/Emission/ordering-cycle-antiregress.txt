@@ -1,0 +1,8 @@
+"struct MySRGOne_InStruct"
+"float4 m_diffuse"
+"enum class ESpec"
+"m_spec"
+"class InClass"
+"static const int N"
+"int f ( ) { return N ; }"
+"enum class En"

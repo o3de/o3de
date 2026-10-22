@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "MysticQtConfig.h"
+#include <AzCore/std/containers/vector.h>
+
 #include <QWidget>
 #include <QScrollArea>
-#include <AzCore/std/containers/vector.h>
-#endif
 
 // forward declarations
 QT_FORWARD_DECLARE_CLASS(QPushButton)

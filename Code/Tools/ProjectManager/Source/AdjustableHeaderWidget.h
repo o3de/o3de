@@ -8,14 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QTableWidget>
-
 #include <QHeaderView>
 #include <QStringList>
 #include <QVector>
 #include <QPair>
-#endif
 
 namespace O3DE::ProjectManager
 {

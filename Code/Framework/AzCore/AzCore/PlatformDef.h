@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////
@@ -353,9 +354,10 @@
     #define az_has_builtin_wmemcmp false
 #endif
 
-// no unique address attribute support in C++17
 #if __has_cpp_attribute(no_unique_address)
     #define AZ_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#elif __has_cpp_attribute(msvc::no_unique_address)
+    #define AZ_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #else
     #define AZ_NO_UNIQUE_ADDRESS
 #endif

@@ -15,6 +15,7 @@
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace SurfaceData
 {
@@ -32,11 +33,11 @@ namespace SurfaceData
             if (edit)
             {
                 edit->Class<SurfaceDataMeshConfig>(
-                    "Mesh Surface Tag Emitter", "")
+                    QT_TRANSLATE_NOOP("AtomLyIntegration", "Mesh Surface Tag Emitter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceDataMeshConfig::m_tags, "Generated Tags", "")
+                    ->DataElement(0, &SurfaceDataMeshConfig::m_tags, QT_TRANSLATE_NOOP("AtomLyIntegration", "Generated Tags"), "")
                     ;
             }
         }

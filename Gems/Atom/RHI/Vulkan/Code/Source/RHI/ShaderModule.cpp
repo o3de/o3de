@@ -43,7 +43,7 @@ namespace AZ
                     .GetContext()
                     .CreateShaderModule(
                         descriptor.m_device->GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeShaderModule);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 

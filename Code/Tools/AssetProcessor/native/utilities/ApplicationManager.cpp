@@ -88,6 +88,16 @@ namespace AssetProcessor
                 // we are in a job thread - return early to make it so that the global log file does not get this message
                 // there will also be a log listener in the actual job log thread which will get the message too, and that one
                 // will write it to the individual log.
+
+                // you can "punch through" this filter by using a window of the console channel (AssetProcessor).
+                // mainly used to show debug.
+                if (window)
+                {
+                    if (strcmp(window, ConsoleChannel) == 0)
+                    {
+                        AzFramework::LogComponent::OutputMessage(severity, window, message);
+                    }
+                }
                 return;
             }
 

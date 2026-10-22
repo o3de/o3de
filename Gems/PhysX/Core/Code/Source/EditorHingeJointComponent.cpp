@@ -10,6 +10,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -35,15 +36,15 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                   editContext->Class<EditorHingeJointComponent>(
-                    "PhysX Hinge Joint", "A dynamic joint that constrains a rigid body with rotation limits around a single axis.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Hinge Joint"), QT_TRANSLATE_NOOP("PhysX", "A dynamic joint that constrains a rigid body with rotation limits around a single axis."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/hinge-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
-                    ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode.")
+                    ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, QT_TRANSLATE_NOOP("PhysX", "Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "The rotation angle limit around the joint's axis."))
+                    ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, QT_TRANSLATE_NOOP("PhysX", "Component Mode"), QT_TRANSLATE_NOOP("PhysX", "Hinge Joint Component Mode."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

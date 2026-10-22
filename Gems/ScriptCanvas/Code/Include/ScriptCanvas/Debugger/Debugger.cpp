@@ -379,7 +379,7 @@ namespace ScriptCanvas
 
                         // Remap the static entity identifiers and move them into the 'self' script targets
                         {
-                            auto insertResult = m_self.m_script.m_entities.insert(runtimeEntityId);
+                            auto insertResult = m_self.m_script.m_entities.try_emplace(runtimeEntityId);
                             auto selfStaticEntityIter = m_self.m_script.m_staticEntities.find(staticEntity);
                             AZ_Assert(
                                 selfStaticEntityIter != m_self.m_script.m_staticEntities.end(),
@@ -403,7 +403,7 @@ namespace ScriptCanvas
 
                         // Remap the static entity identifiers and move them into the 'client' script targets
                         {
-                            auto insertResult = m_client.m_script.m_entities.insert(runtimeEntityId);
+                            auto insertResult = m_client.m_script.m_entities.try_emplace(runtimeEntityId);
                             // Once debugger supports multiple same graphs per entity, we can directly copy over without comparing,
                             // because the component id should be hooked between editor and runtime component
                             for (auto graphIdentifier : clientStaticEntityIter->second)

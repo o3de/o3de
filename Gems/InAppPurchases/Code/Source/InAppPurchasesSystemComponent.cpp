@@ -15,6 +15,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "InAppPurchases/InAppPurchasesResponseBus.h"
 #include "InAppPurchasesSystemComponent.h"
@@ -51,7 +52,9 @@ namespace InAppPurchases
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SystemComponent>("InAppPurchases", "Adds support for in app purchases on iOS and Android")
+                ec->Class<SystemComponent>(
+                    QT_TRANSLATE_NOOP("InAppPurchases", "InAppPurchases"),
+                    QT_TRANSLATE_NOOP("InAppPurchases", "Adds support for in app purchases on iOS and Android"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

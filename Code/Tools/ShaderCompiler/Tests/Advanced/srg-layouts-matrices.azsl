@@ -1,0 +1,134 @@
+// Verifies the matrix packing rules for various cases
+// DXC example of packing is here: http://shader-playground.timjones.io/206f18e88f838720db8e3415362551df
+
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    struct T2 {                          // DXIL            SPIRV
+                  float2x2 a_float2x2;   //    0               0
+                  uint     a_uint;       //   24              32
+                  float2x3 b_float2x3;   //   32              48
+                  uint     b_uint;       //   72              96
+                  float2x4 c_float2x4;   //   80             112
+                  uint     c_uint;       //  136             176
+        row_major float2x2 d_float2x2;   //  144             192
+                  uint     d_uint;       //  168             224
+        row_major float2x3 e_float2x3;   //  176             240
+                  uint     e_uint;       //  204             272
+        row_major float2x4 f_float2x4;   //  208             288
+                  uint     f_uint;       //  240             320
+                  float2x2 g_float2x2;   //  256             336
+                  uint2    g_uint2;      //  280             368
+                  float2x3 h_float2x3;   //  288             384
+                  uint2    h_uint2;      //  328             432
+                  float2x4 i_float2x4;   //  336             448
+                  uint2    i_uint2;      //  392             512
+        row_major float2x2 j_float2x2;   //  400             528
+                  uint2    j_uint2;      //  424             560
+        row_major float2x3 k_float2x3;   //  432             576
+                  uint2    k_uint2;      //  464             608
+        row_major float2x4 l_float2x4;   //  480             624
+                  uint2    l_uint2;      //  512             656
+    };
+
+    struct T3 {                          // +528 to all     +672 to all
+                  float3x2 a_float3x2;   //    0               0
+                  uint     a_uint;       //   28              32
+                  float3x3 b_float3x3;   //   32              48
+                  uint     b_uint;       //   76              96
+                  float3x4 c_float3x4;   //   80             112
+                  uint     c_uint;       //  140             176
+        row_major float3x2 d_float3x2;   //  144             192
+                  uint     d_uint;       //  184             240
+        row_major float3x3 e_float3x3;   //  192             256
+                  uint     e_uint;       //  236             304
+        row_major float3x4 f_float3x4;   //  240             320
+                  uint     f_uint;       //  288             368
+                  float3x2 g_float3x2;   //  304             384
+                  uint2    g_uint2;      //  336             416
+                  float3x3 h_float3x3;   //  352             432
+                  uint2    h_uint2;      //  400             480
+                  float3x4 i_float3x4;   //  416             496
+                  uint2    i_uint2;      //  480             560
+        row_major float3x2 j_float3x2;   //  496             576
+                  uint2    j_uint2;      //  536             624
+        row_major float3x3 k_float3x3;   //  544             640
+                  uint2    k_uint2;      //  592             688
+        row_major float3x4 l_float3x4;   //  608             704
+                  uint2    l_uint2;      //  656             752
+    };
+
+    struct T4 {                          //+1200            +1440 to all
+                  float4x2 a_float4x2;   //    0               0
+                  uint     a_uint;       //   32              32
+                  float4x3 b_float4x3;   //   48              48
+                  uint     b_uint;       //   96              96
+                  float4x4 c_float4x4;   //  112             112
+                  uint     c_uint;       //  176             176
+        row_major float4x2 d_float4x2;   //  192             192
+                  uint     d_uint;       //  248             256
+        row_major float4x3 e_float4x3;   //  256             272
+                  uint     e_uint;       //  316             336
+        row_major float4x4 f_float4x4;   //  320             352
+                  uint     f_uint;       //  384             416
+                  float4x2 g_float4x2;   //  400             432
+                  uint2    g_uint2;      //  432             464
+                  float4x3 h_float4x3;   //  448             480
+                  uint2    h_uint2;      //  496             528
+                  float4x4 i_float4x4;   //  512             544
+                  uint2    i_uint2;      //  576             608
+        row_major float4x2 j_float4x2;   //  592             624
+                  uint2    j_uint2;      //  648             688
+        row_major float4x3 k_float4x3;   //  656             704
+                  uint2    k_uint2;      //  720             768
+        row_major float4x4 l_float4x4;   //  736             784
+                  uint2    l_uint2;      //  800             848
+    };
+
+    // Tests for unit-size or vector-size matrices
+    struct TU {                          //+2016           +2304 to all
+                  float1x1 a_float1x1;   //    0               0
+                  uint     a_uint;       //    4               4
+                  float1x2 b_float1x2;   //   16               8
+                  uint     b_uint;       //   36              16
+                  float1x3 c_float1x3;   //   48              20
+                  uint     c_uint;       //   84              32
+                  float1x4 d_float1x4;   //   96              48
+                  uint     d_uint;       //  148              64
+        row_major float1x1 e_float1x1;   //  152              68
+                  uint     e_uint;       //  156              72
+        row_major float1x2 f_float1x2;   //  160              80
+                  uint     f_uint;       //  168              88
+        row_major float1x3 g_float1x3;   //  176              96
+                  uint     g_uint;       //  188             108
+        row_major float1x4 h_float1x4;   //  192             112
+                  uint     h_uint;       //  208             128
+                  float1x1 i_float1x1;   //  212             132
+                  uint2    i_uint2;      //  216             136
+                  float2x1 j_float2x1;   //  224             144
+                  uint2    j_uint2;      //  232             152
+                  float3x1 k_float3x1;   //  240             160
+                  uint2    k_uint2;      //  256             176
+                  float4x1 l_float4x1;   //  272             192
+                  uint2    l_uint2;      //  288             208
+
+        // Special cases packing tests
+                  uint2    u_uint2;      //  296             216
+                  float2x1 u_float2x1;   //  304             224
+                  uint     v_uint;       //  312             232
+                  float3x1 v_float3x1;   //  320             240
+                  uint     w_uintOne;    //  332             252
+                  float2x1 w_float2x1;   //  336             256
+                  uint     w_uintTwo;    //  344             264
+                  uint2    x_uint2;      //  352             272
+                  float3x1 x_float3x1;   //  368             288
+                  float2x1 y_float2x1One;//  384             304
+                  float2x1 y_float2x1Two;//  392             312
+    };
+
+    T2 m_T2; // Dxc offset is    0           Spirv offset is    0
+    T3 m_T3; // Dxc offset is  528           Spirv offset is  672
+    T4 m_T4; // Dxc offset is 1200           Spirv offset is 1440
+    TU m_TU; // Dxc offset of 2016           Spirv offset is 2304
+};

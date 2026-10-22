@@ -1,0 +1,40 @@
+ShaderResourceGroupSemantic ExampleBinding0 { FrequencyId = 0; };
+ShaderResourceGroupSemantic ExampleBinding1 { FrequencyId = 1; };
+ShaderResourceGroupSemantic ExampleBinding2 { FrequencyId = 2; };
+
+struct S { float4 f; };
+
+struct Light {     // 144 bytes  Source : https://developer.nvidia.com/content/how-about-constant-buffers
+    float3 Position;
+    float  Radius;
+    float4 Color;
+    float3 AttenuationParams;
+    uint   Type;
+    float4 SpotDirectionAndAngle;
+    float4 ShadowRect;
+    float4x4 ShadowMatrix;
+};
+
+ShaderResourceGroup ExampleSRG0 : ExampleBinding0
+{
+    ConstantBuffer<S> m_CB_a;        // stride = 16
+    ConstantBuffer<S> m_CB_b[2];     // stride = 16
+
+    Buffer<float4> m_B_d;            // stride = 16
+    StructuredBuffer<S> m_SB_e;      // stride = 16
+};
+
+ShaderResourceGroup ExampleSRG1 : ExampleBinding1
+{
+
+    ConstantBuffer<Light> m_CB_c;    // stride = 144
+
+    Buffer<float3> m_B_f[2];
+    StructuredBuffer<S> m_SB_g[2];
+};
+
+ShaderResourceGroup ExampleSRG2 : ExampleBinding2
+{
+    TextureCube m_texCube1;         // stride =  16 (default)
+    Texture2D<float3> m_tex2d1;     // stride =  12
+};

@@ -158,7 +158,7 @@ void CFileChangeMonitor::OnDirectoryChange(const QString &path)
 
     for (const auto &fi : prev)
     {
-        int eindex = entries.indexOf(fi);
+        int eindex = static_cast<int>(entries.indexOf(fi));
         if (eindex >= 0)
         {
             if (fi.lastModified() != entries.at(eindex).lastModified())
@@ -195,7 +195,7 @@ void CFileChangeMonitor::NotifyListeners(const QString &path, SFileChangeInfo::E
 {
     for (const auto &glob : m_ignoreMasks)
     {
-        if (AZStd::wildcard_match(qPrintable(glob), qPrintable(path)))
+        if (AZStd::wildcard_match(qUtf8Printable(glob), qUtf8Printable(path)))
         {
             return; // mask matches, ignore event
         }

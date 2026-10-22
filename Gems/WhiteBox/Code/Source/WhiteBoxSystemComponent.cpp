@@ -12,6 +12,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace WhiteBox
 {
@@ -24,7 +25,8 @@ namespace WhiteBox
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<WhiteBoxSystemComponent>(
-                      "WhiteBox", "[Description of functionality provided by this System Component]")
+                      QT_TRANSLATE_NOOP("WhiteBox", "WhiteBox"),
+                      QT_TRANSLATE_NOOP("WhiteBox", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

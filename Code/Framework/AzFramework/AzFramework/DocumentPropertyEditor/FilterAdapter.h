@@ -28,27 +28,17 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path MapToSourcePath(const Dom::Path& filterPath) const override;
 
     protected:
-        struct MatchInfoNode
+        // If you make a subclass of RowFilterAdapter, you must implement these methods to provide the filtering logic for your adapter.
+        // You can use the MatchInfoNode to store any additional information you need to determine whether a node matches the filter.
+        // Make sure to override NewMatchInfoNode and return your own class, and then CacheDomInfoForNode to populate your node
+        // with any information you'd like to cache, then
+        // MatchesFilter(MatchInfoNode* matchNode) const override to return true if the node matches or not.
+        struct AZF_API MatchInfoNode
         {
-            ~MatchInfoNode()
-            {
-                for (auto child : m_childMatchState)
-                {
-                    delete child;
-                }
-                m_childMatchState.clear();
-            }
+            virtual ~MatchInfoNode();
 
-            bool IncludeInFilter()
-            {
-                return (m_matchesSelf || m_hasMatchingAncestor || !m_matchingDescendants.empty());
-            };
-
-            void RemoveChildAtIndex(size_t index)
-            {
-                AZ_Assert(m_childMatchState.size() > index, "MatchInfoNode child out of bounds!");
-                m_childMatchState.erase(m_childMatchState.begin() + index);
-            }
+            bool IncludeInFilter();
+            void RemoveChildAtIndex(size_t index);
 
             bool m_matchesSelf = false;
 
@@ -64,9 +54,7 @@ namespace AZ::DocumentPropertyEditor
             unsigned int m_lastFilterUpdateFrame = 0; //!< frame that this node's match state last changed
 
         protected:
-            MatchInfoNode()
-            {
-            }
+            MatchInfoNode();
         };
 
         // pure virtual methods for new RowFilterAdapters

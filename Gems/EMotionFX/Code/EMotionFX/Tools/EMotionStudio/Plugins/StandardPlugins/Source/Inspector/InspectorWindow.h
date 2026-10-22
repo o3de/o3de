@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
-#endif
 #include <Editor/ObjectEditorCardPool.h>
 #include <Editor/InspectorBus.h>
+
 #include <QVector>
 
 QT_FORWARD_DECLARE_CLASS(QWidget)

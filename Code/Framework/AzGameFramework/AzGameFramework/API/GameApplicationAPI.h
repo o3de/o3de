@@ -6,9 +6,6 @@
  *
  */
 
-#ifndef AZGAMEFRAMEWORK_GAMEAPPLICATIONAPI_H
-#define AZGAMEFRAMEWORK_GAMEAPPLICATIONAPI_H
-
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -23,5 +20,3 @@ namespace AzGameFramework
         using Bus = AZ::EBus<GameApplicationEvents>;
     };
 } // namespace AzGameFramework
-
-#endif // AZGAMEFRAMEWORK_GAMEAPPLICATIONAPI_H

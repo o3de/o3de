@@ -30,7 +30,7 @@ namespace Multiplayer
         const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
         if (componentData.m_allocComponentInputFunction)
         {
-            return AZStd::move(componentData.m_allocComponentInputFunction());
+            return componentData.m_allocComponentInputFunction();
         }
         return nullptr;
     }

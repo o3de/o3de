@@ -331,7 +331,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::CreateViewportBorder(
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
-        m_uiOverlay.setStyleSheet(QString("border: %1px solid %2; border-top: %3px solid %4;")
+        m_uiOverlay.setStyleSheet(QString("#ViewportUiOverlay { border: %1px solid %2; border-top: %3px solid %4; }")
                                       .arg(
                                           QString::number(HighlightBorderSize), HighlightBorderColor,
                                           QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
@@ -370,7 +370,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_viewportBorderText.hide();
-        m_uiOverlay.setStyleSheet("border: none;");
+        m_uiOverlay.setStyleSheet("#ViewportUiOverlay { border: none; }");
         m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
@@ -435,6 +435,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
 
         m_viewportBorderBackButton.setAutoRaise(true); // hover highlight
+        m_viewportBorderBackButton.setFixedHeight(ViewportUiTopBorderSize);
         m_viewportBorderBackButton.hide();
 
         QIcon backButtonIcon(QString(":/stylesheet/img/UI20/toolbar/%1").arg(HighlightBorderBackButtonIconFile));

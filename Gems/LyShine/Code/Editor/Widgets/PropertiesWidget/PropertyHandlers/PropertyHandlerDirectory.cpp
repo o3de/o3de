@@ -170,4 +170,3 @@ void PropertyHandlerDirectory::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerDirectory());
 }
 
-#include <moc_PropertyHandlerDirectory.cpp>

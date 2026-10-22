@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
-#include <QObject>
-#endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+#include <QObject>
+
 
 namespace AzToolsFramework
 {

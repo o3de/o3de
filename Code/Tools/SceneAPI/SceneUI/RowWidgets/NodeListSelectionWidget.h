@@ -8,15 +8,14 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QComboBox>
+
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
-#endif
 
 namespace AZ
 {

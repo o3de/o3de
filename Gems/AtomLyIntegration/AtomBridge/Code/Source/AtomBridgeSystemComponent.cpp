@@ -34,6 +34,8 @@
 
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace AtomBridge
@@ -48,7 +50,7 @@ namespace AZ
 
                 if (EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<AtomBridgeSystemComponent>("AtomBridge", "[Description of functionality provided by this System Component]")
+                    ec->Class<AtomBridgeSystemComponent>(QT_TRANSLATE_NOOP("AtomBridge", "AtomBridge"), QT_TRANSLATE_NOOP("AtomBridge", "[Description of functionality provided by this System Component]"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;

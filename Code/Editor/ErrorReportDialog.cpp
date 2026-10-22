@@ -305,7 +305,7 @@ void CErrorReportDialog::OnReportColumnRClick()
     // process column selection item
     if (menuColumns.actions().contains(nMenuResult))
     {
-        ui->treeView->header()->setSectionHidden(menuColumns.actions().indexOf(nMenuResult), !nMenuResult->isChecked());
+        ui->treeView->header()->setSectionHidden(static_cast<int>(menuColumns.actions().indexOf(nMenuResult)), !nMenuResult->isChecked());
     }
 
 
@@ -542,4 +542,3 @@ void CErrorReportDialog::OnShowFieldChooser()
 }
 */
 
-#include <moc_ErrorReportDialog.cpp>

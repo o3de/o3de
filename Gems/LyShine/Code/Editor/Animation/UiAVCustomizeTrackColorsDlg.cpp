@@ -356,4 +356,3 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     return true;
 }
 
-#include <Animation/moc_UiAVCustomizeTrackColorsDlg.cpp>

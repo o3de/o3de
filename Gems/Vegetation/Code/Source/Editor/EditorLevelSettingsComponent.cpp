@@ -9,6 +9,7 @@
 #include "EditorLevelSettingsComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Vegetation
 {
@@ -38,9 +39,9 @@ namespace Vegetation
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, s_helpUrl)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorLevelSettingsComponent::m_useEditorMaxInstanceProcessTimeMicroseconds, "Override Instance Time Slicing", "Use a max instance process time (in microseconds) for the Editor")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorLevelSettingsComponent::m_useEditorMaxInstanceProcessTimeMicroseconds, QT_TRANSLATE_NOOP("Vegetation", "Override Instance Time Slicing"), QT_TRANSLATE_NOOP("Vegetation", "Use a max instance process time (in microseconds) for the Editor"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLevelSettingsComponent::ConfigurationChanged)
-                    ->DataElement(0, &EditorLevelSettingsComponent::m_editorMaxInstanceProcessTimeMicroseconds, "Editor Instance Time Slicing", "The timeout maximum number of microseconds to process the vegetation instance construction & removal operations while in the Editor.")
+                    ->DataElement(0, &EditorLevelSettingsComponent::m_editorMaxInstanceProcessTimeMicroseconds, QT_TRANSLATE_NOOP("Vegetation", "Editor Instance Time Slicing"), QT_TRANSLATE_NOOP("Vegetation", "The timeout maximum number of microseconds to process the vegetation instance construction & removal operations while in the Editor."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLevelSettingsComponent::ConfigurationChanged)
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 33000)

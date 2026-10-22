@@ -26,6 +26,7 @@ namespace AzToolsFramework
             });
         newCtrl->connect(newCtrl, &AzQtComponents::VectorInput::editingFinished, [newCtrl]()
         {
+            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
         });
 

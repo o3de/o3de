@@ -79,6 +79,9 @@ namespace LUAEditor
 
         static void Reflect(AZ::ReflectContext* reflection);
 
+        bool operator==(const SyntaxStyleSettings& other) const;
+        bool operator!=(const SyntaxStyleSettings& other) const { return !(*this == other); }
+
     private:
         AZ::Vector3 m_textColor {
             156.0f / 255.0f, 220.0f / 255.0f, 254.0f / 255.0f

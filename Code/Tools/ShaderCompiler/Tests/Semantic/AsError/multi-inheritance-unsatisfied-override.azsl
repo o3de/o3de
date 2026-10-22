@@ -1,0 +1,11 @@
+interface interf1 { void f(); };
+
+interface interf2 { void f2(); };
+
+class s : interf1, interf2
+{
+    void f() override;
+};
+
+// Semantic Error 18: line 5::0 'class /s does not redefine /interf2/f2'2
+// #EC 18

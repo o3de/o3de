@@ -96,7 +96,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AzCore
                 AZ::AzToolsFramework
-                Legacy::EditorCommon
                 Legacy::EditorCore
                 Gem::${gem_name}.Static
                 Legacy::CryCommon

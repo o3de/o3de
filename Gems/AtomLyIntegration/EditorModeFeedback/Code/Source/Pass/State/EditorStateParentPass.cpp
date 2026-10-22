@@ -16,7 +16,7 @@ namespace AZ::Render
     RPI::Ptr<EditorStateParentPass> EditorStateParentPass::Create(const RPI::PassDescriptor& descriptor)
     {
         RPI::Ptr<EditorStateParentPass> pass = aznew EditorStateParentPass(descriptor);
-        return AZStd::move(pass);
+        return pass;
     }
 
     EditorStateParentPass::EditorStateParentPass(const RPI::PassDescriptor& descriptor)

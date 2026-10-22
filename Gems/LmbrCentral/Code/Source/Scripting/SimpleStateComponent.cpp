@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "SimpleStateComponent.h"
 
@@ -169,12 +170,18 @@ namespace LmbrCentral
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<State>("State", "A state includes a name and set of entities that will be activated when the state is entered and deactivated when the state is left.")
+                editContext->Class<State>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "State"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "A state includes a name and set of entities that will be activated when the state is entered and deactivated when the state is left."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &State::m_name, "Name", "The name of this state")
+                    ->DataElement(0, &State::m_name,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Name"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The name of this state"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
-                    ->DataElement(0, &State::m_entityIds, "Entities", "The list of entities referenced by this state")
+                    ->DataElement(0, &State::m_entityIds,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Entities"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The list of entities referenced by this state"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
             }
@@ -199,7 +206,9 @@ namespace LmbrCentral
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<SimpleStateComponent>("Simple State", "The Simple State component provides a simple state machine allowing activation and deactivation of associated entities")
+                editContext->Class<SimpleStateComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Simple State"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Simple State component provides a simple state machine allowing activation and deactivation of associated entities"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -207,11 +216,17 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleState.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleState.svg")
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/simple-state/")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SimpleStateComponent::m_initialStateName, "Initial state", "The initial active state")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SimpleStateComponent::m_initialStateName,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Initial state"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The initial active state"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &SimpleStateComponent::GetStateNames)
-                    ->DataElement(0, &SimpleStateComponent::m_resetStateOnActivate, "Reset on activate", "If set, SimpleState will return to the configured initial state when activated, and not the state held prior to being deactivated.")
-                    ->DataElement(0, &SimpleStateComponent::m_states, "States", "The list of states")
+                    ->DataElement(0, &SimpleStateComponent::m_resetStateOnActivate,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Reset on activate"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "If set, SimpleState will return to the configured initial state when activated, and not the state held prior to being deactivated."))
+                    ->DataElement(0, &SimpleStateComponent::m_states,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "States"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The list of states"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
             }

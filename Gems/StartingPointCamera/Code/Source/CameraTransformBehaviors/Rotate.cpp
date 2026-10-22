@@ -9,6 +9,7 @@
 #include "Rotate.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "StartingPointCamera/StartingPointCameraUtilities.h"
 
 namespace Camera
@@ -26,14 +27,20 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<Rotate>("Rotate", "Rotate Camera Angle degrees about its Axis")
+                editContext->Class<Rotate>(
+                    QT_TRANSLATE_NOOP("Camera", "Rotate"),
+                    QT_TRANSLATE_NOOP("Camera", "Rotate Camera Angle degrees about its Axis"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &Rotate::m_angleInDegrees, "Angle", "The angle of rotation")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "degrees")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Rotate::m_axisType, "Axis", "The relative Axis of rotation")
-                        ->EnumAttribute(AxisOfRotation::X_Axis, "X")
-                        ->EnumAttribute(AxisOfRotation::Y_Axis, "Y")
-                        ->EnumAttribute(AxisOfRotation::Z_Axis, "Z");
+                    ->DataElement(0, &Rotate::m_angleInDegrees,
+                        QT_TRANSLATE_NOOP("Camera", "Angle"),
+                        QT_TRANSLATE_NOOP("Camera", "The angle of rotation"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "degrees"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Rotate::m_axisType,
+                        QT_TRANSLATE_NOOP("Camera", "Axis"),
+                        QT_TRANSLATE_NOOP("Camera", "The relative Axis of rotation"))
+                        ->EnumAttribute(AxisOfRotation::X_Axis, QT_TRANSLATE_NOOP("Camera", "X"))
+                        ->EnumAttribute(AxisOfRotation::Y_Axis, QT_TRANSLATE_NOOP("Camera", "Y"))
+                        ->EnumAttribute(AxisOfRotation::Z_Axis, QT_TRANSLATE_NOOP("Camera", "Z"));
             }
         }
     }

@@ -9,40 +9,20 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
-#include <QtGui/private/qhighdpiscaling_p.h>
-
 namespace AzQtComponents
 {
     QPixmap ScalePixmapForScreenDpi(
-        QPixmap pixmap, QScreen* screen, QSize size, Qt::AspectRatioMode aspectRatioMode, Qt::TransformationMode transformationMode)
+        QPixmap pixmap, [[maybe_unused]] QScreen* screen, QSize size, Qt::AspectRatioMode aspectRatioMode, Qt::TransformationMode transformationMode)
     {
-        qreal screenDpiFactor = QHighDpiScaling::factor(screen);
-        pixmap.setDevicePixelRatio(screenDpiFactor);
-
         QPixmap scaledPixmap;
-
-        size.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(size.width()) * screenDpiFactor));
-        size.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(size.height()) * screenDpiFactor));
-
         scaledPixmap = pixmap.scaled(size, aspectRatioMode, transformationMode);
-
         return scaledPixmap;
     }
 
     QPixmap CropPixmapForScreenDpi(
-        QPixmap pixmap, QScreen* screen, QRect rect)
+        QPixmap pixmap, [[maybe_unused]] QScreen* screen, QRect rect)
     {
-        qreal screenDpiFactor = QHighDpiScaling::factor(screen);
-        pixmap.setDevicePixelRatio(screenDpiFactor);
-
-        QRect cropRect(
-            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.left()) * screenDpiFactor),
-            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.top()) * screenDpiFactor),
-            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.width()) * screenDpiFactor),
-            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.height()) * screenDpiFactor)
-        );
-
-        QPixmap croppedPixmap = pixmap.copy(cropRect);
+        QPixmap croppedPixmap = pixmap.copy(rect);
         return croppedPixmap;
     }
 }

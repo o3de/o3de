@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Editor/SkeletonModelJointWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h>
-#endif
-
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 #include <QPushButton>
 
 namespace Physics

@@ -1,0 +1,263 @@
+ShaderResourceGroupSemantic BindingPerMaterial
+{
+FrequencyId = 1;
+};
+ShaderResourceGroupSemantic BindingPerObject
+{
+FrequencyId = 0;
+};
+ShaderResourceGroupSemantic BindingPerPass
+{
+FrequencyId = 3;
+};
+ShaderResourceGroupSemantic BindingPerSubPass
+{
+FrequencyId = 2;
+};
+ShaderResourceGroupSemantic BindingPerView
+{
+FrequencyId = 4;
+};
+ShaderResourceGroup ViewSrg: BindingPerView
+{
+ 
+    row_major float4x4 m_viewProjectionMatrix;
+    float4 m_worldPosition;
+    float4x4 m_worldToClipMatrix;
+}
+
+
+float3 GetView_WorldPosition()
+{
+    return ViewSrg::m_worldPosition.xyz;
+}
+
+float4x4 GetView_ViewProjectionMatrix()
+{
+    return ViewSrg::m_viewProjectionMatrix;
+}ShaderResourceGroupSemantic BindingPerScene
+{
+FrequencyId = 5;
+};
+ShaderResourceGroup SceneSrg: BindingPerScene
+{
+
+    float m_time;
+}
+
+
+float GetScene_Time()
+{
+    return SceneSrg::m_time;
+}#line 1 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/StandardPBR_ForwardPass.azsl"
+#line 1 "<built-in>"
+#line 1 "<built-in>"
+#line 373 "<built-in>"
+#line 1 "<command line>"
+#line 1 "<built-in>"
+#line 1 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/StandardPBR_ForwardPass.azsl"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT;
+    float4 m_bitangent : BITANGENT;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv : UV0;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT;
+    float4 m_bitangent : BITANGENT;
+    float3 m_worldPosition : UV0;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv : UV1;
+};
+
+
+#line 1 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/./MaterialTemplate/ForwardPass.azsli"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// VSInput, VSOutput, ObjectSrg must be defined before including this file.
+
+// [GFX TODO][ATOM-1402] Remove this and use GetObject_WorldMatrix() instead after AZSLc to HLSL code generation bug is fixed.
+float4x4 GetObject_WorldMatrix_TEMP()
+{
+    float4x4 modelToWorld = float4x4(
+        float4(1, 0, 0, 0),
+        float4(0, 1, 0, 0),
+        float4(0, 0, 1, 0),
+        float4(0, 0, 0, 1));
+
+    modelToWorld[0] = PerObject::m_modelToWorld[0];
+    modelToWorld[1] = PerObject::m_modelToWorld[1];
+    modelToWorld[2] = PerObject::m_modelToWorld[2];
+    return modelToWorld;
+}
+
+void StandardPbrTemplate_ForwardPass_VS(in VSInput IN, out VSOutput OUT, float3 worldPosition)
+{
+    OUT.m_worldPosition = worldPosition;
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+
+    //[GFX TODO] Make this support non-uniform scale. Needs an inverse-transpose matrix.
+    OUT.m_normal = mul(GetObject_WorldMatrix_TEMP(), float4(IN.m_normal, 0.0)).xyz;
+    OUT.m_tangent = mul(GetObject_WorldMatrix_TEMP(), IN.m_tangent);
+    OUT.m_bitangent = mul(GetObject_WorldMatrix_TEMP(), IN.m_bitangent);
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+float4 VisNormal(float3 n)
+{
+    return float4(n * 0.5 + 0.5,1);
+}
+
+void StandardPbrTemplate_ForwardPass_PS(in VSOutput IN, out PSOutput OUT, float3 baseColor, float metallic, float roughness, float3 normal, float alpha)
+{
+    // This is just a dummy placeholder that will be replaced later...
+
+    static const float3 lightDir = normalize(float3(1,-1,1));
+
+    float3 viewDir = normalize(GetView_WorldPosition() - IN.m_worldPosition);
+    float3 H = normalize(lightDir + viewDir);
+    float NdotH = dot(normal, H);
+    float NdotL = dot(normal, lightDir);
+
+    float3 diffuse = saturate( NdotL ) * baseColor;
+
+    float3 specular = pow( saturate( NdotH ), 50.0) * saturate(0.5-roughness);
+
+    OUT.m_color = float4(diffuse + specular, alpha);
+}
+#line 39 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/StandardPBR_ForwardPass.azsl"
+
+#line 1 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/./StandardPBR_Common.azsli"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+
+
+ShaderResourceGroup MaterialSrg : BindingPerMaterial
+{
+    float3 m_baseColor;
+    float m_baseColorFactor;
+
+    Texture2D m_baseColorMap;
+    Texture2D m_roughnessMap;
+    Texture2D m_normalMap;
+
+    Sampler m_sampler
+    {
+       AddressU = Clamp;
+       AddressV = Clamp;
+       MinFilter = Linear;
+       MagFilter = Linear;
+       MipFilter = Linear;
+    };
+}
+#line 41 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/StandardPBR_ForwardPass.azsl"
+
+#line 1 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/../../../../../RPI/Assets/ShaderLib/ShaderResourceGroups/DefaultObjectSrg.azsli"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ShaderResourceGroup PerObject : BindingPerObject
+{
+    row_major float3x4 m_modelToWorld;
+}
+
+float4x4 GetObject_WorldMatrix()
+{
+    float4x4 modelToWorld = float4x4(
+        float4(1, 0, 0, 0),
+        float4(0, 1, 0, 0),
+        float4(0, 0, 1, 0),
+        float4(0, 0, 0, 1));
+
+    modelToWorld[0] = PerObject::m_modelToWorld[0];
+    modelToWorld[1] = PerObject::m_modelToWorld[1];
+    modelToWorld[2] = PerObject::m_modelToWorld[2];
+    return modelToWorld;
+}
+#line 43 "C:/Lumberyard/lyengine/branches/Atom/dev/Gems/Atom/Feature/Common/Assets/Materials/StandardPBR/StandardPBR_ForwardPass.azsl"
+
+VSOutput StandardPbr_ForwardPassVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    float3 worldPosition = mul(GetObject_WorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+
+    OUT.m_uv = IN.m_uv;
+
+    StandardPbrTemplate_ForwardPass_VS(IN, OUT, worldPosition);
+
+    return OUT;
+}
+
+PSOutput StandardPbr_ForwardPassPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    // TODO: Figure out how we want our base material to expect channels to be encoded.
+    float4 baseColorMapSample = MaterialSrg::m_baseColorMap.Sample(MaterialSrg::m_sampler, IN.m_uv);
+    float3 baseColor = baseColorMapSample.rgb * MaterialSrg::m_baseColor.rgb * MaterialSrg::m_baseColorFactor;
+    float alpha = baseColorMapSample.a;
+
+    // TODO: Figure out how we want our base material to expect channels to be encoded.
+    float4 roughnessMapSample = MaterialSrg::m_roughnessMap.Sample(MaterialSrg::m_sampler, IN.m_uv);
+    float roughness = roughnessMapSample.r;
+
+    float4 normalMapSample = MaterialSrg::m_normalMap.Sample(MaterialSrg::m_sampler, IN.m_uv);
+    float3 surfaceNormal;
+    surfaceNormal.xy = normalMapSample.xy;
+    surfaceNormal.z = sqrt(1-dot(surfaceNormal.xy, surfaceNormal.xy));
+    float3 vertexNormal = normalize(IN.m_normal);
+    float3 vertexTangent = IN.m_tangent.xyz / IN.m_tangent.w;
+    float3 vertexBitangent = IN.m_bitangent.xyz / IN.m_bitangent.w;
+    float3x3 tbn = float3x3(vertexTangent, vertexBitangent, vertexNormal);
+    float3 normal = mul(surfaceNormal, tbn);
+
+
+    // TODO: Get this from a map
+    float metallic = 0;
+
+    StandardPbrTemplate_ForwardPass_PS(IN, OUT, baseColor, metallic, roughness, normal, alpha);
+
+    return OUT;
+}

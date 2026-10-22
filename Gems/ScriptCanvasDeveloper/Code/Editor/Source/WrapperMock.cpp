@@ -7,6 +7,7 @@
  */
 
 #include <QMenu>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
@@ -34,11 +35,15 @@ namespace ScriptCanvas::Developer
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<WrapperMock>("WrapperMock", "Node for Mocking Wrapper Node visuals")
+                    editContext->Class<WrapperMock>(
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "WrapperMock"),
+                        QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Node for Mocking Wrapper Node visuals"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(ScriptCanvas::Attributes::Node::NodeType, ScriptCanvasEditor::Nodes::NodeType::WrapperNode)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &WrapperMock::m_actionName, "Action Name", "The Add Action Button Name")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &WrapperMock::m_actionName,
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "Action Name"),
+                            QT_TRANSLATE_NOOP("ScriptCanvasDeveloper", "The Add Action Button Name"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &WrapperMock::OnActionNameChanged)
                         ;
                 }
@@ -60,8 +65,8 @@ namespace ScriptCanvas::Developer
 
             QMenu menu;
 
-            QAction* addMock = menu.addAction("Add Mock Node");
-            QAction* addWrapperMock = menu.addAction("Add Wrapper Mock Node");
+            QAction* addMock = menu.addAction(QObject::tr("Add Mock Node"));
+            QAction* addWrapperMock = menu.addAction(QObject::tr("Add Wrapper Mock Node"));
 
             QAction* result = menu.exec(screenPoint);
 

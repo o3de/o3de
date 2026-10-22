@@ -10,13 +10,11 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QWidget>
 
 #include "PropertyEditorAPI.h"
-#endif
 
 class QLineEdit;
 class QString;

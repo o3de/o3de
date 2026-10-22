@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/unordered_set.h>
+
 #include <QSortFilterProxyModel>
-#endif
 
 
 namespace EMStudio

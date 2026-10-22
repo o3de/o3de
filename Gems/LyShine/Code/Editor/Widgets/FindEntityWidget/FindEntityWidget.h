@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -19,7 +18,6 @@
 
 #include <QItemSelection>
 #include <QWidget>
-#endif
 
 class FindEntityItemModel;
 class FindEntitySortFilterProxyModel;

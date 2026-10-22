@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Mesh/EditorMeshSystemComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorMeshSystemComponent>("EditorMeshSystemComponent", "System component that sets up necessary logic related to EditorMeshComponent..")
+                    ec->Class<EditorMeshSystemComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMeshSystemComponent"), QT_TRANSLATE_NOOP("AtomLyIntegration", "System component that sets up necessary logic related to EditorMeshComponent.."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

@@ -47,7 +47,7 @@ namespace EMStudio
 
     void MotionEventPresetsWidget::Init()
     {
-        setTitle("Motion Event Presets");
+        setTitle(tr("Motion Event Presets"));
         setContentsMargins(0, 0, 0, 0);
         AzQtComponents::Card::applyContainerStyle(this);
 
@@ -92,8 +92,8 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            m_saveAction = contextMenu->addAction("Save", this, [this]() { SavePresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
-            m_saveAsAction = contextMenu->addAction("Save as...", this, &MotionEventPresetsWidget::SaveWithDialog);
+            m_saveAction = contextMenu->addAction(tr("Save"), this, [this]() { SavePresets(); /* use lambda so that we get the default value for the showDialog parameter */ });
+            m_saveAsAction = contextMenu->addAction(tr("Save as..."), this, &MotionEventPresetsWidget::SaveWithDialog);
 
             m_saveMenuAction->setMenu(contextMenu);
         }
@@ -300,8 +300,8 @@ namespace EMStudio
     {
         // show message box
         QMessageBox msgBox(this);
-        msgBox.setWindowTitle("Delete All Motion Event Presets?");
-        msgBox.setText("Are you sure to really delete all motion event presets?");
+        msgBox.setWindowTitle(tr("Delete All Motion Event Presets?"));
+        msgBox.setText(tr("Are you sure to really delete all motion event presets?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
         int result = msgBox.exec();

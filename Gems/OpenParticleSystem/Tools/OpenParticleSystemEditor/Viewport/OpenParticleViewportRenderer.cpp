@@ -24,7 +24,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Component/DebugCamera/CameraComponent.h>
 #include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
@@ -193,11 +192,25 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleViewportRenderer::CreateAssetRenderPipeline()
     {
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
-        AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
-        pipelineAsset.Release();
+        const AZ::RHI::MultisampleState appMsaa =
+            AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        const bool useLowEnd = (appMsaa.m_samples == 1);
+
+        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+        pipelineDesc.m_mainViewTagName = "MainCamera";
+        pipelineDesc.m_name = "ParticleEditorPipeline";
+        pipelineDesc.m_rootPassTemplate = useLowEnd ? "LowEndPipelineTemplate" : "MainPipeline";
+        pipelineDesc.m_renderSettings.m_multisampleState = appMsaa;
+
+        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineDesc, *m_windowContext.get());
+
+        if (!m_renderPipeline)
+        {
+            AZ_Error("OpenParticleViewportRenderer", false,
+                "Failed to create render pipeline with root template: %s", pipelineDesc.m_rootPassTemplate.c_str());
+            return;
+        }
+
         m_scene->AddRenderPipeline(m_renderPipeline);
     }
 
@@ -231,8 +244,10 @@ namespace OpenParticleSystemEditor
         m_cameraEntity->Init();
         m_cameraEntity->Activate();
 
-        // Connect camera to pipeline's default view after camera entity activated
-        m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
+        if (m_renderPipeline)
+        {
+            m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
+        }
     }
 
     void OpenParticleViewportRenderer::ActiveView()
@@ -384,6 +399,11 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleViewportRenderer::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        if (!m_renderPipeline)
+        {
+            return;
+        }
+
         if (!m_initialized)
         {
             AzFramework::CameraState cameraState;

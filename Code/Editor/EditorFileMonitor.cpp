@@ -143,8 +143,8 @@ QString RemoveGameName(const QString &filename)
     // Remove first part of path.  File coming in has the game name included
     // eg (AutomatedTesting/Animations/Chicken/anim_chicken_flapping.i_caf)->(Animations/Chicken/anim_chicken_flapping.i_caf)
 
-    int indexOfFirstSlash = filename.indexOf('/');
-    int indexOfFirstBackSlash = filename.indexOf('\\');
+    int indexOfFirstSlash = static_cast<int>(filename.indexOf('/'));
+    int indexOfFirstBackSlash = static_cast<int>(filename.indexOf('\\'));
     if (indexOfFirstSlash >= 0)
     {
         if (indexOfFirstBackSlash >= 0 && indexOfFirstBackSlash < indexOfFirstSlash)
@@ -201,7 +201,7 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
                 {
                     if (AZ::IO::PathView(sCallback.item.toUtf8().constData()) == projectRelativeFilePath)
                     {
-                        sCallback.pListener->OnFileChange(qPrintable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
+                        sCallback.pListener->OnFileChange(qUtf8Printable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
                     }
                 }
             }

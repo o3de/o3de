@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PLATFORMCONFIGURATION_H
-#define PLATFORMCONFIGURATION_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QList>
 #include <QString>
 #include <QObject>
@@ -25,7 +24,7 @@
 #include <native/AssetManager/assetScanFolderInfo.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
-#endif
+
 #include "IPathConversion.h"
 
 
@@ -163,7 +162,7 @@ namespace AssetProcessor
         //! Add AssetProcessor config files from platform specific folders
         bool AddPlatformConfigFilePaths(AZStd::vector<AZ::IO::Path>& configList);
 
-        int MetaDataFileTypesCount() const { return m_metaDataFileTypes.count(); }
+        int MetaDataFileTypesCount() const { return static_cast<int>(m_metaDataFileTypes.count()); }
         // Metadata file types are (meta file extension, original file extension - or blank if its tacked on the end instead of replacing).
         // so for example if its
         // blah.tif + blah.tif.metadata, then its ("metadata", "")
@@ -335,5 +334,3 @@ namespace AssetProcessor
         mutable AZStd::string m_fatalError;
     };
 } // end namespace AssetProcessor
-
-#endif // PLATFORMCONFIGURATION_H

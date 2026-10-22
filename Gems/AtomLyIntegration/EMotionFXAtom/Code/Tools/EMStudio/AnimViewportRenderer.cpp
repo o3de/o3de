@@ -281,7 +281,7 @@ namespace EMStudio
         AZ::TransformBus::Event(m_groundEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, identityTransform);
 
         auto modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-            "objects/groudplane/groundplane_512x512m.fbx.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
+            "objects/groundplane/groundplane_512x512m.fbx.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
         AZ::Render::MeshComponentRequestBus::Event(
             m_groundEntity->GetId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAsset, modelAsset);
 

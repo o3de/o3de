@@ -10,6 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
 namespace AZ
@@ -344,6 +345,46 @@ namespace AZ
             AZStd::vector<AZStd::string> matches;
             AZStd::string completeCommand = console->AutoCompleteCommand("testAutoCompleteD", &matches);
             AZ_TEST_ASSERT(matches.size() == 1 && completeCommand == "testAutoCompleteDuplication");
+        }
+
+        // Argument autocomplete callback
+        {
+            auto id = AZ::TypeId();
+            auto flag = AZ::ConsoleFunctorFlags::Null;
+            auto signature = AZ::ConsoleFunctor<void, false>::FunctorSignature();
+            AZ::ConsoleFunctor<void, false> commandWithArgumentAutocomplete(
+                *console,
+                "testArgumentAutocomplete",
+                "",
+                flag,
+                id,
+                signature);
+
+            commandWithArgumentAutocomplete.SetArgumentAutoCompleteCallback(
+                [](AZStd::string_view arguments, AZStd::vector<AZStd::string>& matches)
+                {
+                    constexpr AZStd::string_view choices[] = { "apple", "apricot", "banana" };
+                    for (AZStd::string_view choice : choices)
+                    {
+                        if (AZ::StringFunc::StartsWith(choice, arguments, false))
+                        {
+                            matches.push_back(choice);
+                        }
+                    }
+                });
+
+            AZStd::vector<AZStd::string> matches;
+            AZStd::string completeCommand = console->AutoCompleteCommand("testArgumentAutocomplete ap", &matches);
+            AZ_TEST_ASSERT(completeCommand == "testArgumentAutocomplete ap");
+            AZ_TEST_ASSERT(matches.size() == 2);
+            AZ_TEST_ASSERT(matches[0] == "testArgumentAutocomplete apple");
+            AZ_TEST_ASSERT(matches[1] == "testArgumentAutocomplete apricot");
+
+            matches.clear();
+            completeCommand = console->AutoCompleteCommand("testArgumentAutocomplete app", &matches);
+            AZ_TEST_ASSERT(completeCommand == "testArgumentAutocomplete apple");
+            AZ_TEST_ASSERT(matches.size() == 1);
+            AZ_TEST_ASSERT(matches[0] == "testArgumentAutocomplete apple");
         }
     }
 

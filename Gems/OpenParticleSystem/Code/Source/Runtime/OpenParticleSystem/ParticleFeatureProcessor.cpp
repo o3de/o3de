@@ -27,7 +27,11 @@ namespace OpenParticle
         if (info.usage == SimuCore::ParticleCore::BufferUsage::VERTEX || info.usage == SimuCore::ParticleCore::BufferUsage::INDEX)
         {
             return info.memory == SimuCore::ParticleCore::MemoryType::STATIC ? AZ::RHI::BufferBindFlags::InputAssembly
-                                                          : AZ::RHI::BufferBindFlags::DynamicInputAssembly;
+                                                      : AZ::RHI::BufferBindFlags::DynamicInputAssembly;
+        }
+        if (info.usage == SimuCore::ParticleCore::BufferUsage::STRUCTURED)
+        {
+            return AZ::RHI::BufferBindFlags::ShaderRead;
         }
         return AZ::RHI::BufferBindFlags::None;
     }
@@ -35,21 +39,27 @@ namespace OpenParticle
     void CreateBuffer(DriverWrap* data, const SimuCore::ParticleCore::BufferCreate& info, SimuCore::ParticleCore::GpuInstance& instance)
     {
         AZ_PROFILE_SCOPE(AzCore, "FP CreateBuffer");
-        if (!data->m_bufferPool)
+        const bool isStructured = (info.usage == SimuCore::ParticleCore::BufferUsage::STRUCTURED);
+        auto* pool = isStructured ? data->m_shaderReadBufferPool.get() : data->m_bufferPool.get();
+
+        if (!pool)
         {
             return;
         }
+
         AZ::RHI::BufferInitRequest request;
         auto buffer = aznew AZ::RHI::Buffer;
 
         request.m_buffer = buffer;
         request.m_descriptor = AZ::RHI::BufferDescriptor{ BindFlags(info), info.size };
         request.m_initialData = info.data;
-        auto result = data->m_bufferPool->InitBuffer(request);
+        auto result = pool->InitBuffer(request);
 
         if (result != AZ::RHI::ResultCode::Success)
         {
             AZ_Error("ParticleSystem", false, "Failed to create buffer: %d", result);
+            delete buffer;
+            return;
         }
         instance.data.ptr = new PtrHolder<AZ::RHI::Buffer>{ buffer };
     }
@@ -57,7 +67,9 @@ namespace OpenParticle
     void UpdateBuffer(DriverWrap* data, const SimuCore::ParticleCore::BufferUpdate& info, const SimuCore::ParticleCore::GpuInstance& instance)
     {
         AZ_PROFILE_SCOPE(AzCore, "FP UpdateBuffer");
-        if (!data->m_bufferPool || info.data == nullptr || instance.data.ptr == nullptr || !AZ::RHI::GetRHIDevice())
+        const bool isStructured = (info.usage == SimuCore::ParticleCore::BufferUsage::STRUCTURED);
+        auto* pool = isStructured ? data->m_shaderReadBufferPool.get() : data->m_bufferPool.get();
+        if (!pool || info.data == nullptr || instance.data.ptr == nullptr || !AZ::RHI::GetRHIDevice())
         {
             return;
         }
@@ -69,12 +81,12 @@ namespace OpenParticle
 
         AZ::RHI::BufferMapResponse mapResponse;
         auto deviceIndex = AZ::RHI::GetRHIDevice()->GetDeviceIndex();
-        auto result = data->m_bufferPool->MapBuffer(request, mapResponse);
+        auto result = pool->MapBuffer(request, mapResponse);
         if (result == AZ::RHI::ResultCode::Success)
         {
             memcpy(mapResponse.m_data[deviceIndex], info.data, info.size);
         }
-        data->m_bufferPool->UnmapBuffer(*buffer->ptr);
+        pool->UnmapBuffer(*buffer->ptr);
     }
 
     void DestroyBuffer(DriverWrap*, const SimuCore::ParticleCore::GpuInstance& instance)
@@ -94,13 +106,24 @@ namespace OpenParticle
 
     void ParticleDataInstance::Init()
     {
+        if (m_particleFp)
+        {
+            m_driver.m_bufferPool = m_particleFp->GetBufferPool();
+            m_driver.m_shaderReadBufferPool = m_particleFp->GetShaderReadBufferPool();
+        }
+
         m_particleInstance = ParticleSystem::Create(m_particleAsset, m_rtConfig);
         m_particleInstance->SetEntityId(m_entityId);
         m_particleInstance->SetObjectId(m_objectId);
         m_particleInstance->SetFeatureProcessor(m_particleFp);
         m_particleInstance->SetScene(m_scene);
-        m_particleInstance->SetTransform(m_transform);
         m_particleInstance->PostLoad();
+        m_particleInstance->SetTransform(m_transform);
+
+        if (m_status == ParticleStatus::EMPTY)
+        {
+            m_status = ParticleStatus::LOADED;
+        }
     }
 
     void ParticleDataInstance::LoadParticle(const AZ::Data::Asset<ParticleAsset>& asset, ParticleFeatureProcessor& fp)
@@ -110,14 +133,6 @@ namespace OpenParticle
 
         if (!m_particleAsset.GetId().IsValid())
         {
-            return;
-        }
-        // find from global database
-        auto particle =
-            AZ::Data::InstanceDatabase<ParticleSystem>::Instance().Find(AZ::Data::InstanceId::CreateFromAssetId(m_particleAsset.GetId()));
-        if (particle)
-        {
-            Init();
             return;
         }
 
@@ -173,6 +188,10 @@ namespace OpenParticle
         {
             m_bufferPool.reset();
         }
+        if (m_shaderReadBufferPool)
+        {
+            m_shaderReadBufferPool.reset();
+        }
     }
 
     void ParticleFeatureProcessor::InitDriver()
@@ -184,16 +203,30 @@ namespace OpenParticle
 
     void ParticleFeatureProcessor::InitBufferPool()
     {
-        AZ::RHI::BufferPoolDescriptor desc;
-        desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
-        desc.m_bindFlags = AZ::RHI::BufferBindFlags::DynamicInputAssembly;
-
-        m_bufferPool = aznew AZ::RHI::BufferPool;
-        m_bufferPool->SetName(AZ::Name("ParticleBufferPool"));
-        auto resultCode = m_bufferPool->Init(desc);
-        if (resultCode != AZ::RHI::ResultCode::Success)
         {
-            AZ_Error("ParticleFeatureProcessor", false, "Failed to initialize buffer pool");
+            AZ::RHI::BufferPoolDescriptor desc;
+            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
+            desc.m_bindFlags = AZ::RHI::BufferBindFlags::DynamicInputAssembly;
+            m_bufferPool = aznew AZ::RHI::BufferPool;
+            m_bufferPool->SetName(AZ::Name("ParticleBufferPool"));
+            auto resultCode = m_bufferPool->Init(desc);
+            if (resultCode != AZ::RHI::ResultCode::Success)
+            {
+                AZ_Error("ParticleFeatureProcessor", false, "Failed to initialize geometry buffer pool");
+            }
+        }
+
+        {
+            AZ::RHI::BufferPoolDescriptor desc;
+            desc.m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
+            desc.m_bindFlags = AZ::RHI::BufferBindFlags::ShaderRead;
+            m_shaderReadBufferPool = aznew AZ::RHI::BufferPool;
+            m_shaderReadBufferPool->SetName(AZ::Name("ParticleShaderReadBufferPool"));
+            auto resultCode = m_shaderReadBufferPool->Init(desc);
+            if (resultCode != AZ::RHI::ResultCode::Success)
+            {
+                AZ_Error("ParticleFeatureProcessor", false, "Failed to initialize shader read buffer pool");
+            }
         }
     }
 

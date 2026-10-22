@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <EventData.h>
 #include <Allocators.h>
@@ -40,7 +41,9 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<DiscardFrameEventData>("[Motion Matching] Discard Frame", "Event used for discarding ranges of the animation..")
+        editContext->Class<DiscardFrameEventData>(
+            QT_TRANSLATE_NOOP("MotionMatching", "[Motion Matching] Discard Frame"),
+            QT_TRANSLATE_NOOP("MotionMatching", "Event used for discarding ranges of the animation.."))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -81,12 +84,15 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<TagEventData>("[Motion Matching] Tag", "")
+        editContext->Class<TagEventData>(
+            QT_TRANSLATE_NOOP("MotionMatching", "[Motion Matching] Tag"), "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->Attribute(AZ_CRC_CE("Creatable"), true)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &TagEventData::m_tag, "Tag", "The tag that should be active.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &TagEventData::m_tag,
+                QT_TRANSLATE_NOOP("MotionMatching", "Tag"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The tag that should be active."))
             ;
     }
 } // namespace EMotionFX::MotionMatching

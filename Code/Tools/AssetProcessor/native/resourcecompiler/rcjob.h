@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCJOB_H
-#define RCJOB_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QObject>
 #include <QString>
 #include <QDateTime>
 #include <QStringList>
+#include <QFileInfoList>
+
 #include <AzCore/base.h>
 #include "RCCommon.h"
 #include "native/utilities/PlatformConfiguration.h"
@@ -20,8 +21,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include "native/assetprocessor.h"
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include <QFileInfoList>
-#endif
+
 
 namespace AssetProcessor
 {
@@ -287,5 +287,3 @@ namespace AssetProcessor
 Q_DECLARE_METATYPE(AssetProcessor::BuilderParams);
 Q_DECLARE_METATYPE(AssetProcessor::JobOutputInfo);
 Q_DECLARE_METATYPE(AssetProcessor::RCParams);
-
-#endif // RCJOB_H

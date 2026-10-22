@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ISPLINES_H
-#define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
 #include <IXml.h>
@@ -1253,4 +1250,3 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(spline::SplineKey<Vec2>, "{24A4D7E5-C36D-427D-AB49-CD86573B7288}");
 }
-#endif // CRYINCLUDE_CRYCOMMON_ISPLINES_H

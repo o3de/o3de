@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Defines namespace PathUtil for operations on files paths.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYPATH_H
-#define CRYINCLUDE_CRYCOMMON_CRYPATH_H
-#pragma once
 
 #include <ISystem.h>
 #include <AzFramework/Archive/IArchive.h>
@@ -623,5 +620,3 @@ namespace PathUtil
         }
     }
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYPATH_H

@@ -69,7 +69,7 @@ namespace GraphCanvas
         verticalLayout->setContentsMargins(5, 5, 5, 5);
 
         m_quickFilter = new AzQtComponents::SearchLineEdit(dockWidgetContents);
-        m_quickFilter->setPlaceholderText("Input node name...");
+        m_quickFilter->setPlaceholderText(tr("Input node name..."));
         m_quickFilter->setClearButtonEnabled(true);
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
@@ -90,7 +90,7 @@ namespace GraphCanvas
         verticalLayout->addWidget(m_quickFilter);
         verticalLayout->addWidget(m_nodelistTable);
 
-        this->setWindowTitle("Graph Outliner");
+        this->setWindowTitle(tr("Graph Outliner"));
         this->setObjectName("GraphOutlinerDockWidget");
         this->setWidget(dockWidgetContents);
 

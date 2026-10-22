@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <GraphCanvas/Widgets/GraphCanvasTreeCategorizer.h>
@@ -15,7 +14,6 @@
 #include <Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
-#endif
 
 namespace ScriptCanvasEditor
 {

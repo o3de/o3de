@@ -10,6 +10,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -32,15 +33,15 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DescriptorWeightSelectorConfig>(
-                    "Vegetation Asset Weight Selector", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Asset Weight Selector"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DescriptorWeightSelectorConfig::m_sortBehavior, "Sort By Weight", "Defines how descriptors will be sorted before gradient is used for selection")
-                    ->EnumAttribute(SortBehavior::Unsorted, "Unsorted")
-                    ->EnumAttribute(SortBehavior::Ascending, "Ascending (lowest first)")
-                    ->EnumAttribute(SortBehavior::Descending, "Descending (highest first)")
-                    ->DataElement(0, &DescriptorWeightSelectorConfig::m_gradientSampler, "Gradient", "Gradient mapped to range between 0 and total combined weight of all descriptors.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DescriptorWeightSelectorConfig::m_sortBehavior, QT_TRANSLATE_NOOP("Vegetation", "Sort By Weight"), QT_TRANSLATE_NOOP("Vegetation", "Defines how descriptors will be sorted before gradient is used for selection"))
+                    ->EnumAttribute(SortBehavior::Unsorted, QT_TRANSLATE_NOOP("Vegetation", "Unsorted"))
+                    ->EnumAttribute(SortBehavior::Ascending, QT_TRANSLATE_NOOP("Vegetation", "Ascending (lowest first)"))
+                    ->EnumAttribute(SortBehavior::Descending, QT_TRANSLATE_NOOP("Vegetation", "Descending (highest first)"))
+                    ->DataElement(0, &DescriptorWeightSelectorConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient mapped to range between 0 and total combined weight of all descriptors."))
                     ;
             }
         }

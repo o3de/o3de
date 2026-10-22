@@ -1,0 +1,5 @@
+// the first appearance of an SRG declaration must bind a semantic.
+ShaderResourceGroup MySrg
+{
+};
+// #EC 23  A semantic is mandatory on the first declaration of a ShaderResourceGroup

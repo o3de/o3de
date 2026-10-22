@@ -12,6 +12,8 @@
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     void ViewBookmark::Reflect(AZ::ReflectContext* context)
@@ -25,11 +27,15 @@ namespace AzToolsFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ViewBookmark>("ViewBookmark Data", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
+                editContext->Class<ViewBookmark>(
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "ViewBookmark Data"), "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "ViewBookmark"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Position"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Rotation"), "");
             }
         }
     }
@@ -49,16 +55,18 @@ namespace AzToolsFramework
             {
                 editContext
                     ->Class<LocalViewBookmarkComponent>(
-                        "Local View Bookmark Component",
-                        "The Local View Bookmark Component allows the user to store bookmarks in a custom setreg file.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Local View Bookmarks")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Local View Bookmark Component"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "The Local View Bookmark Component allows the user to store bookmarks in a custom setreg file."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Local View Bookmarks"))
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
                     ->Attribute(AZ::Edit::Attributes::RemoveableByUser, false)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
-                    ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "View Bookmarks"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &LocalViewBookmarkComponent::m_localBookmarksFileName, "Local Bookmarks File Name",
+                        AZ::Edit::UIHandlers::Default, &LocalViewBookmarkComponent::m_localBookmarksFileName,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Local Bookmarks File Name"),
                         "");
             }
         }

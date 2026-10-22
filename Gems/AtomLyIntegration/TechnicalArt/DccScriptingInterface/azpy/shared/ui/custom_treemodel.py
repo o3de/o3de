@@ -24,9 +24,9 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # 3rd Party
 from unipath import Path
-import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
+import PySide6.QtCore as QtCore
+import PySide6.QtWidgets as QtWidgets
+import PySide6.QtGui as QtGui
 # -------------------------------------------------------------------------
 #  global space
 # To Do: update to dynaconf dynamic env and settings?

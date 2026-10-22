@@ -5,17 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETSCANNER_H
-#define ASSETSCANNER_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include "native/assetprocessor.h"
 #include "assetScannerWorker.h"
 #include "assetScanFolderInfo.h"
+
 #include <QString>
 #include <QThread>
 #include <QList>
-#endif
 
 namespace AssetProcessor
 {
@@ -53,5 +52,3 @@ namespace AssetProcessor
         AZStd::atomic<AssetScanningStatus> m_status;
     };
 }// end namespace AssetProcessor
-
-#endif // ASSETSCANNER_H

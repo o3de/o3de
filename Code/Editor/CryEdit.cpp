@@ -98,7 +98,6 @@ AZ_POP_DISABLE_WARNING
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
-#include "PluginManager.h"
 
 #include "IEditorImpl.h"
 #include "StartupLogoDialog.h"
@@ -120,7 +119,10 @@ AZ_POP_DISABLE_WARNING
 
 #include "ScopedVariableSetter.h"
 
-#include "Util/3DConnexionDriver.h"
+#include "ComponentEntityEditor/ComponentEntityEditorTool.h"
+#include "ProjectSettingsTool/ProjectSettingsEditorTool.h"
+#include "AssetImporter/AssetImporterTool.h"
+
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
@@ -189,7 +191,7 @@ void RecentFileList::Add(const QString& f)
 
 int RecentFileList::GetSize()
 {
-    return m_arrNames.count();
+    return static_cast<int>(m_arrNames.count());
 }
 
 void RecentFileList::GetDisplayName(QString& name, int index, const QString& curDir)
@@ -265,8 +267,7 @@ void CCryDocManager::OnFileNew()
     m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
-bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
-    [[maybe_unused]] DWORD lFlags, bool bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
+bool CCryDocManager::DoPromptFileName(QString& fileName, bool bOpenFileDialog)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
     levelFileDialog.show();
@@ -953,18 +954,27 @@ bool CCryEditApp::InitGame()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CCryEditApp::InitPlugins()
+void CCryEditApp::InitEditorTools()
 {
-    OutputStartupMessage("Loading Plugins...");
-    // Load the plugins
-    {
-        GetIEditor()->LoadPlugins();
+    OutputStartupMessage("Initializing Editor Tools...");
 
-#if defined(AZ_PLATFORM_WINDOWS)
-        C3DConnexionDriver* p3DConnexionDriver = new C3DConnexionDriver;
-        GetIEditor()->GetPluginManager()->RegisterPlugin(0, p3DConnexionDriver);
-#endif
-    }
+    // Constructors register view panes, so these must run before MainWindow restores its layout.
+    m_componentEntityEditor = AZStd::make_unique<ComponentEntityEditorTool>(GetIEditor());
+    m_projectSettingsTool = AZStd::make_unique<ProjectSettingsEditorTool>();
+    m_assetImporter = AZStd::make_unique<AssetImporterTool>(GetIEditor());
+}
+
+/////////////////////////////////////////////////////////////////////////////
+void CCryEditApp::ShutdownEditorTools()
+{
+    AZ::TickBus::ExecuteQueuedEvents();
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
+    // Reverse creation order.
+    // ComponentEntityEditor's SandboxIntegrationManager provides the EditorRequests bus the other tools use during teardown.
+    m_assetImporter.reset();
+    m_projectSettingsTool.reset();
+    m_componentEntityEditor.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1541,6 +1551,11 @@ bool CCryEditApp::InitInstance()
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
 #endif
     mainWindowWrapper->setGuest(mainWindow);
+
+    // Note: we should use getNativeHandle to get the HWND from the widget, but
+    // it returns an invalid handle unless the widget has been shown and polished and even then
+    // it sometimes returns an invalid handle.
+    // So instead, we use winId(), which does consistently work
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
     AZ::IO::FixedMaxPath engineRootPath;
@@ -1555,12 +1570,6 @@ bool CCryEditApp::InitInstance()
         QStringLiteral(":/Assets/Editor/Style"),
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
-
-    // Note: we should use getNativeHandle to get the HWND from the widget, but
-    // it returns an invalid handle unless the widget has been shown and polished and even then
-    // it sometimes returns an invalid handle.
-    // So instead, we use winId(), which does consistently work
-    //mainWindowWrapperHwnd = QtUtil::getNativeHandle(mainWindowWrapper);
 
     // Connect to the AssetProcessor at this point
     // It will be launched if not running
@@ -1601,7 +1610,7 @@ bool CCryEditApp::InitInstance()
     }
 
     // Meant to be called before MainWindow::Initialize
-    InitPlugins();
+    InitEditorTools();
 
     CCryEditApp::OutputStartupMessage(QString("Initializing Main Window..."));
 
@@ -1750,7 +1759,7 @@ void CCryEditApp::LoadFile([[maybe_unused]] QString fileName)
 inline void ExtractMenuName(QString& str)
 {
     // eliminate &
-    int pos = str.indexOf('&');
+    int pos = static_cast<int>(str.indexOf('&'));
     if (pos >= 0)
     {
         str = str.left(pos) + str.right(str.length() - pos - 1);
@@ -1758,7 +1767,7 @@ inline void ExtractMenuName(QString& str)
     // cut the string
     for (int i = 0; i < str.length(); i++)
     {
-        if (str[i] == 9)
+        if (str[i].toLatin1() == 9)
         {
             str = str.left(i);
         }
@@ -2043,13 +2052,13 @@ int CCryEditApp::ExitInstance(int exitCode)
 
     if (m_pEditor)
     {
-        // Ensure component entities are wiped prior to unloading plugins,
-        // since components may be implemented in those plugins.
+        // Ensure component entities are wiped prior to tearing down the editor tools,
+        // since components may be implemented by those tools.
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
         // vital, so that the Qt integration can unhook itself!
-        m_pEditor->UnloadPlugins();
+        ShutdownEditorTools();
         m_pEditor->Uninitialize();
     }
 
@@ -2522,7 +2531,7 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
+CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */, const QString& levelsRootAbsolutePath /* ={} */)
 {
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -2551,7 +2560,18 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
 
     QString cryFileName = levelName.mid(levelName.lastIndexOf('/') + 1, levelName.length() - levelName.lastIndexOf('/') + 1);
-    QString levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    // Compose the absolute level folder. When the caller specifies a root
+    // (e.g. a gem root), use it directly; otherwise fall back to the
+    // project's "Levels" folder for backwards compatibility.
+    QString levelPath;
+    if (!levelsRootAbsolutePath.isEmpty())
+    {
+        levelPath = QStringLiteral("%1/%2/").arg(levelsRootAbsolutePath, levelName);
+    }
+    else
+    {
+        levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
     //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
@@ -2719,7 +2739,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     GetIEditor()->StartLevelErrorReportRecording();
 
     QString fullyQualifiedLevelName;
-    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName);
+    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName, dlg.GetLevelsFolder());
 
     if (result == ECLR_ALREADY_EXISTS)
     {
@@ -2732,9 +2752,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
         QByteArray windowsErrorMessage(ERROR_LEN, 0);
         QByteArray cwd(ERROR_LEN, 0);
-        DWORD dw = GetLastError();
 
 #ifdef WIN32
+        DWORD dw = GetLastError();
         wchar_t windowsErrorMessageW[ERROR_LEN];
         windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2746,7 +2766,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
-        windowsErrorMessage = strerror(dw);
+        int errorNum = errno;
+        windowsErrorMessage = strerror(errorNum);
         cwd = QDir::currentPath().toUtf8();
 #endif
 
@@ -3431,8 +3452,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     // QtOpenGL attributes and surface format setup.
@@ -3452,6 +3471,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     Editor::EditorQtApplication::InstallQtLogHandler();
+
+#ifdef AZ_PLATFORM_LINUX
+    // Force the QPA platform so Qt does not load a platform plugin that AzFramework doesn't support.
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+    {
+#if !PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        qputenv("QT_QPA_PLATFORM", "xcb");
+#elif !PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        qputenv("QT_QPA_PLATFORM", "wayland");
+#endif
+    }
+#endif
 
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
@@ -3495,7 +3526,21 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
 
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("sv_isDedicated false");
+#ifdef AZ_PLATFORM_LINUX
+        //Ensure we don't use Wayland implementations when Qt is using Xcb.
+        auto platformName = QGuiApplication::platformName();
+        if (platformName == "wayland")
+        {
+            //If a user already disabled it, we should re-enable it.
+            console->PerformCommand("wl_enable 1");
+        }
+        else
+        {
+            console->PerformCommand("wl_enable 0");
+        }
+#endif
 
         if (!AZToolsApp.Start())
         {
@@ -3537,4 +3582,3 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
 AZ_DECLARE_MODULE_INITIALIZATION
 
-#include <moc_CryEdit.cpp>

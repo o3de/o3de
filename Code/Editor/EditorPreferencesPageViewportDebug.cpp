@@ -11,9 +11,24 @@
 
 // AzCore
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // Editor
 #include "Settings.h"
+
+namespace EditorPreferencesViewportDebugStrings
+{
+    static const char* ProfilingClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Profiling");
+    static const char* ShowMeshStatsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Show Mesh Statistics");
+    static const char* ShowMeshStatsDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Show Mesh Statistics on Mouse Over");
+
+    static const char* ViewportWarningSettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Viewport Warning Settings");
+    static const char* WarningIconsDistanceName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Warning Icons Draw Distance");
+    static const char* ShowScaleWarningsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Show Scale Warnings");
+    static const char* ShowRotationWarningsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Show Rotation Warnings");
+
+    static const char* ViewportDebugPreferencesClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Viewport Debug Preferences");
+}
 
 void CEditorPreferencesPage_ViewportDebug::Reflect(AZ::SerializeContext& serialize)
 {
@@ -36,19 +51,21 @@ void CEditorPreferencesPage_ViewportDebug::Reflect(AZ::SerializeContext& seriali
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
     {
-        editContext->Class<Profiling>("Profiling", "Profiling")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Profiling::m_showMeshStatsOnMouseOver, "Show Mesh Statistics", "Show Mesh Statistics on Mouse Over");
+        using namespace EditorPreferencesViewportDebugStrings;
 
-        editContext->Class<Warnings>("Viewport Warning Settings", "")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Warnings::m_warningIconsDrawDistance, "Warning Icons Draw Distance", "Warning Icons Draw Distance")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Warnings::m_showScaleWarnings, "Show Scale Warnings", "Show Scale Warnings")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Warnings::m_showRotationWarnings, "Show Rotation Warnings", "Show Rotation Warnings");
+        editContext->Class<Profiling>(ProfilingClassName, ProfilingClassName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Profiling::m_showMeshStatsOnMouseOver, ShowMeshStatsName, ShowMeshStatsDesc);
 
-        editContext->Class<CEditorPreferencesPage_ViewportDebug>("Viewport Debug Preferences", "Viewport Debug Preferences")
+        editContext->Class<Warnings>(ViewportWarningSettingsClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Warnings::m_warningIconsDrawDistance, WarningIconsDistanceName, WarningIconsDistanceName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Warnings::m_showScaleWarnings, ShowScaleWarningsName, ShowScaleWarningsName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Warnings::m_showRotationWarnings, ShowRotationWarningsName, ShowRotationWarningsName);
+
+        editContext->Class<CEditorPreferencesPage_ViewportDebug>(ViewportDebugPreferencesClassName, ViewportDebugPreferencesClassName)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_profiling, "Profiling", "Profiling")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_warnings, "Viewport Warning Settings", "Viewport Warning Settings");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_profiling, ProfilingClassName, ProfilingClassName)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportDebug::m_warnings, ViewportWarningSettingsClassName, ViewportWarningSettingsClassName);
     }
 }
 

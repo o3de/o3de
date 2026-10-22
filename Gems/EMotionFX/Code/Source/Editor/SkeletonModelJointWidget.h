@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <EMotionFX/Source/ActorInstance.h>
+
 #include <QItemSelection>
 #include <QVBoxLayout>
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <GemRepo/GemRepoModel.h>
 #include <LinkWidget.h>
 #include <GemsSubWidget.h>
@@ -18,7 +17,6 @@
 #include <QSpacerItem>
 #include <QWidget>
 #include <QPersistentModelIndex>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)

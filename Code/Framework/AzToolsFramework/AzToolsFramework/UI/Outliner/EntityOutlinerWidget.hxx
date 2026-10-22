@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 
@@ -29,9 +28,6 @@
 
 #include <QIcon>
 #include <QWidget>
-#endif
-
-#pragma once
 
 class QAction;
 class QItemSelection;

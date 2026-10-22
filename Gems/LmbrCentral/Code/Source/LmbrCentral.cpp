@@ -53,6 +53,7 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Scriptable Ebus Registration
@@ -107,7 +108,8 @@ namespace LmbrCentral
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<LmbrCentralAllocatorComponent>(
-                        "LmbrCentral Allocator Component", "Manages initialization of memory allocators required by LmbrCentral")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "LmbrCentral Allocator Component"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Manages initialization of memory allocators required by LmbrCentral"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                         ;
@@ -142,7 +144,8 @@ namespace LmbrCentral
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<LmbrCentralAssetBuilderAllocatorComponent>(
-                        "LmbrCentral Asset Builder Allocator Component", "Manages initialization of memory allocators required by LmbrCentral during asset building")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "LmbrCentral Asset Builder Allocator Component"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Manages initialization of memory allocators required by LmbrCentral during asset building"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                         ;
@@ -265,7 +268,8 @@ namespace LmbrCentral
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<LmbrCentralSystemComponent>(
-                    "LmbrCentral", "Coordinates initialization of systems within LmbrCentral")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "LmbrCentral"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Coordinates initialization of systems within LmbrCentral"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Game")
                 ;

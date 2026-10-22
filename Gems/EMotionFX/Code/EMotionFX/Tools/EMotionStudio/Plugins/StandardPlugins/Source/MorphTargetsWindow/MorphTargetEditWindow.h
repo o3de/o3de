@@ -8,15 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/MorphTarget.h>
 #include "PhonemeSelectionWindow.h"
-#include <QDialog>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
-#endif
 
+#include <QDialog>
 
 namespace EMStudio
 {

@@ -11,6 +11,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -37,11 +38,11 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorJointComponent>(
-                    "PhysX Joint", "A dynamic joint that constrains the position and orientation of one rigid body to another.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Joint"), QT_TRANSLATE_NOOP("PhysX", "A dynamic joint that constrains the position and orientation of one rigid body to another."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorJointComponent::m_config, "Standard Joint Parameters", "Joint parameters shared by all joint types.")
+                    ->DataElement(0, &EditorJointComponent::m_config, QT_TRANSLATE_NOOP("PhysX", "Standard Joint Parameters"), QT_TRANSLATE_NOOP("PhysX", "Joint parameters shared by all joint types."))
                     ;
             }
         }

@@ -12,10 +12,10 @@
 import os
 import sys
 
-from PySide2.QtCore import QFile, QSize
-from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QApplication, QSizePolicy
-from PySide2.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtCore import QFile, QSize
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QApplication, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout
 
 _MODULE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 _UI_FILEPATH = "{0}\\\\sbs_builder_widget.ui".format(_MODULE_DIR_PATH)

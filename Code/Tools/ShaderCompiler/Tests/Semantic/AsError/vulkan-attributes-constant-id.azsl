@@ -1,0 +1,26 @@
+// Make sure we support all listed Vulkan attributes
+// https://github.com/microsoft/DirectXShaderCompiler/blob/master/docs/SPIR-V.rst#vulkan-specific-attributes
+
+// constant_id(X): For marking a global constant as a specialization constant. Allowed on global variables of boolean/integer/float types.
+
+// Run: %dxc -T vs_6_0 -E main
+
+// The Vulkan attribute here works, but AZSLc will fail the test for entirely different reason:
+// ERROR at semantic check: (9): global variable specConst cannot be non static (or extern or uniform). AZSL data binding model uses ShaderResourceGroup.
+[[vk::constant_id(10)]]
+const int specConst = 12;
+
+// This TODO is from the original DXC sample. Looks like spec constants should act as static const, which matches our use of options.
+// TODO: The frontend parsing hits assertion failures saying cannot evaluating as constant int for the following usages.
+/*
+cbuffer Data {
+    float4 pos[specConst];
+    float4 tex[specConst + 5];
+};
+*/
+
+static const int val = specConst + 3;
+
+void main() {
+
+}
