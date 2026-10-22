@@ -23,8 +23,7 @@
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
-                "PipelineViewTag": "MainCamera",
-                "BindViewSrg": false,
+                "BindViewSrg": true,
                 "ShaderAsset": { "FilePath": "Shaders/SceneColorView/Capture.shader" }
             }
         }
