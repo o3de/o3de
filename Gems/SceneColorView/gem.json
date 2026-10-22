@@ -13,10 +13,7 @@
         "Material Canvas",
         "Scene Color"
     ],
-    "platforms": [
-        "Windows",
-        "Linux"
-    ],
+    "platforms": [],
     "dependencies": [
         "Atom_RPI",
         "Atom"
@@ -24,7 +21,7 @@
     "compatible_engines": [],
     "requirements": "C++ project configure/build required. Configuration adds self-contained project View SRG declarations and can trigger a broad shader rebuild. Standard desktop transparent rendering only.",
     "license_url": "https://opensource.org/licenses/MIT",
-    "origin": "omacx",
+    "origin": "Scene Color Pass",
     "origin_url": "https://github.com/omacx",
     "documentation_url": "https://github.com/o3de/o3de/tree/development/Gems/SceneColorView"
 }
