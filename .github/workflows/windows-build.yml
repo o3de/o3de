@@ -246,11 +246,12 @@ jobs:
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
 
       - name: Compress artifacts
-        # Compress with posix format to preserve permissions and timestamps at nanosecond precision
-        # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
+        # Windows tar.exe (libarchive#1630) can silently skip files while returning exit 0.
+        # Use 7-Zip's independent tar writer and fail the job if archiving is unsuccessful.
+        # Its timestamps have second rather than nanosecond precision; these caches are hash-based.
+        # Skip compression and upload for tests to avoid dirty build artifacts.
         id: compress-artifacts
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
-        continue-on-error: true
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           if ("${{ steps.build.outcome }}" -ne "success") {
@@ -260,11 +261,32 @@ jobs:
             }
           }
           New-Item -ItemType Directory -Force .ccache, .o3de\python\downloaded_packages, 3rdParty\downloaded_packages, AutomatedTesting\Cache | Out-Null
-          tar --format=posix -cvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar `
+          $sevenZip = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+          if (-not (Test-Path -LiteralPath $sevenZip -PathType Leaf)) {
+            Write-Output '::error::7-Zip was not found on the Windows runner; refusing to use Windows tar.exe.'
+            exit 1
+          }
+          $archive = Join-Path $env:DEV_DRIVE_WORKSPACE 'cache.tar'
+          Remove-Item -LiteralPath $archive -Force -ErrorAction SilentlyContinue
+          $PSNativeCommandUseErrorActionPreference = $false
+          & $sevenZip a -ttar -y $archive `
             .ccache `
             .o3de\python\downloaded_packages `
             3rdParty\downloaded_packages `
             AutomatedTesting\Cache
+          $archiveExit = $LASTEXITCODE
+          if ($archiveExit -ne 0) {
+            Write-Output "::error::7-Zip failed with exit code $archiveExit. The cache archive will not be uploaded."
+            exit 1
+          }
+          if (-not (Test-Path -LiteralPath $archive -PathType Leaf)) {
+            Write-Output '::error::7-Zip did not create a cache archive.'
+            exit 1
+          }
+          if ((Get-Item -LiteralPath $archive).Length -le 0) {
+            Write-Output '::error::7-Zip produced an empty cache archive.'
+            exit 1
+          }
 
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
