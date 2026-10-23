@@ -869,6 +869,8 @@ namespace OpenParticle
     {
         UpdateRandomIndexes();
         UpdateCurveIndexes();
+        // Drop the removed randoms and curves now (the caches keep them) so the next removal does not apply this shift a second time
+        m_distribution.RebuildDistribution();
     }
 
     void ParticleSourceData::UpdateRandomIndexes()
