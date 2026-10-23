@@ -17,7 +17,7 @@ REM General strategy: Check if python is already installed
 REM If not, use cmake and the new package system to install it.
 
 REM Is python installed?
-cd /D %CMD_DIR%
+cd /D "%CMD_DIR%"
 call python.cmd --version > NUL
 IF !ERRORLEVEL!==0 (
     echo get_python.bat: Python is already installed:
@@ -25,7 +25,7 @@ IF !ERRORLEVEL!==0 (
     goto install_packages
 )
 
-cd /D %CMD_DIR%\..
+cd /D "%CMD_DIR%\.."
 REM IF you update this logic, update it in scripts/build/Platform/Windows/env_windows.cmd
 REM If cmake is not found on path, try a known location at LY_CMAKE_PATH
 where /Q cmake
@@ -71,14 +71,14 @@ if ERRORLEVEL 1 (
 echo calling PIP to install requirements...
 CALL "%CMD_DIR%\python.cmd" -m pip install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
 if ERRORLEVEL 1 (
-    echo Failed to install the packages listed in %CMD_DIR%\requirements.txt.  Check the log above!
+    echo Failed to install the packages listed in !CMD_DIR!\requirements.txt.  Check the log above!
     EXIT /b 1
 )
 
 echo calling PIP to O3DE
 CALL "%CMD_DIR%\python.cmd" -m pip install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
 if ERRORLEVEL 1 (
-    echo Failed to install %CMD_DIR%\..\scripts\o3de into python.  Check the log above!
+    echo Failed to install !CMD_DIR!\..\scripts\o3de into python.  Check the log above!
     EXIT /b 1
 )
 
