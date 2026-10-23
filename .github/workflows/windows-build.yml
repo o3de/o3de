@@ -248,7 +248,7 @@ jobs:
       - name: Compress artifacts
         # Windows tar.exe (libarchive#1630) can silently skip files while returning exit 0.
         # Use 7-Zip's independent tar writer and fail the job if archiving is unsuccessful.
-        # Its timestamps have second rather than nanosecond precision; these caches are hash-based.
+        # Its timestamps have second instead of nanosecond precision; these caches are hash-based.
         # Skip compression and upload for tests to avoid dirty build artifacts.
         id: compress-artifacts
         if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
