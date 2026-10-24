@@ -28,6 +28,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/sort.h>
 
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
@@ -1279,6 +1280,8 @@ namespace AzToolsFramework
         AZStd::chrono::steady_clock::time_point tBeforeBuildArray = refreshStartTime;
         AZStd::chrono::steady_clock::time_point tAfterBuildArray = refreshStartTime;
         AZStd::chrono::steady_clock::time_point tAfterBuildUI = refreshStartTime;
+        AZStd::chrono::steady_clock::time_point tBeforeEntityIcon = refreshStartTime;   // the header updates that end buildUI
+        AZStd::chrono::steady_clock::time_point tAfterEntityIcon = refreshStartTime;
 
         // D1c: read the diagnostics cvar once for this rebuild and reset the per-component accumulators.
         m_inspectorDiagnosticsActive = false;
@@ -1295,6 +1298,12 @@ namespace AzToolsFramework
         m_diagClearHideUs = 0;
         m_diagClearContentUs = 0;
         m_diagClearPreventUs = 0;
+
+        // The adapters' and property editors' own accumulators restart here, so the report below covers this rebuild only
+        AZ::DocumentPropertyEditor::ReflectionAdapter::TakeGenerateContentsMicroseconds();
+        AZ::u64 ignoredRowsUs = 0;
+        AZ::u64 ignoredDirtyHandlersUs = 0;
+        DocumentPropertyEditor::TakeResetTimings(ignoredRowsUs, ignoredDirtyHandlersUs);
 
         setUpdatesEnabled(false);
 
@@ -1412,7 +1421,9 @@ namespace AzToolsFramework
             }
 
 
+            tBeforeEntityIcon = AZStd::chrono::steady_clock::now();
             UpdateEntityIcon();
+            tAfterEntityIcon = AZStd::chrono::steady_clock::now();
             UpdateEntityDisplay();
             tAfterBuildUI = AZStd::chrono::steady_clock::now();
         }
@@ -1531,6 +1542,26 @@ namespace AzToolsFramework
                 aznumeric_cast<double>(m_diagClearHideUs) / 1000.0,
                 aznumeric_cast<double>(m_diagClearContentUs) / 1000.0,
                 aznumeric_cast<double>(m_diagClearPreventUs) / 1000.0);
+
+            // The DPE parts of addInstance + invalidate, over all component editors: the adapters generating their contents (the
+            // DOM), the property editors building the rows from it, and refreshing the new handlers
+            AZ::u64 resetRowsUs = 0;
+            AZ::u64 resetDirtyHandlersUs = 0;
+            DocumentPropertyEditor::TakeResetTimings(resetRowsUs, resetDirtyHandlersUs);
+            const AZ::u64 generateContentsUs = AZ::DocumentPropertyEditor::ReflectionAdapter::TakeGenerateContentsMicroseconds();
+            AZ_Printf(
+                "EntityInspector",
+                "  dpe: dom=%.2f rows=%.2f dirtyHandlers=%.2f (ms)",
+                aznumeric_cast<double>(generateContentsUs) / 1000.0,
+                aznumeric_cast<double>(resetRowsUs) / 1000.0,
+                aznumeric_cast<double>(resetDirtyHandlersUs) / 1000.0);
+
+            // The header updates after the component editors, the rest of buildUI
+            AZ_Printf(
+                "EntityInspector",
+                "  header: entityIcon=%.2f entityDisplay=%.2f (ms)",
+                toMs(tAfterEntityIcon - tBeforeEntityIcon),
+                toMs(tAfterBuildUI - tAfterEntityIcon));
 
             m_lastBuiltComponentSignature = AZStd::move(currentSignature);
             m_lastBuiltSelectionCount = m_selectedEntityIds.size();

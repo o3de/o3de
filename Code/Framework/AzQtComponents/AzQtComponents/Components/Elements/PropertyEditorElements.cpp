@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Elements/PropertyEditorElements.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QBrush>
 #include <QCheckBox>
@@ -59,6 +60,20 @@ namespace AzQtComponents
                 .m_fill = QBrush(Qt::transparent),                  // BaseStyleSheet.qss:17 (*)
             },
         };
+
+        // ------------------------------------------------------------------------------
+        // Prefab override labels: the inline sheet of AzToolsFramework::Prefab::PrefabOverrideLabelHandler over Text.qss and
+        // BaseStyleSheet.qss
+        //
+        // The name label of a DPE row is the handler's ElidingLabel, whose `overridden` property says whether a prefab instance
+        // overrides the row's property (PrefabOverrideLabelHandler.h:30, set in RefreshUI, which then repolishes the label). With
+        // style sheets the handler gives the label the sheet [overridden="true"] { font-weight: bold }; flattened, it gives none.
+        // ------------------------------------------------------------------------------
+
+        //! The label of an overridden property: bold (the handler's inline sheet) over the QLabel's Open Sans 12px (Text.qss:90-91,
+        //! BaseStyleSheet.qss:19). A label that is not overridden keeps the QLabel's Global element (400, BaseStyleSheet.qss:20).
+        //! TOKENIZE: OverriddenPropertyWeight
+        const TextElement OverriddenPropertyLabel{ .m_name = "Global.Text.OverriddenPropertyLabel", .m_pixelSize = 12, .m_weight = 700 };
 
         // ------------------------------------------------------------------------------
         // Card header parts: Card.qss over Text.qss, CheckBox.qss, PushButton.qss and BaseStyleSheet.qss
@@ -184,6 +199,12 @@ namespace AzQtComponents
             return TextElement::withinClass(widget, "AzToolsFramework::PropertyRowWidget");
         }
 
+        //! `[overridden="true"]`: an attribute selector compares the property's text (a bool reads "true")
+        bool overriddenProperty(const QWidget* widget)
+        {
+            return widget->property("overridden").toString() == QLatin1String("true");
+        }
+
         //! `AzQtComponents--CardHeader W`
         bool inCardHeader(const QWidget* widget)
         {
@@ -223,6 +244,10 @@ namespace AzQtComponents
             [](const QWidget* w) { return TextElement::named(w, "Name") && inPropertyRow(w); }, global);
         BoxElement::registerElement(&PropertyRowDefaultLabel, label,
             [](const QWidget* w) { return TextElement::named(w, "DefaultLabel") && inPropertyRow(w); }, global);
+
+        // The handler's sheet sat on its label only; no other widget has the property
+        TextElement::registerElement(&OverriddenPropertyLabel, &ElidingLabel::staticMetaObject,
+            [](const QWidget* w) { return overriddenProperty(w); });
 
         BoxElement::registerElement(&CardHeaderExpander, checkBox,
             [](const QWidget* w)

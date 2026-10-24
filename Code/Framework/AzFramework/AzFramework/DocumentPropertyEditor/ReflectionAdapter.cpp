@@ -14,6 +14,8 @@
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -22,6 +24,10 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    //! The time all reflection adapters spent in GenerateContents (TakeGenerateContentsMicroseconds). Atomic: contents may be
+    //! generated off the main thread.
+    static AZStd::atomic<AZ::u64> s_generateContentsMicroseconds{ 0 };
+
     struct ReflectionAdapterReflectionImpl : public AZ::Reflection::IReadWrite
     {
         AZ::SerializeContext* m_serializeContext = nullptr;
@@ -1366,8 +1372,14 @@ namespace AZ::DocumentPropertyEditor
         return new LabeledRowDPEExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
+    AZ::u64 ReflectionAdapter::TakeGenerateContentsMicroseconds()
+    {
+        return s_generateContentsMicroseconds.exchange(0);
+    }
+
     Dom::Value ReflectionAdapter::GenerateContents()
     {
+        const AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         m_impl->m_builder.BeginAdapter();
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QueryKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
@@ -1383,7 +1395,11 @@ namespace AZ::DocumentPropertyEditor
             Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
         }
         m_impl->m_builder.EndAdapter();
-        return m_impl->m_builder.FinishAndTakeResult();
+        Dom::Value contents = m_impl->m_builder.FinishAndTakeResult();
+
+        s_generateContentsMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - start).count());
+        return contents;
     }
 
     Dom::Value ReflectionAdapter::HandleMessage(const AdapterMessage& message)

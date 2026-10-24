@@ -244,6 +244,11 @@ namespace AzToolsFramework
         static bool ShouldReplaceCVarEditor();
         static bool ShouldUseWidgetPooling();
 
+        //! Inspector diagnostics (ed_inspectorRefreshDiagnostics): the time HandleReset of every property editor spent building the
+        //! rows from its adapter's contents, and refreshing the new handlers (UpdateDirtyHandlers), since the last call, in
+        //! microseconds. Both restart at 0. The time the adapter takes to generate its contents is in neither.
+        static void TakeResetTimings(AZ::u64& rowsMicroseconds, AZ::u64& dirtyHandlersMicroseconds);
+
         static constexpr const char* GetEnableCVarEditorName()
         {
             return "ed_enableCVarDPE";

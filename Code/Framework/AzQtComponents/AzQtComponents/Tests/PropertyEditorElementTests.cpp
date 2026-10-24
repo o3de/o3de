@@ -640,6 +640,52 @@ namespace AzQtComponents
         }
 
         // ----------------------------------------------------------------------------------
+        // T1b: the name label of a DPE row with a prefab override: PrefabOverrideLabelHandler's inline sheet
+        // ----------------------------------------------------------------------------------
+
+        TEST_F(PropertyEditorElementTests, PrefabOverride_AnOverriddenLabelIsBoldAsTheHandlersSheetMadeItAndPlainAgainAfter)
+        {
+            // The handler's label (PrefabOverrideLabelHandler.cpp): an ElidingLabel whose `overridden` property starts false; with
+            // style sheets it carries the handler's inline sheet, flattened it carries none
+            Twins twins(*this, [](QWidget& root)
+                {
+                    auto* layout = new QHBoxLayout(&root);
+                    auto* label = new ElidingLabel(&root);
+                    label->setText(QStringLiteral("Width"));
+                    label->setProperty("overridden", false);
+                    layout->addWidget(label);
+                }, QSize(300, 40), nullptr);
+            auto* legacyLabel = twins.m_legacy.findChild<ElidingLabel*>();
+            auto* flatLabel = twins.m_flat.findChild<ElidingLabel*>();
+            ASSERT_TRUE(legacyLabel != nullptr && flatLabel != nullptr);
+            legacyLabel->setStyleSheet(QStringLiteral("[overridden=\"true\"] { font-weight: bold }"));
+            QApplication::processEvents();
+
+            // What RefreshUI does when the row's override state changes: set the property, repolish the label
+            const auto setOverridden = [](ElidingLabel* label, bool overridden)
+            {
+                StyleManager::setObjectProperty(label, "overridden", overridden);
+                label->RefreshStyle();
+            };
+
+            for (const bool overridden : { false, true, false, true })
+            {
+                setOverridden(legacyLabel, overridden);
+                setOverridden(flatLabel, overridden);
+                QApplication::processEvents();
+
+                const QFont legacyFont = legacyLabel->font();
+                const QFont flatFont = flatLabel->font();
+                EXPECT_EQ(legacyFont.weight(), overridden ? QFont::Bold : QFont::Normal);
+                EXPECT_EQ(flatFont.weight(), legacyFont.weight()) << "overridden " << overridden;
+                EXPECT_EQ(flatFont.pixelSize(), legacyFont.pixelSize()) << "overridden " << overridden;
+                EXPECT_EQ(flatFont.family(), legacyFont.family()) << "overridden " << overridden;
+                EXPECT_EQ(flatLabel->sizeHint(), legacyLabel->sizeHint()) << "overridden " << overridden;
+            }
+            EXPECT_TRUE(flatLabel->styleSheet().isEmpty());
+        }
+
+        // ----------------------------------------------------------------------------------
         // T2: the parts of a card header: Card.qss
         // ----------------------------------------------------------------------------------
 

@@ -58,6 +58,10 @@ namespace AZ::DocumentPropertyEditor
         //! with a tree refresh if needed.
         static void InvokeChangeNotify(const AZ::Dom::Value& domNode);
 
+        //! Inspector diagnostics (ed_inspectorRefreshDiagnostics): the time every reflection adapter spent in GenerateContents
+        //! since the last call, in microseconds. The count restarts at 0.
+        static AZ::u64 TakeGenerateContentsMicroseconds();
+
         //! Connects a listener to the event fired when a property has been changed.
         //! This can be used to notify the view of changes to the DOM, e.g. notifying an editor of document changes.
         void ConnectPropertyChangeHandler(PropertyChangeEvent::Handler& handler);

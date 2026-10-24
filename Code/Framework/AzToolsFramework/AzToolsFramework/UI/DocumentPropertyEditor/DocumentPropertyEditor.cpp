@@ -21,6 +21,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
@@ -43,6 +44,10 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, DPE will use widget pooling to attempt to improve performance.");
+
+//! The time HandleReset spent in its two widget phases (DocumentPropertyEditor::TakeResetTimings). Main thread only, as widgets are.
+static AZ::u64 s_resetRowsMicroseconds = 0;
+static AZ::u64 s_resetDirtyHandlersMicroseconds = 0;
 
 static constexpr const char* GetHandlerPropertyName()
 {
@@ -1832,6 +1837,7 @@ namespace AzToolsFramework
 
         auto topContents = m_adapter->GetContents();
 
+        const AZStd::chrono::steady_clock::time_point rowsStart = AZStd::chrono::steady_clock::now();
         for (size_t arrayIndex = 0, numIndices = topContents.ArraySize(); arrayIndex < numIndices; ++arrayIndex)
         {
             auto& rowValue = topContents[arrayIndex];
@@ -1845,9 +1851,25 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        const AZStd::chrono::steady_clock::time_point dirtyHandlersStart = AZStd::chrono::steady_clock::now();
         UpdateDirtyHandlers();
+        const AZStd::chrono::steady_clock::time_point dirtyHandlersEnd = AZStd::chrono::steady_clock::now();
+
+        s_resetRowsMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(dirtyHandlersStart - rowsStart).count());
+        s_resetDirtyHandlersMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(dirtyHandlersEnd - dirtyHandlersStart).count());
+
         updateGeometry();
         emit RequestSizeUpdate();
+    }
+
+    void DocumentPropertyEditor::TakeResetTimings(AZ::u64& rowsMicroseconds, AZ::u64& dirtyHandlersMicroseconds)
+    {
+        rowsMicroseconds = s_resetRowsMicroseconds;
+        dirtyHandlersMicroseconds = s_resetDirtyHandlersMicroseconds;
+        s_resetRowsMicroseconds = 0;
+        s_resetDirtyHandlersMicroseconds = 0;
     }
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
