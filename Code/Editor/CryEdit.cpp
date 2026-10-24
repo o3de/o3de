@@ -2802,7 +2802,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 void CCryEditApp::OnNewComponent()
 {
     // The Class Wizard uses a modeless PySide6 window, so a second action
-    // invocation must not execute ClassWizard.py again while one is open.
+    // invocation must not execute ClassWizard.py again while it is open.
     // Guard reentrant calls that can occur while the first window is starting.
     static bool s_isLaunchingClassWizard = false;
     if (s_isLaunchingClassWizard)
