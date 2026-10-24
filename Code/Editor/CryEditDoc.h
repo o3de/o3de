@@ -127,6 +127,8 @@ protected:
 
     void Load(CXmlArchive& xmlAr, const QString& szFilename);
     bool SaveLevel(const QString& filename);
+    //! Write the unsaved nested prefabs of the open level into backupLevelFolder/UnsavedPrefabs, for a backup or hold.
+    void SaveUnsavedNestedPrefabs(const QString& backupLevelFolder);
     bool LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteCryFilePath);
     bool LoadEntitiesFromLevel(const QString& levelPakFile);
     void SerializeFogSettings(CXmlArchive& xmlAr);
