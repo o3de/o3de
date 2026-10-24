@@ -25,14 +25,8 @@ namespace AzToolsFramework
 
     void EntityPresetsIntegrationManager::OnMenuRegistrationHook()
     {
-        // Reading the presets here rather than in the constructor: this hook runs once the
-        // application is up, so the settings registry knows which gems are active and the project
-        // path resolves.
-        //
-        // This is the earliest of the three hooks this class handles (menu registration, then
-        // action registration, then binding), and it is also the first thing that needs the preset
-        // list - there is one submenu per category. Loading here rather than letting the lazy load
-        // inside EntityPresets::All() do it keeps the disk read at a point we chose.
+        // Loaded here rather than in the constructor: by now the active gems and project path are
+        // known. This is the first of the three hooks, and the first to need the preset list.
         EntityPresets::Reload();
 
         EntityPresetMenu::RegisterMenus();

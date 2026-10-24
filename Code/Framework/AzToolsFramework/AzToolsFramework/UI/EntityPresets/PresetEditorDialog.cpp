@@ -43,8 +43,7 @@ namespace AzToolsFramework
     {
 
 
-        //! Names as they appear in Add Component. Unlike property paths, these *can* be
-        //! enumerated, so the component picker is a real list rather than a text box to mistype.
+        //! Component names as listed in Add Component.
         QStringList AllComponentNames()
         {
             AZStd::vector<AZStd::string> names;
@@ -115,8 +114,7 @@ namespace AzToolsFramework
             case EntityPresets::PropertyValue::Type::Bool:
                 return value.m_bool ? QStringLiteral("true") : QStringLiteral("false");
             case EntityPresets::PropertyValue::Type::Double:
-                // Shortest text that reads back as the same double. The default keeps 6 significant
-                // digits, and since Result() parses this text, pressing OK would round the value.
+                // Shortest text that reads back as the same value, so OK does not round it.
                 return QString::number(value.m_double, 'g', QLocale::FloatingPointShortest);
             case EntityPresets::PropertyValue::Type::String:
             case EntityPresets::PropertyValue::Type::AssetPath:
@@ -192,8 +190,7 @@ namespace AzToolsFramework
             row->addWidget(new QLabel(QStringLiteral("Category"), this));
 
             m_categoryCombo = new QComboBox(this);
-            // Editable and seeded with what already exists: picking an existing category groups the
-            // preset with it in the menu, typing a new one starts a new submenu.
+            // Editable: pick an existing category or type a new one.
             m_categoryCombo->setEditable(true);
 
             QStringList categories;
@@ -222,8 +219,7 @@ namespace AzToolsFramework
                 names.append(ToQString(component.m_componentName));
             }
 
-            // Worth saying out loud: these are added to the level entity, not to the new entity, so
-            // they do not appear in the tree below and their absence there is not a mistake.
+            // Level components go on the level entity, so they are listed here rather than in the tree.
             auto* levelLabel = new QLabel(
                 QStringLiteral("Level components: %1").arg(names.join(QStringLiteral(", "))), this);
             levelLabel->setEnabled(false);
@@ -331,8 +327,7 @@ namespace AzToolsFramework
         item->setText(ColumnValue, ValueText(assignment.m_value));
         item->setFlags(item->flags() | Qt::ItemIsEditable);
 
-        // The type lives in a combo rather than free text so it cannot be misspelled - it decides
-        // how the value is converted for the property setter, and a wrong type silently fails.
+        // A combo, so the type cannot be misspelled.
         auto* typeCombo = new QComboBox(m_tree);
         typeCombo->addItems(AllTypeLabels());
         typeCombo->setCurrentText(QString::fromUtf8(TypeLabel(assignment.m_value.m_type)));
@@ -347,8 +342,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        // A property row stands in for its component, so "Add Property" works whether the user
-        // clicked the component or one of its existing properties.
+        // A selected property row stands in for its component.
         return item->parent() != nullptr ? item->parent() : item;
     }
 
@@ -411,8 +405,7 @@ namespace AzToolsFramework
             return;
         }
 
-        // Removing a component takes its properties with it, which is what deleting the parent
-        // row already does - they are its children.
+        // Deleting a component row deletes its property rows with it.
         delete item;
     }
 
@@ -512,8 +505,6 @@ namespace AzToolsFramework
 
             row->addStretch();
 
-            // Re-read everything from disk. Presets are plain JSON, so a gem author editing a
-            // Presets/*.json file wants to see the result now rather than after an editor restart.
             auto* reload = new QPushButton(QStringLiteral("Reload from Disk"), this);
             reload->setToolTip(QStringLiteral(
                 "Re-read presets from this project and from every enabled gem's Presets folder."));
@@ -586,8 +577,7 @@ namespace AzToolsFramework
     {
         const int row = m_list->currentRow();
 
-        // Read-only rows come first - compiled-in, then whatever the enabled gems ship - and
-        // anything past them indexes into the user list.
+        // Rows: compiled-in, then gem, then user presets.
         const int readOnlyCount = aznumeric_cast<int>(EntityPresets::BuiltIn().size()) +
             aznumeric_cast<int>(EntityPresets::FromGems().size());
 
@@ -603,8 +593,7 @@ namespace AzToolsFramework
     QString EntityPresetManagerDialog::ClashingPreset(
         const EntityPresets::Preset& candidate, const int ignoreUserIndex) const
     {
-        // Compared by menu identifier rather than by name, because that is what the menu tells
-        // presets apart by - and it ignores punctuation and spacing.
+        // Compared by menu identifier, which ignores punctuation and spacing.
         const AZStd::string identifier = EntityPresetMenu::ActionIdentifierFor(candidate);
 
         const auto describe = [](const EntityPresets::Preset& preset)
@@ -662,8 +651,7 @@ namespace AzToolsFramework
 
         m_editButton->setEnabled(userSelected);
         m_removeButton->setEnabled(userSelected);
-        // Duplicating a shipped preset is the supported way to start from one, so this stays enabled for
-        // any selection.
+        // Any preset can be duplicated, including read-only ones.
         m_duplicateButton->setEnabled(anySelected);
     }
 
@@ -732,8 +720,7 @@ namespace AzToolsFramework
             source = m_userPresets[aznumeric_cast<size_t>(row - builtInCount - gemCount)];
         }
 
-        // The copy is the user's, wherever it came from - editable, saved to the project, and no
-        // longer tied to the gem that may have supplied the original.
+        // The copy is an ordinary user preset.
         source.m_readOnly = false;
         source.m_sourceGem.clear();
         source.m_name = UniqueCopyName(source);
@@ -765,8 +752,6 @@ namespace AzToolsFramework
 
     void EntityPresetManagerDialog::OnReload()
     {
-        // Reloading replaces the working copy, so anything unsaved goes with it. Cheaper to ask
-        // than to track a dirty flag, and the answer is obvious in the moment.
         if (QMessageBox::question(
                 this, QStringLiteral("Reload Presets"),
                 QStringLiteral("Re-read presets from disk? Any unsaved changes here will be lost.")) !=
@@ -779,8 +764,6 @@ namespace AzToolsFramework
         m_userPresets = EntityPresets::User();
         Populate();
 
-        // Rebuild the menus too - a preset that appeared on disk should be usable straight away,
-        // not just visible in this list.
         EntityPresetMenu::Refresh();
     }
 
@@ -794,8 +777,6 @@ namespace AzToolsFramework
             return;
         }
 
-        // Rebuild the actions and menus so the change shows up on the next right click rather than
-        // after a restart.
         EntityPresetMenu::Refresh();
 
         accept();

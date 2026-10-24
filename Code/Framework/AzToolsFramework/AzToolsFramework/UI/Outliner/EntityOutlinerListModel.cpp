@@ -2207,10 +2207,7 @@ namespace AzToolsFramework
     {
         QStyledItemDelegate::setEditorData(editor, index);
 
-        // Renaming an entity nearly always means replacing the name outright rather than amending
-        // it - most of all one just built from a preset, whose name describes the preset and not
-        // this particular entity. Qt leaves the caret at the end with nothing selected, so without
-        // this every rename starts with a Ctrl+A.
+        // Select the whole name, since a rename usually replaces it.
         if (auto* lineEdit = qobject_cast<QLineEdit*>(editor))
         {
             lineEdit->selectAll();

@@ -43,9 +43,7 @@ namespace Terrain
         void Deactivate() override;
 
         // ActionManagerRegistrationNotificationBus overrides ...
-        // Puts the Terrain entity preset into the editor's "Create Preset" menu. That preset is
-        // hand-written rather than data because it touches the level entity and builds a
-        // parent/child pair that refer to each other - see TerrainPreset.
+        // Adds the Terrain preset to the editor's "Create Preset" menu; see TerrainPreset.
         void OnMenuRegistrationHook() override;
         void OnActionRegistrationHook() override;
         void OnMenuBindingHook() override;

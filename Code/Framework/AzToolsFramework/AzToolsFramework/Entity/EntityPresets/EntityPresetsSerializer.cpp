@@ -22,7 +22,6 @@ namespace AzToolsFramework
     {
         namespace
         {
-            //! Spelled in lower case, and short, because these appear in a file people edit.
             constexpr AZStd::string_view BoolTypeName = "bool";
             constexpr AZStd::string_view IntTypeName = "int";
             constexpr AZStd::string_view DoubleTypeName = "double";
@@ -48,8 +47,7 @@ namespace AzToolsFramework
                     return PropertyValue::Type::AssetPath;
                 }
 
-                // Int is the default for anything unrecognised, matching the member's own default.
-                // A preset with a misspelled type is better read as an integer than dropped.
+                // Unknown names read as Int, the member's default.
                 return PropertyValue::Type::Int;
             }
 
@@ -71,8 +69,7 @@ namespace AzToolsFramework
                 }
             }
 
-            //! Add a string member, copying the text - rapidjson does not own string literals passed
-            //! to it by reference, and these outlive the call.
+            //! Add a string member, copying both name and text into the document.
             void AddStringMember(
                 rapidjson::Value& object,
                 const AZStd::string_view name,
@@ -111,8 +108,7 @@ namespace AzToolsFramework
 
             auto* assignment = reinterpret_cast<PropertyAssignment*>(outputValue);
 
-            // Read leniently. A hand-edited file with a member missing should lose that member, not
-            // the whole preset, and the caller drops assignments that end up with no path.
+            // Lenient: a missing member loses that member, not the whole preset.
             if (const auto path = inputValue.FindMember("path");
                 path != inputValue.MemberEnd() && path->value.IsString())
             {
@@ -177,8 +173,7 @@ namespace AzToolsFramework
                         JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Expected a numeric 'value'.");
                 }
 
-                // Through double when the number is not stored as an integer, so a value written as
-                // 5.0 by a hand-edit or another tool still reads as 5 rather than as zero.
+                // Accept 5.0 as well as 5.
                 value.m_int = raw.IsInt64() ? raw.GetInt64() : aznumeric_cast<AZ::s64>(raw.GetDouble());
                 break;
             }
@@ -206,9 +201,7 @@ namespace AzToolsFramework
 
             auto& allocator = context.GetJsonAllocator();
 
-            // Every member is written unconditionally, defaults included. Skipping defaults is the
-            // usual convention, but this file is read by people: an assignment missing its type
-            // because the type happened to be the default one would be confusing to edit.
+            // Every member is written, defaults included, so the file reads fully when edited by hand.
             outputValue.SetObject();
 
             AddStringMember(outputValue, "path", assignment->m_path, allocator);

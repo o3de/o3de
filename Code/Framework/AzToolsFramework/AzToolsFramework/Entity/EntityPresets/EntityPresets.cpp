@@ -44,21 +44,15 @@ namespace AzToolsFramework
         namespace
         {
             constexpr const char* PresetsFileName = "EntityPresets.json";
-            //! Registry/ is a standard project folder that is normally committed, which is the
-            //! point - presets should travel with the project.
+            //! Inside the project, so user presets can be committed with it.
             constexpr const char* PresetsFolder = "Registry";
 
-            //! Where a gem keeps the presets it ships. Its own folder rather than Registry/,
-            //! because these are content the gem author authored, not machine-written settings.
+            //! Folder at a gem's root that holds the presets it ships.
             constexpr const char* GemPresetsFolder = "Presets";
 
-            //! Only files named <something>.entitypresets.json are read. A bare *.json filter
-            //! would claim every JSON file a gem happens to keep in that folder, so the suffix is
-            //! what makes the folder shareable rather than owned by this feature.
+            //! The suffix lets a gem keep other JSON files in the same folder.
             constexpr const char* GemPresetsFileFilter = "*.entitypresets.json";
 
-            //! Cached so menus and the panel are looking at the same list, and so the file is not
-            //! re-read every time the context menu opens.
             AZStd::vector<Preset>& UserStorage()
             {
                 static AZStd::vector<Preset> presets;
@@ -105,12 +99,8 @@ namespace AzToolsFramework
 
             // -- File IO ---------------------------------------------------------------
 
-            //! Read one presets file.
-            //!
-            //! A missing file is not an error - a project that has never had a preset saved simply
-            //! has none - so it is reported separately from a file that exists but will not parse.
-            //! @return False only when the file is there and unreadable, which is worth telling the
-            //! user about because their presets are not going to appear.
+            //! Read one presets file. A missing file is not an error.
+            //! @return False only when the file exists but cannot be read.
             bool ReadPresetFile(const AZStd::string& path, PresetFile& out)
             {
                 auto* fileIO = AZ::IO::FileIOBase::GetInstance();
@@ -131,10 +121,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            //! Read every *.entitypresets.json under a gem's Presets folder.
-            //!
-            //! One file may hold many presets, in the same shape as the project's own file, so a gem
-            //! can either group them or keep one per file - whichever suits it.
+            //! Read every *.entitypresets.json in a gem's Presets folder.
             void LoadPresetsFromFolder(
                 const AZStd::string& folderPath, const AZStd::string& gemName, AZStd::vector<Preset>& out)
             {
@@ -158,8 +145,6 @@ namespace AzToolsFramework
                                     continue;
                                 }
 
-                                // Marked as not-editable and tagged with its origin. Both matter in
-                                // the manager: one greys out Edit, the other explains why.
                                 preset.m_readOnly = true;
                                 preset.m_sourceGem = gemName;
                                 out.push_back(AZStd::move(preset));
@@ -172,8 +157,7 @@ namespace AzToolsFramework
 
             // -- Asset lookup ----------------------------------------------------------
 
-            //! Everything after the last separator, lowercased - what the file is called, with no
-            //! regard for where it lives.
+            //! The lowercased file name of a path.
             AZStd::string FileNameOf(AZStd::string path)
             {
                 const size_t separator = path.find_last_of("/\\");
@@ -186,20 +170,11 @@ namespace AzToolsFramework
                 return path;
             }
 
-            //! Find a product asset by file name, for when its path no longer resolves.
+            //! Find a product asset by file name, for when its path no longer resolves (for example
+            //! after an engine folder was renamed).
             //!
-            //! Engine assets get moved and renamed between versions - "objects/groudplane/" became
-            //! "objects/groundplane/" when that long-standing typo was fixed - and a preset that
-            //! names one by path breaks silently when they do: the property is left at its default
-            //! and you get an entity with no model on it. Searching the catalogue by file name
-            //! recovers from that without the preset having to know what moved where.
-            //!
-            //! Only a unique match is accepted. Several products can share a file name, and picking
-            //! one arbitrarily would put the wrong model on the entity - worse than putting none on
-            //! it, because it looks like it worked.
-            //!
-            //! Cached including misses, since the scan walks the whole catalogue and a preset that
-            //! cannot be resolved once will not resolve on the next click either.
+            //! Only a unique match is accepted, since picking one of several would silently put the
+            //! wrong asset on the entity. Results are cached, misses included.
             AZ::Data::AssetId FindAssetByFileName(const AZStd::string& path)
             {
                 static AZStd::unordered_map<AZStd::string, AZ::Data::AssetId> cache;
@@ -236,8 +211,7 @@ namespace AzToolsFramework
 
             // -- Creation helpers ------------------------------------------------------
 
-            //! Component display name to type id. Worth caching: the lookup walks every registered
-            //! component, and building a rig clicks through several presets in a row.
+            //! Component display name to type id, cached.
             AZ::Uuid FindComponentTypeId(const AZStd::string& componentName)
             {
                 static AZStd::unordered_map<AZStd::string, AZ::Uuid> cache;
@@ -260,11 +234,7 @@ namespace AzToolsFramework
                 return typeId;
             }
 
-            //! Set one property, and if that fails say what the component actually offers.
-            //!
-            //! Property paths are spelled by the Edit Context and do drift between engine
-            //! versions, so a silent failure here is the difference between "my preset is broken"
-            //! and "the path is now Controller|Configuration|Mesh Asset".
+            //! Set one property. On failure, log the paths the component does offer.
             void ApplyProperty(const AZ::EntityComponentIdPair& component, const PropertyAssignment& assignment)
             {
                 bool resolved = true;
@@ -272,8 +242,7 @@ namespace AzToolsFramework
 
                 if (!resolved)
                 {
-                    // Asset not in the catalogue. Leaving the property at its default is better
-                    // than writing a null asset over it.
+                    // Asset not in the catalog: keep the property's default rather than writing a null asset.
                     return;
                 }
 
@@ -300,9 +269,8 @@ namespace AzToolsFramework
                     AZ_Warning("EntityPresets", false, "    %s", path.c_str());
                 }
             }
-            //! Level components are registered against the Level entity type rather than Game, so
-            //! the ordinary lookup does not find them. Game is tried too, because a few components
-            //! are offered for both.
+            //! Like FindComponentTypeId, but tries the Level entity type first, since level
+            //! components are not registered as Game components.
             AZ::Uuid FindLevelComponentTypeId(const AZStd::string& componentName)
             {
                 static AZStd::unordered_map<AZStd::string, AZ::Uuid> cache;
@@ -332,7 +300,7 @@ namespace AzToolsFramework
                 return typeId;
             }
 
-            //! Put the preset's level components on the level entity, skipping any already there.
+            //! Add the preset's level components to the level entity, skipping any already there.
             void EnsureLevelComponents(const Preset& preset)
             {
                 if (preset.m_levelComponents.empty())
@@ -401,11 +369,7 @@ namespace AzToolsFramework
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                // PropertyValue and PropertyAssignment are registered without their fields on
-                // purpose. JsonPropertyAssignmentSerializer writes both of them itself, as one flat
-                // object, and reflecting the fields as well would only offer a second, conflicting
-                // description of the same data. The types still have to be known so that the
-                // containers above them can be described.
+                // No fields: JsonPropertyAssignmentSerializer reads and writes both types itself.
                 serializeContext->Class<PropertyValue>()->Version(1);
                 serializeContext->Class<PropertyAssignment>()->Version(1);
 
@@ -414,7 +378,7 @@ namespace AzToolsFramework
                     ->Field("component", &ComponentSpec::m_componentName)
                     ->Field("properties", &ComponentSpec::m_properties);
 
-                // m_readOnly and m_sourceGem are absent by design - see the header.
+                // m_readOnly and m_sourceGem are runtime-only.
                 serializeContext->Class<Preset>()
                     ->Version(1)
                     ->Field("name", &Preset::m_name)
@@ -446,9 +410,7 @@ namespace AzToolsFramework
                 return AZStd::any(m_string);
             case Type::AssetPath:
                 {
-                    // Several spellings are tried because the product path convention changed:
-                    // models used to be "name.azmodel" and are now "name.fbx.azmodel", and a
-                    // preset written against either should keep working.
+                    // Models used to be "name.azmodel" and are now "name.fbx.azmodel"; try both.
                     const AZStd::string candidates[] = {
                         m_string,
                         [this]()
@@ -476,9 +438,7 @@ namespace AzToolsFramework
                         }
                     }
 
-                    // The path did not resolve in any of its spellings. Before giving up, look the
-                    // file name up in the catalogue - it is almost always the folder that moved,
-                    // not the asset that vanished.
+                    // Fall back to the file name, in case the folder moved.
                     if (const AZ::Data::AssetId byFileName = FindAssetByFileName(m_string);
                         byFileName.IsValid())
                     {
@@ -503,17 +463,8 @@ namespace AzToolsFramework
                 }
             case Type::Int:
             default:
-                // As s64, because that is what PropertyTreeEditor::HandleTypeConversion accepts as
-                // a *source* type. It takes only double and s64 and converts down to whatever the
-                // property really is - u32, s32, u16, u8 and so on. Those narrower types appear
-                // only in its destination list.
-                //
-                // Handing it an s32 therefore works by accident and only when the property is
-                // literally reflected as s32: fromType == toType short-circuits and no conversion
-                // is attempted. Anything else fails, including every enum. Light type is
-                // `enum class LightType : uint8_t`, so it needs the conversion and an s32 silently
-                // loses. PostFX's layer category is a plain int, which is why that one appeared to
-                // work and made the s32 look correct.
+                // As s64: PropertyTreeEditor only converts from s64 and double, so a narrower type
+                // reaches only a property of exactly that type and fails for enums.
                 return AZStd::any(m_int);
             }
         }
@@ -564,9 +515,7 @@ namespace AzToolsFramework
             UserStorage().clear();
             GemStorage().clear();
 
-            // VisitActiveGems hands back name and path for each *enabled* gem, so a gem that is
-            // registered but switched off contributes nothing - which is what you would expect,
-            // since its components would not be there to build with either.
+            // VisitActiveGems only visits enabled gems.
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
                 AZ::SettingsRegistryMergeUtils::VisitActiveGems(
@@ -614,8 +563,6 @@ namespace AzToolsFramework
 
             if (auto* fileIO = AZ::IO::FileIOBase::GetInstance())
             {
-                // StringAsPosix rather than AsPosix: ParentPath hands back a PathView, which only
-                // offers the explicitly-named conversions.
                 const AZStd::string folder = AZ::IO::Path(path).ParentPath().StringAsPosix();
                 fileIO->CreatePath(folder.c_str());
             }
@@ -623,15 +570,11 @@ namespace AzToolsFramework
             PresetFile file;
             file.m_presets = presets;
 
-            // Written with defaults kept, so every preset is spelled out in full. The file is meant
-            // to be read, diffed and hand-edited, and a half-written entry that relies on knowing
-            // what the defaults are is worse to work with than a verbose one.
+            // Defaults are kept so the file is complete and easy to edit by hand.
             AZ::JsonSerializerSettings settings;
             settings.m_keepDefaults = true;
 
-            // Typed rather than a bare nullptr: the default object is the same template parameter
-            // as the value being written, so a literal nullptr gives the compiler nothing to
-            // deduce ObjectType from.
+            // Typed so SaveObjectToFile can deduce its template parameter.
             const PresetFile* noDefault = nullptr;
 
             const auto saved = AZ::JsonSerializationUtils::SaveObjectToFile(&file, path, noDefault, &settings);
@@ -655,21 +598,17 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::BroadcastResult(
                 selected, &ToolsApplicationRequests::GetSelectedEntities);
 
-            // Exactly one selected entity becomes the parent. With none, or several, there is no
-            // unambiguous parent to pick, so it goes to the root.
+            // Parent to the selection only when it is unambiguous.
             const AZ::EntityId parentId = selected.size() == 1 ? selected.front() : AZ::EntityId();
 
             ToolsApplicationRequestBus::Broadcast(
                 &ToolsApplicationRequests::BeginUndoBatch,
                 (AZStd::string("Create Preset: ") + preset.m_name).c_str());
 
-            // Before the entity, because a level singleton is a prerequisite for it rather than a
-            // part of it - and inside the undo batch, so one Ctrl+Z takes both back.
+            // Inside the batch, so one undo removes these too.
             EnsureLevelComponents(preset);
 
-            // Put it where the user is looking rather than at the origin. The interaction
-            // position accounts for the context menu and cursor, so a preset picked from a right
-            // click lands under the cursor; it falls back to the viewport centre otherwise.
+            // Under the cursor when opened from a context menu, otherwise the viewport centre.
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             EditorRequestBus::BroadcastResult(
                 position, &EditorRequestBus::Events::GetWorldPositionAtViewportInteraction);
@@ -718,15 +657,8 @@ namespace AzToolsFramework
                     }
                 }
 
-                
-                // A component whose required services are not met is added *pending* rather than
-                // rejected: the entity looks right in the outliner, the component sits greyed out
-                // in the inspector, and creation reports success. Nothing else reports it, which
-                // is how presets missing a prerequisite went unnoticed for as long as they did.
-                //
-                // Warn rather than repair. Which component satisfies a service is a judgement -
-                // several shapes provide ShapeService - so guessing would sometimes assemble
-                // something the preset author did not mean.
+                // A component with unmet required services is added pending, which otherwise goes
+                // unnoticed. Warn rather than guess which component would satisfy it.
                 AZ::Entity::ComponentArrayType pending;
                 EditorPendingCompositionRequestBus::Event(
                     entityId, &EditorPendingCompositionRequests::GetPendingComponents, pending);
@@ -748,13 +680,7 @@ namespace AzToolsFramework
 
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::EndUndoBatch);
 
-            // Open the outliner's rename box on the new entity. A preset's name says what the
-            // entity is made of, hardly ever what this particular one is for, so it gets renamed
-            // almost every time - this saves hunting it down in the outliner and double clicking.
-            //
-            // Deliberately after the batch closes: renaming is its own undoable step, and starting
-            // it inside the batch would fold the typed name into the creation, so one Ctrl+Z would
-            // undo both and a second would be needed to get back to before the preset.
+            // Start renaming the new entity. After the batch, so the rename is its own undo step.
             if (entityId.IsValid())
             {
                 EntityOutlinerRequestBus::Broadcast(

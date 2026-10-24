@@ -36,51 +36,30 @@ namespace Terrain
             using EntityType = AzToolsFramework::EditorComponentAPIRequests::EntityType;
 
             // -- The shape of the terrain this builds ----------------------------------
-            //
-            // A 1km square starting at the origin, 100m of vertical range, with gentle noise for
-            // height. Big enough to be a landscape rather than a test patch, small enough that the
-            // heightfield does not take a noticeable moment to build.
+            // A 1km square at the origin with 100m of height range and gentle noise.
 
             constexpr float TerrainSizeMetres = 1024.0f;
             constexpr float TerrainHeightMetres = 100.0f;
 
-            //! Vertical extent of the terrain *world*, which is a separate thing from the box: the
-            //! box says where terrain exists, this says what range of heights can be represented.
+            //! Height range of the terrain world (Terrain World), separate from the spawner's box.
             constexpr float WorldMinHeight = 0.0f;
             constexpr float WorldMaxHeight = 1024.0f;
 
-            //! Metres between height samples. 1 is the engine default and a reasonable balance;
-            //! lower is more detail and more memory.
+            //! Metres between height samples; 1 is the engine default.
             constexpr float HeightQueryResolution = 1.0f;
 
-            //! Noise frequency. Low values give broad rolling hills; high values give a rough
-            //! surface that reads as noise rather than terrain.
+            //! Noise frequency. Low values give broad rolling hills.
             constexpr float NoiseFrequency = 0.01f;
 
-            //! Side length of the vegetation area. Smaller than the terrain on purpose - planting
-            //! a full square kilometre on first click would take a noticeable while.
+            //! Side length of the vegetation area, kept small so planting is quick.
             constexpr float VegetationAreaMetres = 128.0f;
 
-            //! Snap vegetation instances to sector centres rather than corners.
-            //!
-            //! Written as a bare number because the enum belongs to the Vegetation gem, which this
-            //! file deliberately does not depend on. Vegetation::SnapMode is
-            //! `enum class SnapMode : AZ::u8 { Corner = 0, Center }`.
+            //! Vegetation::SnapMode::Center, as a number to avoid depending on the Vegetation gem.
             constexpr AZ::s64 SectorPointSnapModeCentre = 1;
 
             // -- Property values -------------------------------------------------------
-            //
-            // PropertyTreeEditor::HandleTypeConversion accepts exactly two source types - double
-            // and s64 - and converts down to whatever the property really is: float, u32, s32,
-            // u16, u8 and so on. Those narrower types appear only in its *destination* list.
-            //
-            // So an any holding a float reaches a float property, but only because the types match
-            // exactly and no conversion is attempted; against a double or an enum property it
-            // fails and the value is silently dropped. The same trap cost the entity presets their
-            // light type, which is `enum class LightType : uint8_t` and was being handed an s32.
-            //
-            // Going through these two helpers means no call site has to know what the property's
-            // real type is, which is just as well - it is not visible from here, and it changes.
+            // PropertyTreeEditor only converts from double and s64, so values go through these two types
+            // whatever the property's real type is.
 
             AZStd::any RealValue(const double value)
             {
@@ -94,12 +73,8 @@ namespace Terrain
 
             // -- Component plumbing ----------------------------------------------------
 
-            //! Resolve a component by display name, trying each category in turn.
-            //!
-            //! The category matters and is easy to get wrong. Components declare which Add
-            //! Component menu they belong to, and level components such as Terrain World appear
-            //! *only* under Level - asking for them as Game components returns nothing at all,
-            //! which looks exactly like the owning gem being disabled.
+            //! Resolve a component by display name, trying each entity type in turn. Level components such
+            //! as Terrain World are only registered under Level.
             AZ::Uuid FindComponentTypeId(const char* componentName, const AZStd::vector<EntityType>& categories)
             {
                 for (const EntityType category : categories)
@@ -118,8 +93,7 @@ namespace Terrain
                 return AZ::Uuid::CreateNull();
             }
 
-            //! Components that go on an ordinary entity. Level is tried as a fallback because the
-            //! categories are advisory and a component may be reachable from either.
+            //! Game first, with Level as a fallback.
             AZ::Uuid FindEntityComponentTypeId(const char* componentName)
             {
                 return FindComponentTypeId(componentName, { EntityType::Game, EntityType::Level });
@@ -165,12 +139,7 @@ namespace Terrain
                 return AddComponentOfType(entityId, componentName, FindEntityComponentTypeId(componentName));
             }
 
-            //! Add a component unless the entity already has one.
-            //!
-            //! Needed for components that pull each other in. The two heightfield colliders depend
-            //! on one another and Landscape Canvas adds them as a pair, so depending on how the
-            //! entity was built one may already be there - and asking for it again just logs a
-            //! failure that means nothing.
+            //! Add a component unless the entity already has one (the heightfield colliders pull each other in).
             void AddComponentIfMissing(const AZ::EntityId entityId, const char* componentName)
             {
                 const AZ::Uuid typeId = FindEntityComponentTypeId(componentName);
@@ -216,11 +185,7 @@ namespace Terrain
                 return outcome.IsSuccess();
             }
 
-            //! Append an entity id to a container property.
-            //!
-            //! SetComponentProperty cannot do this - it replaces a value, and a gradient list is a
-            //! *container* of entity ids. Containers are only reachable through a
-            //! PropertyTreeEditor, which has to be built for the component first.
+            //! Append an entity id to a container property, which SetComponentProperty cannot do.
             bool AppendToContainer(
                 const AZ::EntityComponentIdPair& component, const char* propertyPath, const AZ::EntityId value)
             {
@@ -251,10 +216,7 @@ namespace Terrain
                     return true;
                 }
 
-                // Print the component's real property paths. Container schemas differ between
-                // components that look alike, and a path that is merely *wrong* fails in exactly
-                // the same way as one that is unsupported - this is the difference between a
-                // one-line fix and guesswork.
+                // List the component's real property paths to help fix a wrong one.
                 AZ_Warning(
                     "EntityPresets", false, "Terrain preset could not fill '%s': %s. This component offers:",
                     propertyPath, appendOutcome.GetError().c_str());
@@ -272,9 +234,8 @@ namespace Terrain
                 return false;
             }
 
-            //! Toggle a component off and on so it re-reads a container it was given after it was
-            //! added. Without this the gradient list is populated but not acted on, and the
-            //! terrain stays invisible - which looks exactly like the preset having failed.
+            //! Re-enable a component so it picks up a container filled after it was added; otherwise the
+            //! gradient list is ignored and the terrain stays invisible.
             void ForceRefresh(const AZ::EntityComponentIdPair& component)
             {
                 if (!component.GetEntityId().IsValid())
@@ -308,7 +269,7 @@ namespace Terrain
                 return entityId;
             }
 
-            //! The variant's name as the menu spells it, so a dialog names what was clicked.
+            //! The variant's name as the menu shows it.
             const char* VariantName(const Variant variant)
             {
                 switch (variant)
@@ -359,8 +320,7 @@ namespace Terrain
                 return AddComponentOfType(levelEntityId, componentName, typeId);
             }
 
-            //! Terrain will not render at all without these, and they are easy to forget because
-            //! they live on the level rather than on anything you selected.
+            //! Terrain does not render without these level components.
             void EnsureTerrainLevelComponents()
             {
                 const AZ::EntityId levelEntityId = LevelEntityId();
@@ -372,8 +332,7 @@ namespace Terrain
                     return;
                 }
 
-                // The world extents are configured here, on the Terrain World component; the box on
-                // the spawner only decides *where* terrain exists within them.
+                // The height range lives on Terrain World; the spawner's box only sets where terrain exists.
                 if (const AZ::EntityComponentIdPair world = AddLevelComponent(levelEntityId, "Terrain World");
                     world.GetEntityId().IsValid())
                 {
@@ -398,23 +357,15 @@ namespace Terrain
                         AddLevelComponent(levelEntityId, "Vegetation System Settings");
                     settings.GetEntityId().IsValid())
                 {
-                    // Snap instances to sector centres. Without it, instance positions shift as the
-                    // sector grid moves and counts drift - the automated tests set this for exactly
-                    // that reason, and it makes hand-checking a planted area far less confusing.
+                    // Snap to sector centres so instance positions stay stable.
                     SetProperty(
                         settings, "Configuration|Area System Settings|Sector Point Snap Mode",
                         IntegerValue(SectorPointSnapModeCentre));
                 }
             }
 
-            //! The noise that drives terrain height.
-            //!
-            //! FastNoise Gradient is what this setup is tuned around, but it comes from the
-            //! FastNoise gem, which is not always enabled. Perlin Noise Gradient is part of
-            //! GradientSignal - which the Gradient Transform Modifier alongside it already requires,
-            //! so if the rest of the height provider built at all, Perlin is present. Both expose
-            //! Configuration|Frequency and both default to 1.0, so the configured value carries over
-            //! unchanged; the resulting shape differs in character but is still terrain.
+            //! The noise that drives terrain height: FastNoise Gradient if its gem is enabled, otherwise
+            //! Perlin Noise Gradient from GradientSignal, which has the same Frequency property.
             AZ::EntityComponentIdPair AddNoiseGradient(const AZ::EntityId entityId)
             {
                 const char* const noiseComponents[] = { "FastNoise Gradient", "Perlin Noise Gradient" };
@@ -427,8 +378,6 @@ namespace Terrain
                         continue;
                     }
 
-                    // Pointer comparison against the first element, not a string compare - these are
-                    // the same array entries, so identity is the question being asked.
                     AZ_Warning(
                         "EntityPresets", componentName == noiseComponents[0],
                         "FastNoise Gradient is not available, so the terrain's height is coming from "
@@ -464,8 +413,7 @@ namespace Terrain
                     AZStd::any(AZ::Vector3(
                         VegetationAreaMetres, VegetationAreaMetres, TerrainHeightMetres)));
 
-                // The asset list is deliberately left empty. There is no sensible default plant to
-                // pick, and guessing at an engine asset path would break the moment it moved.
+                // The asset list is left empty; there is no sensible default plant.
                 AZ_TracePrintf(
                     "EntityPresets",
                     "Vegetation area created. Add a mesh or prefab to its Vegetation Asset List to see "
@@ -481,12 +429,7 @@ namespace Terrain
 
             using AzToolsFramework::EntityPresets::RequiredComponent;
 
-            // Everything this builds, and the gem each piece comes from, split by whether the
-            // terrain is still worth having without it. The old check covered Terrain and
-            // Vegetation and let the other four gems fail silently one component at a time.
-            //
-            // Components are asked about rather than gems: a gem can be enabled and still have
-            // registered nothing usable, and it is the components that decide whether this builds.
+            // Required components, with the gem each comes from. Without these nothing is built.
             const AZStd::vector<RequiredComponent> core = {
                 { "Terrain Layer Spawner", "Terrain" },
                 { "Terrain Height Gradient List", "Terrain" },
@@ -509,9 +452,7 @@ namespace Terrain
                 return AZ::EntityId();
             }
 
-            // Layers on top. Each is dropped on its own, and the user is asked once about all of
-            // them together rather than told afterwards - it is their call whether a terrain with
-            // no collision is what they wanted.
+            // Optional layers. Missing ones are dropped after asking the user once.
             AZStd::vector<RequiredComponent> reduced;
             AZStd::vector<AZStd::string> lost;
 
@@ -587,19 +528,15 @@ namespace Terrain
             }
 
             // -- The graph root, for the Landscape Canvas variants ---------------------
-            //
-            // A Landscape Canvas "graph" is not a file - it is an entity carrying the Landscape
-            // Canvas component, whose descendants' components become the nodes. So making the
-            // terrain openable as a graph is a matter of parenting it under such an entity, and
-            // needs no dependency on the Landscape Canvas gem at all.
+            // A Landscape Canvas graph is an entity with the Landscape Canvas component; its descendants
+            // are the nodes. Parenting the terrain under one makes it open as a graph.
             AZ::EntityId graphRootId;
             if (wantsLandscapeCanvas)
             {
                 graphRootId = CreateEntity("Landscape Terrain", AZ::EntityId());
                 if (graphRootId.IsValid())
                 {
-                    // Availability was settled in the preflight, so a failure here is something
-                    // else - worth saying, but not worth blaming the gem for.
+                    // Availability was checked up front, so a failure here has another cause.
                     const AZ::EntityComponentIdPair canvas = AddComponent(graphRootId, "Landscape Canvas");
 
                     AZ_Warning(
@@ -624,10 +561,8 @@ namespace Terrain
             const AZ::EntityComponentIdPair heightGradientList =
                 AddComponent(spawnerId, "Terrain Height Gradient List");
 
-            // Both halves of the collider. Terrain Physics Heightfield Collider turns the terrain
-            // into heightfield data; PhysX Heightfield Collider is what actually puts that data
-            // into the physics scene. One without the other is terrain you fall straight through -
-            // so it is both or neither, and the preflight already settled which.
+            // Both colliders or neither: Terrain Physics Heightfield Collider provides the heightfield,
+            // PhysX Heightfield Collider puts it in the physics scene.
             if (wantsPhysics)
             {
                 AddComponentIfMissing(spawnerId, "Terrain Physics Heightfield Collider");
@@ -639,9 +574,7 @@ namespace Terrain
                 AZStd::any(AZ::Vector3(TerrainSizeMetres, TerrainSizeMetres, TerrainHeightMetres)));
 
             // -- The height provider: noise, shaped to the spawner's box ---------------
-            //
-            // A child of the spawner so the two travel together, and so the setup reads as one
-            // thing in the outliner rather than two unrelated entities.
+            // A child of the spawner, so the two move together.
             const AZ::EntityId heightProviderId = CreateEntity("Terrain Height", spawnerId);
             if (heightProviderId.IsValid())
             {
@@ -649,14 +582,11 @@ namespace Terrain
                 AddComponent(heightProviderId, "Gradient Transform Modifier");
                 const AZ::EntityComponentIdPair noise = AddNoiseGradient(heightProviderId);
 
-                // Point the gradient's shape back at the spawner's box, so the noise is sampled
-                // across exactly the region the terrain covers.
+                // Sample the noise over the spawner's box...
                 SetProperty(shapeReference, "Configuration|Shape Entity Id", AZStd::any(spawnerId));
                 SetProperty(noise, "Configuration|Frequency", RealValue(NoiseFrequency));
 
-                // ...and point the spawner's lists at the gradient. This is the connection that
-                // makes terrain actually appear; without it there is a region with no data in it,
-                // which renders as nothing.
+                // ...and feed it to the spawner. Without this the terrain has no height data and renders nothing.
                 AppendToContainer(heightGradientList, "Configuration|Gradient Entities", heightProviderId);
                 ForceRefresh(heightGradientList);
             }
@@ -677,15 +607,11 @@ namespace Terrain
         }
 
         // -- Editor menu registration --------------------------------
-        //
-        // Terrain reaches the "Create Preset" menu the way any gem would: it registers its own
-        // actions and its own submenu, then attaches that submenu to the identifier
-        // AzToolsFramework publishes. Nothing about it is special-cased on the framework side.
+        // Registered like any gem-supplied entry, against the identifiers AzToolsFramework publishes.
 
         namespace
         {
-            //! Kept identical to the identifiers this used when it lived in AzToolsFramework, so a
-            //! hotkey a user had already bound to one of these survives the move.
+            //! Unchanged from when this lived in AzToolsFramework, so existing hotkeys still work.
             constexpr AZStd::string_view TerrainMenuIdentifier = "o3de.menu.editor.entityPresets.terrain";
 
             struct TerrainVariantAction
@@ -696,8 +622,7 @@ namespace Terrain
                 Variant m_variant;
             };
 
-            //! Ordered as a progression - each builds on the one above - so the list reads as
-            //! "how much do I want" rather than as three unrelated options.
+            //! Ordered from least to most.
             constexpr TerrainVariantAction TerrainVariants[] = {
                 { "o3de.action.editor.entityPreset.terrain.simple", "Simple Terrain",
                   "A terrain region with noise driving its height. The quickest way to have ground.",
@@ -768,9 +693,7 @@ namespace Terrain
                 menuManager->AddActionToMenu(TerrainMenuIdentifier, terrain.m_identifier, sortKey);
             }
 
-            // Safe without any ordering arrangement: the root menu is registered during the menu
-            // registration hook, and every handler completes that hook before any handler reaches
-            // this one.
+            // The root menu exists by now: all menu registration hooks run before any binding hook.
             menuManager->AddSubMenuToMenu(
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, TerrainMenuIdentifier,
                 EntityPresetsIdentifiers::EntityPresetsGemSortKeyStart);

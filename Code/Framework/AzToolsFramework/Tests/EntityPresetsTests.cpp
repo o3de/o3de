@@ -27,17 +27,8 @@ namespace UnitTest
 {
     using namespace AzToolsFramework;
 
-    //! An enum shaped exactly like the ones presets are used to drive.
-    //!
-    //! Atom's Light type is `enum class LightType : uint8_t` and the Vegetation gem's sector point
-    //! snap mode is `enum class SnapMode : AZ::u8`. Both were being set with an AZStd::any holding
-    //! an s32, and both silently did nothing, because PropertyTreeEditor::HandleTypeConversion
-    //! accepts only double and s64 as *source* types - the narrower types appear only in its
-    //! destination list. An s32 lands only when the property is literally an s32, in which case the
-    //! types match exactly and no conversion is attempted at all.
-    //!
-    //! The existing PropertyTreeEditor tests have no enum property, which is a large part of why
-    //! this went unnoticed on both sides.
+    //! An enum with a narrow underlying type, like Atom's LightType. PropertyTreeEditor only
+    //! converts from double and s64, so presets must hand it an s64 to reach such a property.
     enum class EntityPresetsTestEnum : AZ::u8
     {
         First = 0,
@@ -45,8 +36,7 @@ namespace UnitTest
         Third
     };
 
-    //! One property of every kind a preset can set, reflected the way a real component reflects
-    //! its own - serialize fields plus an Edit Context - because that is what a preset addresses.
+    //! One property of every kind a preset can set, reflected like a real component.
     struct EntityPresetsTestConfig
     {
         AZ_TYPE_INFO(EntityPresetsTestConfig, "{6E4C97A5-2E0D-4F91-9B3C-1D5A7F8E2B44}");
@@ -61,11 +51,8 @@ namespace UnitTest
                 ->Field("My String", &EntityPresetsTestConfig::m_string)
                 ->Field("My Enum", &EntityPresetsTestConfig::m_enum);
 
-            // PropertyTreeEditor addresses properties by their *Edit Context* display names - that
-            // is where a path like "Controller|Configuration|Light type" comes from - and
-            // PopulateNodeMap skips outright any node that has no edit metadata. Reflecting
-            // serialize fields alone leaves the tree empty, so every SetProperty fails on a missing
-            // path, for reasons that have nothing to do with the type conversion under test.
+            // PropertyTreeEditor finds properties by their Edit Context names and skips nodes without
+            // edit metadata, so an Edit Context is required.
             AZ::EditContext* editContext = context->GetEditContext();
             if (editContext == nullptr)
             {
@@ -77,9 +64,7 @@ namespace UnitTest
                 ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_int, "My Int", "")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_float, "My Float", "")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_string, "My String", "")
-                // Deliberately a plain Default handler with no EnumAttributes: the conversion under
-                // test has to work on the type itself, not on edit-context decoration a component
-                // may or may not have bothered to add.
+                // No EnumAttributes: the conversion has to work on the type itself.
                 ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPresetsTestConfig::m_enum, "My Enum", "");
         }
 
@@ -99,8 +84,7 @@ namespace UnitTest
             startupParameters.m_loadSettingsRegistry = false;
             m_app.Start(AzFramework::Application::Descriptor(), startupParameters);
 
-            // Without this the user settings component tries to save on shutdown, and that file is
-            // shared engine-wide, so parallel test runs can collide on it.
+            // Keep the shared user settings file from being saved, so parallel test runs do not collide.
             AZ::UserSettingsComponentRequestBus::Broadcast(
                 &AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -115,9 +99,7 @@ namespace UnitTest
             m_app.Stop();
         }
 
-        //! Set a property the way EntityPresets::Create does: build the value, convert it, hand the
-        //! any to PropertyTreeEditor. Going through ToAny rather than constructing the any directly
-        //! is the point - that conversion is what the bug lived in.
+        //! Set a property the way EntityPresets::Create does, through PropertyValue::ToAny.
         static PropertyTreeEditor::PropertyAccessOutcome SetThroughToAny(
             PropertyTreeEditor& tree, const char* path, const EntityPresets::PropertyValue& value)
         {
@@ -140,7 +122,7 @@ namespace UnitTest
         AZ::SerializeContext* m_serializeContext = nullptr;
     };
 
-    // -- The regression this whole file exists for -------------------------------------
+    // -- Type conversion ---------------------------------------------------------------
 
     TEST_F(EntityPresetsTests, IntValueReachesAnEnumProperty)
     {
@@ -149,8 +131,6 @@ namespace UnitTest
 
         const auto outcome = SetThroughToAny(tree, "My Enum", IntValue(2));
 
-        // Before the fix this failed with "value type cannot be converted to the property's type"
-        // and the enum kept its default, with nothing said about it above trace level.
         EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_EQ(config.m_enum, EntityPresetsTestEnum::Third);
     }
@@ -160,8 +140,6 @@ namespace UnitTest
         EntityPresetsTestConfig config;
         PropertyTreeEditor tree(&config, AZ::AzTypeInfo<EntityPresetsTestConfig>::Uuid());
 
-        // The case that always worked, and by working made the s32 look correct. PostFX's layer
-        // category is a plain int, so it was the one that got tested by hand.
         const auto outcome = SetThroughToAny(tree, "My Int", IntValue(5000000));
 
         EXPECT_TRUE(outcome.IsSuccess());
@@ -220,14 +198,11 @@ namespace UnitTest
 
         EXPECT_TRUE(resolved);
 
-        // Stricter than the tests above and deliberately so: it names the one type that works
-        // rather than only checking the outcome. If HandleTypeConversion ever widens the set of
-        // source types it accepts, this is the test that should be relaxed - not the ones above,
-        // which describe behaviour rather than mechanism.
+        // Names the one integer type that converts to every integer property.
         EXPECT_EQ(converted.type(), azrtti_typeid<AZ::s64>());
     }
 
-    // -- The JSON format, which existing project files depend on -----------------------
+    // -- The JSON format ----------------------------------------------------------------
 
     TEST_F(EntityPresetsTests, PropertyAssignmentIsWrittenFlat)
     {
@@ -256,8 +231,7 @@ namespace UnitTest
         const rapidjson::Value& assignment =
             document["presets"][0]["components"][0]["properties"][0];
 
-        // Flat, not nested: reflection on its own would have put the value in its own object, and
-        // every preset file written before the serialization rewrite would have stopped loading.
+        // Flat, not nested.
         ASSERT_TRUE(assignment.IsObject());
         EXPECT_TRUE(assignment["path"].IsString());
         EXPECT_TRUE(assignment["type"].IsString());
@@ -311,9 +285,7 @@ namespace UnitTest
 
     TEST_F(EntityPresetsTests, PresetsFileFromBeforeTheRewriteStillLoads)
     {
-        // Written by hand rather than by the serializer, because the point is to prove that a file
-        // produced by the old Qt-based writer still reads. If the format ever has to change, this
-        // is the test that should force a migration path to be written first.
+        // Written by hand, to prove an existing project file still loads.
         constexpr const char* legacy = R"JSON(
         {
             "presets": [
@@ -366,9 +338,7 @@ namespace UnitTest
         ASSERT_EQ(file.m_presets[0].m_components[0].m_properties.size(), 1);
         EXPECT_EQ(file.m_presets[0].m_components[0].m_properties[0].m_value.m_int, 4);
 
-        // The asset case matters separately: it is the one where the type name decides how the
-        // string is treated, and a preset that reads it as a plain string would set a model path
-        // into a property expecting an AssetId.
+        // For assets the type decides how the string is read.
         const EntityPresets::PropertyAssignment& mesh = file.m_presets[1].m_components[0].m_properties[0];
         EXPECT_EQ(mesh.m_value.m_type, EntityPresets::PropertyValue::Type::AssetPath);
         EXPECT_STREQ(mesh.m_value.m_string.c_str(), "materialeditor/viewportmodels/shaderball.fbx.azmodel");
@@ -382,8 +352,7 @@ namespace UnitTest
         preset.m_name = "From A Gem";
         preset.m_category = "Lights";
 
-        // Both of these describe where a preset came from at runtime. Writing them would let a
-        // user preset claim to be a built-in, or to belong to a gem that never shipped it.
+        // Runtime-only fields must not be written.
         preset.m_readOnly = true;
         preset.m_sourceGem = "SomeGem";
 
@@ -401,16 +370,9 @@ namespace UnitTest
         EXPECT_FALSE(written.HasMember("builtIn"));
         EXPECT_FALSE(written.HasMember("sourceGem"));
     }
-    // -- The file format, as opposed to the serializer ---------------------------------
+    // -- Files on disk -------------------------------------------------------------------
     //
-    // Every test above works on in-memory documents through AZ::JsonSerialization. The code that
-    // actually reads a gem's Presets/<name>.entitypresets.json does not: it goes through
-    // AZ::JsonSerializationUtils::LoadObjectFromFile, which demands a
-    // Type/Version/ClassName/ClassData header before it hands anything to the serializer.
-    //
-    // Nothing covered that, and the gap is not theoretical: a preset file written in the shape the
-    // tests above would lead you to write is valid JSON, is accepted by the serializer, and is
-    // still refused by the loader - so an entire gem's presets fail to appear, quietly.
+    // Gem files are read with LoadObjectFromFile, which requires the JsonSerialization header.
 
     TEST_F(EntityPresetsTests, GemPresetFileLoadsFromDisk)
     {
@@ -469,10 +431,6 @@ namespace UnitTest
 
     TEST_F(EntityPresetsTests, PresetFileWithoutTheSerializationHeaderIsRefused)
     {
-        // The exact mistake the test above exists to prevent, pinned from the other side. This is
-        // the shape PresetsFileFromBeforeTheRewriteStillLoads hands straight to
-        // AZ::JsonSerialization::Load, which is why writing a gem file this way looks reasonable
-        // right up until nothing shows up in the menu.
         constexpr const char* headerless = R"JSON(
         {
             "presets": [
@@ -499,10 +457,7 @@ namespace UnitTest
 
     TEST_F(EntityPresetsTests, WhatTheEditorWritesTheLoaderReads)
     {
-        // The project's file and a gem's files are meant to be the same shape, so a preset can be
-        // moved between them by copying it and a gem can ship exactly what the editor wrote. That
-        // is a claim about two functions agreeing - SaveUser writes through SaveObjectToFile, the
-        // loader reads through LoadObjectFromFile - and nothing else holds them to it.
+        // What SaveUser writes, LoadObjectFromFile must read: project and gem files share one shape.
         EntityPresets::PresetFile written;
 
         EntityPresets::Preset preset;
@@ -529,8 +484,7 @@ namespace UnitTest
         AZ::Test::ScopedAutoTempDirectory tempDirectory;
         const AZ::IO::Path filePath = tempDirectory.Resolve("EntityPresets.json");
 
-        // The settings SaveUser uses: defaults kept, so the file is spelled out in full rather
-        // than relying on the reader knowing what was left out.
+        // The settings SaveUser uses.
         AZ::JsonSerializerSettings serializerSettings;
         serializerSettings.m_keepDefaults = true;
         const EntityPresets::PresetFile* noDefault = nullptr;
@@ -551,8 +505,6 @@ namespace UnitTest
         ASSERT_EQ(read.m_presets[0].m_components[1].m_properties.size(), 1);
         EXPECT_EQ(read.m_presets[0].m_components[1].m_properties[0].m_value.m_int, 5000000);
 
-        // levelComponents is the newest part of the format, and a round trip that dropped it would
-        // lose the level singleton a preset depends on - visible only as "the preset does nothing".
         ASSERT_EQ(read.m_presets[0].m_levelComponents.size(), 1);
         EXPECT_STREQ(
             read.m_presets[0].m_levelComponents[0].m_componentName.c_str(), "Vegetation System Settings");

@@ -26,17 +26,14 @@ class QTreeWidgetItem;
 
 namespace AzToolsFramework
 {
-    //! Edits one preset: its name, description, category, and the components it puts on the entity.
-    //!
-    //! Works on a copy. Nothing is written until the manager saves, so cancelling anywhere in the
-    //! chain leaves the stored presets untouched.
+    //! Edits a copy of one preset: name, description, category and components.
     class AZTF_API EntityPresetEditDialog : public QDialog
     {
         Q_OBJECT
 
     public:
-        //! Describes the preset an edited one would clash with in the menu, or returns an empty
-        //! string when there is none. OK stays refused until the clash is resolved.
+        //! Describes the preset an edited one would share a menu entry with, or returns an empty
+        //! string. OK is refused while there is a clash.
         using ClashCheck = AZStd::function<QString(const EntityPresets::Preset&)>;
 
         EntityPresetEditDialog(
@@ -63,15 +60,13 @@ namespace AzToolsFramework
         void OnAddProperty();
         void OnRemoveSelected();
 
-        //! The component row for the current selection, whether a component or one of its
-        //! properties is selected. Null if nothing usable is selected.
+        //! The component row for the selection (a selected property stands in for its component), or null.
         QTreeWidgetItem* SelectedComponentItem() const;
 
         QLineEdit* m_nameEdit = nullptr;
         QLineEdit* m_descriptionEdit = nullptr;
 
-        //! Carried through untouched: level components are not editable here yet, and rebuilding
-        //! the preset from the widgets alone would silently drop them from a preset that had some.
+        //! Not editable here; carried through so Result() keeps them.
         AZStd::vector<EntityPresets::ComponentSpec> m_levelComponents;
         QComboBox* m_categoryCombo = nullptr;
         QTreeWidget* m_tree = nullptr;
@@ -79,13 +74,8 @@ namespace AzToolsFramework
         ClashCheck m_clashCheck;
     };
 
-    //! Lists every preset and manages the user's own.
-    //!
-    //! Almost every preset shown here belongs to a gem, and those are read-only: editing one would
-    //! be overwritten the next time that gem updated, and the file it came from is not the
-    //! project's to write. The same goes for the handful compiled into the framework. Duplicating
-    //! either produces an ordinary user preset, which is how you start from a shipped one and
-    //! change it.
+    //! Lists every preset and edits the user's own. Compiled-in and gem presets are read-only;
+    //! duplicating one makes an editable user copy.
     class AZTF_API EntityPresetManagerDialog : public QDialog
     {
         Q_OBJECT
@@ -100,11 +90,10 @@ namespace AzToolsFramework
         int SelectedUserIndex() const;
 
         //! The preset @p candidate would share a menu entry with, described for a message, or an
-        //! empty string if it has one of its own. @p ignoreUserIndex is the user preset being
-        //! edited, which it may of course match; -1 for none.
+        //! empty string. @p ignoreUserIndex is the user preset being edited, or -1.
         QString ClashingPreset(const EntityPresets::Preset& candidate, int ignoreUserIndex) const;
 
-        //! "<name> Copy", numbered when that is taken, so a duplicate always gets its own entry.
+        //! "<name> Copy", numbered if needed so the copy gets its own menu entry.
         AZStd::string UniqueCopyName(EntityPresets::Preset copy) const;
 
         void OnAdd();

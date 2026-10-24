@@ -28,23 +28,16 @@ namespace AZStd
 
 namespace AzToolsFramework
 {
-    //! Ready-made entities: "give me a spot light", "give me a shaderball", "give me a PostFX
-    //! volume with exposure control on it" - one click instead of create-entity then hunt for the
-    //! components then set the two properties that make it useful.
+    //! Ready-made entities: an entity with a set of components and a few properties set, created in one click.
     //!
-    //! Presets are **data**, not code. Almost all of them are shipped by gems, as JSON inside the
-    //! gem that owns the components they name, so a preset appears exactly when what it builds is
-    //! available and goes away with its gem. Anything the user adds lives in a JSON file inside the
-    //! project, so their presets travel with the project and can be committed and shared rather
-    //! than being stuck on one machine.
+    //! Presets are data. Gems ship them as JSON next to the components they use, and user presets
+    //! live in a JSON file inside the project.
     namespace EntityPresets
     {
         //! A value to write into a component property.
         //!
-        //! The type has to be carried explicitly rather than inferred from the JSON: the property
-        //! setter takes an AZStd::any, and what is inside it has to be something
-        //! PropertyTreeEditor can convert to the property's real type. A bare JSON number does not
-        //! say whether it meant an integer or a float.
+        //! The type is stored explicitly because a JSON number cannot say whether it is an integer
+        //! or a float, and the property setter needs a type it can convert.
         struct PropertyValue
         {
             AZ_TYPE_INFO(PropertyValue, "{A208839A-3A9E-4E88-8414-135FD6EAE4DA}");
@@ -55,9 +48,8 @@ namespace AzToolsFramework
                 Int,
                 Double,
                 String,
-                //! A product path in the asset cache ("objects/_primitives/_box_1x1.fbx.azmodel").
-                //! Resolved to an AssetId at creation time rather than stored as one, so a preset
-                //! stays valid across machines, re-processed caches and project moves.
+                //! A product path in the asset cache ("objects/_primitives/_box_1x1.fbx.azmodel"),
+                //! resolved to an AssetId at creation time.
                 AssetPath
             };
 
@@ -68,8 +60,8 @@ namespace AzToolsFramework
             AZStd::string m_string;
 
             //! Convert to the type the property setter expects.
-            //! @param resolved Set to false when an asset path is not in the catalogue, in which
-            //! case the caller should leave the property at its default rather than clearing it.
+            //! @param resolved Set to false when an asset path is not in the catalog; the caller
+            //! should then leave the property at its default.
             AZTF_API AZStd::any ToAny(bool& resolved) const;
         };
 
@@ -77,8 +69,7 @@ namespace AzToolsFramework
         {
             AZ_TYPE_INFO(PropertyAssignment, "{A9CB159D-77B8-433D-8731-BAD4CE74DE1C}");
 
-            //! Property path as the Edit Context spells it, e.g.
-            //! "Controller|Configuration|Light type".
+            //! Edit Context property path, e.g. "Controller|Configuration|Light type".
             AZStd::string m_path;
             PropertyValue m_value;
         };
@@ -87,8 +78,7 @@ namespace AzToolsFramework
         {
             AZ_TYPE_INFO(ComponentSpec, "{D5A8A950-ED9A-4DF1-89A1-CEAFF4E1B5A2}");
 
-            //! Display name as it appears in Add Component, e.g. "Light", "PostFX Layer".
-            //! Resolved to a type id at creation time - type ids are not stable to write down.
+            //! Display name as shown in Add Component, e.g. "Light". Resolved to a type id at creation time.
             AZStd::string m_componentName;
             AZStd::vector<PropertyAssignment> m_properties;
         };
@@ -99,52 +89,26 @@ namespace AzToolsFramework
 
             AZStd::string m_name;
 
-            //! One line saying what this makes, and anything the user has to do themselves.
-            //!
-            //! Becomes the action's tooltip in the menu, so it is where a caveat belongs - a preset
-            //! that only does half a job on its own can say so at the point someone is about to
-            //! pick it. Optional; a generic description is used when it is empty.
+            //! Optional. Used as the menu tooltip.
             AZStd::string m_description;
 
-            //! Groups presets into submenus. Free text; anything sharing a category groups together.
+            //! Groups presets into submenus.
             AZStd::string m_category;
             AZStd::vector<ComponentSpec> m_components;
 
-            //! Components ensured on the *level* entity before the new entity is built.
-            //!
-            //! Some setups need a level-scoped singleton to do anything at all: a vegetation area
-            //! plants nothing without the level's Vegetation System Settings, terrain renders
-            //! nothing without Terrain World. That does not fit "an entity with these components on
-            //! it", and having no way to express it is one of the reasons the terrain preset had to
-            //! be written by hand.
-            //!
-            //! Added only when absent, so triggering a preset twice does not stack duplicates on
-            //! the level, and two presets naming the same level component agree rather than fight.
+            //! Components added to the level entity, if not already there, before the new entity is
+            //! created (e.g. Terrain World, Vegetation System Settings).
             AZStd::vector<ComponentSpec> m_levelComponents;
 
-            //! Not the user's to change: either compiled in, or owned by a gem. Only user presets
-            //! are written back to the project's JSON file.
-            //!
-            //! Named for what it means rather than where it came from. It is true for gem presets
-            //! as well as compiled-in ones, and the distinction that matters to every caller is
-            //! whether editing is possible - not which of the two read-only sources it was. Use
-            //! m_sourceGem to tell those apart; it is empty only for the compiled-in ones.
-            //!
-            //! Deliberately not reflected: it describes where this preset came from at runtime, not
-            //! anything that belongs in a file. A preset read from the project file is a user preset
-            //! by definition, and one read from a gem is not, so both are set by the loader.
+            //! True for compiled-in and gem presets. Only user presets are saved to the project file.
+            //! Not reflected; set by the loader.
             bool m_readOnly = false;
 
-            //! Name of the gem that supplied it, empty for compiled-in and user presets. Shown in the
-            //! manager so it is obvious where a preset came from and why it cannot be edited.
-            //! Not reflected, for the same reason as m_readOnly.
+            //! The gem that supplied the preset, empty for compiled-in and user presets. Not reflected.
             AZStd::string m_sourceGem;
         };
 
-        //! The shape of a presets file: one "presets" array and nothing else.
-        //!
-        //! The project's file and a gem's files use the same shape on purpose, so a preset can be
-        //! moved between them by copying it, and a gem can ship exactly what the editor writes.
+        //! The shape of a presets file. The project file and gem files use the same shape.
         struct PresetFile
         {
             AZ_TYPE_INFO(PresetFile, "{F1ABE77D-85F2-45FB-A45C-FD918E82B256}");
@@ -152,48 +116,34 @@ namespace AzToolsFramework
             AZStd::vector<Preset> m_presets;
         };
 
-        //! Reflect the preset types and register the JSON serializer that keeps the file format
-        //! compact. Call once at application startup.
+        //! Reflect the preset types and register their JSON serializer.
         AZTF_API void Reflect(AZ::ReflectContext* context);
 
-        //! The compiled-in presets. Always available, never written to disk.
+        //! The compiled-in presets.
         AZTF_API const AZStd::vector<Preset>& BuiltIn();
 
-        //! Presets shipped by whichever gems are enabled, from each gem's Presets/<name>.entitypresets.json.
-        //!
-        //! A gem that introduces components is the thing best placed to say how they are usually
-        //! assembled - the terrain gem knows what a terrain needs, the PhysX gem knows what a rigid
-        //! body setup looks like. Reading them from the gem means enabling it brings its presets
-        //! along, with no separate install step and nothing to keep in sync.
-        //!
-        //! Read-only: they belong to the gem, and editing them here would be overwritten the next
-        //! time it updated. Duplicate one to get an editable copy.
+        //! Presets from each enabled gem's Presets/*.entitypresets.json. Read-only.
         AZTF_API const AZStd::vector<Preset>& FromGems();
 
-        //! Compiled-in, then gem-provided, then the user's own - the order they appear in menus.
+        //! Compiled-in, then gem, then user presets - the order they appear in menus.
         AZTF_API const AZStd::vector<Preset>& All();
 
-        //! User presets only, as loaded from the project file.
+        //! User presets, as loaded from the project file.
         AZTF_API const AZStd::vector<Preset>& User();
 
-        //! Re-read the user presets from disk and rebuild the combined list.
+        //! Re-read gem and user presets from disk.
         AZTF_API void Reload();
 
-        //! Write the user presets to the project file and rebuild the combined list.
-        //! @return False if the file could not be written, with the reason logged.
+        //! Write the user presets to the project file.
+        //! @return False if the file could not be written; the reason is logged.
         AZTF_API bool SaveUser(const AZStd::vector<Preset>& presets);
 
-        //! Where the user presets are stored, for the UI to show and for error messages.
+        //! Path of the project's user presets file.
         AZTF_API AZStd::string UserPresetsPath();
 
-        //! Build an entity from @p preset: create it, add each component, apply each property.
+        //! Create an entity from @p preset as one undo step.
         //!
-        //! Parented to the selected entity when exactly one is selected - so building a rig by
-        //! clicking presets in sequence nests naturally - and left at the root otherwise.
-        //!
-        //! The whole thing is one undo batch: Ctrl+Z removes the entity, its components and its
-        //! property values in a single step rather than a dozen.
-        //!
+        //! The entity is parented to the selected entity when exactly one is selected.
         //! @return The new entity, or an invalid id if it could not be created.
         AZTF_API AZ::EntityId Create(const Preset& preset);
     } // namespace EntityPresets

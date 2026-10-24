@@ -6,21 +6,8 @@
  *
  */
 
-/*
- * The compiled-in preset library.
- *
- * Kept in its own file because it is data, not logic - the code that consumes it lives in
- * EntityPresets.cpp and should stay readable without scrolling past seventy table entries.
- *
- * What is left is the one preset built from a component AzToolsFramework provides itself:
- * ScriptEditorComponent registers "Lua Script". Everything else moved out to
- * Presets/<name>.entitypresets.json inside the gem that owns its components, which
- * EntityPresets::FromGems() reads - so a preset now appears exactly when the thing it builds
- * is actually available, and disappears with its gem.
- *
- * Kept rather than deleted because this is the right home for a preset built on a framework
- * component, and there is no gem that could honestly claim one.
- */
+// Compiled-in presets: only those built from components AzToolsFramework itself provides.
+// Everything else ships as Presets/*.entitypresets.json in the gem that owns its components.
 
 #include <AzToolsFramework/Entity/EntityPresets/EntityPresets.h>
 
@@ -30,7 +17,7 @@ namespace AzToolsFramework
     {
         namespace
         {
-            //! A preset that is just "an entity with these components on it, all left at default".
+            //! A preset of components left at their defaults.
             Preset Simple(const char* name, const char* category, const AZStd::vector<const char*>& componentNames)
             {
                 Preset preset;

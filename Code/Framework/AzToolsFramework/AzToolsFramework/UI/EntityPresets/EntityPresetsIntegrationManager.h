@@ -16,17 +16,10 @@
 
 namespace AzToolsFramework
 {
-    //! Owns the entity preset feature's presence in the editor.
+    //! Registers the entity presets' menus and actions with the Action Manager.
     //!
-    //! Entity presets are ready-made entities - "give me a spot light", "give me a PostFX volume
-    //! with exposure control on it" - built in one click instead of create-entity then hunt for the
-    //! components then set the two properties that make it useful. The presets themselves are data
-    //! (see EntityPresets); this class is only what puts them in front of the user.
-    //!
-    //! Modelled on Prefab::PrefabIntegrationManager: it exists so the feature has one owner with a
-    //! definite lifetime that connects to the action registration hooks, rather than free functions
-    //! somebody has to remember to call. Instantiate it once, from the editor's own integration
-    //! layer, and destroy it on shutdown.
+    //! Like Prefab::PrefabIntegrationManager, the editor creates one at startup and destroys it on
+    //! shutdown.
     class AZTF_API EntityPresetsIntegrationManager final
         : private ActionManagerRegistrationNotificationBus::Handler
     {
@@ -38,7 +31,6 @@ namespace AzToolsFramework
 
     private:
         // ActionManagerRegistrationNotificationBus overrides ...
-        // Called in this order: menus are registered, then actions, then the two are bound.
         void OnMenuRegistrationHook() override;
         void OnActionRegistrationHook() override;
         void OnMenuBindingHook() override;

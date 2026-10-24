@@ -21,17 +21,9 @@ namespace AzToolsFramework
 {
     namespace EntityPresets
     {
-        //! Conversions between AZStd::string and QString.
+        //! UTF-8 conversions between AZStd::string and QString, with explicit lengths.
         //!
-        //! Shared rather than repeated per file. Defining these locally in each .cpp works fine on
-        //! its own, but O3DE builds with unity blobs - several translation units concatenated into
-        //! one - and two anonymous namespaces in the same blob are the *same* namespace, so the
-        //! second definition is a redefinition. Having one inline copy sidesteps that and stops the
-        //! conversions drifting apart.
-        //!
-        //! Both go through UTF-8 with an explicit length: AZStd::string is not null-terminated by
-        //! contract and may legitimately contain embedded nulls, so the QString(const char*)
-        //! overload would truncate.
+        //! Shared here because per-file copies in anonymous namespaces collide in unity builds.
 
         inline QString ToQString(const AZStd::string_view value)
         {

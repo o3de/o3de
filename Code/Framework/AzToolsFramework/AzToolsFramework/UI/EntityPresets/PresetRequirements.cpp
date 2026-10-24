@@ -81,16 +81,9 @@ namespace AzToolsFramework
                 return missing;
             }
 
-            // Ask for the registered names once and match locally, rather than looking each
-            // component up individually. FindComponentTypeIdsByEntityType warns whenever a name
-            // fails to resolve - and probing is exactly what checking availability is - so looking
-            // components up would log "Not all Type Names provided could be converted to Type Ids"
-            // for every level component while asking the Game list, on every single creation. Noise
-            // that looks identical to a real failure is worse than no diagnostic at all.
-            //
-            // Both entity types, because a requirement list should not have to know which one a
-            // component registers under: Terrain World and Vegetation System Settings register
-            // against Level and are absent from the Game list entirely.
+            // Match against the registered names instead of looking each component up, which would log a
+            // warning for every name that does not resolve. Both entity types, since level components
+            // (Terrain World, Vegetation System Settings) are not in the Game list.
             AZStd::unordered_set<AZStd::string> registered;
             for (const EditorComponentAPIRequests::EntityType entityType :
                  { EditorComponentAPIRequests::EntityType::Game,
@@ -157,9 +150,7 @@ namespace AzToolsFramework
                     .arg(AsGemSentence(missing)));
             box.setDetailedText(AsList(missing));
 
-            // The reduced build is the default: the user asked for this preset, and the reduced
-            // version is still the thing they asked for, minus a layer. Cancel stays available for
-            // when the missing part was the point.
+            // The reduced build is the default; Cancel builds nothing.
             QPushButton* create = box.addButton(
                 QStringLiteral("Create %1").arg(ToQString(reduction)), QMessageBox::AcceptRole);
             box.addButton(QMessageBox::Cancel);

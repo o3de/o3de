@@ -37,14 +37,11 @@ namespace AzToolsFramework
             //! Where uncategorised presets land.
             constexpr const char* OtherCategory = "Other";
 
-            //! Where the presets submenu sits in the context menus. High so it lands below the
-            //! stock entries rather than above Create Entity.
+            //! Below the stock context menu entries.
             constexpr int RootMenuSortKey = 40000;
 
-            //! Everything registered so far, so a refresh can take the old entries out of the
-            //! menus before putting the new ones in. There is no way to unregister an action, so
-            //! a removed preset's action lingers - harmlessly, since nothing references it once
-            //! it is out of the menu.
+            //! What is currently in the menus, so Refresh can take it out first. Actions cannot be
+            //! unregistered; a removed preset's action simply stays out of the menus.
             AZStd::vector<AZStd::string>& RegisteredActionIdentifiers()
             {
                 static AZStd::vector<AZStd::string> identifiers;
@@ -57,10 +54,7 @@ namespace AzToolsFramework
                 return identifiers;
             }
 
-            //! Turn arbitrary preset text into something usable in an identifier.
-            //!
-            //! Identifiers are dotted ASCII by convention, and preset names are free text that can
-            //! contain spaces, brackets and punctuation ("Point Light (Sphere)", "Plane 3x3").
+            //! Reduce free text to ASCII letters and digits joined by '_', for use in identifiers.
             AZStd::string Slug(const AZStd::string& text)
             {
                 AZStd::string slug;
@@ -98,17 +92,8 @@ namespace AzToolsFramework
                     Slug(category);
             }
 
-            //! Categories in alphabetical order, with "Other" last.
-            //!
-            //! Alphabetical because there is nothing else left to order by. Presets now arrive from
-            //! whichever gems happen to be enabled, in whatever order VisitActiveGems returns them,
-            //! so first-appearance order stopped carrying meaning the moment the compiled-in table
-            //! was emptied - it just made the menu depend on the gem list. Alphabetical at least
-            //! makes a category's position predictable from its name.
-            //!
-            //! Order *within* a category is deliberately left alone: that one is authored. A gem
-            //! groups its presets on purpose - the light types read as a progression rather than an
-            //! alphabet - and sorting them would throw that away.
+            //! Categories in alphabetical order, with "Other" last. Presets within a category keep
+            //! the order their authors gave them.
             AZStd::vector<AZStd::string> OrderedCategories()
             {
                 AZStd::vector<AZStd::string> categories;
@@ -127,8 +112,6 @@ namespace AzToolsFramework
                     categories.begin(), categories.end(),
                     [](const AZStd::string& lhs, const AZStd::string& rhs)
                     {
-                        // "Other" is the bucket for presets that named no category, so it belongs
-                        // after the real ones rather than sorted in among them.
                         if ((lhs == OtherCategory) != (rhs == OtherCategory))
                         {
                             return rhs == OtherCategory;
@@ -157,9 +140,8 @@ namespace AzToolsFramework
 
             RegisteredActionIdentifiers().clear();
 
-            // Identifiers keep only the letters and digits of category and name, so two presets can
-            // land on the same one ("Plane 3x3" and "Plane (3x3)", or a project preset named like a
-            // gem's). The second would otherwise share the first's menu entry and never be built.
+            // Two presets can reduce to the same identifier ("Plane 3x3", "Plane (3x3)"); only the
+            // first gets an entry.
             AZStd::unordered_set<AZStd::string> claimed;
 
             for (const EntityPresets::Preset& preset : EntityPresets::All())
@@ -177,10 +159,8 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                // A refresh re-walks presets that are mostly unchanged, and registering a second
-                // time would fail and log. Skipping is not a leak: the handler below captures the
-                // preset by name and looks it up fresh, so an edited preset still creates the
-                // edited entity.
+                // Already registered by an earlier refresh. The handler looks the preset up by name,
+                // so it still builds the current version.
                 if (actionManager->IsActionRegistered(identifier))
                 {
                     RegisteredActionIdentifiers().push_back(identifier);
@@ -194,8 +174,7 @@ namespace AzToolsFramework
                     : preset.m_description;
                 properties.m_category = "Entity Presets";
 
-                // Captured by name rather than by value: presets can be edited in the panel while
-                // the editor is running, and a copy taken at registration would go stale.
+                // By name, not by value, so later edits to the preset are picked up.
                 const AZStd::string presetName = preset.m_name;
                 const AZStd::string presetCategory = preset.m_category;
 
@@ -219,9 +198,6 @@ namespace AzToolsFramework
                 RegisteredActionIdentifiers().push_back(identifier);
             }
 
-            // The way in to the preset manager. Without it the user presets are only reachable by
-            // hand-editing the project's JSON file, so this is part of the feature rather than a
-            // convenience.
             if (!actionManager->IsActionRegistered(
                     AZStd::string(EntityPresetsIdentifiers::EntityPresetsManageActionIdentifier)))
             {
@@ -286,11 +262,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            // Actions are placed into their category submenu in preset order, spaced so a later
-            // insertion has room to land between two existing entries.
+            // In preset order within each category submenu.
             AZStd::unordered_map<AZStd::string, int> nextSortKey;
 
-            // Only the first preset with a given identifier was given an action; see RegisterActions.
+            // Only the first preset with a given identifier has an action; see RegisterActions.
             AZStd::unordered_set<AZStd::string> bound;
 
             for (const EntityPresets::Preset& preset : EntityPresets::All())
@@ -318,16 +293,11 @@ namespace AzToolsFramework
                 categorySortKey += EntityPresetsIdentifiers::EntityPresetsCategorySortKeyStep;
             }
 
-            // A separator ahead of the gem band, so whatever a gem hangs here reads as its own
-            // group rather than as one more category. Placed by the published constant rather than
-            // relative to the last category, because that is exactly what makes the band usable
-            // from outside: a gem cannot know how many categories were loaded.
+            // Separators before the gem entries and before "Manage Presets...".
             menuManager->AddSeparatorToMenu(
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier,
                 EntityPresetsIdentifiers::EntityPresetsGemSortKeyStart - 1);
 
-            // Last, under its own separator: it manages the list rather than creating anything, so
-            // it should not sit among the things that do.
             menuManager->AddSeparatorToMenu(
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier,
                 EntityPresetsIdentifiers::EntityPresetsManageSortKey - 1);
@@ -336,8 +306,6 @@ namespace AzToolsFramework
                 EntityPresetsIdentifiers::EntityPresetsManageActionIdentifier,
                 EntityPresetsIdentifiers::EntityPresetsManageSortKey);
 
-
-            // Both places you would right click when you want to make something.
             menuManager->AddSubMenuToMenu(
                 EditorIdentifiers::ViewportContextMenuIdentifier,
                 EntityPresetsIdentifiers::EntityPresetsRootMenuIdentifier, RootMenuSortKey);
@@ -354,8 +322,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // Empty the category submenus before rebuilding, or a renamed or deleted preset would
-            // stay in the menu alongside its replacement.
+            // Empty the category submenus first, so renamed or deleted presets drop out.
             for (const AZStd::string& menuIdentifier : RegisteredCategoryMenus())
             {
                 for (const AZStd::string& actionIdentifier : RegisteredActionIdentifiers())

@@ -19,16 +19,10 @@ namespace AzToolsFramework
         struct Preset;
     }
 
-    //! Puts the entity presets into the editor's right-click menus.
+    //! Puts the entity presets into the viewport and Entity Outliner context menus.
     //!
-    //! Each preset becomes a registered action, grouped into a submenu per category, with the
-    //! categories collected under one "Create Preset" submenu hung off the viewport and Entity
-    //! Outliner context menus.
-    //!
-    //! Going through the Action Manager rather than building a QMenu directly means the presets
-    //! behave like every other editor command: they can be given hotkeys through the Hotkey
-    //! Editor, they appear in the editor's own shortcut settings, and their enabled state is
-    //! managed rather than hand-maintained.
+    //! Each preset is an Action Manager action (so it can take a hotkey), grouped into a submenu
+    //! per category under one "Create Preset" submenu.
     namespace EntityPresetMenu
     {
         //! Register an action for every preset. Call from OnActionRegistrationHook.
@@ -41,16 +35,10 @@ namespace AzToolsFramework
         //! Call from OnMenuBindingHook.
         AZTF_API void BindMenus();
 
-        //! Re-register and re-bind after the user has edited their presets.
-        //!
-        //! Safe to call at runtime: AddActionToMenu prompts a menu refresh, so a preset added in
-        //! the panel shows up on the next right click rather than after a restart.
+        //! Re-register and re-bind after presets changed. Safe to call at runtime.
         AZTF_API void Refresh();
 
         //! The action identifier a preset is registered under.
-        //!
-        //! Exposed so callers outside the menu - the Python command palette, via the reflected bus
-        //! - can trigger a preset through the Action Manager rather than reimplementing creation.
         AZTF_API AZStd::string ActionIdentifierFor(const EntityPresets::Preset& preset);
     } // namespace EntityPresetMenu
 } // namespace AzToolsFramework
