@@ -151,6 +151,9 @@ namespace EMStudio
         void OnSelectionChanged();
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
         void ClearEditors();
+        void StopDeferredUpdate();
+    protected:
+        bool eventFilter(QObject* watched, QEvent* event) override;
     private:
         AddConditionButton* m_addConditionButton = nullptr;
         void contextMenuEvent(QContextMenuEvent* event) override;

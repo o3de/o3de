@@ -550,12 +550,32 @@ namespace EMStudio
         // Rebuilding the property editors stalls the UI, so a click or drag in the graph finishes first and the inspector catches up on release.
         if (QGuiApplication::mouseButtons() != Qt::NoButton)
         {
+            // The release flushes the update; the timer covers a release this application never sees.
+            qApp->installEventFilter(this);
             m_deferredUpdateTimer->start();
             return;
         }
 
-        m_deferredUpdateTimer->stop();
+        StopDeferredUpdate();
         UpdateAndShowInInspector();
+    }
+
+    void AttributesWindow::StopDeferredUpdate()
+    {
+        m_deferredUpdateTimer->stop();
+        qApp->removeEventFilter(this);
+    }
+
+    bool AttributesWindow::eventFilter(QObject* watched, QEvent* event)
+    {
+        // Catch up as the button comes up, so whoever made the selection sees the inspector showing it.
+        if (event->type() == QEvent::MouseButtonRelease && m_deferredUpdateTimer->isActive())
+        {
+            StopDeferredUpdate();
+            UpdateAndShowInInspector();
+        }
+
+        return QWidget::eventFilter(watched, event);
     }
 
     void AttributesWindow::ClearEditors()
@@ -578,7 +598,7 @@ namespace EMStudio
         {
             if (index.parent() == parent && index.row() >= first && index.row() <= last)
             {
-                m_deferredUpdateTimer->stop();
+                StopDeferredUpdate();
                 ClearEditors();
                 m_displayingModelIndex = QModelIndex();
                 break;
