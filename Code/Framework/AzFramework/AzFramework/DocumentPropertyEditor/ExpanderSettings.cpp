@@ -6,8 +6,11 @@
  *
  */
 
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
@@ -15,6 +18,41 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file with others into one
+    //! translation unit, where anonymous namespaces merge.
+    namespace ExpanderSettingsInternal
+    {
+        // ------------------------------------------------------------------------------
+        // Settings file merges
+        //
+        // All the expander settings of one property editor share one settings file, and from the first merge on the settings registry
+        // holds its contents (a save writes the registry back to the file). So the file is merged once, and again only when it changed
+        // on disk: merging it for every component editor of every inspector selection read and parsed the file each time. The registry
+        // keeps the stamp the file had at its last merge or save here, under a runtime key that is never saved; a new registry has
+        // none, so it merges the file again.
+        // ------------------------------------------------------------------------------
+
+        constexpr const char* MergedSettingsFilesKey = "/O3DE/Runtime/Internal/DocumentPropertyEditor/MergedSettingsFiles";
+
+        //! The registry key that keeps the stamp of a settings file
+        AZStd::string StampKey(const AZ::IO::Path& settingsFilepath)
+        {
+            const AZStd::string_view fileName = settingsFilepath.Filename().Native();
+            return AZStd::string::format("%s/%.*s", MergedSettingsFilesKey, AZ_STRING_ARG(fileName));
+        }
+
+        //! The file's change time and size, as text ("0:0" for a file that does not exist)
+        AZ::SettingsRegistryInterface::FixedValueString Stamp(const AZ::IO::Path& settingsFilepath)
+        {
+            AZ::IO::FixedMaxPath fullPath = AZ::Utils::GetProjectPath();
+            fullPath /= settingsFilepath;
+            return AZ::SettingsRegistryInterface::FixedValueString::format(
+                "%llu:%llu",
+                static_cast<unsigned long long>(AZ::IO::SystemFile::ModificationTime(fullPath.c_str())),
+                static_cast<unsigned long long>(AZ::IO::SystemFile::Length(fullPath.c_str())));
+        }
+    } // namespace ExpanderSettingsInternal
+
     ExpanderSettings::ExpanderSettings(
         const AZ::DocumentPropertyEditor::DocumentAdapter* adapter,
         const AZStd::string& settingsRegistryKey,
@@ -85,27 +123,45 @@ namespace AZ::DocumentPropertyEditor
         {
             AZ_Warning("DocumentPropertyEditorSettings", false, outcome.GetError().c_str());
         }
+        else if (AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get())
+        {
+            // The file now holds what the registry holds: it is not merged back (Settings file merges, above)
+            registry->Set(ExpanderSettingsInternal::StampKey(m_settingsFilepath), ExpanderSettingsInternal::Stamp(m_settingsFilepath));
+        }
     }
 
     bool ExpanderSettings::LoadExpanderStates()
     {
-        bool loaded = false;
-        auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_settingsFilepath);
-        if (loadOutcome.IsSuccess())
+        using namespace ExpanderSettingsInternal;
+
+        // Merge the settings file, unless the registry already holds it as it is on disk (Settings file merges, above)
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        const AZStd::string stampKey = StampKey(m_settingsFilepath);
+        const AZ::SettingsRegistryInterface::FixedValueString stamp = Stamp(m_settingsFilepath);
+        AZ::SettingsRegistryInterface::FixedValueString mergedStamp;
+        if (!registry || !registry->Get(mergedStamp, stampKey) || mergedStamp != stamp)
         {
-            auto getOutcome = m_settingsRegistrar.GetObjectSettings(this, m_fullSettingsRegistryPath);
-            if (getOutcome.IsSuccess())
+            auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_settingsFilepath);
+            if (!loadOutcome.IsSuccess())
             {
-                loaded = getOutcome.GetValue();   
+                AZ_Warning("DocumentPropertyEditorSettings", false, loadOutcome.GetError().c_str());
+                return false;
             }
-            else
+            if (registry)
             {
-                AZ_Warning("DocumentPropertyEditorSettings", false, getOutcome.GetError().c_str());
+                registry->Set(stampKey, stamp);
             }
+        }
+
+        bool loaded = false;
+        auto getOutcome = m_settingsRegistrar.GetObjectSettings(this, m_fullSettingsRegistryPath);
+        if (getOutcome.IsSuccess())
+        {
+            loaded = getOutcome.GetValue();
         }
         else
         {
-            AZ_Warning("DocumentPropertyEditorSettings", false, loadOutcome.GetError().c_str());
+            AZ_Warning("DocumentPropertyEditorSettings", false, getOutcome.GetError().c_str());
         }
 
         return loaded;

@@ -1033,8 +1033,10 @@ namespace AzToolsFramework
             }
         }
 
+        // setIcon schedules the icon's paint. No repaint(): its only caller is UpdateContents, whose updates are disabled, and there
+        // Qt 6 still sends the update request at once, painting and flushing the dirty region of the whole window in the middle of the
+        // rebuild (about 54 ms per 27-component selection); setUpdatesEnabled(true) at the end of the rebuild repaints it anyway.
         m_gui->m_entityIcon->setIcon(QIcon(iconSourcePath.c_str()));
-        m_gui->m_entityIcon->repaint();
     }
 
     EntityPropertyEditor::InspectorLayout EntityPropertyEditor::GetCurrentInspectorLayout() const
