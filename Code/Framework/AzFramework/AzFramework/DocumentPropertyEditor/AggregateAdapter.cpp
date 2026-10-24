@@ -52,7 +52,11 @@ namespace AZ::DocumentPropertyEditor
 
         const auto adapterIndex = m_adapters.size() - 1;
         PopulateNodesForAdapter(adapterIndex);
-        NotifyResetDocument();
+
+        // Queue the reset instead of running it: a multi-selection adds one adapter per entity, and an immediate reset rebuilt the
+        // view after every one of them. The views attached run the queued reset once (the Entity Inspector inside UpdateContents,
+        // DocumentPropertyEditor::InvalidateAll; a standalone view on its next event loop pass).
+        QueueResetDocument(DocumentResetType::HardReset);
     }
 
     void RowAggregateAdapter::RemoveAdapter(DocumentAdapterPtr sourceAdapter)

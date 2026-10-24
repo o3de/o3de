@@ -35,9 +35,14 @@ namespace AzToolsFramework::Prefab
         }
 
         m_textLabel->setProperty(OverriddenPropertyName, false);
-        // an inline sheet of every label of a prefab property row: the GuiPerfFloor noop and passthrough rungs leave it out
-        AzQtComponents::GuiPerfFloor::setInlineStyleSheet(
-            m_textLabel, QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
+        // The label of an overridden property is bold. With style sheets: an inline sheet on every label, as before (the
+        // GuiPerfFloor noop and passthrough rungs leave it out). Flat (no style sheets): RefreshUI sets the weight on the font
+        // instead, so no row label carries a sheet of its own (a sheet gave each one a QStyleSheetStyle, restyled on every reparent).
+        if (!AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            AzQtComponents::GuiPerfFloor::setInlineStyleSheet(
+                m_textLabel, QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
+        }
 
         QHBoxLayout* layout = new QHBoxLayout(this);
         layout->setContentsMargins(0, 0, 0, 0);
@@ -68,6 +73,16 @@ namespace AzToolsFramework::Prefab
 
         if (AzQtComponents::StyleManager::setObjectProperty(m_textLabel, OverriddenPropertyName, m_overridden))
         {
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                // only the weight is set: size and family keep following the row, as the sheet's font-weight rule did
+                QFont weight;
+                if (m_overridden)
+                {
+                    weight.setWeight(QFont::Bold);
+                }
+                m_textLabel->setFont(weight);
+            }
             m_textLabel->RefreshStyle();
         }
         // Set up icon

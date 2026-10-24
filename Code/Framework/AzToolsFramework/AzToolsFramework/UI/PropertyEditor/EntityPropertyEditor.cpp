@@ -31,7 +31,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
-#include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
@@ -1914,9 +1913,24 @@ namespace AzToolsFramework
                     setUpdatesEnabled(true);
                 });
 
-            // force Card resize when expansion state changes or when explicitly requested by OnSizeUpdateRequested
-            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnExpansionContractionDone);
-            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnSizeUpdateRequested);
+            // force Card resize when expansion state changes or when explicitly requested by OnSizeUpdateRequested (o3de #15945:
+            // cards kept the size of the previous component). A size recompute, not a restyle: the repolish this replaces unpolished
+            // and polished the card and every child widget on every DPE reset (about 3800 widgets per 27-component rebuild). The
+            // card's look follows its own properties through Card.cpp, which repolishes itself when they change.
+            auto forceCardResize = [componentEditor]()
+            {
+                if (QWidget* content = componentEditor->contentWidget())
+                {
+                    content->updateGeometry();
+                }
+                if (QLayout* cardLayout = componentEditor->layout())
+                {
+                    cardLayout->invalidate();
+                }
+                componentEditor->updateGeometry();
+            };
+            connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, componentEditor, forceCardResize);
+            connect(componentEditor, &ComponentEditor::OnSizeUpdateRequested, componentEditor, forceCardResize);
 
             connect(componentEditor, &ComponentEditor::OnDisplayComponentEditorMenu, this, &EntityPropertyEditor::OnDisplayComponentEditorMenu);
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);

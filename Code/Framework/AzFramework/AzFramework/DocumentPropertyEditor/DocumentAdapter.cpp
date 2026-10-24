@@ -144,7 +144,7 @@ namespace AZ::DocumentPropertyEditor
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
     {
         // this is the actual reset function, which overrides any queuing, so reset it.
-        // It also works without a queued reset: adapters that reset immediately by design (RowAggregateAdapter, MetaAdapter
+        // It also works without a queued reset: adapters that reset immediately by design (RowAggregateAdapter::ClearAdapters, MetaAdapter
         // when its source changes, BasicAdapter) call it directly. The debounce lives in ExecuteQueuedReset.
         m_isResetQueued = false;
         if (resetType == DocumentResetType::HardReset || m_cachedContents.IsNull())
