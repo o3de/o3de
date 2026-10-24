@@ -167,12 +167,23 @@ jobs:
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
           $PSNativeCommandUseErrorActionPreference = $false
-          tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
-          if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Ignoring invalid cache archive"
-            Remove-Item -Recurse -Force .ccache, .o3de\python\downloaded_packages, 3rdParty\downloaded_packages, AutomatedTesting\Cache -ErrorAction SilentlyContinue
+          $sevenZip = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+          if (-not (Test-Path -LiteralPath $sevenZip -PathType Leaf)) {
+            Write-Output '::error::7-Zip was not found on the Windows runner; cannot extract artifact cache.'
+            exit 1
           }
-          Remove-Item ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar -Force -ErrorAction SilentlyContinue
+          $archive = Join-Path $env:DEV_DRIVE_WORKSPACE 'cache.tar'
+          & $sevenZip x -ttar -y "-o$env:DEV_DRIVE_WORKSPACE" $archive
+          $extractExit = $LASTEXITCODE
+          if ($extractExit -ne 0) {
+            Write-Warning "Ignoring invalid cache archive (7-Zip exit code $extractExit)"
+            foreach ($cachePath in @('.ccache', '.o3de\python\downloaded_packages', '3rdParty\downloaded_packages', 'AutomatedTesting\Cache')) {
+              if (Test-Path -LiteralPath $cachePath) {
+                Remove-Item -LiteralPath $cachePath -Recurse -Force -ErrorAction Stop
+              }
+            }
+          }
+          Remove-Item -LiteralPath $archive -Force -ErrorAction SilentlyContinue
           ccache --zero-stats --cleanup
 
       - name: Setup cmake
