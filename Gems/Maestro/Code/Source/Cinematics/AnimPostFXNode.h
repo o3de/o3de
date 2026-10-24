@@ -22,6 +22,7 @@ namespace Maestro
         AZ_RTTI(CAnimPostFXNode, "{41FCA8BB-46A8-4F37-87C2-C1D10994854B}", CAnimNode);
 
         static void Initialize();
+        static void Shutdown();
         static CFXNodeDescription* GetFXNodeDescription(AnimNodeType nodeType);
         static CAnimNode* CreateNode(const int id, AnimNodeType nodeType);
 
