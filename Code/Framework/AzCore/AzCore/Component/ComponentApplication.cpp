@@ -189,7 +189,11 @@ namespace AZ
 
     ReflectionManager* ReflectionEnvironment::GetReflectionManager()
     {
-        AZ::EnvironmentVariable<ReflectionEnvironment> environment = AZ::Environment::FindVariable<ReflectionEnvironment>(s_reflectionEnvironmentName);
+        // The variable's id is the CRC32 of its constant name: hash it once instead of on every call. This runs for every
+        // GetSerializeContext / GetBehaviorContext / GetJsonRegistrationContext, which the property editors and the JSON serializer
+        // call per value: hashing the name was about a quarter of an Entity Inspector rebuild. Same id, same lookup as before.
+        static const u32 s_reflectionEnvironmentId = AZ::Internal::EnvironmentVariableNameToId(s_reflectionEnvironmentName);
+        AZ::EnvironmentVariable<ReflectionEnvironment> environment = AZ::Environment::FindVariable<ReflectionEnvironment>(s_reflectionEnvironmentId);
         return environment ? environment->Get() : nullptr;
     }
 
@@ -1409,7 +1413,8 @@ namespace AZ
     //=========================================================================
     AZ::SerializeContext* ComponentApplication::GetSerializeContext()
     {
-        return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<SerializeContext>() : nullptr;
+        ReflectionManager* reflectionManager = ReflectionEnvironment::GetReflectionManager();
+        return reflectionManager ? reflectionManager->GetReflectContext<SerializeContext>() : nullptr;
     }
 
     //=========================================================================
@@ -1417,7 +1422,8 @@ namespace AZ
     //=========================================================================
     AZ::BehaviorContext* ComponentApplication::GetBehaviorContext()
     {
-        return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<BehaviorContext>() : nullptr;
+        ReflectionManager* reflectionManager = ReflectionEnvironment::GetReflectionManager();
+        return reflectionManager ? reflectionManager->GetReflectContext<BehaviorContext>() : nullptr;
     }
 
     //=========================================================================
@@ -1425,7 +1431,8 @@ namespace AZ
     //=========================================================================
     AZ::JsonRegistrationContext* ComponentApplication::GetJsonRegistrationContext()
     {
-        return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<JsonRegistrationContext>() : nullptr;
+        ReflectionManager* reflectionManager = ReflectionEnvironment::GetReflectionManager();
+        return reflectionManager ? reflectionManager->GetReflectContext<JsonRegistrationContext>() : nullptr;
     }
 
     /// Returns the path to the engine.

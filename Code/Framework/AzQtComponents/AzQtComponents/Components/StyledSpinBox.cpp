@@ -145,8 +145,10 @@ namespace AzQtComponents
             // Remove trailing zeros, since the locale conversion won't do
             // it for us
             QString zeroDigit = locale().zeroDigit();
-            QString trailingZeros = QString("%1+$").arg(zeroDigit);
-            stringValue.remove(QRegularExpression(trailingZeros));
+            while (!zeroDigit.isEmpty() && stringValue.endsWith(zeroDigit))      // no regex: one was JIT-compiled per value shown
+            {
+                stringValue.chop(zeroDigit.size());
+            }
 
             // It's possible we could be left with a decimal point on the end
             // if we stripped the trailing zeros, so if that's the case, then
