@@ -80,6 +80,7 @@ namespace EMStudio
         virtual void OnEnabledToggle(GraphNode* node, bool enabled)                     { MCORE_UNUSED(node); MCORE_UNUSED(enabled); }
         virtual void OnSetupVisualizeOptions(GraphNode* node)                           { MCORE_UNUSED(node); }
 
+        virtual void CommitTransitionWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints);
         virtual void ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset,
             GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode);
 
