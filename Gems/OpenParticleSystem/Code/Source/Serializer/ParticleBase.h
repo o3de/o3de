@@ -788,6 +788,11 @@ namespace OpenParticle
                 delete curve;
             }
             retiredCurves.clear();
+            for (auto random : retiredRandoms)
+            {
+                delete random;
+            }
+            retiredRandoms.clear();
             randoms.clear();
             curves.clear();
             distInfos.Clear();
@@ -805,6 +810,8 @@ namespace OpenParticle
         // Makes the curve list exactly the curves the enabled settings use, in order, giving every setting its own copy (a file where two settings point at
         // one curve index, from an emitter copied by an older editor) and setting aside curves nothing uses, so renumbering cannot point a setting at the wrong curve.
         void NormalizeCurves();
+        // Same for the randoms: an unused or shared random otherwise moved every later setting onto its neighbour's range when renumbering.
+        void NormalizeRandoms();
         void SortDistributionIndex();
         void RebuildDistribution();
         void RebuildDistributionIndex();
@@ -823,6 +830,8 @@ namespace OpenParticle
         AZStd::vector<size_t> stashedCurveIndexes;
         // Curves no setting uses any more, owned here so a cache that still points at one never dangles.
         AZStd::vector<Curve*> retiredCurves;
+        // Randoms no setting uses any more, kept alive for the same reason.
+        AZStd::vector<Random*> retiredRandoms;
     };
 } // namespace OpenParticle
 

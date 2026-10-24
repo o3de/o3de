@@ -371,6 +371,7 @@ namespace OpenParticle
         // Turned off modules leave the list first, so the numbering of the rest matches the list again before it is made exact.
         m_distribution.RebuildDistribution();
         m_distribution.NormalizeCurves();
+        m_distribution.NormalizeRandoms();
         m_distribution.SortDistributionIndex();
         m_distribution.RebuildDistributionIndex();
     }
@@ -1642,12 +1643,14 @@ namespace OpenParticle
             auto cacheInterface = AZ::Interface<DistributionCacheInterface>::Get();
             if (cacheInterface)
             {
-                AZStd::vector<RandomData> popRandom;
-                AZStd::vector<CurveData> popCurve;
+                // Per module and per param: modules share param names (sizeObject), so leftovers wrote one module's indexes into another or added a random twice
+                DistInfos moduleDistInfos;
                 AZStd::vector<AZ::TypeId> paramIds;
                 DataConvertor::GetParamId(*module, paramIds);
                 for (auto& paramId : paramIds)
                 {
+                    AZStd::vector<RandomData> popRandom;
+                    AZStd::vector<CurveData> popCurve;
                     auto key = cacheInterface->GetKey(sourceDetail, "className", "moduleName", paramId);
                     cacheInterface->PopDistributionRandom(key, popRandom);
                     for (auto& randomInfo : popRandom)
@@ -1656,7 +1659,7 @@ namespace OpenParticle
 
                         AddRandom(*randomInfo.second);
                         randomInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.randoms.size());
-                        distInfos.randomIndexInfos.emplace_back(randomInfo.first);
+                        moduleDistInfos.randomIndexInfos.emplace_back(randomInfo.first);
                     }
 
                     cacheInterface->PopDistributionCurve(key, popCurve);
@@ -1666,10 +1669,10 @@ namespace OpenParticle
 
                         AddCurve(*curveInfo.second);
                         curveInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.curves.size());
-                        distInfos.curveIndexInfos.emplace_back(curveInfo.first);
+                        moduleDistInfos.curveIndexInfos.emplace_back(curveInfo.first);
                     }
                 }
-                DataConvertor::UpdateDistIndex(*module, distInfos);
+                DataConvertor::UpdateDistIndex(*module, moduleDistInfos);
             }
         }
 

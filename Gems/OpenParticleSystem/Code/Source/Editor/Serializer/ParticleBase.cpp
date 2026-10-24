@@ -597,6 +597,42 @@ namespace OpenParticle
         curves = compact;
     }
 
+    void Distribution::NormalizeRandoms()
+    {
+        // Keep exactly the used randoms in settings order, one per setting, so renumbering cannot shift a setting onto a neighbour's range
+        AZStd::unordered_set<Random*> taken;
+        AZStd::vector<Random*> compact;
+        for (ParamDistInfo& info : distInfos.randomIndexInfos)
+        {
+            if (info.distIndex == 0 || info.distIndex > randoms.size())
+            {
+                continue;
+            }
+            Random* source = randoms[info.distIndex - 1];
+            Random* use = taken.insert(source).second ? source : aznew Random(*source);
+            compact.emplace_back(use);
+            info.distIndex = compact.size();
+        }
+
+        AZStd::unordered_set<Random*> cached;
+        for (const auto& cache : randomCaches)
+        {
+            for (Random* random : cache.second)
+            {
+                cached.insert(random);
+            }
+        }
+        for (Random* random : randoms)
+        {
+            // The editor caches may still point at an unused random, so it is kept alive (and freed with the distribution) instead of deleted
+            if (taken.find(random) == taken.end() && cached.find(random) == cached.end())
+            {
+                retiredRandoms.emplace_back(random);
+            }
+        }
+        randoms = compact;
+    }
+
     void SortIndex(AZStd::vector<ParamDistInfo>& indexInfo)
     {
         AZStd::sort(
