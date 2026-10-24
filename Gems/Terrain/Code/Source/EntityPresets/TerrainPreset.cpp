@@ -106,7 +106,7 @@ namespace Terrain
 
             //! Add a component and hand back the instance, so its properties can be set.
             AZ::EntityComponentIdPair AddComponentOfType(
-                const AZ::EntityId entityId, const char* componentName, const AZ::Uuid typeId)
+                const AZ::EntityId entityId, [[maybe_unused]] const char* componentName, const AZ::Uuid typeId)
             {
                 if (typeId.IsNull())
                 {
