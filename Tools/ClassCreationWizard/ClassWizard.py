@@ -2119,6 +2119,8 @@ class ClassWizardWindow(QMainWindow):
 
     def __init__(self, engine_path: Path, project_path: Optional[Path] = None):
         super().__init__()
+        # Matched by CCryEditApp::OnNewComponent to prevent duplicate launches.
+        self.setObjectName("O3DEClassCreationWizard")
 
         self.engine_path = engine_path
         self.project_path = project_path
