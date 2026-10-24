@@ -844,11 +844,30 @@ namespace OpenParticle
             module.second = &moduleList.back();
             break;
         case DetailConstant::RENDER_TYPE:
+        {
+            // Stash and release the renderer's curves/randoms like a removed module, or its stale indexes outlive the list entries.
+            StashDistribution(emitterInfo->m_renderConfig, detailInfo, className, moduleName);
+            DistInfos distInfos;
+            DataConvertor::GetDistIndex(emitterInfo->m_renderConfig, distInfos);
+            for (auto& info : distInfos.randomIndexInfos)
+            {
+                m_distribution.stashedRandomIndexes.emplace_back(info.distIndex);
+                info.distIndex = 0;
+            }
+            for (auto& info : distInfos.curveIndexInfos)
+            {
+                m_distribution.stashedCurveIndexes.emplace_back(info.distIndex);
+                info.distIndex = 0;
+            }
+            DataConvertor::UpdateDistIndex(emitterInfo->m_renderConfig, distInfos);
+
             module.first = false;
             moduleList.emplace_back(emitterInfo->m_renderConfig);
             module.second = &moduleList.back();
             emitterInfo->m_renderConfig.clear();
+            UpdateDistributionIndexes();
             break;
+        }
         case DetailConstant::EMITTER_EMIT:
             RemoveDetailModule(detailInfo, className, moduleName, emitterInfo->m_emitModules);
             break;
