@@ -498,7 +498,7 @@ namespace Terrain
 
             if (const auto missing = AzToolsFramework::EntityPresets::MissingComponents(core); !missing.empty())
             {
-                for (const RequiredComponent& component : missing)
+                for ([[maybe_unused]] const RequiredComponent& component : missing)
                 {
                     AZ_Warning(
                         "EntityPresets", false, "Terrain preset needs '%s' from the %s gem, which is not available.",
@@ -563,7 +563,7 @@ namespace Terrain
                     reduction += lost[index];
                 }
 
-                for (const RequiredComponent& component : reduced)
+                for ([[maybe_unused]] const RequiredComponent& component : reduced)
                 {
                     AZ_Warning(
                         "EntityPresets", false, "Terrain preset is leaving out '%s' from the %s gem.",

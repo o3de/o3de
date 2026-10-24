@@ -12,6 +12,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 
@@ -25,6 +26,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStringList>
@@ -113,7 +115,9 @@ namespace AzToolsFramework
             case EntityPresets::PropertyValue::Type::Bool:
                 return value.m_bool ? QStringLiteral("true") : QStringLiteral("false");
             case EntityPresets::PropertyValue::Type::Double:
-                return QString::number(value.m_double);
+                // Shortest text that reads back as the same double. The default keeps 6 significant
+                // digits, and since Result() parses this text, pressing OK would round the value.
+                return QString::number(value.m_double, 'g', QLocale::FloatingPointShortest);
             case EntityPresets::PropertyValue::Type::String:
             case EntityPresets::PropertyValue::Type::AssetPath:
                 return ToQString(value.m_string);
@@ -154,8 +158,10 @@ namespace AzToolsFramework
 
     // -- Edit one preset --------------------------------------------------------------------
 
-    EntityPresetEditDialog::EntityPresetEditDialog(const EntityPresets::Preset& preset, QWidget* parent)
+    EntityPresetEditDialog::EntityPresetEditDialog(
+        const EntityPresets::Preset& preset, QWidget* parent, ClashCheck clashCheck)
         : QDialog(parent)
+        , m_clashCheck(AZStd::move(clashCheck))
     {
         setWindowTitle(QStringLiteral("Edit Preset"));
         setMinimumSize(680, 460);
@@ -276,6 +282,20 @@ namespace AzToolsFramework
                         this, QStringLiteral("Preset"),
                         QStringLiteral("Give the preset a name - it is what appears in the menu."));
                     return;
+                }
+
+                if (m_clashCheck)
+                {
+                    if (const QString clash = m_clashCheck(Result()); !clash.isEmpty())
+                    {
+                        QMessageBox::warning(
+                            this, QStringLiteral("Preset"),
+                            QStringLiteral("This would share its menu entry with %1, so only one of them could "
+                                           "be built. Change the name or the category - punctuation and spacing "
+                                           "do not count as a difference.")
+                                .arg(clash));
+                        return;
+                    }
                 }
                 accept();
             });
@@ -580,6 +600,61 @@ namespace AzToolsFramework
         return userIndex < aznumeric_cast<int>(m_userPresets.size()) ? userIndex : -1;
     }
 
+    QString EntityPresetManagerDialog::ClashingPreset(
+        const EntityPresets::Preset& candidate, const int ignoreUserIndex) const
+    {
+        // Compared by menu identifier rather than by name, because that is what the menu tells
+        // presets apart by - and it ignores punctuation and spacing.
+        const AZStd::string identifier = EntityPresetMenu::ActionIdentifierFor(candidate);
+
+        const auto describe = [](const EntityPresets::Preset& preset)
+        {
+            return preset.m_category.empty()
+                ? QStringLiteral("'%1'").arg(ToQString(preset.m_name))
+                : QStringLiteral("'%1' in %2").arg(ToQString(preset.m_name), ToQString(preset.m_category));
+        };
+
+        for (const EntityPresets::Preset& preset : EntityPresets::BuiltIn())
+        {
+            if (EntityPresetMenu::ActionIdentifierFor(preset) == identifier)
+            {
+                return describe(preset);
+            }
+        }
+
+        for (const EntityPresets::Preset& preset : EntityPresets::FromGems())
+        {
+            if (EntityPresetMenu::ActionIdentifierFor(preset) == identifier)
+            {
+                return describe(preset);
+            }
+        }
+
+        for (int index = 0; index < aznumeric_cast<int>(m_userPresets.size()); ++index)
+        {
+            const EntityPresets::Preset& preset = m_userPresets[aznumeric_cast<size_t>(index)];
+            if (index != ignoreUserIndex && EntityPresetMenu::ActionIdentifierFor(preset) == identifier)
+            {
+                return describe(preset);
+            }
+        }
+
+        return {};
+    }
+
+    AZStd::string EntityPresetManagerDialog::UniqueCopyName(EntityPresets::Preset copy) const
+    {
+        const AZStd::string baseName = copy.m_name + " Copy";
+        copy.m_name = baseName;
+
+        for (int number = 2; !ClashingPreset(copy, -1).isEmpty(); ++number)
+        {
+            copy.m_name = baseName + " " + AZStd::to_string(number);
+        }
+
+        return copy.m_name;
+    }
+
     void EntityPresetManagerDialog::SyncButtons()
     {
         const bool userSelected = SelectedUserIndex() >= 0;
@@ -597,7 +672,12 @@ namespace AzToolsFramework
         EntityPresets::Preset preset;
         preset.m_category = "Custom";
 
-        EntityPresetEditDialog dialog(preset, this);
+        EntityPresetEditDialog dialog(
+            preset, this,
+            [this](const EntityPresets::Preset& edited)
+            {
+                return ClashingPreset(edited, -1);
+            });
         if (dialog.exec() == QDialog::Accepted)
         {
             m_userPresets.push_back(dialog.Result());
@@ -614,7 +694,12 @@ namespace AzToolsFramework
             return;
         }
 
-        EntityPresetEditDialog dialog(m_userPresets[aznumeric_cast<size_t>(index)], this);
+        EntityPresetEditDialog dialog(
+            m_userPresets[aznumeric_cast<size_t>(index)], this,
+            [this, index](const EntityPresets::Preset& edited)
+            {
+                return ClashingPreset(edited, index);
+            });
         if (dialog.exec() == QDialog::Accepted)
         {
             m_userPresets[aznumeric_cast<size_t>(index)] = dialog.Result();
@@ -651,7 +736,7 @@ namespace AzToolsFramework
         // longer tied to the gem that may have supplied the original.
         source.m_readOnly = false;
         source.m_sourceGem.clear();
-        source.m_name += " Copy";
+        source.m_name = UniqueCopyName(source);
 
         m_userPresets.push_back(source);
         Populate();

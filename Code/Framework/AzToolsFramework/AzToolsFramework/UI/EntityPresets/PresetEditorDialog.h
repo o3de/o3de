@@ -12,7 +12,10 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Entity/EntityPresets/EntityPresets.h>
 
+#include <AzCore/std/functional.h>
+
 #include <QDialog>
+#include <QString>
 #endif
 
 class QComboBox;
@@ -32,7 +35,12 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        EntityPresetEditDialog(const EntityPresets::Preset& preset, QWidget* parent = nullptr);
+        //! Describes the preset an edited one would clash with in the menu, or returns an empty
+        //! string when there is none. OK stays refused until the clash is resolved.
+        using ClashCheck = AZStd::function<QString(const EntityPresets::Preset&)>;
+
+        EntityPresetEditDialog(
+            const EntityPresets::Preset& preset, QWidget* parent = nullptr, ClashCheck clashCheck = {});
 
         //! The edited preset. Only meaningful after exec() returned Accepted.
         EntityPresets::Preset Result() const;
@@ -67,6 +75,8 @@ namespace AzToolsFramework
         AZStd::vector<EntityPresets::ComponentSpec> m_levelComponents;
         QComboBox* m_categoryCombo = nullptr;
         QTreeWidget* m_tree = nullptr;
+
+        ClashCheck m_clashCheck;
     };
 
     //! Lists every preset and manages the user's own.
@@ -88,6 +98,14 @@ namespace AzToolsFramework
 
         //! The user preset selected in the list, or -1 for a read-only one or nothing.
         int SelectedUserIndex() const;
+
+        //! The preset @p candidate would share a menu entry with, described for a message, or an
+        //! empty string if it has one of its own. @p ignoreUserIndex is the user preset being
+        //! edited, which it may of course match; -1 for none.
+        QString ClashingPreset(const EntityPresets::Preset& candidate, int ignoreUserIndex) const;
+
+        //! "<name> Copy", numbered when that is taken, so a duplicate always gets its own entry.
+        AZStd::string UniqueCopyName(EntityPresets::Preset copy) const;
 
         void OnAdd();
         void OnEdit();

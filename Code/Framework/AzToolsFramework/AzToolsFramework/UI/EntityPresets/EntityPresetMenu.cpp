@@ -157,9 +157,25 @@ namespace AzToolsFramework
 
             RegisteredActionIdentifiers().clear();
 
+            // Identifiers keep only the letters and digits of category and name, so two presets can
+            // land on the same one ("Plane 3x3" and "Plane (3x3)", or a project preset named like a
+            // gem's). The second would otherwise share the first's menu entry and never be built.
+            AZStd::unordered_set<AZStd::string> claimed;
+
             for (const EntityPresets::Preset& preset : EntityPresets::All())
             {
                 const AZStd::string identifier = ActionIdentifierFor(preset);
+
+                if (!claimed.insert(identifier).second)
+                {
+                    AZ_Warning(
+                        "EntityPresets", false,
+                        "Preset '%s' in '%s' is left out of the menu: an earlier preset has the same "
+                        "name and category once punctuation is ignored. Rename it or move it to another "
+                        "category.",
+                        preset.m_name.c_str(), preset.m_category.c_str());
+                    continue;
+                }
 
                 // A refresh re-walks presets that are mostly unchanged, and registering a second
                 // time would fail and log. Skipping is not a leak: the handler below captures the
@@ -274,15 +290,24 @@ namespace AzToolsFramework
             // insertion has room to land between two existing entries.
             AZStd::unordered_map<AZStd::string, int> nextSortKey;
 
+            // Only the first preset with a given identifier was given an action; see RegisterActions.
+            AZStd::unordered_set<AZStd::string> bound;
+
             for (const EntityPresets::Preset& preset : EntityPresets::All())
             {
+                const AZStd::string actionIdentifier = ActionIdentifierFor(preset);
+                if (!bound.insert(actionIdentifier).second)
+                {
+                    continue;
+                }
+
                 const AZStd::string category = preset.m_category.empty() ? AZStd::string(OtherCategory) : preset.m_category;
                 const AZStd::string menuIdentifier = CategoryMenuIdentifierFor(category);
 
                 int& sortKey = nextSortKey[menuIdentifier];
                 sortKey += 100;
 
-                menuManager->AddActionToMenu(menuIdentifier, ActionIdentifierFor(preset), sortKey);
+                menuManager->AddActionToMenu(menuIdentifier, actionIdentifier, sortKey);
             }
 
             int categorySortKey = EntityPresetsIdentifiers::EntityPresetsCategorySortKeyStart;
