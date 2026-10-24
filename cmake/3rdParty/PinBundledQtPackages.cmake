@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-# Prevent Qt's nested find_package(Qt6*Tools) calls from mixing the O3DE Qt
-# package with another Qt installation. Unlike a CMAKE_PREFIX_PATH hint,
+# Prevent Qt's nested find_package(Qt6*Tools) calls from mixing the O3DE 
+# Qt package with another Qt installation. Unlike a CMAKE_PREFIX_PATH hint,
 # <Package>_DIR variables take precedence over the standard package searches,
 # including stale entries in CMakeCache.txt. Keep the overrides local to the
 # caller so they do not overwrite the user's CMake cache settings.
