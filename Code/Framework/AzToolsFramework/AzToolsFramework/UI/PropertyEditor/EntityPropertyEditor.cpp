@@ -559,7 +559,7 @@ namespace AzToolsFramework
             auto* propertyEditorToolsSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
             AZ_Assert(propertyEditorToolsSystemInterface != nullptr, "EntityPropertyEditor - "
                 "PropertyEditorToolsSystemInterface is not available for registering prefab override label handler.");
-            propertyEditorToolsSystemInterface->RegisterHandler<Prefab::PrefabOverrideLabelHandler>();
+            Prefab::RegisterPrefabOverrideLabelHandler(*propertyEditorToolsSystemInterface);
         }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();

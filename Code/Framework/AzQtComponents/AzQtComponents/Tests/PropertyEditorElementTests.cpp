@@ -16,6 +16,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+#include <AzQtComponents/Components/Widgets/IconElidingLabel.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -36,7 +37,10 @@
 #include <QSpacerItem>
 #include <QStyleFactory>
 #include <QStyleOption>
+#include <QToolButton>
 #include <QVBoxLayout>
+
+#include <string>
 
 namespace AzQtComponents
 {
@@ -683,6 +687,197 @@ namespace AzQtComponents
                 EXPECT_EQ(flatLabel->sizeHint(), legacyLabel->sizeHint()) << "overridden " << overridden;
             }
             EXPECT_TRUE(flatLabel->styleSheet().isEmpty());
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T1c: the compact override label (IconElidingLabel) against the composite it stands in for
+        // ----------------------------------------------------------------------------------
+
+        //! The override label of a DPE row both ways, each alone in a root of the same size: the composite of
+        //! PrefabOverrideLabelHandler (a container whose layout has no margins and no spacing, a tool button with the 6x6 icon, an
+        //! ElidingLabel) and the IconElidingLabel of CompactPrefabOverrideLabelHandler. The legacy twins carry the handlers' inline
+        //! sheet on the label and the application's sheet on the root; the flat twins have the style on everything and no sheet.
+        struct OverrideLabelTwins
+        {
+            OverrideLabelTwins(const PropertyEditorElementTests& tests, bool flatMode, const QSize& size)
+            {
+                auto* compositeColumn = new QHBoxLayout(&m_compositeRoot);
+                compositeColumn->setContentsMargins(0, 0, 0, 0);
+                m_container = new QWidget(&m_compositeRoot);
+                compositeColumn->addWidget(m_container);
+                m_button = new QToolButton();
+                m_label = new ElidingLabel();
+                auto* containerLayout = new QHBoxLayout(m_container);
+                containerLayout->setContentsMargins(0, 0, 0, 0);
+                containerLayout->setSpacing(0);
+                containerLayout->addWidget(m_button);
+                containerLayout->addWidget(m_label);
+
+                auto* compactColumn = new QHBoxLayout(&m_compactRoot);
+                compactColumn->setContentsMargins(0, 0, 0, 0);
+                m_compact = new IconElidingLabel(&m_compactRoot);
+                compactColumn->addWidget(m_compact);
+
+                for (ElidingLabel* label : { m_label, static_cast<ElidingLabel*>(m_compact) })
+                {
+                    label->setProperty("overridden", false);
+                    if (!flatMode)
+                    {
+                        label->setStyleSheet(QStringLiteral("[overridden=\"true\"] { font-weight: bold }"));
+                    }
+                }
+                set(QStringLiteral("Width"), false);
+
+                for (QWidget* root : { &m_compositeRoot, &m_compactRoot })
+                {
+                    if (flatMode)
+                    {
+                        tests.flat(*root);
+                    }
+                    else
+                    {
+                        PropertyEditorElementTests::legacy(*root, nullptr, nullptr);
+                    }
+                    PropertyEditorElementTests::show(*root, size);
+                }
+            }
+
+            //! What RefreshUI does to both: the text, the override state (the property set, the label repolished) and the icon
+            void set(const QString& text, bool overridden)
+            {
+                const QIcon icon = overridden ? QIcon(marker(QSize(6, 6), QColor(0xE0, 0x80, 0x20))) : QIcon();
+                for (ElidingLabel* label : { m_label, static_cast<ElidingLabel*>(m_compact) })
+                {
+                    label->setText(text);
+                    if (StyleManager::setObjectProperty(label, "overridden", overridden))
+                    {
+                        label->RefreshStyle();
+                    }
+                }
+                m_button->setIcon(icon);
+                m_button->setIconSize(QSize(6, 6));
+                m_compact->setIcon(icon, QSize(6, 6));
+                QApplication::processEvents();
+            }
+
+            //! A root as its window paints it (QWidget::render: the background, then the children), on grey at a device ratio
+            static QImage render(QWidget& root, qreal ratio)
+            {
+                QImage image((QSizeF(root.size()) * ratio).toSize(), QImage::Format_ARGB32_Premultiplied);
+                image.setDevicePixelRatio(ratio);
+                image.fill(QColor(0x80, 0x80, 0x80));
+                root.render(&image);
+                return image;
+            }
+
+            //! The same pixels at both ratios, the hints the row's layout reads, and the same elided text and tooltip
+            void expectSame(const std::string& what)
+            {
+                for (const qreal ratio : { 1.0, 1.5 })
+                {
+                    EXPECT_EQ(PropertyEditorElementTests::differing(render(m_compositeRoot, ratio), render(m_compactRoot, ratio)), 0)
+                        << what << " at ratio " << ratio;
+                }
+                EXPECT_EQ(m_compact->sizeHint(), m_container->sizeHint()) << what;
+                EXPECT_EQ(m_compact->minimumSizeHint(), m_container->minimumSizeHint()) << what;
+                EXPECT_EQ(m_compact->elidedText(), m_label->elidedText()) << what;
+                EXPECT_EQ(m_compact->toolTip(), m_label->toolTip()) << what;
+            }
+
+            QWidget m_compositeRoot;
+            QWidget m_compactRoot;
+            QWidget* m_container = nullptr;
+            QToolButton* m_button = nullptr;
+            ElidingLabel* m_label = nullptr;
+            IconElidingLabel* m_compact = nullptr;
+        };
+
+        TEST_F(PropertyEditorElementTests, CompactOverrideLabel_LooksAndSizesAsTheCompositeWithAndWithoutTheOverride)
+        {
+            // a row as tall as its spin boxes, one as tall as the label, and a column too narrow for the text
+            for (const bool flatMode : { false, true })
+            {
+                for (const QSize& size : { QSize(220, 24), QSize(220, 16), QSize(44, 24) })
+                {
+                    OverrideLabelTwins twins(*this, flatMode, size);
+                    const std::string mode = std::string(flatMode ? "flat " : "legacy ") + std::to_string(size.width()) + "x" +
+                        std::to_string(size.height());
+                    for (const bool overridden : { false, true, false })
+                    {
+                        twins.set(QStringLiteral("Width"), overridden);
+                        twins.expectSame(mode + (overridden ? " overridden" : " plain"));
+                    }
+                    twins.set(QStringLiteral("A property with a name that is far too long for its column"), true);
+                    twins.expectSame(mode + " long name");
+                }
+            }
+        }
+
+        TEST_F(PropertyEditorElementTests, CompactOverrideLabel_IsFilteredAndDisabledAsTheComposite)
+        {
+            for (const bool flatMode : { false, true })
+            {
+                OverrideLabelTwins twins(*this, flatMode, QSize(220, 24));
+                const std::string mode = flatMode ? "flat" : "legacy";
+                twins.set(QStringLiteral("Width"), true);
+
+                // the filter's highlight is drawn in ElidingLabel::TextRect, which starts after the button
+                twins.m_label->setFilter(QStringLiteral("dt"));
+                twins.m_compact->setFilter(QStringLiteral("dt"));
+                twins.expectSame(mode + " filtered");
+                twins.m_label->setFilter(QString());
+                twins.m_compact->setFilter(QString());
+
+                // a disabled row: the button's icon and the text as the style draws them disabled
+                twins.m_compositeRoot.setEnabled(false);
+                twins.m_compactRoot.setEnabled(false);
+                QApplication::processEvents();
+                twins.expectSame(mode + " disabled");
+            }
+        }
+
+        TEST_F(PropertyEditorElementTests, CompactOverrideLabel_TheFlatButtonUnderTheMouseOrPressedIsDrawnAsIdle)
+        {
+            // The compact label draws the button idle only. The flattened style draws a tool button without a panel and without a
+            // shift (ToolButton::drawToolButton, Fusion's PM_ButtonShift* of 0), so under the mouse and pressed it looked the same.
+            OverrideLabelTwins twins(*this, true, QSize(220, 24));
+            twins.set(QStringLiteral("Width"), true);
+            twins.m_button->setAttribute(Qt::WA_UnderMouse, true);
+            twins.expectSame("under the mouse");
+            twins.m_button->setDown(true);
+            twins.expectSame("pressed");
+        }
+
+        TEST_F(PropertyEditorElementTests, CompactOverrideLabel_IsOneWidgetWithoutATabStopAndItsWindowHasOneButton)
+        {
+            OverrideLabelTwins twins(*this, true, QSize(220, 48));
+            twins.set(QStringLiteral("Width"), true);
+
+            // the composite: the container, the tool button (a Tab stop, which the DPE's Tab skips), the label and its hidden
+            // metrics label; the compact label: itself and its metrics label, and the window's hidden button
+            EXPECT_EQ(twins.m_compositeRoot.findChildren<QWidget*>().size(), 4);
+            EXPECT_TRUE(twins.m_button->focusPolicy() & Qt::TabFocus);
+            EXPECT_EQ(twins.m_compactRoot.findChildren<QWidget*>().size(), 3);
+            EXPECT_EQ(twins.m_compact->focusPolicy(), Qt::NoFocus);
+            const QList<QToolButton*> buttons = twins.m_compactRoot.findChildren<QToolButton*>();
+            ASSERT_EQ(buttons.size(), 1);
+            EXPECT_FALSE(buttons.front()->isVisible());
+            EXPECT_FALSE(buttons.front()->isVisibleTo(&twins.m_compactRoot));
+
+            // A second label, made without a parent and placed after (as the DPE places a handler's widget): it shares the
+            // window's button, and has the first one's size once it is in the window
+            auto* second = new IconElidingLabel();
+            second->setIcon(QIcon(marker(QSize(6, 6), QColor(0xE0, 0x80, 0x20))), QSize(6, 6));
+            second->setText(QStringLiteral("Width"));
+            second->setProperty("overridden", true);
+            twins.m_compactRoot.layout()->addWidget(second);
+            flat(twins.m_compactRoot);                          // the style on the label and its metrics label, as on the others
+            second->show();
+            QApplication::processEvents();
+            EXPECT_EQ(twins.m_compactRoot.findChildren<QToolButton*>().size(), 1);
+            EXPECT_EQ(second->sizeHint(), twins.m_compact->sizeHint());
+            EXPECT_EQ(second->indent(), twins.m_compact->indent());
+            EXPECT_GT(second->indent(), 0);
         }
 
         // ----------------------------------------------------------------------------------

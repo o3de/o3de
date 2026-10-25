@@ -7,14 +7,59 @@
  */
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/StyleManager.h>
+
+AZ_CVAR(
+    bool,
+    ed_dpeCompactOverrideLabel,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, the override label of a DPE row is one widget that draws the override dot itself (CompactPrefabOverrideLabelHandler) "
+    "instead of a tool button and a label in a container. Rows built after a change follow it.");
 
 namespace AzToolsFramework::Prefab
 {
     QWeakPointer<QIcon> PrefabOverrideLabelHandler::s_sharedOverrideIcon;
     QWeakPointer<QIcon> PrefabOverrideLabelHandler::s_sharedEmptyIcon;
     constexpr QSize kIconSize(6, 6);
+
+    namespace PrefabOverrideLabelInternal
+    {
+        //! The override icon of the compact labels: one for all of them while any is alive
+        QWeakPointer<QIcon> s_sharedCompactOverrideIcon;
+    } // namespace PrefabOverrideLabelInternal
+
+    // ----------------------------------------------------------------------------------
+    // Registration: the composite handler or the compact one, as ed_dpeCompactOverrideLabel says
+    // ----------------------------------------------------------------------------------
+
+    void RegisterPrefabOverrideLabelHandler(PropertyEditorToolsSystemInterface& propertyEditorToolsSystem)
+    {
+        PropertyEditorToolsSystemInterface::HandlerData handlerData;
+        handlerData.m_name = PrefabOverrideLabelHandler::GetHandlerName();
+        handlerData.m_shouldHandleType = [](const AZ::TypeId& typeId)
+        {
+            return PrefabOverrideLabelHandler::ShouldHandleType(typeId);
+        };
+        handlerData.m_factory = []() -> PropertyEditorToolsSystemInterface::PropertyHandlerInstance
+        {
+            if (ed_dpeCompactOverrideLabel)
+            {
+                return AZStd::make_unique<CompactPrefabOverrideLabelHandler>();
+            }
+            return AZStd::make_unique<PrefabOverrideLabelHandler>();
+        };
+        handlerData.m_isDefaultHandler = false;
+        propertyEditorToolsSystem.RegisterHandler(AZStd::move(handlerData));
+    }
+
+    // ----------------------------------------------------------------------------------
+    // PrefabOverrideLabelHandler: a tool button and a label in a container
+    // ----------------------------------------------------------------------------------
 
     PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
         : m_overridden(false)
@@ -100,6 +145,91 @@ namespace AzToolsFramework::Prefab
     }
 
     void PrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
+    {
+        if (!m_overridden)
+        {
+            return;
+        }
+
+        QMenu contextMenu;
+        QAction* revertAction = contextMenu.addAction(tr("Revert override"));
+
+        QAction* selectedItem = contextMenu.exec(mapToGlobal(position));
+
+        if (selectedItem == revertAction)
+        {
+            AZStd::string_view relativePathFromEntity =
+                PrefabPropertyEditorNodes::PrefabOverrideLabel::RelativePath.ExtractFromDomNode(m_node).value_or("");
+            PrefabPropertyEditorNodes::PrefabOverrideLabel::RevertOverride.InvokeOnDomNode(m_node, relativePathFromEntity);
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // CompactPrefabOverrideLabelHandler: the same label in one widget
+    // ----------------------------------------------------------------------------------
+
+    CompactPrefabOverrideLabelHandler::CompactPrefabOverrideLabelHandler()
+        : m_overrideIcon(PrefabOverrideLabelInternal::s_sharedCompactOverrideIcon.lock())
+    {
+        if (!m_overrideIcon)
+        {
+            m_overrideIcon = QSharedPointer<QIcon>(new QIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg")));
+            PrefabOverrideLabelInternal::s_sharedCompactOverrideIcon = m_overrideIcon;
+        }
+
+        // Bold when overridden, as PrefabOverrideLabelHandler's label is: the inline sheet with style sheets, the flattened GUI's
+        // element without (Global.Text.OverriddenPropertyLabel, which matches an ElidingLabel and so this one)
+        setProperty(PrefabOverrideLabelHandler::OverriddenPropertyName, false);
+        if (!AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            AzQtComponents::GuiPerfFloor::setInlineStyleSheet(
+                this, QString("[%1=\"true\"] { font-weight: bold }").arg(PrefabOverrideLabelHandler::OverriddenPropertyName));
+        }
+        setIcon(QIcon(), kIconSize);
+
+        setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(this, &CompactPrefabOverrideLabelHandler::customContextMenuRequested, this, &CompactPrefabOverrideLabelHandler::ShowContextMenu);
+    }
+
+    void CompactPrefabOverrideLabelHandler::SetValueFromDom(const AZ::Dom::Value& domValue)
+    {
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+
+        m_overridden = PrefabOverrideLabel::IsOverridden.ExtractFromDomNode(domValue).value_or(false);
+        // The node gives the context menu its relative path and its revert message
+        m_node = domValue;
+    }
+
+    void CompactPrefabOverrideLabelHandler::RefreshUI()
+    {
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+
+        AZStd::string_view labelText = PrefabOverrideLabel::Value.ExtractFromDomNode(m_node).value_or("");
+        setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
+
+        if (AzQtComponents::StyleManager::setObjectProperty(this, PrefabOverrideLabelHandler::OverriddenPropertyName, m_overridden))
+        {
+            RefreshStyle();
+        }
+        setIcon(m_overridden ? *m_overrideIcon : QIcon(), kIconSize);
+    }
+
+    bool CompactPrefabOverrideLabelHandler::ResetToDefaults()
+    {
+        // the styling properties are left to RefreshUI, as PrefabOverrideLabelHandler leaves them
+        m_overridden = false;
+        setText(QString());
+        setIcon(QIcon(), kIconSize);
+        m_node = AZ::Dom::Value();
+        return true;
+    }
+
+    void CompactPrefabOverrideLabelHandler::SetFilter(const QString& filter)
+    {
+        AzQtComponents::IconElidingLabel::SetFilter(filter);
+    }
+
+    void CompactPrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
     {
         if (!m_overridden)
         {

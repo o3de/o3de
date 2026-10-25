@@ -186,6 +186,8 @@ set(FILES
     Components/Widgets/FilteredSearchWidgetConfig.ini
     Components/Widgets/GradientSlider.cpp
     Components/Widgets/GradientSlider.h
+    Components/Widgets/IconElidingLabel.cpp
+    Components/Widgets/IconElidingLabel.h
     Components/Widgets/LineEdit.cpp
     Components/Widgets/LineEdit.h
     Components/Widgets/LineEdit.qss

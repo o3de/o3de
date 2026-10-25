@@ -6,16 +6,132 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/std/algorithm.h>
+#include <AzQtComponents/Components/Widgets/IconElidingLabel.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <Prefab/Overrides/PrefabInspectorOverrideTestFixture.h>
 
+#include <QAbstractSpinBox>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QKeyEvent>
 #include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
 
 namespace UnitTest
 {
     using PrefabInspectorOverrideTest = PrefabInspectorOverrideTestFixture;
+
+    namespace PrefabInspectorOverrideTestInternal
+    {
+        //! What the DPE's Tab stops on (DocumentPropertyEditor.cpp IsInputWidget). A widget whose focus goes to another (the line
+        //! edit of a spin box) is not a stop of its own.
+        bool IsTabStop(const QWidget* widget)
+        {
+            const bool input = qobject_cast<const QAbstractSpinBox*>(widget) || qobject_cast<const QComboBox*>(widget) ||
+                qobject_cast<const QCheckBox*>(widget) || qobject_cast<const QLineEdit*>(widget) || qobject_cast<const QPushButton*>(widget);
+            return input && !widget->focusProxy();
+        }
+
+        //! The property editor of the inspector's one card
+        const AzToolsFramework::DocumentPropertyEditor* FindPropertyEditor()
+        {
+            AZStd::vector<const AzToolsFramework::ComponentEditor*> componentEditors;
+            AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                &AzToolsFramework::EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
+                [&componentEditors](const AzToolsFramework::ComponentEditor* componentEditor)
+                {
+                    componentEditors.push_back(componentEditor);
+                    return true;
+                });
+            return componentEditors.size() == 1 ? componentEditors.front()->findChild<AzToolsFramework::DocumentPropertyEditor*>() : nullptr;
+        }
+
+        //! Tab from the card's first stop until the walk leaves the card: each stop as the index of its widget among the card's
+        //! stops (in the order the card made them), and -1 for the widget outside the card where the walk ends
+        AZStd::vector<int> WalkTheTabChain(QWidget& window, const AzToolsFramework::DocumentPropertyEditor& propertyEditor)
+        {
+            QList<QWidget*> stops;
+            for (QWidget* widget : propertyEditor.findChildren<QWidget*>())
+            {
+                if (IsTabStop(widget) && widget->isVisibleTo(&window) && widget->isEnabled())
+                {
+                    stops.push_back(widget);
+                }
+            }
+
+            AZStd::vector<int> walk;
+            if (stops.isEmpty())
+            {
+                return walk;
+            }
+            stops.front()->setFocus(Qt::TabFocusReason);
+            for (int step = 0; step <= stops.size(); ++step)
+            {
+                const int index = aznumeric_cast<int>(stops.indexOf(window.focusWidget()));
+                walk.push_back(index);
+                if (index < 0)
+                {
+                    break;
+                }
+                QKeyEvent tab(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier);
+                QApplication::sendEvent(window.focusWidget(), &tab);
+            }
+            return walk;
+        }
+    } // namespace PrefabInspectorOverrideTestInternal
+
+    // The Tab chain of a real card, with the composite override label and with the compact one (ed_dpeCompactOverrideLabel): the
+    // DPE's Tab (DocumentPropertyEditor::focusNextPrevChild) stops on the input widgets only (the X, Y and Z of a vector, a field's
+    // browse button), and the compact label leaves that walk as the composite's tool button and label left it
+    TEST_F(PrefabInspectorOverrideTest, TheTabChainOfACardIsTheSameWithTheCompactOverrideLabel)
+    {
+        using namespace PrefabInspectorOverrideTestInternal;
+
+        AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
+        CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
+        CreateAndValidateEditEntityOverride(newEntityId, grandparentContainerId);  // the Translate row's label has the override dot
+
+        auto* console = AZ::Interface<AZ::IConsole>::Get();
+        ASSERT_NE(console, nullptr);
+
+        AZStd::vector<int> walks[2];
+        for (const bool compact : { false, true })
+        {
+            console->PerformCommand(compact ? "ed_dpeCompactOverrideLabel true" : "ed_dpeCompactOverrideLabel false");
+
+            // a new inspector, shown (a hidden window has no Tab chain): its rows are made with the cvar as it is now
+            m_testEntityPropertyEditor = AZStd::make_unique<AzToolsFramework::EntityPropertyEditor>(nullptr, Qt::WindowFlags(), false);
+            m_testEntityPropertyEditor->setAttribute(Qt::WA_DontShowOnScreen);
+            m_testEntityPropertyEditor->resize(400, 900);
+            m_testEntityPropertyEditor->show();
+            GenerateComponentAdapterDoms(newEntityId);
+            QApplication::processEvents();
+
+            const auto* propertyEditor = FindPropertyEditor();
+            ASSERT_NE(propertyEditor, nullptr);
+            EXPECT_EQ(propertyEditor->findChildren<AzQtComponents::IconElidingLabel*>().isEmpty(), !compact) << "compact " << compact;
+            walks[compact] = WalkTheTabChain(*m_testEntityPropertyEditor, *propertyEditor);
+        }
+        console->PerformCommand("ed_dpeCompactOverrideLabel false");
+
+        // Every Tab moves on to the next stop of the card (three at least: the X, Y and Z of Translate) until it leaves the card,
+        // and the walk is the same both ways
+        const AZStd::vector<int>& walk = walks[0];
+        ASSERT_GE(walk.size(), 4);
+        for (size_t step = 0; step + 1 < walk.size(); ++step)
+        {
+            EXPECT_GE(walk[step], 0) << "step " << step;
+            EXPECT_TRUE(AZStd::find(walk.begin() + step + 1, walk.end(), walk[step]) == walk.end())
+                << "step " << step << " stops again on " << walk[step];
+        }
+        EXPECT_EQ(walks[1], walks[0]);
+    }
 
     // The fixture's inspector is a real one (DPE inspector, override management): it also proves what a rebuild leaves behind
     TEST_F(PrefabInspectorOverrideTest, RebuildsDoNotGrowTheLayoutOfAReusedPropertyEditor)
