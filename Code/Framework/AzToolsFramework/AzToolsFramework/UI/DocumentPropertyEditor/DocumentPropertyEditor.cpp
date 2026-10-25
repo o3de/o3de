@@ -213,6 +213,20 @@ namespace AzToolsFramework
         return { (m_enforceMinWidth ? cumulativeWidth : 0), minimumHeight };
     }
 
+    //! A shared column's layout only places the row's items for one layout pass. It gives the items back to the row's layout, which
+    //! owns them, then deletes the spacers CloseColumn gave it, and itself: a pass used to leak both.
+    static void ReleaseColumnLayout(const QLayout& rowLayout, QHBoxLayout* columnLayout)
+    {
+        while (QLayoutItem* item = columnLayout->takeAt(0))
+        {
+            if (rowLayout.indexOf(item) < 0)
+            {
+                delete item; // a spacer of CloseColumn
+            }
+        }
+        delete columnLayout;
+    }
+
     void DPELayout::CloseColumn(
         QHBoxLayout* currentColumnLayout,
         QRect& itemGeometry,
@@ -243,6 +257,7 @@ namespace AzToolsFramework
             itemGeometry.setRight(itemGeometry.left() + columnWidth);
         }
         currentColumnLayout->setGeometry(itemGeometry);
+        ReleaseColumnLayout(*this, currentColumnLayout);
 
         // Count completed columns.
         ++currentColumnCount;
@@ -1100,7 +1115,12 @@ namespace AzToolsFramework
 
     void DPERowWidget::PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
-        rowWidget->setParent(this);
+        // A new row is parented once, by the main layout that takes it (AddAfterWidget: insertWidget reparents it to the scroll
+        // surface). A row that is moved is parented here first, as before: its parent decides which layout Qt takes it out of.
+        if (rowWidget->parentWidget())
+        {
+            rowWidget->setParent(this);
+        }
         auto dpe = GetDPE();
 
         // determine where to put this new row in the main DPE layout
@@ -1363,6 +1383,9 @@ namespace AzToolsFramework
         m_layout = new QVBoxLayout(scrollSurface);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(2);
+        // The stretch below the rows: rows are always inserted before it (AddAfterWidget). Added once here; a reset used to add another
+        // every time, so the layout of a reused property editor grew by one item per reset.
+        m_layout->addStretch();
 
         setWidget(scrollSurface);
         setWidgetResizable(true);
@@ -1850,7 +1873,6 @@ namespace AzToolsFramework
                 m_rootNode->AddChildFromDomValue(topContents[arrayIndex], arrayIndex);
             }
         }
-        m_layout->addStretch();
         const AZStd::chrono::steady_clock::time_point dirtyHandlersStart = AZStd::chrono::steady_clock::now();
         UpdateDirtyHandlers();
         const AZStd::chrono::steady_clock::time_point dirtyHandlersEnd = AZStd::chrono::steady_clock::now();

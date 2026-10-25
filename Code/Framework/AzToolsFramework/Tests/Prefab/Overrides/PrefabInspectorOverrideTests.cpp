@@ -7,12 +7,54 @@
  */
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <Prefab/Overrides/PrefabInspectorOverrideTestFixture.h>
+
+#include <QLayout>
 
 namespace UnitTest
 {
     using PrefabInspectorOverrideTest = PrefabInspectorOverrideTestFixture;
+
+    // The fixture's inspector is a real one (DPE inspector, override management): it also proves what a rebuild leaves behind
+    TEST_F(PrefabInspectorOverrideTest, RebuildsDoNotGrowTheLayoutOfAReusedPropertyEditor)
+    {
+        AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
+        CreateEntityInNestedPrefab(newEntityId, parentContainerId, grandparentContainerId);
+
+        // three rebuilds: the inspector reuses its component editor, and the property editor in it, every time
+        for (int rebuild = 0; rebuild < 3; ++rebuild)
+        {
+            GenerateComponentAdapterDoms(newEntityId);
+        }
+
+        AZStd::vector<const AzToolsFramework::ComponentEditor*> componentEditors;
+        AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+            &AzToolsFramework::EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
+            [&componentEditors](const AzToolsFramework::ComponentEditor* componentEditor)
+            {
+                componentEditors.push_back(componentEditor);
+                return true;
+            });
+        ASSERT_EQ(componentEditors.size(), 1);
+        const auto* propertyEditor = componentEditors.front()->findChild<AzToolsFramework::DocumentPropertyEditor*>();
+        ASSERT_NE(propertyEditor, nullptr);
+
+        // the rows of the last rebuild and the one stretch below them
+        const QLayout* rowLayout = propertyEditor->widget()->layout();
+        int rows = 0;
+        int stretches = 0;
+        for (int itemIndex = 0; itemIndex < rowLayout->count(); ++itemIndex)
+        {
+            QLayoutItem* item = rowLayout->itemAt(itemIndex);
+            rows += item->widget() ? 1 : 0;
+            stretches += item->spacerItem() ? 1 : 0;
+        }
+        EXPECT_GT(rows, 0);
+        EXPECT_EQ(stretches, 1);
+        EXPECT_TRUE(rowLayout->itemAt(rowLayout->count() - 1)->spacerItem() != nullptr);
+    }
 
     // These index paths depend on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
     // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, these may

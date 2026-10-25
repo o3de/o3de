@@ -307,6 +307,31 @@ namespace AzQtComponents
         EXPECT_EQ(counters.m_unpolishSheet, 0u);
     }
 
+    TEST_F(GuiPerfCountersTests, Style_AddingATagTheWidgetHasChangesNothing)
+    {
+        QWidget widget;
+        widget.ensurePolished();
+        Style::addClass(&widget, QStringLiteral("Primary"));
+        countFromHere();
+
+        // PushButton::polish adds the tag of a default button on every polish; tags compare without case (hasClass, removeClass)
+        Style::addClass(&widget, QStringLiteral("Primary"));
+        Style::addClass(&widget, QStringLiteral("primary"));
+        EXPECT_EQ(widget.property("class").toString(), QStringLiteral("Primary"));
+        EXPECT_EQ(GuiPerfCounters::counters().m_unpolish, 0u);
+        EXPECT_EQ(GuiPerfCounters::counters().m_polish, 0u);
+
+        // a new tag still polishes the widget again, once
+        Style::addClass(&widget, QStringLiteral("Small"));
+        EXPECT_EQ(widget.property("class").toString(), QStringLiteral("Primary Small"));
+        EXPECT_EQ(GuiPerfCounters::counters().m_unpolish, 1u);
+        EXPECT_EQ(GuiPerfCounters::counters().m_polish, 1u);
+
+        Style::removeClass(&widget, QStringLiteral("Primary"));
+        EXPECT_FALSE(Style::hasClass(&widget, QStringLiteral("Primary")));
+        EXPECT_TRUE(Style::hasClass(&widget, QStringLiteral("Small")));
+    }
+
     TEST_F(GuiPerfCountersTests, Style_TimesOnlyTheOutermostPolish)
     {
         countFromHere();

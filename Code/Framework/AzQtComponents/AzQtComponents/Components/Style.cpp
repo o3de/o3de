@@ -3784,6 +3784,13 @@ namespace AzQtComponents
 
     void Style::addClass(QWidget* button, const QString& className)
     {
+        // A tag the widget has already changes nothing: no second copy, no polish again. PushButton::polish and Slider::polish add
+        // theirs on every polish, which grew the class text and unpolished the widget inside its own polish each time.
+        if (hasClass(button, className))
+        {
+            return;
+        }
+
         QVariant buttonClassVariant = button->property("class");
         if (buttonClassVariant.isNull())
         {
