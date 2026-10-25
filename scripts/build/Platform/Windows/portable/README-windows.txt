@@ -51,7 +51,9 @@ Getting started
 
        C:\O3DE\@TOP_DIR@\o3de.cmd
 
-     The first start downloads and sets up O3DE's Python, which takes a few
+     A small window says "Starting the O3DE Project Manager" until the
+     Project Manager opens; there is no need to double-click again. The
+     first start downloads and sets up O3DE's Python, which takes a few
      minutes. The Project Manager also registers this engine, so you can
      create and open projects straight away.
 
