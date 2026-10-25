@@ -56,19 +56,11 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $ScriptDir = $PSScriptRoot
-# Use the Windows bsdtar, which can write zip files (a tar from Git or MSYS on PATH cannot)
-$Tar = Join-Path $env:SystemRoot 'System32\tar.exe'
-if (-not (Test-Path $Tar)) {
-    throw "tar.exe not found at $Tar (requires Windows 10 1803 or newer)"
-}
+. (Join-Path $ScriptDir 'package_helpers.ps1')
+Assert-WindowsTar
 
 function Write-Step([string]$Message) {
     Write-Host "[portable] $Message"
-}
-
-function Write-TextFile([string]$Path, [string]$Content) {
-    # No BOM, so the checksum file also works with sha256sum
-    [System.IO.File]::WriteAllText($Path, $Content, (New-Object System.Text.UTF8Encoding $false))
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
@@ -109,15 +101,7 @@ try {
         throw "$EngineSource does not contain engine.json"
     }
 
-    # Use the display version (what the installer is named after), falling back to the engine version
-    $EngineInfo = Get-Content -Raw $EngineJsonPath | ConvertFrom-Json
-    $Version = $null
-    if ($EngineInfo.PSObject.Properties['display_version']) {
-        $Version = $EngineInfo.display_version
-    }
-    if ([string]::IsNullOrEmpty($Version) -or $Version -eq '00.00') {
-        $Version = $EngineInfo.version
-    }
+    $Version = Get-EngineVersion $EngineJsonPath
     $TopDir = "o3de_$Version"
     if (-not $Name) {
         $Name = "o3de_${Version}_windows_portable"
@@ -150,7 +134,7 @@ try {
         Write-Step "Extracting bundled CMake into cmake\runtime"
         $CMakeExtract = Join-Path $StagingRoot 'cmake'
         New-Item -ItemType Directory -Path $CMakeExtract | Out-Null
-        & $Tar -x -f $CMakeZip.FullName -C $CMakeExtract
+        & $WindowsTar -x -f $CMakeZip.FullName -C $CMakeExtract
         if ($LASTEXITCODE -ne 0) {
             throw "Extracting $($CMakeZip.Name) failed"
         }
@@ -186,41 +170,13 @@ try {
 
     # 4. Archive, checksum and optionally sign
     $Archive = Join-Path $OutputDir "$Name.zip"
-    if (Test-Path $Archive) {
-        Remove-Item -Force $Archive
-    }
     Write-Step "Creating $Archive"
-    $SevenZip = $null
-    $SevenZipCommand = Get-Command 7z.exe -ErrorAction SilentlyContinue
-    if ($SevenZipCommand) {
-        $SevenZip = $SevenZipCommand.Source
-    }
-    elseif (Test-Path "$env:ProgramFiles\7-Zip\7z.exe") {
-        $SevenZip = "$env:ProgramFiles\7-Zip\7z.exe"
-    }
-    if ($SevenZip) {
-        # 7-Zip compresses with all cores, much faster than tar.exe for an archive this size
-        Push-Location $StagingRoot
-        try {
-            & $SevenZip a -tzip -mx=5 -mmt=on -bso0 -bsp0 $Archive $TopDir
-            if ($LASTEXITCODE -ne 0) { throw "7-Zip failed with exit code $LASTEXITCODE" }
-        }
-        finally {
-            Pop-Location
-        }
-    }
-    else {
-        & $Tar -a -c -f $Archive -C $StagingRoot $TopDir
-        if ($LASTEXITCODE -ne 0) { throw "tar.exe failed with exit code $LASTEXITCODE" }
-    }
-
-    $Hash = (Get-FileHash -Algorithm SHA256 $Archive).Hash.ToLowerInvariant()
-    Write-TextFile "$Archive.sha256" "$Hash  $Name.zip`n"
+    New-ZipArchive $StagingRoot $TopDir $Archive
+    Write-Sha256File $Archive
 
     if ($GpgKey) {
         Write-Step "Signing with key $GpgKey"
-        & gpg --batch --yes --local-user $GpgKey --armor --detach-sign --output "$Archive.asc" $Archive
-        if ($LASTEXITCODE -ne 0) { throw "gpg failed with exit code $LASTEXITCODE" }
+        New-GpgSignature $Archive $GpgKey
     }
 
     if ($Keep) {
