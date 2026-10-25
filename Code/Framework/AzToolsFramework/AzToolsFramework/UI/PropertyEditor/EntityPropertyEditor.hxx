@@ -184,6 +184,12 @@ namespace AzToolsFramework
         float GetMoveIndicatorAlpha() const;
         PropertyRowWidget* GetRowToHighlight();
 
+        //! The lazy cards (ed_inspectorLazyCards, inspector build plan I.4): builds the rows of every card that still holds them, now,
+        //! top to bottom (tests, and anything that needs every card's rows)
+        void CompleteLazyCards();
+        //! The cards that still hold their rows (0 once every card has its rows)
+        int GetLazyCardsPending() const;
+
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
 
@@ -596,6 +602,33 @@ namespace AzToolsFramework
         AZ::s64 m_diagClearHideUs = 0;
         AZ::s64 m_diagClearContentUs = 0;
         AZ::s64 m_diagClearPreventUs = 0;
+
+        // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4): a card past the view, or collapsed, holds the build of its rows.
+        // The rows are built later, always top to bottom (so that they join the Tab chain in the cards' order), at idle, as soon as
+        // the view reaches the card (scroll, resize), or when the card is expanded. A rebuild cancels what is left.
+        bool LazyCardsEnabled() const;
+        //! Builds the held cards from the top through the card at lastIndex, or until budgetUs is spent (after one card at least) when it
+        //! is not 0; a card above the view moves the scroll value by the height it gains, so that the view stays on what it shows
+        void ReleaseLazyCardsThrough(int lastIndex, AZ::s64 budgetUs = 0);
+        //! Not inside a release, during a rebuild, or with one queued, and only with held cards
+        bool CanReleaseLazyCards() const;
+        //! The used card that is or holds the widget, or -1
+        int IndexOfCardHolding(const QWidget* widget) const;
+        //! Builds the held cards through the last one in the view or one screen below it
+        void ReleaseLazyCardsInView();
+        //! Builds the held cards through the expanded card
+        void ReleaseLazyCardExpanded(const ComponentEditor* componentEditor);
+        void QueueLazyCardsStep(int delayMs = 0);
+        void RunLazyCardsStep(AZ::u64 generation);
+        void FinishLazyCards();
+        void UpdateLazyCardsPendingProperty();
+
+        AZ::u64 m_lazyCardsGeneration = 0;      //!< a rebuild queued or cards cleared: the steps of an older generation do nothing
+        bool m_lazyCardsReleasing = false;      //!< inside ReleaseLazyCardsThrough (its scroll changes release nothing more)
+        int m_lazyCardsHeldAtBuild = 0;
+        int m_lazyCardsSteps = 0;
+        bool m_lazyCardsDiagnostics = false;    //!< ed_inspectorRefreshDiagnostics, as the rebuild that held the cards read it
+        AZ::s64 m_lazyCardsStartUs = 0;         //!< that rebuild's start, steady clock microseconds
 
         using ComponentPropertyEditorMap = AZStd::unordered_map<AZ::Component*, ComponentEditor*>;
         ComponentPropertyEditorMap m_componentToEditorMap;

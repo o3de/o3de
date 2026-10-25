@@ -183,9 +183,11 @@ set(FILES
     ThumbnailerTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
+    UI/DocumentPropertyEditorHoldTests.cpp
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityOutlinerFlatSheetTests.cpp
+    UI/EntityPropertyEditorLazyCardsTests.cpp
     UI/EntityPropertyEditorTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp

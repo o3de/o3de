@@ -202,6 +202,16 @@ namespace AzToolsFramework
          *  to make the DPE arbitrarily narrow. */
         void SetEnforceMinWidth(bool enforceMinWidth);
 
+        //! Holds or releases the build of the rows (the inspector's lazy cards, inspector build plan I.4). While held, a reset, a queued
+        //! reset or a change of the adapter builds nothing: the rows are only marked pending. Releasing builds them once, from the
+        //! adapter's current contents; with nothing pending it builds nothing.
+        void SetContentBuildHeld(bool held);
+        //! Drops a hold without building the pending rows (the editor is being cleared for other contents)
+        void DiscardHeldContentBuild();
+        bool IsContentBuildHeld() const;
+        //! True while held, once a reset, a queued reset or a change arrived
+        bool IsContentBuildPending() const;
+
         auto GetAdapter()
         {
             return m_adapter;
@@ -308,6 +318,8 @@ namespace AzToolsFramework
         void UpdateDirtyHandlers();
 
         bool m_executeQueuedResetAlreadyQueued = false;
+        bool m_contentBuildHeld = false;    //!< SetContentBuildHeld
+        bool m_contentBuildPending = false; //!< the adapter asked for a build while held
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;

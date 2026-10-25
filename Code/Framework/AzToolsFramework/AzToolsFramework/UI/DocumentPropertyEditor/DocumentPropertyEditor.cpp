@@ -1431,9 +1431,15 @@ namespace AzToolsFramework
         }
 
         m_adapter = theAdapter;
+        // A held editor builds nothing for its adapter's events, it only marks its rows pending (SetContentBuildHeld)
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->HandleReset();
             });
         m_adapter->ConnectResetHandler(m_resetHandler);
@@ -1441,6 +1447,11 @@ namespace AzToolsFramework
         m_resetQueuedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler(
             [this]()
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->RequestExecuteQueuedReset();
             });
         m_adapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
@@ -1448,6 +1459,11 @@ namespace AzToolsFramework
         m_changedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
             [this](const AZ::Dom::Patch& patch)
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->HandleDomChange(patch);
             });
         m_adapter->ConnectChangedHandler(m_changedHandler);
@@ -1618,6 +1634,52 @@ namespace AzToolsFramework
     {
         m_dpeSettings.reset();
         Clear();
+    }
+
+    void DocumentPropertyEditor::SetContentBuildHeld(bool held)
+    {
+        if (held == m_contentBuildHeld)
+        {
+            return;
+        }
+        if (held)
+        {
+            m_contentBuildHeld = true;
+            return;
+        }
+
+        // Release: first run the reset the adapter may still have queued, while its events still only mark the rows pending (the
+        // reset posted for it, if any, finds nothing left to do); then build the rows once, from the adapter's current contents
+        m_executeQueuedResetAlreadyQueued = false;
+        if (m_adapter)
+        {
+            m_adapter->ExecuteQueuedReset();
+        }
+        m_contentBuildHeld = false;
+        if (m_contentBuildPending)
+        {
+            m_contentBuildPending = false;
+            if (m_adapter)
+            {
+                HandleReset();
+            }
+        }
+    }
+
+    void DocumentPropertyEditor::DiscardHeldContentBuild()
+    {
+        m_contentBuildHeld = false;
+        m_contentBuildPending = false;
+    }
+
+    bool DocumentPropertyEditor::IsContentBuildHeld() const
+    {
+        return m_contentBuildHeld;
+    }
+
+    bool DocumentPropertyEditor::IsContentBuildPending() const
+    {
+        return m_contentBuildPending;
     }
 
     void DocumentPropertyEditor::InvalidateAll([[maybe_unused]] const char* filter)

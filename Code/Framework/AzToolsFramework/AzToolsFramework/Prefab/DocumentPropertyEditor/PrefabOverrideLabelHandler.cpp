@@ -15,11 +15,12 @@
 AZ_CVAR(
     bool,
     ed_dpeCompactOverrideLabel,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, the override label of a DPE row is one widget that draws the override dot itself (CompactPrefabOverrideLabelHandler) "
-    "instead of a tool button and a label in a container. Rows built after a change follow it.");
+    "If set (the default), the override label of a DPE row is one widget that draws the override dot itself "
+    "(CompactPrefabOverrideLabelHandler); if not, a tool button and a label in a container (PrefabOverrideLabelHandler). Rows built "
+    "after a change follow it.");
 
 namespace AzToolsFramework::Prefab
 {

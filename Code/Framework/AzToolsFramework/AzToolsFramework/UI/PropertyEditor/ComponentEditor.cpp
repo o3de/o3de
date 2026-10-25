@@ -611,6 +611,46 @@ namespace AzToolsFramework
         GetPropertyEditor()->InvalidateAll(filter);
     }
 
+    void ComponentEditor::HoldContentBuild()
+    {
+        if (m_dpe)
+        {
+            m_dpe->SetContentBuildHeld(true);
+        }
+    }
+
+    void ComponentEditor::ReleaseContentBuild()
+    {
+        if (m_dpe)
+        {
+            // The rows are built in the hidden property editor and shown with it, as in a card that is built hidden: rows added to a
+            // shown parent are shown later (QLayout::addChildWidget queues it), after the card has taken its height without them
+            const bool shown = m_dpe->isVisible();
+            if (shown)
+            {
+                m_dpe->hide();
+            }
+            m_dpe->SetContentBuildHeld(false);
+            if (shown)
+            {
+                m_dpe->show();
+            }
+        }
+    }
+
+    void ComponentEditor::DiscardContentBuild()
+    {
+        if (m_dpe)
+        {
+            m_dpe->DiscardHeldContentBuild();
+        }
+    }
+
+    bool ComponentEditor::IsContentBuildHeld() const
+    {
+        return m_dpe && m_dpe->IsContentBuildHeld();
+    }
+
     void ComponentEditor::QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel)
     {
         GetPropertyEditor()->QueueInvalidation(refreshLevel);

@@ -149,6 +149,19 @@ namespace AzToolsFramework
         "If set, logs Entity Inspector full-refresh timing and whether the component composition matches the "
         "previous refresh (I.2 measurement harness for same-composition value-refresh reuse).");
 
+    AZ_CVAR(
+        bool,
+        ed_inspectorLazyCards,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, the Entity Inspector builds the rows of the cards in view (and one screen below) at once, and those of the cards "
+        "past them and of collapsed cards later, top to bottom: at idle, or as soon as the view or the focus reaches them "
+        "(inspector build plan I.4).");
+
+    //! A lazy cards step builds held cards for about this long (at least one card) before it lets the event loop run
+    static constexpr AZ::s64 LazyCardsStepBudgetUs = 10000;
+
     static bool ShouldUseDPE()
     {
         bool dpeEnabled = true;
@@ -701,6 +714,9 @@ namespace AzToolsFramework
         //TODO explore other options to avoid referencing qApp and filtering all events even though research says
         //this is the way to do it without overriding or registering with all child widgets
         qApp->installEventFilter(this);
+
+        // Lazy cards: the view reaching held cards builds them (a viewport resize is caught by eventFilter)
+        connect(m_gui->m_componentList->verticalScrollBar(), &QScrollBar::valueChanged, this, &EntityPropertyEditor::ReleaseLazyCardsInView);
 
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
@@ -1276,6 +1292,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         const AZStd::chrono::steady_clock::time_point refreshStartTime = AZStd::chrono::steady_clock::now();
+        m_lazyCardsStartUs = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(refreshStartTime.time_since_epoch()).count();
         // D1b sub-phase timing (ed_inspectorRefreshDiagnostics): localize where UpdateContents spends its time.
         // Default each boundary to the start so skipped phases (e.g. no entity selected) report 0ms.
         AZStd::chrono::steady_clock::time_point tAfterClear = refreshStartTime;
@@ -1826,6 +1843,14 @@ namespace AzToolsFramework
             marker = now;
         };
 
+        // Lazy cards: the cards from the top build their rows until they cover the view as it will be shown (the scroll position the
+        // rebuild restores, the view, and one screen below); the cards after them, and collapsed ones, hold theirs. Not with a filter
+        // (whether a card shows at all depends on its rows) or when the view goes to a new component.
+        const bool lazyCards = LazyCardsEnabled() && m_filterString.empty() && !m_shouldScrollToNewComponents;
+        const int lazyCardsCover = AZStd::max(m_savedVerticalScroll, 0) + 2 * m_gui->m_componentList->viewport()->height();
+        const int cardSpacing = AZStd::max(m_gui->m_componentListContents->layout()->spacing(), 0);
+        int cardsHeight = 0;
+
         for (auto& sharedComponentInfo : sharedComponentArray)
         {
             bool componentInFilter = ComponentMatchesCurrentFilter(sharedComponentInfo);
@@ -1835,6 +1860,12 @@ namespace AzToolsFramework
 
             auto componentEditor = CreateComponentEditor();
             markUs(mark, m_diagCreateEditorUs);
+
+            // A card past the cover holds its rows before its instances are added, so that the resets they queue build nothing
+            if (lazyCards && cardsHeight >= lazyCardsCover)
+            {
+                componentEditor->HoldContentBuild();
+            }
 
             // Add instances to componentEditor
             auto& componentInstances = sharedComponentInfo.m_instances;
@@ -1863,6 +1894,11 @@ namespace AzToolsFramework
             componentEditor->AddNotifications();
             markUs(mark, m_diagNotificationsUs);
             componentEditor->UpdateExpandability();
+            // A collapsed card builds its rows when it is expanded (or at idle); a held card's InvalidateAll builds nothing
+            if (lazyCards && !componentEditor->IsExpanded())
+            {
+                componentEditor->HoldContentBuild();
+            }
             componentEditor->InvalidateAll(!componentInFilter ? m_filterString.c_str() : nullptr);
             markUs(mark, m_diagInvalidateUs);
 
@@ -1880,6 +1916,7 @@ namespace AzToolsFramework
                     m_componentToEditorMap[componentInstance] = componentEditor;
                 }
                 componentEditor->show();
+                cardsHeight += componentEditor->sizeHint().height() + cardSpacing;
             }
             else
             {
@@ -1887,6 +1924,218 @@ namespace AzToolsFramework
                 componentEditor->ClearInstances(true);
             }
             markUs(mark, m_diagShowUs);
+        }
+
+        // The held cards build at idle, one step at a time
+        m_lazyCardsHeldAtBuild = GetLazyCardsPending();
+        m_lazyCardsSteps = 0;
+        if (m_lazyCardsHeldAtBuild > 0)
+        {
+            m_lazyCardsDiagnostics = diag;
+            QueueLazyCardsStep();
+        }
+        UpdateLazyCardsPendingProperty();
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4)
+    // ----------------------------------------------------------------------------------
+
+    bool EntityPropertyEditor::LazyCardsEnabled() const
+    {
+        return ed_inspectorLazyCards && ShouldUseDPE();
+    }
+
+    int EntityPropertyEditor::GetLazyCardsPending() const
+    {
+        int held = 0;
+        for (AZ::s32 index = 0; index < m_componentEditorsUsed; ++index)
+        {
+            held += m_componentEditors[index]->IsContentBuildHeld() ? 1 : 0;
+        }
+        return held;
+    }
+
+    void EntityPropertyEditor::ReleaseLazyCardsThrough(int lastIndex, AZ::s64 budgetUs)
+    {
+        if (m_lazyCardsReleasing)
+        {
+            return;
+        }
+        m_lazyCardsReleasing = true;
+
+        const AZStd::chrono::steady_clock::time_point releaseStart = AZStd::chrono::steady_clock::now();
+        QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
+        for (int index = 0; index <= lastIndex && index < m_componentEditorsUsed; ++index)
+        {
+            ComponentEditor* componentEditor = m_componentEditors[index];
+            if (!componentEditor->IsContentBuildHeld())
+            {
+                continue;
+            }
+
+            const bool aboveView = componentEditor->isVisible() && componentEditor->geometry().bottom() < verticalScroll->value();
+            const int heightBefore = componentEditor->height();
+            componentEditor->ReleaseContentBuild();
+
+            // A card above the view resizes the list now, so that the view keeps what it shows; the cards below it resize when the
+            // event loop runs the layout
+            if (aboveView)
+            {
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::LayoutRequest);
+                verticalScroll->setValue(verticalScroll->value() + componentEditor->height() - heightBefore);
+            }
+
+            // an idle step stops when its budget is spent (after one card at least)
+            const AZ::s64 elapsedUs =
+                AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - releaseStart).count();
+            if (budgetUs > 0 && elapsedUs >= budgetUs)
+            {
+                break;
+            }
+        }
+
+        m_lazyCardsReleasing = false;
+    }
+
+    bool EntityPropertyEditor::CanReleaseLazyCards() const
+    {
+        // not inside a release, during a rebuild, or with one queued (the held cards' components may be going)
+        return !m_lazyCardsReleasing && !m_isBuildingProperties && !m_isAlreadyQueuedRefresh && GetLazyCardsPending() > 0;
+    }
+
+    int EntityPropertyEditor::IndexOfCardHolding(const QWidget* widget) const
+    {
+        for (AZ::s32 index = 0; index < m_componentEditorsUsed; ++index)
+        {
+            const ComponentEditor* componentEditor = m_componentEditors[index];
+            if (componentEditor == widget || componentEditor->isAncestorOf(widget))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    void EntityPropertyEditor::ReleaseLazyCardsInView()
+    {
+        if (!CanReleaseLazyCards())
+        {
+            return;
+        }
+
+        // the last card that starts in the view or in the screen below it
+        const int viewBottom = m_gui->m_componentList->verticalScrollBar()->value() + 2 * m_gui->m_componentList->viewport()->height();
+        int lastInView = -1;
+        for (AZ::s32 index = 0; index < m_componentEditorsUsed; ++index)
+        {
+            const ComponentEditor* componentEditor = m_componentEditors[index];
+            if (componentEditor->isVisible() && componentEditor->geometry().top() <= viewBottom)
+            {
+                lastInView = index;
+            }
+        }
+        ReleaseLazyCardsThrough(lastInView);
+        UpdateLazyCardsPendingProperty();
+    }
+
+    void EntityPropertyEditor::ReleaseLazyCardExpanded(const ComponentEditor* componentEditor)
+    {
+        if (!CanReleaseLazyCards())
+        {
+            return;
+        }
+        if (const int index = IndexOfCardHolding(componentEditor); index >= 0)
+        {
+            ReleaseLazyCardsThrough(index);
+            UpdateLazyCardsPendingProperty();
+        }
+    }
+
+    void EntityPropertyEditor::QueueLazyCardsStep(int delayMs)
+    {
+        const AZ::u64 generation = m_lazyCardsGeneration;
+        QTimer::singleShot(delayMs, this, [this, generation]()
+            {
+                RunLazyCardsStep(generation);
+            });
+    }
+
+    void EntityPropertyEditor::RunLazyCardsStep(AZ::u64 generation)
+    {
+        // A rebuild queued or ran since the cards were held: it holds its own
+        if (generation != m_lazyCardsGeneration || m_isAlreadyQueuedRefresh || m_isBuildingProperties)
+        {
+            return;
+        }
+        // Not while a card or a row is being dragged around: building moves the cards under it
+        if (m_currentReorderState != ReorderState::Inactive)
+        {
+            QueueLazyCardsStep(50);
+            return;
+        }
+
+        // The next held cards from the top, for about one step's budget, at least one card
+        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, LazyCardsStepBudgetUs);
+        ++m_lazyCardsSteps;
+
+        if (GetLazyCardsPending() > 0)
+        {
+            QueueLazyCardsStep();
+        }
+        else
+        {
+            FinishLazyCards();
+        }
+        UpdateLazyCardsPendingProperty();
+    }
+
+    void EntityPropertyEditor::CompleteLazyCards()
+    {
+        if (GetLazyCardsPending() == 0)
+        {
+            return;
+        }
+        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1);
+        FinishLazyCards();
+        UpdateLazyCardsPendingProperty();
+    }
+
+    void EntityPropertyEditor::FinishLazyCards()
+    {
+        // The generation ends here: a step still queued for it does nothing
+        ++m_lazyCardsGeneration;
+        if (!m_lazyCardsDiagnostics)
+        {
+            return;
+        }
+        m_lazyCardsDiagnostics = false;
+
+        // The time from the start of the rebuild that held the cards to the last card built, and what the held cards' builds cost
+        const AZ::s64 nowUs =
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+        AZ::u64 resetRowsUs = 0;
+        AZ::u64 resetDirtyHandlersUs = 0;
+        DocumentPropertyEditor::TakeResetTimings(resetRowsUs, resetDirtyHandlersUs);
+        const AZ::u64 generateContentsUs = AZ::DocumentPropertyEditor::ReflectionAdapter::TakeGenerateContentsMicroseconds();
+        AZ_Printf(
+            "EntityInspector",
+            "  lazyCards: held=%d steps=%d completeMs=%.2f dom=%.2f rows=%.2f dirtyHandlers=%.2f (ms)",
+            m_lazyCardsHeldAtBuild,
+            m_lazyCardsSteps,
+            aznumeric_cast<double>(nowUs - m_lazyCardsStartUs) / 1000.0,
+            aznumeric_cast<double>(generateContentsUs) / 1000.0,
+            aznumeric_cast<double>(resetRowsUs) / 1000.0,
+            aznumeric_cast<double>(resetDirtyHandlersUs) / 1000.0);
+    }
+
+    void EntityPropertyEditor::UpdateLazyCardsPendingProperty()
+    {
+        // read by the PerfBench kit, which waits for every card's rows before it reads the inspector
+        const int pending = GetLazyCardsPending();
+        if (property("lazyCardsPending").toInt() != pending)
+        {
+            setProperty("lazyCardsPending", pending);
         }
     }
 
@@ -1980,6 +2229,15 @@ namespace AzToolsFramework
             };
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, componentEditor, forceCardResize);
             connect(componentEditor, &ComponentEditor::OnSizeUpdateRequested, componentEditor, forceCardResize);
+
+            // Lazy cards: a held card the user expands builds its rows (the cards above it first)
+            connect(componentEditor, &AzQtComponents::Card::expandStateChanged, this, [this, componentEditor](bool expanded)
+                {
+                    if (expanded && componentEditor->IsContentBuildHeld())
+                    {
+                        ReleaseLazyCardExpanded(componentEditor);
+                    }
+                });
 
             connect(componentEditor, &ComponentEditor::OnDisplayComponentEditorMenu, this, &EntityPropertyEditor::OnDisplayComponentEditorMenu);
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);
@@ -2256,6 +2514,9 @@ namespace AzToolsFramework
             marker = now;
         };
 
+        // Lazy cards: the cards are cleared, so the steps left of the last build do nothing and no hold outlives it
+        ++m_lazyCardsGeneration;
+
         for (auto componentEditor : m_componentEditors)
         {
             AZStd::chrono::steady_clock::time_point clearMark =
@@ -2264,6 +2525,7 @@ namespace AzToolsFramework
             componentEditor->hide();
             clearMarkUs(clearMark, m_diagClearHideUs);
 
+            componentEditor->DiscardContentBuild();
             componentEditor->ClearInstances(invalidateImmediately);
             clearMarkUs(clearMark, m_diagClearContentUs);
 
@@ -2319,6 +2581,9 @@ namespace AzToolsFramework
         if (!m_isAlreadyQueuedRefresh)
         {
             m_isAlreadyQueuedRefresh = true;
+
+            // Lazy cards: the components the held cards show may be about to go, so none of them builds before the rebuild
+            ++m_lazyCardsGeneration;
 
             // disable all actions until queue refresh is done, so that long queues of events like
             // click - delete - click - delete - click .... dont all occur while the state is invalid.
@@ -4387,6 +4652,13 @@ namespace AzToolsFramework
     {
         HandleMenuEvent(object, event);
         HandleSelectionEvents(object, event);
+
+        // Lazy cards: a resized view builds the held cards it reaches. (Tab needs nothing more: the list scrolls to the focused widget,
+        // and the scroll builds the cards down to one screen below it before the focus gets there.)
+        if (event->type() == QEvent::Resize && object == m_gui->m_componentList->viewport())
+        {
+            ReleaseLazyCardsInView();
+        }
         return false;
     }
 

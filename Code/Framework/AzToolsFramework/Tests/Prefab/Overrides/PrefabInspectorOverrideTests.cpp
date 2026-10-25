@@ -118,7 +118,7 @@ namespace UnitTest
             EXPECT_EQ(propertyEditor->findChildren<AzQtComponents::IconElidingLabel*>().isEmpty(), !compact) << "compact " << compact;
             walks[compact] = WalkTheTabChain(*m_testEntityPropertyEditor, *propertyEditor);
         }
-        console->PerformCommand("ed_dpeCompactOverrideLabel false");
+        console->PerformCommand("ed_dpeCompactOverrideLabel true");   // the default
 
         // Every Tab moves on to the next stop of the card (three at least: the X, Y and Z of Translate) until it leaves the card,
         // and the walk is the same both ways
