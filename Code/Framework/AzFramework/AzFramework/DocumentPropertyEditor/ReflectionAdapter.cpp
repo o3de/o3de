@@ -1429,11 +1429,11 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value ReflectionAdapter::BuildContents(bool useCaches)
     {
-        // Every type id the generation turns into a value is converted once (TypeIdToDomValueCacheScope)
-        AZStd::optional<AZ::Dom::Utils::TypeIdToDomValueCacheScope> typeIdCache;
+        // The generation's values are marshalled with the marshal cache: each type id converted once, PointerObjects built directly
+        AZStd::optional<AZ::Dom::Utils::MarshalCacheScope> marshalCache;
         if (useCaches)
         {
-            typeIdCache.emplace();
+            marshalCache.emplace();
         }
 
         m_impl->m_builder.BeginAdapter();

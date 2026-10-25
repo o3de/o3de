@@ -34,20 +34,28 @@ namespace AZ::Dom::Utils
     AZCORE_API bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     AZCORE_API Value TypeIdToDomValue(const AZ::TypeId& typeId);
 
-    //! TypeIdToDomValue converts a type id through JSON serialization on every call, and content generation (the property editors'
-    //! adapters) asks for the same few types again and again. While a TypeIdToDomValueCacheScope exists on the calling thread, each
-    //! type is converted once and its value reused. Reflection does not change within one generation, so the values are the ones
-    //! TypeIdToDomValue gives. A nested scope uses the outermost one's values; another thread has its own.
-    class AZCORE_API TypeIdToDomValueCacheScope
+    //! The marshalling of values into the DOM goes through JSON serialization, and content generation (the property editors'
+    //! adapters) marshals the same few kinds of values again and again. While a MarshalCacheScope exists on the calling thread:
+    //! - TypeIdToDomValue converts each type once and reuses its value;
+    //! - MarshalOpaqueValue builds a PointerObject's value directly, as the stock PointerJsonSerializer writes it, instead of storing it
+    //!   to JSON and converting that (only when the stock serializer is the one registered for PointerObject).
+    //! Reflection and the registered serializers do not change within one generation, so the values are the ones the JSON path gives.
+    //! A nested scope uses the outermost one; another thread has its own.
+    class AZCORE_API MarshalCacheScope
     {
     public:
-        TypeIdToDomValueCacheScope();
-        ~TypeIdToDomValueCacheScope();
-        TypeIdToDomValueCacheScope(const TypeIdToDomValueCacheScope&) = delete;
-        TypeIdToDomValueCacheScope& operator=(const TypeIdToDomValueCacheScope&) = delete;
+        MarshalCacheScope();
+        ~MarshalCacheScope();
+        MarshalCacheScope(const MarshalCacheScope&) = delete;
+        MarshalCacheScope& operator=(const MarshalCacheScope&) = delete;
+
+        //! The outermost scope on the calling thread, or null
+        static MarshalCacheScope* Current();
+
+        AZStd::unordered_map<AZ::TypeId, Value> m_typeIdValues; //!< TypeIdToDomValue's value of each type converted so far
+        int m_buildPointerObjects = -1;                          //!< -1 not checked yet, 0 PointerObjects take the JSON path, 1 built
 
     private:
-        AZStd::unordered_map<AZ::TypeId, Value> m_values;
         bool m_isOutermost = false;
     };
     AZCORE_API AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);

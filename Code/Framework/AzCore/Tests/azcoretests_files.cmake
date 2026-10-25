@@ -87,7 +87,7 @@ set(FILES
     DOM/DomPathBenchmarks.cpp
     DOM/DomPatchTests.cpp
     DOM/DomPatchBenchmarks.cpp
-    DOM/DomTypeIdCacheTests.cpp
+    DOM/DomMarshalCacheTests.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
     DOM/DomPrefixTreeTests.cpp
