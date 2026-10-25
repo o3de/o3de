@@ -137,7 +137,7 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override
         {
             m_inspector.reset();
-            SetLazyCards(false);
+            SetLazyCards(true);     // the default
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
 

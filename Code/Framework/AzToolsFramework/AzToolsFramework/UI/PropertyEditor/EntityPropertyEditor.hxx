@@ -603,13 +603,37 @@ namespace AzToolsFramework
         AZ::s64 m_diagClearContentUs = 0;
         AZ::s64 m_diagClearPreventUs = 0;
 
+        // Component list layout: SettleComponentList lays the list out now, as it stays, so that the inspector never paints a card
+        // where it was before (see its definition)
+        enum class SettleOrigin
+        {
+            Rebuild,        //!< the end of a rebuild (only with ed_inspectorSettleLayout)
+            LazyStep,       //!< an idle lazy cards step, below the view (only with ed_inspectorSettleLayout)
+            Interaction     //!< a card or a row expanded or collapsed, a card's size asked for, held cards the view reaches
+        };
+        //! Returns the rounds of layout requests it sent
+        int SettleComponentList(SettleOrigin origin);
+        //! A layout that keeps asking for another round (a scroll bar showing and hiding) stops here
+        static constexpr int SettleRoundsMax = 16;
+        bool m_componentListSettling = false;
+
+        //! Diagnostics (ed_inspectorRefreshDiagnostics): the cards that move after a rebuild returns, and the component list's repaints
+        void ReportLayoutSettling(int settleRounds, AZ::s64 rebuildStartUs);
+        void RecordListPaint(const QObject* object);
+        AZ::u64 m_layoutSettlingGeneration = 0;
+        bool m_listPaintWatch = false;
+        AZ::s64 m_listPaintWatchStartUs = 0;     //!< steady clock microseconds
+        AZ::s64 m_listPaintLastUs = 0;
+        AZStd::vector<AZStd::pair<double, int>> m_listPaintBursts;    //!< per repaint: ms since the rebuild started, widgets painted
+
         // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4): a card past the view, or collapsed, holds the build of its rows.
         // The rows are built later, always top to bottom (so that they join the Tab chain in the cards' order), at idle, as soon as
         // the view reaches the card (scroll, resize), or when the card is expanded. A rebuild cancels what is left.
         bool LazyCardsEnabled() const;
         //! Builds the held cards from the top through the card at lastIndex, or until budgetUs is spent (after one card at least) when it
-        //! is not 0; a card above the view moves the scroll value by the height it gains, so that the view stays on what it shows
-        void ReleaseLazyCardsThrough(int lastIndex, AZ::s64 budgetUs = 0);
+        //! is not 0; a card above the view moves the scroll value by the height it gains, so that the view stays on what it shows. The
+        //! list is then settled as settleOrigin asks.
+        void ReleaseLazyCardsThrough(int lastIndex, SettleOrigin settleOrigin, AZ::s64 budgetUs = 0);
         //! Not inside a release, during a rebuild, or with one queued, and only with held cards
         bool CanReleaseLazyCards() const;
         //! The used card that is or holds the widget, or -1

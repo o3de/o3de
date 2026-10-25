@@ -152,15 +152,26 @@ namespace AzToolsFramework
     AZ_CVAR(
         bool,
         ed_inspectorLazyCards,
-        false,
+        true,
         nullptr,
         AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-        "If set, the Entity Inspector builds the rows of the cards in view (and one screen below) at once, and those of the cards "
-        "past them and of collapsed cards later, top to bottom: at idle, or as soon as the view or the focus reaches them "
+        "If set (the default), the Entity Inspector builds the rows of the cards in view (and one screen below) at once, and those of "
+        "the cards past them and of collapsed cards later, top to bottom: at idle, or as soon as the view or the focus reaches them "
         "(inspector build plan I.4).");
 
     //! A lazy cards step builds held cards for about this long (at least one card) before it lets the event loop run
     static constexpr AZ::s64 LazyCardsStepBudgetUs = 10000;
+
+    AZ_CVAR(
+        bool,
+        ed_inspectorSettleLayout,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, the Entity Inspector also lays its component list out before it paints at the end of a rebuild and of each idle lazy "
+        "cards step (EntityPropertyEditor::SettleComponentList): a reused card then never shows where the previous selection's card "
+        "was. It always does after an expand, a collapse, or cards built as the view reaches them. Off by default: a few ms per "
+        "rebuild.");
 
     static bool ShouldUseDPE()
     {
@@ -660,6 +671,10 @@ namespace AzToolsFramework
 
         m_overlay = new EntityPropertyEditorOverlay(this, m_gui->m_componentListContents);
         UpdateOverlay();
+
+        // The list grows and shrinks below the cards in view: its resize paints only the area it exposes. Without this, every
+        // resize repainted every card in view (once after each rebuild, and after each lazy cards step that grew the list).
+        m_gui->m_componentListContents->setAttribute(Qt::WA_StaticContents);
 
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
@@ -1480,6 +1495,10 @@ namespace AzToolsFramework
         layout()->update();
         layout()->activate();
 
+        // with ed_inspectorSettleLayout, the cards where they stay before the inspector paints them (a reused card is still where the
+        // previous selection's was)
+        const int settleRounds = SettleComponentList(SettleOrigin::Rebuild);
+
         m_isBuildingProperties = false;
 
         setUpdatesEnabled(true);
@@ -1600,6 +1619,10 @@ namespace AzToolsFramework
 
             m_lastBuiltComponentSignature = AZStd::move(currentSignature);
             m_lastBuiltSelectionCount = m_selectedEntityIds.size();
+
+            ReportLayoutSettling(
+                settleRounds,
+                AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(refreshStartTime.time_since_epoch()).count());
         }
         else
         {
@@ -1916,7 +1939,10 @@ namespace AzToolsFramework
                     m_componentToEditorMap[componentInstance] = componentEditor;
                 }
                 componentEditor->show();
-                cardsHeight += componentEditor->sizeHint().height() + cardSpacing;
+                if (lazyCards)
+                {
+                    cardsHeight += componentEditor->sizeHint().height() + cardSpacing;
+                }
             }
             else
             {
@@ -1938,6 +1964,187 @@ namespace AzToolsFramework
     }
 
     // ----------------------------------------------------------------------------------
+    // Component list layout
+    // ----------------------------------------------------------------------------------
+
+    namespace ComponentListLayoutInternal
+    {
+        //! Counts the layout requests the application delivers while it filters the application's events
+        class LayoutRequestCounter : public QObject
+        {
+        public:
+            bool eventFilter(QObject* watched, QEvent* event) override
+            {
+                m_delivered += event->type() == QEvent::LayoutRequest ? 1 : 0;
+                return QObject::eventFilter(watched, event);
+            }
+
+            int m_delivered = 0;
+        };
+    } // namespace ComponentListLayoutInternal
+
+    int EntityPropertyEditor::SettleComponentList(SettleOrigin origin)
+    {
+        // A layout that changes asks the layout above it to follow with a posted layout request: a card's rows, the card, the list, and
+        // the scroll area that sizes the list. The event loop sends the requests posted before it started, then paints the inspector,
+        // and sends the requests those posted on a later turn: after a rebuild a reused card showed where the previous selection's
+        // card was (over the card above it) and moved on the next turn; an expanded row's rows showed before they were placed. The
+        // requests are sent here round after round until none is left.
+        // A rebuild and an idle lazy cards step (below the view) settle only with ed_inspectorSettleLayout (it costs the rebuild a few
+        // ms); an interaction always does, or the card the user acts on bounces.
+        const bool optional = origin == SettleOrigin::Rebuild || origin == SettleOrigin::LazyStep;
+        if (m_componentListSettling || (optional && !ed_inspectorSettleLayout))
+        {
+            return 0;
+        }
+        m_componentListSettling = true;
+
+        ComponentListLayoutInternal::LayoutRequestCounter counter;
+        QCoreApplication::instance()->installEventFilter(&counter);
+        int rounds = 0;
+        while (rounds < SettleRoundsMax)
+        {
+            counter.m_delivered = 0;
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::LayoutRequest);
+            if (counter.m_delivered == 0)
+            {
+                break;
+            }
+            ++rounds;
+        }
+        QCoreApplication::instance()->removeEventFilter(&counter);
+
+        m_componentListSettling = false;
+        return rounds;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Layout diagnostics (ed_inspectorRefreshDiagnostics): does the list a rebuild leaves move afterwards, and how often does it paint?
+    // ----------------------------------------------------------------------------------
+
+    namespace LayoutSettlingInternal
+    {
+        struct CardGeometry
+        {
+            QRect m_geometry;
+            int m_hintHeight = 0;
+            AZ::u64 m_rows = 0;     //!< where the card's rows are (a checksum of the shown rows' geometry)
+        };
+
+        AZStd::vector<CardGeometry> SnapshotCards(const AZStd::vector<ComponentEditor*>& cards)
+        {
+            AZStd::vector<CardGeometry> snapshot;
+            for (ComponentEditor* card : cards)
+            {
+                CardGeometry geometry;
+                geometry.m_geometry = card->geometry();
+                geometry.m_hintHeight = card->sizeHint().height();
+                const auto* content = qobject_cast<QScrollArea*>(card->contentWidget());
+                if (const QWidget* surface = content ? content->widget() : nullptr)
+                {
+                    for (const QWidget* row : surface->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
+                    {
+                        if (row->isVisible())
+                        {
+                            geometry.m_rows = geometry.m_rows * 31 + row->geometry().y();
+                            geometry.m_rows = geometry.m_rows * 31 + row->geometry().height();
+                        }
+                    }
+                }
+                snapshot.push_back(geometry);
+            }
+            return snapshot;
+        }
+    } // namespace LayoutSettlingInternal
+
+    void EntityPropertyEditor::ReportLayoutSettling(int settleRounds, AZ::s64 rebuildStartUs)
+    {
+        using LayoutSettlingInternal::CardGeometry;
+        using LayoutSettlingInternal::SnapshotCards;
+
+        AZStd::vector<ComponentEditor*> cards;
+        for (AZ::s32 index = 0; index < m_componentEditorsUsed; ++index)
+        {
+            if (m_componentEditors[index]->isVisible())
+            {
+                cards.push_back(m_componentEditors[index]);
+            }
+        }
+        const AZStd::vector<CardGeometry> atReturn = SnapshotCards(cards);
+        int offHint = 0;
+        for (const CardGeometry& geometry : atReturn)
+        {
+            offHint += geometry.m_geometry.height() != geometry.m_hintHeight ? 1 : 0;
+        }
+        AZ_Printf("EntityInspector", "  layoutAtReturn: settleRounds=%d cards=%zu offHint=%d", settleRounds, cards.size(), offHint);
+
+        // The cards that moved or resized since the return: on the next turn of the event loop (what the first paint shows them
+        // doing), and once the lazy cards had time to build. Held cards below the view grow, and the cards below them move.
+        const AZ::u64 generation = ++m_layoutSettlingGeneration;
+        const auto check = [this, generation, cards, atReturn](const char* when)
+        {
+            if (generation != m_layoutSettlingGeneration || m_isBuildingProperties)
+            {
+                return;     // another rebuild came
+            }
+            const AZStd::vector<CardGeometry> now = SnapshotCards(cards);
+            int moved = 0;
+            int rowsMoved = 0;
+            AZStd::string first;
+            for (size_t index = 0; index < now.size(); ++index)
+            {
+                rowsMoved += now[index].m_rows != atReturn[index].m_rows ? 1 : 0;
+                if (now[index].m_geometry != atReturn[index].m_geometry && moved++ == 0)
+                {
+                    first = AZStd::string::format(" card %zu y %d->%d h %d->%d", index, atReturn[index].m_geometry.y(),
+                        now[index].m_geometry.y(), atReturn[index].m_geometry.height(), now[index].m_geometry.height());
+                }
+            }
+            AZ_Printf("EntityInspector", "  layoutSettle: after=%s moved=%d rowsMoved=%d%s", when, moved, rowsMoved, first.c_str());
+        };
+        QTimer::singleShot(0, this, [check]() { check("turn1"); });
+        QTimer::singleShot(200, this, [check]() { check("200ms"); });
+
+        // The list's repaints from now on (eventFilter -> RecordListPaint), reported once the lazy cards had time to build
+        m_listPaintWatch = true;
+        m_listPaintWatchStartUs = rebuildStartUs;
+        m_listPaintBursts.clear();
+        QTimer::singleShot(800, this, [this, generation]()
+            {
+                if (generation != m_layoutSettlingGeneration)
+                {
+                    return;
+                }
+                m_listPaintWatch = false;
+                AZStd::string bursts;
+                for (const auto& [ms, widgets] : m_listPaintBursts)
+                {
+                    bursts += AZStd::string::format("%s%.1f(%d)", bursts.empty() ? "" : " ", ms, widgets);
+                }
+                AZ_Printf("EntityInspector", "  listPaints: repaints=%zu [%s] (ms since the rebuild started, widgets painted)",
+                    m_listPaintBursts.size(), bursts.c_str());
+            });
+    }
+
+    void EntityPropertyEditor::RecordListPaint(const QObject* object)
+    {
+        const QWidget* viewport = m_gui->m_componentList->viewport();
+        if (!object->isWidgetType() || (object != viewport && !viewport->isAncestorOf(static_cast<const QWidget*>(object))))
+        {
+            return;
+        }
+        // one repaint: the widgets painted less than 2 ms apart
+        const AZ::s64 nowUs =
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+        if (m_listPaintBursts.empty() || nowUs - m_listPaintLastUs > 2000)
+        {
+            m_listPaintBursts.emplace_back(aznumeric_cast<double>(nowUs - m_listPaintWatchStartUs) / 1000.0, 0);
+        }
+        ++m_listPaintBursts.back().second;
+        m_listPaintLastUs = nowUs;
+    }
+
+    // ----------------------------------------------------------------------------------
     // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4)
     // ----------------------------------------------------------------------------------
 
@@ -1956,7 +2163,7 @@ namespace AzToolsFramework
         return held;
     }
 
-    void EntityPropertyEditor::ReleaseLazyCardsThrough(int lastIndex, AZ::s64 budgetUs)
+    void EntityPropertyEditor::ReleaseLazyCardsThrough(int lastIndex, SettleOrigin settleOrigin, AZ::s64 budgetUs)
     {
         if (m_lazyCardsReleasing)
         {
@@ -1966,6 +2173,7 @@ namespace AzToolsFramework
 
         const AZStd::chrono::steady_clock::time_point releaseStart = AZStd::chrono::steady_clock::now();
         QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
+        bool released = false;
         for (int index = 0; index <= lastIndex && index < m_componentEditorsUsed; ++index)
         {
             ComponentEditor* componentEditor = m_componentEditors[index];
@@ -1977,12 +2185,13 @@ namespace AzToolsFramework
             const bool aboveView = componentEditor->isVisible() && componentEditor->geometry().bottom() < verticalScroll->value();
             const int heightBefore = componentEditor->height();
             componentEditor->ReleaseContentBuild();
+            released = true;
 
-            // A card above the view resizes the list now, so that the view keeps what it shows; the cards below it resize when the
-            // event loop runs the layout
+            // A card above the view resizes the list now, so that the view keeps what it shows (the height it gains is only known
+            // once the list is laid out, so this settles whatever the origin)
             if (aboveView)
             {
-                QCoreApplication::sendPostedEvents(nullptr, QEvent::LayoutRequest);
+                SettleComponentList(SettleOrigin::Interaction);
                 verticalScroll->setValue(verticalScroll->value() + componentEditor->height() - heightBefore);
             }
 
@@ -1993,6 +2202,12 @@ namespace AzToolsFramework
             {
                 break;
             }
+        }
+
+        // the built cards at their new heights, and the cards below them moved, before the inspector paints
+        if (released)
+        {
+            SettleComponentList(settleOrigin);
         }
 
         m_lazyCardsReleasing = false;
@@ -2035,7 +2250,7 @@ namespace AzToolsFramework
                 lastInView = index;
             }
         }
-        ReleaseLazyCardsThrough(lastInView);
+        ReleaseLazyCardsThrough(lastInView, SettleOrigin::Interaction);
         UpdateLazyCardsPendingProperty();
     }
 
@@ -2047,7 +2262,7 @@ namespace AzToolsFramework
         }
         if (const int index = IndexOfCardHolding(componentEditor); index >= 0)
         {
-            ReleaseLazyCardsThrough(index);
+            ReleaseLazyCardsThrough(index, SettleOrigin::Interaction);
             UpdateLazyCardsPendingProperty();
         }
     }
@@ -2076,7 +2291,7 @@ namespace AzToolsFramework
         }
 
         // The next held cards from the top, for about one step's budget, at least one card
-        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, LazyCardsStepBudgetUs);
+        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, SettleOrigin::LazyStep, LazyCardsStepBudgetUs);
         ++m_lazyCardsSteps;
 
         if (GetLazyCardsPending() > 0)
@@ -2096,7 +2311,7 @@ namespace AzToolsFramework
         {
             return;
         }
-        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1);
+        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, SettleOrigin::Interaction);
         FinishLazyCards();
         UpdateLazyCardsPendingProperty();
     }
@@ -2227,8 +2442,18 @@ namespace AzToolsFramework
                 }
                 componentEditor->updateGeometry();
             };
-            connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, componentEditor, forceCardResize);
-            connect(componentEditor, &ComponentEditor::OnSizeUpdateRequested, componentEditor, forceCardResize);
+            // ...and the list laid out before the inspector paints (an expanded row's rows placed, the cards below moved). A rebuild and
+            // a lazy release settle the list once, at their end.
+            auto resizeCard = [this, forceCardResize]()
+            {
+                forceCardResize();
+                if (!m_isBuildingProperties && !m_lazyCardsReleasing)
+                {
+                    SettleComponentList(SettleOrigin::Interaction);
+                }
+            };
+            connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, componentEditor, resizeCard);
+            connect(componentEditor, &ComponentEditor::OnSizeUpdateRequested, componentEditor, resizeCard);
 
             // Lazy cards: a held card the user expands builds its rows (the cards above it first)
             connect(componentEditor, &AzQtComponents::Card::expandStateChanged, this, [this, componentEditor](bool expanded)
@@ -4658,6 +4883,12 @@ namespace AzToolsFramework
         if (event->type() == QEvent::Resize && object == m_gui->m_componentList->viewport())
         {
             ReleaseLazyCardsInView();
+        }
+
+        // Diagnostics: the component list's paints after a rebuild (ReportLayoutSettling)
+        if (m_listPaintWatch && event->type() == QEvent::Paint)
+        {
+            RecordListPaint(object);
         }
         return false;
     }
