@@ -67,7 +67,49 @@ namespace AZ::Dom::Utils
         return AZ::Success(AZStd::move(value));
     }
 
+    //! Everything private to the type id conversion. A named namespace: a unity build joins this file with others.
+    namespace TypeIdToDomValueInternal
+    {
+        //! The values of the outermost TypeIdToDomValueCacheScope on this thread, or null when none exists
+        thread_local AZStd::unordered_map<AZ::TypeId, Value>* t_cachedValues = nullptr;
+
+        Value ConvertTypeId(const AZ::TypeId& typeId);
+    }
+
+    TypeIdToDomValueCacheScope::TypeIdToDomValueCacheScope()
+    {
+        if (!TypeIdToDomValueInternal::t_cachedValues)
+        {
+            TypeIdToDomValueInternal::t_cachedValues = &m_values;
+            m_isOutermost = true;
+        }
+    }
+
+    TypeIdToDomValueCacheScope::~TypeIdToDomValueCacheScope()
+    {
+        if (m_isOutermost)
+        {
+            TypeIdToDomValueInternal::t_cachedValues = nullptr;
+        }
+    }
+
     Value TypeIdToDomValue(const AZ::TypeId& typeId)
+    {
+        AZStd::unordered_map<AZ::TypeId, Value>* cachedValues = TypeIdToDomValueInternal::t_cachedValues;
+        if (!cachedValues)
+        {
+            return TypeIdToDomValueInternal::ConvertTypeId(typeId);
+        }
+        if (auto cached = cachedValues->find(typeId); cached != cachedValues->end())
+        {
+            return cached->second;
+        }
+        Value value = TypeIdToDomValueInternal::ConvertTypeId(typeId);
+        cachedValues->emplace(typeId, value);
+        return value;
+    }
+
+    Value TypeIdToDomValueInternal::ConvertTypeId(const AZ::TypeId& typeId)
     {
         // Assign a custom reporting callback to ignore unregistered types
         AZ::JsonSerializerSettings settings;

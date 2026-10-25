@@ -62,6 +62,10 @@ namespace AZ::DocumentPropertyEditor
         //! since the last call, in microseconds. The count restarts at 0.
         static AZ::u64 TakeGenerateContentsMicroseconds();
 
+        //! Inspector diagnostics (ed_dpeVerifyContentCaches): how many contents were generated twice, without and with the content
+        //! generation caches, and how many of them came out different, since the last call. Both counts restart at 0.
+        static void TakeVerifyCounts(AZ::u64& generations, AZ::u64& mismatches);
+
         //! Connects a listener to the event fired when a property has been changed.
         //! This can be used to notify the view of changes to the DOM, e.g. notifying an editor of document changes.
         void ConnectPropertyChangeHandler(PropertyChangeEvent::Handler& handler);
@@ -95,6 +99,10 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
     private:
+        //! One generation of the contents; useCaches false generates them as without any content generation cache (the reference
+        //! of ed_dpeVerifyContentCaches)
+        Dom::Value BuildContents(bool useCaches);
+
         void* m_instance = nullptr;
         AZ::TypeId m_typeId = AZ::TypeId::CreateNull();
 

@@ -11,6 +11,7 @@
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace AZ::Dom::Utils
 {
@@ -32,6 +33,23 @@ namespace AZ::Dom::Utils
 
     AZCORE_API bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     AZCORE_API Value TypeIdToDomValue(const AZ::TypeId& typeId);
+
+    //! TypeIdToDomValue converts a type id through JSON serialization on every call, and content generation (the property editors'
+    //! adapters) asks for the same few types again and again. While a TypeIdToDomValueCacheScope exists on the calling thread, each
+    //! type is converted once and its value reused. Reflection does not change within one generation, so the values are the ones
+    //! TypeIdToDomValue gives. A nested scope uses the outermost one's values; another thread has its own.
+    class AZCORE_API TypeIdToDomValueCacheScope
+    {
+    public:
+        TypeIdToDomValueCacheScope();
+        ~TypeIdToDomValueCacheScope();
+        TypeIdToDomValueCacheScope(const TypeIdToDomValueCacheScope&) = delete;
+        TypeIdToDomValueCacheScope& operator=(const TypeIdToDomValueCacheScope&) = delete;
+
+    private:
+        AZStd::unordered_map<AZ::TypeId, Value> m_values;
+        bool m_isOutermost = false;
+    };
     AZCORE_API AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
     //! Runs a dry-run JSON Serializer over the Dom::Value to check if it can be converted to the type associated
     //! with the AZ TypeId

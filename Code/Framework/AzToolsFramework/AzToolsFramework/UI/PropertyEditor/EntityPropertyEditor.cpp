@@ -1306,6 +1306,9 @@ namespace AzToolsFramework
         AZ::u64 ignoredRowsUs = 0;
         AZ::u64 ignoredDirtyHandlersUs = 0;
         DocumentPropertyEditor::TakeResetTimings(ignoredRowsUs, ignoredDirtyHandlersUs);
+        AZ::u64 ignoredGenerations = 0;
+        AZ::u64 ignoredMismatches = 0;
+        AZ::DocumentPropertyEditor::ReflectionAdapter::TakeVerifyCounts(ignoredGenerations, ignoredMismatches);
 
         setUpdatesEnabled(false);
 
@@ -1564,6 +1567,19 @@ namespace AzToolsFramework
                 "  header: entityIcon=%.2f entityDisplay=%.2f (ms)",
                 toMs(tAfterEntityIcon - tBeforeEntityIcon),
                 toMs(tAfterBuildUI - tAfterEntityIcon));
+
+            // With ed_dpeVerifyContentCaches: the contents generated twice in this rebuild, and how many differed (must be 0)
+            AZ::u64 verifiedGenerations = 0;
+            AZ::u64 mismatchedGenerations = 0;
+            AZ::DocumentPropertyEditor::ReflectionAdapter::TakeVerifyCounts(verifiedGenerations, mismatchedGenerations);
+            if (verifiedGenerations > 0)
+            {
+                AZ_Printf(
+                    "EntityInspector",
+                    "  dpeVerify: generations=%llu mismatches=%llu",
+                    static_cast<unsigned long long>(verifiedGenerations),
+                    static_cast<unsigned long long>(mismatchedGenerations));
+            }
 
             m_lastBuiltComponentSignature = AZStd::move(currentSignature);
             m_lastBuiltSelectionCount = m_selectedEntityIds.size();

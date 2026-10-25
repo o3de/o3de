@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
@@ -27,6 +28,19 @@ namespace AZ::DocumentPropertyEditor
     //! The time all reflection adapters spent in GenerateContents (TakeGenerateContentsMicroseconds). Atomic: contents may be
     //! generated off the main thread.
     static AZStd::atomic<AZ::u64> s_generateContentsMicroseconds{ 0 };
+
+    AZ_CVAR(
+        bool,
+        ed_dpeVerifyContentCaches,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "Development check: every reflection adapter generates its contents twice, without and with the content generation caches, and "
+        "counts the generations whose contents differ (they must not). Doubles the generation time.");
+
+    //! The counts of ed_dpeVerifyContentCaches (TakeVerifyCounts)
+    static AZStd::atomic<AZ::u64> s_verifiedGenerations{ 0 };
+    static AZStd::atomic<AZ::u64> s_mismatchedGenerations{ 0 };
 
     struct ReflectionAdapterReflectionImpl : public AZ::Reflection::IReadWrite
     {
@@ -1377,9 +1391,51 @@ namespace AZ::DocumentPropertyEditor
         return s_generateContentsMicroseconds.exchange(0);
     }
 
+    void ReflectionAdapter::TakeVerifyCounts(AZ::u64& generations, AZ::u64& mismatches)
+    {
+        generations = s_verifiedGenerations.exchange(0);
+        mismatches = s_mismatchedGenerations.exchange(0);
+    }
+
     Dom::Value ReflectionAdapter::GenerateContents()
     {
         const AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+
+        Dom::Value contents;
+        if (ed_dpeVerifyContentCaches)
+        {
+            // The contents the caches give must be the contents without them. Generated last, the cached ones are the ones kept (with
+            // the change callbacks they registered). Opaque values (callbacks) compare by type: each generation makes its own.
+            const Dom::Value reference = BuildContents(false);
+            contents = BuildContents(true);
+            ++s_verifiedGenerations;
+            AZ::Dom::Utils::ComparisonParameters byTypeForOpaqueValues;
+            byTypeForOpaqueValues.m_treatOpaqueValuesOfSameTypeAsEqual = true;
+            if (!AZ::Dom::Utils::DeepCompareIsEqual(reference, contents, byTypeForOpaqueValues))
+            {
+                ++s_mismatchedGenerations;
+                AZ_Warning("DPE", false, "The content generation caches changed the contents of type %s", m_typeId.ToFixedString().c_str());
+            }
+        }
+        else
+        {
+            contents = BuildContents(true);
+        }
+
+        s_generateContentsMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - start).count());
+        return contents;
+    }
+
+    Dom::Value ReflectionAdapter::BuildContents(bool useCaches)
+    {
+        // Every type id the generation turns into a value is converted once (TypeIdToDomValueCacheScope)
+        AZStd::optional<AZ::Dom::Utils::TypeIdToDomValueCacheScope> typeIdCache;
+        if (useCaches)
+        {
+            typeIdCache.emplace();
+        }
+
         m_impl->m_builder.BeginAdapter();
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QueryKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
@@ -1395,11 +1451,7 @@ namespace AZ::DocumentPropertyEditor
             Reflection::VisitLegacyInMemoryInstance(m_impl.get(), m_instance, m_typeId);
         }
         m_impl->m_builder.EndAdapter();
-        Dom::Value contents = m_impl->m_builder.FinishAndTakeResult();
-
-        s_generateContentsMicroseconds += aznumeric_cast<AZ::u64>(
-            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - start).count());
-        return contents;
+        return m_impl->m_builder.FinishAndTakeResult();
     }
 
     Dom::Value ReflectionAdapter::HandleMessage(const AdapterMessage& message)
