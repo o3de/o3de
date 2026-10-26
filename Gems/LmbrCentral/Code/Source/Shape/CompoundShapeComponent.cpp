@@ -9,6 +9,7 @@
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -22,9 +23,12 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CompoundShapeConfiguration>("Configuration", "Compound shape configuration parameters")
+                editContext->Class<CompoundShapeConfiguration>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Compound shape configuration parameters"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CompoundShapeConfiguration::m_childEntities,
-                        "Child Shape Entities", "A list of entities that have shapes on them which when combined, act as the compound shape")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Child Shape Entities"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "A list of entities that have shapes on them which when combined, act as the compound shape"))
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"));
             }

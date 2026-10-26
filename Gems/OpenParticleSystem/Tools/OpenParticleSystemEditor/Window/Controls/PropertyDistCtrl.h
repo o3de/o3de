@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Window/Controls/InfoLineEdit.h>
 #include <Window/Controls/InfoRadioButton.h>
@@ -20,7 +19,6 @@
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Serializer/ParticleBase.h>
-#endif
 
 #include <QWidget>
 #include <QComboBox>

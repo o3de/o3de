@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QStringList>
 #include <QVector>
 #include <QMetaType>
-#endif
 
 namespace O3DE::ProjectManager
 {
@@ -80,6 +78,7 @@ namespace O3DE::ProjectManager
 
         QString m_path;
         QString m_name = "Unknown Gem Name";
+        QString m_altname;
         QString m_displayName;
         QString m_origin = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;

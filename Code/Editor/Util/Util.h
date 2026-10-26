@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMONTOOLS_UTIL_H
-#define CRYINCLUDE_CRYCOMMONTOOLS_UTIL_H
 #pragma once
-
 
 #include <cstring>  // memset()
 
@@ -191,5 +187,3 @@ namespace Util
         return x * x * x;
     }
 } // namespace Util
-
-#endif // CRYINCLUDE_CRYCOMMONTOOLS_UTIL_H

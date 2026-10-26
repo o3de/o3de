@@ -61,5 +61,3 @@ int CAutoDirectoryRestoreFileDialog::exec()
 
     return result;
 }
-
-#include <Util/moc_AutoDirectoryRestoreFileDialog.cpp>

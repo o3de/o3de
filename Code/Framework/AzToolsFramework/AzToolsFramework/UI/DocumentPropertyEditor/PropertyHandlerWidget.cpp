@@ -8,6 +8,9 @@
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
+#include <AzCore/DOM/DomValue.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+
 namespace AzToolsFramework
 {
     QWidget* PropertyHandlerWidgetInterface::GetFirstInTabOrder()
@@ -19,4 +22,14 @@ namespace AzToolsFramework
     {
         return GetWidget();
     }
+
+    void PropertyHandlerWidgetInterface::SetValueFromDom_Internal(const AZ::Dom::Value& node, AzToolsFramework::DocumentPropertyEditor* owningDPE)
+    {
+        SetValueFromDom(node);
+        if (owningDPE)
+        {
+            owningDPE->AddDirtyHandler(this);
+        }
+    }
+
 } // namespace AzToolsFramework

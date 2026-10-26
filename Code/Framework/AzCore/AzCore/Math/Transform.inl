@@ -9,20 +9,16 @@
 namespace AZ
 {
     AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, float scale)
-        : m_translation(translation)
-        , m_rotation(rotation)
-        , m_scale(scale)
+        : m_rotation(rotation)
+        , m_translationScale(Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(translation.GetSimdValue()), scale))
     {
-        ;
     }
-
 
     AZ_MATH_INLINE Transform Transform::CreateIdentity()
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = 1.0f;
-        result.m_translation = Vector3::CreateZero();
+        result.m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, 1.0f);
         return result;
     }
 
@@ -45,8 +41,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = q;
-        result.m_scale = 1.0f;
-        result.m_translation = Vector3::CreateZero();
+        result.m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, 1.0f);
         return result;
     }
 
@@ -54,8 +49,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = q;
-        result.m_scale = 1.0f;
-        result.m_translation = p;
+        result.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(p.GetSimdValue()), 1.0f);
         return result;
     }
 
@@ -63,8 +57,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = scale;
-        result.m_translation = Vector3::CreateZero();
+        result.m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, scale);
         return result;
     }
 
@@ -72,8 +65,7 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = 1.0f;
-        result.m_translation = translation;
+        result.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(translation.GetSimdValue()), 1.0f);
         return result;
     }
 
@@ -108,27 +100,23 @@ namespace AZ
         return m_rotation.TransformVector(Vector3::CreateAxisZ(m_scale));
     }
 
-    AZ_MATH_INLINE void Transform::GetBasisAndTranslation(Vector3* basisX, Vector3* basisY, Vector3* basisZ, Vector3* pos) const
+    AZ_MATH_INLINE Vector3 Transform::GetTranslation() const
     {
-        *basisX = GetBasisX();
-        *basisY = GetBasisY();
-        *basisZ = GetBasisZ();
-        *pos = GetTranslation();
-    }
-
-    AZ_MATH_INLINE const Vector3& Transform::GetTranslation() const
-    {
-        return m_translation;
+        return Vector3(Simd::Vec4::ToVec3(m_translationScale));
     }
 
     AZ_MATH_INLINE void Transform::SetTranslation(float x, float y, float z)
     {
-        SetTranslation(Vector3(x, y, z));
+        m_translationX = x;
+        m_translationY = y;
+        m_translationZ = z;
     }
 
     AZ_MATH_INLINE void Transform::SetTranslation(const Vector3& v)
     {
-        m_translation = v;
+        // Single 16-byte aligned blend+store: take xyz from v, keep W (scale) from existing memory.
+        // Avoids the scalar extraction that 3 separate m_x/y/z writes would force from v's SIMD register.
+        m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(v.GetSimdValue()), Simd::Vec4::SplatIndex3(m_translationScale));
     }
 
     AZ_MATH_INLINE const Quaternion& Transform::GetRotation() const
@@ -167,8 +155,11 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = m_rotation * rhs.m_rotation;
-        result.m_scale = m_scale * rhs.m_scale;
-        result.m_translation = TransformPoint(rhs.m_translation);
+        // translation = rotate(scale * rhs.translation) + translation
+        const Simd::Vec3::FloatType scaled = Simd::Vec3::Mul(Simd::Vec4::ToVec3(rhs.m_translationScale), Simd::Vec3::Splat(m_scale));
+        const Simd::Vec3::FloatType rotated = Simd::Vec4::QuaternionTransform(m_rotation.GetSimdValue(), scaled);
+        const Simd::Vec3::FloatType newTransform = Simd::Vec3::Add(rotated, Simd::Vec4::ToVec3(m_translationScale));
+        result.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(newTransform), m_scale * rhs.m_scale);
         return result;
     }
 
@@ -180,25 +171,32 @@ namespace AZ
 
     AZ_MATH_INLINE Vector3 Transform::TransformPoint(const Vector3& rhs) const
     {
-        return m_rotation.TransformVector((m_scale * rhs)) + m_translation;
+        const Simd::Vec3::FloatType scaled = Simd::Vec3::Mul(rhs.GetSimdValue(), Simd::Vec3::Splat(m_scale));
+        const Simd::Vec3::FloatType rotated = Simd::Vec4::QuaternionTransform(m_rotation.GetSimdValue(), scaled);
+        return Vector3(Simd::Vec3::Add(rotated, Simd::Vec4::ToVec3(m_translationScale)));
     }
 
     AZ_MATH_INLINE Vector4 Transform::TransformPoint(const Vector4& rhs) const
     {
-        return Vector4::CreateFromVector3AndFloat(m_rotation.TransformVector((m_scale * rhs.GetAsVector3())) + m_translation * rhs(3), rhs(3));
+        const Simd::Vec3::FloatType scaled = Simd::Vec3::Mul(Simd::Vec4::ToVec3(rhs.GetSimdValue()), Simd::Vec3::Splat(m_scale));
+        const Simd::Vec3::FloatType rotated = Simd::Vec4::QuaternionTransform(m_rotation.GetSimdValue(), scaled);
+        const Simd::Vec3::FloatType result = Simd::Vec3::Madd(Simd::Vec4::ToVec3(m_translationScale), Simd::Vec3::Splat(rhs(3)), rotated);
+        return Vector4::CreateFromVector3AndFloat(Vector3(result), rhs(3));
     }
 
     AZ_MATH_INLINE Vector3 Transform::TransformVector(const Vector3& rhs) const
     {
-        return m_rotation.TransformVector((m_scale * rhs));
+        return Vector3(Simd::Vec4::QuaternionTransform(m_rotation.GetSimdValue(), Simd::Vec3::Mul(rhs.GetSimdValue(), Simd::Vec3::Splat(m_scale))));
     }
 
     AZ_MATH_INLINE Transform Transform::GetInverse() const
     {
         Transform out;
         out.m_rotation = m_rotation.GetConjugate();
-        out.m_scale = 1.0f / m_scale;
-        out.m_translation = -out.m_scale * (out.m_rotation.TransformVector(m_translation));
+        const float inverseScale = 1.0f / m_scale;
+        const Simd::Vec3::FloatType rotated = Simd::Vec4::QuaternionTransform(out.m_rotation.GetSimdValue(), Simd::Vec4::ToVec3(m_translationScale));
+        const Simd::Vec3::FloatType newTransform = Simd::Vec3::Mul(rotated, Simd::Vec3::Splat(-inverseScale));
+        out.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(newTransform), inverseScale);
         return out;
     }
 
@@ -216,8 +214,10 @@ namespace AZ
     {
         Transform result;
         result.m_rotation = m_rotation;
+        result.m_translationX = m_translationX;
+        result.m_translationY = m_translationY;
+        result.m_translationZ = m_translationZ;
         result.m_scale = 1.0f;
-        result.m_translation = m_translation;
         return result;
     }
 
@@ -228,16 +228,16 @@ namespace AZ
 
     AZ_MATH_INLINE bool Transform::IsClose(const Transform& rhs, float tolerance) const
     {
+        // Packed 4-lane compare on {tx, ty, tz, scale}.
         return m_rotation.IsClose(rhs.m_rotation, tolerance)
-            && AZ::IsClose(m_scale, rhs.m_scale, tolerance)
-            && m_translation.IsClose(rhs.m_translation, tolerance);
+            && Vector4(m_translationScale).IsClose(Vector4(rhs.m_translationScale), tolerance);
     }
 
     AZ_MATH_INLINE bool Transform::operator==(const Transform& rhs) const
     {
+        // Packed 4-lane exact equality on {tx, ty, tz, scale}.
         return m_rotation == rhs.m_rotation
-            && m_scale == rhs.m_scale
-            && m_translation == rhs.m_translation;
+            && Simd::Vec4::CmpAllEq(m_translationScale, rhs.m_translationScale);
     }
 
     AZ_MATH_INLINE bool Transform::operator!=(const Transform& rhs) const
@@ -257,23 +257,21 @@ namespace AZ
 
     AZ_MATH_INLINE void Transform::SetFromEulerDegrees(const Vector3& eulerDegrees)
     {
-        m_translation = Vector3::CreateZero();
-        m_scale = 1.0f;
+        m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, 1.0f);
         m_rotation.SetFromEulerDegrees(eulerDegrees);
     }
 
     AZ_MATH_INLINE void Transform::SetFromEulerRadians(const Vector3& eulerRadians)
     {
-        m_translation = Vector3::CreateZero();
-        m_scale = 1.0f;
+        m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, 1.0f);
         m_rotation.SetFromEulerRadians(eulerRadians);
     }
 
     AZ_MATH_INLINE bool Transform::IsFinite() const
     {
-        return m_rotation.IsFinite()
-            && AZ::IsFiniteFloat(m_scale)
-            && m_translation.IsFinite();
+        // Packed Vec4 finite check on {tx, ty, tz, scale}: abs(v) <= FloatMax
+        // catches both NaN (unordered compare returns false) and Inf (Inf > FloatMax)
+        return m_rotation.IsFinite() && Simd::Vec4::CmpAllLtEq(Simd::Vec4::Abs(m_translationScale), Simd::Vec4::Splat(Constants::FloatMax));
     }
 
     // Non-member functionality belonging to the AZ namespace

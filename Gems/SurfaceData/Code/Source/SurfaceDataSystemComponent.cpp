@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <SurfaceData/SurfaceDataConstants.h>
@@ -36,7 +37,9 @@ namespace SurfaceData
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SurfaceDataSystemComponent>("Surface Data System", "Manages registration of surface data providers and forwards intersection data requests to them")
+                ec->Class<SurfaceDataSystemComponent>(
+                    QT_TRANSLATE_NOOP("SurfaceData", "Surface Data System"),
+                    QT_TRANSLATE_NOOP("SurfaceData", "Manages registration of surface data providers and forwards intersection data requests to them"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

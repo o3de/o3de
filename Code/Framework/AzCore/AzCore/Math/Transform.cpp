@@ -18,7 +18,10 @@
 
 namespace AZ
 {
-    namespace 
+    static_assert(sizeof(Transform) == 32, "AZ::Transform must be exactly 32 bytes"); // (16B rotation + 16B {translation, scale})
+    static_assert(alignof(Transform) == 16, "AZ::Transform must be 16-byte aligned");
+
+    namespace
     {
         class TransformSerializer
             : public SerializeContext::IDataSerializer
@@ -124,7 +127,7 @@ namespace AZ
         void TransformGetBasisAndTranslationMultipleReturn(const Transform* thisPtr, ScriptDataContext& dc)
         {
             Vector3 basisX(Vector3::CreateZero()), basisY(Vector3::CreateZero()), basisZ(Vector3::CreateZero()), translation(Vector3::CreateZero());
-            thisPtr->GetBasisAndTranslation(&basisX, &basisY, &basisZ, &translation);
+            thisPtr->GetBasisAndTranslation(basisX, basisY, basisZ, translation);
             dc.PushResult(basisX);
             dc.PushResult(basisY);
             dc.PushResult(basisZ);
@@ -309,7 +312,7 @@ namespace AZ
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
                 Method("GetBasisZ", &Transform::GetBasisZ)->
-                Property<const Vector3&(Transform::*)() const, void (Transform::*)(const Vector3&)>("translation", &Transform::GetTranslation, &Transform::SetTranslation)->
+                Property<Vector3(Transform::*)() const, void (Transform::*)(const Vector3&)>("translation", &Transform::GetTranslation, &Transform::SetTranslation)->
                 Property<const Quaternion&(Transform::*)() const, void (Transform::*)(const Quaternion&)>("rotation", &Transform::GetRotation, &Transform::SetRotation)->
                 Method("ToString", &TransformToString)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::ToString)->
@@ -367,13 +370,24 @@ namespace AZ
         }
     }
 
+    void Transform::GetBasisAndTranslation(Vector3& basisX, Vector3& basisY, Vector3& basisZ, Vector3& pos) const
+    {
+        // Build the rotation matrix once so the quaternion's intermediate products
+        // are computed a single time and shared across all three basis vectors.
+        const Matrix3x3 rotationMatrix = Matrix3x3::CreateFromQuaternion(m_rotation);
+        const float scale = m_scale;
+        basisX = rotationMatrix.GetBasisX() * scale;
+        basisY = rotationMatrix.GetBasisY() * scale;
+        basisZ = rotationMatrix.GetBasisZ() * scale;
+        pos = GetTranslation();
+    }
+
     Transform Transform::CreateFromMatrix3x3(const Matrix3x3& value)
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_translationScale = Simd::Vec4::LoadImmediate(0.0f, 0.0f, 0.0f, tmp.ExtractScale().GetMaxElement());
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
-        result.m_translation = Vector3::CreateZero();
         return result;
     }
 
@@ -381,9 +395,8 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(p.GetSimdValue()), tmp.ExtractScale().GetMaxElement());
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
-        result.m_translation = p;
         return result;
     }
 
@@ -391,9 +404,8 @@ namespace AZ
     {
         Transform result;
         Matrix3x4 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_translationScale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(value.GetTranslation().GetSimdValue()), tmp.ExtractScale().GetMaxElement());
         result.m_rotation = Quaternion::CreateFromMatrix3x4(tmp);
-        result.m_translation = value.GetTranslation();
         return result;
     }
 

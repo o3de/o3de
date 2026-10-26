@@ -10,10 +10,10 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
+#include <QRegularExpression>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -21,12 +21,12 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
 #include <QString>
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QLineEdit;
 class QPushButton;
 class QSortFilterProxyModel;
 class QTreeView;
+class QStandardItem;
 
 namespace AZ
 {
@@ -63,12 +63,16 @@ namespace AzToolsFramework
     protected:
         void focusOutEvent(QFocusEvent* event) override;
 
+    protected slots:
+        virtual void ActivateSelection(const QModelIndex& index);
+        //! Clears the search box and refreshes the filtered results.
+        //! Exposed so subclasses can dismiss through the same codepath as the base tree.
+        void ClearSearch();
+
     private slots:
         void UpdateContent();
         void QueueUpdateSearch();
         void UpdateSearch();
-        void ClearSearch();
-        void ActivateSelection(const QModelIndex& index);
         void ExpandCategory(const QModelIndex& index);
         void CollapseCategory(const QModelIndex& index);
         void FocusSearchBox();

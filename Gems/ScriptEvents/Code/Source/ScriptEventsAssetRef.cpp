@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEvents
 {
@@ -22,10 +23,12 @@ namespace ScriptEvents
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ScriptEventsAssetRef>("Script Event Asset", "")
+                editContext->Class<ScriptEventsAssetRef>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "Script Event Asset"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEventsAssetRef::m_asset, "Script Event Asset", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEventsAssetRef::m_asset,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Script Event Asset"), "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ScriptEventsAssetRef::OnAssetChanged)
                     // TODO #lsempe: hook up to open Asset Editor when ready
                     //->Attribute("EditButton", "")

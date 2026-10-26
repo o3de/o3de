@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QImage>
 #include <QColor>
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
-#endif
 
 class QSettings;
 class QToolButton;

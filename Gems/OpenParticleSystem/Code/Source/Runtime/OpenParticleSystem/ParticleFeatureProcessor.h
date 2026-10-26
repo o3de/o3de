@@ -110,6 +110,9 @@ namespace OpenParticle
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
+        AZ::RHI::Ptr<AZ::RHI::BufferPool> GetBufferPool() const { return m_bufferPool; }
+        AZ::RHI::Ptr<AZ::RHI::BufferPool> GetShaderReadBufferPool() const { return m_shaderReadBufferPool; }
+
     private:
         void Init() override;
 
@@ -122,6 +125,7 @@ namespace OpenParticle
         void InitBufferPool();
 
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
+        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_shaderReadBufferPool;
         AZ::Render::TransformServiceFeatureProcessorInterface* m_transformService = nullptr;
         AZ::StableDynamicArray<ParticleDataInstance> m_particleInstances;
         AZStd::unordered_map<AZ::u32, ParticlePipelineState> m_pipelineStates;

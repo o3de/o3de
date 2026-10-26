@@ -1,0 +1,21 @@
+ShaderResourceGroupSemantic SRG_PerView
+{
+    FrequencyId = 4;
+};
+
+ShaderResourceGroup ViewSrg: SRG_PerView
+{
+    float4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+
+    float GetNearZ()
+    {
+        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.x;
+    }
+ 
+    struct Decal
+    {
+        float3 m_position;
+    };
+
+    StructuredBuffer<Decal> m_decals;
+};

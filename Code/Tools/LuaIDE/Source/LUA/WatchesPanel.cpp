@@ -12,7 +12,6 @@
 #include "LUAEditorDebuggerMessages.h"
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Script/lua/lua.h>
-#include <Source/LUA/moc_WatchesPanel.cpp>
 
 #include <QSortFilterProxyModel>
 #include <QMenu>

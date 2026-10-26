@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Allocators.h>
 #include <FeatureSchema.h>
@@ -130,11 +131,13 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeatureSchema>("FeatureSchema", "")
+        editContext->Class<FeatureSchema>(
+            QT_TRANSLATE_NOOP("MotionMatching", "FeatureSchema"), "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureSchema::m_features, "Features", "")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureSchema::m_features,
+                QT_TRANSLATE_NOOP("MotionMatching", "Features"), "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ;
     }

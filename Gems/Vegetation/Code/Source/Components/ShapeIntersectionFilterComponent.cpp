@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <Vegetation/InstanceData.h>
 
@@ -35,15 +36,15 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<ShapeIntersectionFilterConfig>(
-                    "Vegetation Shape Intersection Filter", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Shape Intersection Filter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ShapeIntersectionFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(0, &ShapeIntersectionFilterConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to test intersection.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ShapeIntersectionFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(0, &ShapeIntersectionFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Entity with shape component to test intersection."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ;
 

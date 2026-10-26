@@ -10,10 +10,8 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include "LogPanel_Panel.h"
 #include "LogControl.h" // for BaseLogView
-#endif
 
 namespace AzToolsFramework
 {

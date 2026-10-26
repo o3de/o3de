@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
@@ -35,22 +36,22 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<ScaleModifierConfig>(
-                    "Vegetation Scale Modifier", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Scale Modifier"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ScaleModifierConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ScaleModifierConfig::m_rangeMin, "Range Min", "Minimum scale.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ScaleModifierConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ScaleModifierConfig::m_rangeMin, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum scale."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.125f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ScaleModifierConfig::m_rangeMax, "Range Max", "Maximum scale.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ScaleModifierConfig::m_rangeMax, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum scale."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.125f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->DataElement(0, &ScaleModifierConfig::m_gradientSampler, "Gradient", "Gradient used as blend factor to lerp between ranges.")
+                    ->DataElement(0, &ScaleModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
                     ;
             }
         }

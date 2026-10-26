@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
     };
 
     // need to define qHash for ProjectManagerScreen when using scoped enums
-    inline uint qHash(ProjectManagerScreen key, uint seed)
+    inline size_t qHash(ProjectManagerScreen key, uint seed)
     {
         return ::qHash(static_cast<uint>(key), seed);
     }

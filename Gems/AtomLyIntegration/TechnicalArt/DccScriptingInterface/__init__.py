@@ -53,7 +53,7 @@ _logging.captureWarnings(capture=True)
 # set this manually if you want to raise exceptions/warnings
 DCCSI_STRICT = False
 
-# set manually to allow this module to test PySide2 imports
+# set manually to allow this module to test PySide imports
 DCCSI_TEST_PYSIDE = False
 
 # default loglevel to info unless set
@@ -694,7 +694,7 @@ _LOGGER.info(f'Final {ENVAR_PATH_O3DE_BIN} is: {str(PATH_O3DE_BIN)}')
 
 
 # -------------------------------------------------------------------------
-# QtForPython (PySide2) is a DCCsi Gem dependency
+# QtForPython (PySide) is a DCCsi Gem dependency
 # Can't be initialized in the dev env, because Wing 9 is a Qt5 app
 # and this causes interference, so replicate here
 
@@ -747,8 +747,8 @@ if DCCSI_TEST_PYSIDE:
         # path constructor
         QT_PLUGIN_PATH = Path(PATH_O3DE_3RDPARTY,
                               'packages',
-                              'pyside2-5.15.2.1-py3.10-rev3-windows',
-                                'pyside2',
+                              'pyside6-6.10.2-py3.10-rev1-windows',
+                                'pyside6',
                                 'lib',
                                 'site-packages')
 
@@ -780,11 +780,11 @@ if DCCSI_TEST_PYSIDE:
         add_site_dir(O3DE_QT_BIN)
 
     try:
-        import PySide2
-        from PySide2.QtWidgets import QPushButton
-        _LOGGER.info('PySide2 bootstrapped PATH for Windows.')
+        import PySide6
+        from PySide6.QtWidgets import QPushButton
+        _LOGGER.info('PySide bootstrapped PATH for Windows.')
     except ImportError as e:
-        _LOGGER.warning('Cannot import PySide2.')
+        _LOGGER.warning('Cannot import PySide6.')
         _LOGGER.error(f'{e} , traceback =', exc_info=True)
         if DCCSI_STRICT:
             _LOGGER.exception(f'{e} , traceback =', exc_info=True)

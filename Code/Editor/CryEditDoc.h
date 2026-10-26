@@ -6,12 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CRYEDITDOC_H
-#define CRYINCLUDE_EDITOR_CRYEDITDOC_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "DocMultiArchive.h"
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -21,7 +17,6 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <TimeValue.h>
 #include <IEditor.h>
-#endif
 
 struct LightingSettings;
 struct IVariable;
@@ -209,5 +204,3 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
-
-#endif // CRYINCLUDE_EDITOR_CRYEDITDOC_H

@@ -1,0 +1,37 @@
+float func();  // the function declared. (will become a ref)
+
+float4 psmain() : SV_TARGET0
+{
+    float f = func();  // ref 2
+    return float4(f, 0, 0, 1);
+}
+
+float func()  // function defined. (not a ref)
+{
+    return 1.0;
+}
+
+float func();  // ref 3.  re-re-declared but should be innocent.
+
+class interferer
+{
+    float func() { return 2.0; }  // same local name but different symbol family
+};
+
+interferer getinterferer() { interferer i; return i; }
+
+float4 untint(float4 c)
+{
+    typeof(func()) f = 0.0;  // ref 4
+    switch (func()) // ref 5
+    {
+        case 1.0:
+            f = func();  // ref 6
+            break;
+    }
+    interferer i;
+    i.func();  // nope
+    getinterferer().func();  // still nope
+    return float4(func(), f, 0, 1);  // ref 7
+}
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

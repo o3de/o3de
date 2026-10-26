@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <Editor/EditorJointConfiguration.h>
@@ -55,27 +56,27 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitConfig>(
-                    "Editor Joint Limit Config Base", "Base joint limit parameters.")
+                    QT_TRANSLATE_NOOP("PhysX", "Editor Joint Limit Config Base"), QT_TRANSLATE_NOOP("PhysX", "Base joint limit parameters."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isLimited, "Limit",
-                        "When active, the joint's degrees of freedom are limited.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isLimited, QT_TRANSLATE_NOOP("PhysX", "Limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, the joint's degrees of freedom are limited."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointLimitConfig::IsInComponentMode)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isSoftLimit, "Soft limit",
-                        "When active, motion beyond the joint limit with a spring-like return is allowed.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_isSoftLimit, QT_TRANSLATE_NOOP("PhysX", "Soft limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, motion beyond the joint limit with a spring-like return is allowed."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::m_isLimited)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointLimitConfig::IsInComponentMode)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_damping, "Damping",
-                        "Dissipation of energy and reduction in spring oscillations when outside the joint limit.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_damping, QT_TRANSLATE_NOOP("PhysX", "Damping"),
+                        QT_TRANSLATE_NOOP("PhysX", "Dissipation of energy and reduction in spring oscillations when outside the joint limit."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::IsSoftLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_stiffness, "Stiffness",
-                        "The spring's drive relative to the position of the follower when outside the joint limit.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConfig::m_stiffness, QT_TRANSLATE_NOOP("PhysX", "Stiffness"),
+                        QT_TRANSLATE_NOOP("PhysX", "The spring's drive relative to the position of the follower when outside the joint limit."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConfig::IsSoftLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_springMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_springMin)
@@ -108,20 +109,20 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitPairConfig>(
-                    "Angular Limit", "Rotation limitation.")
+                    QT_TRANSLATE_NOOP("PhysX", "Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Rotation limitation."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_standardLimitConfig
-                        , "Standard limit configuration"
-                        , "Common limit parameters to all joint types.")
-                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitPositive, "Positive angular limit",
-                        "Positive rotation angle.")
+                        , QT_TRANSLATE_NOOP("PhysX", "Standard limit configuration")
+                        , QT_TRANSLATE_NOOP("PhysX", "Common limit parameters to all joint types."))
+                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitPositive, QT_TRANSLATE_NOOP("PhysX", "Positive angular limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "Positive rotation angle."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitNegative, "Negative angular limit",
-                        "Negative rotation angle.")
+                    ->DataElement(0, &PhysX::EditorJointLimitPairConfig::m_limitNegative, QT_TRANSLATE_NOOP("PhysX", "Negative angular limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "Negative rotation angle."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMin)
                     ->Attribute(AZ::Edit::Attributes::Min, -s_angleMax)
@@ -158,23 +159,23 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::EditorJointLimitLinearPairConfig>("Linear Limit", "Limitation on linear motion.")
+                editContext->Class<PhysX::EditorJointLimitLinearPairConfig>(QT_TRANSLATE_NOOP("PhysX", "Linear Limit"), QT_TRANSLATE_NOOP("PhysX", "Limitation on linear motion."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         0,
                         &PhysX::EditorJointLimitLinearPairConfig::m_standardLimitConfig,
-                        "Standard limit configuration",
-                        "Common limit parameters to all joint types.")
+                        QT_TRANSLATE_NOOP("PhysX", "Standard limit configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "Common limit parameters to all joint types."))
                     ->DataElement(
-                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitLower, "Lower linear limit", "Lower limit of linear motion.")
+                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitLower, QT_TRANSLATE_NOOP("PhysX", "Lower linear limit"), QT_TRANSLATE_NOOP("PhysX", "Lower limit of linear motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitLinearPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
                     ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointLimitLinearPairConfig::OnLimitLowerChanged)
                     ->DataElement(
-                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, "Upper linear limit", "Upper limit of linear motion.")
+                        0, &PhysX::EditorJointLimitLinearPairConfig::m_limitUpper, QT_TRANSLATE_NOOP("PhysX", "Upper linear limit"), QT_TRANSLATE_NOOP("PhysX", "Upper limit of linear motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitLinearPairConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, LinearLimitMax)
                     ->Attribute(AZ::Edit::Attributes::Min, LinearLimitMin)
@@ -228,20 +229,20 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PhysX::EditorJointLimitConeConfig>(
-                    "Angular Limit", "Rotation limitation.")
+                    QT_TRANSLATE_NOOP("PhysX", "Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Rotation limitation."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_standardLimitConfig
-                        , "Standard limit configuration"
-                        , "Common limit parameters to all joint types.")
-                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitY, "Y axis angular limit",
-                        "Limit for swing angle about Y axis.")
+                        , QT_TRANSLATE_NOOP("PhysX", "Standard limit configuration")
+                        , QT_TRANSLATE_NOOP("PhysX", "Common limit parameters to all joint types."))
+                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitY, QT_TRANSLATE_NOOP("PhysX", "Y axis angular limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "Limit for swing angle about Y axis."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConeConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
-                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitZ, "Z axis angular limit",
-                        "Limit for swing angle about Z axis.")
+                    ->DataElement(0, &PhysX::EditorJointLimitConeConfig::m_limitZ, QT_TRANSLATE_NOOP("PhysX", "Z axis angular limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "Limit for swing angle about Z axis."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointLimitConeConfig::IsLimited)
                     ->Attribute(AZ::Edit::Attributes::Max, s_angleMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_angleMin)
@@ -293,50 +294,50 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Enum<EditorJointConfig::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")
-                    ->Value("Never", EditorJointConfig::DisplaySetupState::Never)
-                    ->Value("Selected", EditorJointConfig::DisplaySetupState::Selected)
-                    ->Value("Always", EditorJointConfig::DisplaySetupState::Always)
+                editContext->Enum<EditorJointConfig::DisplaySetupState>(QT_TRANSLATE_NOOP("PhysX", "Joint Display Setup State"), QT_TRANSLATE_NOOP("PhysX", "Options for displaying joint setup."))
+                    ->Value(QT_TRANSLATE_NOOP("PhysX", "Never"), EditorJointConfig::DisplaySetupState::Never)
+                    ->Value(QT_TRANSLATE_NOOP("PhysX", "Selected"), EditorJointConfig::DisplaySetupState::Selected)
+                    ->Value(QT_TRANSLATE_NOOP("PhysX", "Always"), EditorJointConfig::DisplaySetupState::Always)
                     ;
 
                 editContext->Class<PhysX::EditorJointConfig>(
-                    "PhysX Joint Configuration", "")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Joint Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_localPosition, "Local Position"
-                        , "Local Position of joint, relative to its entity.")
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_localRotation, "Local Rotation"
-                        , "Local Rotation of joint, relative to its entity.")
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_localPosition, QT_TRANSLATE_NOOP("PhysX", "Local Position")
+                        , QT_TRANSLATE_NOOP("PhysX", "Local Position of joint, relative to its entity."))
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_localRotation, QT_TRANSLATE_NOOP("PhysX", "Local Rotation")
+                        , QT_TRANSLATE_NOOP("PhysX", "Local Rotation of joint, relative to its entity."))
                     ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
                     ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_fixJointLocation, "Fix Joint Location"
-                        , "When enabled the joint will remain in the same location when moving the entity.")
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_leadEntity, "Lead Entity"
-                        , "Parent entity associated with joint.")
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_fixJointLocation, QT_TRANSLATE_NOOP("PhysX", "Fix Joint Location")
+                        , QT_TRANSLATE_NOOP("PhysX", "When enabled the joint will remain in the same location when moving the entity."))
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_leadEntity, QT_TRANSLATE_NOOP("PhysX", "Lead Entity")
+                        , QT_TRANSLATE_NOOP("PhysX", "Parent entity associated with joint."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointConfig::OnLeadEntityChanged)
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_selfCollide, "Lead-Follower Collide"
-                        , "When active, the lead and follower pair will collide with each other.")
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_selfCollide, QT_TRANSLATE_NOOP("PhysX", "Lead-Follower Collide")
+                        , QT_TRANSLATE_NOOP("PhysX", "When active, the lead and follower pair will collide with each other."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &PhysX::EditorJointConfig::m_displayJointSetup, "Display Setup in Viewport"
-                        , "Never = Not shown."
+                        AZ::Edit::UIHandlers::ComboBox, &PhysX::EditorJointConfig::m_displayJointSetup, QT_TRANSLATE_NOOP("PhysX", "Display Setup in Viewport")
+                        , QT_TRANSLATE_NOOP("PhysX", "Never = Not shown."
                         "Select = Show setup display when entity is selected."
-                        "Always = Always show setup display.")
+                        "Always = Always show setup display."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
-                        , "Select lead entity on snap to position in component mode.")
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, QT_TRANSLATE_NOOP("PhysX", "Select Lead on Snap")
+                        , QT_TRANSLATE_NOOP("PhysX", "Select lead entity on snap to position in component mode."))
                     ->DataElement(0, &PhysX::EditorJointConfig::m_breakable
-                        , "Breakable"
-                        , "Joint is breakable when force or torque exceeds limit.")
+                        , QT_TRANSLATE_NOOP("PhysX", "Breakable")
+                        , QT_TRANSLATE_NOOP("PhysX", "Joint is breakable when force or torque exceeds limit."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_forceMax,
-                        "Maximum Force", "Amount of force joint can withstand before breakage.")
+                        QT_TRANSLATE_NOOP("PhysX", "Maximum Force"), QT_TRANSLATE_NOOP("PhysX", "Amount of force joint can withstand before breakage."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, BreakageMax)
                     ->Attribute(AZ::Edit::Attributes::Min, BreakageMin)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_torqueMax,
-                        "Maximum Torque", "Amount of torque joint can withstand before breakage.")
+                        QT_TRANSLATE_NOOP("PhysX", "Maximum Torque"), QT_TRANSLATE_NOOP("PhysX", "Amount of torque joint can withstand before breakage."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, BreakageMax)
                     ->Attribute(AZ::Edit::Attributes::Min, BreakageMin)

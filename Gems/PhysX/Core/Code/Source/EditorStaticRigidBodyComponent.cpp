@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <AzFramework/Physics/NameConstants.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Source/EditorStaticRigidBodyComponent.h>
 #include <Source/StaticRigidBodyComponent.h>
@@ -23,10 +24,10 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                constexpr const char* ToolTip = "The entity behaves as a non-movable rigid body in PhysX.";
+                constexpr const char* ToolTip = QT_TRANSLATE_NOOP("PhysX", "The entity behaves as a non-movable rigid body in PhysX.");
                 constexpr const char* HelpPageURL = "https://www.o3de.org/docs/user-guide/components/reference/physx/static-rigid-body/";
 
-                editContext->Class<EditorStaticRigidBodyComponent>("PhysX Static Rigid Body", ToolTip)
+                editContext->Class<EditorStaticRigidBodyComponent>(QT_TRANSLATE_NOOP("PhysX", "PhysX Static Rigid Body"), ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXStaticRigidBody.svg")

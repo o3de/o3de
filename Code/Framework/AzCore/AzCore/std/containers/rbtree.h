@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/allocator.h>
@@ -796,14 +797,14 @@ namespace AZStd
         template <class InsertReturnType, class NodeHandle>
         InsertReturnType node_handle_insert_unique(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        iterator node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle);
 
         //! Returns an iterator pointing to the inserted element.
         //! If the nodeHandle is empty the end() iterator is returned
         template <class NodeHandle>
-        auto node_handle_insert_equal(NodeHandle&& nodeHandle) -> iterator;
+        iterator node_handle_insert_equal(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        iterator node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle);
 
         //! Searches for an element which matches the value of key and extracts it from the hash_table
         //! @return A NodeHandle which can be used to insert the an element between unique and non-unique containers of the same type
@@ -883,7 +884,9 @@ namespace AZStd
             return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, lastNode));
         }
 
-        AZ_FORCE_INLINE void erase(const key_type* first, const key_type* last)
+        template<class InputIterator>
+            requires (!is_convertible_v<InputIterator, const_iterator>)
+        AZ_FORCE_INLINE void erase(InputIterator first, InputIterator last)
         {
             while (first != last)
             {
@@ -904,8 +907,9 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto find(const ComparableToKey& key)
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator find(const ComparableToKey& key)
         {
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
@@ -933,22 +937,25 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto find(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator find(const ComparableToKey& key) const
         {
             return const_iterator(const_cast<rbtree*>(this)->find(key));
         }
 
         template<class ComparableToKey>
-        auto contains(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, bool>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        bool contains(const ComparableToKey& key) const
         {
             return find(key) != end();
         }
 
         template<class ComparableToKey>
-        auto lower_bound(const ComparableToKey& key)
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator lower_bound(const ComparableToKey& key)
         {
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
@@ -969,15 +976,17 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator lower_bound(const ComparableToKey& key) const
         {
             return const_iterator(const_cast<rbtree*>(this)->lower_bound(key));
         }
 
         template<class ComparableToKey>
-        auto upper_bound(const ComparableToKey& key)
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        iterator upper_bound(const ComparableToKey& key)
         {
             base_node_ptr_type y = &m_head;
             base_node_ptr_type x = m_head.get_parent();
@@ -998,36 +1007,41 @@ namespace AZStd
         }
 
         template<class ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        const_iterator upper_bound(const ComparableToKey& key) const
         {
             return const_iterator(const_cast<rbtree*>(this)->upper_bound(key));
         }
 
         template<class ComparableToKey>
-        auto count(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, size_type>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        size_type count(const ComparableToKey& key) const
         {
             AZStd::pair<const_iterator, const_iterator> p = equal_range(key);
             return AZStd::distance(p.first, p.second);
         }
 
         template<class ComparableToKey>
-        auto equal_range(const ComparableToKey& key)
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<iterator, iterator>>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<iterator, iterator> equal_range(const ComparableToKey& key)
         {
             return { lower_bound(key), upper_bound(key) };
         }
         template<class ComparableToKey>
-        auto equal_range(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<const_iterator, const_iterator>>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<const_iterator, const_iterator> equal_range(const ComparableToKey& key) const
         {
             return { lower_bound(key), upper_bound(key) };
         }
 
         template<class ComparableToKey>
-        auto equal_range_unique(const ComparableToKey& key)
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<iterator, iterator>>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<iterator, iterator> equal_range_unique(const ComparableToKey& key)
         {
             AZStd::pair<iterator, iterator> p;
             p.second = lower_bound(key);
@@ -1043,8 +1057,9 @@ namespace AZStd
             return p;
         }
         template<class ComparableToKey>
-        auto equal_range_unique(const ComparableToKey& key) const
-            -> enable_if_t<Internal::is_transparent<key_equal, ComparableToKey>::value || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<const_iterator, const_iterator>>
+            requires Internal::is_transparent_v<key_equal, ComparableToKey>
+                || AZStd::is_convertible_v<ComparableToKey, key_type>
+        AZStd::pair<const_iterator, const_iterator> equal_range_unique(const ComparableToKey& key) const
         {
             AZStd::pair<iterator, iterator> non_const_range(const_cast<rbtree*>(this)->equal_range_unique(key));
             return { const_iterator(non_const_range.first), const_iterator(non_const_range.second) };
@@ -1641,7 +1656,7 @@ namespace AZStd
 
         AZ_FORCE_INLINE void    deallocate_node(node_ptr_type node)
         {
-            m_allocator.deallocate(node, sizeof(node_type), alignment_of<node_type>::value);
+            m_allocator.deallocate(node, sizeof(node_type), alignment_of_v<node_type>);
         }
 
         inline void rotate_left(base_node_ptr_type x)

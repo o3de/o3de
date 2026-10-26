@@ -1,0 +1,3 @@
+struct s {};
+
+struct s2 : s {};  // Error: can't inherit from struct

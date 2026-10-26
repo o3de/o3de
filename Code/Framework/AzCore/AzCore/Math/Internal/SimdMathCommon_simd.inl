@@ -449,14 +449,15 @@ namespace AZ
 
                 const typename Vec4Type::FloatType partial3 = Vec4Type::SplatIndex0(Vec4Type::FromVec1(Vec3Type::Dot(quat, quat)));
                 const typename Vec4Type::FloatType partial4 = Vec4Type::Mul(scalar, scalar);
-                const typename Vec4Type::FloatType partial5 = Vec4Type::Sub(partial4, partial3);
-                const typename Vec4Type::FloatType sum2 = Vec4Type::Mul(partial5, vec3); // vec3 * (scalar * scalar - quat.Dot(quat))
+                const typename Vec4Type::FloatType partial5 = Vec4Type::Sub(partial4, partial3); // (scalar * scalar - quat.Dot(quat))
 
                 const typename Vec4Type::FloatType partial6 = Vec4Type::Mul(scalar, Two);
                 const typename Vec4Type::FloatType partial7 = Vec3Type::Cross(quat, vec3);
-                const typename Vec4Type::FloatType sum3 = Vec4Type::Mul(partial6, partial7); // scalar * 2.0f * quat.Cross(vec3)
 
-                return Vec4Type::Add(Vec4Type::Add(sum1, sum2), sum3);
+                // Fused multiply-add chain: sum1 + partial5 * vec3 + partial6 * partial7
+                // With FMA enabled, each Madd is a single instruction with one rounding step
+                // (more precise than separate Mul + Add). Without FMA, falls back to Mul + Add.
+                return Vec4Type::Madd(partial6, partial7, Vec4Type::Madd(partial5, vec3, sum1));
             }
 
             template <typename Vec4Type, typename Vec3Type>

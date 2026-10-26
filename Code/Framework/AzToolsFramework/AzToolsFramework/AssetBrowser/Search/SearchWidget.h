@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 AZ_POP_DISABLE_WARNING
@@ -17,8 +18,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QSharedPointer>
 AZ_POP_DISABLE_WARNING
-#endif
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 
 namespace AzToolsFramework

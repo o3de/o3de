@@ -6,19 +6,19 @@
  *
  */
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
 #include <QModelIndex>
 #include <QPointer>
-#endif
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 
 namespace AzToolsFramework

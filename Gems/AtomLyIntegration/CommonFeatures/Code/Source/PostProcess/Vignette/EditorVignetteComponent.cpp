@@ -8,6 +8,7 @@
 
 #include <PostProcess/Vignette/EditorVignetteComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorVignetteComponent>("Vignette", "Controls the Vignette")
+                    editContext->Class<EditorVignetteComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Vignette"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Vignette"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -41,22 +42,22 @@ namespace AZ
                     editContext->Class<VignetteComponentController>("VignetteComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &VignetteComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VignetteComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
                     editContext->Class<VignetteComponentConfig>("VignetteComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &VignetteComponentConfig::m_enabled, "Enable Vignette", "Enable Vignette.")
+                            Edit::UIHandlers::CheckBox, &VignetteComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Vignette"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Vignette."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &VignetteComponentConfig::m_intensity, "Intensity", "Intensity of effect")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &VignetteComponentConfig::m_intensity, QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity of effect"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &VignetteComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ATLControlsModel.h>
 #include <AudioControl.h>
 #include <IAudioSystemEditor.h>
@@ -20,7 +19,6 @@
 #include <QListWidget>
 
 #include <Source/Editor/ui_InspectorPanel.h>
-#endif
 
 namespace AudioControls
 {

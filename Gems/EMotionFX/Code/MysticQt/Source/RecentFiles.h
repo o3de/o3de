@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "MysticQtConfig.h"
 #include <MCore/Source/StandardHeaders.h>
 #include <AzCore/std/containers/vector.h>
+
 #include <QMenu>
 #include <QObject>
-#endif
 
 
 namespace MysticQt

@@ -19,6 +19,7 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LyShineExamples
 {
@@ -236,7 +237,7 @@ namespace LyShineExamples
             AZ::EditContext* ec = serializeContext->GetEditContext();
             if (ec)
             {
-                auto editInfo = ec->Class<UiCustomImageComponent>("Custom Image", "A visual component to draw a rectangle with an optional sprite/texture");
+                auto editInfo = ec->Class<UiCustomImageComponent>(QT_TRANSLATE_NOOP("LyShineExamples", "Custom Image"), QT_TRANSLATE_NOOP("LyShineExamples", "A visual component to draw a rectangle with an optional sprite/texture"));
 
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
@@ -244,23 +245,23 @@ namespace LyShineExamples
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement("Sprite", &UiCustomImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
+                editInfo->DataElement("Sprite", &UiCustomImageComponent::m_spritePathname, QT_TRANSLATE_NOOP("LyShineExamples", "Sprite path"), QT_TRANSLATE_NOOP("LyShineExamples", "The sprite path. Can be overridden by another component such as an interactable."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnSpritePathnameChange);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiCustomImageComponent::m_color, "Color", "The color tint for the image. Can be overridden by another component such as an interactable.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiCustomImageComponent::m_color, QT_TRANSLATE_NOOP("LyShineExamples", "Color"), QT_TRANSLATE_NOOP("LyShineExamples", "The color tint for the image. Can be overridden by another component such as an interactable."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnColorChange);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiCustomImageComponent::m_alpha, "Alpha", "The transparency. Can be overridden by another component such as an interactable.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiCustomImageComponent::m_alpha, QT_TRANSLATE_NOOP("LyShineExamples", "Alpha"), QT_TRANSLATE_NOOP("LyShineExamples", "The transparency. Can be overridden by another component such as an interactable."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnColorChange)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-                editInfo->DataElement(0, &UiCustomImageComponent::m_uvs, "UV Rect", "The UV coordinates of the rectangle for rendering the texture.")
+                editInfo->DataElement(0, &UiCustomImageComponent::m_uvs, QT_TRANSLATE_NOOP("LyShineExamples", "UV Rect"), QT_TRANSLATE_NOOP("LyShineExamples", "The UV coordinates of the rectangle for rendering the texture."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCustomImageComponent::m_clamp, "Clamp", "Whether the image should be clamped or not.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCustomImageComponent::m_clamp, QT_TRANSLATE_NOOP("LyShineExamples", "Clamp"), QT_TRANSLATE_NOOP("LyShineExamples", "Whether the image should be clamped or not."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"));
             }

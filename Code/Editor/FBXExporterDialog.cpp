@@ -102,4 +102,3 @@ int CFBXExporterDialog::exec()
     return QDialog::exec();
 }
 
-#include <moc_FBXExporterDialog.cpp>

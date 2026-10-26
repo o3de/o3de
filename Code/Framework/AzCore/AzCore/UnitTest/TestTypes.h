@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_UNITTEST_USERTYPES_H
-#define AZCORE_UNITTEST_USERTYPES_H
+
+#pragma once
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
@@ -275,5 +275,3 @@ namespace UnitTest
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>
     int CreationCounter<size, instance, alignment>::s_moved = 0;
 }
-
-#endif // AZCORE_UNITTEST_USERTYPES_H

@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <Config/SettingsObjects/SoftNameSetting.h>
 
@@ -51,15 +52,19 @@ namespace AZ
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<SoftNameSetting>("Soft name setting", "A pattern matcher to setup project specific naming conventions.")
+                    editContext->Class<SoftNameSetting>(
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Soft name setting"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "A pattern matcher to setup project specific naming conventions."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-                        ->DataElement(Edit::UIHandlers::Default, &SoftNameSetting::m_pattern, "Pattern", 
-                            "The pattern the matcher will check against.")
+                        ->DataElement(Edit::UIHandlers::Default, &SoftNameSetting::m_pattern,
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Pattern"), 
+                            QT_TRANSLATE_NOOP("SceneProcessing", "The pattern the matcher will check against."))
                             ->Attribute(Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-                        ->DataElement(Edit::UIHandlers::ComboBox, &SoftNameSetting::m_virtualType, "Virtual Type", 
-                            "The node(s) will be converted to this type after their pattern matches.")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &SoftNameSetting::m_virtualType,
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Virtual Type"), 
+                            QT_TRANSLATE_NOOP("SceneProcessing", "The node(s) will be converted to this type after their pattern matches."))
                             ->Attribute(Edit::Attributes::StringList, &SoftNameSetting::GetAllVirtualTypes);
                 }
             }

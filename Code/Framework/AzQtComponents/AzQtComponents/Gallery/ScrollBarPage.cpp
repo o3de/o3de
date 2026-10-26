@@ -65,4 +65,3 @@ ScrollBarPage::~ScrollBarPage()
 {
 }
 
-#include <Gallery/moc_ScrollBarPage.cpp>

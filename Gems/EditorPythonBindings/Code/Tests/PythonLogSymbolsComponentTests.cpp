@@ -16,9 +16,11 @@
 #include <Source/PythonMarshalComponent.h>
 #include <Source/PythonLogSymbolsComponent.h>
 
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <EditorPythonBindings/PythonUtility.h>
 
 
 namespace UnitTest
@@ -84,6 +86,17 @@ namespace UnitTest
     };
 
     //////////////////////////////////////////////////////////////////////////
+    // A request bus with a named-argument event, used to verify the generated
+    // Python stub names the event arguments (width: float) rather than listing
+    // their types only (float). ComponentBus exercises the bus-id-argument skip.
+    class ArgNameTestRequests : public AZ::ComponentBus
+    {
+    public:
+        virtual void SetThing(float width, float height) = 0;
+    };
+    using ArgNameTestRequestBus = AZ::EBus<ArgNameTestRequests>;
+
+    //////////////////////////////////////////////////////////////////////////
     // fixtures
 
     struct PythonLogSymbolsComponentTest
@@ -110,6 +123,27 @@ namespace UnitTest
 
     //////////////////////////////////////////////////////////////////////////
     // tests
+
+    TEST_F(PythonLogSymbolsComponentTest, BusDefinition_IncludesEventArgumentNames)
+    {
+        AZ::BehaviorContext* behaviorContext = m_app.GetBehaviorContext();
+        behaviorContext->EBus<ArgNameTestRequestBus>("ArgNameTestRequestBus")
+            ->Event(
+                "SetThing",
+                &ArgNameTestRequestBus::Events::SetThing,
+                { { { "width", "the width in units" }, { "height", "the height in units" } } });
+
+        auto ebusIt = behaviorContext->m_ebuses.find("ArgNameTestRequestBus");
+        ASSERT_NE(ebusIt, behaviorContext->m_ebuses.end());
+
+        EditorPythonBindings::Text::PythonBehaviorDescription description;
+        const AZStd::string busText = description.BusDefinition("ArgNameTestRequestBus", ebusIt->second);
+
+        // The generated event signature must name the arguments (width: float,
+        // height: float), not just list their types (float, float).
+        EXPECT_NE(busText.find("width: float"), AZStd::string::npos) << busText.c_str();
+        EXPECT_NE(busText.find("height: float"), AZStd::string::npos) << busText.c_str();
+    }
 
     TEST_F(PythonLogSymbolsComponentTest, FetchSupportedTypesByTypeAndTraits_PythonTypeReturned)
     {

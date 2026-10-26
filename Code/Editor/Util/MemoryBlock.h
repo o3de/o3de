@@ -6,13 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : Memory block helper used with ZLib
 
 
-#ifndef CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H
-#define CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H
-#pragma once
 #include "RefCountBase.h"
 
 #include "Include/EditorCoreAPI.h"
@@ -79,4 +77,3 @@ private:
     //! True if memory block owns its memory.
     bool m_owns;
 };
-#endif // CRYINCLUDE_EDITOR_UTIL_MEMORYBLOCK_H

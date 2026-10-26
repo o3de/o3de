@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
@@ -17,7 +16,6 @@
 
 #include <QStyledItemDelegate>
 #include <QStandardItem>
-#endif
 
 #if !defined(DEFINED_QMETATYPE_UUID)
 #define DEFINED_QMETATYPE_UUID

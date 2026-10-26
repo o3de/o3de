@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
@@ -39,20 +40,20 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DescriptorListConfig>(
-                    "Vegetation Asset List", "Vegetation descriptor assets")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Asset List"), QT_TRANSLATE_NOOP("Vegetation", "Vegetation descriptor assets"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DescriptorListConfig::m_sourceType, "Source Type", "Determines if descriptors are embedded or in an external asset.")
-                    ->EnumAttribute(DescriptorListSourceType::EMBEDDED, "Embedded")
-                    ->EnumAttribute(DescriptorListSourceType::EXTERNAL, "External")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DescriptorListConfig::m_sourceType, QT_TRANSLATE_NOOP("Vegetation", "Source Type"), QT_TRANSLATE_NOOP("Vegetation", "Determines if descriptors are embedded or in an external asset."))
+                    ->EnumAttribute(DescriptorListSourceType::EMBEDDED, QT_TRANSLATE_NOOP("Vegetation", "Embedded"))
+                    ->EnumAttribute(DescriptorListSourceType::EXTERNAL, QT_TRANSLATE_NOOP("Vegetation", "External"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    ->DataElement(0, &DescriptorListConfig::m_descriptorListAsset, "External Assets", "Asset containing a set of vegetation descriptors.")
+                    ->DataElement(0, &DescriptorListConfig::m_descriptorListAsset, QT_TRANSLATE_NOOP("Vegetation", "External Assets"), QT_TRANSLATE_NOOP("Vegetation", "Asset containing a set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsExternalSource)
 
-                    ->DataElement(0, &DescriptorListConfig::m_descriptors, "Embedded Assets", "Set of vegetation descriptors.")
+                    ->DataElement(0, &DescriptorListConfig::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Embedded Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsEmbeddedSource)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)

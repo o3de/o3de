@@ -278,8 +278,8 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            m_saveAction = contextMenu->addAction("Save", this, &MotionSetManagementWindow::OnSave);
-            m_saveAsAction = contextMenu->addAction("Save as...", this, &MotionSetManagementWindow::OnSaveAs);
+            m_saveAction = contextMenu->addAction(tr("Save"), this, &MotionSetManagementWindow::OnSave);
+            m_saveAsAction = contextMenu->addAction(tr("Save as..."), this, &MotionSetManagementWindow::OnSaveAs);
 
             m_saveMenuAction->setMenu(contextMenu);
         }
@@ -355,7 +355,7 @@ namespace EMStudio
     {
         // Get the selected items in the motion set tree widget..
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.size();
+        const int numSelectedItems = static_cast<int>(selectedItems.size());
 
         // Create and fill an array containing ids of all selected motion sets.
         AZStd::vector<uint32> selectedMotionSetIDs;
@@ -475,28 +475,28 @@ namespace EMStudio
         menu->setObjectName("EMFX.MotionSetManagementWindow.ContextMenu");
 
         // add motion set is always enabled
-        QAction* addAction = menu->addAction("Add Motion Set");
+        QAction* addAction = menu->addAction(tr("Add Motion Set"));
         connect(addAction, &QAction::triggered, this, &MotionSetManagementWindow::OnCreateMotionSet);
 
         // get the selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // add remove if at least one item selected
         if (numSelectedItems > 0)
         {
-            QAction* removeAction = menu->addAction("Remove selected");
+            QAction* removeAction = menu->addAction(tr("Remove selected"));
             removeAction->setObjectName("EMFX.MotionSetManagementWindow.ContextMenu.RemoveSelected");
             connect(removeAction, &QAction::triggered, this, &MotionSetManagementWindow::OnRemoveSelectedMotionSets);
 
-            QAction* removeAllAction = menu->addAction("Remove all");
+            QAction* removeAllAction = menu->addAction(tr("Remove all"));
             connect(removeAllAction, &QAction::triggered, this, &MotionSetManagementWindow::OnClearMotionSets);
         }
 
         // add rename if only one item selected
         if (numSelectedItems == 1)
         {
-            QAction* renameAction = menu->addAction("Rename Selected Motion Set");
+            QAction* renameAction = menu->addAction(tr("Rename Selected Motion Set"));
             connect(renameAction, &QAction::triggered, this, &MotionSetManagementWindow::OnRenameSelectedMotionSet);
         }
 
@@ -506,7 +506,7 @@ namespace EMStudio
             menu->addSeparator();
 
             // add the save menu
-            QAction* saveAction = menu->addAction("Save Selected Root Motion Set");
+            QAction* saveAction = menu->addAction(tr("Save Selected Root Motion Set"));
             connect(saveAction, &QAction::triggered, this, &MotionSetManagementWindow::OnSave);
         }
 
@@ -519,7 +519,7 @@ namespace EMStudio
     void MotionSetManagementWindow::OnCreateMotionSet()
     {
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // only add the motion set as child if at least one item selected
         // if nothing is selected, add the new motion set as root
@@ -860,7 +860,7 @@ namespace EMStudio
     void MotionSetManagementWindow::UpdateInterface()
     {
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // remove and save buttons are valid if at least one item is selected
         const bool atLeastOneItemSelected = numSelectedItems > 0;
@@ -902,7 +902,7 @@ namespace EMStudio
     {
         // get the selected items and the number of selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // at leat one item must be selected
         if (numSelectedItems == 0)
@@ -976,7 +976,7 @@ namespace EMStudio
     {
         // get the selected items and the number of selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // filter to only keep the root motion sets from the selected items
         AZStd::vector<EMotionFX::MotionSet*> selectedRootMotionSets;

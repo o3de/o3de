@@ -1,0 +1,12 @@
+class A
+{
+    void M();
+};
+
+class B
+{
+    void A::M(){}  // illegal
+};
+
+// Semantic Error 3: line 8::4 'definition of (M) method of /A in foreign scope /B is forbidden
+// #EC 3

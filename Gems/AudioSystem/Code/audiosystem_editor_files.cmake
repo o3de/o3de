@@ -33,6 +33,7 @@ set(FILES
     Source/Editor/AudioControlsEditorPlugin.cpp
     Source/Editor/AudioControlsEditorUndo.cpp
     Source/Editor/AudioControlsEditorWindow.cpp
+    Source/Editor/DockTitleBarWidget.cpp
     Source/Editor/AudioControlsLoader.cpp
     Source/Editor/AudioControlsWriter.cpp
     Source/Editor/AudioResourceSelectors.cpp
@@ -48,6 +49,7 @@ set(FILES
     Source/Editor/AudioControlsEditorPlugin.h
     Source/Editor/AudioControlsEditorUndo.h
     Source/Editor/AudioControlsEditorWindow.h
+    Source/Editor/DockTitleBarWidget.h
     Source/Editor/AudioControlsLoader.h
     Source/Editor/AudioControlsWriter.h
     Source/Editor/AudioResourceSelectors.h

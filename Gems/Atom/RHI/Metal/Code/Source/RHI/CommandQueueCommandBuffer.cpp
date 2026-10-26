@@ -57,9 +57,16 @@ namespace AZ
             {
                 if(RHI::BuildOptions::IsDebugBuild || RHI::BuildOptions::IsProfileBuild)
                 {
-                    // check command buffer's status for errors, print out all of its contents
-                    m_statusAfterExecution = buffer.status;
-                    if (m_statusAfterExecution == MTLCommandBufferStatusError)
+                    // check command buffer's status for errors, print out all of its contents.
+                    // This handler runs on the Metal completion queue after the GPU finishes, which can be
+                    // after the owning object (e.g. a per-frame FrameGraphExecuteGroupHandler) was destroyed.
+                    // Never touch 'this' here unless the CPU is known to wait for completion first.
+                    const MTLCommandBufferStatus status = buffer.status;
+                    if constexpr (RHI::ForceCpuGpuInSync)
+                    {
+                        m_statusAfterExecution = status;
+                    }
+                    if (status == MTLCommandBufferStatusError)
                     {
                         const char * cbLabel = [ buffer.label UTF8String ];
                         AZ_Printf("RHI", "Command Buffer %s failed to execute\n", cbLabel);

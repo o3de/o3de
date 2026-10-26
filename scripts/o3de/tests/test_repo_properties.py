@@ -265,7 +265,7 @@ class TestEditRepoProperties:
                          None, None, None, None,
                          None, None, None, None, None,
                          0),
-            # test remove project with a empty parameter
+            # test remove project with an empty parameter
             pytest.param(pathlib.Path('F:/repotest'),'RepoRemove', 
                          None, None, None, None,
                          'project1 project2', '', None, [{'project_name':'project1'}, {'project_name':'project2'}],

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/ranges/ranges.h>
@@ -597,18 +598,16 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
-    template <class Element, class Traits, class R, class = void>
+    template <class Element, class Traits, class R>
     constexpr bool convertible_to_string_view = false;
 
     // If the range has a traits_type element, it must match
-    template <class Element, class Traits, class R, class = void>
+    template <class Element, class Traits, class R>
     static constexpr bool range_trait_type_matches = true;
     template <class Element, class Traits, class R>
-    inline constexpr bool range_trait_type_matches<Element, Traits, R,
-        enable_if_t<conjunction_v<
-        Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
-        bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
-        >>> = false;
+        requires requires { typename remove_reference_t<R>::traits_type; }
+              && (!same_as<typename remove_reference_t<R>::traits_type, Traits>)
+    inline constexpr bool range_trait_type_matches<Element, Traits, R> = false;
 }
 namespace AZStd
 {
@@ -652,31 +651,20 @@ namespace AZStd
             , m_size(count)
         {}
 
-        template <typename It, typename End, typename = AZStd::enable_if_t<
-            contiguous_iterator<It>
-            && sized_sentinel_for<End, It>
-            && is_same_v<iter_value_t<It>, value_type>
-            && !is_convertible_v<End, size_type>>
-        >
+        template <contiguous_iterator It, sized_sentinel_for<It> End>
+            requires is_same_v<iter_value_t<It>, value_type>
+                && (!is_convertible_v<End, size_type>)
         constexpr basic_string_view(It first, End last)
             : m_begin(AZStd::to_address(first))
             , m_size(AZStd::to_address(last) - AZStd::to_address(first))
         {}
 
-        // double SFINAE is used to defer evaluation of the contiguous range
-        // until after validating the input type isn't basic_string_view
-        template <typename R,
-            typename = enable_if_t<conjunction_v<
-            bool_constant<!same_as<remove_cvref_t<R>, basic_string_view>>,
-            bool_constant<!convertible_to<R, const_pointer>>
-            >>,
-            typename = enable_if_t<conjunction_v<
-            bool_constant<ranges::contiguous_range<R>>,
-            bool_constant<ranges::sized_range<R>>,
-            bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
-            bool_constant<!Internal::convertible_to_string_view<Element, Traits, R>>,
-            bool_constant<Internal::range_trait_type_matches<Element, Traits, R>>
-            >>>
+        template <typename R>
+            requires (!same_as<remove_cvref_t<R>, basic_string_view>)
+                && (!convertible_to<R, const_pointer>)
+                && requires(R& r) { { r.data() } -> convertible_to<const Element*>; { r.size() } -> convertible_to<size_type>; requires same_as<remove_cv_t<remove_pointer_t<decltype(r.data())>>, Element>; }
+                && (!Internal::convertible_to_string_view<Element, Traits, R>)
+                && Internal::range_trait_type_matches<Element, Traits, R>
         constexpr basic_string_view(R&& r)
             : m_begin(ranges::data(r))
             , m_size(ranges::size(r))
@@ -1078,9 +1066,9 @@ namespace AZStd::Internal
     // Specialize the convertible_to_string_view after the class declaration
     // of basic_string_view, as it neds to reference the complete type
     template <class Element, class Traits, class R>
-    inline constexpr bool convertible_to_string_view<Element, Traits, R, enable_if_t<
-        same_as<::AZStd::basic_string_view<Element, Traits>, decltype(declval<remove_cvref_t<R>&>().operator ::AZStd::basic_string_view<Element, Traits>())>
-        >> = true;
+        requires same_as<::AZStd::basic_string_view<Element, Traits>,
+                         decltype(declval<remove_cvref_t<R>&>().operator ::AZStd::basic_string_view<Element, Traits>())>
+    inline constexpr bool convertible_to_string_view<Element, Traits, R> = true;
 }
 
 namespace AZStd::ranges

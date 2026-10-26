@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/unittests/UnitTestUtils.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
@@ -14,7 +14,6 @@
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/UuidManager.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
-#endif
 
 namespace AssetProcessor
 {

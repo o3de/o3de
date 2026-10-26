@@ -972,10 +972,10 @@ namespace EMStudio
 
         // if we clicked inside the node history area
         RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
-        if (GetIsInsideNodeHistory(event->y()) && recorderGroup->GetDisplayNodeActivity())
+        if (GetIsInsideNodeHistory(event->position().y()) && recorderGroup->GetDisplayNodeActivity())
         {
             EMotionFX::Recorder::ActorInstanceData* actorInstanceData = FindActorInstanceData();
-            EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->x(), event->y());
+            EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->position().x(), event->position().y());
             if (historyItem)
             {
                 emit m_plugin->DoubleClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
@@ -1007,13 +1007,13 @@ namespace EMStudio
 
         QPoint mousePos = event->pos();
 
-        const int32 deltaRelX = event->x() - m_lastMouseX;
-        m_lastMouseX = event->x();
-        m_plugin->m_curMouseX = event->x();
-        m_plugin->m_curMouseY = event->y();
+        const int32 deltaRelX = event->position().x() - m_lastMouseX;
+        m_lastMouseX = event->position().x();
+        m_plugin->m_curMouseX = event->position().x();
+        m_plugin->m_curMouseY = event->position().y();
 
-        const int32 deltaRelY = event->y() - m_lastMouseY;
-        m_lastMouseY = event->y();
+        const int32 deltaRelY = event->position().y() - m_lastMouseY;
+        m_lastMouseY = event->position().y();
 
         const bool altPressed = event->modifiers() & Qt::AltModifier;
         const bool isZooming = m_mouseLeftClicked == false && m_mouseRightClicked && altPressed;
@@ -1025,7 +1025,7 @@ namespace EMStudio
         }
 
         // get the track over which the cursor is positioned
-        TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->y());
+        TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->position().y());
 
         if (m_mouseRightClicked)
         {
@@ -1053,7 +1053,7 @@ namespace EMStudio
             if (m_draggingElement == nullptr && m_resizeElement == nullptr && m_rectSelecting == false)
             {
                 // update the current time marker
-                int newX = event->x();
+                int newX = event->position().x();
                 newX = MCore::Clamp<int>(newX, 0, geometry().width() - 1);
                 m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
@@ -1082,7 +1082,7 @@ namespace EMStudio
             }
 
             // calculate the delta movement
-            const int32 deltaX = event->x() - m_lastLeftClickedX;
+            const int32 deltaX = event->position().x() - m_lastLeftClickedX;
             const int32 movement = abs(deltaX);
             const bool elementTrackChanged = (mouseCursorTrack && dragElementTrack && mouseCursorTrack != dragElementTrack);
             if ((movement > 1 && !m_dragging) || elementTrackChanged)
@@ -1172,8 +1172,8 @@ namespace EMStudio
             const double snapThreshold = 0.02 / m_plugin->m_timeScale;
 
             // calculate how many pixels we moved with the mouse
-            const int32 deltaMovement = event->x() - m_lastMouseMoveX;
-            m_lastMouseMoveX = event->x();
+            const int32 deltaMovement = event->position().x() - m_lastMouseMoveX;
+            m_lastMouseMoveX = event->position().x();
 
             // snap the moved amount to a given time value
             double snappedTime = m_draggingElement->GetStartTime() + ((deltaMovement / m_plugin->m_pixelsPerSecond) / m_plugin->m_timeScale);
@@ -1228,7 +1228,7 @@ namespace EMStudio
         }
         else // no left mouse button is pressed
         {
-            UpdateMouseOverCursor(event->x(), event->y());
+            UpdateMouseOverCursor(event->position().x(), event->position().y());
         }
     }
 
@@ -1314,7 +1314,7 @@ namespace EMStudio
         const bool altPressed = event->modifiers() & Qt::AltModifier;
 
         // store the last clicked position
-        m_lastMouseMoveX     = event->x();
+        m_lastMouseMoveX     = event->position().x();
         m_allowContextMenu   = true;
         m_rectSelecting      = false;
 
@@ -1323,7 +1323,7 @@ namespace EMStudio
             m_mouseRightClicked = true;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = true;
         }
@@ -1336,7 +1336,7 @@ namespace EMStudio
             if ((m_plugin->m_nodeHistoryItem == nullptr) && altPressed == false && (recorder.GetRecordTime() >= MCore::Math::epsilon))
             {
                 // update the current time marker
-                int newX = event->x();
+                int newX = event->position().x();
                 newX = MCore::Clamp<int>(newX, 0, geometry().width() - 1);
                 m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
@@ -1361,10 +1361,10 @@ namespace EMStudio
             {
                 // if we clicked inside the node history area
                 RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
-                if (GetIsInsideNodeHistory(event->y()) && recorderGroup->GetDisplayNodeActivity())
+                if (GetIsInsideNodeHistory(event->position().y()) && recorderGroup->GetDisplayNodeActivity())
                 {
                     EMotionFX::Recorder::ActorInstanceData* actorInstanceData = FindActorInstanceData();
-                    EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->x(), event->y());
+                    EMotionFX::Recorder::NodeHistoryItem* historyItem = FindNodeHistoryItem(actorInstanceData, event->position().x(), event->position().y());
                     if (historyItem && altPressed == false)
                     {
                         emit m_plugin->ClickedRecorderNodeHistoryItem(actorInstanceData, historyItem);
@@ -1378,7 +1378,7 @@ namespace EMStudio
                     }
 
                     // find the element we're clicking in
-                    TimeTrackElement* element = m_plugin->GetElementAt(event->x(), event->y());
+                    TimeTrackElement* element = m_plugin->GetElementAt(event->position().x(), event->position().y());
                     if (element)
                     {
                         // show the time of the currently dragging element in the time info view
@@ -1439,7 +1439,7 @@ namespace EMStudio
 
                     // store the last clicked position
                     m_mouseLeftClicked   = true;
-                    m_lastLeftClickedX   = event->x();
+                    m_lastLeftClickedX   = event->position().x();
                 }
             }
         }
@@ -1472,7 +1472,7 @@ namespace EMStudio
             m_plugin->GetTimeInfoWidget()->SetIsOverwriteMode(false);
         }
 
-        m_lastMouseMoveX = event->x();
+        m_lastMouseMoveX = event->position().x();
 
         const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
         //const bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
@@ -1483,14 +1483,14 @@ namespace EMStudio
             m_isScrolling = false;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = false;
         }
 
         if (event->button() == Qt::LeftButton)
         {
-            TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->y());
+            TimeTrack* mouseCursorTrack = m_plugin->GetTrackAt(event->position().y());
             const bool elementTrackChanged = (mouseCursorTrack && m_dragElementTrack && mouseCursorTrack != m_dragElementTrack);
 
             if (m_dragging && m_mouseLeftClicked && m_draggingElement && !m_isScrolling && !m_resizing)
@@ -1563,7 +1563,7 @@ namespace EMStudio
         // disable rect selection mode again
         m_rectSelecting  = false;
 
-        UpdateMouseOverCursor(event->x(), event->y());
+        UpdateMouseOverCursor(event->position().x(), event->position().y());
     }
 
     void TrackDataWidget::ClearState()
@@ -1618,7 +1618,7 @@ namespace EMStudio
     void TrackDataWidget::dragMoveEvent(QDragMoveEvent* event)
     {
         m_plugin->SetRedrawFlag();
-        QPoint mousePos = event->pos();
+        QPoint mousePos = event->position().toPoint();
 
         double dropTime = m_plugin->PixelToTime(mousePos.x());
         m_plugin->SetCurrentTime(dropTime);
@@ -1634,7 +1634,7 @@ namespace EMStudio
         event->acceptProposedAction();
 
         // emit drop event
-        emit MotionEventPresetsDropped(event->pos());
+        emit MotionEventPresetsDropped(event->position().toPoint());
 
         m_plugin->SetCurrentTime(m_oldCurrentTime);
     }
@@ -1717,46 +1717,46 @@ namespace EMStudio
             TimeTrackElement* element = m_plugin->GetElementAt(m_contextMenuX, m_contextMenuY);
             if (element == nullptr)
             {
-                QAction* action = menu.addAction("Add motion event");
+                QAction* action = menu.addAction(tr("Add motion event"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnAddElement);
 
                 // add action to add a motion event which gets its param and type from the selected preset
                 if (m_plugin->CheckIfMotionEventPresetReadyToDrop())
                 {
-                    QAction* presetAction = menu.addAction("Add preset event");
+                    QAction* presetAction = menu.addAction(tr("Add preset event"));
                     connect(presetAction, &QAction::triggered, this, &TrackDataWidget::OnCreatePresetEvent);
                 }
 
                 if (timeTrack->GetNumElements() > 0)
                 {
-                    action = menu.addAction("Cut all events in track");
+                    action = menu.addAction(tr("Cut all events in track"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnCutTrack);
 
-                    action = menu.addAction("Copy all events in track");
+                    action = menu.addAction(tr("Copy all events in track"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnCopyTrack);
                 }
 
                 if (GetIsReadyForPaste())
                 {
-                    action = menu.addAction("Paste");
+                    action = menu.addAction(tr("Paste"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnPaste);
 
-                    action = menu.addAction("Paste at location");
+                    action = menu.addAction(tr("Paste at location"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnPasteAtLocation);
                 }
             }
             else if (element->GetIsSelected())
             {
-                QAction* action = menu.addAction("Cut");
+                QAction* action = menu.addAction(tr("Cut"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnCutElement);
 
-                action = menu.addAction("Copy");
+                action = menu.addAction(tr("Copy"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnCopyElement);
             }
         }
         else
         {
-            QAction* action = menu.addAction("Add event track");
+            QAction* action = menu.addAction(tr("Add event track"));
             connect(action, &QAction::triggered, this, &TrackDataWidget::OnAddTrack);
         }
 
@@ -1764,28 +1764,24 @@ namespace EMStudio
         if (numSelectedElements > 0)
         {
             // construct the action name
-            AZStd::string actionName = "Remove selected event";
-            if (numSelectedElements > 1)
-            {
-                actionName += "s";
-            }
+            QString actionName = (numSelectedElements > 1) ? tr("Remove selected events") : tr("Remove selected event");
 
             // add the action
-            QAction* action = menu.addAction(actionName.c_str());
+            QAction* action = menu.addAction(actionName);
             connect(action, &QAction::triggered, this, &TrackDataWidget::RemoveSelectedMotionEventsInTrack);
         }
 
         // menu entry for removing all elements
         if (timeTrack && timeTrack->GetNumElements() > 0)
         {
-            QAction* action = menu.addAction("Clear track");
+            QAction* action = menu.addAction(tr("Clear track"));
             connect(action, &QAction::triggered, this, &TrackDataWidget::RemoveAllMotionEventsInTrack);
         }
 
         // Remove track.
         if (timeTrack)
         {
-            QAction* action = menu.addAction("Remove track");
+            QAction* action = menu.addAction(tr("Remove track"));
             action->setEnabled(timeTrack->GetIsDeletable());
             connect(action, &QAction::triggered, this, &TrackDataWidget::OnRemoveEventTrack);
         }
@@ -2339,10 +2335,10 @@ namespace EMStudio
         //---------------------
         // Timeline actions
         //---------------------
-        QAction* action = menu.addAction("Zoom To Fit All");
+        QAction* action = menu.addAction(tr("Zoom To Fit All"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnZoomAll);
 
-        action = menu.addAction("Reset Timeline");
+        action = menu.addAction(tr("Reset Timeline"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnResetTimeline);
 
         //---------------------
@@ -2353,7 +2349,7 @@ namespace EMStudio
         {
             menu.addSeparator();
 
-            action = menu.addAction("Show Node In Graph");
+            action = menu.addAction(tr("Show Node In Graph"));
             connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnShowNodeHistoryNodeInGraph);
         }
 
@@ -2644,4 +2640,3 @@ namespace EMStudio
     }
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/moc_TrackDataWidget.cpp>

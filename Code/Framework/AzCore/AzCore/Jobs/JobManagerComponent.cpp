@@ -12,6 +12,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
 
@@ -134,13 +136,18 @@ namespace AZ
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<JobManagerComponent>(
-                    "Job Manager", "Provides fine grained job system and worker threads")
+                    QT_TRANSLATE_NOOP("AzCore", "Job Manager"),
+                    QT_TRANSLATE_NOOP("AzCore", "Provides fine grained job system and worker threads"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                    ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_numberOfWorkerThreads, "Worker threads", "Number of worked threads for this job manager.")
+                    ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_numberOfWorkerThreads,
+                        QT_TRANSLATE_NOOP("AzCore", "Worker threads"),
+                        QT_TRANSLATE_NOOP("AzCore", "Number of worker threads for this job manager."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)
-                    ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_firstThreadCPU, "CPU ID", "First CPU ID for a worker thread, each consecutive thread will use the next CPU ID. -1 Will not assign CPU Ids")
+                    ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_firstThreadCPU,
+                        QT_TRANSLATE_NOOP("AzCore", "CPU ID"),
+                        QT_TRANSLATE_NOOP("AzCore", "First CPU ID for a worker thread, each consecutive thread will use the next CPU ID. -1 Will not assign CPU Ids"))
                         ->Attribute(AZ::Edit::Attributes::Min, -1)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)
                     ;

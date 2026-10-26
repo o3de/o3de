@@ -6,25 +6,19 @@
  *
  */
 
+#pragma once
 
 // Description : Dialog for python script terminal
 
-#ifndef CRYINCLUDE_EDITOR_SCRIPTTERMDIALOG_H
-#define CRYINCLUDE_EDITOR_SCRIPTTERMDIALOG_H
-#pragma once
-
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 #include <QWidget>
-
 #include <QColor>
 #include <QScopedPointer>
-#endif
 
 
 #define SCRIPT_TERM_WINDOW_NAME "Python Console"
@@ -83,5 +77,3 @@ namespace AzToolsFramework
         int m_upArrowLastCommandIndex = -1;
     };
 } // namespace AzToolsFramework
-
-#endif // CRYINCLUDE_EDITOR_SCRIPTTERMDIALOG_H

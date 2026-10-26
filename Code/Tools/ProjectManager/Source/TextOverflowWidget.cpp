@@ -76,8 +76,8 @@ namespace O3DE::ProjectManager
             while (matches.hasNext())
             {
                 match = matches.next();
-                int matchStartIndex = match.capturedStart();
-                int matchLength = match.capturedLength();
+                int matchStartIndex = static_cast<int>(match.capturedStart());
+                int matchLength = static_cast<int>(match.capturedLength());
 
                 // If at the start of a new link tag mark this index
                 // to truncate from here in-case the link text is too long.
@@ -107,7 +107,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            displayLength = text.length();
+            displayLength = static_cast<int>(text.length());
 
             if (displayLength > maxLength)
             {
@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
         {
             return QString("%1%2 <a href=\"%3\">Read More...</a>")
                 .arg(
-                    text.leftRef(truncateEnd),
+                    text.left(truncateEnd),
                     // Append closing tag if link text got truncated %2
                     match.isValid() && matchIndex % 2 == 1 ? match.captured() : "",
                     s_overflowLink);

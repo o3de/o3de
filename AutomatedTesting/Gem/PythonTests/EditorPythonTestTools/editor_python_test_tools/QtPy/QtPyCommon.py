@@ -8,7 +8,7 @@ Base class for QtPy classes. Contains commonly used constants and generic behavi
 """
 
 import pyside_utils
-from PySide2 import QtWidgets, QtTest, QtCore
+from PySide6 import QtWidgets, QtTest, QtCore
 from enum import IntEnum
 from editor_python_test_tools.utils import TestHelper as helper
 from consts.general import (WAIT_TIME_SEC_3)

@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QScopedPointer>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
-#endif
 
 namespace Ui {
     class ColorPickerPage;

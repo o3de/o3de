@@ -14,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/std/sort.h>
 
@@ -56,14 +57,17 @@ namespace VirtualGamepad
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<VirtualGamepadButtonComponent>("VirtualGamepadButton", "A component that designates this entity as a virtual gamepad button")
+                ec->Class<VirtualGamepadButtonComponent>(
+                    QT_TRANSLATE_NOOP("VirtualGamepad", "VirtualGamepadButton"),
+                    QT_TRANSLATE_NOOP("VirtualGamepad", "A component that designates this entity as a virtual gamepad button"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiVirtualButton.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiVirtualButton.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadButtonComponent::m_assignedInputChannelName,
-                        "Input Channel", "The input channel that will be updated when the user interacts with this virtual control")
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "Input Channel"),
+                        QT_TRANSLATE_NOOP("VirtualGamepad", "The input channel that will be updated when the user interacts with this virtual control"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &VirtualGamepadButtonComponent::GetAssignableInputChannelNames)
                 ;
             }

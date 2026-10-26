@@ -34,11 +34,20 @@ namespace AZ
             : public Data::AssetData
         {
             friend class BufferAssetCreator;
+            friend class BufferAssetHandler;
 
         public:
             static constexpr const char* DisplayName{ "BufferAsset" };
             static constexpr const char* Group{ "Buffer" };
             static constexpr const char* Extension{ "azbuffer" };
+
+            // The compression format on disk, should be decompressed upon loading
+            enum class CompressionFormat : uint8_t
+            {
+                Uncompressed,
+                Index,
+                Vertex,
+            };
 
             AZ_RTTI(BufferAsset, "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", Data::AssetData);
             AZ_CLASS_ALLOCATOR_DECL;
@@ -60,6 +69,8 @@ namespace AZ
             CommonBufferPoolType GetCommonPoolType() const;
             
             const AZStd::string& GetName() const;
+
+            const CompressionFormat GetCompressionFormat() const;
 
         private:
             using Allocator = BufferAssetAllocator_for_std_t;
@@ -89,8 +100,20 @@ namespace AZ
             Data::Asset<ResourcePoolAsset> m_poolAsset{ Data::AssetLoadBehavior::PreLoad };
 
             CommonBufferPoolType m_poolType = CommonBufferPoolType::Invalid;
+
+            CompressionFormat m_compressionFormat = CompressionFormat::Uncompressed;
         };
 
-        using BufferAssetHandler = AssetHandler<BufferAsset>;
+        class ATOM_RPI_REFLECT_API BufferAssetHandler
+            : public AssetHandler<BufferAsset>
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(BufferAssetHandler, AZ::SystemAllocator);
+
+            Data::AssetHandler::LoadResult LoadAssetData(
+                const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+                AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+                const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
+        };
     } // namespace RPI
 } // namespace AZ

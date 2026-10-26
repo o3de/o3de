@@ -81,6 +81,11 @@ namespace AzToolsFramework
             */
             URSequencePoint* Find(URCommandID id, const AZ::Uuid& typeOfCommand);
 
+            /*!
+            * Finds the given command in parent-child tree with the matching handle.
+            */
+            URSequencePoint* Find(URSequencePoint* expected);
+
             void SetName(const AZStd::string& friendlyName);
             AZStd::string& GetName();
 

@@ -20,7 +20,7 @@ from collections import OrderedDict
 
 # -------------------------------------------------------------------------
 # normal scripts we would do the following 'from dynaconf import settings'
-# for GUI apps that need PySide2 we init in the following manner instead
+# for GUI apps that need PySide we init in the following manner instead
 import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 settings = _config.get_config_settings(setup_ly_pyside=True)
@@ -70,11 +70,11 @@ from dynaconf import settings
 import config
 _LOGGER.debug('config.py is: {}'.format(config))
 
-# initialize the Lumberyard Qt / PySide2
+# initialize the Lumberyard Qt / PySide
 config.init_o3de_pyside(settings.O3DE_DEV)  # for standalone
 settings.setenv()  # for standalone
 
-# log debug info about Qt/PySide2
+# log debug info about Qt/PySide
 _LOGGER.debug('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
 _LOGGER.debug('PATH_O3DE_BIN: {}'.format(settings.PATH_O3DE_BIN))
 _LOGGER.debug('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
@@ -83,16 +83,16 @@ _LOGGER.debug('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_
 
 
 # -------------------------------------------------------------------------
-# Qt and Pyside2 imports block
-import PySide2
-_LOGGER.debug('PySide2 is:'.format(PySide2.__file__))
+# Qt and Pyside imports block
+import PySide6
+_LOGGER.debug('PySide is:'.format(PySide6.__file__))
 
-import PySide2.QtCore
-from PySide2 import QtCore, QtWidgets
-# from PySide2.QtCore import QTimer
-from PySide2.QtCore import QProcess, Signal, Slot, QTextCodec
-from PySide2.QtGui import QTextCursor, QColor
-from PySide2.QtWidgets import QApplication, QPlainTextEdit
+import PySide6.QtCore
+from PySide6 import QtCore, QtWidgets
+# from PySide6.QtCore import QTimer
+from PySide6.QtCore import QProcess, Signal, Slot, QTextCodec
+from PySide6.QtGui import QTextCursor, QColor
+from PySide6.QtWidgets import QApplication, QPlainTextEdit
 # -------------------------------------------------------------------------
 
 

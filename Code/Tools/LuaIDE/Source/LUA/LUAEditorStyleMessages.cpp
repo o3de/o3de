@@ -27,6 +27,49 @@ namespace LUAEditor
         m_font.setPointSize(m_fontSize * (m_zoomPercent / 100.0f));
     }
 
+    bool SyntaxStyleSettings::operator==(const SyntaxStyleSettings& other) const
+    {
+        return m_fontFamily == other.m_fontFamily
+            && m_fontSize == other.m_fontSize
+            && m_noAntialiasing == other.m_noAntialiasing
+            && m_tabSize == other.m_tabSize
+            && m_useSpacesInsteadOfTabs == other.m_useSpacesInsteadOfTabs
+            && m_zoomPercent == other.m_zoomPercent
+            && m_textColor == other.m_textColor
+            && m_lineNumberColor == other.m_lineNumberColor
+            && m_textFocusedBackgroundColor == other.m_textFocusedBackgroundColor
+            && m_textUnfocusedBackgroundColor == other.m_textUnfocusedBackgroundColor
+            && m_textReadOnlyFocusedBackgroundColor == other.m_textReadOnlyFocusedBackgroundColor
+            && m_textReadOnlyUnfocusedBackgroundColor == other.m_textReadOnlyUnfocusedBackgroundColor
+            && m_textSelectedColor == other.m_textSelectedColor
+            && m_textSelectedBackgroundColor == other.m_textSelectedBackgroundColor
+            && m_textWhitespaceColor == other.m_textWhitespaceColor
+            && m_breakpointFocusedBackgroundColor == other.m_breakpointFocusedBackgroundColor
+            && m_breakpointUnfocusedBackgroundColor == other.m_breakpointUnfocusedBackgroundColor
+            && m_foldingFocusedBackgroundColor == other.m_foldingFocusedBackgroundColor
+            && m_foldingUnfocusedBackgroundColor == other.m_foldingUnfocusedBackgroundColor
+            && m_currentIdentifierColor == other.m_currentIdentifierColor
+            && m_currentLineOutlineColor == other.m_currentLineOutlineColor
+            && m_specialCharacterColor == other.m_specialCharacterColor
+            && m_keywordColor == other.m_keywordColor
+            && m_specialKeywordColor == other.m_specialKeywordColor
+            && m_commentColor == other.m_commentColor
+            && m_stringLiteralColor == other.m_stringLiteralColor
+            && m_numberColor == other.m_numberColor
+            && m_libraryColor == other.m_libraryColor
+            && m_methodColor == other.m_methodColor
+            && m_bracketColor == other.m_bracketColor
+            && m_selectedBracketColor == other.m_selectedBracketColor
+            && m_unmatchedBracketColor == other.m_unmatchedBracketColor
+            && m_foldingColor == other.m_foldingColor
+            && m_foldingCurrentColor == other.m_foldingCurrentColor
+            && m_foldingLineColor == other.m_foldingLineColor
+            && m_findResultsHeaderColor == other.m_findResultsHeaderColor
+            && m_findResultsFileColor == other.m_findResultsFileColor
+            && m_findResultsMatchColor == other.m_findResultsMatchColor
+            && m_findResultsLineHighlightColor == other.m_findResultsLineHighlightColor;
+    }
+
     void SyntaxStyleSettings::Reflect(AZ::ReflectContext* reflection)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);

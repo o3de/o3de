@@ -12,8 +12,8 @@ def Scene_Settings_Tests_In_Editor_Create_And_Verify_Scene_Settings_File():
     async def run_test():
         import asyncio
         from editor_python_test_tools.utils import Report
-        import PySide2
-        from PySide2 import QtWidgets
+        import PySide6
+        from PySide6 import QtWidgets
         import azlmbr.bus as bus
         import scene_settings_test_messages as tm
         import scene_settings_test_helpers as scene_test_helpers

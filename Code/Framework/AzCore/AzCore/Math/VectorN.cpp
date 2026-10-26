@@ -10,6 +10,8 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     void VectorN::Reflect([[maybe_unused]] ReflectContext* context)
@@ -24,10 +26,13 @@ namespace AZ
 
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<VectorN>("N-Dimensional Vector", "")
+                editContext->Class<VectorN>(
+                    QT_TRANSLATE_NOOP("AzCore", "N-Dimensional Vector"), "")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->DataElement(
-                        Edit::UIHandlers::Default, &VectorN::m_numElements, "Total Elements", "The total number of elements in the vector")
+                        Edit::UIHandlers::Default, &VectorN::m_numElements,
+                        QT_TRANSLATE_NOOP("AzCore", "Total Elements"),
+                        QT_TRANSLATE_NOOP("AzCore", "The total number of elements in the vector"))
                             ->Attribute(Edit::Attributes::ChangeNotify, &VectorN::OnSizeChanged)
                     ;
             }

@@ -1,0 +1,12 @@
+struct A {}; // only one
+
+A make(int);
+A make(uint);
+
+typealias Auto = typeof(make(0));
+
+void main()
+{
+    float x = 0.5;
+    Auto a = make(floor(x) + 1);  // was EC 41 in the AsError heterogeneous version, but here the homogeneity of type returned makes it ok
+}

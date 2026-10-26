@@ -40,7 +40,6 @@
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/TextUtilities.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -68,11 +67,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QTableView>
 #include <QTextEdit>
 #include <QToolButton>
-#include <QtGui/private/qscreen_p.h>
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 AZ_POP_DISABLE_WARNING
-
-#include <QtWidgets/private/qstylehelper_p.h>
 
 #include <limits>
 #include <QListWidget>
@@ -277,15 +272,6 @@ namespace AzQtComponents
                 }
                 break;
             }
-            case QStyle::CT_TabBarTab:
-            {
-                const auto tabSize = TabBar::sizeFromContents(this, type, option, size, widget, m_data->tabWidgetConfig);
-                if (tabSize.isValid())
-                {
-                    return tabSize;
-                }
-                break;
-            }
             case QStyle::CT_HeaderSection:
             {
                 const auto headerSize = TableView::sizeFromContents(this, type, option, size, widget, m_data->tableViewConfig);
@@ -382,24 +368,6 @@ namespace AzQtComponents
             }
             break;
 
-            case CE_TabBarTabLabel:
-            {
-                if (qobject_cast<const QTabBar*>(widget))
-                {
-                    // Qt lacks a textAlignment variable in QStyleOptionTab, which is used for drawing QTabWidget and QTabBar.
-                    // Text alignment for tab labels is hardcoded to horizontal center. For this reason, there is no way to customize
-                    // text alignment if not creating a new member variable for QStyleOptionTab (or to subclass QStyleOptionTab) on Qt
-                    // side. To avoid doing either, we set a new variable to be used from Style::drawItemText, with a scope limited to
-                    // the drawing of this specific control element (the tab label).
-                    QScopedValueRollback<QVariant> rollbackTabBarTabLabel(m_drawItemTextAlignmentOverride, {(int)(Qt::AlignLeft | Qt::AlignVCenter)});
-                    if (TabBar::drawTabBarTabLabel(this, option, painter, widget, m_data->tabWidgetConfig))
-                    {
-                        return;
-                    }
-                }
-            }
-            break;
-
             case CE_Header:
             {
                 if (qobject_cast<const QHeaderView*>(widget))
@@ -475,43 +443,6 @@ namespace AzQtComponents
                         copy.rect.adjust(treeView->indentation(), 0, 0, 0);
                         return QProxyStyle::drawControl(element, &copy, painter, widget);
                     }
-                }
-            }
-            break;
-            case CE_MenuItem:
-            {
-                const QMenu* menu = qobject_cast<const QMenu*>(widget);
-                QAction* action = menu->activeAction();
-                if (action)
-                {
-                    QMenu* subMenu = action->menu();
-                    if (subMenu)
-                    {
-                        QVariant noHover = subMenu->property("noHover");
-                        if (noHover.isValid() && noHover.toBool())
-                        {
-                            // First draw as standard to get the correct hover background for the complete control.
-                            QProxyStyle::drawControl(element, option, painter, widget);
-                            // Now draw the icon as non-hovered so control behaves as designed.
-                            QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                            myOpt.state &= ~QStyle::State_Selected;
-                            return QProxyStyle::drawControl(element, &myOpt, painter, widget);
-                        }
-                    }
-                }
-                // Implement checkmark with icon in menu.
-                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                bool checkable = myOpt.checkType != QStyleOptionMenuItem::NotCheckable;
-                bool checked = checkable ? myOpt.checked : false;
-
-                if (!myOpt.icon.isNull() && checked)
-                {
-                    const int iconSize{ 18 };
-                    int topPadding{ AZStd::max( 0 , (myOpt.rect.height() - iconSize) / 2) - 1};
-
-                    QProxyStyle::drawControl(element, &myOpt, painter, widget);
-                    myOpt.rect.adjust(0, topPadding, iconSize - myOpt.rect.width(), iconSize - myOpt.rect.height());
-                    return drawPrimitive(PE_IndicatorMenuCheckMark, &myOpt, painter, widget);
                 }
             }
             break;
@@ -629,49 +560,6 @@ namespace AzQtComponents
                 {
                     return;
                 }
-                // With how we setup our styles, Style::drawPrimitive gets first crack at the treeview branch indicator.
-                // Since it doesn't care to do anything, it delegates to the base style, which is a QStyleSheetStyle.
-                // If there is a css rule in the loaded stylesheet, the QStyleSheetStyle will follow those rules -
-                // and NOT draw the indicator arrow.
-                // So below, we let the QStyleSheetStyle do its thing, then we manually call into the Fusion style
-                // to draw the arrows.
-                // If you really don't want this, add the g_treeViewDisableDefaultArrorPainting class to your object.
-                // I.e. Style::addClass(aQTreeView, g_treeViewDisableDefaultArrorPainting);
-#if !defined(AZ_PLATFORM_LINUX)
-
-                if (qobject_cast<const QTreeView*>(widget) && !hasClass(widget, g_treeViewDisableDefaultArrorPainting))
-                {
-                    QStyleSheetStyle* styleSheetStyle = qobject_cast<QStyleSheetStyle*>(baseStyle());
-                    if (styleSheetStyle)
-                    {
-                        QStyle* fusionStyle = styleSheetStyle->baseStyle();
-                        if (fusionStyle && (fusionStyle != this) && (fusionStyle != styleSheetStyle))
-                        {
-                            QProxyStyle::drawPrimitive(element, option, painter, widget);
-
-                            return fusionStyle->drawPrimitive(element, option, painter, widget);
-                        }
-                    }
-                }
-#endif // !defined(AZ_PLATFORM_LINUX)
-            }
-            break;
-
-            case PE_PanelMenu:
-            {
-                if (Menu::drawFrame(this, option, painter, widget, m_data->menuConfig))
-                {
-                    return;
-                }
-            }
-            break;
-
-            case PE_IndicatorItemViewItemCheck:
-            {
-                if (ComboBox::drawItemCheckIndicator(this, option, painter, widget, m_data->comboBoxConfig))
-                {
-                    return;
-                }
             }
             break;
 
@@ -772,15 +660,6 @@ namespace AzQtComponents
         }
 
         return QProxyStyle::drawComplexControl(element, option, painter, widget);
-    }
-
-    void Style::drawItemText(QPainter* painter, const QRect& rectangle, int alignment, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole) const
-    {
-        if (m_drawItemTextAlignmentOverride.isValid())
-        {
-            alignment = m_drawItemTextAlignmentOverride.value<Qt::Alignment>();
-        }
-        QProxyStyle::drawItemText(painter, rectangle, alignment, palette, enabled, text, textRole);
     }
 
     void Style::drawDragIndicator(const QStyleOption* option, QPainter* painter, const QWidget* widget) const
@@ -1083,46 +962,6 @@ namespace AzQtComponents
                 break;
             }
 
-            case QStyle::PM_MenuHMargin:
-            {
-                const int margin = Menu::horizontalMargin(this, option, widget, m_data->menuConfig);
-                if (margin != -1)
-                {
-                    return margin;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuVMargin:
-            {
-                const int margin = Menu::verticalMargin(this, option, widget, m_data->menuConfig);
-                if (margin != -1)
-                {
-                    return margin;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuHPlacementOffset:
-            {
-                const int hOffset = Menu::horizontalShadowMargin(this, option, widget, m_data->menuConfig);
-                if (hOffset != std::numeric_limits<int>::lowest())
-                {
-                    return hOffset;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuVPlacementOffset:
-            {
-                const int vOffset = Menu::verticalShadowMargin(this, option, widget, m_data->menuConfig);
-                if (vOffset != std::numeric_limits<int>::lowest())
-                {
-                    return vOffset;
-                }
-                break;
-            }
-
             case QStyle::PM_MenuButtonIndicator:
             {
                 int size = ToolButton::menuButtonIndicatorWidth(this, option, widget, m_data->toolButtonConfig);
@@ -1150,25 +989,7 @@ namespace AzQtComponents
 
             case QStyle::PM_ToolBarExtensionExtent:
             {
-                const QPoint wPos = widget->pos();
-                const QPoint gPos = widget->mapToGlobal(wPos);
                 int retval{ 12 };
-
-                const QScreen* thisScreen = QGuiApplication::screenAt(gPos);
-                if (!thisScreen)
-                {
-                    thisScreen = QGuiApplication::primaryScreen();
-                }
-                if (thisScreen)
-                {
-                    // We have to do this as the KDAB Dpi functions return a strange rounded value
-                    // that means dpiScaled is always returned 12
-                    const qreal dpi = thisScreen->handle()->logicalDpi().first;
-                    if (dpi > 0)
-                    {
-                        retval = int(QStyleHelper::dpiScaled(12, dpi));
-                    }
-                }
                 return retval;
             }
 
@@ -1188,8 +1009,6 @@ namespace AzQtComponents
         }
 
         QScopedValueRollback<QWidget*> recursionGuard(alreadyStyling, widget);
-
-        TitleBarOverdrawHandler::getInstance()->polish(widget);
 
         if (hasStyle(widget))
         {
@@ -1479,7 +1298,7 @@ namespace AzQtComponents
             const QString classText = buttonClassVariant.toString();
             QStringList classList = classText.split(QRegularExpression("\\s+"));
             bool changed = false;
-            for (int i = classList.count() -1; i >= 0; --i)
+            for (int i = static_cast<int>(classList.count()) -1; i >= 0; --i)
             {
                 if (classList[i].compare(className, Qt::CaseInsensitive) == 0)
                 {
@@ -1595,5 +1414,3 @@ namespace AzQtComponents
 #endif
 
 } // namespace AzQtComponents
-
-#include "Components/moc_Style.cpp"

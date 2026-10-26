@@ -9,11 +9,9 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+
 #include <QTextEdit>
-#endif // !defined(Q_MOC_RUN)
 
 namespace AzToolsFramework
 {

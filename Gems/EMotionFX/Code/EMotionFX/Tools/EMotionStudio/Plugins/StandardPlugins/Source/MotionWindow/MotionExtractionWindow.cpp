@@ -71,12 +71,12 @@ namespace EMStudio
         m_warningWidget->setMinimumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
         m_warningWidget->setMaximumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
 
-        QLabel* warningLabel = new QLabel("<qt>No node has been selected yet to enable Motion Extraction.</qt>");
+        QLabel* warningLabel = new QLabel(tr("<qt>No node has been selected yet to enable Motion Extraction.</qt>"));
         warningLabel->setWordWrap(true);
         warningLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
         m_warningSelectNodeLink = new AzQtComponents::BrowseEdit(m_warningWidget);
-        m_warningSelectNodeLink->setPlaceholderText("Click here to setup the Motion Extraction node");
+        m_warningSelectNodeLink->setPlaceholderText(tr("Click here to setup the Motion Extraction node"));
         connect(
             m_warningSelectNodeLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this,
             &MotionExtractionWindow::OnSelectMotionExtractionNode);
@@ -133,7 +133,7 @@ namespace EMStudio
         m_childVerticalLayout->addWidget(m_rootMotionExtractionWidget);
 
         // Create the save motion button.
-        m_saveMotionButton = new QPushButton("Save Motion");
+        m_saveMotionButton = new QPushButton(tr("Save Motion"));
         m_saveMotionButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         connect(m_saveMotionButton, &QPushButton::clicked, this, &MotionExtractionWindow::OnSaveMotion);
         m_childVerticalLayout->addWidget(m_saveMotionButton);

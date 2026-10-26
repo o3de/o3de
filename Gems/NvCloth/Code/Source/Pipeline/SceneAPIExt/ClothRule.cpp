@@ -9,6 +9,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexColorData.h>
@@ -275,58 +276,69 @@ namespace NvCloth
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<ClothRule>("Cloth", "Adds cloth data to the exported CGF asset. The cloth data will be used to determine what meshes to use for cloth simulation.")
+                editContext->Class<ClothRule>(
+                    QT_TRANSLATE_NOOP("NvCloth", "Cloth"),
+                    QT_TRANSLATE_NOOP("NvCloth", "Adds cloth data to the exported CGF asset. The cloth data will be used to determine what meshes to use for cloth simulation."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->DataElement("NodeListSelection", &ClothRule::m_meshNodeName, "Select Cloth Mesh", "Mesh used for cloth simulation.")
+                    ->DataElement("NodeListSelection", &ClothRule::m_meshNodeName,
+                        QT_TRANSLATE_NOOP("NvCloth", "Select Cloth Mesh"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Mesh used for cloth simulation."))
                         ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IMeshData::TYPEINFO_Uuid())
                         ->Attribute("DisabledOption", DefaultChooseNodeName)
-                    ->DataElement("NodeListSelection", &ClothRule::m_inverseMassesStreamName, "Inverse Masses",
-                        "Select the 'vertex color' stream that contains cloth inverse masses or 'Default: 1.0' to use mass 1.0 for all vertices.")
+                    ->DataElement("NodeListSelection", &ClothRule::m_inverseMassesStreamName,
+                        QT_TRANSLATE_NOOP("NvCloth", "Inverse Masses"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select the 'vertex color' stream that contains cloth inverse masses or 'Default: 1.0' to use mass 1.0 for all vertices."))
                         ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IMeshVertexColorData::TYPEINFO_Uuid())
                         ->Attribute("DisabledOption", DefaultInverseMassesString)
                         ->Attribute("UseShortNames", true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_inverseMassesChannel, "Inverse Masses Channel",
-                        "Select which color channel to obtain the inverse mass information from.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, "Red")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, "Green")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, "Blue")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, "Alpha")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_inverseMassesChannel,
+                        QT_TRANSLATE_NOOP("NvCloth", "Inverse Masses Channel"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select which color channel to obtain the inverse mass information from."))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, QT_TRANSLATE_NOOP("NvCloth", "Red"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, QT_TRANSLATE_NOOP("NvCloth", "Green"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, QT_TRANSLATE_NOOP("NvCloth", "Blue"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, QT_TRANSLATE_NOOP("NvCloth", "Alpha"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ClothRule::IsInverseMassesStreamDisabled)
-                    ->DataElement("NodeListSelection", &ClothRule::m_motionConstraintsStreamName, "Motion Constraints",
-                        "Select the 'vertex color' stream that contains cloth motion constraints or 'Default: 1.0' to use 1.0 for all vertices.")
+                    ->DataElement("NodeListSelection", &ClothRule::m_motionConstraintsStreamName,
+                        QT_TRANSLATE_NOOP("NvCloth", "Motion Constraints"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select the 'vertex color' stream that contains cloth motion constraints or 'Default: 1.0' to use 1.0 for all vertices."))
                         ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IMeshVertexColorData::TYPEINFO_Uuid())
                         ->Attribute("DisabledOption", DefaultMotionConstraintsString)
                         ->Attribute("UseShortNames", true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_motionConstraintsChannel, "Motion Constraints Channel",
-                        "Select which color channel to obtain the motion constraints information from.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, "Red")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, "Green")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, "Blue")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, "Alpha")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_motionConstraintsChannel,
+                        QT_TRANSLATE_NOOP("NvCloth", "Motion Constraints Channel"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select which color channel to obtain the motion constraints information from."))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, QT_TRANSLATE_NOOP("NvCloth", "Red"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, QT_TRANSLATE_NOOP("NvCloth", "Green"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, QT_TRANSLATE_NOOP("NvCloth", "Blue"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, QT_TRANSLATE_NOOP("NvCloth", "Alpha"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ClothRule::IsMotionConstraintsStreamDisabled)
-                    ->DataElement("NodeListSelection", &ClothRule::m_backstopStreamName, "Backstop",
-                        "Select the 'vertex color' stream that contains cloth backstop data.")
+                    ->DataElement("NodeListSelection", &ClothRule::m_backstopStreamName,
+                        QT_TRANSLATE_NOOP("NvCloth", "Backstop"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select the 'vertex color' stream that contains cloth backstop data."))
                         ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IMeshVertexColorData::TYPEINFO_Uuid())
                         ->Attribute("DisabledOption", DefaultBackstopString)
                         ->Attribute("UseShortNames", true)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_backstopOffsetChannel, "Backstop Offset Channel",
-                        "Select which color channel to obtain the backstop offset from.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, "Red")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, "Green")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, "Blue")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, "Alpha")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_backstopOffsetChannel,
+                        QT_TRANSLATE_NOOP("NvCloth", "Backstop Offset Channel"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select which color channel to obtain the backstop offset from."))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, QT_TRANSLATE_NOOP("NvCloth", "Red"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, QT_TRANSLATE_NOOP("NvCloth", "Green"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, QT_TRANSLATE_NOOP("NvCloth", "Blue"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, QT_TRANSLATE_NOOP("NvCloth", "Alpha"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ClothRule::IsBackstopStreamDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_backstopRadiusChannel, "Backstop Radius Channel",
-                        "Select which color channel to obtain the backstop radius from.")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, "Red")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, "Green")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, "Blue")
-                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, "Alpha")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClothRule::m_backstopRadiusChannel,
+                        QT_TRANSLATE_NOOP("NvCloth", "Backstop Radius Channel"),
+                        QT_TRANSLATE_NOOP("NvCloth", "Select which color channel to obtain the backstop radius from."))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Red, QT_TRANSLATE_NOOP("NvCloth", "Red"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Green, QT_TRANSLATE_NOOP("NvCloth", "Green"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Blue, QT_TRANSLATE_NOOP("NvCloth", "Blue"))
+                        ->EnumAttribute(AZ::SceneAPI::DataTypes::ColorChannel::Alpha, QT_TRANSLATE_NOOP("NvCloth", "Alpha"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ClothRule::IsBackstopStreamDisabled);
             }
         }

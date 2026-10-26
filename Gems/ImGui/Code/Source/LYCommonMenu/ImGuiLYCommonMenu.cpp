@@ -685,22 +685,37 @@ namespace ImGui
                 ImGui::ShowDemoWindow(&m_showImGuiDemo);
             }
 
-            const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
-            const float buttonSize = dpiAwareSizeFn(40.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
+            // Right-aligned "ImGui:ON [toggle]" status widget. Widths are derived from the actual
+            // text and button sizes (rather than hard-coded constants) so the layout stays correct
+            // for any status text or toggle-key label length and never clips at the frame's right edge.
+            const char* const statusText = "ImGui:ON";
+            const char* const toggleButtonLabel = "\u0020~\u0020";
+
+            const ImGuiStyle& style = ImGui::GetStyle();
+            const float statusTextWidth = ImGui::CalcTextSize(statusText).x;
+            const float buttonWidth = ImGui::CalcTextSize(toggleButtonLabel).x + (style.FramePadding.x * 2.0f);
+            const float interItemSpacing = style.ItemSpacing.x;
+            const float widgetWidth = statusTextWidth + interItemSpacing + buttonWidth;
+
+            // Preserve the previous clearance from the right edge when a viewport border is active.
+            const float widgetRightEdgeX = ImGui::GetWindowContentRegionMax().x
+                - dpiAwareSizeFn(viewportBorderPadding.m_right) - rightAlignedBorderOffset;
+            const float widgetStartX = widgetRightEdgeX - widgetWidth;
+
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
-            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
-            float backgroundHeight = ImGui::GetTextLineHeight() + dpiAwareSizeFn(3.0f);
-            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+            ImGui::SameLine(widgetStartX);
+            const float backgroundHeight = ImGui::GetTextLineHeight() + dpiAwareSizeFn(3.0f);
+            const ImVec2 cursorPos = ImGui::GetCursorScreenPos();
             ImGui::GetWindowDrawList()->AddRectFilled(
-                cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
-            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
+                cursorPos, ImVec2(cursorPos.x + widgetWidth, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
+            ImGui::SameLine(widgetStartX);
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 1);
-            ImGui::Text("ImGui:ON");
-            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - buttonSize);
+            ImGui::TextUnformatted(statusText);
+            ImGui::SameLine(widgetStartX + statusTextWidth + interItemSpacing);
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 255));
             ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 255, 255, 255));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(128, 128, 128, 255));
-            if (ImGui::SmallButton("home"))
+            if (ImGui::SmallButton(toggleButtonLabel))
             {
                 ImGuiManagerBus::Broadcast(&IImGuiManager::ToggleThroughImGuiVisibleState);
             }

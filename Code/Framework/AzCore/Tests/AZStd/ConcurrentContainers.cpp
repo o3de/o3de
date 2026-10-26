@@ -357,7 +357,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(map.empty());
 
             //clear
-            map.insert(10);
+            map.insert({10, 0});
             AZ_TEST_ASSERT(!map.empty());
             map.clear();
             AZ_TEST_ASSERT(map.empty());
@@ -512,16 +512,16 @@ namespace UnitTest
             AZ_TEST_ASSERT(map.empty());
 
             //clear
-            map.insert(10);
+            map.insert({10, 0});
             AZ_TEST_ASSERT(!map.empty());
             map.clear();
             AZ_TEST_ASSERT(map.empty());
             AZ_TEST_ASSERT(map.erase(10) == 0);
 
             //assignment
-            map.insert(10);
-            map.insert(20);
-            map.insert(30);
+            map.insert({10, 0});
+            map.insert({20, 0});
+            map.insert({30, 0});
             Map map2(map);
             AZ_TEST_ASSERT(map2.size() == 3);
             AZ_TEST_ASSERT(map2.find(20));
@@ -609,7 +609,7 @@ namespace UnitTest
     {
         run();
     }
-    
+
     TEST_F(ConcurrentFixedUnorderedMultiMapTest, Test)
     {
         run();

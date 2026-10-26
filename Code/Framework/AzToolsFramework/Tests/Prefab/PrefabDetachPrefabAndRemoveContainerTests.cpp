@@ -573,4 +573,47 @@ namespace UnitTest
             childEntityName, &AZ::ComponentApplicationRequests::GetEntityName, entityOrderArrayAfterDetach[2]);
         EXPECT_EQ(childEntityName, blackWheelEntityName);
     }
+
+    TEST_F(PrefabDetachPrefabTests, DetachSelectedPrefabAndRemoveContainer_UndoRedoRestoresExpectedSelection)
+    {
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        const AZ::IO::Path prefabFilepath = engineRootPath / "SelectedPrefab";
+
+        const AZ::EntityId childEntityId = CreateEditorEntityUnderRoot("ChildEntity");
+        const AZ::EntityId containerEntityId = CreateEditorPrefab(prefabFilepath, { childEntityId });
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ containerEntityId });
+
+        PrefabOperationResult result = m_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntityId);
+        ASSERT_TRUE(result.IsSuccess());
+        ProcessDeferredUpdates();
+
+        EXPECT_EQ(AzToolsFramework::GetEntityById(containerEntityId), nullptr);
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_TRUE(selectedEntities.empty());
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::UndoPressed);
+
+        EXPECT_NE(AzToolsFramework::GetEntityById(containerEntityId), nullptr);
+        selectedEntities.clear();
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        ASSERT_EQ(selectedEntities.size(), 1);
+        EXPECT_EQ(selectedEntities.front(), containerEntityId);
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::RedoPressed);
+
+        EXPECT_EQ(AzToolsFramework::GetEntityById(containerEntityId), nullptr);
+        selectedEntities.clear();
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        EXPECT_TRUE(selectedEntities.empty());
+
+        ProcessDeferredUpdates();
+        EXPECT_EQ(AzToolsFramework::GetEntityById(containerEntityId), nullptr);
+    }
 } // namespace UnitTest

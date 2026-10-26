@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include <QCheckBox>
 #include <QSharedPointer>
 #include <QWidget>
-#endif
 
 namespace Ui
 {

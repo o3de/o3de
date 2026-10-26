@@ -1,0 +1,24 @@
+/*
+ * Tests the use of ranges for integer options
+ *
+ * Global constants and SRG constants marked with the "option" qualifier are treated as variant options
+ */
+
+[range(1, 64)]
+option int IntOptionA         = 42;
+
+[range(5, 8)]
+option int IntOptionB         = 7;
+
+[range(5, 9)]
+option int IntOptionC         = 9;
+
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 64;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{ };

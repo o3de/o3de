@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<VignettePass> VignettePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<VignettePass> pass = aznew VignettePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         VignettePass::VignettePass(const RPI::PassDescriptor& descriptor)

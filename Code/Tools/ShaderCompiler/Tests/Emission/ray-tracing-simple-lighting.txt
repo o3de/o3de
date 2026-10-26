@@ -1,0 +1,6 @@
+"RaytracingAccelerationStructure RaySRG_Scene : register ( t0 , space0 ) ;"
+"RWTexture2D < float4 > RaySRG_RenderTarget : register ( u0 , space0 ) ;"
+"ByteAddressBuffer RaySRG_Indices : register ( t1 , space0 ) ;"
+"StructuredBuffer < Vertex > RaySRG_Vertices : register ( t2 , space0 ) ;"
+"ConstantBuffer < :: SceneConstantBuffer > RaySRG_g_sceneCB : register ( b0 , space0 ) ;"
+"ConstantBuffer < :: CubeConstantBuffer > RaySRG_g_cubeCB : register ( b1 , space0 ) ;"

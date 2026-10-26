@@ -8,6 +8,7 @@
 
 set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
 set(O3DE_FETCHCONTENT_MESSAGE_LEVEL "ERROR" CACHE STRING "Message level when fetching 3rd party libraries.  Set to DEBUG or VERBOSE to debug")
+set(O3DE_FETCHCONTENT_FORCE_GIT OFF CACHE BOOL "Force FetchContent to use git to acquire packages instead of downloading archives")
 
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"
@@ -403,6 +404,10 @@ function(o3de_fixup_fetchcontent_targets)
         
         # alias it with 3rdParty::targetname
         add_library(3rdParty::${TARGET_TO_FIXUP} ALIAS ${TARGET_TO_FIXUP})
+
+        # We install headers for fetchcontent libraries explicitly, so clear any PUBLIC_HEADER property.
+        # Installing the target below without a PUBLIC_HEADER DESTINATION would warn.
+        set_property(TARGET ${TARGET_TO_FIXUP} PROPERTY PUBLIC_HEADER)
 
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)

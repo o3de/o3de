@@ -32,4 +32,3 @@ namespace AzQtComponents
     }
 }
 
-#include "Components/Widgets/moc_AssetFolderListView.cpp"

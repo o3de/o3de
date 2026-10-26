@@ -9,7 +9,9 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
-#define UNICODE
+#ifndef UNICODE
+    #define UNICODE
+#endif
 //#define NOGDICAPMASKS     //- CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 //#define NOVIRTUALKEYCODES //- VK_*
 //#define NOWINMESSAGES     //- WM_*, EM_*, LB_*, CB_*

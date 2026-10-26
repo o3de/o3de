@@ -1,0 +1,14 @@
+float4 SomeFunc()
+{
+    int a = 1;
+    float4 highred = float4(56.5, 0, 0, 1);
+    switch (a)
+    {
+        case 0:
+            highred *= 3;
+            break;
+        case 1:
+            highred *= 0.5;
+    }
+    return highred;
+}

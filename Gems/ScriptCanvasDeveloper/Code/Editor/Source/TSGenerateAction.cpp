@@ -6,7 +6,6 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QAction>
 #include <QObject>
@@ -14,7 +13,6 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QMessageBox>
-#endif
 
 #include <Source/Translation/TranslationBus.h>
 

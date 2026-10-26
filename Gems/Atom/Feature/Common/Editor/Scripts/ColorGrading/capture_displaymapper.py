@@ -47,7 +47,7 @@ passtree_default = ["Root",
 
 default_path = "FrameCapture\DisplayMappeInput.dds"
 
-# To Do: we can wrap this, to call from a PySide2 GUI
+# To Do: we can wrap this, to call from a PySide GUI
 
 def capture(command="CapturePassAttachment",
             passtree=passtree_default,

@@ -320,4 +320,3 @@ namespace OpenParticleSystemEditor
     }
 } // namespace OpenParticleSystemEditor
 
-#include <Window/moc_ParticleItemWidget.cpp>

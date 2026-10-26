@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "EditorDebugDrawTextComponent.h"
 
@@ -29,16 +30,21 @@ namespace DebugDraw
             if (editContext)
             {
                 editContext->Class<EditorDebugDrawTextComponent>(
-                    "DebugDraw Text", "Draws debug text on the screen at this entity's location.")
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Text"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Draws debug text on the screen at this entity's location."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawText.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawText.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(0, &EditorDebugDrawTextComponent::m_element, "Text element settings", "Settings for the text element.")
+                    ->DataElement(0, &EditorDebugDrawTextComponent::m_element,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Text element settings"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Settings for the text element."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawTextComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorDebugDrawTextComponent::m_settings, "Visibility settings", "Common settings for DebugDraw components.")
+                    ->DataElement(0, &EditorDebugDrawTextComponent::m_settings,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Visibility settings"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawTextComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

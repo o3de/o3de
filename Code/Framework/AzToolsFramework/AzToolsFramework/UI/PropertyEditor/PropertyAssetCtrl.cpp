@@ -141,7 +141,8 @@ namespace AzToolsFramework
         m_completer->setCaseSensitivity(Qt::CaseInsensitive);
         m_completer->setFilterMode(Qt::MatchContains);
 
-        connect(m_completer->completionModel(), &QAbstractItemModel::modelReset, this, &PropertyAssetCtrl::OnCompletionModelReset);
+        m_completerResetConnection = connect(
+            m_completer->completionModel(), &QAbstractItemModel::modelReset, this, &PropertyAssetCtrl::OnCompletionModelReset);
         connect(m_completer, static_cast<void (QCompleter::*)(const QModelIndex& index)>(&QCompleter::activated), this, &PropertyAssetCtrl::OnAutocomplete);
 
         m_view = new AssetCompleterListView(this);
@@ -261,7 +262,7 @@ namespace AzToolsFramework
         }
 
         // 2a - Detect number of keys in lineEdit; if more than m_autocompleteAfterNumberOfChars, activate autocompleter
-        int chars = text.size();
+        int chars = static_cast<int>(text.size());
         if (chars >= s_autocompleteAfterNumberOfChars && !m_completerIsActive)
         {
             EnableAutocompleter();
@@ -397,7 +398,7 @@ namespace AzToolsFramework
         {
             if (!m_optionalValidDragDropExtensions.isEmpty())
             {
-                const int dotIndex = path.lastIndexOf('.');
+                const int dotIndex = static_cast<int>(path.lastIndexOf('.'));
                 if (dotIndex >= 0)
                 {
                     const QString& extension = path.mid(dotIndex);
@@ -774,6 +775,10 @@ namespace AzToolsFramework
         AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
+        if (m_completerResetConnection)
+        {
+            QObject::disconnect(m_completerResetConnection);
+        }
     }
 
     void PropertyAssetCtrl::OnEditButtonClicked()
@@ -1837,4 +1842,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_PropertyAssetCtrl.cpp"

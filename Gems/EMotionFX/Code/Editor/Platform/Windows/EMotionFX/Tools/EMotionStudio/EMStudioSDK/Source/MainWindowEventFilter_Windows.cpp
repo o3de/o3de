@@ -13,7 +13,7 @@
 
 namespace EMStudio
 {
-    bool NativeEventFilter::nativeEventFilter(const QByteArray& /*eventType*/, void* message, long* /*result*/)
+    bool NativeEventFilter::nativeEventFilter(const QByteArray& /*eventType*/, void* message, qintptr* /*result*/)
     {
         MSG* msg = static_cast<MSG*>(message);
         if (msg->message == WM_DEVICECHANGE)

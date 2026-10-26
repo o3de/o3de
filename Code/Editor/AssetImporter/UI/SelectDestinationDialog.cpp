@@ -229,7 +229,7 @@ void SelectDestinationDialog::ValidatePath()
     else
     {
         QString destinationDirectory = DestinationDirectory();
-        int strLength = destinationDirectory.length();
+        int strLength = static_cast<int>(destinationDirectory.length());
 
         // store the updated acceptable destination directory into the registry,
         // so that when users manually modify the directory,
@@ -245,6 +245,4 @@ QString SelectDestinationDialog::DestinationDirectory() const
 {
     return QDir::fromNativeSeparators(m_ui->DestinationLineEdit->text());
 }
-
-#include <AssetImporter/UI/moc_SelectDestinationDialog.cpp>
 

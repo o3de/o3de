@@ -679,16 +679,29 @@ namespace AzToolsFramework
         // * Filter out any unselectable entities
         // * Calculate selection/deselection delta so we can notify specific entities only on change.
         // * Filter any duplicates.
-
-        // Filter out any invalid or non-selectable entities
         EntityIdList selectedEntitiesFiltered;
         selectedEntitiesFiltered.reserve(selectedEntities.size());
 
+        // Filter out any invalid or non-selectable entities
         // if the new viewport interaction model is enabled we do not want to
         // filter out locked entities as this breaks with the logic of being
         // able to select locked entities in the entity outliner
-        selectedEntitiesFiltered.insert(
-            selectedEntitiesFiltered.begin(), selectedEntities.begin(), selectedEntities.end());
+
+        std::copy_if(
+            selectedEntities.begin(),
+            selectedEntities.end(),
+            std::back_inserter(selectedEntitiesFiltered),
+            [this](const AZ::EntityId& entityId)
+            {
+                if (AZ::Entity* resultEntity = FindEntity(entityId);resultEntity)
+                {
+                    if (resultEntity->GetState() == AZ::Entity::State::Active)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
 
         EntityIdList newlySelectedIds;
         EntityIdList newlyDeselectedIds;
@@ -1301,9 +1314,17 @@ namespace AzToolsFramework
             searchNode = searchNode->GetParent(); // walk up the tree.
         }
 
-        // note that when resuming an undo batch, we do not pop any values, this allows the node to
-        // continue adding data to nodes without creating new undos.
-        // we only create a new undo node if the one we are trying to resume is not anywhere in the current undo tree.
+        // if we just finished an undo, and its the top operation or contains the resume operation, reopen it.
+        // note that we re-attach the root to the current undo batch, but we return the child found.
+        UndoSystem::URSequencePoint* topOperation = m_undoStack->GetTop();
+        if (topOperation)
+        {
+            if (UndoSystem::URSequencePoint* searcher = topOperation->Find(expected); searcher)
+            {
+                m_currentBatchUndo = m_undoStack->PopTop();
+                return searcher;
+            }
+        }
 
         return BeginUndoBatch(label);
     }

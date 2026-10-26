@@ -137,4 +137,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyEnumComboBoxCtrl.cpp"

@@ -6,12 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : A multiplatform base class for handling errors and collecting call stacks
-
-#ifndef CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H
-#define CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H
-#pragma once
 
 #include "System.h"
 
@@ -69,7 +66,7 @@ protected:
     IDebugCallStack();
     virtual ~IDebugCallStack();
 
-    static const char* TranslateExceptionCode(DWORD dwExcept);
+    static const char* TranslateExceptionCode(AZ::u32 dwExcept);
     static void PutVersion(char* str, size_t length);
 
     bool m_bIsFatalError;
@@ -79,7 +76,3 @@ protected:
 
     AZ::IO::HandleType m_memAllocFileHandle;
 };
-
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H

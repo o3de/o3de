@@ -825,4 +825,3 @@ void CGameEngine::ExecuteQueuedEvents()
     AZ::MainThreadRenderRequestBus::ExecuteQueuedEvents();
 }
 
-#include <moc_GameEngine.cpp>

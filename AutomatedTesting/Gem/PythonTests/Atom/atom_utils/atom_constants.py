@@ -7,6 +7,19 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Holds constants used across both hydra and non-hydra scripts.
 """
 
+AO_METHODS = {
+    'SSAO': 0,
+    'GTAO': 1,
+}
+
+GTAO_QUALITY = {
+    'SuperLow': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'SuperHigh': 4,
+}
+
 # Light type options for the Light component.
 LIGHT_TYPES = {
     'unknown': 0,
@@ -214,6 +227,67 @@ class AtomComponentProperties:
         properties = {
             'name': 'Actor',
             'Actor asset': 'Actor asset',
+        }
+        return properties[property]
+    
+    @staticmethod
+    def ao(property: str = 'name') -> str:
+        """
+        Ambient Occlusion component properties. Requires PostFX Layer component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable AO' toggles the overall function of Screen Space Ambient Occlusion (bool)
+          - 'AO Method' toggles the algorithm of ao calculation (enum, Uses above dictionary AO_METHODS)
+          - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
+          - 'SSAO Sampling Radius' (float 0.0 to 0.25, default 0.05)
+          - 'GTAO Quality' (int 0 to 4, default 2)
+          - 'GTAO Strength' (float 0.0 to 2.0, default 1.0)
+          - 'GTAO Power' (float 0.0 to 5.0, default 1.0)
+          - 'GTAO World Radius' (float 0.0 to 5.0, default 2.0)
+          - 'GTAO Thickness Blend' (float 0.0 to 1.0, default 1.0)
+          - 'GTAO Max Depth' (float 0.0 to 1000.0, default 200.0)
+          - 'Enable Blur' toggles the blur feature of SSAO (bool)
+          - 'Blur Strength' (float 0.0 to 1.0 default 0.85)
+          - 'Blur Edge Threshold' (float default 0.0 to 1.0)
+          - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
+          - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
+          - 'Enabled Override' toggles a collection of override values (bool)
+          - 'SSAOStrength Override' (float 0.0 to default 1.0)
+          - 'SSAOSamplingRadius Override' (float 0.0 to default 1.0)
+          - 'EnableBlur Override' toggles blur overrides (bool)
+          - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffStrength Override' (float 0.0 to default 1.0)
+          - 'EnableDownsample Override' toggles override for enable downsampling (bool)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Ambient Occlusion',
+            'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable AO': 'Controller|Configuration|Enable AO',
+            'AO Method': 'Controller|Configuration|AO Method',
+            'SSAO Strength': 'Controller|Configuration|SSAO Strength',
+            'SSAO Sampling Radius': 'Controller|Configuration|SSAO Sampling Radius',
+            'GTAO Quality': 'Controller|Configuration|GTAO Quality',
+            'GTAO Strength': 'Controller|Configuration|GTAO Strength',
+            'GTAO Power': 'Controller|Configuration|GTAO Power',
+            'GTAO World Radius': 'Controller|Configuration|GTAO World Radius',
+            'GTAO Thickness Blend': 'Controller|Configuration|GTAO Thickness Blend',
+            'GTAO Max Depth': 'Controller|Configuration|GTAO Max Depth',
+            'Enable Blur': 'Controller|Configuration|Enable Blur',
+            'Blur Strength': 'Controller|Configuration|Blur Strength',
+            'Blur Edge Threshold': 'Controller|Configuration|Blur Edge Threshold',
+            'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
+            'Enable Downsample': 'Controller|Configuration|Enable Downsample',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'SsaoStrength Override': 'Controller|Configuration|Overrides|SsaoStrength Override',
+            'SsaoSamplingRadius Override': 'Controller|Configuration|Overrides|SsaoSamplingRadius Override',
+            'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
+            'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
+            'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
+            'BlurDepthFalloffThreshold Override': 'Controller|Configuration|Overrides|BlurDepthFalloffThreshold Override',
+            'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]
 
@@ -1390,53 +1464,6 @@ class AtomComponentProperties:
             'Min samples': 'Controller|Configuration|Advanced|Min samples',
             'Near clip': 'Controller|Configuration|Advanced|Near clip',
             'Near fade distance': 'Controller|Configuration|Advanced|Near fade distance',
-        }
-        return properties[property]
-
-    @staticmethod
-    def ssao(property: str = 'name') -> str:
-        """
-        SSAO component properties. Requires PostFX Layer component.
-          - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable SSAO' toggles the overall function of Screen Space Ambient Occlusion (bool)
-          - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
-          - 'Sampling Radius' (float 0.0 to 0.25, default 0.05)
-          - 'Enable Blur' toggles the blur feature of SSAO (bool)
-          - 'Blur Strength' (float 0.0 to 1.0 default 0.85)
-          - 'Blur Edge Threshold' (float default 0.0 to 1.0)
-          - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
-          - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
-          - 'Enabled Override' toggles a collection of override values (bool)
-          - 'Strength Override' (float 0.0 to default 1.0)
-          - 'SamplingRadius Override' (float 0.0 to default 1.0)
-          - 'EnableBlur Override' toggles blur overrides (bool)
-          - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
-          - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
-          - 'BlurDepthFalloffStrength Override' (float 0.0 to default 1.0)
-          - 'EnableDownsample Override' toggles override for enable downsampling (bool)
-        :param property: From the last element of the property tree path. Default 'name' for component name string.
-        :return: Full property path OR component name if no property specified.
-        """
-        properties = {
-            'name': 'SSAO',
-            'requires': [AtomComponentProperties.postfx_layer()],
-            'Enable SSAO': 'Controller|Configuration|Enable SSAO',
-            'SSAO Strength': 'Controller|Configuration|SSAO Strength',
-            'Sampling Radius': 'Controller|Configuration|Sampling Radius',
-            'Enable Blur': 'Controller|Configuration|Enable Blur',
-            'Blur Strength': 'Controller|Configuration|Blur Strength',
-            'Blur Edge Threshold': 'Controller|Configuration|Blur Edge Threshold',
-            'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
-            'Enable Downsample': 'Controller|Configuration|Enable Downsample',
-            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
-            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
-            'SamplingRadius Override': 'Controller|Configuration|Overrides|SamplingRadius Override',
-            'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
-            'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
-            'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
-            'BlurDepthFalloffThreshold Override': 'Controller|Configuration|Overrides|BlurDepthFalloffThreshold Override',
-            'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]
 

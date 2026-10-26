@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ScreensCtrl.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <GemCatalog/GemInfo.h>
+
 #include <QSet>
 #include <QString>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)

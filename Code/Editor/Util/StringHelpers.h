@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMONTOOLS_STRINGHELPERS_H
-#define CRYINCLUDE_CRYCOMMONTOOLS_STRINGHELPERS_H
 #pragma once
 
 #include <AzCore/std/string/string.h>
@@ -25,4 +22,3 @@ namespace StringHelpers
     void Split(const AZStd::wstring& str, const AZStd::wstring& separator, bool bReturnEmptyPartsToo, std::vector<AZStd::wstring>& outParts);
 
 }
-#endif // CRYINCLUDE_CRYCOMMONTOOLS_STRINGHELPERS_H

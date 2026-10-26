@@ -63,4 +63,3 @@ namespace AssetProcessor
     }
 }
 
-#include "native/AssetManager/moc_assetScanner.cpp"

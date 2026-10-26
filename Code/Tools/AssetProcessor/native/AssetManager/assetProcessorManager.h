@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QByteArray>
 #include <QQueue>
@@ -44,7 +43,6 @@
 #include <AssetManager/ExcludedFolderCache.h>
 #include <AssetManager/ProductAsset.h>
 #include <native/utilities/IMetadataUpdates.h>
-#endif
 
 class FileWatcher;
 

@@ -99,4 +99,3 @@ namespace EMStudio
 
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/moc_ToolBarPlugin.cpp>

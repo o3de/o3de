@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -30,19 +31,19 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<PosterizeGradientConfig>(
-                    "Posterize Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Posterize Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PosterizeGradientConfig::m_mode, "Mode", "")
-                    ->EnumAttribute(ModeType::Ceiling, "Ceiling")
-                    ->EnumAttribute(ModeType::Floor, "Floor")
-                    ->EnumAttribute(ModeType::Round, "Round")
-                    ->EnumAttribute(ModeType::Ps, "PS")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PosterizeGradientConfig::m_bands, "Bands", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PosterizeGradientConfig::m_mode, QT_TRANSLATE_NOOP("GradientSignal", "Mode"), "")
+                    ->EnumAttribute(ModeType::Ceiling, QT_TRANSLATE_NOOP("GradientSignal", "Ceiling"))
+                    ->EnumAttribute(ModeType::Floor, QT_TRANSLATE_NOOP("GradientSignal", "Floor"))
+                    ->EnumAttribute(ModeType::Round, QT_TRANSLATE_NOOP("GradientSignal", "Round"))
+                    ->EnumAttribute(ModeType::Ps, QT_TRANSLATE_NOOP("GradientSignal", "PS"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PosterizeGradientConfig::m_bands, QT_TRANSLATE_NOOP("GradientSignal", "Bands"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 2)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->DataElement(0, &PosterizeGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be transformed in relation to threshold.")
+                    ->DataElement(0, &PosterizeGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

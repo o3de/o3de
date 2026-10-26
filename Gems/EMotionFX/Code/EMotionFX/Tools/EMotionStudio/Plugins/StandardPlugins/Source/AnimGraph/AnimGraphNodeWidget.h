@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QPersistentModelIndex>
 #include <QWidget>
-#endif
 
 namespace EMotionFX
 {

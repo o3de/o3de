@@ -9,16 +9,15 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <Editor/EditorCommon.h>
-#include <Editor/ImagePopup.h>
 #include <QEvent>
 #include <QTimer>
 
+#include <AzCore/Memory/SystemAllocator.h>
+#include <Editor/EditorCommon.h>
+#include <Editor/ImagePopup.h>
+
 #include <Processing/ImagePreview.h>
-#endif
 
 namespace Ui
 {

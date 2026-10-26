@@ -1,0 +1,39 @@
+class A
+{
+    void MethodA();
+};
+
+class B
+{
+    class A
+    {
+        void MethodA();
+    };
+    
+    void MethodA();
+
+    void M()
+    {
+        // check the other way around than qualification-printout.azsl test
+        // this time we start from a fully qualified name and apply the reverse lookup.
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(::A::MethodA, __azslc_prtsym_least_qualified);
+        __azslc_print_message(" == /A/MethodA");
+        
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(A::MethodA, __azslc_prtsym_least_qualified);
+        __azslc_print_message(" == A/MethodA");
+        
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(MethodA, __azslc_prtsym_least_qualified);
+        __azslc_print_message(" == MethodA");
+        
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(B::MethodA, __azslc_prtsym_least_qualified);
+        __azslc_print_message(" == MethodA");
+        
+        __azslc_print_message("@check predicate ");
+        __azslc_print_symbol(::B::MethodA, __azslc_prtsym_least_qualified);
+        __azslc_print_message(" == MethodA");
+    }
+};

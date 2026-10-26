@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_EDITOR_KEYBOARD_CUSTOMIZATION_SETTINGS_H
-#define CRYINCLUDE_EDITOR_KEYBOARD_CUSTOMIZATION_SETTINGS_H
+
 #pragma once
 
 #include <QWidget>
@@ -66,5 +65,3 @@ private:
 
     static QVector<KeyboardCustomizationSettings*> m_instances;
 };
-
-#endif //CRYINCLUDE_EDITOR_KEYBOARD_CUSTOMIZATION_SETTINGS_H

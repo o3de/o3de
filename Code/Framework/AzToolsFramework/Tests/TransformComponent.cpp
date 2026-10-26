@@ -196,6 +196,21 @@ namespace UnitTest
             checkAddCount++;
             AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount);
 
+            // New behavior (Entity Activation update, PR #19319): the TransformComponent is now
+            // "always active" - it binds at Init and unbinds at Destruct, with an empty Deactivate.
+            // So the parent/child link is preserved across entity active-state changes. Toggling the
+            // child's entity active state must NOT churn OnChildAdded/OnChildRemoved on the parent.
+            // (Replaces the pre-#19319 block that asserted deactivate->remove / activate->add, which
+            // was deleted rather than re-expressed for the new behavior.)
+            childEntity.SetEntityActive(false);
+            childEntity.ApplyEffectiveActiveState();
+            AZ_TEST_ASSERT(childEntity.GetState() == AZ::Entity::State::Init);
+            AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount); // no spurious removal on deactivate
+            childEntity.SetEntityActive(true);
+            childEntity.ApplyEffectiveActiveState();
+            AZ_TEST_ASSERT(childEntity.GetState() == AZ::Entity::State::Active);
+            AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount); // no spurious re-add on reactivate
+
             // Setting parent invalid should notify removal
             AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
             childTransform->SetParent(EntityId());
@@ -801,7 +816,8 @@ namespace UnitTest
         EXPECT_TRUE(m_transformInterface->GetLocalTM().IsClose(nextTM));
     }
 
-    // Sets up a parent/child relationship between two static transform components
+    // Sets up a static parent at world (5,5,5). Each test adds its own child via MakeStaticChild so
+    // it can select the ParentActivationTransformMode under validation.
     class ParentedStaticTransformComponent
         : public TransformComponentApplication
     {
@@ -811,43 +827,117 @@ namespace UnitTest
             TransformComponentApplication::SetUp();
 
             m_parentEntity = aznew Entity("Parent");
-            m_parentEntity->Init();
-
             AZ::TransformConfig parentConfig{ AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)) };
             parentConfig.m_isStatic = true;
             m_parentEntity->CreateComponent<TransformComponent>()->SetConfiguration(parentConfig);
+            m_parentEntity->Init();
+        }
 
+        void TearDown() override
+        {
+            // Entity dtor deactivates as needed; delete the child before the parent it references.
+            delete m_childEntity;
+            delete m_parentEntity;
+            TransformComponentApplication::TearDown();
+        }
+
+        // Adds a static child parented to m_parentEntity with the given activation mode and
+        // configured transform, then Inits it. Configure-before-Init: a component may be added while
+        // the entity is Constructed (CanAddRemoveComponents permits Constructed and Init), and
+        // AddComponent only force-Inits the component when the entity is ALREADY Init - so
+        // configuring first lets the transform initialize with its parent + mode in place (the
+        // normal deserialize-then-Init order).
+        void MakeStaticChild(
+            AZ::TransformConfig::ParentActivationTransformMode mode, const AZ::Transform& configuredTransform)
+        {
             m_childEntity = aznew Entity("Child");
-            m_childEntity->Init();
-
-            AZ::TransformConfig childConfig{ AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)) };
+            AZ::TransformConfig childConfig{ configuredTransform };
             childConfig.m_isStatic = true;
             childConfig.m_parentId = m_parentEntity->GetId();
-            childConfig.m_parentActivationTransformMode = AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform;
+            childConfig.m_parentActivationTransformMode = mode;
             m_childEntity->CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+            m_childEntity->Init();
+        }
+
+        AZ::Transform WorldOf(const Entity* entity) const
+        {
+            AZ::Transform tm = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(tm, entity->GetId(), &AZ::TransformBus::Events::GetWorldTM);
+            return tm;
+        }
+
+        AZ::Transform LocalOf(const Entity* entity) const
+        {
+            AZ::Transform tm = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(tm, entity->GetId(), &AZ::TransformBus::Events::GetLocalTM);
+            return tm;
         }
 
         Entity* m_parentEntity = nullptr;
         Entity* m_childEntity = nullptr;
     };
 
-    // Created to force old broken offset behaviour.
-    // Altered 2026-01-16 to determine reverse implemented in Entity Activation Update. Out of order activation should preserve positioning.
-    TEST_F(ParentedStaticTransformComponent, ParentActivatesLast_OffsetObeyed)
+    // MaintainOriginalRelativeTransform keeps the child's LOCAL offset relative to the parent.
+    //
+    // Lifecycle change being validated (PR #19319): the transform hierarchy now persists across
+    // active-state changes - a deactivated parent stays in the hierarchy; only DESTRUCTION removes
+    // it. So the child resolves against its parent at Init and its world is correct before any
+    // activation, unchanged by activation order. The pre-#19319 test asserted the opposite (a
+    // late-activating parent "snapped" the static child by its offset); that only happened because a
+    // deactivated parent used to be ABSENT from the hierarchy (as if destroyed), so the child had no
+    // parent until the parent activated. That premise no longer holds, so the assertion is inverted
+    // and now checks the resolved values directly rather than just position stability.
+    TEST_F(ParentedStaticTransformComponent, MaintainOriginalRelativeTransform_KeepsLocalOffset)
     {
+        // Parent at world (5,5,5); child local offset (5,5,5) -> resolved world (10,10,10).
+        MakeStaticChild(
+            AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)));
+
+        const AZ::Transform expectedLocal = AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f));
+        const AZ::Transform expectedWorld = AZ::Transform::CreateTranslation(AZ::Vector3(10.f, 10.f, 10.f));
+
+        // Resolved at Init, before any activation (persistent hierarchy).
+        EXPECT_TRUE(LocalOf(m_childEntity).IsClose(expectedLocal));
+        EXPECT_TRUE(WorldOf(m_childEntity).IsClose(expectedWorld));
+
+        // Child activates first; the parent activating last must not move the child.
         m_childEntity->SetEntityActive(true);
         m_childEntity->ApplyEffectiveActiveState();
-
-        Transform previousWorldTM;
-        TransformBus::EventResult(previousWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
+        ASSERT_TRUE(m_childEntity->GetState() == AZ::Entity::State::Active);
+        EXPECT_TRUE(LocalOf(m_childEntity).IsClose(expectedLocal));
+        EXPECT_TRUE(WorldOf(m_childEntity).IsClose(expectedWorld));
 
         m_parentEntity->SetEntityActive(true);
+        m_parentEntity->ApplyEffectiveActiveState();
+        ASSERT_TRUE(m_parentEntity->GetState() == AZ::Entity::State::Active);
+        EXPECT_TRUE(LocalOf(m_childEntity).IsClose(expectedLocal)); // relative offset maintained
+        EXPECT_TRUE(WorldOf(m_childEntity).IsClose(expectedWorld));
+    }
+
+    // MaintainCurrentWorldTransform keeps the child's WORLD position when the parent is applied; the
+    // local transform is recomputed as the offset from the parent. Also order-independent under the
+    // persistent hierarchy.
+    TEST_F(ParentedStaticTransformComponent, MaintainCurrentWorldTransform_KeepsWorldPosition)
+    {
+        // Parent at world (5,5,5); child configured world (5,5,5) -> local offset becomes identity.
+        MakeStaticChild(
+            AZ::TransformConfig::ParentActivationTransformMode::MaintainCurrentWorldTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)));
+
+        const AZ::Transform expectedWorld = AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f));
+        const AZ::Transform expectedLocal = AZ::Transform::CreateIdentity();
+
+        EXPECT_TRUE(WorldOf(m_childEntity).IsClose(expectedWorld));
+        EXPECT_TRUE(LocalOf(m_childEntity).IsClose(expectedLocal));
+
+        m_childEntity->SetEntityActive(true);
         m_childEntity->ApplyEffectiveActiveState();
+        m_parentEntity->SetEntityActive(true);
+        m_parentEntity->ApplyEffectiveActiveState();
 
-        Transform nextWorldTM;
-        TransformBus::EventResult(nextWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
-
-        EXPECT_TRUE(previousWorldTM.IsClose(nextWorldTM));
+        EXPECT_TRUE(WorldOf(m_childEntity).IsClose(expectedWorld)); // world position maintained
+        EXPECT_TRUE(LocalOf(m_childEntity).IsClose(expectedLocal));
     }
 
     // Fixture that loads a TransformComponent from a buffer.
@@ -962,6 +1052,345 @@ namespace UnitTest
 
         EXPECT_TRUE(component.GetConfiguration(retrievedConfig));
         EXPECT_TRUE(defaultConfig == retrievedConfig);
+    }
+
+    // Counts OnChildAdded/OnChildRemoved fired at a specific parent entity id.
+    class ChildChangeNotificationHandler
+        : public AZ::TransformNotificationBus::Handler
+    {
+    public:
+        explicit ChildChangeNotificationHandler(AZ::EntityId parentId)
+        {
+            AZ::TransformNotificationBus::Handler::BusConnect(parentId);
+        }
+        ~ChildChangeNotificationHandler() override
+        {
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+        }
+        void OnChildAdded(AZ::EntityId /*child*/) override { ++m_added; }
+        void OnChildRemoved(AZ::EntityId /*child*/) override { ++m_removed; }
+
+        int m_added = 0;
+        int m_removed = 0;
+    };
+
+    // Always-active transform lifecycle: a child fires OnChildAdded when it enters the hierarchy
+    // (Init, parent already set) and OnChildRemoved when it leaves (destruction) - but NOT when it is
+    // merely force-deactivated/reactivated, because deactivation does not change parenting.
+    TEST_F(TransformComponentApplication, ChildEvents_FireOnCreateAndDestruct_NotOnActivateCycle)
+    {
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        ChildChangeNotificationHandler handler(parent.GetId());
+
+        // Brand-new child created under the parent: OnChildAdded fires once at Init.
+        AZ::Entity* child = aznew AZ::Entity("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child->CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child->Init();
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 0);
+
+        // Force deactivate/reactivate must NOT churn child events.
+        child->Activate();
+        child->Deactivate();
+        child->Activate();
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 0);
+
+        // Full destruct: OnChildRemoved fires once.
+        delete child;
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 1);
+    }
+
+    // Reparenting is a real change, so it fires OnChildRemoved on the old parent and OnChildAdded on
+    // the new parent.
+    TEST_F(TransformComponentApplication, ChildEvents_Reparent_RemovesFromOldAddsToNew)
+    {
+        AZ::Entity parentA("ParentA");
+        parentA.CreateComponent<TransformComponent>();
+        parentA.Init();
+        parentA.Activate();
+
+        AZ::Entity parentB("ParentB");
+        parentB.CreateComponent<TransformComponent>();
+        parentB.Init();
+        parentB.Activate();
+
+        ChildChangeNotificationHandler handlerA(parentA.GetId());
+        ChildChangeNotificationHandler handlerB(parentB.GetId());
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parentA.GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_EQ(handlerA.m_added, 1);
+        EXPECT_EQ(handlerA.m_removed, 0);
+        EXPECT_EQ(handlerB.m_added, 0);
+
+        // Reparent the child from A to B.
+        AZ::TransformBus::Event(child.GetId(), &AZ::TransformBus::Events::SetParent, parentB.GetId());
+        EXPECT_EQ(handlerA.m_removed, 1);
+        EXPECT_EQ(handlerB.m_added, 1);
+    }
+
+    // Minimal component used to detect whether the rest of an entity's components are initialized at
+    // the instant a hierarchy notification fires. Created AFTER the TransformComponent so it sits later
+    // in the init order (Entity::Init runs components in insertion order; only Activate sorts).
+    class InitProbeComponent
+        : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(InitProbeComponent, "{6F2A9C84-3B1D-4E7A-AB52-9D0C1E3F5A7B}");
+        static void Reflect(AZ::ReflectContext*) {}
+        void Init() override { m_initialized = true; }
+        void Activate() override { ++m_activateCount; }
+        void Deactivate() override { ++m_deactivateCount; }
+        bool m_initialized = false;
+        int m_activateCount = 0;
+        int m_deactivateCount = 0;
+    };
+
+    // Listens on the PARENT and, when a child is added, records whether that child's OTHER component
+    // (the InitProbeComponent) was already initialized - i.e. whether OnChildAdded fired only after the
+    // whole child finished initializing. Mirrors the real crash: the parent's net-transform reaching
+    // into the child's not-yet-init NetBindComponent during the child's Init.
+    class ChildAddedInitInspector
+        : public AZ::TransformNotificationBus::Handler
+    {
+    public:
+        explicit ChildAddedInitInspector(AZ::EntityId parentId)
+        {
+            AZ::TransformNotificationBus::Handler::BusConnect(parentId);
+        }
+        ~ChildAddedInitInspector() override
+        {
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+        }
+        void OnChildAdded(AZ::EntityId child) override
+        {
+            AZ::Entity* childEntity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationRequests::FindEntity, child);
+            if (childEntity)
+            {
+                if (auto* probe = childEntity->FindComponent<InitProbeComponent>())
+                {
+                    m_siblingInitializedAtChildAdded = probe->m_initialized;
+                }
+            }
+            ++m_childAddedCount;
+        }
+
+        int m_childAddedCount = 0;
+        bool m_siblingInitializedAtChildAdded = false;
+    };
+
+    // Hierarchy notifications (OnChildAdded) must fire at PostInit - after EVERY component on the child
+    // is initialized - never mid-Init from the TransformComponent (the first component) while later
+    // siblings are still unconstructed. Guards the AzFramework TransformComponent change from PR #19856
+    // (SetParentImpl moved Init -> OnEntityExists). FAILS on a tree without that fix - the intended alarm.
+    TEST_F(TransformComponentApplication, ChildAdded_FiresOnlyAfterAllChildComponentsInitialized)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        ChildAddedInitInspector inspector(parent.GetId());
+
+        AZ::Entity* child = aznew AZ::Entity("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child->CreateComponent<TransformComponent>()->SetConfiguration(childConfig); // component 0 - fires OnChildAdded
+        child->CreateComponent<InitProbeComponent>();                               // component 1 - the sibling
+        child->Init();
+
+        EXPECT_EQ(inspector.m_childAddedCount, 1);
+        // The alarm: on the old path OnChildAdded fires from TransformComponent::Init before this
+        // sibling is initialized, so this reads false. With #19856 it fires post-init and reads true.
+        EXPECT_TRUE(inspector.m_siblingInitializedAtChildAdded);
+
+        delete child;
+    }
+
+    // F4 - parent (de)activation cascades to the child's effective state AND its components: deactivating
+    // the parent drives the child effectively inactive (its components Deactivate); reactivating restores
+    // it. This is F7's enabler - a child component deactivating is what unregisters NetBind during teardown.
+    // GREEN on base (merged 26.05 cascade) - regression guard.
+    TEST_F(TransformComponentApplication, ParentDeactivation_CascadesToChildComponents_AndReactivationRestores)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        InitProbeComponent* probe = child.CreateComponent<InitProbeComponent>();
+        child.Init();
+        child.Activate();
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Parent deactivates -> child cascades inactive, its component deactivates.
+        parent.Deactivate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(probe->m_deactivateCount, 1);
+
+        // Parent reactivates -> child restored, its component reactivates.
+        parent.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+        EXPECT_EQ(probe->m_activateCount, 2);
+    }
+
+    // F5a - a child parked inactive SOLELY because its parent is inactive regains active-ness when that
+    // already-deactivated parent is destroyed (OnEntityDestruction releases the parent dependency and
+    // restores the parent-active layer). RED on base: base never restores the layer -> child stuck Init.
+    TEST_F(TransformComponentApplication, DeactivatedParentDestroyed_ChildRegainsActive)
+    {
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+
+        // Parent deactivated FIRST -> child settles into the parent-inactive state.
+        parent->Deactivate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+
+        // Destroy the now-inactive parent -> child must regain active-ness (the alarm).
+        delete parent;
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+
+        AZ::EntityId childParentId;
+        AZ::TransformBus::EventResult(childParentId, child.GetId(), &AZ::TransformBus::Events::GetParentId);
+        EXPECT_FALSE(childParentId.IsValid());
+    }
+
+    // F5b - destroying an ACTIVE parent: the destroy implicitly deactivates it (Reset->Deactivate cascade
+    // flags the child parent-inactive) THEN OnEntityDestruction recovers the child, all in one teardown
+    // (child Active->Init->Active). Verifies the full destroy ordering settles to active. RED on base.
+    TEST_F(TransformComponentApplication, ActiveParentDestroyed_ChildRegainsActive)
+    {
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+
+        // Destroy the ACTIVE parent directly - implicit deactivate-then-destruct in one call.
+        delete parent;
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+
+        AZ::EntityId childParentId;
+        AZ::TransformBus::EventResult(childParentId, child.GetId(), &AZ::TransformBus::Events::GetParentId);
+        EXPECT_FALSE(childParentId.IsValid());
+    }
+
+    // F6 - an EXPLICITLY deactivated child (entity-layer false via SetEntityActive) must NOT revive when
+    // the parent reactivates OR is destroyed: effective-active is the AND of all layers, so restoring the
+    // parent layer can't override an explicit deactivate. This is what stops the inactive->active->inactive
+    // ping-pong behind the teardown use-after-free. GREEN on base (AND logic is merged 26.05) - UAF guard.
+    TEST_F(TransformComponentApplication, ExplicitlyInactiveChild_DoesNotReviveOnParentActivateOrDestroy)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        InitProbeComponent* probe = child.CreateComponent<InitProbeComponent>();
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Explicitly deactivate the child (entity-layer false), then reconcile to actually deactivate it.
+        child.SetEntityActive(false);
+        child.ApplyEffectiveActiveState();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(probe->m_deactivateCount, 1);
+
+        // A parent activate cycle must NOT revive the explicitly-inactive child (no re-Activate).
+        parent->Deactivate();
+        parent->Activate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Destroying the parent must NOT revive it either (parent layer restored, entity layer still false).
+        delete parent;
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+    }
+
+    // F9 - FindEntity must still locate a DEACTIVATED (but not yet destroyed) entity. The network
+    // teardown's destroy path relies on this: it resolves entity ids up front then destroys them in an
+    // order that is not guaranteed child-first, so DestroyGameEntity may need to find a child that a
+    // sibling's destruction already deactivated. Lives in this fixture because it needs a
+    // ComponentApplication (m_app) for FindEntity to resolve. GREEN on base - guards the dependency.
+    TEST_F(TransformComponentApplication, FindEntity_LocatesDeactivatedEntity)
+    {
+        auto findEntity = [](const AZ::EntityId& lookup) -> AZ::Entity*
+        {
+            AZ::Entity* found = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(found, &AZ::ComponentApplicationRequests::FindEntity, lookup);
+            return found;
+        };
+
+        AZ::Entity* entity = aznew AZ::Entity("Deactivatable");
+        entity->CreateComponent<TransformComponent>();
+        entity->Init();
+        entity->Activate();
+        const AZ::EntityId id = entity->GetId();
+
+        EXPECT_EQ(findEntity(id), entity); // active -> found
+
+        entity->Deactivate();
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(findEntity(id), entity); // deactivated but allocated -> STILL found (the contract)
+
+        delete entity;
+        EXPECT_EQ(findEntity(id), nullptr); // destroyed -> gone (sanity that the lookup is real)
     }
 
     ///////////////////////////////////////////////////////////////////////////

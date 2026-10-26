@@ -79,7 +79,7 @@ namespace AssetProcessor
                 + CacheServerAddressKey))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
-                return AZStd::move(address);
+                return address;
             }
         }
         return {};

@@ -1,0 +1,1 @@
+typealias CUD = const unsigned dword;

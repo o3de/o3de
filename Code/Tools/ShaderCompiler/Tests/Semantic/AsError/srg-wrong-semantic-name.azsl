@@ -1,0 +1,12 @@
+ShaderResourceGroupSemantic CorrectSemanticName
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRG : CorretSemanticName
+{
+    Buffer<float4> data[1024];
+};
+
+//Semantic Error 23: line 6::0 'Declaration for semantic CorretSemanticName used in SRG MySRG was not found'
+// #EC 23

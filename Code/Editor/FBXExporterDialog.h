@@ -6,16 +6,11 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H
-#define CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Resource.h"
 
 #include <QDialog>
-#endif
 
 namespace Ui
 {
@@ -48,4 +43,3 @@ protected:
 private:
     QScopedPointer<Ui::FBXExporterDialog> m_ui;
 };
-#endif // CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -22,7 +23,8 @@ namespace AZStd::Internal
     struct counted_iterator_value_type {};
 
     template<class I>
-    struct counted_iterator_value_type<I, enable_if_t<indirectly_readable<I>>>
+        requires indirectly_readable<I>
+    struct counted_iterator_value_type<I>
     {
         using value_type = iter_value_t<I>;
     };
@@ -31,7 +33,8 @@ namespace AZStd::Internal
     struct counted_iterator_iter_concept {};
 
     template<class I>
-    struct counted_iterator_iter_concept<I, void_t<typename ITER_TRAITS<I>::iterator_concept>>
+        requires requires { typename ITER_TRAITS<I>::iterator_concept; }
+    struct counted_iterator_iter_concept<I>
     {
         using iterator_concept = typename ITER_TRAITS<I>::iterator_concept;
     };
@@ -40,7 +43,8 @@ namespace AZStd::Internal
     struct counted_iterator_iter_category {};
 
     template<class I>
-    struct counted_iterator_iter_category<I, void_t<typename ITER_TRAITS<I>::iterator_category>>
+        requires requires { typename ITER_TRAITS<I>::iterator_category; }
+    struct counted_iterator_iter_category<I>
     {
         using iterator_category = typename ITER_TRAITS<I>::iterator_category;
     };
@@ -53,12 +57,12 @@ namespace AZStd
     //! counted_iterator is an iterator adapter that behaves the same as the underlying iterator
     //! except its keeps track of the distance to the end of the range
 
-    template<class I>
+    template<input_or_output_iterator I>
     class counted_iterator
         : public Internal::counted_iterator_value_type<I>
         , public Internal::counted_iterator_iter_concept<I>
         , public Internal::counted_iterator_iter_category<I>
-        , private enable_if_t<input_or_output_iterator<I>, Internal::counted_iterator_requirements_fulfilled>
+        , private Internal::counted_iterator_requirements_fulfilled
     {
     public:
         using iterator_type = I;
@@ -68,22 +72,25 @@ namespace AZStd
         using reference = iter_reference_t<I>;
         using pointer = conditional_t<contiguous_iterator<I>, decltype(to_address(declval<I>())), void>;
 
-        template<bool Enable = default_initializable<I>, class = enable_if<Enable>>
-        constexpr counted_iterator() {}
+        constexpr counted_iterator()
+            requires default_initializable<I>
+        {}
         constexpr counted_iterator(I i, iter_difference_t<I> length)
             : m_current{ AZStd::move(i) }
             , m_length{ length }
         {
         }
 
-        template<class I2, class = enable_if_t<convertible_to<const I2&, I>>>
+        template<class I2>
+            requires convertible_to<const I2&, I>
         constexpr counted_iterator(const counted_iterator<I2>& other)
             : m_current(other.m_current)
             , m_length(other.m_length)
         {
         }
 
-        template<class I2, class = enable_if_t<assignable_from<I&, const I2&>>>
+        template<class I2>
+            requires assignable_from<I&, const I2&>
         constexpr counted_iterator& operator=(const counted_iterator<I2>& other)
         {
             m_current = other.m_current;
@@ -110,21 +117,21 @@ namespace AZStd
             AZ_Assert(m_length > 0, "Attempting to dereference a counted_iterator with a negative count");
             return *m_current;
         }
-        template<bool Enable = Internal::dereferenceable<const I>, class = enable_if_t<Enable>>
         constexpr decltype(auto) operator*() const
+            requires Internal::dereferenceable<const I>
         {
             AZ_Assert(m_length > 0, "Attempting to dereference a counted_iterator with a negative count");
             return *m_current;
         }
 
-        template<bool Enable = contiguous_iterator<I>, class = enable_if_t<Enable>>
         constexpr auto operator->() const noexcept
+            requires contiguous_iterator<I>
         {
             return to_address(m_current);
         }
 
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
         constexpr decltype(auto) operator[](iter_difference_t<I> n) const noexcept
+            requires random_access_iterator<I>
         {
             AZ_Assert(n < m_length, "index %lld is out of range count %lld", static_cast<AZ::s64>(n), static_cast<AZ::s64>(m_length));
             return m_current[n];
@@ -154,16 +161,16 @@ namespace AZStd
             }
         }
 
-        template<bool Enable = bidirectional_iterator<I>, class = enable_if_t<Enable>>
         constexpr counted_iterator& operator--()
+            requires bidirectional_iterator<I>
         {
             --m_current;
             ++m_length;
             return *this;
         }
 
-        template<bool Enable = bidirectional_iterator<I>, class = enable_if_t<Enable>>
         constexpr counted_iterator operator--(int)
+            requires bidirectional_iterator<I>
         {
             counted_iterator tmp = *this;
             --*this;
@@ -171,33 +178,36 @@ namespace AZStd
         }
 
         // operator+, +=
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
         constexpr counted_iterator operator+(iter_difference_t<I> n)
+            requires random_access_iterator<I>
         {
             return counted_iterator(m_current + n, m_length - n);
         }
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
+
         constexpr counted_iterator& operator+=(iter_difference_t<I> n)
+            requires random_access_iterator<I>
         {
             AZ_Assert(n <= m_length, "the input distance cannot advance the counted_iterator pass the end of the count");
             m_current += n;
             m_length -= n;
             return *this;
         }
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
+
         friend constexpr counted_iterator operator+(iter_difference_t<I> n, const counted_iterator& x)
+            requires random_access_iterator<I>
         {
             return x + n;
         }
 
         // operator-, -=
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
         constexpr counted_iterator operator-(iter_difference_t<I> n)
+            requires random_access_iterator<I>
         {
             return counted_iterator(m_current - n, m_length + n);
         }
-        template<bool Enable = random_access_iterator<I>, class = enable_if_t<Enable>>
+
         constexpr counted_iterator& operator-=(iter_difference_t<I> n)
+            requires random_access_iterator<I>
         {
             AZ_Assert(-n <= m_length, "the input distance cannot advance the counted_iterator pass the end of the count");
             m_current -= n;
@@ -207,8 +217,8 @@ namespace AZStd
 
         // friend navigation operators
         template<class I2>
-        friend constexpr auto operator-(const counted_iterator& x, const counted_iterator<I2>& y)
-            -> enable_if_t<common_with<I2, I>, iter_difference_t<I2>>
+            requires common_with<I2, I>
+        friend constexpr iter_difference_t<I2> operator-(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return y.count() - x.count();
         }
@@ -225,14 +235,14 @@ namespace AZStd
 
         // comparison operations
         template<class I2>
-        friend constexpr auto operator==(const counted_iterator& x, const counted_iterator<I2>& y)
-            -> enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator==(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return x.count() == y.count();
         }
         template<class I2>
-        friend constexpr auto operator!=(const counted_iterator& x, const counted_iterator<I2>& y)
-            ->enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator!=(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return !operator==(x, y);
         }
@@ -255,8 +265,8 @@ namespace AZStd
         }
 
         template<class I2>
-        friend constexpr auto operator<(const counted_iterator& x, const counted_iterator<I2>& y)
-            ->enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator<(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             // Comparison is reversed, due to length being decremented as the counted_iterator advances
             // therefore a counted_iterator referring to the same sequence is further
@@ -264,33 +274,34 @@ namespace AZStd
             return y.count() < x.count();
         }
         template<class I2>
-        friend constexpr auto operator>(const counted_iterator& x, const counted_iterator<I2>& y)
-            ->enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator>(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return operator<(y, x);
         }
         template<class I2>
-        friend constexpr auto operator<=(const counted_iterator& x, const counted_iterator<I2>& y)
-            ->enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator<=(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return !operator<(y, x);
         }
         template<class I2>
-        friend constexpr auto operator>=(const counted_iterator& x, const counted_iterator<I2>& y)
-            ->enable_if_t<common_with<I2, I>, bool>
+            requires common_with<I2, I>
+        friend constexpr bool operator>=(const counted_iterator& x, const counted_iterator<I2>& y)
         {
             return !operator<(x, y);
         }
 
-        friend constexpr auto iter_move(const counted_iterator& i)
+        friend constexpr iter_rvalue_reference_t<I> iter_move(const counted_iterator& i)
             noexcept(noexcept(ranges::iter_move(declval<const I&>())))
-            -> enable_if_t<input_iterator<I>, iter_rvalue_reference_t<I>>
+            requires input_iterator<I>
         {
             AZ_Assert(i.count() > 0, "count value must be greater than 0 in order for iter_move to safely dereference the iterator");
             return ranges::iter_move(i.base());
         }
 
-        template<class I2, enable_if_t<indirectly_swappable<I2, I>>>
+        template<class I2>
+            requires indirectly_swappable<I2, I>
         friend constexpr void iter_swap(const counted_iterator& x, const counted_iterator<I2>& y)
             noexcept(noexcept(ranges::iter_swap(declval<const I&>(), declval<const I2&>())))
         {
@@ -307,19 +318,18 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
-    template<class I, class = void>
-    constexpr bool counted_iterator_trait_requirements = false;
-
     template<class I>
-    constexpr bool counted_iterator_trait_requirements<I, enable_if_t<input_iterator<I>&&
-        same_as<Internal::ITER_TRAITS<I>, iterator_traits<I>>&&
-        Internal::sfinae_trigger_v<typename I::_is_primary_template>> > = true;
+    concept counted_iterator_trait_requirements =
+        input_iterator<I> &&
+        same_as<Internal::ITER_TRAITS<I>, iterator_traits<I>> &&
+        requires { typename I::_is_primary_template; };
 }
 
 namespace AZStd
 {
     template<class I>
-    struct iterator_traits<counted_iterator<I>, enable_if_t<Internal::counted_iterator_trait_requirements<I>>>
+        requires Internal::counted_iterator_trait_requirements<I>
+    struct iterator_traits<counted_iterator<I>>
         : iterator_traits<I>
     {
         using pointer = conditional_t<contiguous_iterator<I>, add_pointer_t<iter_reference_t<I>>, void>;

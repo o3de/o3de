@@ -45,5 +45,4 @@ namespace ScriptCanvasEditor
         accept();
     }
 
-#include <Editor/View/Dialogs/moc_UnsavedChangesDialog.cpp>
 }

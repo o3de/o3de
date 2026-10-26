@@ -190,5 +190,3 @@ void CTrackViewFindDlg::OnItemDoubleClicked()
 {
     ProcessSel();
 }
-
-#include <TrackView/moc_TrackViewFindDlg.cpp>

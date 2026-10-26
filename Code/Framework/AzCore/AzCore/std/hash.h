@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_HASH_H
-#define AZSTD_HASH_H 1
+
+#pragma once
 
 #include <limits>
 #include <AzCore/std/function/invoke.h>
@@ -46,18 +46,20 @@ namespace AZStd
     /// define your own struct AZStd::hash<T> and HasherInvocable<T>::type will be AZStd::true_type
     AZ_HAS_STATIC_MEMBER(DefaultHash, OnlyUnspecializedTypesShouldHaveThis, bool, ());
 
-    template<class T, bool isConstructible = AZStd::is_constructible<T>::value && !AZStd::is_abstract<T>::value>
+    template<class T>
     struct IsNumber
     {
         static constexpr bool value = false;
     };
 
     template <typename T>
-    struct IsNumber<T, true>
+        requires AZStd::is_constructible_v<T>
+            && (!AZStd::is_abstract_v<T>)
+    struct IsNumber<T>
     {
         static constexpr bool value = std::numeric_limits<T>::is_specialized;
     };
-    
+
     template<typename KeyType>
     using HasherInvocable = AZStd::conjunction
         < AZStd::disjunction<AZStd::negation<HasDefaultHash<hash<KeyType>>>, IsNumber<KeyType>, AZStd::is_enum<KeyType>>
@@ -66,9 +68,9 @@ namespace AZStd
 
     template<typename KeyType>
     inline constexpr bool HasherInvocable_v = HasherInvocable<KeyType>::value;
-    
+
     template<typename... Types>
-    using hash_enabled_concept = AZStd::bool_constant<AZStd::conjunction_v<HasherInvocable<Types>...>>;
+    using hash_enabled_concept = AZStd::bool_constant<(HasherInvocable_v<Types> && ...)>;
 
     template<typename... Types>
     inline constexpr bool hash_enabled_concept_v = hash_enabled_concept<Types...>::value;
@@ -205,7 +207,8 @@ namespace AZStd
     template<typename T, typename U>
     struct hash< AZStd::pair<T, U> >
     {
-        template<typename A, typename B, typename = AZStd::enable_if_t<hash_enabled_concept_v<A, B>>>
+        template<typename A, typename B>
+            requires hash_enabled_concept_v<A, B>
         constexpr size_t operator()(const AZStd::pair<A, B>& value) const
         {
             size_t seed = 0;
@@ -219,6 +222,3 @@ namespace AZStd
     // Bucket size suitable to hold n elements.
     AZCORE_API AZStd::size_t hash_next_bucket_size(AZStd::size_t n);
 }
-
-#endif // AZSTD_HASH_H
-#pragma once

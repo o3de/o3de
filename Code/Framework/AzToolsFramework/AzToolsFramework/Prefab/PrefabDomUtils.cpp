@@ -171,7 +171,7 @@ namespace AzToolsFramework
                     {
                         // Only track the instance that was passed in
                         return (&instance == entityIdMapper.GetLoadingInstance());
-                    }; 
+                    };
 
                     if ((flags & LoadFlags::ReportDeprecatedComponents) == LoadFlags::ReportDeprecatedComponents)
                     {
@@ -444,7 +444,7 @@ namespace AzToolsFramework
                     {
                         continue;
                     }
-                
+
                     AZStd::string_view patchPath = patchEntryIterator->value.GetString();
 
                     // Entities
@@ -522,7 +522,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                return AZStd::move(patchesMetadata);
+                return patchesMetadata;
             }
 
             void PrintPrefabDomValue(

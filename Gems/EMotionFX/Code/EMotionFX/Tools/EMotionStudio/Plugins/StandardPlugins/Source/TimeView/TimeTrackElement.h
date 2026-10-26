@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include "../StandardPluginsConfig.h"
+
 #include <QPen>
 #include <QFont>
 #include <QBrush>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QBrush)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)

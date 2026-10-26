@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -17,7 +16,6 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-#endif
 
 namespace AtomToolsFramework
 {

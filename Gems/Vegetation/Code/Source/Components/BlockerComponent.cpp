@@ -12,6 +12,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -49,11 +50,11 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<BlockerConfig>(
-                    "Vegetation Layer Blocker", "Vegetation blocker")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Layer Blocker"), QT_TRANSLATE_NOOP("Vegetation", "Vegetation blocker"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &BlockerConfig::m_inheritBehavior, "Inherit Behavior", "Allow shapes, modifiers, filters of a parent to affect this area.")
+                    ->DataElement(0, &BlockerConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
                     ;
             }
         }

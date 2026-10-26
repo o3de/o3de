@@ -50,7 +50,7 @@ namespace ParsingMetaDataCPP
     {
         size_t startPosition = 0;
         size_t foundPosition;
-        
+
         while ((foundPosition = replaced.find(from, startPosition)) != AZStd::string::npos)
         {
             replaced.replace(foundPosition, from.length(), to);
@@ -95,7 +95,7 @@ namespace ParsingMetaDataCPP
 
         const auto& slotIdsByName = formatted->GetNamedSlotIdMap();
         AZStd::vector<AZStd::pair<size_t, SlotId>> positionsAndSlotIds = ParsePositionsAndSlotIds(slotIdsByName, rawString);
-        
+
         // translate the formatted string to C++ / Lua friendly printf format
         AZStd::string formattedString(rawString);
 
@@ -206,7 +206,7 @@ namespace ScriptCanvas
 
         // turn the print node into a separate string format node and then a print node
         void PrintMetaData::PostParseExecutionTreeBody(AbstractCodeModel& model, ExecutionTreePtr print)
-        {            
+        {
             // set function call names
             print->SetNameLexicalScope(LexicalScope(Grammar::LexicalScopeType::Namespace, { k_printLexicalScopeName }));
             print->SetName(k_printName);
@@ -234,7 +234,7 @@ namespace ScriptCanvas
             }
 
             const auto indexAndChild = removeOutcome.TakeValue();
-            
+
             parent->InsertChild(indexAndChild.first, {indexAndChild.second.m_slot, indexAndChild.second.m_output, format });
             print->SetParent(format);
             format->AddChild({ nullptr, {}, print });
@@ -242,14 +242,14 @@ namespace ScriptCanvas
             // move input to format
             format->CopyInput(print, ExecutionTree::RemapVariableSource::Yes);
             print->ClearInput();
-            
+
             // add output to format
             auto output = AZStd::make_shared<Variable>();
             output->m_source = format;
-            output->m_datum = AZStd::move(Datum(Data::Type::String(), Datum::eOriginality::Copy));
+            output->m_datum = Datum(Data::Type::String(), Datum::eOriginality::Copy);
             output->m_name = print->ModScope()->AddVariableName("format", "output");
             format->ModChild(0).m_output.push_back({ nullptr, model.CreateOutputAssignment(output) });
-            
+
             // make format output the print input
             print->AddInput({ nullptr, output, DebugDataSource::FromInternal(output->m_datum.GetType()) });
 
@@ -284,7 +284,7 @@ namespace ScriptCanvas
                 oldInput.emplace(input.m_slot->GetId(), input);
             }
 
-            // rewrite the input so that it can appear with repeats and in usage order 
+            // rewrite the input so that it can appear with repeats and in usage order
             expression->ClearInput();
 
             for (auto andSlotId : positionsAndSlotIds)
@@ -295,6 +295,6 @@ namespace ScriptCanvas
             m_expressionString = expressionString;
         }
 
-    } 
+    }
 
-} 
+}

@@ -104,7 +104,7 @@ namespace AzToolsFramework
 
         Instance::~Instance()
         {
-            // when destroying an instance in its destructor, do not re-create any 
+            // when destroying an instance in its destructor, do not re-create any
             // new entities or instances (Avoids a leak)
             Reset(false);
         }
@@ -141,7 +141,7 @@ namespace AzToolsFramework
 
             m_templateId = templateId;
 
-            // If this instance's templateId is valid, we should be able to register this instance to 
+            // If this instance's templateId is valid, we should be able to register this instance to
             // Template to Instance mapping successfully.
             if (m_templateId != InvalidTemplateId &&
                 !m_templateInstanceMapper->RegisterInstanceToTemplate(*this))
@@ -191,7 +191,7 @@ namespace AzToolsFramework
         bool Instance::AddEntity(AZ::Entity& entity, EntityAlias entityAlias)
         {
             return
-                RegisterEntity(entity.GetId(), entityAlias) && 
+                RegisterEntity(entity.GetId(), entityAlias) &&
                 m_entities.emplace(AZStd::move(entityAlias), &entity).second;
         }
 
@@ -250,7 +250,7 @@ namespace AzToolsFramework
 
         void Instance::DetachAllEntitiesInHierarchy(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback)
         {
-            callback(AZStd::move(DetachContainerEntity()));
+            callback(DetachContainerEntity());
             DetachEntities(callback);
 
             for (const auto& [instanceAlias, instance] : m_nestedInstances)
@@ -407,7 +407,7 @@ namespace AzToolsFramework
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
         {
-            
+
             if ((m_entityIdInstanceRelationship ==
                     EntityIdInstanceRelationship::OneToOne) && !(m_instanceEntityMapper->RegisterEntityToInstance(entityId, *this)))
             {
@@ -809,7 +809,7 @@ namespace AzToolsFramework
             if (instance)
             {
                 AZStd::vector<const Instance*> instanceChain;
-                
+
                 while (instance && instance != this)
                 {
                     instanceChain.push_back(instance);
@@ -977,7 +977,7 @@ namespace AzToolsFramework
             // force a flush of memory by clearing first if cache isn't empty.
             if (!m_cachedInstanceDom.IsNull())
             {
-                m_cachedInstanceDom = PrefabDom(); 
+                m_cachedInstanceDom = PrefabDom();
             }
 
             if (m_isDomCachingEnabled)

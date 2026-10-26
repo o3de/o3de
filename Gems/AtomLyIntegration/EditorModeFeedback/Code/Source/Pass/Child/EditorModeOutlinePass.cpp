@@ -25,14 +25,14 @@ namespace AZ
         RPI::Ptr<EditorModeOutlinePass> EditorModeOutlinePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<EditorModeOutlinePass> pass = aznew EditorModeOutlinePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         EditorModeOutlinePass::EditorModeOutlinePass(const RPI::PassDescriptor& descriptor)
             : EditorModeFeedbackChildPassBase(descriptor, { 0.0f, 0.0f, 0.0f }, 1.0f)
         {
         }
-        
+
         void EditorModeOutlinePass::InitializeInternal()
         {
             EditorModeFeedbackChildPassBase::InitializeInternal();
@@ -40,7 +40,7 @@ namespace AZ
             m_lineColorIndex.Reset();
             m_outlineStyleIndex.Reset();
         }
-        
+
         void EditorModeOutlinePass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();

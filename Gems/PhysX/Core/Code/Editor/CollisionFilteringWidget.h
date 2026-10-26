@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>
 #include <QWidget>
-#endif
 
 namespace PhysX
 {

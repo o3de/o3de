@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
-#endif
 
 namespace MaterialEditor
 {

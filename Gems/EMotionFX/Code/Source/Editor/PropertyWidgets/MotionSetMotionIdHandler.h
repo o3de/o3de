@@ -8,18 +8,17 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/utils.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <QWidget>
-#include <QPushButton>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MotionSetSelectionWindow.h>
+
 #include <QGridLayout>
 #include <QLabel>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <AzCore/std/utils.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/containers/list.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MotionSetSelectionWindow.h>
-#endif
+#include <QPushButton>
+#include <QWidget>
 
 namespace EMotionFX
 {

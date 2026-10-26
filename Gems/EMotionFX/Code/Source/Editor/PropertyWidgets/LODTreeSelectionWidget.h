@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <SceneAPI/SceneUI/RowWidgets/NodeTreeSelectionWidget.h>
 #include <EMotionFX/Pipeline/AzSceneDef.h>
-#endif
 
 namespace EMotionFX
 {

@@ -7,6 +7,7 @@
  */
 
 #include "XmlSchemaAsset.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AzFramework
 {
@@ -20,9 +21,13 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<VersionSearchRule>("Version Search Rule", "Rule for getting the attribute of the root node which specifies the version")
+                editContext->Class<VersionSearchRule>(
+                    QT_TRANSLATE_NOOP("AzFramework", "Version Search Rule"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Rule for getting the attribute of the root node which specifies the version"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &VersionSearchRule::m_rootNodeAttributeName, "Root Node Attribute Name", "Attribute name of the root node which specifies the version. Example: versionnumber");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &VersionSearchRule::m_rootNodeAttributeName,
+                        QT_TRANSLATE_NOOP("AzFramework", "Root Node Attribute Name"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Attribute name of the root node which specifies the version. Example: versionnumber"));
             }
         }
     }
@@ -44,11 +49,19 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<MatchingRule>("Matching Rules", "Rules for matchup")
+                editContext->Class<MatchingRule>(
+                    QT_TRANSLATE_NOOP("AzFramework", "Matching Rules"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Rules for matchup"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_filePathPattern, "File Path Pattern", "Pattern of the file path. Example: *Fonts/*.xml")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_excludedFilePathPattern, "Excluded File Path Pattern", "Pattern of the excluded file path. Example: *Fonts/*.xml")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_versionConstraints, "Version Constraints", "Data file versions these rules adapt to. These constraints follow the rules of Semantic Versioning. Example: >=1.2.3, ~>1.2.3");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_filePathPattern,
+                        QT_TRANSLATE_NOOP("AzFramework", "File Path Pattern"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Pattern of the file path. Example: *Fonts/*.xml"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_excludedFilePathPattern,
+                        QT_TRANSLATE_NOOP("AzFramework", "Excluded File Path Pattern"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Pattern of the excluded file path. Example: *Fonts/*.xml"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MatchingRule::m_versionConstraints,
+                        QT_TRANSLATE_NOOP("AzFramework", "Version Constraints"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Data file versions these rules adapt to. These constraints follow the rules of Semantic Versioning. Example: >=1.2.3, ~>1.2.3"));
             }
         }
     }
@@ -92,23 +105,45 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<XmlSchemaAttribute>("XmlSchemaAttribute", "XML Schema attribute")
+                editContext->Class<XmlSchemaAttribute>(
+                    QT_TRANSLATE_NOOP("AzFramework", "XmlSchemaAttribute"),
+                    QT_TRANSLATE_NOOP("AzFramework", "XML Schema attribute"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_name, "Name", "Name of the attribute")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_expectedExtension, "Expected Extension", "Expected extension for the file name.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_matchPattern, "Match Pattern", "(Optional) Values that don't match this regex pattern will be rejected.  Case-insensitive.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_findPattern, "Find Pattern", "(Optional) Regex pattern to use to match against the value for replacing.  Case-insensitive.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_replacePattern, "Replace Pattern", "(Optional) Regex pattern to use to replace the value.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &XmlSchemaAttribute::m_type, "Type", "Type of the attribute. Select from RelativePath, AssetId, etc.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_name,
+                        QT_TRANSLATE_NOOP("AzFramework", "Name"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Name of the attribute"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_expectedExtension,
+                        QT_TRANSLATE_NOOP("AzFramework", "Expected Extension"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Expected extension for the file name."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_matchPattern,
+                        QT_TRANSLATE_NOOP("AzFramework", "Match Pattern"),
+                        QT_TRANSLATE_NOOP("AzFramework", "(Optional) Values that don't match this regex pattern will be rejected.  Case-insensitive."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_findPattern,
+                        QT_TRANSLATE_NOOP("AzFramework", "Find Pattern"),
+                        QT_TRANSLATE_NOOP("AzFramework", "(Optional) Regex pattern to use to match against the value for replacing.  Case-insensitive."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_replacePattern,
+                        QT_TRANSLATE_NOOP("AzFramework", "Replace Pattern"),
+                        QT_TRANSLATE_NOOP("AzFramework", "(Optional) Regex pattern to use to replace the value."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &XmlSchemaAttribute::m_type,
+                        QT_TRANSLATE_NOOP("AzFramework", "Type"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Type of the attribute. Select from RelativePath, AssetId, etc."))
                     ->EnumAttribute(AttributeType::RelativePath, "RelativePath")
                     ->EnumAttribute(AttributeType::Asset, "Asset")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &XmlSchemaAttribute::m_pathDependencyType, "Path Dependency Type", "Path dependency type of the attribute. Select from SourceFile and ProductFile")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &XmlSchemaAttribute::m_pathDependencyType,
+                        QT_TRANSLATE_NOOP("AzFramework", "Path Dependency Type"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Path dependency type of the attribute. Select from SourceFile and ProductFile"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &XmlSchemaAttribute::GetVisibilityProperty)
                     ->EnumAttribute(AttributePathDependencyType::SourceFile, "SourceFile")
                     ->EnumAttribute(AttributePathDependencyType::ProductFile, "ProductFile")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_relativeToSourceAssetFolder, "RelativeToSourceAssetFolder", "Whether the file path is relative to the source asset folder")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_optional, "Optional", "Whether the attribute is optional")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_cacheRelativePath, "CacheRelativePath", "CacheRelative allows dependent assets to be from other scan folders.");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_relativeToSourceAssetFolder,
+                        QT_TRANSLATE_NOOP("AzFramework", "RelativeToSourceAssetFolder"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Whether the file path is relative to the source asset folder"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_optional,
+                        QT_TRANSLATE_NOOP("AzFramework", "Optional"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Whether the attribute is optional"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAttribute::m_cacheRelativePath,
+                        QT_TRANSLATE_NOOP("AzFramework", "CacheRelativePath"),
+                        QT_TRANSLATE_NOOP("AzFramework", "CacheRelative allows dependent assets to be from other scan folders."));
 
             }
         }
@@ -182,12 +217,22 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<XmlSchemaElement>("XmlSchemaElement", "XML Schema Element")
+                editContext->Class<XmlSchemaElement>(
+                    QT_TRANSLATE_NOOP("AzFramework", "XmlSchemaElement"),
+                    QT_TRANSLATE_NOOP("AzFramework", "XML Schema Element"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_name, "Name", "Name of the element")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_childElements, "Child Elements", "Children of the element")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_attributes, "Attributes", "Attributes of the element")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_optional, "Optional", "Whether the element is optional");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_name,
+                        QT_TRANSLATE_NOOP("AzFramework", "Name"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Name of the element"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_childElements,
+                        QT_TRANSLATE_NOOP("AzFramework", "Child Elements"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Children of the element"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_attributes,
+                        QT_TRANSLATE_NOOP("AzFramework", "Attributes"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Attributes of the element"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaElement::m_optional,
+                        QT_TRANSLATE_NOOP("AzFramework", "Optional"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Whether the element is optional"));
             }
         }
     }
@@ -240,10 +285,16 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SearchRuleDefinition>("SearchRuleDefinition", "Definition for the dependency search rule")
+                editContext->Class<SearchRuleDefinition>(
+                    QT_TRANSLATE_NOOP("AzFramework", "SearchRuleDefinition"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Definition for the dependency search rule"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SearchRuleDefinition::m_searchRuleStructure, "Search Rule Structure", "Search rule structure which contain element and attribute nodes")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SearchRuleDefinition::m_relativeToXmlRoot, "Relative to XML Root", "Whether the element is relative to XML root");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SearchRuleDefinition::m_searchRuleStructure,
+                        QT_TRANSLATE_NOOP("AzFramework", "Search Rule Structure"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Search rule structure which contain element and attribute nodes"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SearchRuleDefinition::m_relativeToXmlRoot,
+                        QT_TRANSLATE_NOOP("AzFramework", "Relative to XML Root"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Whether the element is relative to XML root"));
             }
         }
     }
@@ -269,10 +320,16 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DependencySearchRule>("DependencySearchRule", "Dependency search rules")
+                editContext->Class<DependencySearchRule>(
+                    QT_TRANSLATE_NOOP("AzFramework", "DependencySearchRule"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Dependency search rules"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DependencySearchRule::m_searchRuleDefinitions, "Search Rule Definitions", "A list of Definitions for dependency search rules")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DependencySearchRule::m_versionConstraints, "Version Constraints", "Data file versions these rules adapt to. These constraints follow the rules of Semantic Versioning. Example: >=1.2.3: Minimum: 1.2.3 Maximum: None");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DependencySearchRule::m_searchRuleDefinitions,
+                        QT_TRANSLATE_NOOP("AzFramework", "Search Rule Definitions"),
+                        QT_TRANSLATE_NOOP("AzFramework", "A list of Definitions for dependency search rules"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DependencySearchRule::m_versionConstraints,
+                        QT_TRANSLATE_NOOP("AzFramework", "Version Constraints"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Data file versions these rules adapt to. These constraints follow the rules of Semantic Versioning. Example: >=1.2.3: Minimum: 1.2.3 Maximum: None"));
             }
         }
     }
@@ -314,12 +371,22 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<XmlSchemaAsset>("Definition", "Definition of the schema asset")
+                editContext->Class<XmlSchemaAsset>(
+                    QT_TRANSLATE_NOOP("AzFramework", "Definition"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Definition of the schema asset"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_versionSearchRule, "Version Search Rule", "VersionSearchRule")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_matchingRules, "Matching Rules", "A list of matching rules defined by the current schema")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_useAZSerialization, "Use AZ Serialization for dependencies", "Use AZ serialization to extract dependencies from matching files")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_dependencySearchRules, "Dependency Search Rules", "A list of dependency search rules defined by the current schema");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_versionSearchRule,
+                        QT_TRANSLATE_NOOP("AzFramework", "Version Search Rule"),
+                        QT_TRANSLATE_NOOP("AzFramework", "VersionSearchRule"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_matchingRules,
+                        QT_TRANSLATE_NOOP("AzFramework", "Matching Rules"),
+                        QT_TRANSLATE_NOOP("AzFramework", "A list of matching rules defined by the current schema"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_useAZSerialization,
+                        QT_TRANSLATE_NOOP("AzFramework", "Use AZ Serialization for dependencies"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Use AZ serialization to extract dependencies from matching files"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &XmlSchemaAsset::m_dependencySearchRules,
+                        QT_TRANSLATE_NOOP("AzFramework", "Dependency Search Rules"),
+                        QT_TRANSLATE_NOOP("AzFramework", "A list of dependency search rules defined by the current schema"));
             }
         }
     }

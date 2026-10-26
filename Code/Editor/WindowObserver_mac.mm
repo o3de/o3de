@@ -11,7 +11,7 @@
 #include <AppKit/AppKit.h>
 
 #include <QApplication>
-#include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QtGui/6.10.2/QtGui/qpa/qplatformnativeinterface.h>
 
 
 @interface NSWindowObserver : NSObject
@@ -169,5 +169,3 @@ namespace Editor
         }
     }
 }
-
-#include <moc_WindowObserver_mac.cpp>

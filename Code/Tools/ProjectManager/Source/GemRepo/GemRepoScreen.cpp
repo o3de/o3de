@@ -195,7 +195,7 @@ namespace O3DE::ProjectManager
         else
         {
             QMessageBox::critical(
-                this, tr("Operation failed"), QString("Some repos failed to refresh."));
+                this, tr("Operation failed"), QString(tr("Some repos failed to refresh.")));
         }
     }
 
@@ -218,7 +218,7 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(
                 this, tr("Operation failed"),
-                QString("Failed to refresh gem repo %1<br>Error:<br>%2")
+                QString(tr("Failed to refresh gem repo %1<br>Error:<br>%2"))
                     .arg(m_gemRepoModel->GetName(modelIndex), refreshResult.GetError().c_str()));
         }
     }
@@ -267,7 +267,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.<br>Error:<br>%2").arg(allGemRepoInfosResult.GetError().c_str()));
+            QMessageBox::critical(this, tr("Operation failed"), QString(tr("Cannot retrieve gem repos for engine.<br>Error:<br>%2")).arg(allGemRepoInfosResult.GetError().c_str()));
         }
     }
 

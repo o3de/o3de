@@ -79,8 +79,6 @@ namespace AzToolsFramework
 
         void BeginEditing();
         void EndEditing();
-        void BeginUndoBatch(const char* label);
-        void EndUndoBatch();
 
         AZStd::function<AZ::Transform()> m_getManipulatorSpace;
         AZStd::function<AZ::Vector3()> m_getNonUniformScale;
@@ -92,6 +90,5 @@ namespace AzToolsFramework
         AZStd::function<void()> m_endEditing;
 
         AZStd::unordered_set<AZ::EntityId> m_entityIds;
-        UndoSystem::URSequencePoint* m_undoBatch = nullptr;
     };
 } // namespace AzToolsFramework

@@ -15,7 +15,7 @@
 class HiddenMouseNativeEventFilter : public QAbstractNativeEventFilter
 {
 public:
-    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override
     {
         assert(eventType == "mac_generic_NSEvent");
         NSEvent *event = (NSEvent *)message;

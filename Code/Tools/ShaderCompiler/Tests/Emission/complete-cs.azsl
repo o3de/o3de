@@ -1,0 +1,65 @@
+ShaderResourceGroupSemantic sem0 { FrequencyId = 0; };
+
+ShaderResourceGroup SRG : sem0
+{
+    RWByteAddressBuffer g_ByteBuffer;
+};
+
+groupshared uint gs_GpShared[1024];
+
+[numthreads(1, 1, 1)]
+void MainCS(  uint2 thread_id :SV_DispatchThreadID)
+{
+    uint origVal;
+    
+    InterlockedAdd(gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] += 1;
+    InterlockedAdd(gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] += 1;
+    InterlockedOr (gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] |= 1;
+    InterlockedOr (gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] |= 1;
+    InterlockedAnd(gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] &= 1;
+    InterlockedAnd(gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] &= 1;
+    InterlockedXor(gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] ^= 1;
+    InterlockedXor(gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] ^= 1;
+    InterlockedMin(gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] = min(gs_GpShared[thread_id.x], 1);
+    InterlockedMin(gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] = min(gs_GpShared[thread_id.x], 1);
+    InterlockedMax(gs_GpShared[thread_id.x], 1);             // Same as gs_GpShared[thread_id.x] = max(gs_GpShared[thread_id.x], 1);
+    InterlockedMax(gs_GpShared[thread_id.x], 1, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] = max(gs_GpShared[thread_id.x], 1);
+
+    InterlockedCompareStore   (gs_GpShared[thread_id.x], 0, 5);          // Same as if (gs_GpShared[thread_id.x] == 0) { gs_GpShared[thread_id.x] = 5; }
+    InterlockedCompareExchange(gs_GpShared[thread_id.x], 0, 5, origVal); // Same as if (gs_GpShared[thread_id.x] == 0) { origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] = 5; }
+    InterlockedExchange       (gs_GpShared[thread_id.x], 5, origVal);    // Same as origVal = gs_GpShared[thread_id.x]; gs_GpShared[thread_id.x] = 5;
+    
+    AllMemoryBarrier();                 // Blocks execution of all threads in a group until all memory accesses have been completed.
+    AllMemoryBarrierWithGroupSync();    // Blocks execution of all threads in a group until all memory accesses have been completed and all threads in the group have reached this call.
+    DeviceMemoryBarrier();              // Blocks execution of all threads in a group until all device memory accesses have been completed.
+    DeviceMemoryBarrierWithGroupSync(); // Blocks execution of all threads in a group until all device memory accesses have been completed and all threads in the group have reached this call.
+    GroupMemoryBarrier();               // Blocks execution of all threads in a group until all group shared accesses have been completed.
+    GroupMemoryBarrierWithGroupSync();  // Blocks execution of all threads in a group until all group shared accesses have been completed and all threads in the group have reached this call.
+
+    SRG::g_ByteBuffer.InterlockedAdd(thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] += 1;
+    SRG::g_ByteBuffer.InterlockedAdd(thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] += 1;
+    SRG::g_ByteBuffer.InterlockedOr (thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] |= 1;
+    SRG::g_ByteBuffer.InterlockedOr (thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] |= 1;
+    SRG::g_ByteBuffer.InterlockedAnd(thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] &= 1;
+    SRG::g_ByteBuffer.InterlockedAnd(thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] &= 1;
+    SRG::g_ByteBuffer.InterlockedXor(thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] ^= 1;
+    SRG::g_ByteBuffer.InterlockedXor(thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] ^= 1;
+    SRG::g_ByteBuffer.InterlockedMin(thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] = min(g_ByteBuffer[thread_id.x], 1);
+    SRG::g_ByteBuffer.InterlockedMin(thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] = min(g_ByteBuffer[thread_id.x], 1);
+    SRG::g_ByteBuffer.InterlockedMax(thread_id.x, 1);             // Same as g_ByteBuffer[thread_id.x] = max(g_ByteBuffer[thread_id.x], 1);
+    SRG::g_ByteBuffer.InterlockedMax(thread_id.x, 1, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] = max(g_ByteBuffer[thread_id.x], 1);
+
+    SRG::g_ByteBuffer.InterlockedCompareStore   (thread_id.x, 0, 5);          // Same as if (g_ByteBuffer[thread_id.x] == 0) { g_ByteBuffer[thread_id.x] = 5; }
+    SRG::g_ByteBuffer.InterlockedCompareExchange(thread_id.x, 0, 5, origVal); // Same as if (g_ByteBuffer[thread_id.x] == 0) { origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] = 5; }
+    SRG::g_ByteBuffer.InterlockedExchange       (thread_id.x, 5, origVal);    // Same as origVal = g_ByteBuffer[thread_id.x]; g_ByteBuffer[thread_id.x] = 5;
+
+    AllMemoryBarrier();                 // Blocks execution of all threads in a group until all memory accesses have been completed.
+    AllMemoryBarrierWithGroupSync();    // Blocks execution of all threads in a group until all memory accesses have been completed and all threads in the group have reached this call.
+    DeviceMemoryBarrier();              // Blocks execution of all threads in a group until all device memory accesses have been completed.
+    DeviceMemoryBarrierWithGroupSync(); // Blocks execution of all threads in a group until all device memory accesses have been completed and all threads in the group have reached this call.
+    GroupMemoryBarrier();               // Blocks execution of all threads in a group until all group shared accesses have been completed.
+    GroupMemoryBarrierWithGroupSync();  // Blocks execution of all threads in a group until all group shared accesses have been completed and all threads in the group have reached this call.
+
+} 
+
+// Generated code: ShaderVariantOptions fallback value getters:

@@ -1116,8 +1116,10 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
         {
-            // Focus on the root prefab (AZ::EntityId() will default to it)
-            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+            // Focus on the root prefab (AZ::EntityId() will default to it).
+            // We use the private interface, so that it does not try to create an undo batch for the focus change.
+            // Since play in editor is not an edit operation
+            s_prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::OnStopPlayInEditor()

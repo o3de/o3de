@@ -21,6 +21,8 @@
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace Render
@@ -42,7 +44,8 @@ namespace AZ
                 if (EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorAreaLightComponent>(
-                        "Light", "A light which emits from a point or geometric shape.")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Light"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "A light which emits from a point or geometric shape."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
@@ -56,79 +59,122 @@ namespace AZ
                         "AreaLightComponentController", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<AreaLightComponentConfig>(
                         "AreaLightComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_lightType, "Light type", "Which type of light this component represents.")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Unknown, "Choose a light type")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Sphere, "Point (sphere)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimplePoint, "Point (simple punctual)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SpotDisk, "Spot (disk)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimpleSpot, "Spot (simple punctual)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Capsule, "Capsule")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Quad, "Quad")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Polygon, "Polygon")
-                        ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color, "Color", "Color of the light")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_lightType,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Light type"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Which type of light this component represents."))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Unknown,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Choose a light type"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Sphere,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Point (sphere)"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimplePoint,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Point (simple punctual)"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SpotDisk,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Spot (disk)"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimpleSpot,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Spot (simple punctual)"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Capsule,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Capsule"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Quad,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Quad"))
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Polygon,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Polygon"))
+                        ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color of the light"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                             ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetLinearRgbEditorConfig())
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying which photometric unit to work in.")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity mode"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Allows specifying which photometric unit to work in."))
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaLightComponentConfig::GetValidPhotometricUnits)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_intensity,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity of the light in the set photometric unit."))
                             ->Attribute(Edit::Attributes::Min, &AreaLightComponentConfig::GetIntensityMin)
                             ->Attribute(Edit::Attributes::Max, &AreaLightComponentConfig::GetIntensityMax)
                             ->Attribute(Edit::Attributes::SoftMin, &AreaLightComponentConfig::GetIntensitySoftMin)
                             ->Attribute(Edit::Attributes::SoftMax, &AreaLightComponentConfig::GetIntensitySoftMax)
                             ->Attribute(Edit::Attributes::Suffix, &AreaLightComponentConfig::GetIntensitySuffix)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightEmitsBothDirections, "Both directions", "Whether light should emit from both sides of the surface or just the front")
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightEmitsBothDirections,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Both directions"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Whether light should emit from both sides of the surface or just the front"))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsBothDirections)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_useFastApproximation, "Fast approximation", "Whether the light should use the default high quality linear transformed cosine technique or a faster approximation.")
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_useFastApproximation,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fast approximation"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Whether the light should use the default high quality linear transformed cosine technique or a faster approximation."))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsFastApproximation)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_goboImageAsset, "Gobo", "Select a texture to be used as gobo")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_goboImageAsset,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Gobo"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Select a texture to be used as gobo"))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsGobo)
-                        ->ClassElement(Edit::ClassElements::Group, "Attenuation radius")
+                        ->ClassElement(Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Attenuation radius"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenuation radius is calculated automatically or set explicitly.")
-                            ->EnumAttribute(LightAttenuationRadiusMode::Automatic, "Automatic")
-                            ->EnumAttribute(LightAttenuationRadiusMode::Explicit, "Explicit")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Mode"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls whether the attenuation radius is calculated automatically or set explicitly."))
+                            ->EnumAttribute(LightAttenuationRadiusMode::Automatic,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Automatic"))
+                            ->EnumAttribute(LightAttenuationRadiusMode::Explicit,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Explicit"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_attenuationRadius, "Radius", "The distance at which this light no longer has an affect.")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_attenuationRadius,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Radius"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The distance at which this light no longer has an affect."))
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_lightingChannelConfig,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Lighting Channels"), "")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
-                        ->ClassElement(Edit::ClassElements::Group, "Shutters")
+                        ->ClassElement(Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shutters"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShutters, "Enable shutters", "Restrict the light to a specific beam angle depending on shape.")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShutters,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable shutters"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Restrict the light to a specific beam angle depending on shape."))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::ShuttersMustBeEnabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_innerShutterAngleDegrees, "Inner angle", "The inner angle of the shutters where the light beam begins to be occluded.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_innerShutterAngleDegrees,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Inner angle"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The inner angle of the shutters where the light beam begins to be occluded."))
                             ->Attribute(Edit::Attributes::Min, 0.5f)
                             ->Attribute(Edit::Attributes::Max, 90.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShuttersDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_outerShutterAngleDegrees, "Outer angle", "The outer angle of the shutters where the light beam is completely occluded.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_outerShutterAngleDegrees,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Outer angle"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The outer angle of the shutters where the light beam is completely occluded."))
                             ->Attribute(Edit::Attributes::Min, 0.5f)
                             ->Attribute(Edit::Attributes::Max, 90.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShuttersDisabled)
 
-                        ->ClassElement(Edit::ClassElements::Group, "Shadows")
+                        ->ClassElement(Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadows"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShadow, "Enable shadow", "Enable shadow for the light")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShadow,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable shadow"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable shadow for the light"))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowmapMaxSize, "Shadowmap size", "Width and height of shadowmap")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowmapMaxSize,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadowmap size"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Width and height of shadowmap"))
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
                             ->EnumAttribute(ShadowmapSize::Size1024, "1024")
@@ -136,7 +182,9 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_bias, "Bias", "How deep in shadow a surface must be before being affected by it.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_bias,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Bias"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "How deep in shadow a surface must be before being affected by it."))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
@@ -145,30 +193,37 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowFilterMethod, "Shadow filter method",
-                            "Filtering method of edge-softening of shadows.\n"
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowFilterMethod,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow filter method"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Filtering method of edge-softening of shadows.\n"
                             "  None: no filtering\n"
                             "  PCF: Percentage-closer Filtering\n"
                             "  ESM: Exponential shadow maps\n"
                             "  ESM+PCF: ESM with a PCF fallback\n"
-                            "For BehaviorContext (or track view), None=0, PCF=1, ESM=2, ESM+PCF=3")
-                            ->EnumAttribute(ShadowFilterMethod::None, "None")
-                            ->EnumAttribute(ShadowFilterMethod::Pcf, "PCF")
-                            ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
-                            ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
+                            "For BehaviorContext (or track view), None=0, PCF=1, ESM=2, ESM+PCF=3"))
+                            ->EnumAttribute(ShadowFilterMethod::None,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "None"))
+                            ->EnumAttribute(ShadowFilterMethod::Pcf,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "PCF"))
+                            ->EnumAttribute(ShadowFilterMethod::Esm,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "ESM"))
+                            ->EnumAttribute(ShadowFilterMethod::EsmPcf,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "ESM+PCF"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Filtering sample count"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF."))
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "ESM exponent",
-                            "Exponent used by ESM shadows. "
-                            "Larger values increase the sharpness of the border between lit and unlit areas.")
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "ESM exponent"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Exponent used by ESM shadows. "
+                            "Larger values increase the sharpness of the border between lit and unlit areas."))
                             ->Attribute(Edit::Attributes::Min, 1.0f)
                             ->Attribute(Edit::Attributes::Max, 20.0f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 0)
@@ -177,29 +232,36 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal shadow bias",
-                            "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
-                            "If this is 0, no biasing is applied.")
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Normal shadow bias"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
+                            "If this is 0, no biasing is applied."))
                             ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 10.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_cacheShadows, "Cache shadows",
-                            "When turned on, shadows will only render when something in their field of view changes. This takes more memory "
-                            "because the shadow map texture needs to persist, but can be a performance improvement for largely static scenes.")
+                            Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_cacheShadows,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Cache shadows"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "When turned on, shadows will only render when something in their field of view changes. This takes more memory "
+                            "because the shadow map texture needs to persist, but can be a performance improvement for largely static scenes."))
 
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
 
-                        ->ClassElement(Edit::ClassElements::Group, "Global illumination (GI)")
+                        ->ClassElement(Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Global illumination (GI)"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsAffectsGI)
-                         ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_affectsGI, "Affects GI", "Controls whether this light affects diffuse global illumination.")
+                         ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_affectsGI,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects GI"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls whether this light affects diffuse global illumination."))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsAffectsGI)
-                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_affectsGIFactor, "Factor", "Multiplier on the amount of contribution to diffuse global illumination.")
+                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_affectsGIFactor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Multiplier on the amount of contribution to diffuse global illumination."))
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsAffectsGI)
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)

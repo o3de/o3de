@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <AzCore/IO/Path/Path.h>
-#endif
 
 namespace AssetProcessor
 {

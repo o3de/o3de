@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <FormBrowseEditWidget.h> 
-#endif
+#include <FormBrowseEditWidget.h>
 
 namespace O3DE::ProjectManager
 {

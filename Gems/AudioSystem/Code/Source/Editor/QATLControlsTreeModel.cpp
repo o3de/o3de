@@ -150,7 +150,7 @@ namespace AudioControls
 
         AZStd::vector<STreeIndex> sortedIndexList;
 
-        const int size = indexList.length();
+        const int size = static_cast<int>(indexList.length());
         for (int i = 0; i < size; ++i)
         {
             int level = 0;

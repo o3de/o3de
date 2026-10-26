@@ -71,7 +71,7 @@ namespace ScriptCanvas
 
             void OperatorArithmetic::OnInit()
             {
-                // Version conversion for previous elements                
+                // Version conversion for previous elements
                 for (Slot& currentSlot : ModSlots())
                 {
                     if (currentSlot.IsData())
@@ -114,7 +114,7 @@ namespace ScriptCanvas
                     m_scrapedInputs = false;
                     m_applicableInputs.clear();
 
-                    m_result.ReconfigureDatumTo(AZStd::move(ScriptCanvas::Datum()));
+                    m_result.ReconfigureDatumTo(ScriptCanvas::Datum());
                 }
             }
 
@@ -272,7 +272,7 @@ namespace ScriptCanvas
                 }
 
                 auto inputs = GetAllSlotsByDescriptor(SlotDescriptors::DataIn());
-                
+
                 for (size_t i = 0; i < inputs.size(); ++i)
                 {
                     Slot* slot = GetSlot(inputs[i]->GetId());

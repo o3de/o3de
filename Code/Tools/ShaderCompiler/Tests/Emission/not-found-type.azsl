@@ -1,0 +1,9 @@
+NotFoundType function(NotFoundType_2 arg)
+{
+    return (NotFoundType)0;
+}
+
+struct S
+{
+    NotFoundType_3 member;
+};

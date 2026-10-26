@@ -201,7 +201,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
             if (!m_alreadyNotifiedCreate.contains(dirPath))
             {
                 DEBUG_FILEWATCHER("%s rawFileAdded for root AddWatchFolder\n", dirPath.toUtf8().constData());
-                source.rawFileAdded(dirPath, {});
+                source.rawFileAdded(dirPath);
                 m_alreadyNotifiedCreate.insert(dirPath);
             }
         }
@@ -257,7 +257,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
                 if (!m_alreadyNotifiedCreate.contains(filePath))
                 {
                     DEBUG_FILEWATCHER("%s rawFileAdded via recursive directory crawl for file\n", filePath.toUtf8().constData());
-                    source.rawFileAdded(filePath, {});
+                    source.rawFileAdded(filePath);
                     m_alreadyNotifiedCreate.insert(filePath);
                 }
             }
@@ -407,7 +407,7 @@ void FileWatcher::WatchFolderLoop()
                                 if (!m_platformImpl->m_alreadyNotifiedCreate.remove(pathStr))
                                 {
                                     DEBUG_FILEWATCHER("sending rawFileAdded(%s) from file monitor cycle: %i \n", pathStr.toUtf8().constData(), cycleCount);
-                                    rawFileAdded(pathStr, {});
+                                    rawFileAdded(pathStr);
                                 }
 
                                 // when a folder is MOVED, we don't notify for all the files inside that folder, only
@@ -428,7 +428,7 @@ void FileWatcher::WatchFolderLoop()
                         if (!m_platformImpl->m_alreadyNotifiedCreate.remove(pathStr))
                         {
                             DEBUG_FILEWATCHER("sending rawFileAdded(%s) from file monitor cycle: %i \n", pathStr.toUtf8().constData(), cycleCount);
-                            rawFileAdded(pathStr, {});
+                            rawFileAdded(pathStr);
                         }
                         else
                         {
@@ -442,7 +442,7 @@ void FileWatcher::WatchFolderLoop()
                     DEBUG_FILEWATCHER("notify event is IN_DELETE | IN_MOVED_FROM: %s (from '%s' - handle %i) cycle: %i\n", pathStr.toUtf8().constData(), event->name, event->wd, cycleCount);
                     DEBUG_FILEWATCHER("sending rawFileRemoved(%s)\n", pathStr.toUtf8().constData());
                     m_platformImpl->m_alreadyNotifiedCreate.remove(pathStr);
-                    rawFileRemoved(pathStr, {});
+                    rawFileRemoved(pathStr);
                 }
 
                 if (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF))
@@ -461,7 +461,7 @@ void FileWatcher::WatchFolderLoop()
                 {
                     DEBUG_FILEWATCHER("notify event is modify, sending rawFileModified: '%s' (from event-Name '%s') cycle: %i mask 0x%08x\n", pathStr.toUtf8().constData(), event->name, cycleCount, event->mask);
                     m_platformImpl->m_alreadyNotifiedCreate.remove(pathStr);
-                    rawFileModified(pathStr, {});
+                    rawFileModified(pathStr);
                 }
             }
             index += s_inotifyEventSize + event->len;

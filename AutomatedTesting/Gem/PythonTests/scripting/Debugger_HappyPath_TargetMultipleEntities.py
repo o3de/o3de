@@ -45,8 +45,8 @@ def Debugger_HappyPath_TargetMultipleEntities():
 
     :return: None
     """
-    from PySide2 import QtWidgets
-    from PySide2.QtCore import Qt
+    from PySide6 import QtWidgets
+    from PySide6.QtCore import Qt
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.asset as asset

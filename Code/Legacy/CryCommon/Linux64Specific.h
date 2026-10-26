@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Linux declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H
-#pragma once
 
 
 #if !defined(__ARM_ARCH)
@@ -47,9 +44,9 @@
 
 typedef double real;
 
-typedef uint32      DWORD;
-typedef DWORD*      LPDWORD;
-typedef uint64      DWORD_PTR;
+//typedef uint32      DWORD;
+//typedef DWORD*      LPDWORD;
+//typedef uint64      DWORD_PTR;
 typedef intptr_t INT_PTR, * PINT_PTR;
 typedef uintptr_t UINT_PTR, * PUINT_PTR;
 typedef char* LPSTR, * PSTR;
@@ -64,7 +61,6 @@ typedef long LONG_PTR, * PLONG_PTR, * PLONG;
 typedef unsigned long ULONG_PTR, * PULONG_PTR;
 
 typedef uint8               BYTE;
-typedef uint16              WORD;
 typedef void*               HWND;
 typedef UINT_PTR            WPARAM;
 typedef LONG_PTR            LPARAM;
@@ -114,5 +110,3 @@ typedef uint8               byte;
 #define __assume(x)
 
 #define _msize(p) malloc_usable_size(p)
-
-#endif // CRYINCLUDE_CRYCOMMON_LINUX64SPECIFIC_H

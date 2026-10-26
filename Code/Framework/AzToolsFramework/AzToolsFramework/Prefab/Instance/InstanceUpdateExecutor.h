@@ -12,11 +12,12 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -26,9 +27,11 @@ namespace AzToolsFramework
         class PrefabSystemComponentInterface;
         class TemplateInstanceMapperInterface;
         class InstanceDomGeneratorInterface;
+        class InstanceEntityMapperInterface;
 
         class AZTF_API InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
+            , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
         {
         public:
             AZ_RTTI(InstanceUpdateExecutor, "{E21DB0D4-0478-4DA9-9011-31BC96F55837}", InstanceUpdateExecutorInterface);
@@ -40,7 +43,7 @@ namespace AzToolsFramework
             void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
             // Note, this function destroys and re-creates Entity* and Component*, do not assume your pointers are still good after this.
-            bool UpdateTemplateInstancesInQueue() override;
+            bool UpdateTemplateInstancesInQueue(bool flush) override;
             bool IsUpdatingTemplateInstancesInQueue() const override;
 
             void RemoveTemplateInstanceFromQueue(Instance* instance) override;
@@ -59,9 +62,13 @@ namespace AzToolsFramework
 
             void AddInstanceToQueue(Instance* instance);
 
+            // ToolsApplicationNotificationBus overrides ...
+            void AfterUndoRedo() override;
+
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             AZStd::unordered_set<Instance*> m_uniqueInstancesForPropagation;

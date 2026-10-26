@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Render
     {
-        void PostProcessingShaderOptionBase::PreloadShaderVariant(
+        void PostProcessingShaderOptionBase::PreloadShaderVariantForDraw(
             const Data::Instance<AZ::RPI::Shader>& shader,
             const RPI::ShaderOptionGroup& shaderOption,
             const RHI::RenderAttachmentConfiguration& renderAttachmentConfiguration,
@@ -35,6 +35,20 @@ namespace AZ
             inputStreamLayout.Finalize();
 
             pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
+
+            m_shaderVariantTable[variationKey].m_pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+            m_shaderVariantTable[variationKey].m_isFullyBaked = !shaderVariant.UseKeyFallback();
+        }
+
+        void PostProcessingShaderOptionBase::PreloadShaderVariantForDispatch(
+            const Data::Instance<AZ::RPI::Shader>& shader,
+            const RPI::ShaderOptionGroup& shaderOption)
+        {
+            RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+            AZ::u64 variationKey = shaderOption.GetShaderVariantId().m_key.to_ullong();
+
+            auto shaderVariant = shader->GetVariant(shaderOption.GetShaderVariantId());
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOption);
 
             m_shaderVariantTable[variationKey].m_pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             m_shaderVariantTable[variationKey].m_isFullyBaked = !shaderVariant.UseKeyFallback();

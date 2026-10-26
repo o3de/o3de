@@ -25,7 +25,7 @@ namespace EMStudio
         }
 
         InputDialogValidatable* inputDialog = new InputDialogValidatable(parent, /*labelText=*/"Name:");
-        inputDialog->setWindowTitle("New simulated object name");
+        inputDialog->setWindowTitle(tr("New simulated object name"));
         inputDialog->setMinimumWidth(300);
         inputDialog->setObjectName("EMFX.SimulatedObjectActionManager.SimulatedObjectDialog");
 

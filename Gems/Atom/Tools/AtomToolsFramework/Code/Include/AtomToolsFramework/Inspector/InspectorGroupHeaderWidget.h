@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/ExtendedLabel.h>
+
 #include <QMouseEvent>
 #include <QPaintEvent>
-#endif
 
 namespace AtomToolsFramework
 {

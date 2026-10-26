@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
-#endif
 
 namespace Physics
 {

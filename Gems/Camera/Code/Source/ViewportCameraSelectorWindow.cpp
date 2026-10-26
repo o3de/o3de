@@ -7,15 +7,17 @@
  */
 #include "ViewportCameraSelectorWindow.h"
 #include "ViewportCameraSelectorWindow_Internals.h"
+
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+
 #include <QLabel>
 #include <QListView>
 #include <QScopedValueRollback>
 #include <QSortFilterProxyModel>
 #include <QVBoxLayout>
-#include <qmetatype.h>
+#include <QMetaType>
 
 namespace Qt
 {

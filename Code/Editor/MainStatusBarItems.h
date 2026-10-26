@@ -10,12 +10,20 @@
 
 #include <MainStatusBar.h>
 #include <IRenderer.h>
+
+#include <memory>
+
+#include <QIcon>
+#include <QMenu>
 #include <QMutex>
-#include <QString>
 #include <QSet>
+#include <QString>
 #include <QWidgetAction>
 
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+
+class QAction;
+class QCheckBox;
 
 class GeneralStatusItem
     : public StatusBarItem

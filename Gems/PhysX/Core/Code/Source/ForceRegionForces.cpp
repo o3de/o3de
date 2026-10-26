@@ -6,6 +6,7 @@
  *
  */
 #include "ForceRegionForces.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace PhysX
 {
@@ -37,13 +38,13 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceWorldSpace>(
-                    "World Space Force", "Applies a force in world space.")
+                    QT_TRANSLATE_NOOP("PhysX", "World Space Force"), QT_TRANSLATE_NOOP("PhysX", "Applies a force in world space."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ForceWorldSpace::m_direction, "Direction", "Direction of the force in world space.")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ForceWorldSpace::m_direction, QT_TRANSLATE_NOOP("PhysX", "Direction"), QT_TRANSLATE_NOOP("PhysX", "Direction of the force in world space."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceWorldSpace::m_magnitude, "Magnitude", "Magnitude of the force in world space.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceWorldSpace::m_magnitude, QT_TRANSLATE_NOOP("PhysX", "Magnitude"), QT_TRANSLATE_NOOP("PhysX", "Magnitude of the force in world space."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
                     ;
@@ -109,13 +110,13 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceLocalSpace>(
-                    "Local Space Force", "Applies a force in the volume's local space.")
+                    QT_TRANSLATE_NOOP("PhysX", "Local Space Force"), QT_TRANSLATE_NOOP("PhysX", "Applies a force in the volume's local space."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ForceLocalSpace::m_direction, "Direction", "Direction of the force in local space.")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ForceLocalSpace::m_direction, QT_TRANSLATE_NOOP("PhysX", "Direction"), QT_TRANSLATE_NOOP("PhysX", "Direction of the force in local space."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceLocalSpace::m_magnitude, "Magnitude", "Magnitude of the force in local space.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceLocalSpace::m_magnitude, QT_TRANSLATE_NOOP("PhysX", "Magnitude"), QT_TRANSLATE_NOOP("PhysX", "Magnitude of the force in local space."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
                     ;
@@ -179,10 +180,10 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForcePoint>(
-                    "Point Force", "Applies a force directed towards or away from the center of the volume.")
+                    QT_TRANSLATE_NOOP("PhysX", "Point Force"), QT_TRANSLATE_NOOP("PhysX", "Applies a force directed towards or away from the center of the volume."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForcePoint::m_magnitude, "Magnitude", "Magnitude of the point force.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForcePoint::m_magnitude, QT_TRANSLATE_NOOP("PhysX", "Magnitude"), QT_TRANSLATE_NOOP("PhysX", "Magnitude of the point force."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
                     ;
@@ -242,24 +243,24 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceSplineFollow>(
-                    "Spline Follow Force", "Applies a force to make objects follow a spline at a given speed.")
+                    QT_TRANSLATE_NOOP("PhysX", "Spline Follow Force"), QT_TRANSLATE_NOOP("PhysX", "Applies a force to make objects follow a spline at a given speed."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_dampingRatio, "Damping Ratio",
-                        "Values below 1 cause the entity to approach the spline faster but lead to overshooting and oscillation, "
-                        "while higher values will cause it to approach more slowly but more smoothly.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_dampingRatio, QT_TRANSLATE_NOOP("PhysX", "Damping Ratio"),
+                        QT_TRANSLATE_NOOP("PhysX", "Values below 1 cause the entity to approach the spline faster but lead to overshooting and oscillation, "
+                        "while higher values will cause it to approach more slowly but more smoothly."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionZeroValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxDampingRatio)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_frequency, "Frequency",
-                        "Affects how quickly the entity approaches the spline.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_frequency, QT_TRANSLATE_NOOP("PhysX", "Frequency"),
+                        QT_TRANSLATE_NOOP("PhysX", "Affects how quickly the entity approaches the spline."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinFrequency)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxFrequency)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_targetSpeed, "Target Speed",
-                        "Speed at which entities in the force region move along a spline.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_targetSpeed, QT_TRANSLATE_NOOP("PhysX", "Target Speed"),
+                        QT_TRANSLATE_NOOP("PhysX", "Speed at which entities in the force region move along a spline."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionMinValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_lookAhead, "Lookahead",
-                        "Distance at which entities look ahead in their path to reach a point on a spline.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSplineFollow::m_lookAhead, QT_TRANSLATE_NOOP("PhysX", "Lookahead"),
+                        QT_TRANSLATE_NOOP("PhysX", "Distance at which entities look ahead in their path to reach a point on a spline."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionZeroValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxValue)
                     ;
@@ -398,10 +399,10 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceSimpleDrag>(
-                    "Simple Drag Force", "Simulates a drag force on entities.")
+                    QT_TRANSLATE_NOOP("PhysX", "Simple Drag Force"), QT_TRANSLATE_NOOP("PhysX", "Simulates a drag force on entities."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSimpleDrag::m_volumeDensity, "Region Density", "Density of the region.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSimpleDrag::m_volumeDensity, QT_TRANSLATE_NOOP("PhysX", "Region Density"), QT_TRANSLATE_NOOP("PhysX", "Density of the region."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionZeroValue)
                     ;
             }
@@ -477,10 +478,10 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceLinearDamping>(
-                    "Linear Damping Force", "Applies an opposite force to the entity's velocity.")
+                    QT_TRANSLATE_NOOP("PhysX", "Linear Damping Force"), QT_TRANSLATE_NOOP("PhysX", "Applies an opposite force to the entity's velocity."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceLinearDamping::m_damping, "Damping", "Amount of damping applied to an opposite force.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceLinearDamping::m_damping, QT_TRANSLATE_NOOP("PhysX", "Damping"), QT_TRANSLATE_NOOP("PhysX", "Amount of damping applied to an opposite force."))
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionZeroValue)
                       ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxDamping)
                     ;

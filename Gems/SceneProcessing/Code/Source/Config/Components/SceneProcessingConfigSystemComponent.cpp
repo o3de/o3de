@@ -9,6 +9,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Source/SceneProcessingModule.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -262,15 +263,19 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<SceneProcessingConfigSystemComponent>("Scene Processing Config", "Use this component to fine tune the defaults for processing of scene files like FBX.")
+                    ec->Class<SceneProcessingConfigSystemComponent>(
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Scene Processing Config"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Use this component to fine tune the defaults for processing of scene files like FBX."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Assets")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SceneProcessingConfigSystemComponent::m_softNames,
-                            "Soft naming conventions", "Update the naming conventions to suit your project.")
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Soft naming conventions"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Update the naming conventions to suit your project."))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SceneProcessingConfigSystemComponent::m_UseCustomNormals,
-                            "Use Custom Normals", "When enabled, Open 3D Engine will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on an individual scene file's asset settings.")
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Use Custom Normals"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "When enabled, Open 3D Engine will use the DCC assets custom or tangent space normals. When disabled, the normals will be averaged. This setting can be overridden on an individual scene file's asset settings."))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
                 }
             }

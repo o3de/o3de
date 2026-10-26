@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef WINDOWSCREEN_H
-#define WINDOWSCREEN_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QObject>
 #include <QString>
 #include <QWindow>
-#endif
 
 
 /** The WindowScreenInfo struct stores the x, y, width, height and
@@ -93,6 +91,3 @@ private:
     WindowScreenInfo m_windowPreviousInfo;
     QString m_windowName = QString();
 };
-
-
-#endif // WINDOWSCREEN_H

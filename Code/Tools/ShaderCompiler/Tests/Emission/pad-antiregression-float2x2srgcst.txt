@@ -1,0 +1,4 @@
+"float2x2 ExampleSRG_mat ;"
+"float4 ExampleSRG___pad_at16 [1] ;"
+"float ExampleSRG___pad_at32 ;"
+"bool ExampleSRG_b ;"

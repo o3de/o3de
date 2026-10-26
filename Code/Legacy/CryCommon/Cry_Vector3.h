@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Common vector class
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRY_VECTOR3_H
-#define CRYINCLUDE_CRYCOMMON_CRY_VECTOR3_H
-#pragma once
 
 
 #include "CryEndian.h"
@@ -1378,4 +1375,3 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(Vec3, "{DFA993FB-4E92-4A13-BDB3-4E9285A5346F}");
 }
-#endif // CRYINCLUDE_CRYCOMMON_CRY_VECTOR3_H

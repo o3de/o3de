@@ -32,7 +32,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridRayTracingPass> DiffuseProbeGridRayTracingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridRayTracingPass> pass = aznew DiffuseProbeGridRayTracingPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridRayTracingPass::DiffuseProbeGridRayTracingPass(const RPI::PassDescriptor& descriptor)
@@ -304,7 +304,7 @@ namespace AZ
                 m_rayTracingShaderTable->Build(descriptor);
             }
         }
-    
+
         void DiffuseProbeGridRayTracingPass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();

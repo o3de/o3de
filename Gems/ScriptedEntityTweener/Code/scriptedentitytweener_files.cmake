@@ -9,7 +9,6 @@
 set(FILES
     Include/ScriptedEntityTweener/ScriptedEntityTweenerBus.h
     Include/ScriptedEntityTweener/ScriptedEntityTweenerEnums.h
-    Source/ScriptedEntityTweenerMath.h
     Source/ScriptedEntityTweenerTask.cpp
     Source/ScriptedEntityTweenerTask.h
     Source/ScriptedEntityTweenerSubtask.cpp

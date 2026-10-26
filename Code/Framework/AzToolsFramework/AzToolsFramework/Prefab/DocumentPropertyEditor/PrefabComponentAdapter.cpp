@@ -41,6 +41,14 @@ namespace AzToolsFramework::Prefab
 
     void PrefabComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
+        if (!componentInstance)
+        {
+            // the component we were looking at is destroyed - stop performing logic, a refresh is coming soon.
+            m_entityAlias.clear();
+            m_componentAlias.clear();
+            ClearValue();
+            return;
+        }
         auto owningInstance = AZ::Interface<InstanceEntityMapperInterface>::Get()->FindOwningInstance(
             componentInstance->GetEntityId());
         AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");
@@ -116,26 +124,6 @@ namespace AzToolsFramework::Prefab
     {
         if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
         {
-            // The Begin/ResumeUndoBatch call will come from PropertyManagerComponent::RequestWrite which gets invoked
-            // just before this, so we just need to retrieve the undo batch.
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
-            if (!m_currentUndoBatch)
-            {
-                AZ_Warning(
-                    "Prefab",
-                    false,
-                    "New undo batch is being created in PrefabComponentAdapter. This is unusual. An undo batch should already have "
-                    "existed by this point.");
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Component Property");
-            }
-
-            // But we do need to mark our entity as dirty. In the RPE, this is handled by EntityPropertyEditor::BeforePropertyModified,
-            // but the DPE doesn't use those notification triggers.
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityId);
-
             if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
             {
                 instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
@@ -147,10 +135,6 @@ namespace AzToolsFramework::Prefab
             {
                 instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
             }
-
-            // The EndUndoBatch will get called from PropertyManagerComponent::OnEditingFinished, so we can just clear
-            // out our reference to the undo batch here.
-            m_currentUndoBatch = nullptr;
         }
         AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
 
@@ -234,13 +218,12 @@ namespace AzToolsFramework::Prefab
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
 
                 ScopedUndoBatch undoBatch("Update component in a prefab template");
-
                 PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Undo Updating Component");
-                state->SetParent(m_currentUndoBatch);
+                state->SetParent(undoBatch.GetUndoBatch());
                 state->Capture(
                     owningInstance->get(), AZ::Dom::Path(relativePathFromOwningPrefab).ToString(), afterValueOfComponentProperty);
                 state->Redo();
-
+                m_currentUndoBatch = nullptr; // do not let this operation be batched with others.
                 return state->Changed();
             }
         }
@@ -279,11 +262,12 @@ namespace AzToolsFramework::Prefab
                     return false;
                 }
 
+                ScopedUndoBatch undoBatch("Override component property in a prefab template");
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
                 PrefabUndoComponentPropertyOverride* state = aznew PrefabUndoComponentPropertyOverride("Undo overriding Component");
-                state->SetParent(m_currentUndoBatch);
+                state->SetParent(undoBatch.GetUndoBatch());
                 state->CaptureAndRedo(owningInstance->get(), relativePathFromOwningPrefab, afterValueOfComponentProperty);
-
+                m_currentUndoBatch = nullptr; // do not let this operation be batched with others.
                 return state->Changed();
             }
         }

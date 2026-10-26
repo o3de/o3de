@@ -1,0 +1,10 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup SRG : slot1
+{
+};
+

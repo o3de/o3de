@@ -236,12 +236,12 @@ namespace AZ
                     descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
                 if (result == VK_ERROR_FRAGMENTED_POOL)
                 {
-                    // fragmented pool will be re-created subsequently in DescriptorSetAllocator, so warning only 
+                    // fragmented pool will be re-created subsequently in DescriptorSetAllocator, so warning only
                     AZ_Warning("Vulkan RHI", false, "Fragmented pool, will be recreated in DescriptorSetAllocator afterward");
                 }
-                else 
+                else
                 {
-                    AssertSuccess(result);
+                    VK_RESULT_ASSERT(result);
                 }
 
                 if (result != VK_SUCCESS)
@@ -292,8 +292,9 @@ namespace AZ
             {
                 AZ_Assert(m_descriptor.m_descriptorPool, "Descriptor pool is null.");
                 auto& device = static_cast<Device&>(GetDevice());
-                AssertSuccess(device.GetContext().FreeDescriptorSets(
-                    device.GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet));
+                [[maybe_unused]] VkResult result = device.GetContext().FreeDescriptorSets(
+                    device.GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet);
+                VK_RESULT_ASSERT(result);
                 m_nativeDescriptorSet = VK_NULL_HANDLE;
             }
             m_constantDataBufferView = nullptr;
@@ -461,11 +462,13 @@ namespace AZ
                         // release existing descriptor set if necessary
                         if (m_nativeDescriptorSet)
                         {
-                            AssertSuccess(m_descriptor.m_device->GetContext().FreeDescriptorSets(
+
+                            [[maybe_unused]] VkResult vkResult = m_descriptor.m_device->GetContext().FreeDescriptorSets(
                                 m_descriptor.m_device->GetNativeDevice(),
                                 m_descriptor.m_descriptorPool->GetNativeDescriptorPool(),
                                 1,
-                                &m_nativeDescriptorSet));
+                                &m_nativeDescriptorSet);
+                            VK_RESULT_ASSERT(vkResult);
                             m_nativeDescriptorSet = VK_NULL_HANDLE;
                         }
                     }
@@ -488,9 +491,9 @@ namespace AZ
                 allocInfo.descriptorPool = m_descriptor.m_descriptorPool->GetNativeDescriptorPool();
                 allocInfo.descriptorSetCount = 1;
                 allocInfo.pSetLayouts = &nativeLayout;
-
-                AssertSuccess(m_descriptor.m_device->GetContext().AllocateDescriptorSets(
-                    m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet));
+                [[maybe_unused]] VkResult vkResult = m_descriptor.m_device->GetContext().AllocateDescriptorSets(
+                    m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
+                VK_RESULT_ASSERT(vkResult);
 
                 m_currentUnboundedArrayAllocation = unboundedArraySize;
                 SetName(GetName());

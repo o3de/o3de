@@ -8,14 +8,13 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
-#endif
 
 namespace AZ
 {

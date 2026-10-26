@@ -6,10 +6,7 @@
  *
  */
 
-
 #pragma once
-#ifndef CRYINCLUDE_EDITORCOMMON_WAITCURSOR_H
-#define CRYINCLUDE_EDITORCOMMON_WAITCURSOR_H
 
 class WaitCursor
 {
@@ -17,5 +14,3 @@ public:
     WaitCursor();
     ~WaitCursor();
 };
-
-#endif

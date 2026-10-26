@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : These are helper classes for containing the data from the
 //               generic overwrite dialog.
-
-#ifndef CRYINCLUDE_EDITOR_DIALOGS_GENERIC_USEROPTIONS_H
-#define CRYINCLUDE_EDITOR_DIALOGS_GENERIC_USEROPTIONS_H
-#pragma once
 
 
 // Small helper class.
@@ -74,4 +71,3 @@ protected:
 private:
     //////////////////////////////////////////////////////////////////////////
 };
-#endif // CRYINCLUDE_EDITOR_DIALOGS_GENERIC_USEROPTIONS_H

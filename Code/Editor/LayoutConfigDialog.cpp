@@ -113,4 +113,3 @@ void CLayoutConfigDialog::OnOK()
     done(m_layout == oldLayout ? QDialog::Rejected : QDialog::Accepted);
 }
 
-#include <moc_LayoutConfigDialog.cpp>

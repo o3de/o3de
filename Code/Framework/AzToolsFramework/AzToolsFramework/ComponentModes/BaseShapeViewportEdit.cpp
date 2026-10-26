@@ -119,29 +119,6 @@ namespace AzToolsFramework
         }
     }
 
-    void BaseShapeViewportEdit::BeginUndoBatch(const char* label)
-    {
-        if (!m_entityIds.empty())
-        {
-            ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, label);
-
-            for (const AZ::EntityId& entityId : m_entityIds)
-            {
-                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
-            }
-        }
-    }
-
-    void BaseShapeViewportEdit::EndUndoBatch()
-    {
-        if (m_undoBatch)
-        {
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
-            m_undoBatch = nullptr;
-        }
-    }
-
     void BaseShapeViewportEdit::OnCameraStateChanged([[maybe_unused]] const AzFramework::CameraState& cameraState)
     {
     }
@@ -150,13 +127,19 @@ namespace AzToolsFramework
     {
         // manipulators handle undo batches for the main viewport themselves, but this function does not work via manipulators
         // so needs its own undo batch
-        BeginUndoBatch("ViewportEdit Reset");
-        // also provide a hook for other viewports to handle undo/redo, UI refresh, etc
-        BeginEditing();
-        ResetValuesImpl();
-        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
-        EndEditing();
-        EndUndoBatch();
+        if (!m_entityIds.empty())
+        {
+            AzToolsFramework::ScopedUndoBatch batch("Reset Shape Values");
+            BeginEditing();
+            ResetValuesImpl();
+            ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+            EndEditing();
+            for (const AZ::EntityId& entityId : m_entityIds)
+            {
+                batch.MarkEntityDirty(entityId);
+            }
+        }
+       
     }
 
     void BaseShapeViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)

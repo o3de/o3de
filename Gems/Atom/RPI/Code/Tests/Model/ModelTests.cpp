@@ -987,12 +987,12 @@ namespace UnitTest
     */
     static constexpr AZStd::array CubePositions = { -1.0f, 1.0f, 1.0f,  1.0f, 1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
                                                     -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f };
-    static constexpr AZStd::array CubeIndices = {
-        uint32_t{ 0 }, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 4, 2, 4, 6, 2, 1, 3, 5, 5, 3, 7, 0, 1, 4, 4, 1, 5, 2, 6, 3, 6, 7, 3,
-    };
+    static constexpr AZStd::array CubeIndices = AZStd::to_array<uint32_t>({
+        0, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 4, 2, 4, 6, 2, 1, 3, 5, 5, 3, 7, 0, 1, 4, 4, 1, 5, 2, 6, 3, 6, 7, 3,
+    });
 
     static constexpr AZStd::array QuadPositions = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
-    static constexpr AZStd::array QuadIndices = { uint32_t{ 0 }, 2, 1, 1, 2, 3 };
+    static constexpr AZStd::array QuadIndices = AZStd::to_array<uint32_t>({ 0, 2, 1, 1, 2, 3 });
 
     /*
        This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
@@ -1026,12 +1026,12 @@ namespace UnitTest
         -0.333f, 0.333f,  0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -0.333f, 0.5f,
     };
     // clang-format off
-    static constexpr AZStd::array TwoSeparatedPlanesIndices{
-        uint32_t{ 0 }, 1,  2,  3,  4,  5,  2,  6,  3,  7,  8,  9,  10, 5,  8,  11, 10, 7,  12, 3,  10, 13, 12, 11, 14, 2,  12,
-        15,            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 25, 29, 27, 24, 30, 31, 32, 33, 34, 29, 35, 17, 34,
-        0,             36, 1,  3,  6,  4,  2,  1,  6,  7,  10, 8,  10, 3,  5,  11, 12, 10, 12, 2,  3,  13, 14, 12, 14, 0,  2,
-        15,            37, 16, 38, 39, 40, 17, 16, 41, 24, 27, 25, 42, 43, 44, 29, 34, 27, 45, 46, 47, 33, 35, 34, 35, 15, 17,
-    };
+    static constexpr AZStd::array TwoSeparatedPlanesIndices = AZStd::to_array<uint32_t>({
+        0,  1,  2,  3,  4,  5,  2,  6,  3,  7,  8,  9,  10, 5,  8,  11, 10, 7,  12, 3,  10, 13, 12, 11, 14, 2,  12,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 25, 29, 27, 24, 30, 31, 32, 33, 34, 29, 35, 17, 34,
+        0,  36, 1,  3,  6,  4,  2,  1,  6,  7,  10, 8,  10, 3,  5,  11, 12, 10, 12, 2,  3,  13, 14, 12, 14, 0,  2,
+        15, 37, 16, 38, 39, 40, 17, 16, 41, 24, 27, 25, 42, 43, 44, 29, 34, 27, 45, 46, 47, 33, 35, 34, 35, 15, 17,
+    });
     // clang-format on
 
     // Ensure that the index buffer references all the positions in the position buffer

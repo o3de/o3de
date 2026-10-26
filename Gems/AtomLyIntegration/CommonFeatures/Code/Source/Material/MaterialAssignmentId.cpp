@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -60,12 +61,12 @@ namespace AZ
                 if (auto editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<MaterialAssignmentId>(
-                        "Material Assignment Id", "Material Assignment Id")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Assignment Id"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Assignment Id"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_lodIndex, "LOD Index", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_materialSlotStableId, "Material Slot Stable Id", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_lodIndex, QT_TRANSLATE_NOOP("AtomLyIntegration", "LOD Index"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_materialSlotStableId, QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Slot Stable Id"), "")
                         ;
                 }
             }

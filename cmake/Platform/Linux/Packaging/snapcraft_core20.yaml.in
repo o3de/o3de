@@ -16,6 +16,7 @@ parts:
       - enable-patchelf
     stage-packages:
       - clang-12
+      - cmake-qt-gui
       - libatomic1
       - libcurl4
       - libdbus-1-3

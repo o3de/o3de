@@ -14,6 +14,7 @@
 #include <SurfaceData/SurfaceDataTagProviderRequestBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 AZ_DECLARE_BUDGET(SurfaceData);
 
@@ -62,11 +63,14 @@ namespace SurfaceData
             if (edit)
             {
                 edit->Class<SurfaceTag>(
-                    "Surface Tag", "Matches a surface value like a mask or material")
+                    QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag"),
+                    QT_TRANSLATE_NOOP("SurfaceData", "Matches a surface value like a mask or material"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceTag::m_surfaceTagCrc, "Surface Tag", "Matches a surface value like a mask or material")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceTag::m_surfaceTagCrc,
+                        QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag"),
+                        QT_TRANSLATE_NOOP("SurfaceData", "Matches a surface value like a mask or material"))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &SurfaceTag::BuildSelectableTagList)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ;

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/typetraits/underlying_type.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
@@ -18,8 +17,6 @@
 #include <QStyle>
 #include <QVector>
 #include <QFrame>
-
-#endif
 
 class QSettings;
 class QToolButton;

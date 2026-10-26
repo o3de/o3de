@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
@@ -32,7 +33,7 @@ namespace OpenParticleSystem
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<ParticleMaterialThumbnailSystemComponent>("ParticleMaterialThumbnailSystemComponent", "System component for image thumbnails.")
+                    ec->Class<ParticleMaterialThumbnailSystemComponent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "ParticleMaterialThumbnailSystemComponent"), QT_TRANSLATE_NOOP("OpenParticleSystem", "System component for image thumbnails."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);

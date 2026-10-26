@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_XMLUTILS_H
-#define CRYINCLUDE_CRYSYSTEM_XML_XMLUTILS_H
 #pragma once
 
 #include "ISystem.h"
@@ -50,5 +47,3 @@ public:
 private:
     ISystem* m_pSystem;
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_XMLUTILS_H

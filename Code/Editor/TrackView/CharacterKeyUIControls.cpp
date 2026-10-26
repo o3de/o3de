@@ -34,14 +34,14 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_animation, "Animation", IVariable::DT_ANIMATION);
-        AddVariable(mv_table, mv_loop, "Loop");
-        AddVariable(mv_table, mv_blendGap, "Blend Gap");
-        AddVariable(mv_table, mv_inplace, "In Place");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
-        AddVariable(mv_table, mv_timeScale, "Time Scale");
+        AddVariable(mv_table, tr("Key Properties"));
+        AddVariable(mv_table, mv_animation, tr("Animation"), IVariable::DT_ANIMATION);
+        AddVariable(mv_table, mv_loop, tr("Loop"));
+        AddVariable(mv_table, mv_blendGap, tr("Blend Gap"));
+        AddVariable(mv_table, mv_inplace, tr("In Place"));
+        AddVariable(mv_table, mv_startTime, tr("Start Time"));
+        AddVariable(mv_table, mv_endTime, tr("End Time"));
+        AddVariable(mv_table, mv_timeScale, tr("Time Scale"));
         mv_timeScale->SetLimits(0.001f, 100.f);
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override

@@ -11,7 +11,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
@@ -21,7 +20,7 @@ AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: con
 #include <QObject>
 #include <QPixmap>
 AZ_POP_DISABLE_WARNING
-#endif
+
 
 namespace AzToolsFramework
 {

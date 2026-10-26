@@ -1,0 +1,4 @@
+Mat_t::BRDF GetBRDF< Mat_t : IMaterial >(Mat_t mat)
+{
+    return mat.GenBRDF(mat.GetColor(), mat.GetRoughness());
+}

@@ -167,22 +167,22 @@ namespace AzToolsFramework
         static constexpr char WildcardCharacter = '*';
         static constexpr char RecursiveWildcard[] = "...";
 
-        int firstWildcardIndex = path.indexOf(WildcardCharacter);
+        int firstWildcardIndex = static_cast<int>(path.indexOf(WildcardCharacter));
 
         if(firstWildcardIndex < 0)
         {
-            firstWildcardIndex = path.indexOf(RecursiveWildcard);
+            firstWildcardIndex = static_cast<int>(path.indexOf(RecursiveWildcard));
         }
 
         if(firstWildcardIndex >= 0)
         {
-            int lastSlashBeforeWildcard = path.lastIndexOf(AZ_CORRECT_FILESYSTEM_SEPARATOR, firstWildcardIndex);
+            int lastSlashBeforeWildcard = static_cast<int>(path.lastIndexOf(AZ_CORRECT_FILESYSTEM_SEPARATOR, firstWildcardIndex));
 
             root = path.left(lastSlashBeforeWildcard + 1); // Include the separator
             wildcardEntry = path.mid(lastSlashBeforeWildcard + 1); // Skip the separator
             remaining = "";
 
-            int nextSlashAfterWildcard = wildcardEntry.indexOf(AZ_CORRECT_FILESYSTEM_SEPARATOR);
+            int nextSlashAfterWildcard = static_cast<int>(wildcardEntry.indexOf(AZ_CORRECT_FILESYSTEM_SEPARATOR));
 
             if(nextSlashAfterWildcard >= 0)
             {

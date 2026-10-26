@@ -141,8 +141,6 @@ bool UserPopupWidgetHandler::ReadValuesIntoGUI(size_t index, UserPropertyEditor*
     return false;
 }
 
-#include <Controls/ReflectedPropertyControl/moc_PropertyMiscCtrl.cpp>
-
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {
     CSplineCtrl *cSpline = new CSplineCtrl(pParent);

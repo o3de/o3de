@@ -109,4 +109,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Favorites/moc_FavoritesEntryDelegate.cpp"

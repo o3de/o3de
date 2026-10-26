@@ -10,6 +10,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -36,11 +38,12 @@ namespace AzToolsFramework
         }
 
         static const char* const s_componentModeEnterDescription =
+            QT_TRANSLATE_NOOP("AzToolsFramework",
             "In this mode, you can only edit properties for this component. "
-            "All other components on the entity are locked.";
+            "All other components on the entity are locked.");
 
         static const char* const s_componentModeLeaveDescription =
-            "Return to normal viewport editing";
+            QT_TRANSLATE_NOOP("AzToolsFramework", "Return to normal viewport editing");
 
         // was the double click on the component or off it (select/deselect)
         enum class DoubleClickOutcome
@@ -131,16 +134,17 @@ namespace AzToolsFramework
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<ComponentModeDelegate>(
-                        "Component Mode", "Provides advanced editing of Components.")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Component Mode"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Provides advanced editing of Components."))
                         ->UIElement(AZ::Edit::UIHandlers::Button, "", s_componentModeEnterDescription)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ComponentModeDelegate::OnComponentModeEnterButtonPressed)
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Edit")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("AzToolsFramework", "Edit"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EnterComponentModeButtonVisible)
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &ComponentModeDelegate::ComponentModeButtonInactive)
                         ->UIElement(AZ::Edit::UIHandlers::Button, "", s_componentModeLeaveDescription)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ComponentModeDelegate::OnComponentModeLeaveButtonPressed)
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Done")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("AzToolsFramework", "Done"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &LeaveComponentModeButtonVisible)
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
                             ;

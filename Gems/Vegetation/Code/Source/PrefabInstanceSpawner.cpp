@@ -13,6 +13,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Vegetation/AreaComponentBase.h>
@@ -50,15 +51,15 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<PrefabInstanceSpawner>(
-                    "Prefab", "Prefab Instance")
+                    QT_TRANSLATE_NOOP("Vegetation", "Prefab"), QT_TRANSLATE_NOOP("Vegetation", "Prefab Instance"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &PrefabInstanceSpawner::m_spawnableAsset, "Prefab Asset", "Prefab asset")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &PrefabInstanceSpawner::m_spawnableAsset, QT_TRANSLATE_NOOP("Vegetation", "Prefab Asset"), QT_TRANSLATE_NOOP("Vegetation", "Prefab asset"))
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
                     ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
-                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "a Prefab")
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, QT_TRANSLATE_NOOP("Vegetation", "a Prefab"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PrefabInstanceSpawner::SpawnableAssetChanged)
                     ;
             }

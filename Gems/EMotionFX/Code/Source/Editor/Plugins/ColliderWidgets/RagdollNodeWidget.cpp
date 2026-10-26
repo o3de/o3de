@@ -69,7 +69,7 @@ namespace EMotionFX
 
         m_ragdollNodeEditor = new EMotionFX::ObjectEditor(serializeContext, result);
         m_ragdollNodeCard = new RagdollCard(result);
-        m_ragdollNodeCard->setTitle("Ragdoll properties");
+        m_ragdollNodeCard->setTitle(tr("Ragdoll properties"));
         m_ragdollNodeCard->setContentWidget(m_ragdollNodeEditor);
         m_ragdollNodeCard->setExpanded(true);
         AzQtComponents::CardHeader* cardHeader = m_ragdollNodeCard->header();

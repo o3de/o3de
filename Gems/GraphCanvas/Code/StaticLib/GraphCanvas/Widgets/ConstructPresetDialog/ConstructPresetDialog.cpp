@@ -113,9 +113,9 @@ namespace GraphCanvas
                 switch (section)
                 {
                 case ColumnIndex::Name:
-                    return QString("PresetName");
+                    return tr("PresetName");
                 case ColumnIndex::DefaultPreset:
-                    return QString("Is Default");
+                    return tr("Is Default");
                 default:
                     break;
                 }
@@ -511,5 +511,4 @@ namespace GraphCanvas
         AssetEditorPresetNotificationBus::Handler::BusConnect(m_editorId);
     }
 
-#include <StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/moc_ConstructPresetDialog.cpp>
 }

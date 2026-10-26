@@ -33,7 +33,7 @@ namespace PhysX
         const AZStd::string RightCollider = "RightCollider";
         const int FramesToUpdate = 25;
 
-        void SetUp() override 
+        void SetUp() override
         {
             PhysXDefaultWorldTest::SetUp();
 
@@ -88,7 +88,7 @@ namespace PhysX
         auto leftColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
         leftColliderConfig->m_position = AZ::Vector3(-1.0f, 0.0f, 0.0f);
         leftColliderConfig->m_tag = leftColliderTag;
-        
+
         auto rightBoxConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>();
         auto rightColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
         rightColliderConfig->m_position = AZ::Vector3(1.0f, 0.0f, 0.0f);
@@ -104,7 +104,7 @@ namespace PhysX
 
         entityPtr->Init();
         entityPtr->Activate();
-        return AZStd::move(entityPtr);
+        return entityPtr;
     }
 
     TEST_F(PhysXCollisionFilteringTest, TestSetColliderLayerOnStaticObject)

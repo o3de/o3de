@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 
@@ -16,7 +15,6 @@
 
 #include <LyShine/Bus/UiTransform2dBus.h>
 #include <LyShine/UiBase.h>
-#endif
 
 class QLabel;
 class QWidget;

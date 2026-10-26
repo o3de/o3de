@@ -6,18 +6,14 @@
  *
  */
 
-#ifndef INC_DEBUGATTACHMENTBUTTON_H
-#define INC_DEBUGATTACHMENTBUTTON_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include "LUAContextControlMessages.h"
+
 #include <QPushButton>
 #include <QWidgetAction>
-#endif
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -70,5 +66,3 @@ namespace LUAEditor
         virtual QWidget* createWidget(QWidget* pParent);
     };
 }
-
-#endif //INC_DEBUGATTACHMENTBUTTON_H

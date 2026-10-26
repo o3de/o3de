@@ -10,12 +10,11 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/LegacyFramework/UIFrameworkAPI.h>
+
 #include <QDialog>
-#endif
 
 namespace Ui
 {

@@ -1,0 +1,68 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroupSemantic slot2
+{
+    FrequencyId = 2;
+};
+
+struct MyStructA
+{
+    float m_data;
+    [[pad_to(16)]]
+};
+
+struct MyStructB
+{
+    int m_data;
+    [[pad_to(16)]]
+    MyStructA m_a;
+    float2 m_b;
+    [[pad_to(64)]]
+};
+
+class MyClassC
+{
+    MyStructA m_a;
+    MyStructB m_b;
+    float m_color_red;
+    [[pad_to(16)]]
+    uint m_uint;
+    [[pad_to(256)]]
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyClassC m_myStruct;
+
+    float GetRed()
+    {
+        return m_myStruct.m_color_red;
+    }
+};
+
+ShaderResourceGroup DemoSrg2 : slot2
+{
+    MyStructA m_a;
+    MyStructB m_b;
+    float m_color_red;
+    [[pad_to(16)]]
+    uint m_uint;
+    [[pad_to(256)]]
+
+    float4 GetColor()
+    {
+        return float4(m_color_red , m_b.m_b.x, m_b.m_b.y, m_a.m_data);
+    }
+};
+
+float4 PSMain() : SV_Target0
+{
+    // Inside func
+    float4 color = float4(0, 0, 0, 0);
+    color.r = DemoSrg::GetRed();
+    color += DemoSrg2::GetColor();
+    return color;
+}

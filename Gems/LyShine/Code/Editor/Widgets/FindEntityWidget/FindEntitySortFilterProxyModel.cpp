@@ -16,7 +16,8 @@ FindEntitySortFilterProxyModel::FindEntitySortFilterProxyModel(QObject* pParent)
 
 void FindEntitySortFilterProxyModel::UpdateFilter()
 {
-    invalidateFilter();
+    beginFilterChange();
+    endFilterChange();
 }
 
 bool FindEntitySortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
@@ -26,4 +27,3 @@ bool FindEntitySortFilterProxyModel::filterAcceptsRow(int sourceRow, const QMode
     return visibilityData.isValid() ? visibilityData.toBool() : true;
 }
 
-#include <moc_FindEntitySortFilterProxyModel.cpp>

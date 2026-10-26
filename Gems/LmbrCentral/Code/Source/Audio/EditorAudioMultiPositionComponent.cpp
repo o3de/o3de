@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -36,7 +37,9 @@ namespace LmbrCentral
                     ->Value("Blended", Audio::MultiPositionBehaviorType::Blended)
                     ;
 
-                editContext->Class<EditorAudioMultiPositionComponent>("Multi-Position Audio", "The Multi-Position Audio component provides the ability to broadcast sounds through multiple positions")
+                editContext->Class<EditorAudioMultiPositionComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Multi-Position Audio"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Multi-Position Audio component provides the ability to broadcast sounds through multiple positions"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioMultiPosition.svg")
@@ -44,8 +47,12 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/multi-position/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioMultiPositionComponent::m_entityRefs, "Entity References", "The entities from which positions will be obtained for multi-position audio")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioMultiPositionComponent::m_behaviorType, "Behavior Type", "Determines how multi-postion sounds are treated, Separate or Blended")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioMultiPositionComponent::m_entityRefs,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Entity References"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The entities from which positions will be obtained for multi-position audio"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioMultiPositionComponent::m_behaviorType,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Behavior Type"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Determines how multi-postion sounds are treated, Separate or Blended"))
                     ;
             }
         }

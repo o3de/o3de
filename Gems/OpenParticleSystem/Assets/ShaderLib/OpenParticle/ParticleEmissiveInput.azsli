@@ -19,3 +19,4 @@ float3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, float fact
     }
     return emissive;
 }
+

@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include "StartingPointCamera/StartingPointCameraConstants.h"
 #include <AzCore/Math/Quaternion.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MathConversion.h>
 #include <StartingPointCamera/StartingPointCameraUtilities.h>
 
@@ -31,7 +32,9 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<FaceTarget>("FaceTarget", "Causes the camera to face the target")
+                editContext->Class<FaceTarget>(
+                    QT_TRANSLATE_NOOP("Camera", "FaceTarget"),
+                    QT_TRANSLATE_NOOP("Camera", "Causes the camera to face the target"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
         }

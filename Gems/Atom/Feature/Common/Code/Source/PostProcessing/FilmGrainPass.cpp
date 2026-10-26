@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<FilmGrainPass> FilmGrainPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<FilmGrainPass> pass = aznew FilmGrainPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         FilmGrainPass::FilmGrainPass(const RPI::PassDescriptor& descriptor)
@@ -100,7 +100,7 @@ namespace AZ
 
             constants.m_grainTextureSize[0] = grainTextureSize.m_width;
             constants.m_grainTextureSize[1] = grainTextureSize.m_height;
-            
+
             AZ_Assert(GetOutputCount() > 0, "FilmGrainPass: No output bindings!");
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 

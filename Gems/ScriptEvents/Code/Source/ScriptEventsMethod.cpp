@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEvents
 {
@@ -49,18 +50,25 @@ namespace ScriptEvents
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Method>("Script Event", "A script event's definition")
+                editContext->Class<Method>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "Script Event"),
+                    QT_TRANSLATE_NOOP("ScriptEvents", "A script event's definition"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &Method::m_name, "Name",
-                        "The specified name for this event, represents a callable function (i.e. MyScriptEvent())")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Method::m_tooltip, "Tooltip", "A description of this event")
+                        AZ::Edit::UIHandlers::Default, &Method::m_name,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Name"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "The specified name for this event, represents a callable function (i.e. MyScriptEvent())"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Method::m_tooltip,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Tooltip"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "A description of this event"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &Method::m_returnType, "Return value type",
-                        "the typeid of the return value, ex. AZ::type_info<int>::Uuid foo()")
+                        AZ::Edit::UIHandlers::ComboBox, &Method::m_returnType,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Return value type"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "the typeid of the return value, ex. AZ::type_info<int>::Uuid foo()"))
                     ->Attribute(AZ::Edit::Attributes::GenericValueList, &Types::GetValidReturnTypes)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &Method::m_parameters, "Parameters",
-                        "A list of parameters for the EBus event, ex. void foo(Parameter1, Parameter2)");
+                        AZ::Edit::UIHandlers::Default, &Method::m_parameters,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Parameters"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "A list of parameters for the EBus event, ex. void foo(Parameter1, Parameter2)"));
             }
         }
 

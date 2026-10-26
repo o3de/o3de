@@ -37,6 +37,22 @@
     <widget class="QGroupBox" name="STATIC_GROUP1">
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
+       <widget class="QLabel" name="LEVEL_ROOT_LABEL">
+        <property name="text">
+         <string>Root</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="buddy">
+         <cstring>LEVEL_ROOT</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="LEVEL_ROOT"/>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="STATIC2">
         <property name="text">
          <string>Name</string>
@@ -49,14 +65,14 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QLineEdit" name="LEVEL">
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="STATIC1">
         <property name="minimumSize">
          <size>
@@ -75,7 +91,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="AzQtComponents::BrowseEdit" name="LEVEL_FOLDERS" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">

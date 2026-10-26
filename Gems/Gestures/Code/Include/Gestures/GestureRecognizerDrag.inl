@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,15 +26,23 @@ inline void Gestures::RecognizerDrag::Config::Reflect(AZ::ReflectContext* contex
 
         if (AZ::EditContext* ec = serialize->GetEditContext())
         {
-            ec->Class<Config>("Drag Config", "Configuration values used to setup a gesture recognizer for drags.")
+            ec->Class<Config>(
+                QT_TRANSLATE_NOOP("Gestures", "Drag Config"),
+                QT_TRANSLATE_NOOP("Gestures", "Configuration values used to setup a gesture recognizer for drags."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Config::pointerIndex, "Pointer Index", "The pointer (button or finger) index to track.")
+                ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Config::pointerIndex,
+                    QT_TRANSLATE_NOOP("Gestures", "Pointer Index"),
+                    QT_TRANSLATE_NOOP("Gestures", "The pointer (button or finger) index to track."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 10)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minSecondsHeld, "Min Seconds Held", "The min time in seconds after the initial press before a drag will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minSecondsHeld,
+                    QT_TRANSLATE_NOOP("Gestures", "Min Seconds Held"),
+                    QT_TRANSLATE_NOOP("Gestures", "The min time in seconds after the initial press before a drag will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minPixelsMoved, "Min Pixels Moved", "The min distance in pixels that must be dragged before a drag will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minPixelsMoved,
+                    QT_TRANSLATE_NOOP("Gestures", "Min Pixels Moved"),
+                    QT_TRANSLATE_NOOP("Gestures", "The min distance in pixels that must be dragged before a drag will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ;
         }

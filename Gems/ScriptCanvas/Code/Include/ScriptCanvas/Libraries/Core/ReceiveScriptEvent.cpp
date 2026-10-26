@@ -119,7 +119,7 @@ namespace ScriptCanvas
                             {
                                 Data::Type busIdType(AZ::BehaviorContextHelper::IsStringParameter(m_ebus->m_idParam) ? Data::Type::String() : Data::FromAZType(busId));
 
-                                config.ConfigureDatum(AZStd::move(Datum(busIdType, Datum::eOriginality::Original)));
+                                config.ConfigureDatum(Datum(busIdType, Datum::eOriginality::Original));
                                 config.m_contractDescs = { { [busIdType]() { return aznew RestrictedTypeContract({ busIdType }); } } };
                             }
 
@@ -207,7 +207,7 @@ namespace ScriptCanvas
                     slotConfiguration.m_name = argumentTypeName;
 
                     slotConfiguration.SetConnectionType(ConnectionType::Input);
-                    slotConfiguration.ConfigureDatum(AZStd::move(Datum(inputType, Datum::eOriginality::Copy, nullptr, AZ::Uuid::CreateNull())));
+                    slotConfiguration.ConfigureDatum(Datum(inputType, Datum::eOriginality::Copy, nullptr, AZ::Uuid::CreateNull()));
                     slotConfiguration.m_addUniqueSlotByNameAndType = false;
 
                     auto remappingIdIter = m_eventSlotMapping.find(resultIdentifier);

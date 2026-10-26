@@ -1,0 +1,96 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// =============================================================================
+// ${Name}.azsl
+// -----------------------------------------------------------------------------
+// Pixel shader for the ${Name} fullscreen post-process pass.
+//
+// THIS FILE IS A BASELINE.
+//   By default it is a pure pass-through: sample the input color, write it
+//   back unchanged. Two commented blocks ship below to demonstrate how to
+//   customise the effect:
+//     * COLOR GRADE -- a tiny tint + exposure adjustment, the canonical
+//       "first useful screen-space effect" example. Uncomment to enable.
+//     * PROBE       -- forces the output to fully red. The fastest possible
+//       proof-of-life when wiring up the pass for the first time.
+//
+// SRG LAYOUT:
+//   m_framebuffer   Texture2D bound from the InputColor pass slot.
+//   LinearSampler   Default linear-clamp sampler used to sample m_framebuffer.
+//   Add new constants and resources here as you customise the effect; the
+//   C++ pass class accesses them through m_shaderResourceGroup.
+// =============================================================================
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+
+
+// -----------------------------------------------------------------------------
+// Pass SRG. Add fields here as you give the C++ pass class more knobs to tune.
+// -----------------------------------------------------------------------------
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_framebuffer;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    float4 src = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+
+    // Default behaviour: pass-through. Overwrite this assignment in the blocks
+    // below to actually do something visible.
+    OUT.m_color = src;
+
+    // -------------------------------------------------------------------------
+    // COLOR GRADE -- baseline example.
+    //
+    // Uncomment to apply a uniform tint and exposure curve. Replace the
+    // literals with PassSrg constants if you want them driven from C++:
+    //   1. Add 'float3 m_tint;' and 'float m_exposure;' to PassSrg above.
+    //   2. Cache the indices in ${Name}Pass::InitializeInternal.
+    //   3. Push values from C++ in ${Name}Pass::FrameBeginInternal (or, if
+    //      you generated the PostVolume integration mode, from the
+    //      ${Name}Settings component).
+    // -------------------------------------------------------------------------
+    //
+    //   const float3 tint     = float3(1.05, 1.00, 0.95); // mild warm cast
+    //   const float  exposure = 1.10;                     // 10% brighter
+    //   OUT.m_color = float4(src.rgb * tint * exposure, src.a);
+
+    // -------------------------------------------------------------------------
+    // PROBE -- proof-of-life.
+    //
+    // Uncomment to force the entire viewport to red. Use this when wiring up
+    // the pass for the first time to confirm the registration / pipeline
+    // chain is intact end-to-end. If this does not turn the screen red, the
+    // pass is not running and the C++ side is fine -- look at the integration
+    // path: PostProcess Volume entity in the level (PostVolume mode), pipeline
+    // injection (ScreenSpaceConstant mode), or your hand-pasted PassRequest
+    // (ManualPassAsset mode).
+    // -------------------------------------------------------------------------
+    //
+    //   OUT.m_color = float4(1.0, 0.0, 0.0, 1.0);
+
+    return OUT;
+}

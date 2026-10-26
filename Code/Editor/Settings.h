@@ -6,10 +6,8 @@
  *
  */
 
-
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_SETTINGS_H
-#define CRYINCLUDE_EDITOR_SETTINGS_H
+
 #include "SettingsManager.h"
 
 #include "SandboxAPI.h"
@@ -426,5 +424,3 @@ private:
 
 //! Single instance of editor settings for fast access.
 SANDBOX_API extern SEditorSettings gSettings;
-
-#endif // CRYINCLUDE_EDITOR_SETTINGS_H

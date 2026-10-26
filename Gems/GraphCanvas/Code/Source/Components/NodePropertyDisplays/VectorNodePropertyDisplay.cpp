@@ -415,5 +415,4 @@ namespace GraphCanvas
         }
     }
 
-#include <Source/Components/NodePropertyDisplays/moc_VectorNodePropertyDisplay.cpp>
 } // namespace GraphCanvas

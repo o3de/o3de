@@ -735,4 +735,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/UICore/moc_QTreeViewStateSaver.cpp"

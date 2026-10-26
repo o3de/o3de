@@ -12,11 +12,6 @@ QMainWindow {
     min-height:700px;
 }
 
-QPushButton:focus {
-    outline: none;
-    border:1px solid #1e70eb;
-}
-
 QPushButton[primary="true"] {
     qproperty-flat: true;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,

@@ -53,4 +53,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "Application/moc_Ticker.cpp"

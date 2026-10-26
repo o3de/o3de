@@ -18,15 +18,15 @@ PrefabEditVisualModeWidget::PrefabEditVisualModeWidget()
 {
     // Create Label
     m_label = new QLabel(this);
-    m_label->setText("Prefab Edit:");
+    m_label->setText(tr("Prefab Edit:"));
 
     // Create ComboBox
     m_comboBox = new QComboBox(this);
     m_comboBox->setMinimumWidth(120);
 
     // Follow the same order as the PrefabEditModeUXSetting enum.
-    m_comboBox->addItem(QObject::tr("Normal"));
-    m_comboBox->addItem(QObject::tr("Monochromatic"));
+    m_comboBox->addItem(tr("Normal"));
+    m_comboBox->addItem(tr("Monochromatic"));
 
     m_prefabEditMode =
         AzToolsFramework::PrefabEditModeEffectEnabled() ? PrefabEditModeUXSetting::Monochromatic : PrefabEditModeUXSetting::Normal;

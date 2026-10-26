@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -126,14 +127,20 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SplineCommon>("Configuration", "Spline configuration parameters")
+                editContext->Class<SplineCommon>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Spline configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SplineCommon::m_splineType, "Spline Type", "Interpolation type to use between vertices.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SplineCommon::m_splineType,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Spline Type"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Interpolation type to use between vertices."))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, &PopulateSplineTypeList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SplineCommon::OnChangeSplineType)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplineCommon::m_spline, "Spline", "Data representing the spline.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplineCommon::m_spline,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Spline"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Data representing the spline."))
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);

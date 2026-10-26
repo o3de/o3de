@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
 #include <QTreeWidget>
-#endif
 
 namespace AzQtComponents
 {

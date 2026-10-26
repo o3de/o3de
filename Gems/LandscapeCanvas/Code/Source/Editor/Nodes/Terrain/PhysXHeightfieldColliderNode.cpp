@@ -29,7 +29,8 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysXHeightfieldColliderNode>("PhysXHeightfieldColliderNode", "")->
+                editContext->Class<PhysXHeightfieldColliderNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "PhysXHeightfieldColliderNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "TerrainNodeTitlePalette")
                     ;

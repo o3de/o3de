@@ -7,9 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
-#include <qmimedata.h>
+#include <QMimeData>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -18,7 +17,6 @@
 #include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
 #include <GraphCanvas/Widgets/GraphCanvasTreeItem.h>
-#endif
 
 namespace GraphCanvas
 {

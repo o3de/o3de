@@ -67,7 +67,7 @@ namespace AFR
                     if(m_afrRenderPipeline.second)
                     {
                         AZ_Assert(!m_afrPipelineName.empty(), "AFR Pipeline had already been set, reset to this pipeline");
-                        m_afrRenderPipeline = { "", nullptr };
+                        m_afrRenderPipeline = { AZ::RPI::RenderPipelineId(""), nullptr };
                         m_afrCopyPasses.clear();
                     }
 
@@ -113,7 +113,7 @@ namespace AFR
                 if (renderPipeline->GetId() == m_afrRenderPipeline.first)
                 {
                     // Clear CopyPasses
-                    m_afrRenderPipeline = { "", nullptr };
+                    m_afrRenderPipeline = { AZ::RPI::RenderPipelineId(""), nullptr };
                     m_afrCopyPasses.clear();
                     m_scheduledPasses.clear();
                     m_afrSetupState = AFRSetupState::NOT_INITIALIZED;

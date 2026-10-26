@@ -18,6 +18,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -45,7 +46,7 @@ namespace OpenParticleSystemEditor
             {
                 editContext
                     ->Class<OpenParticleViewportComponent>(
-                        "OpenParticleViewport", "Manages configurations for lighting and models displayed in the viewport")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "OpenParticleViewport"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Manages configurations for lighting and models displayed in the viewport"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
