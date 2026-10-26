@@ -137,6 +137,7 @@ namespace OpenParticle
         runtimeData.localSpace = editData.localSpace;
         runtimeData.maxSize = editData.maxSize;
         runtimeData.loop = editData.loop;
+        runtimeData.disabled = !editData.enabled;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::EmitBurstList& editData, SimuCore::ParticleCore::EmitBurstList& runtimeData)
