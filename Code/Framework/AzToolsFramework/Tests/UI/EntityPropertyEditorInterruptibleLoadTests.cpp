@@ -17,6 +17,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <Prefab/PrefabTestFixture.h>
 
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/sort.h>
 
 #include <QApplication>
@@ -93,6 +94,41 @@ namespace UnitTest
             AZStd::vector<float> m_values = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f };
         };
 
+        //! A slow card: one number whose visibility takes longer to read than a lazy cards step's budget (10 ms)
+        class InterruptibleSlowTestComponent : public AzToolsFramework::Components::EditorComponentBase
+        {
+        public:
+            AZ_EDITOR_COMPONENT(
+                InterruptibleSlowTestComponent, "{3828131F-6B6A-4059-A36F-83C72CCC4B98}", AzToolsFramework::Components::EditorComponentBase);
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<InterruptibleSlowTestComponent, AzToolsFramework::Components::EditorComponentBase>()
+                        ->Version(1)
+                        ->Field("value", &InterruptibleSlowTestComponent::m_value);
+
+                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                    {
+                        editContext->Class<InterruptibleSlowTestComponent>("Interruptible Slow Test", "A slow card")
+                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &InterruptibleSlowTestComponent::m_value, "Value", "")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &InterruptibleSlowTestComponent::SlowVisibility);
+                    }
+                }
+            }
+
+            AZ::Crc32 SlowVisibility() const
+            {
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(12));
+                return AZ::Edit::PropertyVisibility::Show;
+            }
+
+            float m_value = 0.0f;
+        };
+
         //! A window that repaints for a new selection, as the outliner does, and records the inspector's card titles when its paint
         //! runs (the update request is delivered; the window is never on screen)
         class SelectionPaintProbe : public QWidget
@@ -127,17 +163,21 @@ namespace UnitTest
     protected:
         using InterruptibleShortTestComponent = EntityPropertyEditorInterruptibleLoadTestsInternal::InterruptibleShortTestComponent;
         using InterruptibleTallTestComponent = EntityPropertyEditorInterruptibleLoadTestsInternal::InterruptibleTallTestComponent;
+        using InterruptibleSlowTestComponent = EntityPropertyEditorInterruptibleLoadTestsInternal::InterruptibleSlowTestComponent;
         using SelectionPaintProbe = EntityPropertyEditorInterruptibleLoadTestsInternal::SelectionPaintProbe;
 
         static constexpr int TallComponents = 6;
+        static constexpr int SlowComponents = 4;
 
         void SetUpEditorFixtureImpl() override
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
             GetApplication()->RegisterComponentDescriptor(InterruptibleShortTestComponent::CreateDescriptor());
             GetApplication()->RegisterComponentDescriptor(InterruptibleTallTestComponent::CreateDescriptor());
+            GetApplication()->RegisterComponentDescriptor(InterruptibleSlowTestComponent::CreateDescriptor());
 
-            // one entity of the transform and a short card, one of the transform and six tall cards
+            // one entity of the transform and a short card, one of the transform and six tall cards, one of the transform and four
+            // slow cards
             m_shortEntityId = CreateEditorEntityUnderRoot("InterruptibleShortEntity");
             AZ::Entity* shortEntity = AzToolsFramework::GetEntityById(m_shortEntityId);
             shortEntity->Deactivate();
@@ -153,6 +193,16 @@ namespace UnitTest
                     AZStd::string::format("InterruptibleTallTestComponent_%d", index));
             }
             tallEntity->Activate();
+
+            m_slowEntityId = CreateEditorEntityUnderRoot("InterruptibleSlowEntity");
+            AZ::Entity* slowEntity = AzToolsFramework::GetEntityById(m_slowEntityId);
+            slowEntity->Deactivate();
+            for (int index = 0; index < SlowComponents; ++index)
+            {
+                slowEntity->CreateComponent<InterruptibleSlowTestComponent>()->SetSerializedIdentifier(
+                    AZStd::string::format("InterruptibleSlowTestComponent_%d", index));
+            }
+            slowEntity->Activate();
         }
 
         void TearDownEditorFixtureImpl() override
@@ -207,6 +257,12 @@ namespace UnitTest
 
         //! Runs the rebuild the selection queued, and nothing after it: the inspector as the event loop leaves it after that turn
         void RunTheQueuedRebuildOnly()
+        {
+            QCoreApplication::sendPostedEvents(m_inspector.get(), QEvent::MetaCall);
+        }
+
+        //! Runs the idle step the inspector queued last, and nothing after it
+        void RunTheQueuedStepOnly()
         {
             QCoreApplication::sendPostedEvents(m_inspector.get(), QEvent::MetaCall);
         }
@@ -311,6 +367,7 @@ namespace UnitTest
 
         AZ::EntityId m_shortEntityId;
         AZ::EntityId m_tallEntityId;
+        AZ::EntityId m_slowEntityId;
         AZStd::unique_ptr<AzToolsFramework::EntityPropertyEditor> m_inspector;
     };
 
@@ -452,6 +509,31 @@ namespace UnitTest
             EXPECT_FALSE(card->IsContentBuildHeld());
         }
         EXPECT_GT(m_inspector->GetLazyCardsPending(), 0);
+    }
+
+    TEST_F(EntityPropertyEditorInterruptibleLoadTests, AStepOfTheFrozenInspectorBuildsTheViewForTheInlineBudget)
+    {
+        // a rebuild that builds no card itself: the inspector frozen, every card held; the window tall enough for every slow card
+        SetInlineMs(0);
+        Show(m_shortEntityId);
+        m_inspector->resize(420, 900);
+        RunTheEventLoop();
+        SelectQueued(m_slowEntityId);
+        RunTheQueuedRebuildOnly();
+        ASSERT_FALSE(m_inspector->updatesEnabled());
+        ASSERT_EQ(m_inspector->GetLazyCardsPending(), 1 + SlowComponents);
+
+        // the next step builds the cards in view for the inline budget (a lazy cards step's 10 ms would build one slow card): all of
+        // them, and the inspector shows them
+        SetInlineMs(1000);
+        RunTheQueuedStepOnly();
+        EXPECT_TRUE(m_inspector->updatesEnabled());
+        const AZStd::vector<AzToolsFramework::ComponentEditor*> inView = CardsInView();
+        EXPECT_EQ(inView.size(), static_cast<size_t>(1 + SlowComponents));
+        for (const AzToolsFramework::ComponentEditor* card : inView)
+        {
+            EXPECT_FALSE(card->IsContentBuildHeld()) << card->GetHeader()->titleLabel()->text().toUtf8().constData();
+        }
     }
 
     TEST_F(EntityPropertyEditorInterruptibleLoadTests, ADirectRebuildStaysSynchronous)

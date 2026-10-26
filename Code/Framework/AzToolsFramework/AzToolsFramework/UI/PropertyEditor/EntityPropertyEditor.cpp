@@ -191,8 +191,24 @@ namespace AzToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
         "With ed_inspectorInterruptibleLoad, the rebuild a selection queues builds the cards in view for about this long (ms) before "
-        "it lets the event loop run: a turn of the loop (the engine's tick, other windows' paints) costs about 30 ms before the next "
-        "step. 0 builds every card in idle steps.");
+        "it lets the event loop run, and so does each idle step until they show: a turn of the loop (the engine's tick, other "
+        "windows' paints) costs about 30 ms before the next step. 0 builds every card in idle steps.");
+
+    //! ed_inspectorInterruptibleInlineMs in microseconds
+    static AZ::s64 InterruptibleInlineBudgetUs()
+    {
+        return aznumeric_cast<AZ::s64>(static_cast<int>(ed_inspectorInterruptibleInlineMs)) * 1000;
+    }
+
+    // A/B switch for the frozen steps' budget (inspector build plan, final optimization round): removed in finalization
+    AZ_CVAR(
+        bool,
+        ed_inspectorFrozenStepsInlineBudget,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set (the default), each idle step of an inspector that keeps its last picture builds the cards in view for "
+        "ed_inspectorInterruptibleInlineMs; if not, for a lazy cards step (10 ms).");
 
     static bool ShouldUseDPE()
     {
@@ -1527,9 +1543,9 @@ namespace AzToolsFramework
 
         // An interruptible rebuild builds the cards in view for a while at once, then keeps the inspector's last picture until the idle
         // steps have built the rest of them
-        if (m_interruptibleRebuild && ed_inspectorInterruptibleInlineMs > 0)
+        if (m_interruptibleRebuild && InterruptibleInlineBudgetUs() > 0)
         {
-            BuildViewCards(aznumeric_cast<AZ::s64>(static_cast<int>(ed_inspectorInterruptibleInlineMs)) * 1000);
+            BuildViewCards(InterruptibleInlineBudgetUs());
         }
         AZ::s64 viewShownUs = 0;    // the view shown by this rebuild itself (reported after its own line)
         if (m_interruptibleRebuild && !ViewCardsBuilt())
@@ -2500,8 +2516,17 @@ namespace AzToolsFramework
             return;
         }
 
-        // The next held cards from the top, for about one step's budget, at least one card
-        ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, SettleOrigin::LazyStep, LazyCardsStepBudgetUs);
+        // The next held cards from the top, for about one step's budget, at least one card. While the inspector keeps its last
+        // picture, the cards in view, for as long as the rebuild builds them: nothing shows before they are built, and each turn of
+        // the event loop between two steps costs about 30 ms
+        if (m_viewFrozen && ed_inspectorFrozenStepsInlineBudget)
+        {
+            BuildViewCards(AZStd::max(InterruptibleInlineBudgetUs(), LazyCardsStepBudgetUs));
+        }
+        else
+        {
+            ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, SettleOrigin::LazyStep, LazyCardsStepBudgetUs);
+        }
         ++m_lazyCardsSteps;
 
         // the cards in view built: the frozen inspector shows them
