@@ -173,6 +173,27 @@ namespace AzToolsFramework
         "was. It always does after an expand, a collapse, or cards built as the view reaches them. Off by default: a few ms per "
         "rebuild.");
 
+    AZ_CVAR(
+        bool,
+        ed_inspectorInterruptibleLoad,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set (the default), the Entity Inspector lets a new selection show before it rebuilds, and a newer one interrupt the "
+        "rebuild: the rebuild a selection queues paints what waits to be painted first (the outliner's new selection), builds every "
+        "card's rows in idle steps, and keeps the inspector's last picture until the cards in view are built, then shows them in one "
+        "paint; a new selection drops the steps left (inspector build plan I.7).");
+
+    AZ_CVAR(
+        int,
+        ed_inspectorInterruptibleInlineMs,
+        40,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "With ed_inspectorInterruptibleLoad, the rebuild a selection queues builds the cards in view for about this long (ms) before "
+        "it lets the event loop run: a turn of the loop (the engine's tick, other windows' paints) costs about 30 ms before the next "
+        "step. 0 builds every card in idle steps.");
+
     static bool ShouldUseDPE()
     {
         bool dpeEnabled = true;
@@ -1342,7 +1363,10 @@ namespace AzToolsFramework
         AZ::u64 ignoredMismatches = 0;
         AZ::DocumentPropertyEditor::ReflectionAdapter::TakeVerifyCounts(ignoredGenerations, ignoredMismatches);
 
+        // A freeze of the previous rebuild ends with this one: its updates stay disabled until this one's end
         setUpdatesEnabled(false);
+        m_viewFrozen = false;
+        ++m_viewFreezeGeneration;
 
         m_isBuildingProperties = true;
         m_isAlreadyQueuedRefresh = false;
@@ -1501,7 +1525,26 @@ namespace AzToolsFramework
 
         m_isBuildingProperties = false;
 
-        setUpdatesEnabled(true);
+        // An interruptible rebuild builds the cards in view for a while at once, then keeps the inspector's last picture until the idle
+        // steps have built the rest of them
+        if (m_interruptibleRebuild && ed_inspectorInterruptibleInlineMs > 0)
+        {
+            BuildViewCards(aznumeric_cast<AZ::s64>(static_cast<int>(ed_inspectorInterruptibleInlineMs)) * 1000);
+        }
+        AZ::s64 viewShownUs = 0;    // the view shown by this rebuild itself (reported after its own line)
+        if (m_interruptibleRebuild && !ViewCardsBuilt())
+        {
+            StartViewFreeze();
+        }
+        else
+        {
+            setUpdatesEnabled(true);
+            if (m_interruptibleRebuild)
+            {
+                viewShownUs =
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+            }
+        }
 
         // re-enable all actions so that things like "delete" or "cut" work again
         QList<QAction*> actionList = actions();
@@ -1623,6 +1666,10 @@ namespace AzToolsFramework
             ReportLayoutSettling(
                 settleRounds,
                 AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(refreshStartTime.time_since_epoch()).count());
+            if (viewShownUs != 0)
+            {
+                ReportFirstView(viewShownUs);
+            }
         }
         else
         {
@@ -1869,8 +1916,10 @@ namespace AzToolsFramework
         // Lazy cards: the cards from the top build their rows until they cover the view as it will be shown (the scroll position the
         // rebuild restores, the view, and one screen below); the cards after them, and collapsed ones, hold theirs. Not with a filter
         // (whether a card shows at all depends on its rows) or when the view goes to a new component.
+        // An interruptible rebuild holds every card: the idle steps build the view's first.
         const bool lazyCards = LazyCardsEnabled() && m_filterString.empty() && !m_shouldScrollToNewComponents;
-        const int lazyCardsCover = AZStd::max(m_savedVerticalScroll, 0) + 2 * m_gui->m_componentList->viewport()->height();
+        const int lazyCardsCover =
+            m_interruptibleRebuild ? 0 : AZStd::max(m_savedVerticalScroll, 0) + 2 * m_gui->m_componentList->viewport()->height();
         const int cardSpacing = AZStd::max(m_gui->m_componentListContents->layout()->spacing(), 0);
         int cardsHeight = 0;
 
@@ -2145,6 +2194,165 @@ namespace AzToolsFramework
     }
 
     // ----------------------------------------------------------------------------------
+    // Interruptible load (ed_inspectorInterruptibleLoad, inspector build plan I.7)
+    // ----------------------------------------------------------------------------------
+
+    void EntityPropertyEditor::RunQueuedRefresh()
+    {
+        // A selection queues this rebuild ahead of the paints it causes (Qt posts paints at low priority), so the outliner showed the
+        // new selection only once the inspector was rebuilt. The pending paints go first.
+        if (ed_inspectorInterruptibleLoad)
+        {
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::UpdateRequest);
+        }
+
+        const auto nowUs = []()
+        {
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+        };
+        m_refreshStartUs = nowUs();
+        m_interruptibleRebuild = ed_inspectorInterruptibleLoad;
+        UpdateContents();
+        m_interruptibleRebuild = false;
+        m_refreshReturnUs = nowUs();
+    }
+
+    bool EntityPropertyEditor::ViewCardsBuilt() const
+    {
+        // the bottom of the view the rebuild restores (the saved scroll position), and the cards' tops at their heights now (a held
+        // card has its header's)
+        const int viewBottom = AZStd::max(m_savedVerticalScroll, 0) + m_gui->m_componentList->viewport()->height();
+        const QLayout* listLayout = m_gui->m_componentListContents->layout();
+        const int spacing = AZStd::max(listLayout->spacing(), 0);
+        int top = listLayout->contentsMargins().top();
+        for (AZ::s32 index = 0; index < m_componentEditorsUsed; ++index)
+        {
+            const ComponentEditor* componentEditor = m_componentEditors[index];
+            if (!componentEditor->isVisible())
+            {
+                continue;
+            }
+            if (top >= viewBottom)
+            {
+                return true;
+            }
+            if (componentEditor->IsContentBuildHeld() && componentEditor->IsExpanded())
+            {
+                return false;
+            }
+            top += componentEditor->sizeHint().height() + spacing;
+        }
+        return true;
+    }
+
+    void EntityPropertyEditor::BuildViewCards(AZ::s64 budgetUs)
+    {
+        const AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+        while (!ViewCardsBuilt())
+        {
+            // the first held card that the view needs built (the cards above it are)
+            int first = -1;
+            for (AZ::s32 index = 0; index < m_componentEditorsUsed && first < 0; ++index)
+            {
+                const ComponentEditor* componentEditor = m_componentEditors[index];
+                first = componentEditor->isVisible() && componentEditor->IsContentBuildHeld() && componentEditor->IsExpanded() ? index : -1;
+            }
+            if (first < 0)
+            {
+                return;
+            }
+            ReleaseLazyCardsThrough(first, SettleOrigin::LazyStep);
+
+            const AZ::s64 elapsedUs =
+                AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - start).count();
+            if (elapsedUs >= budgetUs)
+            {
+                return;
+            }
+        }
+    }
+
+    void EntityPropertyEditor::StartViewFreeze()
+    {
+        // the updates stay disabled (UpdateContents disabled them) and the mouse is ignored until EndViewFreeze
+        m_viewFrozen = true;
+        const AZ::u64 generation = ++m_viewFreezeGeneration;
+        QTimer::singleShot(ViewFreezeMaxMs, this, [this, generation]()
+            {
+                // the steps did not get there (paused, or a rebuild is queued and will end the freeze): build the view now
+                if (generation != m_viewFreezeGeneration || !m_viewFrozen || m_isAlreadyQueuedRefresh || m_isBuildingProperties)
+                {
+                    return;
+                }
+                BuildViewCards(AZStd::numeric_limits<AZ::s64>::max());
+                EndViewFreeze();
+                UpdateLazyCardsPendingProperty();
+            });
+    }
+
+    void EntityPropertyEditor::EndViewFreeze()
+    {
+        if (!m_viewFrozen)
+        {
+            return;
+        }
+        m_viewFrozen = false;
+        ++m_viewFreezeGeneration;
+
+        // The cards in view at their heights before the one paint that shows them (a step leaves the layout to the event loop),
+        // and the scroll position restored again: when the rebuild restored it, the held cards were too short to reach it
+        SettleComponentList(SettleOrigin::Interaction);
+        if (m_savedVerticalScroll >= 0)
+        {
+            m_gui->m_componentList->verticalScrollBar()->setValue(m_savedVerticalScroll);
+        }
+        setUpdatesEnabled(true);
+        ReportFirstView(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count());
+    }
+
+    void EntityPropertyEditor::ReportFirstView(AZ::s64 shownUs) const
+    {
+        if (m_inspectorDiagnosticsActive)
+        {
+            AZ_Printf(
+                "EntityInspector", "  firstView: ms=%.2f steps=%d (ms since the rebuild started)",
+                aznumeric_cast<double>(shownUs - m_lazyCardsStartUs) / 1000.0, m_lazyCardsSteps);
+        }
+    }
+
+    bool EntityPropertyEditor::IgnoredWhileFrozen(const QObject* object, const QEvent* event) const
+    {
+        switch (event->type())
+        {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::Wheel:
+        case QEvent::ContextMenu:
+            return object->isWidgetType() && (object == this || isAncestorOf(static_cast<const QWidget*>(object)));
+        default:
+            return false;
+        }
+    }
+
+    void EntityPropertyEditor::ReportSelectionPaint(AZ::s64 queuedUs)
+    {
+        if (queuedUs != m_refreshQueuedUs)
+        {
+            return;     // a newer refresh was queued: it reports
+        }
+        const auto sinceQueued = [queuedUs](AZ::s64 us)
+        {
+            return us != 0 ? aznumeric_cast<double>(us - queuedUs) / 1000.0 : -1.0;
+        };
+        AZ_Printf(
+            "EntityInspector", "  selectionPaint: outliner=%.1f rebuildStart=%.1f rebuildReturn=%.1f (ms after the refresh was queued)",
+            sinceQueued(m_outlinerPaintUs), sinceQueued(m_refreshStartUs), sinceQueued(m_refreshReturnUs));
+        m_refreshQueuedUs = 0;
+    }
+
+    // ----------------------------------------------------------------------------------
     // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4)
     // ----------------------------------------------------------------------------------
 
@@ -2234,7 +2442,9 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ReleaseLazyCardsInView()
     {
-        if (!CanReleaseLazyCards())
+        // While the view is frozen the steps build it: the scroll bar that shows as the list grows (a viewport resize) and the scroll
+        // restore must not build the whole view at once
+        if (m_viewFrozen || !CanReleaseLazyCards())
         {
             return;
         }
@@ -2294,6 +2504,12 @@ namespace AzToolsFramework
         ReleaseLazyCardsThrough(m_componentEditorsUsed - 1, SettleOrigin::LazyStep, LazyCardsStepBudgetUs);
         ++m_lazyCardsSteps;
 
+        // the cards in view built: the frozen inspector shows them
+        if (m_viewFrozen && ViewCardsBuilt())
+        {
+            EndViewFreeze();
+        }
+
         if (GetLazyCardsPending() > 0)
         {
             QueueLazyCardsStep();
@@ -2318,6 +2534,9 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::FinishLazyCards()
     {
+        // Every card is built: a freeze cannot outlast it
+        EndViewFreeze();
+
         // The generation ends here: a step still queued for it does nothing
         ++m_lazyCardsGeneration;
         if (!m_lazyCardsDiagnostics)
@@ -2860,7 +3079,17 @@ namespace AzToolsFramework
             // tree, not just refreshing values (that is taken care of elsewhere).
             // Sometimes, these events cause it to repeatedly refresh, so instead, give it a delay of more than 0 so that
             // tick can happen first.
-            QTimer::singleShot(0, this, &EntityPropertyEditor::UpdateContents);
+            QTimer::singleShot(0, this, &EntityPropertyEditor::RunQueuedRefresh);
+            if (m_inspectorDiagnosticsActive)
+            {
+                const AZ::s64 queuedUs =
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+                m_refreshQueuedUs = queuedUs;
+                m_refreshStartUs = 0;
+                m_refreshReturnUs = 0;
+                m_outlinerPaintUs = 0;
+                QTimer::singleShot(600, this, [this, queuedUs]() { ReportSelectionPaint(queuedUs); });
+            }
 
             //saving state any time refresh gets queued because requires valid components
             //attempting to call directly anywhere state needed to be preserved always occurred with QueuePropertyRefresh
@@ -4875,6 +5104,12 @@ namespace AzToolsFramework
     //overridden to intercept application level mouse events for component editor selection
     bool EntityPropertyEditor::eventFilter(QObject* object, QEvent* event)
     {
+        // Interruptible load: the frozen inspector shows its last picture, which the mouse must not act on
+        if (m_viewFrozen && IgnoredWhileFrozen(object, event))
+        {
+            return true;
+        }
+
         HandleMenuEvent(object, event);
         HandleSelectionEvents(object, event);
 
@@ -4889,6 +5124,17 @@ namespace AzToolsFramework
         if (m_listPaintWatch && event->type() == QEvent::Paint)
         {
             RecordListPaint(object);
+        }
+
+        // Diagnostics: the outliner's first paint after a refresh was queued (its view paints in the tree view's viewport)
+        if (m_refreshQueuedUs != 0 && m_outlinerPaintUs == 0 && event->type() == QEvent::Paint && object->isWidgetType())
+        {
+            const QWidget* parent = static_cast<const QWidget*>(object)->parentWidget();
+            if (parent && strstr(parent->metaObject()->className(), "EntityOutlinerTreeView") != nullptr)
+            {
+                m_outlinerPaintUs =
+                    AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now().time_since_epoch()).count();
+            }
         }
         return false;
     }

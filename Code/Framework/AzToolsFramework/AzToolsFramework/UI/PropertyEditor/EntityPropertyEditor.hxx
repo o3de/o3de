@@ -654,6 +654,37 @@ namespace AzToolsFramework
         bool m_lazyCardsDiagnostics = false;    //!< ed_inspectorRefreshDiagnostics, as the rebuild that held the cards read it
         AZ::s64 m_lazyCardsStartUs = 0;         //!< that rebuild's start, steady clock microseconds
 
+        // Interruptible load (ed_inspectorInterruptibleLoad, inspector build plan I.7)
+        //! The rebuild QueuePropertyRefresh queues: the pending paints first (the outliner's new selection), then UpdateContents, which
+        //! may then hold every card and freeze the view (m_interruptibleRebuild)
+        void RunQueuedRefresh();
+        bool m_interruptibleRebuild = false;
+        // The view freeze: after an interruptible rebuild the inspector keeps its last picture (updates disabled, mouse input ignored)
+        // while the idle steps build the cards in view, then shows them in one paint
+        //! The cards from the top down to the bottom of the view the rebuild restores have their rows (a collapsed card needs none)
+        bool ViewCardsBuilt() const;
+        //! Builds the held cards in view from the top, until they are built or budgetUs is spent (after one card at least); an
+        //! interruptible rebuild does so for ed_inspectorInterruptibleInlineMs before it lets the event loop run
+        void BuildViewCards(AZ::s64 budgetUs);
+        void StartViewFreeze();
+        void EndViewFreeze();
+        //! Diagnostics: "firstView:" the cards in view of an interruptible rebuild were shown at shownUs (steady clock microseconds),
+        //! reported as ms since the rebuild started
+        void ReportFirstView(AZ::s64 shownUs) const;
+        //! Mouse input the frozen inspector ignores (it would act on cards that are not the ones shown)
+        bool IgnoredWhileFrozen(const QObject* object, const QEvent* event) const;
+        bool m_viewFrozen = false;
+        AZ::u64 m_viewFreezeGeneration = 0;
+        //! The freeze ends by then even if the idle steps have not built the view (the rest is built at once)
+        static constexpr int ViewFreezeMaxMs = 1000;
+        //! Diagnostics: when the last refresh was queued, when its rebuild started and returned, and when the outliner first painted
+        //! after it (steady clock microseconds; 0 = not yet), reported by ReportSelectionPaint
+        void ReportSelectionPaint(AZ::s64 queuedUs);
+        AZ::s64 m_refreshQueuedUs = 0;
+        AZ::s64 m_refreshStartUs = 0;
+        AZ::s64 m_refreshReturnUs = 0;
+        AZ::s64 m_outlinerPaintUs = 0;
+
         using ComponentPropertyEditorMap = AZStd::unordered_map<AZ::Component*, ComponentEditor*>;
         ComponentPropertyEditorMap m_componentToEditorMap;
 

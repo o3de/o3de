@@ -187,6 +187,7 @@ set(FILES
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityOutlinerFlatSheetTests.cpp
+    UI/EntityPropertyEditorInterruptibleLoadTests.cpp
     UI/EntityPropertyEditorLayoutTests.cpp
     UI/EntityPropertyEditorLazyCardsTests.cpp
     UI/EntityPropertyEditorTests.cpp

@@ -112,6 +112,9 @@ namespace UnitTest
             m_testEntityPropertyEditor->show();
             GenerateComponentAdapterDoms(newEntityId);
             QApplication::processEvents();
+            // the rebuild the selection queued runs in that turn, and builds its cards' rows in idle steps (interruptible load):
+            // the walk needs them all
+            m_testEntityPropertyEditor->CompleteLazyCards();
 
             const auto* propertyEditor = FindPropertyEditor();
             ASSERT_NE(propertyEditor, nullptr);
