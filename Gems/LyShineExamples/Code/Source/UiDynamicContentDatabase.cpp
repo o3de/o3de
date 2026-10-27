@@ -7,10 +7,10 @@
  */
 
 #include "UiDynamicContentDatabase.h"
-#include <ISystem.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/JSON/reader.h>
 #include <AzCore/JSON/error/en.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -102,42 +102,45 @@ namespace LyShineExamples
 
     void UiDynamicContentDatabase::Refresh(ColorType colorType, const AZStd::string& filePath)
     {
-        AZ::IO::HandleType readHandle = gEnv->pCryPak->FOpen(filePath.c_str(), "rt");
+        AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
+        {
+            return;
+        }
 
+        AZ::IO::HandleType readHandle = archive->FOpen(filePath.c_str(), "rt");
         if (readHandle == AZ::IO::InvalidHandle)
         {
             return;
         }
 
-        size_t fileSize = gEnv->pCryPak->FGetSize(readHandle);
+        size_t fileSize = archive->FGetSize(readHandle);
         if (fileSize > 0)
         {
             AZStd::string fileBuf;
             fileBuf.resize(fileSize);
 
-            gEnv->pCryPak->FRead(fileBuf.data(), fileSize, readHandle);
-
             m_documentParsed[colorType] = false;
+            archive->FRead(fileBuf.data(), fileSize, readHandle);
 
             rapidjson::ParseResult parseResult = m_document[colorType].Parse(fileBuf.data());
             if (!parseResult)
             {
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING,
+                AZ_Warning("LyShineExamples", false,
                     "Failed to parse content due to '%s' at offset %zd.\n",
                     rapidjson::GetParseError_En(parseResult.Code()), parseResult.Offset());
             }
             else if (!m_document[colorType].IsObject())
             {
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING,
+                AZ_Warning("LyShineExamples", false,
                     "Expected an object at the root.");
             }
             else
             {
                 m_documentParsed[colorType] = true;
             }
-
         }
-        gEnv->pCryPak->FClose(readHandle);
+        archive->FClose(readHandle);
     }
 
     void UiDynamicContentDatabase::Reflect(AZ::ReflectContext* context)

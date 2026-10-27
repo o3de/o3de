@@ -408,7 +408,7 @@ struct ISystemUserCallback
 
     // Description:
     //   Show message by provider.
-    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) { CryMessageBox(text, caption, uType); }
+    virtual void ShowMessage(const char* text, const char* caption, EShowMessageType eType) { CryMessageBox(text, caption, eType); }
 
     // </interfuscator:shuffle>
 
@@ -422,8 +422,8 @@ struct ISystemEventListener
 {
     // <interfuscator:shuffle>
     virtual ~ISystemEventListener() {}
-    virtual void OnSystemEventAnyThread([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam) {}
-    virtual void OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam) { }
+    virtual void OnSystemEventAnyThread([[maybe_unused]] ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam) {}
+    virtual void OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam) { }
     // </interfuscator:shuffle>
 };
 
@@ -436,7 +436,7 @@ struct ISystemEventDispatcher
     virtual bool RegisterListener(ISystemEventListener* pListener) = 0;
     virtual bool RemoveListener(ISystemEventListener* pListener) = 0;
 
-    virtual void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) = 0;
+    virtual void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) = 0;
     virtual void Update() = 0;
 
     //virtual void OnLocaleChange() = 0;
@@ -783,7 +783,7 @@ struct ISystem
     // Description:
     //   Report message by provider or by using CryMessageBox.
     //   Doesn't terminate the execution.
-    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
+    virtual void ShowMessage(const char* text, const char* caption, EShowMessageType uType) = 0;
 
     // Summary:
     //   Compare specified verbosity level to the one currently set.

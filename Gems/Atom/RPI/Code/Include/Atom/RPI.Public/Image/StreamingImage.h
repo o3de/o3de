@@ -14,6 +14,8 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+#include <AzCore/EBus/EBus.h>
+
 // Enable streaming image hot reloading
 #define AZ_RPI_STREAMING_IMAGE_HOT_RELOADING
 
@@ -23,6 +25,20 @@ namespace AZ
     {
         class StreamingImagePool;
         class StreamingImageController;
+
+        //! Notifies a StreamingImage that one of its mip chain uploads finished.
+        class StreamingImageUploadNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            using BusIdType = AZ::Uuid;
+            using MutexType = AZStd::recursive_mutex;
+
+            virtual void OnMipChainUploaded(size_t mipChainIndex) = 0;
+        };
+        using StreamingImageUploadNotificationBus = AZ::EBus<StreamingImageUploadNotifications>;
 
         //! A runtime streaming image, containing GPU data and streaming state.
         //! StreamingImage is the runtime instance of a StreamingImageAsset. Both are immutable (on
@@ -47,6 +63,7 @@ namespace AZ
         class ATOM_RPI_PUBLIC_API StreamingImage final
             : public Image
             , public Data::AssetBus::MultiHandler
+            , private StreamingImageUploadNotificationBus::Handler
         {
             static_assert(RHI::Limits::Image::MipCountMax < 16, "StreamingImageAsset is optimized to support a maximum of 16 mip levels.");
 
@@ -147,6 +164,11 @@ namespace AZ
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
             ///////////////////////////////////////////////////////////////////
 
+            ///////////////////////////////////////////////////////////////////
+            // StreamingImageUploadNotificationBus::Handler
+            void OnMipChainUploaded(size_t mipChainIndex) override;
+            ///////////////////////////////////////////////////////////////////
+
             // Evicts the mip chain asset associated with the provided index from the CPU. Does *NOT*
             // affect the GPU image content.            
             void EvictMipChainAsset(size_t mipChainIndex);
@@ -166,6 +188,10 @@ namespace AZ
             RHI::ResultCode UploadMipChain(size_t mipChainIndex);
 
             AZStd::mutex m_mipChainMutex;
+
+            // Address of this image on StreamingImageUploadNotificationBus. Regenerated on each Init so
+            // uploads queued before a reload don't reach the reloaded image.
+            AZ::Uuid m_uploadEventId;
 
             struct MipChainState
             {

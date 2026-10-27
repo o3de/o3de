@@ -144,7 +144,7 @@ public:
     void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup) override;
 
     // ISystemEventListener
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
 
     ///////////////////////////////////////////////////////////////////////////
     //! @name ISystem implementation
@@ -210,7 +210,7 @@ public:
     // Validator Warning.
     void WarningV(EValidatorModule module, EValidatorSeverity severity, int flags, const char* file, const char* format, va_list args) override;
     void Warning(EValidatorModule module, EValidatorSeverity severity, int flags, const char* file, const char* format, ...) override;
-    void ShowMessage(const char* text, const char* caption, unsigned int uType) override;
+    void ShowMessage(const char* text, const char* caption, EShowMessageType uType) override;
     bool CheckLogVerbosity(int verbosity) override;
 
     //! Return pointer to user defined callback.

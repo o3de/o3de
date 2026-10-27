@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#include "IGem.h"
+#include <AzCore/EBus/EBus.h>
 
 namespace CertificateManager
 {
     class IDataSource;
-
-    //CRYINTERFACE_DECLARE(ICertificateManagerGem, 0x37a4537a67f04608, 0xf8ab133065034f52);
 
     class CertificateManagerRequests
         : public AZ::EBusTraits

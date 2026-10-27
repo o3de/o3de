@@ -59,9 +59,6 @@ typedef unsigned __int64 ULONG_PTR, * PULONG_PTR;
 
 typedef ULONG_PTR DWORD_PTR, * PDWORD_PTR;
 
-int64 CryGetTicks();
-int64 CryGetTicksPerSec();
-
 #ifndef FILE_ATTRIBUTE_NORMAL
     #define FILE_ATTRIBUTE_NORMAL 0x00000080
 #endif

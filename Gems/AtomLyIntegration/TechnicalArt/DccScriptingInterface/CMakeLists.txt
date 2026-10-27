@@ -9,6 +9,4 @@ update_pip_requirements(${CMAKE_CURRENT_LIST_DIR}/requirements.txt DccScriptingI
 
 o3de_gem_setup("DccScriptingInterface")
 
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
-
 add_subdirectory(Code)

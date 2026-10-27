@@ -77,7 +77,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     {
         if (gEnv && gEnv->pSystem)
         {
-            gEnv->pSystem->ShowMessage(szBuffer, "Error", MB_OK | MB_ICONERROR | MB_APPLMODAL);
+            gEnv->pSystem->ShowMessage(szBuffer, "Error", EShowMessageType::Error);
         }
     }
 }
@@ -112,7 +112,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
     {
         if (gEnv && gEnv->pSystem)
         {
-            gEnv->pSystem->ShowMessage(szBuffer, "Warning", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            gEnv->pSystem->ShowMessage(szBuffer, "Warning", EShowMessageType::Warning);
         }
     }
 }

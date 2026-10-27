@@ -10,18 +10,19 @@
 
 #include <CertificateManager/ICertificateManagerGem.h>
 #include <CertificateManager/DataSource/FileDataSourceBus.h>
+#include <AzCore/Module/Module.h>
 
 namespace CertificateManager
 {
     class FileDataSource;
 
     class CertificateManagerModule
-        : public CryHooksModule
+        : public AZ::Module
         , public FileDataSourceCreationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(CertificateManagerModule, AZ::SystemAllocator)
-        AZ_RTTI(CertificateManagerModule,"{11C0C40E-3576-4AFD-A708-B1EE70DF907B}",CryHooksModule);
+        AZ_RTTI(CertificateManagerModule,"{11C0C40E-3576-4AFD-A708-B1EE70DF907B}",AZ::Module);
 
         CertificateManagerModule();
         ~CertificateManagerModule() override;

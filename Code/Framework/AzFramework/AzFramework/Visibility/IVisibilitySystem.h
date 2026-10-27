@@ -79,6 +79,11 @@ namespace AzFramework
         //! @param visibilityEntry data for the object being removed
         virtual void RemoveEntry(VisibilityEntry& visibilityEntry) = 0;
 
+        //! Enumerate every node in the scene, including nodes with no entries.
+        //! The callback may run while the scene is locked. Do not modify the scene from the callback.
+        //! @param callback the callback to invoke for each node
+        virtual void Enumerate(const EnumerateCallback& callback) const = 0;
+
         //! Intersects an axis aligned bounding box against the visibility system.
         //! @param aabb the axis aligned bounding box to test against
         //! @param callback the callback to invoke when a node is visible
@@ -111,8 +116,8 @@ namespace AzFramework
         //! @param callback the callback to invoke when a node is visible
         virtual void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const = 0;
 
-        //! Enumerate *all* OctreeNodes that have any entries in them (without any culling).
-        //! @param callback the callback to invoke when a node is visible
+        //! Enumerate nodes containing entries without applying spatial culling.
+        //! @param callback the callback to invoke for each node with entries
         virtual void EnumerateNoCull(const EnumerateCallback& callback) const = 0;
 
         //! Return the number of VisibilityEntries that have been added to the system

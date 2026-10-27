@@ -1,0 +1,12 @@
+{
+    "PackageName": "sse2neon",
+    "Version": "1.9.1",
+    "URL": "https://github.com/DLTcollab/sse2neon",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/DLTcollab/sse2neon/archive/refs/tags/v1.9.1.tar.gz",
+        "Revision": "92f6de174717aef09033ad21568d5bb9e5470404",
+        "SHA256": "6b70e7cb8c5ce4641002b85deaafe97efdf9ade9b49884edeaf678b35f0e132f"
+    }
+}

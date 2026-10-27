@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 
 namespace WhiteBox
 {
-    class WhiteBoxModule : public CryHooksModule
+    class WhiteBoxModule : public AZ::Module
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(WhiteBoxModule, "{7B6D6056-1C3C-4B0B-B7CF-B1D18956A069}", CryHooksModule);
+        AZ_RTTI(WhiteBoxModule, "{7B6D6056-1C3C-4B0B-B7CF-B1D18956A069}", AZ::Module);
 
         WhiteBoxModule();
         ~WhiteBoxModule();

@@ -86,7 +86,7 @@ struct SSystemUserCallback
             azsnprintf(str, 4096, "Unknown Error\r\nSave Level Before Exiting the Editor?");
         }
 
-        int res = IDNO;
+        int res = QMessageBox::No;
 
         ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
 
@@ -320,7 +320,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     bool bTestMode,
     const char* sInCmdLine,
     IInitializeUIInfo* logo,
-    HWND hwndForInputSystem)
+    void* hwndForInputSystem)
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
 

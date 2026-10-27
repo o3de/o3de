@@ -449,7 +449,7 @@ protected:
     friend class CViewManager;
     bool IsVectorInValidRange(const Vec3& v) const { return fabs(v.x) < 1e+8 && fabs(v.y) < 1e+8 && fabs(v.z) < 1e+8; }
     void AssignConstructionPlane(const Vec3& p1, const Vec3& p2, const Vec3& p3);
-    HWND renderOverlayHWND() const;
+    void* renderOverlayHWND() const;
     void setRenderOverlayVisible(bool);
     bool isRenderOverlayVisible() const;
 

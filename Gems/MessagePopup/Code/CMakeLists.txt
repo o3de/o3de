@@ -17,7 +17,10 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzFramework
         PUBLIC
+            AZ::AzCore
             Legacy::CryCommon
             Gem::LyShine.Clients.API
 )

@@ -730,6 +730,22 @@ def test_validate_build_tool_from_config_key(test_version_query, test_version_re
 
 
 @pytest.mark.parametrize(
+    "cmake_version, supported", [
+        pytest.param(str(android_support.CMAKE_MIN_VERSION), True, id='minimum'),
+        pytest.param('3.24.99', False, id='below_minimum')
+    ]
+)
+def test_validate_cmake_version(cmake_version, supported):
+    cmake_path = '/path/to/cmake'
+    with patch('o3de.android_support.validate_build_tool', return_value=(cmake_path, cmake_version)):
+        if supported:
+            assert android_support.validate_cmake(Mock()) == (cmake_path, cmake_version)
+        else:
+            with pytest.raises(android_support.AndroidToolError, match='O3DE requires CMake'):
+                android_support.validate_cmake(Mock())
+
+
+@pytest.mark.parametrize(
     "test_version_query, test_version_result, test_version_regex, test_expected_version", [
         pytest.param("-version", "Version 1.4", r'(Version)\s*([\d\.]*)', '1.4'),
         pytest.param("--version", "Unknown", r'(Version)\s*([\d\.]*)', None),

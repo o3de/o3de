@@ -212,44 +212,7 @@ size_t wcsnlen(const wchar_t* str, size_t maxLen)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-bool QueryPerformanceCounter(LARGE_INTEGER* counter)
-{
-#if defined(LINUX)
-    // replaced gettimeofday
-    // http://fixunix.com/kernel/378888-gettimeofday-resolution-linux.html
-    timespec tv;
-    clock_gettime(CLOCK_MONOTONIC, &tv);
-    counter->QuadPart = (uint64)tv.tv_sec * 1000000 + tv.tv_nsec / 1000;
-    return true;
-#elif defined(APPLE)
-    counter->QuadPart = mach_absolute_time();
-    return true;
-#else
-    return false;
-#endif
-}
 
-bool QueryPerformanceFrequency(LARGE_INTEGER* frequency)
-{
-#if defined(LINUX)
-    // On Linux we'll use gettimeofday().  The API resolution is microseconds,
-    // so we'll report that to the caller.
-    frequency->u.LowPart  = 1000000;
-    frequency->u.HighPart = 0;
-    return true;
-#elif defined(APPLE)
-    static mach_timebase_info_data_t s_kTimeBaseInfoData;
-    if (s_kTimeBaseInfoData.denom == 0)
-    {
-        mach_timebase_info(&s_kTimeBaseInfoData);
-    }
-    // mach_timebase_info_data_t expresses the tick period in nanoseconds
-    frequency->QuadPart = 1e+9 * (uint64_t)s_kTimeBaseInfoData.denom / (uint64_t)s_kTimeBaseInfoData.numer;
-    return true;
-#else
-    return false;
-#endif
-}
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -319,75 +282,40 @@ void CrySleep(unsigned int dwMilliseconds)
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] EShowMessageType eType)
 {
 #ifdef WIN32
 #   error WIN32 is defined in WinBase.cpp (it is a non-Windows file)
 #elif defined(MAC)
     CFStringRef strText = CFStringCreateWithCString(nullptr, lpText, kCFStringEncodingMacRoman);
     CFStringRef strCaption = CFStringCreateWithCString(nullptr, lpCaption, kCFStringEncodingMacRoman);
-
     CFStringRef strOk = CFSTR("OK");
-    CFStringRef strCancel = CFSTR("Cancel");
-    CFStringRef strRetry = CFSTR("Retry");
-    CFStringRef strYes = CFSTR("Yes");
-    CFStringRef strNo = CFSTR("No");
-    CFStringRef strAbort = CFSTR("Abort");
-    CFStringRef strIgnore = CFSTR("Ignore");
-    CFStringRef strTryAgain = CFSTR("Try Again");
-    CFStringRef strContinue = CFSTR("Continue");
-
-    CFStringRef defaultButton = nullptr;
-    CFStringRef alternativeButton = nullptr;
-    CFStringRef otherButton = nullptr;
-
-    switch (uType & 0xf)
+    CFOptionFlags cfOpt = 0;
+    switch (eType)
     {
-        case MB_OKCANCEL:
-            defaultButton = strOk;
-            alternativeButton = strCancel;
-            break;
-        case MB_ABORTRETRYIGNORE:
-            defaultButton = strAbort;
-            alternativeButton = strRetry;
-            otherButton = strIgnore;
-            break;
-        case MB_YESNOCANCEL:
-            defaultButton = strYes;
-            alternativeButton = strNo;
-            otherButton = strCancel;
-            break;
-        case MB_YESNO:
-            defaultButton = strYes;
-            alternativeButton = strNo;
-            break;
-        case MB_RETRYCANCEL:
-            defaultButton = strRetry;
-            alternativeButton = strCancel;
-            break;
-        case MB_CANCELTRYCONTINUE:
-            defaultButton = strCancel;
-            alternativeButton = strTryAgain;
-            otherButton = strContinue;
-            break;
-        case MB_OK:
-        default:
-            defaultButton = strOk;
-            break;
+    case EShowMessageType::Error:
+        cfOpt = kCFUserNotificationStopAlertLevel;
+        break;
+    case EShowMessageType::Warning:
+        cfOpt = kCFUserNotificationCautionAlertLevel;
+        break;
+    case EShowMessageType::Info:
+    default:
+        cfOpt = kCFUserNotificationNoteAlertLevel;
+        break;
     }
-
     CFOptionFlags kResult;
     CFUserNotificationDisplayAlert(
         0,                                 // no timeout
-        kCFUserNotificationNoteAlertLevel, //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
+        cfOpt,                             //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
         nullptr,                           //icon url, use default, you can change it depending message_type flags
         nullptr,                           //not used
         nullptr,                           //localization of strings
         strText,                           //header text
         strCaption,                        //message text
-        defaultButton,                     //default "ok" text in button
-        alternativeButton,                 //alternate button title
-        otherButton,                       //other button title, null--> no other button
+        strOk,                     //default "ok" text in button
+        nullptr,                            //alternate button title
+        nullptr,                            //other button title, null--> no other button
         &kResult                           //response flags
     );
 

@@ -271,7 +271,7 @@ namespace stl
     {
         bool operator()(const Type& left, const Type& right) const
         {
-            return _stricmp(constchar_cast(left), constchar_cast(right)) < 0;
+            return azstricmp(constchar_cast(left), constchar_cast(right)) < 0;
         }
     };
 
@@ -352,7 +352,7 @@ namespace stl
     public:
         bool operator()(const Key& key1, const Key& key2) const
         {
-            return _stricmp(constchar_cast(key1), constchar_cast(key2)) == 0;
+            return azstricmp(constchar_cast(key1), constchar_cast(key2)) == 0;
         }
     };
 

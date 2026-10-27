@@ -6,7 +6,7 @@
  *
  */
 
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <Behaviors/LoggingGroupBehavior.h>
 #include <Processors/LoadingTrackingProcessor.h>
@@ -20,14 +20,13 @@ namespace SceneLoggingExample
     // NOTE: The gem system currently does not support registering file extensions through the  
     // AssetImportRequest EBus.
     class SceneLoggingExampleModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
         AZ_CLASS_ALLOCATOR(SceneLoggingExampleModule, AZ::SystemAllocator)
-        AZ_RTTI(SceneLoggingExampleModule, "{36AA9C0F-7976-40C7-AF54-C492AC5B16F6}", CryHooksModule);
+        AZ_RTTI(SceneLoggingExampleModule, "{36AA9C0F-7976-40C7-AF54-C492AC5B16F6}", AZ::Module);
 
         SceneLoggingExampleModule()
-            : CryHooksModule()
         {
             // The SceneAPI libraries require specialized initialization. As early as possible, be 
             // sure to repeat the following two lines for any SceneAPI you want to use. Omitting these 

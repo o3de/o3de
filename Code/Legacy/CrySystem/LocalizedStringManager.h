@@ -85,7 +85,7 @@ public:
     // ~ILocalizationManager
 
     // ISystemEventManager
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
     // ~ISystemEventManager
 
     void GetLoadedTags(TLocalizationTagVec& tagVec);
@@ -114,7 +114,7 @@ private:
 
     struct SLanguage;
 
-    //#define LOG_DECOMP_TIMES              //If defined, will log decompression times to a file
+    // #define LOG_DECOMP_TIMES              //If defined, will log decompression times to a file
 
     struct SLocalizedStringEntry
     {
