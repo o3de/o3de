@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QTableWidget>
 #include <QMimeData>
+#include <QSignalBlocker>
 #include <QSplitter>
 #include <QClipboard>
 #include <QApplication>
@@ -636,6 +637,11 @@ namespace EMStudio
             }
         }
 
+        // Selection signals stay quiet while the table is rebuilt; the motion selection is synced once at the end.
+        const QSignalBlocker signalBlocker(tableWidget);
+        AZ_UNUSED(signalBlocker);
+        const bool syncMotionSelection = (tableWidget == m_tableWidget) && !readOnly;
+
         // Now that we remembered the selected motion entries, clear selection.
         tableWidget->clearSelection();
 
@@ -645,6 +651,10 @@ namespace EMStudio
         {
             tableWidget->setRowCount(0);
             tableWidget->horizontalHeader()->setVisible(false);
+            if (syncMotionSelection && !selectedMotionIds.empty())
+            {
+                UpdateInterface();
+            }
             return;
         }
 
@@ -811,6 +821,11 @@ namespace EMStudio
 
         // enable the sorting
         tableWidget->setSortingEnabled(true);
+
+        if (syncMotionSelection && !selectedMotionIds.empty())
+        {
+            UpdateInterface();
+        }
     }
 
     void MotionSetWindow::SyncMotionDirtyFlag(int motionId)
@@ -868,30 +883,45 @@ namespace EMStudio
             return;
         }
 
-        MCore::CommandGroup commandGroup("Select motion");
-        commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
-
-        // Inform the time view plugin about the motion selection change.
-        for (QTableWidgetItem* selectedItem : selectedItems)
+        // Rows are selected whole, so take one motion per row instead of one per cell.
+        AZStd::vector<EMotionFX::Motion*> selectedMotions;
+        const QModelIndexList selectedRows = m_tableWidget->selectionModel()->selectedRows();
+        for (const QModelIndex& rowIndex : selectedRows)
         {
-            EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntry(selectedItem);
-            if (motionEntry)
+            EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntry(m_tableWidget->item(rowIndex.row(), 1));
+            EMotionFX::Motion* motion = motionEntry ? motionEntry->GetMotion() : nullptr;
+            if (motion && AZStd::find(selectedMotions.begin(), selectedMotions.end(), motion) == selectedMotions.end())
             {
-                EMotionFX::Motion* motion = motionEntry->GetMotion();
-                if (motion)
-                {
-                    const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
-                    commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %zu", motionIndex));
-                }
+                selectedMotions.push_back(motion);
             }
         }
 
-        AZStd::string result;
-        if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
+        // Every select command makes the time view and the motion inspector rebuild, so skip the commands when nothing changed.
+        const CommandSystem::SelectionList& currentSelection = GetCommandManager()->GetCurrentSelection();
+        bool selectionChanged = currentSelection.GetNumSelectedMotions() != selectedMotions.size();
+        for (size_t i = 0; !selectionChanged && i < selectedMotions.size(); ++i)
         {
-            AZ_Error("EMotionFX", false, result.c_str());
+            selectionChanged = !currentSelection.CheckIfHasMotion(selectedMotions[i]);
         }
 
+        if (selectionChanged)
+        {
+            MCore::CommandGroup commandGroup("Select motion");
+            commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
+            for (EMotionFX::Motion* motion : selectedMotions)
+            {
+                const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
+                commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %zu", motionIndex));
+            }
+
+            AZStd::string result;
+            if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
+            {
+                AZ_Error("EMotionFX", false, result.c_str());
+            }
+        }
+
+        // Inform the time view plugin about the motion selection change.
         emit MotionSelectionChanged();
     }
 
@@ -2146,17 +2176,25 @@ namespace EMStudio
 
     void MotionSetWindow::Select(EMotionFX::MotionSet::MotionEntry* motionEntry)
     {
-        m_tableWidget->clearSelection();
-
-        const int rowCount = m_tableWidget->rowCount();
-        for (int i = 0; i < rowCount; ++i)
+        // Clearing and reselecting would each sync the motion selection, so stay quiet and sync once.
         {
-            const QTableWidgetItem* item = m_tableWidget->item(i, 1);
-            if (item->text() == motionEntry->GetId().c_str())
+            const QSignalBlocker signalBlocker(m_tableWidget);
+            AZ_UNUSED(signalBlocker);
+
+            m_tableWidget->clearSelection();
+
+            const int rowCount = m_tableWidget->rowCount();
+            for (int i = 0; i < rowCount; ++i)
             {
-                m_tableWidget->selectRow(i);
+                const QTableWidgetItem* item = m_tableWidget->item(i, 1);
+                if (item->text() == motionEntry->GetId().c_str())
+                {
+                    m_tableWidget->selectRow(i);
+                }
             }
         }
+
+        UpdateInterface();
     }
 
     EMotionFX::MotionSet::MotionEntry* MotionSetWindow::FindMotionEntry(QTableWidgetItem* item) const

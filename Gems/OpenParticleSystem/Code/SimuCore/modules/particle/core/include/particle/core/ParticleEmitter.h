@@ -43,6 +43,8 @@ namespace SimuCore::ParticleCore {
             bool localSpace = false;
             SimulateType type = SimulateType::CPU;
             bool loop = true;
+            // A disabled emitter stays in the system (emitter indexes and event links keep their meaning) but neither simulates nor draws.
+            bool disabled = false;
         };
 
         ParticleEmitter(const ParticleEmitter::Config& cfg, EmitterCreateInfo createInfo);

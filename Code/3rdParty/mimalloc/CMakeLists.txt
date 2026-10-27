@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(mimalloc
-    VERSION "3.5.2"
+    VERSION "3.6.0"
     LICENSE "MIT"
-    URL "https://github.com/microsoft/mimalloc/archive/refs/tags/v3.5.2.tar.gz"
-    URL_HASH "db5c4aaaf356edfeb1aa236b3a052fe3c67d01419db36613f783999341ed5619"
+    URL "https://github.com/microsoft/mimalloc/archive/refs/tags/v3.6.0.tar.gz"
+    URL_HASH "c663101ba193b5b823c8541c1b719ab67e3ebf9976e425a02359a5cad5e52990"
     GIT "https://github.com/microsoft/mimalloc.git"
-    GIT_HASH "636510a36ab743f76a582067142f29d15b024c90"
+    GIT_HASH "b18ab4eef383f655e760881b02eff8af02800879"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(mimalloc)
@@ -32,6 +32,7 @@ ly_add_target(
         PRIVATE
             MI_OPT_SIMD=1
             MI_SKIP_COLLECT_ON_EXIT=1
+            MI_PROFILE=0
 )
 
 target_include_directories(mimalloc SYSTEM
