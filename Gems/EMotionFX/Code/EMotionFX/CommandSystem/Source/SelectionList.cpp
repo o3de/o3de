@@ -11,6 +11,7 @@
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionManager.h>
 
 namespace CommandSystem
 {
@@ -256,6 +257,19 @@ namespace CommandSystem
             if (EMotionFX::GetActorManager().CheckIfIsActorInstanceRegistered(actorInstance) == false)
             {
                 m_selectedActorInstances.erase(m_selectedActorInstances.begin() + i);
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        // motions deleted by an asset reload leave dangling pointers behind, so drop the ones the manager no longer knows
+        for (size_t i = 0; i < m_selectedMotions.size();)
+        {
+            if (EMotionFX::GetMotionManager().FindMotionIndex(m_selectedMotions[i]) == InvalidIndex)
+            {
+                m_selectedMotions.erase(m_selectedMotions.begin() + i);
             }
             else
             {

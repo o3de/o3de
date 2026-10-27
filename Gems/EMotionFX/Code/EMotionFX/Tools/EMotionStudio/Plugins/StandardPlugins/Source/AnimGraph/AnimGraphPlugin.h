@@ -272,6 +272,8 @@ namespace EMStudio
 
         float                                       m_lastPlayTime;
         float                                       m_totalTime;
+        static constexpr float                      s_liveRedrawInterval = 1.0f / 30.0f; // graph view with an active anim graph instance
+        static constexpr float                      s_idleRedrawInterval = 0.5f; // fallback for changes that bypass the model
 
         uint32                                      m_displayFlags;
 
