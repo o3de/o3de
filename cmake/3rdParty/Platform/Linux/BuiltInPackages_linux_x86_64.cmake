@@ -38,3 +38,4 @@ ly_associate_package(PACKAGE_NAME pyside6-6.11.2-py3.10-rev1-linux              
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux              TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 83fc1711404d3e5b2faabb1134e97cc92b748d8b87ff4ea99599d8c750b8eff0)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux        TARGETS vulkan-validationlayers     PACKAGE_HASH 9195c7959695bcbcd1bc1dc5c425c14639a759733b3abe2ffa87eb3915b12c71)
+ly_associate_package(PACKAGE_NAME python-3.14.9-rev1-linux                          TARGETS python                      PACKAGE_HASH 110b92daaf25eebee4853a3596c87134735fc8c014211cb10c87cdb9728167dc
