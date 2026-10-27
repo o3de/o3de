@@ -67,7 +67,7 @@ namespace OpenParticle
     {
         AssetBuilderSDK::AssetBuilderDesc particleBuilderDescriptor;
         particleBuilderDescriptor.m_name = jobKey;
-        particleBuilderDescriptor.m_version = 1; // bump this to reprocess all particles.
+        particleBuilderDescriptor.m_version = 2; // bump this to reprocess all particles.
         particleBuilderDescriptor.m_busId = azrtti_typeid<ParticleBuilder>();
         particleBuilderDescriptor.m_patterns.push_back(
             AssetBuilderSDK::AssetBuilderPattern("*.particle", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
