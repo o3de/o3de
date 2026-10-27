@@ -31,6 +31,11 @@ Options:
   -s, --sign KEYID  Create a detached, armored GPG signature (.asc) with KEYID
   -k, --keep        Keep the staging directory after the tarball is created
   -h, --help        Show this help
+
+Examples:
+  $(basename "$0") -o dist build/linux/CPackUploads/o3de_26.10.0.deb
+  $(basename "$0") -z -o dist ~/Downloads/o3de_26.10.0.deb
+  $(basename "$0") -o dist /opt/O3DE/26.10.0
 EOF
 }
 

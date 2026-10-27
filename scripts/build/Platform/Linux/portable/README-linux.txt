@@ -10,9 +10,11 @@ System requirements
 -------------------
 
   * x86_64 Linux with glibc @MIN_GLIBC@ or newer, and libstdc++ providing
-    GLIBCXX_@MIN_GLIBCXX@ or newer. Check yours with:  ldd --version
-    For example: Ubuntu 22.04 or newer, Debian 12 or newer, a current Fedora
-    or Arch. RHEL/Rocky/Alma 9 and older are not supported by this build.
+    GLIBCXX_@MIN_GLIBCXX@ or newer (GCC 13 or newer). For example: Ubuntu
+    24.04 or newer, Debian 13 or newer, Fedora 43 or newer, openSUSE Leap
+    15.6 or newer, RHEL/Alma/Rocky 10, and Arch.
+    Ubuntu 22.04 needs a newer libstdc++ first, see "Ubuntu 22.04" below.
+    Debian 12 and RHEL/Alma/Rocky 9 are not supported by this build.
   * A GPU and driver with Vulkan support.
   * An X11 or Wayland (XWayland) desktop session.
   * Internet access the first time you run O3DE (it downloads its Python
@@ -64,6 +66,21 @@ The Fedora and Arch package names are a guide; if something is still
 missing, the launcher lists the exact library files it could not find.
 
 CMake does not need to be installed: a copy is bundled in cmake/runtime.
+
+
+Ubuntu 22.04
+------------
+
+Ubuntu 22.04, and distributions based on it such as Linux Mint 21 and
+Pop!_OS 22.04, ship an older libstdc++ than this build needs. Install a
+newer one from the Ubuntu toolchain PPA, in addition to the packages above:
+
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt update
+  sudo apt install libstdc++6 libstdc++-13-dev
+
+This updates the system libstdc++, which stays compatible with existing
+programs. libstdc++-13-dev is needed to build projects.
 
 
 Getting started
@@ -126,7 +143,12 @@ Troubleshooting
     package that provides it (on Ubuntu, usually one of the libxcb-* or
     libxkbcommon-x11-0 packages above).
 
-"version `GLIBC_2.xx' not found" or "version `GLIBCXX_3.4.xx' not found"
+"version `GLIBCXX_3.4.xx' not found"
+    Your libstdc++ is older than this build needs. On Ubuntu 22.04, see
+    "Ubuntu 22.04" above. Otherwise your distribution is older than this
+    build supports (see System requirements).
+
+"version `GLIBC_2.xx' not found"
     Your distribution is older than this build supports (see System
     requirements).
 
