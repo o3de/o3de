@@ -640,7 +640,7 @@ namespace AzToolsFramework
             return;
         }
 
-        for (const auto component : m_components)
+        for (const auto& component : m_components)
         {
             if ((component.GetComponentId() == entityComponentIdPair.GetComponentId()) 
              && (component.GetEntityId() == entityComponentIdPair.GetEntityId()))

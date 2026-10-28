@@ -3914,7 +3914,7 @@ namespace AzToolsFramework
             {
                 if (m_componentEditors[componentIndex])
                 {
-                    for (const auto component : m_componentEditors[componentIndex]->GetEntityComponentIdPairs())
+                    for (const auto& component : m_componentEditors[componentIndex]->GetEntityComponentIdPairs())
                     {
                         if (component.GetComponentId() == newComponentId)
                         {
