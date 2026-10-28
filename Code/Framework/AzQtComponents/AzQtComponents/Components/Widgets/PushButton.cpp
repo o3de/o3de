@@ -10,6 +10,7 @@
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
@@ -107,9 +108,8 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
     }
     else if (pushButton != nullptr)
     {
-        // BrowseEdit.qss:55-58 `#attached-button { max-width, min-width, max-height, min-height: 16px }`: in Native the sheet's
-        // geometry came after this and replaced the maximum height (qstylesheetstyle.cpp:2875-2890). The flattened BrowseEdit
-        // fixed the button at 16x16 (BrowseEdit.cpp:78), which the maximum of the default frame must not raise again.
+        // A BrowseEdit's attached button: the sheet's geometry (BrowseEdit.qss:55-58) came after this and replaced the maximum height
+        // (QStyleSheetStyle::polish); the flattened BrowseEdit fixes the button's size, which the default frame must not raise again
         const bool browseEditButton = StyleManager::stylesheetsDisabled() && pushButton->objectName() == QLatin1String("attached-button")
             && Selectors::childOfClass(pushButton, "AzQtComponents::BrowseEdit");
         if (!browseEditButton)
@@ -178,9 +178,8 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
     const auto* button = qobject_cast<const QPushButton*>(widget);
     if (StyleManager::stylesheetsDisabled() && button && button->objectName() == QLatin1String("attached-button"))
     {
-        // BrowseEdit.qss #attached-button: vertical gradient #666666 -> #555555 (:hover
-        // #777777 -> #666666, :pressed #444444, :disabled #666666 + 1px #555555 left line),
-        // square left edge, right corners 2px. TOKENIZE: BrowseEditButtonFace
+        // The attached button of a BrowseEdit (BrowseEdit.qss:50-89): a vertical gradient, flat when pressed or disabled (with a line at
+        // its left then), the left corners square and the right ones round
         const bool enabled = option->state.testFlag(QStyle::State_Enabled);
         const bool pressed = option->state.testFlag(QStyle::State_Sunken);
         const bool hover = enabled && option->state.testFlag(QStyle::State_MouseOver);
@@ -189,20 +188,25 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
         QBrush face;
         if (!enabled)
         {
-            face = QColor(0x66, 0x66, 0x66);
+            face = QColor(0x66, 0x66, 0x66);                            // BrowseEdit.qss:87 $fill.button.disabled.Alt1
         }
         else if (pressed)
         {
-            face = QColor(0x44, 0x44, 0x44);
+            face = Foundations::Mid;                                    // BrowseEdit.qss:82 $fill.button.pressed.Mid
         }
         else
         {
+            // BrowseEdit.qss:63, :77 (the top stops) $fill.button.idle.gradient $fill.button.hover.gradient
+            const QColor top = hover ? QColor(0x77, 0x77, 0x77) : QColor(0x66, 0x66, 0x66);
+            // BrowseEdit.qss:63, :77 (the bottom stops) $fill.button.idle.gradient $fill.button.hover.gradient
+            const QColor bottom = hover ? QColor(0x66, 0x66, 0x66) : QColor(0x55, 0x55, 0x55);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0.0, hover ? QColor(0x77, 0x77, 0x77) : QColor(0x66, 0x66, 0x66));
-            gradient.setColorAt(1.0, hover ? QColor(0x66, 0x66, 0x66) : QColor(0x55, 0x55, 0x55));
+            gradient.setColorAt(0.0, top);
+            gradient.setColorAt(1.0, bottom);
             face = gradient;
         }
 
+        //! BrowseEdit.qss:70-71 $radius.button.idle.top-right.Alt1 $radius.button.idle.bottom-right.Alt1
         const qreal radius = 2.0;
         QPainterPath path;
         path.moveTo(r.left(), r.top());
@@ -218,7 +222,8 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
         painter->fillPath(path, face);
         if (!enabled)
         {
-            painter->fillRect(QRectF(r.left(), r.top(), 1.0, r.height()), QColor(0x55, 0x55, 0x55));
+            // BrowseEdit.qss:88 $line.button.disabled.width $line.button.disabled.color
+            painter->fillRect(QRectF(r.left(), r.top(), 1.0, r.height()), Foundations::Highest);
         }
         painter->restore();
         return true;

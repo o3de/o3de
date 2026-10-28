@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Elements/TabElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Style.h>
 
 #include <QBrush>
@@ -33,40 +34,39 @@ namespace AzQtComponents
 
         // ---- Every tab bar
         constexpr int TabMaxWidth = 200;                            // TabWidget.qss:18 $size.tab.idle.max-width
-        const QColor PlainFill(0x44, 0x44, 0x44);                   // TabWidget.qss:13 $fill.tab.idle.Mid
+        const QColor PlainFill = Foundations::Mid;                  // TabWidget.qss:13 $fill.tab.idle.Mid
 
         // ---- AzQtComponents' TabBar: the bar, and a tab of the Primary look
-        const QColor BarFill(0x44, 0x44, 0x44);                     // TabWidget.qss:28 $fill.surface.idle.Mid
+        const QColor BarFill = Foundations::Mid;                    // TabWidget.qss:28 $fill.surface.idle.Mid
         constexpr int BarMinHeight = 28;                            // TabWidget.qss:51 $size.tab.idle.min-height.Alt1
         constexpr int MoveAnimationDuration = 0;                    // TabWidget.qss:54 $other.tab.idle.widget-animation-duration
-        const QColor TabFill(0x33, 0x33, 0x33);                     // TabWidget.qss:60 $fill.tab.idle.Low
+        const QColor TabFill = Foundations::Low;                    // TabWidget.qss:60 $fill.tab.idle.Low
         // TabWidget.qss:59 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
-        const TabElement::Edge TabLine{ 1, QColor(0x11, 0x11, 0x11) };
+        const TabElement::Edge TabLine{ 1, Foundations::FarBG };
         constexpr QMargins TabPadding(9, 6, 21, 6);                 // TabWidget.qss:61 $space.tab.idle.padding.Alt1
-        const QColor TabText(0xFF, 0xFF, 0xFF);                     // BaseStyleSheet.qss:18 $text.surface.idle.Alt1
-        const QColor HoverFill(0x44, 0x44, 0x44);                   // TabWidget.qss:90 $fill.tab.hover.Mid
-        const QColor SelectedFill(0x44, 0x44, 0x44);                // TabWidget.qss:90 $fill.tab.selected.Mid
+        const QColor HoverFill = Foundations::Mid;                  // TabWidget.qss:90 $fill.tab.hover.Mid
+        const QColor SelectedFill = Foundations::Mid;               // TabWidget.qss:90 $fill.tab.selected.Mid
         // TabWidget.qss:84 $line.tab.selected.width.Alt1 $line.tab.selected.color.Mid
-        const TabElement::Edge SelectedLine{ 1, QColor(0x44, 0x44, 0x44) };
+        const TabElement::Edge SelectedLine{ 1, Foundations::Mid };
 
         // ---- A tab of the Secondary look, and of the bordered one
-        const QColor SecondaryFill(0x44, 0x44, 0x44);               // TabWidget.qss:138 $fill.tab.idle.Mid
+        const QColor SecondaryFill = Foundations::Mid;              // TabWidget.qss:138 $fill.tab.idle.Mid
         // TabWidget.qss:140 $line.tab.idle.width.Alt3 $line.tab.idle.color.Low
-        const TabElement::Edge SecondaryLine{ 3, QColor(0x33, 0x33, 0x33) };
+        const TabElement::Edge SecondaryLine{ 3, Foundations::Low };
         constexpr QMargins SecondaryPadding(14, 7, 14, 5);          // TabWidget.qss:141 $space.tab.idle.padding.Alt3
         const QColor SecondaryText(0x95, 0x95, 0x95);               // TabWidget.qss:142 $text.tab.idle
         const QColor SecondaryHoverFill(0xFF, 0xFF, 0xFF, 0x26);    // TabWidget.qss:147 $fill.tab.hover.Alt1
         // TabWidget.qss:148 $line.tab.hover.width $line.tab.hover.color
-        const TabElement::Edge SecondaryHoverLine{ 3, QColor(0x44, 0x44, 0x44) };
+        const TabElement::Edge SecondaryHoverLine{ 3, Foundations::Mid };
         const QColor SecondaryHoverText(0xFF, 0xFF, 0xFF);          // TabWidget.qss:149 $text.tab.hover.Alt1
         // TabWidget.qss:160 $line.tab.selected.width.Alt2 $line.tab.selected.color.Alt1
         const TabElement::Edge SecondarySelectedLine{ 3, QColor(0x00, 0x8D, 0xE5) };
         const QColor SecondarySelectedText(0xFF, 0xFF, 0xFF);       // TabWidget.qss:161 $text.tab.selected.Alt1
         // TabWidget.qss:154 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
-        const TabElement::Edge BorderedTopLine{ 1, QColor(0x11, 0x11, 0x11) };
+        const TabElement::Edge BorderedTopLine{ 1, Foundations::FarBG };
         constexpr QMargins BorderedPadding(14, 6, 14, 6);           // TabWidget.qss:155 $space.tab.idle.padding.Alt2
         // TabWidget.qss:132-133 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG (one rule for the left and top edges)
-        const TabElement::Edge BorderedBarLine{ 1, QColor(0x11, 0x11, 0x11) };
+        const TabElement::Edge BorderedBarLine{ 1, Foundations::FarBG };
 
         // ---- The close button of a tab, and the hover fill of a dock tab's (a DockBarButton)
         constexpr const char* CloseIcon = ":/stylesheet/img/close_small.svg";   // TabWidget.qss:66 $asset.button.idle.image
@@ -76,13 +76,13 @@ namespace AzQtComponents
         const QColor DockCloseHoverFill(0xB8, 0x0D, 0x1C);          // TitleBar.qss:104 $fill.button.hover.fill.Alt3
 
         // ---- The tab widget, its pane and the action toolbar container in its corner
-        const QColor WidgetFill(0x11, 0x11, 0x11);                  // TabWidget.qss:23 $fill.tab.idle.FarBG
+        const QColor WidgetFill = Foundations::FarBG;               // TabWidget.qss:23 $fill.tab.idle.FarBG
         constexpr int EmptyPaneOffset = 30;                         // TabWidget.qss:43 $space.tab-pane.idle.margin-top
         constexpr int CornerMinHeight = 28;                 // TabWidgetActionToolBar.qss:4, :29 $size.tab.idle.min-height.Alt1
         constexpr int CornerMarginBottom = 9;               // TabWidgetActionToolBar.qss:6, :31 $space.tab.idle.margin-bottom.Alt2
-        const QColor SecondaryWidgetFill(0x44, 0x44, 0x44);         // TabWidget.qss:103 $fill.tab.idle.Mid
+        const QColor SecondaryWidgetFill = Foundations::Mid;        // TabWidget.qss:103 $fill.tab.idle.Mid
         // TabWidget.qss:108 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
-        const TabElement::Edge BorderedWidgetLine{ 1, QColor(0x11, 0x11, 0x11) };
+        const TabElement::Edge BorderedWidgetLine{ 1, Foundations::FarBG };
         // TabWidget.qss:114 $line.tab-pane.idle.width.Alt2 $line.tab-pane.idle.color
         const TabElement::Edge SecondaryPaneLine{ 2, QColor(0x2B, 0x2B, 0x2B) };
         // TabWidget.qss:115, :116 $space.tab-pane.idle.padding $space.tab-pane.idle.padding-top
@@ -100,10 +100,12 @@ namespace AzQtComponents
             .m_name = "Global.Tab.Primary",
             .m_barFill = BarFill,
             .m_barMinHeight = BarMinHeight,
-            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
-            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
-            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
-            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
+            .m_idle = { .m_fill = TabFill, .m_text = Foundations::Surface::Text, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
+            .m_hover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = Foundations::Surface::Text,
+                .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text,
+                .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
             .m_closeIcon = CloseIcon,
@@ -124,10 +126,12 @@ namespace AzQtComponents
             .m_name = "Global.Tab.DockGroup",
             .m_barFill = BarFill,
             .m_barMinHeight = BarMinHeight,
-            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, {} } },
-            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, {} } },
-            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, {} } },
-            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, {} } },
+            .m_idle = { .m_fill = TabFill, .m_text = Foundations::Surface::Text, .m_edges = { TabLine, TabLine, TabLine, {} } },
+            .m_hover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text, .m_edges = { TabLine, TabLine, TabLine, {} } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = Foundations::Surface::Text,
+                .m_edges = { TabLine, TabLine, SelectedLine, {} } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text,
+                .m_edges = { TabLine, TabLine, SelectedLine, {} } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
             .m_closeHoverFill = DockCloseHoverFill,
@@ -144,10 +148,10 @@ namespace AzQtComponents
         const TabElement DockTitle{
             .m_name = "Global.Tab.DockTitle",
             .m_barMinHeight = BarMinHeight,
-            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { {}, TabLine, TabLine, {} } },
-            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { {}, TabLine, TabLine, {} } },
-            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { {}, TabLine, SelectedLine, {} } },
-            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { {}, TabLine, SelectedLine, {} } },
+            .m_idle = { .m_fill = TabFill, .m_text = Foundations::Surface::Text, .m_edges = { {}, TabLine, TabLine, {} } },
+            .m_hover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text, .m_edges = { {}, TabLine, TabLine, {} } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = Foundations::Surface::Text, .m_edges = { {}, TabLine, SelectedLine, {} } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text, .m_edges = { {}, TabLine, SelectedLine, {} } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
             .m_closeHoverFill = DockCloseHoverFill,

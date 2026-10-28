@@ -6,9 +6,10 @@
  *
  */
 
-#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ControlElements.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 
@@ -42,10 +43,10 @@ namespace AzQtComponents
 
         // ---- The buttons beside a dock's tabs
         constexpr QMargins TabButtonsMargin(0, 0, 0, 3);            // TitleBar.qss:56 $space.surface.idle.margin-bottom.Alt1
-        const QColor TitleBarFill(0x00, 0x00, 0x00, 0x00);          // TitleBar.qss:28 $fill.surface.idle.Clear
+        const QColor TitleBarFill = Foundations::Clear;             // TitleBar.qss:28 $fill.surface.idle.Clear
 
         // ---- The close button of a filter tag
-        const QColor CloseTagFill(0x00, 0x00, 0x00, 0x00);          // FilteredSearchWidget.qss:42 $fill.button.idle.fill.Clear
+        const QColor CloseTagFill = Foundations::Clear;             // FilteredSearchWidget.qss:42 $fill.button.idle.fill.Clear
         constexpr int CloseTagMinWidth = 16;                        // FilteredSearchWidget.qss:47 $size.button.idle.min-width.Alt4
         // FilteredSearchWidget.qss:46, :45 $size.button.idle.max-width.Alt3 $size.button.idle.max-height.Alt3
         constexpr QSize CloseTagMaxSize(16, 16);
@@ -54,9 +55,9 @@ namespace AzQtComponents
         constexpr QSize CloseTagIconSize(10, 10);                   // FilteredSearchWidget.qss:40 $asset.button.idle.iconsize.Alt5
 
         // ---- The panel of a toolbar, and the button for the actions that do not fit it
-        const QColor ToolBarFill(0x44, 0x44, 0x44);                 // ToolBar.qss:20 $fill.bar.idle.Mid
+        const QColor ToolBarFill = Foundations::Mid;                // ToolBar.qss:20 $fill.bar.idle.Mid
         // ToolBar.qss:33 $line.bar.idle.width.Alt2 $line.bar.idle.color
-        const BoxElement::Edge ToolBarBottomLine{ 2, QColor(0x11, 0x11, 0x11) };
+        const BoxElement::Edge ToolBarBottomLine{ 2, Foundations::FarBG };
         constexpr const char* ToolBarExtensionIcon = ":/stylesheet/img/hidden-icons.svg";   // ToolBar.qss:141 $asset.bar.idle.icon
 
         // ---- The handle of a movable toolbar: the image, its own size in the file, and the padding of each rule
@@ -73,11 +74,11 @@ namespace AzQtComponents
         constexpr QMargins VerticalHandlePadding(-2, 2, -2, 2);     // ToolBar.qss:112, :123, :136 $space.scroll-handle.idle.Alt1
 
         // ---- The buttons of a segment bar
-        const QColor SegmentFill(0x33, 0x33, 0x33);                 // SegmentControl.qss:16 $fill.button.idle.fill.Low
-        const QColor SegmentHoverFill(0x44, 0x44, 0x44);            // SegmentControl.qss:76 $fill.button.hover+unchecked
-        const QColor SegmentPressedFill(0x44, 0x44, 0x44);          // SegmentControl.qss:76 $fill.button.pressed+unchecked
-        const QColor SegmentCheckedFill(0x55, 0x55, 0x55);          // SegmentControl.qss:70 $fill.button.checked
-        const QColor SegmentLine(0x22, 0x22, 0x22);                 // SegmentControl.qss:17 $line.button.idle.color.BG
+        const QColor SegmentFill = Foundations::Low;                // SegmentControl.qss:16 $fill.button.idle.fill.Low
+        const QColor SegmentHoverFill = Foundations::Mid;           // SegmentControl.qss:76 $fill.button.hover+unchecked
+        const QColor SegmentPressedFill = Foundations::Mid;         // SegmentControl.qss:76 $fill.button.pressed+unchecked
+        const QColor SegmentCheckedFill = Foundations::Highest;     // SegmentControl.qss:70 $fill.button.checked
+        const QColor SegmentLine = Foundations::BG;                 // SegmentControl.qss:17 $line.button.idle.color.BG
         constexpr int SegmentLineWidth = 1;                         // SegmentControl.qss:19 $line.button.idle.width.Alt2
         // SegmentControl.qss:31-32 $space.button.idle.padding-left $space.button.idle.padding-right
         constexpr QMargins SegmentPadding(16, 0, 16, 0);

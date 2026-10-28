@@ -43,6 +43,7 @@ set(FILES
     Components/Elements/ControlElements.h
     Components/Elements/ElementCommon.cpp
     Components/Elements/ElementCommon.h
+    Components/Elements/Foundations.h
     Components/Elements/FrameElement.cpp
     Components/Elements/FrameElement.h
     Components/Elements/IndicatorElement.cpp

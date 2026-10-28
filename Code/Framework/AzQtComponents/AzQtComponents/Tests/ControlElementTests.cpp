@@ -1244,7 +1244,7 @@ namespace AzQtComponents
                     EXPECT_EQ(flatBox->sizeHint(), legacyBox->sizeHint()) << qPrintable(what);
                     EXPECT_EQ(flatBox->minimumSizeHint(), legacyBox->minimumSizeHint()) << qPrintable(what);
                     EXPECT_EQ(flatBox->sizeHint().height(), 23) << qPrintable(what);
-                    EXPECT_EQ(SpinBoxElement::extraWidth(flatBox), place.m_extra) << qPrintable(what);
+                    EXPECT_EQ(SpinBoxElement::extraSize(flatBox), QSize(place.m_extra, 4)) << qPrintable(what);
                 }
             }
         }

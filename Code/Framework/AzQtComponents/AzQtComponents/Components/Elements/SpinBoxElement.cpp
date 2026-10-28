@@ -6,10 +6,11 @@
  *
  */
 
+#include <AzQtComponents/Components/Elements/SpinBoxElement.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Elements/BoxElement.h>
-#include <AzQtComponents/Components/Elements/SpinBoxElement.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Utilities/IconUtilities.h>
 
@@ -39,31 +40,11 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        // ---- The box at rest: the entry rule of BaseStyleSheet.qss under SpinBox.qss
-        const QColor FieldFill(0xCC, 0xCC, 0xCC);                   // BaseStyleSheet.qss:76 $fill.field.idle.Alt1
-        constexpr int FieldRadius = 2;                              // BaseStyleSheet.qss:79 $radius.field.idle.all
-        constexpr QMargins FieldMargin(2, 2, 2, 2);                 // SpinBox.qss:13 $space.field.idle.margin.Alt1
+        // ---- The spin box's own values; the field's (its margins, its padding, the lines, radii and fills of its states) are Field's
+        namespace Field = Foundations::Field;
         constexpr int ButtonsPadding = 12;                          // SpinBox.qss:16 $space.field.idle.padding-right.Alt1
-
-        // ---- Hovered and focused (SpinBox.qss:22-55)
-        constexpr QMargins HoverMargin(1, 1, 1, 1);                 // SpinBox.qss:27 $space.field.hover.margin.Alt1
-        constexpr QMargins FocusMargin(1, 1, 1, 1);                 // SpinBox.qss:27 $space.field.focus.margin.Alt1
-        constexpr int HoverLineWidth = 1;                           // SpinBox.qss:28 $line.field.hover.width.Alt1
-        constexpr int FocusLineWidth = 1;                           // SpinBox.qss:28 $line.field.focus.width.Alt1
-        constexpr int HoverRadius = 3;                              // SpinBox.qss:30 $radius.field.hover.all
-        constexpr int FocusRadius = 3;                              // SpinBox.qss:30 $radius.field.focus.all
-        const QColor HoverLine(0x22, 0x22, 0x22);                   // SpinBox.qss:36 $line.field.hover.color.BG
         constexpr const char* HoverImage = ":/SpinBox/hoverBackground.svg";         // SpinBox.qss:37 $asset.field.hover
-        const QColor FocusLine(0x94, 0xD2, 0xFF);                   // SpinBox.qss:45 $line.field.focus.color.Alt1
-        const QColor FocusFill(0xFF, 0xFF, 0xFF);                   // SpinBox.qss:46 $fill.field.focus.Alt1
         constexpr const char* HoverFocusImage = ":/SpinBox/focusedBackground.svg";  // SpinBox.qss:52 $asset.field.hover+focus
-
-        // ---- With an error, and disabled
-        constexpr QMargins ErrorMargin(0, 0, 0, 0);                 // SpinBox.qss:62 $space.field.HasError
-        constexpr int ErrorLineWidth = 2;                           // SpinBox.qss:63 $line.field.HasError.width
-        constexpr int ErrorRadius = 4;                              // SpinBox.qss:65 $radius.field.HasError
-        const QColor ErrorLine(0xE2, 0x52, 0x43);                   // SpinBox.qss:66 $line.field.HasError.color
-        const QColor DisabledFill(0x66, 0x66, 0x66);                // SpinBox.qss:72 $fill.field.disabled
 
         // ---- In a vector element: flush with the coordinate label, in every state (one rule for its three selectors)
         // VectorInput.qss:25 $space.field.idle.margin-left.Alt1 $space.field.hover.margin-left $space.field.focus.margin-left
@@ -131,27 +112,27 @@ namespace AzQtComponents
         Face faceOf(const Look& look)
         {
             Face face;
-            face.m_margin = FieldMargin;
-            face.m_fill = FieldFill;
-            face.m_radii = { FieldRadius, FieldRadius, FieldRadius, FieldRadius };
+            face.m_margin = Field::Margin;
+            face.m_fill = Field::Fill;
+            face.m_radii = { Field::Radius, Field::Radius, Field::Radius, Field::Radius };
 
             // `:focus, :hover`: a margin of 1 and a border of 1 where the margin 2 was, a radius of 3
             if (look.m_hover)
             {
-                face.m_margin = HoverMargin;
-                face.m_border = QMargins(HoverLineWidth, HoverLineWidth, HoverLineWidth, HoverLineWidth);
-                face.m_radii = { HoverRadius, HoverRadius, HoverRadius, HoverRadius };
-                face.m_borderColor = HoverLine;
+                face.m_margin = Field::HoverMargin;
+                face.m_border = QMargins(Field::HoverLineWidth, Field::HoverLineWidth, Field::HoverLineWidth, Field::HoverLineWidth);
+                face.m_radii = { Field::HoverRadius, Field::HoverRadius, Field::HoverRadius, Field::HoverRadius };
+                face.m_borderColor = Field::HoverLine;
                 face.m_image = HoverImage;
             }
             // :focus, equally specific and later than :hover, over its border colour
             if (look.m_focus)
             {
-                face.m_margin = FocusMargin;
-                face.m_border = QMargins(FocusLineWidth, FocusLineWidth, FocusLineWidth, FocusLineWidth);
-                face.m_radii = { FocusRadius, FocusRadius, FocusRadius, FocusRadius };
-                face.m_borderColor = FocusLine;
-                face.m_fill = FocusFill;
+                face.m_margin = Field::FocusMargin;
+                face.m_border = QMargins(Field::FocusLineWidth, Field::FocusLineWidth, Field::FocusLineWidth, Field::FocusLineWidth);
+                face.m_radii = { Field::FocusRadius, Field::FocusRadius, Field::FocusRadius, Field::FocusRadius };
+                face.m_borderColor = Field::FocusLine;
+                face.m_fill = Field::FocusFill;
             }
             if (look.m_hover && look.m_focus)
             {
@@ -178,15 +159,15 @@ namespace AzQtComponents
             // `:enabled[HasError=true]`, as specific as :hover:focus and later
             if (look.m_error)
             {
-                face.m_margin = ErrorMargin;
-                face.m_border = QMargins(ErrorLineWidth, ErrorLineWidth, ErrorLineWidth, ErrorLineWidth);
-                face.m_borderColor = ErrorLine;
-                face.m_radii = { ErrorRadius, ErrorRadius, ErrorRadius, ErrorRadius };
+                face.m_margin = Field::ErrorMargin;
+                face.m_border = QMargins(Field::ErrorLineWidth, Field::ErrorLineWidth, Field::ErrorLineWidth, Field::ErrorLineWidth);
+                face.m_borderColor = Field::ErrorLine;
+                face.m_radii = { Field::ErrorRadius, Field::ErrorRadius, Field::ErrorRadius, Field::ErrorRadius };
             }
 
             if (!look.m_enabled)
             {
-                face.m_fill = DisabledFill;
+                face.m_fill = Field::DisabledFill;
             }
             return face;
         }
@@ -307,6 +288,18 @@ namespace AzQtComponents
         {
             return qobject_cast<const QSpinBox*>(widget) || qobject_cast<const QDoubleSpinBox*>(widget);
         }
+
+        //! The box around the contents, alike in every state (the margin and the border of each face add up to the same): the face at
+        //! rest where the spin box is, and the rule's padding with the buttons' room on the right (none in a color picker)
+        QMargins contentsBox(const QWidget* widget)
+        {
+            Look look;
+            look.m_vector = Selectors::withinClass(widget, "AzQtComponents::VectorElement");
+            look.m_colorPicker = Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
+            const Face face = faceOf(look);
+            const int buttons = (look.m_colorPicker ? 0 : GlyphSize.width()) + ButtonsPadding;
+            return face.m_margin + face.m_border + QMargins(Field::PaddingLeft, Field::PaddingTop, buttons, Field::PaddingBottom);
+        }
     } // namespace SpinBoxElementInternal
 
     // ----------------------------------------------------------------------------------
@@ -354,22 +347,22 @@ namespace AzQtComponents
     // Geometry
     // ----------------------------------------------------------------------------------
 
-    int SpinBoxElement::extraWidth(const QWidget* widget)
+    QSize SpinBoxElement::extraSize(const QWidget* widget)
     {
-        using namespace SpinBoxElementInternal;
-
-        if (!widget || !isSpinBox(widget))
+        if (!widget || !SpinBoxElementInternal::isSpinBox(widget))
         {
-            return -1;
+            return QSize();
         }
+        const QMargins box = SpinBoxElementInternal::contentsBox(widget);
+        return QSize(box.left() + box.right(), box.top() + box.bottom());
+    }
 
-        Look look;
-        look.m_vector = Selectors::withinClass(widget, "AzQtComponents::VectorElement");
-        look.m_colorPicker = Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
-
-        // The margin and the border of every state's face add up to the same, so the box does not change the hint's size
-        const Face face = faceOf(look);
-        const QMargins box = face.m_margin + face.m_border;
-        return (look.m_colorPicker ? 0 : GlyphSize.width()) + box.left() + box.right() + ButtonsPadding;
+    QRect SpinBoxElement::editFieldRect(const QRect& rect, const QWidget* widget)
+    {
+        if (!widget || !SpinBoxElementInternal::isSpinBox(widget))
+        {
+            return QRect();
+        }
+        return rect.marginsRemoved(SpinBoxElementInternal::contentsBox(widget));
     }
 } // namespace AzQtComponents

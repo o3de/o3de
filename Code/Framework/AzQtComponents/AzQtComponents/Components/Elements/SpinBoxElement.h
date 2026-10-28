@@ -10,6 +10,9 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
+#include <QRect>
+#include <QSize>
+
 class QPainter;
 class QStyleOptionSpinBox;
 class QWidget;
@@ -25,8 +28,12 @@ namespace AzQtComponents
         //! CC_SpinBox of a QSpinBox or a QDoubleSpinBox. False for any other widget, and for a null option.
         AZ_QT_COMPONENTS_API bool draw(const QStyleOptionSpinBox* option, QPainter* painter, const QWidget* widget);
 
-        //! The width the sheet added to the base style's size (QStyleSheetStyle::sizeFromContents, CT_SpinBox): the up button (none in
-        //! a color picker), the box around the contents and the padding for the buttons. -1: not a spin box.
-        AZ_QT_COMPONENTS_API int extraWidth(const QWidget* widget);
+        //! What the sheet added to the base style's size (QStyleSheetStyle::sizeFromContents, CT_SpinBox): the box around the contents,
+        //! the padding and the up button (none in a color picker). Invalid: not a spin box.
+        AZ_QT_COMPONENTS_API QSize extraSize(const QWidget* widget);
+
+        //! The edit field of a spin box in rect: the contents of its box less the buttons (QStyleSheetStyle::subControlRect,
+        //! SC_SpinBoxEditField). Null: not a spin box.
+        AZ_QT_COMPONENTS_API QRect editFieldRect(const QRect& rect, const QWidget* widget);
     } // namespace SpinBoxElement
 } // namespace AzQtComponents

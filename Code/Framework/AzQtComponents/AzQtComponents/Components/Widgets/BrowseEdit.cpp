@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 #include <AzQtComponents/Components/Style.h>
@@ -36,22 +37,17 @@ namespace AzQtComponents
     //! this file with others into one translation unit, where anonymous namespaces merge.
     namespace BrowseEditFlat
     {
-        // The box of a BrowseEdit and of the line edit inside it, as the legacy rules gave them. The margin is the BrowseEdit's own
-        // (BrowseEdit.qss:10-13); the rest is the rule `AzQtComponents--BrowseEdit QLineEdit` (BrowseEdit.qss:15-29), which outranks
-        // the QLineEdit rules of LineEdit.qss:11-20 and BaseStyleSheet.qss:68-84 wherever it sets a property: no border, the two left
-        // corners rounded (the right ones square: the attached button's), padding 2 on the left and -4 on the right, and the vertical
-        // padding LineEdit.qss gave every line edit (-1 above, 1 below) that it leaves alone.
-        // TOKENIZE: BrowseEditMargin, BrowseEditFieldRadius, BrowseEditFieldPadding
-        constexpr int Margin = 2;                       // BrowseEdit.qss:12
-        constexpr int FieldRadius = 2;                  // BrowseEdit.qss:21-22 (:23-24 the right corners, 0)
-        constexpr int PaddingLeft = 2;                  // BrowseEdit.qss:26
-        constexpr int PaddingRight = -4;                // BrowseEdit.qss:28
-        constexpr int PaddingTop = -1;                  // LineEdit.qss:19
-        constexpr int PaddingBottom = 1;                // LineEdit.qss:18
+        // The box of the line edit inside a BrowseEdit: the rule `AzQtComponents--BrowseEdit QLineEdit` (BrowseEdit.qss:15-29) over the
+        // entry field (Foundations::Field: the BrowseEdit's margin, the vertical padding): no border, the two left corners rounded (the
+        // right ones square: the attached button's), and its own padding on the left and the right
+        //! BrowseEdit.qss:21-22 (:23-24 the right corners, 0) $radius.field.idle.top-left.Alt2 $radius.field.idle.bottom-left.Alt2
+        constexpr int FieldRadius = 2;
+        constexpr int PaddingLeft = 2;                  // BrowseEdit.qss:26 $space.field.idle.padding-left.Alt3
+        constexpr int PaddingRight = -4;                // BrowseEdit.qss:28 $space.field.idle.padding-right.Alt2
 
-        //! QRenderRule::borderClip (qstylesheetstyle.cpp:1288-1325) of that rule: a path along the box with the arcs of its two left
-        //! corners (no border, so none of the half-widths the arcs lose); QRenderRule::drawBackground fills it antialiased
-        //! (:1348-1370), so at a fractional device ratio the rows at the edges blend.
+        //! QRenderRule::borderClip of that rule: a path along the box with the arcs of its two left corners (no border, so none of the
+        //! half-widths the arcs lose); QRenderRule::drawBackground fills it antialiased, so at a fractional device ratio the rows at the
+        //! edges blend.
         QPainterPath fieldPath(const QRectF& box)
         {
             const qreal radius = FieldRadius;
@@ -111,9 +107,9 @@ namespace AzQtComponents
         // makes them are what that rung measures
         if (StyleManager::flatStylingActive())
         {
-            // BrowseEdit.qss: #attached-button flat, 16x16, icon 12x12; the inner QLineEdit has
-            // border-width 0 (its field colour comes from the palette, the frame from
-            // BrowseEdit::drawFrame). TOKENIZE: BrowseEditButtonSize, BrowseEditButtonIconSize
+            // The attached button and a line edit without a frame (its field is the palette's, its frame drawFrame's): BrowseEdit.qss:53
+            // $other.button.idle.flat, :55-58 $size.button.idle.min-width.Alt4 $size.button.idle.max-width.Alt3
+            // $size.button.idle.min-height.Alt3 $size.button.idle.max-height.Alt3, :60 $asset.button.idle.iconsize.Alt3
             m_data->m_attachedButton->setFlat(true);
             m_data->m_attachedButton->setFixedSize(16, 16);
             m_data->m_attachedButton->setIconSize(QSize(12, 12));
@@ -122,8 +118,8 @@ namespace AzQtComponents
             // The padding of the rule (BrowseEdit.qss:26, :28; LineEdit.qss:18-19) is where the sheet put the text: inside the field's
             // rect, 2px from its left edge (and the rect that holds it 4px wider on the right, a line less above and a line more
             // below), which also sets the size hint of the field. A line edit keeps that room as text margins.
-            m_data->m_lineEdit->setTextMargins(BrowseEditFlat::PaddingLeft, BrowseEditFlat::PaddingTop,
-                BrowseEditFlat::PaddingRight, BrowseEditFlat::PaddingBottom);
+            m_data->m_lineEdit->setTextMargins(BrowseEditFlat::PaddingLeft, Foundations::Field::PaddingTop,
+                BrowseEditFlat::PaddingRight, Foundations::Field::PaddingBottom);
         }
         boxLayout->addWidget(m_data->m_attachedButton);
         connect(m_data->m_attachedButton, &QPushButton::clicked, this, &BrowseEdit::attachedButtonTriggered);
@@ -239,38 +235,31 @@ namespace AzQtComponents
         return LineEdit::defaultConfig();
     }
 
-    // The field of the line edit inside a BrowseEdit, as the sheets painted it: the QLineEdit
-    // rule gave #CCCCCC with black text (BaseStyleSheet.qss:76-77), :disabled #666666 with #999999
-    // text (LineEdit.qss:33-34). .ValidDropTarget QLineEdit { background-color: transparent }
-    // (BrowseEdit.qss:35: the blue frame fill painted by BrowseEdit::drawFrame shows through) and
-    // .InvalidDropTarget QLineEdit { background-color: #FFFFFF } (BrowseEdit.qss:41) outrank
-    // :disabled, so they hold in every state. A style sheet derives the placeholder from the text
-    // color at half alpha (qstylesheetstyle.cpp:1459-1463): #80000000, #80999999 when disabled.
-    // Runs after LineEdit::polish, whose #888888 placeholder it replaces. Style::addClass and
-    // removeClass polish the BrowseEdit, so a drop-target class change lands here too.
-    // TOKENIZE: BrowseEditFieldColor, BrowseEditDisabledFieldColor, BrowseEditTextColor,
-    // BrowseEditDisabledTextColor, BrowseEditInvalidDropFieldColor
+    // The field of the line edit inside a BrowseEdit: the entry field's, under the drop-target rules, which outrank :disabled and hold
+    // in every state (a valid target's field is transparent: BrowseEdit::drawFrame's fill shows through). The placeholder is the text
+    // colour at half alpha (QRenderRule::configurePalette), in place of LineEdit::polish's. Style::addClass and removeClass polish the
+    // BrowseEdit, so a drop-target class change lands here too.
     static void applyFlattenedFieldPalette(const BrowseEdit* browseEdit, QLineEdit* lineEdit)
     {
         if (!StyleManager::stylesheetsDisabled() || !lineEdit)
         {
             return;
         }
-        QColor field(0xCC, 0xCC, 0xCC);
-        QColor disabledField(0x66, 0x66, 0x66);
+        QColor field = Foundations::Field::Fill;
+        QColor disabledField = Foundations::Field::DisabledFill;
         if (Style::hasClass(browseEdit, ValidDropTarget))
         {
-            field = disabledField = Qt::transparent;
+            field = disabledField = Foundations::Clear;                 // BrowseEdit.qss:35 $fill.field.idle.Clear
         }
         else if (Style::hasClass(browseEdit, InvalidDropTarget))
         {
-            field = disabledField = QColor(0xFF, 0xFF, 0xFF);
+            field = disabledField = QColor(0xFF, 0xFF, 0xFF);           // BrowseEdit.qss:41 $fill.field.idle.Alt4
         }
         QPalette fieldPalette = lineEdit->palette();
         for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
         {
             const bool disabled = group == QPalette::Disabled;
-            QColor text = disabled ? QColor(0x99, 0x99, 0x99) : QColor(Qt::black);
+            QColor text = disabled ? Foundations::Field::DisabledText : Foundations::Field::Text;
             fieldPalette.setColor(group, QPalette::Base, disabled ? disabledField : field);
             fieldPalette.setColor(group, QPalette::Text, text);
             text.setAlpha((text.alpha() + 1) / 2);
@@ -302,10 +291,8 @@ namespace AzQtComponents
     {
         // The field of the line edit inside a BrowseEdit: the rule drew its background over the line edit's rect, inside the path of
         // its rounded left corners (BrowseEditFlat::fieldPath), and no border. The fill is the Base of the palette
-        // (applyFlattenedFieldPalette: #CCCCCC, :disabled #666666, a valid drop target none, an invalid one #FFFFFF), except that the
-        // field is #FFFFFF while it has the focus (BrowseEdit.qss:38-43 `QLineEdit:focus`), the valid drop target's transparent
-        // rule (:31-36, one pseudo-class more) aside. UNVERIFIED against a capture: none holds a focused field (FieldBrowseEditTests holds
-        // the focus and hover states against the sheet). TOKENIZE: BrowseEditFocusFieldColor
+        // (applyFlattenedFieldPalette), the field's focus fill while it has the focus (BrowseEdit.qss:38-43 `QLineEdit:focus`), the valid
+        // drop target's transparent rule (:31-36, one pseudo-class more) aside.
         const auto* lineEdit = qobject_cast<const QLineEdit*>(widget);
         if (!option || !lineEdit || !qobject_cast<const BrowseEdit*>(lineEdit->parentWidget()))
         {
@@ -316,7 +303,7 @@ namespace AzQtComponents
         const bool focused = option->state.testFlag(QStyle::State_Enabled) && option->state.testFlag(QStyle::State_HasFocus);
         if (focused && fill.style() != Qt::NoBrush && fill.color().alpha() != 0)
         {
-            fill = QBrush(QColor(0xFF, 0xFF, 0xFF));
+            fill = QBrush(Foundations::Field::FocusFill);
         }
         if (fill.style() == Qt::NoBrush || (fill.style() == Qt::SolidPattern && fill.color().alpha() == 0))
         {
@@ -452,8 +439,7 @@ namespace AzQtComponents
         const bool hasError = !browserEdit->hasAcceptableInput();
         const int lineWidth = config.getLineWidth(option, hasError, dropTarget);
 
-        // Flattened: the frame sits inside the BrowseEdit.qss 2px margin, i.e. on the frame
-        // rect the style option carries (legacy capture 2026-09-24: 1px ring, not 3px).
+        // Flattened: the frame sits inside the BrowseEdit's margin, on the rect the style option carries
         const QRect contentsRect = StyleManager::stylesheetsDisabled() ? option->rect : browserEdit->rect();
 
         if (lineWidth > 0)
@@ -500,12 +486,12 @@ namespace AzQtComponents
             const int verticalAdjustment = 1;
             buttonRect.adjust(0, verticalAdjustment, 0, 0);
 
-            // The sheet style handed this its option with the rect inside the margin of the BrowseEdit's rule (CE_ShapedFrame,
-            // qstylesheetstyle.cpp:4502-4511: borderRect), so the frame lay 2px further in than the ring, which is drawn on the
-            // whole rect (above). The flattened option holds the whole rect.
+            // The sheet style handed this its option with the rect inside the margin of the BrowseEdit's rule
+            // (QStyleSheetStyle::drawControl, CE_ShapedFrame: the border rect), so the frame lay further in than the ring, which is drawn
+            // on the whole rect (above). The flattened option holds the whole rect.
             const int offset = config.dropFrameOffset;
-            const int margin = StyleManager::stylesheetsDisabled() ? BrowseEditFlat::Margin : 0;
-            const QRect dropFrameRect = option->rect.adjusted(margin + offset, margin + offset, -(margin + offset), -(margin + offset));
+            const QMargins margin = StyleManager::stylesheetsDisabled() ? Foundations::Field::Margin : QMargins();
+            const QRect dropFrameRect = option->rect.marginsRemoved(margin + QMargins(offset, offset, offset, offset));
             QPainterPath dropFramePath = style->lineEditRect(dropFrameRect, lineWidth, config.dropFrameRadius);
             dropFramePath.moveTo(buttonRect.topLeft());
             dropFramePath.lineTo(buttonRect.bottomLeft());

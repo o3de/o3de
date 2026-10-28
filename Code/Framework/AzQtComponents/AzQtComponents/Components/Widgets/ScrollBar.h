@@ -60,12 +60,12 @@ namespace AzQtComponents
         //! Sets the ScrollBar display mode for the QAbstractScrollArea specified.
         static void setDisplayMode(QAbstractScrollArea* scrollArea, ScrollBarMode mode);
 
-        //! Gives a QAbstractScrollArea (a console, a text output) a background colour that covers its viewport and the lanes of its scroll bars.
-        //! A scroll area set its own with an inline style sheet, `setStyleSheet("background: <colour>")`, which the legacy GUI drew with the
-        //! scroll bars of ScrollBar.qss. In the flattened GUI (style sheets disabled) such a sheet keeps a style sheet style alive on the area and on
-        //! every scroll bar inside it, and that style draws them as the squared bars of the base style. So: with style sheets, this sets that same
-        //! sheet; flattened, it sets the colour as the Base and Window roles of the area's palette (and the area fills its own background)
-        //! and leaves the scroll bars to the style, which draws them as it draws every other scroll bar.
+        //! Gives a QAbstractScrollArea (a console, a text output) a background colour that covers its viewport and the lanes of its
+        //! scroll bars. A scroll area set its own with an inline style sheet, `setStyleSheet("background: <colour>")`, which the legacy
+        //! GUI drew with the scroll bars of ScrollBar.qss. In the flattened GUI such a sheet keeps a style sheet style alive on the area
+        //! and on every scroll bar inside it, which draws them as the squared bars of the base style. So: with style sheets, this sets
+        //! that same sheet; flattened, it sets the colour as the Base and Window roles of the area's palette (the area fills its own
+        //! background) and leaves the scroll bars to the style.
         static void setBackgroundColor(QAbstractScrollArea* scrollArea, const QColor& color);
 
     private:
@@ -77,8 +77,8 @@ namespace AzQtComponents
         static void initializeWatcher();
         static void uninitializeWatcher();
 
-        //! Flattened GUI, from Style::polish after everything else sets a palette: gives a scroll area the background colour setBackgroundColor
-        //! gave it. An inline sheet outranked every rule of the application sheet, so this does too.
+        //! Flattened GUI, from Style::polish after everything else sets a palette: gives a scroll area the background colour
+        //! setBackgroundColor gave it. An inline sheet outranked every rule of the application sheet, so this does too.
         static void applyBackgroundColor(QWidget* widget);
 
         static bool polish(Style* style, QWidget* widget, const Config& config);

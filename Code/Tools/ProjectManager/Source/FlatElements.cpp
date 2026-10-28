@@ -10,6 +10,7 @@
 
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/FrameElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Elements/TabElement.h>
@@ -51,14 +52,14 @@
 // ProjectManager.qss, or the AzQtComponents sheet that reached the widget too (BaseStyleSheet.qss, Text.qss, PushButton.qss,
 // ...). Nothing is estimated.
 //
-// - An element is a complete definition; none is built from another. A matcher stands for the selector of the rules.
-//   Of the rows that match a widget the first registered wins, so the cascade is written as an order: the rule that is more
-//   specific, or comes later in the sheet, is registered first.
+// - An element is a complete definition at runtime; the variants of one rule are built by one function (roleButton, formFrame,
+//   startCard), each row naming what differs. A matcher stands for the selector of the rules. Of the rows that match a widget the
+//   first registered wins, so the cascade is written as an order: the rule that is more specific, or comes later in the sheet, is
+//   registered first.
 // - The same goes for the other registries a rule can reach: the indicator of a check box or radio button (IndicatorElement:
 //   `::indicator`, ProjectManager.qss:97-99) and the item views (ItemViewElement: the header of the gem list, :872-874).
-// - UNVERIFIED: no capture shows the widget (a dialog, a popup), or the widget in a state (hover, pressed, focus, disabled: the
-//   comment above the state faces of the element names them). Its values are the cascade's; its look has not been compared yet.
-// - OPEN: a declaration that no element can hold, with the reason.
+// - What no capture shows (a dialog, a popup, a state) and the declarations no element can hold are kept in the flatten provenance
+//   ledger, not here.
 // - m_nativeBorder is false where the winning declarations give the border a style of its own, a `border` or a `border-radius`
 //   (which cancels Qt's native border); its comment names that declaration. m_hasBox is set where a margin or padding of 0 is written.
 // - TOKENIZE: a colour that will become a token.
@@ -74,8 +75,8 @@
 //   a push button is carried (BoxElement::m_textAlign): a rule with a position has the sheet lay the icon and the text of its buttons
 //   out itself, 4px apart where the base style's are 2px. The spacing of a radio button and a check box is carried (BoxElement::m_spacing
 //   and the faces'), and the drop-down of a combo box (m_dropDownWidth, m_dropDownPadding). Sub-controls with no element family (the
-//   popup rows of the form combo box, ProjectManager.qss:170-174 and :334-338, ::chunk, the ::indicator of the tag chips) are marked
-//   OPEN where their widget's element is.
+//   popup rows of the form combo box, ProjectManager.qss:170-174 and :334-338, ::chunk, the ::indicator of the tag chips) are not
+//   carried.
 // - Selectors name classes and ancestors as Qt matches them: `#a B` is any ancestor named a, `#a > B` the parent only, a type
 //   selector includes the subclasses (a QLabel is a QFrame), and a rule of a dead selector (a name no widget has: #createAGem
 //   #formFrame, #createGemTab #formFrame, #gemCatalogUninstallGemButton, #gemRepoHeaderRefreshButton) is not registered.
@@ -87,6 +88,8 @@ namespace O3DE::ProjectManager
     //! into one translation unit, where anonymous namespaces merge.
     namespace FlatElementsInternal
     {
+        namespace Field = AzQtComponents::Foundations::Field;
+
         using AzQtComponents::BoxElement;
         using AzQtComponents::FrameElement;
         using AzQtComponents::IndicatorElement;
@@ -152,27 +155,51 @@ namespace O3DE::ProjectManager
         const QColor AccentBluePressed(0x0E, 0x60, 0xEB);     // TOKENIZE: AccentFillPressed (ProjectManager.qss:644)
         const QColor LinkBlue(0x94, 0xD2, 0xFF);              // TOKENIZE: LinkText (ProjectManager.qss:239, 1024)
 
-        // ProjectManager.qss:15-59: the face of a push button role is a vertical gradient per state
-        // TOKENIZE: PrimaryFill (ProjectManager.qss:17-18)
-        const QBrush PrimaryFill = BoxElement::vertical(QColor(0x00, 0x95, 0xF2), QColor(0x1E, 0x70, 0xEB));
-        // TOKENIZE: PrimaryHoverFill (ProjectManager.qss:21-22)
-        const QBrush PrimaryHoverFill = BoxElement::vertical(QColor(0x10, 0xA5, 0xF2), QColor(0x2E, 0x80, 0xEB));
-        // TOKENIZE: PrimaryPressedFill (ProjectManager.qss:25-26)
-        const QBrush PrimaryPressedFill = BoxElement::vertical(QColor(0x00, 0x85, 0xE2), QColor(0x0E, 0x60, 0xDB));
-        // TOKENIZE: PrimaryDisabledFill (ProjectManager.qss:29-30)
-        const QBrush PrimaryDisabledFill = BoxElement::vertical(QColor(0x77, 0x77, 0x77), QColor(0x44, 0x44, 0x44));
-        // TOKENIZE: SecondaryFill (ProjectManager.qss:35-36)
-        const QBrush SecondaryFill = BoxElement::vertical(QColor(0x88, 0x88, 0x88), QColor(0x55, 0x55, 0x55));
-        // TOKENIZE: SecondaryHoverFill (ProjectManager.qss:39-40)
-        const QBrush SecondaryHoverFill = BoxElement::vertical(QColor(0x99, 0x99, 0x99), QColor(0x66, 0x66, 0x66));
-        // TOKENIZE: SecondaryPressedFill (ProjectManager.qss:43-44)
-        const QBrush SecondaryPressedFill = BoxElement::vertical(QColor(0x55, 0x55, 0x55), QColor(0x77, 0x77, 0x77));
-        // TOKENIZE: DangerFill (ProjectManager.qss:49-50)
-        const QBrush DangerFill = BoxElement::vertical(QColor(0xE3, 0x2C, 0x27), QColor(0x95, 0x1D, 0x21));
-        // TOKENIZE: DangerHoverFill (ProjectManager.qss:53-54)
-        const QBrush DangerHoverFill = BoxElement::vertical(QColor(0xFD, 0x31, 0x29), QColor(0xAF, 0x22, 0x21));
-        // TOKENIZE: DangerPressedFill (ProjectManager.qss:57-58)
-        const QBrush DangerPressedFill = BoxElement::vertical(QColor(0x95, 0x1D, 0x1F), QColor(0xC9, 0x27, 0x24));
+        // ---- The roles of a push button (ProjectManager.qss:15-59): a vertical gradient per state, flat; only the primary role has a
+        // disabled rule
+        struct ButtonRole
+        {
+            QBrush m_idle;
+            QBrush m_hover;
+            QBrush m_pressed;
+            QBrush m_disabled;                                //!< no brush: no rule
+        };
+        //! ProjectManager.qss:17-18, :21-22, :25-26, :29-30 $fill.button.primary $fill.button.hover+primary
+        //! $fill.button.pressed+primary $fill.button.disabled+primary
+        const ButtonRole Primary{
+            BoxElement::vertical(QColor(0x00, 0x95, 0xF2), QColor(0x1E, 0x70, 0xEB)),
+            BoxElement::vertical(QColor(0x10, 0xA5, 0xF2), QColor(0x2E, 0x80, 0xEB)),
+            BoxElement::vertical(QColor(0x00, 0x85, 0xE2), QColor(0x0E, 0x60, 0xDB)),
+            BoxElement::vertical(QColor(0x77, 0x77, 0x77), QColor(0x44, 0x44, 0x44)),
+        };
+        //! ProjectManager.qss:35-36, :39-40, :43-44 $fill.button.secondary $fill.button.hover+secondary $fill.button.pressed+secondary
+        const ButtonRole Secondary{
+            BoxElement::vertical(QColor(0x88, 0x88, 0x88), QColor(0x55, 0x55, 0x55)),
+            BoxElement::vertical(QColor(0x99, 0x99, 0x99), QColor(0x66, 0x66, 0x66)),
+            BoxElement::vertical(QColor(0x55, 0x55, 0x55), QColor(0x77, 0x77, 0x77)),
+        };
+        //! ProjectManager.qss:49-50, :53-54, :57-58 $fill.button.danger $fill.button.hover+danger $fill.button.pressed+danger
+        const ButtonRole Danger{
+            BoxElement::vertical(QColor(0xE3, 0x2C, 0x27), QColor(0x95, 0x1D, 0x21)),
+            BoxElement::vertical(QColor(0xFD, 0x31, 0x29), QColor(0xAF, 0x22, 0x21)),
+            BoxElement::vertical(QColor(0x95, 0x1D, 0x1F), QColor(0xC9, 0x27, 0x24)),
+        };
+
+        //! A push button of a role, in the box given (its name, margin, radius, sizes, text alignment): the role's faces, its own border
+        //! (a radius is one), flat (ProjectManager.qss:16, :34, :48 $other.button.primary $other.button.secondary $other.button.danger)
+        BoxElement roleButton(BoxElement box, const ButtonRole& role)
+        {
+            box.m_nativeBorder = false;
+            box.m_idle = { .m_fill = role.m_idle };
+            box.m_stateFaces[0] = { BoxElement::Hover, { .m_fill = role.m_hover } };
+            box.m_stateFaces[1] = { BoxElement::Pressed, { .m_fill = role.m_pressed } };
+            if (role.m_disabled.style() != Qt::NoBrush)
+            {
+                box.m_stateFaces[2] = { BoxElement::Disabled, { .m_fill = role.m_disabled } };
+            }
+            box.m_properties[0] = { "flat", true };
+            return box;
+        }
 
         // ------------------------------------------------------------------------------
         // Frames
@@ -213,16 +240,13 @@ namespace O3DE::ProjectManager
 
         // ---- The window and the widgets of no particular place
 
-        //! A progress bar (QProgressBar): no border, a clear track. UNVERIFIED: no capture shows one.
+        //! A progress bar (QProgressBar): no border, a clear track.
         const BoxElement ProgressBar{
             .m_name = "ProjectManager.Box.ProgressBar",
             .m_hasBox = true,                                 // a margin or padding of 0: ProjectManager.qss:775 (QProgressBar)
             .m_nativeBorder = false,                          // border: ProjectManager.qss:773 (QProgressBar)
             .m_size = QSize(-1, 5),                           // ProgressBar.qss:15 (QProgressBar)
             .m_idle = { .m_fill = QBrush(Transparent) },      // ProjectManager.qss:774 (QProgressBar)
-            // OPEN the track: this clear fill (ProjectManager.qss:774) wants a QProgressBar door; the style paints the groove with the
-            // palette's Base, #9A9A9A (Style.cpp:2849-2857). The chunk (::chunk, ProjectManager.qss:778-780) is #1E70EB, the palette's
-            // Highlight there: nothing to carry
             .m_properties = { { "textVisible", false } },     // ProgressBar.qss:18 (QProgressBar)
         };
 
@@ -245,67 +269,17 @@ namespace O3DE::ProjectManager
 
         // ---- Screen chrome: headers, footers and surfaces
 
-        // The footer buttons carry no maximum height. The sheet gives them max-height: 28px (ProjectManager.qss:469), but
-        // PushButton::polish gives every push button a maximum height of 24 (PushButton.cpp:107-110) after the sheet's geometry, and
-        // DialogButtonBox::polish repolishes its buttons through the style below the sheet's (DialogButtonBox.cpp:23-34). Native's maximum
-        // is 24 (the n2 dumps): an element must not fight the code.
-        //! A primary button of a footer (#footer > QPushButton[primary]): the blue gradient on the footer's button box.
-        const BoxElement FooterButtonPrimary{
-            .m_name = "ProjectManager.Box.FooterButtonPrimary",
-            .m_margin = QMargins(0, 0, 30, 0),                // ProjectManager.qss:471 (#footer > QPushButton)
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:467 (#footer > QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:467 (#footer > QPushButton)
-            .m_minSize = QSize(150, 28),                      // ProjectManager.qss:468,470 (#footer > QPushButton)
-            // no maximum height: see the note above FooterButtonPrimary (ProjectManager.qss:469)
-            .m_idle = { .m_fill = PrimaryFill },              // ProjectManager.qss:17 (QPushButton[primary="true"])
-            // UNVERIFIED states: hover, pressed, disabled (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:21 (QPushButton[primary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = PrimaryHoverFill } },
-                // ProjectManager.qss:25 (QPushButton[primary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = PrimaryPressedFill } },
-                // ProjectManager.qss:29 (QPushButton[primary="true"]:disabled)
-                { BoxElement::Disabled, { .m_fill = PrimaryDisabledFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:16 (QPushButton[primary="true"])
-        };
-
-        //! A secondary button of a footer: the grey gradient on the same box.
-        const BoxElement FooterButtonSecondary{
-            .m_name = "ProjectManager.Box.FooterButtonSecondary",
-            .m_margin = QMargins(0, 0, 30, 0),                // ProjectManager.qss:471 (#footer > QPushButton)
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:467 (#footer > QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:467 (#footer > QPushButton)
-            .m_minSize = QSize(150, 28),                      // ProjectManager.qss:468,470 (#footer > QPushButton)
-            // no maximum height: see the note above FooterButtonPrimary (ProjectManager.qss:469)
-            .m_idle = { .m_fill = SecondaryFill },            // ProjectManager.qss:35 (QPushButton[secondary="true"])
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:39 (QPushButton[secondary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = SecondaryHoverFill } },
-                // ProjectManager.qss:43 (QPushButton[secondary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = SecondaryPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:34 (QPushButton[secondary="true"])
-        };
-
-        //! A danger button of a footer (the uninstall dialog): the red gradient on the same box. UNVERIFIED: no capture shows one.
-        const BoxElement FooterButtonDanger{
-            .m_name = "ProjectManager.Box.FooterButtonDanger",
-            .m_margin = QMargins(0, 0, 30, 0),                // ProjectManager.qss:471 (#footer > QPushButton)
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:467 (#footer > QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:467 (#footer > QPushButton)
-            .m_minSize = QSize(150, 28),                      // ProjectManager.qss:468,470 (#footer > QPushButton)
-            // no maximum height: see the note above FooterButtonPrimary (ProjectManager.qss:469)
-            .m_idle = { .m_fill = DangerFill },               // ProjectManager.qss:49 (QPushButton[danger="true"])
-            .m_stateFaces = {
-                // ProjectManager.qss:53 (QPushButton[danger="true"]:hover)
-                { BoxElement::Hover, { .m_fill = DangerHoverFill } },
-                // ProjectManager.qss:57 (QPushButton[danger="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = DangerPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:48 (QPushButton[danger="true"])
-        };
+        //! A button of a footer (#footer > QPushButton, ProjectManager.qss:466-472) in the role its property names: 150 x 28 at least,
+        //! 30px apart, round by 3. No maximum height: the sheet's (:469) came before PushButton::polish gave every push button its
+        //! own, which DialogButtonBox::polish repolishes below the sheet; an element must not fight the code.
+        BoxElement footerButton(const char* name, const ButtonRole& role)
+        {
+            // ProjectManager.qss:471, :467, :468, :470
+            return roleButton({ .m_name = name, .m_margin = QMargins(0, 0, 30, 0), .m_radius = 3, .m_minSize = QSize(150, 28) }, role);
+        }
+        const BoxElement FooterButtonPrimary = footerButton("ProjectManager.Box.FooterButtonPrimary", Primary);
+        const BoxElement FooterButtonSecondary = footerButton("ProjectManager.Box.FooterButtonSecondary", Secondary);
+        const BoxElement FooterButtonDanger = footerButton("ProjectManager.Box.FooterButtonDanger", Danger);     // the uninstall dialog's
 
         //! The back arrow of a screen header (#header QPushButton): its arrow, in a 24x24 box.
         const BoxElement HeaderBackButton{
@@ -316,7 +290,6 @@ namespace O3DE::ProjectManager
             // Hover and Pressed are one face and both stay entries: a key press holds Pressed with no pointer over the button.
             // ProjectManager.qss:415 (#header QPushButton)
             .m_idle = { .m_fill = QBrush(Transparent), .m_image = ":/ArrowBack.svg" },
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
             .m_stateFaces = {
                 // ProjectManager.qss:426 (#header QPushButton:hover)
                 { BoxElement::Hover, { .m_fill = QBrush(Transparent), .m_image = ":/ArrowBack_Hover.svg" } },
@@ -380,92 +353,34 @@ namespace O3DE::ProjectManager
 
         // ---- The start page
 
-        //! The 'Create a project' card of the start page: 210x276, a white outline that turns blue, and its plus.
-        const BoxElement StartCardCreate{
-            .m_name = "ProjectManager.Box.StartCardCreate",
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_minSize = QSize(210, 276),                     // ProjectManager.qss:624,626 (#firstTimeContent > QPushButton)
-            .m_maxSize = QSize(210, 276),                     // ProjectManager.qss:625,627 (#firstTimeContent > QPushButton)
-            // ProjectManager.qss:649 (#createProjectButton); ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_idle = { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, White), .m_image = ":/AddOffset.svg" },
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:649 (#createProjectButton); ProjectManager.qss:640 (#firstTimeContent > QPushButton:focus)
-                { BoxElement::Focus, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue),
-                                       .m_image = ":/AddOffset.svg" } },
-                // ProjectManager.qss:653 (#createProjectButton:hover); ProjectManager.qss:635 (#firstTimeContent > QPushButton:hover);
-                // ProjectManager.qss:636 (#firstTimeContent > QPushButton:hover)
-                { BoxElement::Hover, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue), .m_text = AccentBlue,
-                                       .m_image = ":/AddOffset_Hover.svg" } },
-                // ProjectManager.qss:653 (#createProjectButton:pressed); ProjectManager.qss:644 (#firstTimeContent > QPushButton:pressed);
-                // ProjectManager.qss:645 (#firstTimeContent > QPushButton:pressed)
-                { BoxElement::Pressed, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBluePressed),
-                                         .m_text = AccentBluePressed, .m_image = ":/AddOffset_Hover.svg" } },
-            },
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :649 (#createProjectButton)
-            .m_imageAlign = Qt::AlignCenter,
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :649 (#createProjectButton)
-            .m_imageOrigin = BoxElement::Origin::Content,
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:628 (#firstTimeContent > QPushButton)
-        };
-
-        //! The 'Open a project' card.
-        const BoxElement StartCardOpen{
-            .m_name = "ProjectManager.Box.StartCardOpen",
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_minSize = QSize(210, 276),                     // ProjectManager.qss:624,626 (#firstTimeContent > QPushButton)
-            .m_maxSize = QSize(210, 276),                     // ProjectManager.qss:625,627 (#firstTimeContent > QPushButton)
-            // ProjectManager.qss:657 (#addProjectButton); ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_idle = { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, White), .m_image = ":/FolderOffset.svg" },
-            // UNVERIFIED states: hover, pressed, focus (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:657 (#addProjectButton); ProjectManager.qss:640 (#firstTimeContent > QPushButton:focus)
-                { BoxElement::Focus, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue),
-                                       .m_image = ":/FolderOffset.svg" } },
-                // ProjectManager.qss:661 (#addProjectButton:hover); ProjectManager.qss:635 (#firstTimeContent > QPushButton:hover);
-                // ProjectManager.qss:636 (#firstTimeContent > QPushButton:hover)
-                { BoxElement::Hover, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue), .m_text = AccentBlue,
-                                       .m_image = ":/FolderOffset_Hover.svg" } },
-                // ProjectManager.qss:661 (#addProjectButton:pressed); ProjectManager.qss:644 (#firstTimeContent > QPushButton:pressed);
-                // ProjectManager.qss:645 (#firstTimeContent > QPushButton:pressed)
-                { BoxElement::Pressed, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBluePressed),
-                                         .m_text = AccentBluePressed, .m_image = ":/FolderOffset_Hover.svg" } },
-            },
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :657 (#addProjectButton)
-            .m_imageAlign = Qt::AlignCenter,
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :657 (#addProjectButton)
-            .m_imageOrigin = BoxElement::Origin::Content,
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:628 (#firstTimeContent > QPushButton)
-        };
-
-        //! The 'Add a remote project' card.
-        const BoxElement StartCardRemote{
-            .m_name = "ProjectManager.Box.StartCardRemote",
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_minSize = QSize(210, 276),                     // ProjectManager.qss:624,626 (#firstTimeContent > QPushButton)
-            .m_maxSize = QSize(210, 276),                     // ProjectManager.qss:625,627 (#firstTimeContent > QPushButton)
-            // ProjectManager.qss:665 (#addRemoteProjectButton); ProjectManager.qss:631 (#firstTimeContent > QPushButton)
-            .m_idle = { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, White), .m_image = ":/Cloud.svg" },
-            // UNVERIFIED states: hover, pressed, focus (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:665 (#addRemoteProjectButton); ProjectManager.qss:640 (#firstTimeContent > QPushButton:focus)
-                { BoxElement::Focus, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue),
-                                       .m_image = ":/Cloud.svg" } },
-                // ProjectManager.qss:669 (#addRemoteProjectButton:hover); ProjectManager.qss:635 (#firstTimeContent > QPushButton:hover);
-                // ProjectManager.qss:636 (#firstTimeContent > QPushButton:hover)
-                { BoxElement::Hover, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBlue), .m_text = AccentBlue,
-                                       .m_image = ":/Cloud_Hover.svg" } },
-                // ProjectManager.qss:669 (#addRemoteProjectButton:pressed); ProjectManager.qss:644 (#firstTimeContent >
-                // QPushButton:pressed); ProjectManager.qss:645 (#firstTimeContent > QPushButton:pressed)
-                { BoxElement::Pressed, { .m_fill = QBrush(CardFill), .m_edges = BoxElement::border(1, AccentBluePressed),
-                                         .m_text = AccentBluePressed, .m_image = ":/Cloud_Hover.svg" } },
-            },
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :665 (#addRemoteProjectButton)
-            .m_imageAlign = Qt::AlignCenter,
-            // ProjectManager.qss:629 (#firstTimeContent > QPushButton), :665 (#addRemoteProjectButton)
-            .m_imageOrigin = BoxElement::Origin::Content,
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:628 (#firstTimeContent > QPushButton)
-        };
+        //! A card of the start page (#firstTimeContent > QPushButton, ProjectManager.qss:623-646): 210 x 276, flat, its image centered in
+        //! the contents, a white outline that turns blue with the focus and under the pointer, darker pressed, where the label takes the
+        //! outline's colour. Each card's own rule names its image and the image under the pointer.
+        BoxElement startCard(const char* name, const char* image, const char* hoverImage)
+        {
+            const QBrush fill(CardFill);
+            return BoxElement{
+                .m_name = name,
+                .m_nativeBorder = false,                        // ProjectManager.qss:631
+                .m_minSize = QSize(210, 276),                   // ProjectManager.qss:624, :626
+                .m_maxSize = QSize(210, 276),                   // ProjectManager.qss:625, :627
+                .m_idle = { .m_fill = fill, .m_edges = BoxElement::border(1, White), .m_image = image },                    // :631
+                .m_stateFaces = {
+                    { BoxElement::Focus, { .m_fill = fill, .m_edges = BoxElement::border(1, AccentBlue), .m_image = image } },  // :640
+                    { BoxElement::Hover, { .m_fill = fill, .m_edges = BoxElement::border(1, AccentBlue), .m_text = AccentBlue,
+                                           .m_image = hoverImage } },                                                          // :635-636
+                    { BoxElement::Pressed, { .m_fill = fill, .m_edges = BoxElement::border(1, AccentBluePressed),
+                                             .m_text = AccentBluePressed, .m_image = hoverImage } },                           // :644-645
+                },
+                .m_imageAlign = Qt::AlignCenter,                // ProjectManager.qss:629
+                .m_imageOrigin = BoxElement::Origin::Content,   // ProjectManager.qss:629
+                .m_properties = { { "flat", true } },           // ProjectManager.qss:628
+            };
+        }
+        // #createProjectButton (ProjectManager.qss:649, :653), #addProjectButton (:657, :661), #addRemoteProjectButton (:665, :669)
+        const BoxElement StartCardCreate = startCard("ProjectManager.Box.StartCardCreate", ":/AddOffset.svg", ":/AddOffset_Hover.svg");
+        const BoxElement StartCardOpen = startCard("ProjectManager.Box.StartCardOpen", ":/FolderOffset.svg", ":/FolderOffset_Hover.svg");
+        const BoxElement StartCardRemote = startCard("ProjectManager.Box.StartCardRemote", ":/Cloud.svg", ":/Cloud_Hover.svg");
 
         //! The big title of the start page: 73px above it, no indent.
         const BoxElement StartTitle{
@@ -485,24 +400,10 @@ namespace O3DE::ProjectManager
 
         // ---- The projects page and its cards
 
-        //! The red button that cancels a project card's action (#labelButton #projectActionCancelButton). UNVERIFIED: no capture shows one.
-        const BoxElement ProjectCardCancel{
-            .m_name = "ProjectManager.Box.ProjectCardCancel",
-            .m_margin = QMargins(1, 0, 0, 0),                 // ProjectManager.qss:734 (#labelButton #projectActionCancelButton)
-            // border-radius: ProjectManager.qss:733 (#labelButton #projectActionCancelButton)
-            .m_nativeBorder = false,
-            .m_radius = 3,                                    // ProjectManager.qss:733 (#labelButton #projectActionCancelButton)
-            .m_minSize = QSize(140, 24),                      // ProjectManager.qss:726,728 (#labelButton QPushButton)
-            .m_maxSize = QSize(140, 24),                      // ProjectManager.qss:727,729 (#labelButton QPushButton)
-            .m_idle = { .m_fill = DangerFill },               // ProjectManager.qss:49 (QPushButton[danger="true"])
-            .m_stateFaces = {
-                // ProjectManager.qss:53 (QPushButton[danger="true"]:hover)
-                { BoxElement::Hover, { .m_fill = DangerHoverFill } },
-                // ProjectManager.qss:57 (QPushButton[danger="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = DangerPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:48 (QPushButton[danger="true"])
-        };
+        //! The red button that cancels a project card's action (#labelButton #projectActionCancelButton, ProjectManager.qss:733-734;
+        //! #labelButton QPushButton :726-729): 140 x 24
+        const BoxElement ProjectCardCancel = roleButton({ .m_name = "ProjectManager.Box.ProjectCardCancel",
+            .m_margin = QMargins(1, 0, 0, 0), .m_radius = 3, .m_minSize = QSize(140, 24), .m_maxSize = QSize(140, 24) }, Danger);
 
         //! The 'New Project' button of the projects page (#projectsContent > QFrame > #newProjectButton): 150x26, not flat.
         const BoxElement NewProjectButton{
@@ -536,7 +437,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent) },      // BaseStyleSheet.qss:17 (*)
         };
 
-        //! The darkening veil over a project card's image (#labelButtonOverlay). UNVERIFIED: no capture shows one.
+        //! The darkening veil over a project card's image (#labelButtonOverlay).
         const BoxElement ProjectCardOverlay{
             .m_name = "ProjectManager.Box.ProjectCardOverlay",
             .m_hasBox = true,                                 // a margin or padding of 0: ProjectManager.qss:711 (#projectButton QLabel)
@@ -544,7 +445,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "indent", 0 } },              // ProjectManager.qss:710 (#projectButton QLabel)
         };
 
-        //! The message over a project card (#projectMessageOverlay): 160x32. UNVERIFIED.
+        //! The message over a project card (#projectMessageOverlay): 160x32.
         const BoxElement ProjectCardMessage{
             .m_name = "ProjectManager.Box.ProjectCardMessage",
             .m_hasBox = true,                                 // a margin or padding of 0: ProjectManager.qss:711 (#projectButton QLabel)
@@ -554,7 +455,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "indent", 0 } },              // ProjectManager.qss:710 (#projectButton QLabel)
         };
 
-        //! The second message over a project card (#projectSubMessageOverlay): 160x32. UNVERIFIED.
+        //! The second message over a project card (#projectSubMessageOverlay): 160x32.
         const BoxElement ProjectCardSubMessage{
             .m_name = "ProjectManager.Box.ProjectCardSubMessage",
             .m_hasBox = true,                                 // a margin or padding of 0: ProjectManager.qss:711 (#projectButton QLabel)
@@ -572,7 +473,6 @@ namespace O3DE::ProjectManager
             // Hover, Pressed and Focus are one face and all stay entries: each can hold alone (a key press, a focus by Tab).
             // BaseStyleSheet.qss:17 (*); ProjectManager.qss:687 (#projectButton > #labelButton)
             .m_idle = { .m_fill = QBrush(Transparent), .m_edges = BoxElement::border(1, White) },
-            // UNVERIFIED states: hover, pressed, focus (no capture shows the widget in them)
             .m_stateFaces = {
                 // BaseStyleSheet.qss:17 (*); ProjectManager.qss:693 (#projectButton > #labelButton:hover)
                 { BoxElement::Hover, { .m_fill = QBrush(Transparent), .m_edges = BoxElement::border(1, AccentBlue) } },
@@ -654,15 +554,10 @@ namespace O3DE::ProjectManager
             .m_properties = { { "flat", true } },             // ProjectManager.qss:278 (#formFrame QPushButton)
         };
 
-        //! The entry of a form field (#formFrame QLineEdit): no border, clear, 24px of contents.
-        //! `height: 1em` (ProjectManager.qss:305) is the height of the entry's font: Qt reads an em as QFontMetrics::height() of the font of the
-        //! rule (lengthValueFromData, qcssparser.cpp:462-467), which is the 18px Open Sans of :301 (FormLineEditText), 24px high. n2 holds the
-        //! entry's hint: 157x21 in every row of every form, the 24px of the height less the 4px of padding above and plus the 1px below (:306
-        //! and LineEdit.qss:18); the entry without a height of its own hints 23 (f5). Each row of a form is 78 high in n2 (formFrame 68, entry 21)
-        //! and was 80 without it: the entry, its frame, its row and the page below were 2px too tall (the rows of the Engine and the project
-        //! settings pages, the create and edit gem forms; the template list of the new project page lost the 6px of its three rows). The 24
-        //! is the number n2 shows for this font: a font of another height gives another em.
-        //! TOKENIZE: FormLineEditHeight
+        //! The entry of a form field (#formFrame QLineEdit): no border, clear, 24px of contents. `height: 1em` (ProjectManager.qss:305) is
+        //! the height of the entry's font: Qt reads an em as QFontMetrics::height() of the rule's font (lengthValueFromData), the 18px Open
+        //! Sans of :301 (FormLineEditText), 24px high; a font of another height gives another em. The entry's hint is that height less the
+        //! 4px of padding above and plus the 1px below (:306, LineEdit.qss:18). TOKENIZE: FormLineEditHeight
         const BoxElement FormLineEdit{
             .m_name = "ProjectManager.Box.FormLineEdit",
             // LineEdit.qss:15,18 (QLineEdit); ProjectManager.qss:306 (#formFrame QLineEdit)
@@ -676,17 +571,10 @@ namespace O3DE::ProjectManager
         //! The combo box of a form field (#formFrame QComboBox, ProjectManager.qss:149-159 and its twin :313-323, with the drop-down of :161-168
         //! and :325-332), over ComboBox.qss:13-57 and BaseStyleSheet.qss:68-84: 810px wide (min and max, :152-153), 26px high (:156) with the
         //! 1px margin of every combo box (ComboBox.qss:17), a drop-down 24px wide with 20px of padding to its right, the arrow in its left 24.
-        //! n2 (the project settings page): the combo box is at [68,485,812,28], hints 858x28 and has the limits 812 wide, its row
-        //! (FormComboBoxWidget) is 890x85, and the ink of its arrow lies at x 840.7 to 850.0, y 497.3 to 501.3; f5 had it 802x18 at [68,491]
-        //! (hint 85x18) and the row 75 high. ComboBox.qss:22-42 changes the box with the state: :hover and :focus (and the open popup,
-        //! [HasPopupOpen=true]) take the margin away, give it a border of 1px and round it by 3px instead of 2, so each carries its own margin
-        //! and radius (Face::m_margin, m_radius). The idle box and its sizes are Native's; the faces of the other states are the cascade's and
-        //! are proven against the legacy rules by the twin tests of AzQtComponents.Tests (BoxElementFaceTests.ComboBox_*), UNVERIFIED by
-        //! capture: no capture holds this combo box hovered, focused, open or disabled. An open popup is the state the combo box reports as
-        //! Checked (QComboBox::initStyleOption, qcombobox.cpp:1499-1500): the declarations of :focus.
-        //! OPEN: the rows of its popup (`#formFrame QComboBox QListView::item { height: 40px; font-size: 18px }`, :170-174 and :334-338), which
-        //! ComboPopupElement owns. TOKENIZE: FormComboBoxFill, FormComboBoxHoverEdge, FormComboBoxFocusEdge, FormComboBoxFocusFill,
-        //! FormComboBoxDisabledFill, FormComboBoxDisabledText
+        //! ComboBox.qss:22-42 changes the box with the state: :hover and :focus (and the open popup, [HasPopupOpen=true]) take the margin
+        //! away, give it a border and round it more, so each carries its own margin and radius (Face::m_margin, m_radius); the twin tests of
+        //! AzQtComponents.Tests (BoxElementFaceTests.ComboBox_*) hold the faces against the legacy rules. An open popup is the state the combo
+        //! box reports as Checked (QComboBox::initStyleOption): the declarations of :focus. The rows of its popup are ComboPopupElement's.
         const BoxElement FormComboBox{
             .m_name = "ProjectManager.Box.FormComboBox",
             .m_margin = QMargins(1, 1, 1, 1),                 // ComboBox.qss:17 (QComboBox)
@@ -699,180 +587,59 @@ namespace O3DE::ProjectManager
             .m_maxSize = QSize(810, -1),                      // max-width: ProjectManager.qss:153 (#formFrame QComboBox)
             .m_dropDownWidth = 24,                            // width: ProjectManager.qss:167 (#formFrame QComboBox::drop-down)
             .m_dropDownPadding = QMargins(0, 0, 20, 0),       // padding-right: ProjectManager.qss:164 (#formFrame QComboBox::drop-down)
-            // ComboBox.qss:19 (QComboBox background-color), BaseStyleSheet.qss:77 (QComboBox color: black)
-            .m_idle = { .m_fill = QBrush(QColor(0xCC, 0xCC, 0xCC)), .m_text = QColor(0x00, 0x00, 0x00) },
+            // The entry field's (Foundations::Field): ComboBox.qss:19, BaseStyleSheet.qss:77
+            .m_idle = { .m_fill = QBrush(Field::Fill), .m_text = Field::Text },
             .m_stateFaces = {
-                // ComboBox.qss:22-29 (QComboBox:hover): no margin, a 1px border of rgba(0, 0, 0, 50), round by 3px
+                // ComboBox.qss:22-29 (QComboBox:hover): no margin, a line of the combo box's own (:28 $line.field.hover.color.Alt1)
                 { BoxElement::Hover, {
-                    .m_fill = QBrush(QColor(0xCC, 0xCC, 0xCC)), .m_edges = BoxElement::border(1, QColor(0, 0, 0, 50)),
-                    .m_text = QColor(0x00, 0x00, 0x00), .m_margin = QMargins(0, 0, 0, 0), .m_radius = 3 } },
-                // ComboBox.qss:31-42 (QComboBox:focus): no margin, a 1px border of #94D2FF, round by 3px, white
+                    .m_fill = QBrush(Field::Fill), .m_edges = BoxElement::border(Field::HoverLineWidth, QColor(0, 0, 0, 50)),
+                    .m_text = Field::Text, .m_margin = QMargins(0, 0, 0, 0), .m_radius = Field::HoverRadius } },
+                // ComboBox.qss:31-42 (QComboBox:focus), and :32-33 (QComboBox[HasPopupOpen=true]) the same declarations
                 { BoxElement::Focus, {
-                    .m_fill = QBrush(QColor(0xFF, 0xFF, 0xFF)), .m_edges = BoxElement::border(1, QColor(0x94, 0xD2, 0xFF)),
-                    .m_text = QColor(0x00, 0x00, 0x00), .m_margin = QMargins(0, 0, 0, 0), .m_radius = 3 } },
-                // ComboBox.qss:32-33 (QComboBox[HasPopupOpen=true]): the declarations of :focus. UNVERIFIED (no capture holds an open popup)
+                    .m_fill = QBrush(Field::FocusFill), .m_edges = BoxElement::border(Field::FocusLineWidth, Field::FocusLine),
+                    .m_text = Field::Text, .m_margin = QMargins(0, 0, 0, 0), .m_radius = Field::FocusRadius } },
                 { BoxElement::Checked, {
-                    .m_fill = QBrush(QColor(0xFF, 0xFF, 0xFF)), .m_edges = BoxElement::border(1, QColor(0x94, 0xD2, 0xFF)),
-                    .m_text = QColor(0x00, 0x00, 0x00), .m_margin = QMargins(0, 0, 0, 0), .m_radius = 3 } },
-                // ComboBox.qss:53-57 (QComboBox:disabled): the fill and the colour only. UNVERIFIED
-                { BoxElement::Disabled, { .m_fill = QBrush(QColor(0x66, 0x66, 0x66)), .m_text = QColor(0x99, 0x99, 0x99) } },
+                    .m_fill = QBrush(Field::FocusFill), .m_edges = BoxElement::border(Field::FocusLineWidth, Field::FocusLine),
+                    .m_text = Field::Text, .m_margin = QMargins(0, 0, 0, 0), .m_radius = Field::FocusRadius } },
+                // ComboBox.qss:53-57 (QComboBox:disabled): the fill and the colour only
+                { BoxElement::Disabled, { .m_fill = QBrush(Field::DisabledFill), .m_text = Field::DisabledText } },
                 // :disabled is declared after :focus (ComboBox.qss:53 after :31): a disabled combo box that has the focus has the fill and the
-                // colour of the first and the box of the second. UNVERIFIED
+                // colour of the first and the box of the second
                 { BoxElement::Disabled | BoxElement::Focus, {
-                    .m_fill = QBrush(QColor(0x66, 0x66, 0x66)), .m_edges = BoxElement::border(1, QColor(0x94, 0xD2, 0xFF)),
-                    .m_text = QColor(0x99, 0x99, 0x99), .m_margin = QMargins(0, 0, 0, 0), .m_radius = 3 } },
+                    .m_fill = QBrush(Field::DisabledFill), .m_edges = BoxElement::border(Field::FocusLineWidth, Field::FocusLine),
+                    .m_text = Field::DisabledText, .m_margin = QMargins(0, 0, 0, 0), .m_radius = Field::FocusRadius } },
             },
         };
 
-        //! The nested form frame of the create-a-gem wizard when its value is invalid (#formFrame[Valid="false"]). UNVERIFIED.
-        const BoxElement FormFrameNestedInvalid{
-            .m_name = "ProjectManager.Box.FormFrameNestedInvalid",
-            // ProjectManager.qss:214 (#formFrame), :397 (#createAGemRadioButtonSubFormField #formFrame)
-            .m_margin = QMargins(23, 10, 0, 0),
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderInvalid) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! The same while its entry has the focus (#formFrame[Focus="true"]). UNVERIFIED.
-        const BoxElement FormFrameNestedFocused{
-            .m_name = "ProjectManager.Box.FormFrameNestedFocused",
-            // ProjectManager.qss:214 (#formFrame), :397 (#createAGemRadioButtonSubFormField #formFrame)
-            .m_margin = QMargins(23, 10, 0, 0),
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, AccentBlue) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! A form frame nested in the wizard's template option (#createAGemRadioButtonSubFormField #formFrame): 23px in.
-        const BoxElement FormFrameNested{
-            .m_name = "ProjectManager.Box.FormFrameNested",
-            // ProjectManager.qss:214 (#formFrame), :397 (#createAGemRadioButtonSubFormField #formFrame)
-            .m_margin = QMargins(23, 10, 0, 0),
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:211 (#formFrame)
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:211 (#formFrame)
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorder) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! A form frame of the wizard or of a dialog when its value is invalid. UNVERIFIED.
-        const BoxElement FormFrameWizardInvalid{
-            .m_name = "ProjectManager.Box.FormFrameWizardInvalid",
-            // ProjectManager.qss:107 (#createAGemRHS #formFrame), :214 (#formFrame), :1136 (#addRemoteProjectDialog #formFrame)
-            .m_margin = QMargins(0, 10, 0, 0),
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderInvalid) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! The same while its entry has the focus. UNVERIFIED.
-        const BoxElement FormFrameWizardFocused{
-            .m_name = "ProjectManager.Box.FormFrameWizardFocused",
-            // ProjectManager.qss:107 (#createAGemRHS #formFrame), :214 (#formFrame), :1136 (#addRemoteProjectDialog #formFrame)
-            .m_margin = QMargins(0, 10, 0, 0),
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, AccentBlue) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! A form frame of the create-a-gem wizard and of the dialogs that put it flush left (#createAGemRHS #formFrame and its twins).
-        const BoxElement FormFrameWizard{
-            .m_name = "ProjectManager.Box.FormFrameWizard",
-            .m_margin = QMargins(0, 10, 0, 0),                // ProjectManager.qss:107 (#createAGemRHS #formFrame), :214 (#formFrame)
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:211 (#formFrame)
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:211 (#formFrame)
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorder) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! A form frame whose value is invalid (#formFrame[Valid="false"]): a red border. UNVERIFIED.
-        const BoxElement FormFrameInvalid{
-            .m_name = "ProjectManager.Box.FormFrameInvalid",
-            .m_margin = QMargins(50, 10, 0, 0),               // ProjectManager.qss:214,215 (#formFrame)
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:258 (#formFrame[Valid="false"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderInvalid) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! A form frame while its entry has the focus (#formFrame[Focus="true"]): a blue border. UNVERIFIED.
-        const BoxElement FormFrameFocused{
-            .m_name = "ProjectManager.Box.FormFrameFocused",
-            .m_margin = QMargins(50, 10, 0, 0),               // ProjectManager.qss:214,215 (#formFrame)
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:254 (#formFrame[Focus="true"])
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, AccentBlue) },
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
-
-        //! The card around a form field (#formFrame): a rounded, bordered panel, 50px in; a grey border when disabled.
-        const BoxElement FormFrame{
-            .m_name = "ProjectManager.Box.FormFrame",
-            .m_margin = QMargins(50, 10, 0, 0),               // ProjectManager.qss:214,215 (#formFrame)
-            .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:213 (#formFrame)
-            .m_nativeBorder = false,                          // border: ProjectManager.qss:211 (#formFrame)
-            .m_radius = 4,                                    // ProjectManager.qss:212 (#formFrame)
-            .m_maxSize = QSize(840, -1),                      // ProjectManager.qss:209 (#formFrame)
-            // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:211 (#formFrame)
-            .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorder) },
-            // UNVERIFIED states: disabled (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:210 (#formFrame); ProjectManager.qss:262 (#formFrame:disabled)
-                { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
-            },
-        };
+        //! The card around a form field (#formFrame, ProjectManager.qss:208-216): a rounded, bordered panel, its border grey when
+        //! disabled (:262). Where it sits sets its left margin, the state of its entry the colour of its border.
+        BoxElement formFrame(const char* name, int marginLeft, const QColor& border)
+        {
+            return BoxElement{
+                .m_name = name,
+                .m_margin = QMargins(marginLeft, 10, 0, 0),     // ProjectManager.qss:214
+                .m_padding = QMargins(6, 0, 10, 2),             // ProjectManager.qss:213
+                .m_nativeBorder = false,                        // ProjectManager.qss:211
+                .m_radius = 4,                                  // ProjectManager.qss:212
+                .m_maxSize = QSize(840, -1),                    // ProjectManager.qss:209
+                .m_idle = { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, border) },                        // :210
+                .m_stateFaces = {
+                    { BoxElement::Disabled, { .m_fill = QBrush(PanelFill), .m_edges = BoxElement::border(1, FormBorderDisabled) } },
+                },
+            };
+        }
+        // 50px in (ProjectManager.qss:215); flush in the wizard and the dialogs (#createAGemRHS #formFrame :107, #addRemoteProjectDialog
+        // #formFrame :1136); 23px in under a template option of the wizard (#createAGemRadioButtonSubFormField #formFrame :397). The
+        // border: the frame's (:211), a focused entry's ([Focus="true"] :254), an invalid value's ([Valid="false"] :258).
+        const BoxElement FormFrame = formFrame("ProjectManager.Box.FormFrame", 50, FormBorder);
+        const BoxElement FormFrameFocused = formFrame("ProjectManager.Box.FormFrameFocused", 50, AccentBlue);
+        const BoxElement FormFrameInvalid = formFrame("ProjectManager.Box.FormFrameInvalid", 50, FormBorderInvalid);
+        const BoxElement FormFrameWizard = formFrame("ProjectManager.Box.FormFrameWizard", 0, FormBorder);
+        const BoxElement FormFrameWizardFocused = formFrame("ProjectManager.Box.FormFrameWizardFocused", 0, AccentBlue);
+        const BoxElement FormFrameWizardInvalid = formFrame("ProjectManager.Box.FormFrameWizardInvalid", 0, FormBorderInvalid);
+        const BoxElement FormFrameNested = formFrame("ProjectManager.Box.FormFrameNested", 23, FormBorder);
+        const BoxElement FormFrameNestedFocused = formFrame("ProjectManager.Box.FormFrameNestedFocused", 23, AccentBlue);
+        const BoxElement FormFrameNestedInvalid = formFrame("ProjectManager.Box.FormFrameNestedInvalid", 23, FormBorderInvalid);
 
         //! The frame of the wizard's options (#createAGemRHS #formOptionsFrame): 2px in.
         const BoxElement FormOptionsFrameWizard{
@@ -891,7 +658,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent) },      // CheckBox.qss:12 (QCheckBox)
         };
 
-        //! The error under a form field in the wizard and the remote dialogs: flush left. UNVERIFIED: no capture shows one.
+        //! The error under a form field in the wizard and the remote dialogs: flush left.
         const BoxElement FormErrorLabelFlush{
             .m_name = "ProjectManager.Box.FormErrorLabelFlush",
             // ProjectManager.qss:347 (#createAGemBody #formErrorLabel), :351 (#addRemoteProjectDialog #formErrorLabel), :355
@@ -900,7 +667,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent) },      // BaseStyleSheet.qss:17 (*)
         };
 
-        //! The error under a form field (#formErrorLabel): 50px in. UNVERIFIED.
+        //! The error under a form field (#formErrorLabel): 50px in.
         const BoxElement FormErrorLabel{
             .m_name = "ProjectManager.Box.FormErrorLabel",
             .m_margin = QMargins(50, 1, 0, 1),                // ProjectManager.qss:343 (#formErrorLabel); Text.qss:93,94 (QLabel)
@@ -916,7 +683,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent) },      // BaseStyleSheet.qss:17 (*)
         };
 
-        //! The tag list under the wizard's tags field (#createAGemRHS #formTagField). UNVERIFIED: no capture shows one.
+        //! The tag list under the wizard's tags field (#createAGemRHS #formTagField).
         const BoxElement FormTagFieldWizard{
             .m_name = "ProjectManager.Box.FormTagFieldWizard",
             .m_padding = QMargins(6, 0, 10, 2),               // ProjectManager.qss:228 (#formTagField)
@@ -924,7 +691,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:227 (#formTagField)
         };
 
-        //! The tag list under a tags field (#formTagField): 50px in. UNVERIFIED.
+        //! The tag list under a tags field (#formTagField): 50px in.
         const BoxElement FormTagField{
             .m_name = "ProjectManager.Box.FormTagField",
             .m_margin = QMargins(50, 0, 0, 0),                // ProjectManager.qss:229 (#formTagField)
@@ -933,12 +700,11 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:227 (#formTagField)
         };
 
-        //! A tag of that list (#formTagField QCheckBox): a chip. UNVERIFIED.
+        //! A tag of that list (#formTagField QCheckBox): a chip.
         const BoxElement FormTagChip{
             .m_name = "ProjectManager.Box.FormTagChip",
             .m_padding = QMargins(7, 2, 5, 2),                // ProjectManager.qss:234,235,236,237 (#formTagField QCheckBox)
             .m_idle = { .m_fill = QBrush(ChipFill) },         // ProjectManager.qss:233 (#formTagField QCheckBox)
-            // OPEN ::indicator { image: url(:/X.svg); width: 10%; padding-left: 3px } (ProjectManager.qss:242-247): a sub-control
         };
 
         //! The title of a settings form (#formTitleLabel): 50px in, 24px above, 10px below.
@@ -954,9 +720,7 @@ namespace O3DE::ProjectManager
         //! the box of the indicator (`spacing`, ProjectManager.qss:83), and the button is as wide as its label and the 30px of its :checked
         //! rule (:93): Qt reads the spacing of the state of the option for the size of the button and the one of the rule with no pseudo-class
         //! for where the label sits (SE_RadioButtonContents asks with no option, qstylesheetstyle.cpp:6200), so a checked step is 20px wider than
-        //! the others and its label never moves. n2: the steps hint 230 (checked) and 210, the label's ink starts at device column 47 (46 for
-        //! one glyph) in every step, and the list of steps is 230 wide, where f5 had 206 (180 + the 20px of the indicator + 6px) and the label
-        //! at column 41. The indicator of a step is the box with nothing in it (WizardStepIndicator).
+        //! the others and its label never moves. The indicator of a step is the box with nothing in it (WizardStepIndicator).
         const BoxElement WizardStepRadio{
             .m_name = "ProjectManager.Box.WizardStepRadio",
             .m_spacing = 10,                                  // spacing: ProjectManager.qss:83 (#createAGemLHS QRadioButton)
@@ -975,7 +739,7 @@ namespace O3DE::ProjectManager
         //! ProjectManager.qss:97-99) with nothing in it: the sheet's image replaces the images of RadioButton.qss:36-64 in every state
         //! (its selector, an id, outranks theirs), :/nothing.png is no resource of the Project Manager (ProjectManager.qrc does not list the
         //! file), and an image that does not load paints nothing. The size is the sheet's: RadioButton.qss:24-26 (16px, 2px of margin: 20px of
-        //! box) and :31-33 with the focus (18px, 1px of margin). n2: the steps have no mark in any state, and the label starts at 30px.
+        //! box) and :31-33 with the focus (18px, 1px of margin).
         const IndicatorElement WizardStepIndicator{
             .m_name = "ProjectManager.Indicator.WizardStep",
             .m_imageSize = QSize(16, 16),                     // RadioButton.qss:24-25 (QRadioButton::indicator:!focus)
@@ -990,8 +754,7 @@ namespace O3DE::ProjectManager
         //! The header that heads the gem list and the table of the repositories (`#adjustableHeaderWidget`, a QTableWidget that is only its
         //! header), `#adjustableHeaderWidget QHeaderView::section { background-color: transparent }` (ProjectManager.qss:872-874): the sections
         //! are clear and the page shows through them, where the global section is #2d2d2d (TableView.qss:69); the height, font and padding
-        //! of the section rule are TableView.qss's (:62-76) and the item view element's. n2: the header's viewport is #333333 (the page)
-        //! on the Gems and the Remote Sources pages; f5 #2d2d2d. TOKENIZE: AdjustableHeaderFill
+        //! of the section rule are TableView.qss's (:62-76) and the item view element's. TOKENIZE: AdjustableHeaderFill
         const ItemViewElement AdjustableHeader{
             .m_name = "ProjectManager.ItemView.AdjustableHeader",
             .m_headerFill = QColor(0, 0, 0, 0),               // background-color: ProjectManager.qss:873 (#adjustableHeaderWidget QHeaderView::section)
@@ -1037,29 +800,12 @@ namespace O3DE::ProjectManager
 
         // ---- Project settings and templates
 
-        //! The button beside the tabs of the project settings (#projectSettingsTab::tab-bar > QPushButton): a 170x26 secondary button.
-        const BoxElement SettingsTabButton{
-            .m_name = "ProjectManager.Box.SettingsTabButton",
-            .m_margin = QMargins(0, 0, 30, 12),               // ProjectManager.qss:594,595,596 (#projectSettingsTab::tab-bar > QPushButton)
-            // border-radius: ProjectManager.qss:601 (#projectSettingsTab::tab-bar > QPushButton)
-            .m_nativeBorder = false,
-            .m_radius = 3,                                    // ProjectManager.qss:601 (#projectSettingsTab::tab-bar > QPushButton)
-            .m_minSize = QSize(170, 26),                      // ProjectManager.qss:597,599 (#projectSettingsTab::tab-bar > QPushButton)
-            .m_maxSize = QSize(170, 26),                      // ProjectManager.qss:598,600 (#projectSettingsTab::tab-bar > QPushButton)
-            .m_idle = { .m_fill = SecondaryFill },            // ProjectManager.qss:35 (QPushButton[secondary="true"])
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:39 (QPushButton[secondary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = SecondaryHoverFill } },
-                // ProjectManager.qss:43 (QPushButton[secondary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = SecondaryPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:34 (QPushButton[secondary="true"])
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:602 (#projectSettingsTab::tab-bar > QPushButton)
-        };
+        //! The button beside the tabs of the project settings (#projectSettingsTab::tab-bar > QPushButton, ProjectManager.qss:594-602):
+        //! a 170 x 26 secondary button, its label centered
+        const BoxElement SettingsTabButton = roleButton({ .m_name = "ProjectManager.Box.SettingsTabButton", .m_margin = QMargins(0, 0, 30, 12),
+            .m_radius = 3, .m_minSize = QSize(170, 26), .m_maxSize = QSize(170, 26), .m_textAlign = Qt::AlignCenter }, Secondary);
 
-        //! A project template's button (#projectTemplate QPushButton): 96x160, flat, a lighter panel under the pointer. UNVERIFIED: no
-        //! capture shows one.
+        //! A project template's button (#projectTemplate QPushButton): 96x160, flat, a lighter panel under the pointer.
         const BoxElement TemplateButton{
             .m_name = "ProjectManager.Box.TemplateButton",
             .m_minSize = QSize(96, 160),                      // ProjectManager.qss:549,551 (#projectTemplate QPushButton)
@@ -1072,7 +818,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "flat", true } },             // ProjectManager.qss:548 (#projectTemplate QPushButton)
         };
 
-        //! The picture of the checked template (#projectTemplate QPushButton[Checked="true"] #templateImage): a blue frame. UNVERIFIED.
+        //! The picture of the checked template (#projectTemplate QPushButton[Checked="true"] #templateImage): a blue frame.
         const BoxElement TemplateImageChecked{
             .m_name = "ProjectManager.Box.TemplateImageChecked",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
@@ -1083,7 +829,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent), .m_edges = BoxElement::border(3, AccentBlue) },
         };
 
-        //! The picture of a template (#projectTemplate QPushButton #templateImage): a clear frame at radius 4px. UNVERIFIED.
+        //! The picture of a template (#projectTemplate QPushButton #templateImage): a clear frame at radius 4px.
         const BoxElement TemplateImage{
             .m_name = "ProjectManager.Box.TemplateImage",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
@@ -1094,7 +840,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent), .m_edges = BoxElement::border(3, Transparent) },
         };
 
-        //! The name of a template (#projectTemplate #templateLabel): centered. UNVERIFIED.
+        //! The name of a template (#projectTemplate #templateLabel): centered.
         const BoxElement TemplateLabel{
             .m_name = "ProjectManager.Box.TemplateLabel",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
@@ -1103,7 +849,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "alignment", QString("AlignCenter") } },
         };
 
-        //! The darkening veil over a template's picture (#labelButtonOverlay). UNVERIFIED.
+        //! The darkening veil over a template's picture (#labelButtonOverlay).
         const BoxElement TemplateOverlay{
             .m_name = "ProjectManager.Box.TemplateOverlay",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
@@ -1139,7 +885,7 @@ namespace O3DE::ProjectManager
             .m_minSize = QSize(240, -1),                      // ProjectManager.qss:517 (#projectTemplateDetails)
             .m_maxSize = QSize(20, -1),                       // ProjectManager.qss:516 (#projectTemplateDetails)
             // `max-width: 20%` (ProjectManager.qss:516) is 20px to Qt: a % length is read as its number (qcssparser.cpp:2960-2963,
-            // 439-467). The legacy widget is 50 wide at most and 270 at least with its 30px margin (the n2 dump), and the minimum wins.
+            // 439-467): the legacy widget is 50 wide at most and 270 at least with its 30px margin, and the minimum wins.
             .m_idle = { .m_fill = QBrush(PanelFill) },        // ProjectManager.qss:515 (#projectTemplateDetails)
         };
 
@@ -1179,127 +925,30 @@ namespace O3DE::ProjectManager
 
         // ---- The gem catalog and the gem repositories
 
-        //! The 'Use Version' button of the gem inspector: its box with a margin above and below (#GemCatalogVersion QPushButton).
-        //! UNVERIFIED.
-        const BoxElement InspectorVersionButton{
-            .m_name = "ProjectManager.Box.InspectorVersionButton",
-            .m_margin = QMargins(0, 5, 0, 5),                 // ProjectManager.qss:970 (#GemCatalogVersion QPushButton)
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_minSize = QSize(-1, 24),                       // ProjectManager.qss:903 (#GemCatalogInspector QPushButton)
-            .m_maxSize = QSize(-1, 24),                       // ProjectManager.qss:904 (#GemCatalogInspector QPushButton)
-            .m_idle = { .m_fill = SecondaryFill },            // ProjectManager.qss:35 (QPushButton[secondary="true"])
-            .m_stateFaces = {
-                // ProjectManager.qss:39 (QPushButton[secondary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = SecondaryHoverFill } },
-                // ProjectManager.qss:43 (QPushButton[secondary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = SecondaryPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:902 (#GemCatalogInspector QPushButton)
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:906 (#GemCatalogInspector QPushButton)
-        };
+        //! A button of the gem inspector (#GemCatalogInspector QPushButton, ProjectManager.qss:901-907): 24px tall, round by 3, its label
+        //! centered; the repository inspector's (#gemRepoInspector QPushButton, :1118-1127) has the same box
+        BoxElement inspectorButton(const char* name, const ButtonRole& role, const QMargins& margin = QMargins())
+        {
+            return roleButton({ .m_name = name, .m_margin = margin, .m_radius = 3, .m_minSize = QSize(-1, 24), .m_maxSize = QSize(-1, 24),
+                .m_textAlign = Qt::AlignCenter }, role);
+        }
+        // 'Use Version' (#GemCatalogVersion QPushButton: a margin above and below, ProjectManager.qss:970), 'Download Gem', 'Uninstall
+        // Gem', and the repository's 'Remove' (10px below the details, :1126)
+        const BoxElement InspectorVersionButton =
+            inspectorButton("ProjectManager.Box.InspectorVersionButton", Secondary, QMargins(0, 5, 0, 5));
+        const BoxElement InspectorButtonSecondary = inspectorButton("ProjectManager.Box.InspectorButtonSecondary", Secondary);
+        const BoxElement InspectorButtonPrimary = inspectorButton("ProjectManager.Box.InspectorButtonPrimary", Primary);
+        const BoxElement InspectorButtonDanger = inspectorButton("ProjectManager.Box.InspectorButtonDanger", Danger);
+        const BoxElement RepoInspectorButtonDanger =
+            inspectorButton("ProjectManager.Box.RepoInspectorButtonDanger", Danger, QMargins(0, 10, 0, 0));
 
-        //! A secondary button of the gem inspector (#GemCatalogInspector QPushButton).
-        const BoxElement InspectorButtonSecondary{
-            .m_name = "ProjectManager.Box.InspectorButtonSecondary",
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_minSize = QSize(-1, 24),                       // ProjectManager.qss:903 (#GemCatalogInspector QPushButton)
-            .m_maxSize = QSize(-1, 24),                       // ProjectManager.qss:904 (#GemCatalogInspector QPushButton)
-            .m_idle = { .m_fill = SecondaryFill },            // ProjectManager.qss:35 (QPushButton[secondary="true"])
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:39 (QPushButton[secondary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = SecondaryHoverFill } },
-                // ProjectManager.qss:43 (QPushButton[secondary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = SecondaryPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:902 (#GemCatalogInspector QPushButton)
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:906 (#GemCatalogInspector QPushButton)
-        };
+        //! The add and update buttons of the gem repositories page (#gemRepoAddButton, ProjectManager.qss:1056-1063): 120 x 24,
+        //! secondary. The rule has a position (`text-align: center`), so the sheet laid the label of 'Update All' out itself: its icon
+        //! and its text 4px apart, where the base style puts the text 2px after the icon.
+        const BoxElement GemRepoAddButton = roleButton({ .m_name = "ProjectManager.Box.GemRepoAddButton", .m_radius = 3,
+            .m_minSize = QSize(120, 24), .m_maxSize = QSize(120, 24), .m_textAlign = Qt::AlignCenter }, Secondary);
 
-        //! The 'Download Gem' button of the gem inspector. UNVERIFIED: no capture shows one.
-        const BoxElement InspectorButtonPrimary{
-            .m_name = "ProjectManager.Box.InspectorButtonPrimary",
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_minSize = QSize(-1, 24),                       // ProjectManager.qss:903 (#GemCatalogInspector QPushButton)
-            .m_maxSize = QSize(-1, 24),                       // ProjectManager.qss:904 (#GemCatalogInspector QPushButton)
-            .m_idle = { .m_fill = PrimaryFill },              // ProjectManager.qss:17 (QPushButton[primary="true"])
-            .m_stateFaces = {
-                // ProjectManager.qss:21 (QPushButton[primary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = PrimaryHoverFill } },
-                // ProjectManager.qss:25 (QPushButton[primary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = PrimaryPressedFill } },
-                // ProjectManager.qss:29 (QPushButton[primary="true"]:disabled)
-                { BoxElement::Disabled, { .m_fill = PrimaryDisabledFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:902 (#GemCatalogInspector QPushButton)
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:906 (#GemCatalogInspector QPushButton)
-        };
-
-        //! The 'Uninstall Gem' button of the gem inspector. UNVERIFIED: no capture shows one.
-        const BoxElement InspectorButtonDanger{
-            .m_name = "ProjectManager.Box.InspectorButtonDanger",
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:905 (#GemCatalogInspector QPushButton)
-            .m_minSize = QSize(-1, 24),                       // ProjectManager.qss:903 (#GemCatalogInspector QPushButton)
-            .m_maxSize = QSize(-1, 24),                       // ProjectManager.qss:904 (#GemCatalogInspector QPushButton)
-            .m_idle = { .m_fill = DangerFill },               // ProjectManager.qss:49 (QPushButton[danger="true"])
-            .m_stateFaces = {
-                // ProjectManager.qss:53 (QPushButton[danger="true"]:hover)
-                { BoxElement::Hover, { .m_fill = DangerHoverFill } },
-                // ProjectManager.qss:57 (QPushButton[danger="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = DangerPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:902 (#GemCatalogInspector QPushButton)
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:906 (#GemCatalogInspector QPushButton)
-        };
-
-        //! The 'Remove' button of the gem repository inspector (#gemRepoInspector QPushButton): red, 10px below the details.
-        const BoxElement RepoInspectorButtonDanger{
-            .m_name = "ProjectManager.Box.RepoInspectorButtonDanger",
-            .m_margin = QMargins(0, 10, 0, 0),                // ProjectManager.qss:1126 (#gemRepoInspector QPushButton)
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:1122 (#gemRepoInspector QPushButton)
-            .m_radius = 3,                                    // ProjectManager.qss:1122 (#gemRepoInspector QPushButton)
-            .m_minSize = QSize(-1, 24),                       // ProjectManager.qss:1120 (#gemRepoInspector QPushButton)
-            .m_maxSize = QSize(-1, 24),                       // ProjectManager.qss:1121 (#gemRepoInspector QPushButton)
-            .m_idle = { .m_fill = DangerFill },               // ProjectManager.qss:49 (QPushButton[danger="true"])
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:53 (QPushButton[danger="true"]:hover)
-                { BoxElement::Hover, { .m_fill = DangerHoverFill } },
-                // ProjectManager.qss:57 (QPushButton[danger="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = DangerPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:1119 (#gemRepoInspector QPushButton)
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:1123 (#gemRepoInspector QPushButton)
-        };
-
-        //! The add and update buttons of the gem repositories page (#gemRepoAddButton): 120x24, secondary. The rule has a position
-        //! (`text-align: center`, :1062), so the sheet lays the label of 'Update All' out itself: its icon and its text 4px apart, where the
-        //! base style puts the text 2px after the icon. n2: the text of the button starts 3 device px later than in f5, the icon is where
-        //! it was (the Remote Sources page, the button at [775,200,120,24]: ink of the icon at device columns 25 to 55 in both, of the text
-        //! 67 to 153 in n2 and 64 to 150 in f5).
-        const BoxElement GemRepoAddButton{
-            .m_name = "ProjectManager.Box.GemRepoAddButton",
-            .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:1061 (#gemRepoAddButton)
-            .m_radius = 3,                                    // ProjectManager.qss:1061 (#gemRepoAddButton)
-            .m_minSize = QSize(120, 24),                      // ProjectManager.qss:1057,1059 (#gemRepoAddButton)
-            .m_maxSize = QSize(120, 24),                      // ProjectManager.qss:1058,1060 (#gemRepoAddButton)
-            .m_idle = { .m_fill = SecondaryFill },            // ProjectManager.qss:35 (QPushButton[secondary="true"])
-            // UNVERIFIED states: hover, pressed (no capture shows the widget in them)
-            .m_stateFaces = {
-                // ProjectManager.qss:39 (QPushButton[secondary="true"]:hover)
-                { BoxElement::Hover, { .m_fill = SecondaryHoverFill } },
-                // ProjectManager.qss:43 (QPushButton[secondary="true"]:pressed)
-                { BoxElement::Pressed, { .m_fill = SecondaryPressedFill } },
-            },
-            .m_properties = { { "flat", true } },             // ProjectManager.qss:34 (QPushButton[secondary="true"])
-            .m_textAlign = Qt::AlignCenter,                   // text-align: ProjectManager.qss:1062 (#gemRepoAddButton)
-        };
-
-        //! The requirements notice of the gem inspector (#GemCatalogInspector #GemCatalogRequirements): its info icon. UNVERIFIED.
+        //! The requirements notice of the gem inspector (#GemCatalogInspector #GemCatalogRequirements): its info icon.
         const BoxElement InspectorNoticeInfo{
             .m_name = "ProjectManager.Box.InspectorNoticeInfo",
             .m_margin = QMargins(0, 0, 0, 10),                // ProjectManager.qss:848 (#GemCatalogInspector #GemCatalogRequirements)
@@ -1311,7 +960,7 @@ namespace O3DE::ProjectManager
             .m_imageAlign = Qt::AlignLeft | Qt::AlignVCenter,
         };
 
-        //! The compatibility warning of the gem inspector: its warning icon. UNVERIFIED.
+        //! The compatibility warning of the gem inspector: its warning icon.
         const BoxElement InspectorNoticeWarning{
             .m_name = "ProjectManager.Box.InspectorNoticeWarning",
             // ProjectManager.qss:848 (#GemCatalogInspector #GemCatalogCompatibilityWarning)
@@ -1345,7 +994,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:920 (#TagWidget)
         };
 
-        //! A tag anywhere else (the cart, the template details): the chip with the label margins. UNVERIFIED.
+        //! A tag anywhere else (the cart, the template details): the chip with the label margins.
         const BoxElement Tag{
             .m_name = "ProjectManager.Box.Tag",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
@@ -1371,7 +1020,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PanelFill) },
         };
 
-        //! A tag container of the gem inspector (#GemCatalogInspector #TagWidgetContainer): 210px wide. UNVERIFIED.
+        //! A tag container of the gem inspector (#GemCatalogInspector #TagWidgetContainer): 210px wide.
         const BoxElement InspectorTagContainer{
             .m_name = "ProjectManager.Box.InspectorTagContainer",
             .m_minSize = QSize(210, -1),                      // ProjectManager.qss:952 (#GemCatalogInspector #TagWidgetContainer)
@@ -1408,14 +1057,14 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(CountBadgeFill) },   // ProjectManager.qss:816 (#GemCatalogCartCountLabel)
         };
 
-        //! The cart popup (#GemCatalogCart): a lighter panel. UNVERIFIED: no capture shows it.
+        //! The cart popup (#GemCatalogCart): a lighter panel.
         const BoxElement GemCart{
             .m_name = "ProjectManager.Box.GemCart",
             .m_hasBox = true,                                 // a margin or padding of 0: QDockWidget.qss:35 (QAbstractScrollArea)
             .m_idle = { .m_fill = QBrush(CartFill) },         // ProjectManager.qss:811 (#GemCatalogCart)
         };
 
-        //! The list of downloads in the cart (#GemCatalogCartOverlayGemDownloadBG). UNVERIFIED.
+        //! The list of downloads in the cart (#GemCatalogCartOverlayGemDownloadBG).
         const BoxElement CartDownloadList{
             .m_name = "ProjectManager.Box.CartDownloadList",
             // a margin or padding of 0: ProjectManager.qss:867 (#GemCatalogCartOverlayGemDownloadBG); ProjectManager.qss:868
@@ -1424,7 +1073,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PanelFill) },        // ProjectManager.qss:869 (#GemCatalogCartOverlayGemDownloadBG)
         };
 
-        //! The header of that list (#GemCatalogCartOverlayGemDownloadHeader). UNVERIFIED.
+        //! The header of that list (#GemCatalogCartOverlayGemDownloadHeader).
         const BoxElement CartDownloadHeader{
             .m_name = "ProjectManager.Box.CartDownloadHeader",
             // a margin or padding of 0: ProjectManager.qss:861 (#GemCatalogCartOverlayGemDownloadHeader); ProjectManager.qss:862
@@ -1439,8 +1088,6 @@ namespace O3DE::ProjectManager
             .m_hasBox = true,                                 // a margin or padding of 0: QDockWidget.qss:35 (QAbstractScrollArea)
             .m_nativeBorder = false,                          // border: TableView.qss:28 (QListView)
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:883 (#GemCatalogListView)
-            // OPEN the sections of its header (#adjustableHeaderWidget QHeaderView::section { background-color: transparent },
-            // ProjectManager.qss:872): no element family holds a header section
         };
 
         //! The count over the gem list (#GemCatalogHeaderShowCountLabel); its fill is the list header's inline sheet.
@@ -1457,10 +1104,6 @@ namespace O3DE::ProjectManager
             .m_maxSize = QSize(24, 24),                       // ProjectManager.qss:827,829 (#RefreshButton)
             // GemListHeaderWidget.cpp:28 (*); ProjectManager.qss:825 (#RefreshButton)
             .m_idle = { .m_fill = QBrush(PageFill), .m_image = ":/Refresh.svg" },
-            // OPEN the faces: under GemListHeaderWidget's inline sheet (`background-color: #333333`, GemListHeaderWidget.cpp:28, for its
-            // whole subtree): QStyleSheetStyle still paints this button, so the style may never be asked for its icon; limits and
-            // properties apply
-            // UNVERIFIED states: hover (no capture shows the widget in them)
             .m_stateFaces = {
                 // GemListHeaderWidget.cpp:28 (*); ProjectManager.qss:834 (#RefreshButton:hover)
                 { BoxElement::Hover, { .m_fill = QBrush(PageFill), .m_image = ":/Refresh_Hover.svg" } },
@@ -1480,14 +1123,14 @@ namespace O3DE::ProjectManager
 
         // ---- Dialogs and the toast
 
-        //! The address in the external link dialog (#ExternalLinkDialog #externalLink). UNVERIFIED: no capture shows it.
+        //! The address in the external link dialog (#ExternalLinkDialog #externalLink).
         const BoxElement ExternalLink{
             .m_name = "ProjectManager.Box.ExternalLink",
             .m_margin = QMargins(0, 5, 0, 30),                // ProjectManager.qss:491 (#ExternalLinkDialog #externalLink)
             .m_idle = { .m_fill = QBrush(Transparent) },      // BaseStyleSheet.qss:17 (*)
         };
 
-        //! A label of the gem dependencies dialog (#GemDependenciesDialog QLabel). UNVERIFIED.
+        //! A label of the gem dependencies dialog (#GemDependenciesDialog QLabel).
         const BoxElement DependencyLabel{
             .m_name = "ProjectManager.Box.DependencyLabel",
             // Text.qss:93 (QLabel); ProjectManager.qss:887 (#GemDependenciesDialog QLabel)
@@ -1495,7 +1138,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(Transparent) },      // BaseStyleSheet.qss:17 (*)
         };
 
-        //! A check box of that dialog (#GemDependenciesDialog QCheckBox): a chip. UNVERIFIED.
+        //! A check box of that dialog (#GemDependenciesDialog QCheckBox): a chip.
         const BoxElement DependencyCheckBox{
             .m_name = "ProjectManager.Box.DependencyCheckBox",
             .m_margin = QMargins(0, 5, 5, 0),                 // ProjectManager.qss:894,896 (#GemDependenciesDialog QCheckBox)
@@ -1505,7 +1148,7 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:891 (#GemDependenciesDialog QCheckBox)
         };
 
-        //! A toast notification (#ToastNotification): black, a light rounded outline. UNVERIFIED: no capture shows one.
+        //! A toast notification (#ToastNotification): black, a light rounded outline.
         const BoxElement Toast{
             .m_name = "ProjectManager.Box.Toast",
             .m_nativeBorder = false,                          // border: ProjectManager.qss:184 (#ToastNotification)
@@ -1516,7 +1159,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "minimumSize", QSize(100, 50) } },
         };
 
-        //! The frame of a toast's icon (#ToastNotification #icon_frame). UNVERIFIED.
+        //! The frame of a toast's icon (#ToastNotification #icon_frame).
         const BoxElement ToastIconFrame{
             .m_name = "ProjectManager.Box.ToastIconFrame",
             .m_nativeBorder = false,                          // border-radius: ProjectManager.qss:189 (#ToastNotification #icon_frame)
@@ -1526,7 +1169,7 @@ namespace O3DE::ProjectManager
             .m_properties = { { "minimumSize", QSize(44, 20) } },
         };
 
-        //! A toast's icon (#ToastNotification #iconLabel): 30x20. UNVERIFIED.
+        //! A toast's icon (#ToastNotification #iconLabel): 30x20.
         const BoxElement ToastIcon{
             .m_name = "ProjectManager.Box.ToastIcon",
             // ProjectManager.qss:196 (#ToastNotification #iconLabel); Text.qss:93,94 (QLabel)
@@ -1879,14 +1522,14 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0xDD, 0xDD, 0xDD),
         };
 
-        //! The message over a project card (#labelButton #projectMessageOverlay). UNVERIFIED.
+        //! The message over a project card (#labelButton #projectMessageOverlay).
         const TextElement ProjectCardMessageText{
             .m_name = "ProjectManager.Text.ProjectCardMessage",
             .m_pixelSize = 16,                                // ProjectManager.qss:749 (#labelButton #projectMessageOverlay)
             .m_weight = 700,                                  // ProjectManager.qss:708 (#projectButton QLabel)
         };
 
-        //! The second message over a project card. UNVERIFIED.
+        //! The second message over a project card.
         const TextElement ProjectCardSubMessageText{
             .m_name = "ProjectManager.Text.ProjectCardSubMessage",
             .m_pixelSize = 12,                                // ProjectManager.qss:753 (#labelButton #projectSubMessageOverlay)
@@ -1919,7 +1562,7 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0xCC, 0xCC, 0xCC),
         };
 
-        //! The error under a form field (#formErrorLabel). UNVERIFIED.
+        //! The error under a form field (#formErrorLabel).
         const TextElement FormErrorLabelText{
             .m_name = "ProjectManager.Text.FormErrorLabel",
             .m_pixelSize = 14,                                // ProjectManager.qss:342 (#formErrorLabel)
@@ -1956,7 +1599,7 @@ namespace O3DE::ProjectManager
 
         //! A tag chip of the tags field (#formTagField QCheckBox): light blue, disabled too: the window's sheet outranks the
         //! application's whatever the specificity (qstylesheetstyle.cpp:1689, qcssparser.cpp:2220-2222), so the grey of CheckBox.qss:19
-        //! (QCheckBox:disabled) does not reach it. UNVERIFIED: no capture shows one.
+        //! (QCheckBox:disabled) does not reach it.
         const TextElement FormTagChipText{
             .m_name = "ProjectManager.Text.FormTagChip",
             .m_color = QColor(0x94, 0xD2, 0xFF),              // TOKENIZE: FormTagChipText; ProjectManager.qss:239 (#formTagField QCheckBox)
@@ -1989,7 +1632,7 @@ namespace O3DE::ProjectManager
             .m_weight = 100,                                  // ProjectManager.qss:505 (#projectTemplateLabel)
         };
 
-        //! The name of the checked template: bold. UNVERIFIED.
+        //! The name of the checked template: bold.
         const TextElement TemplateLabelCheckedText{
             .m_name = "ProjectManager.Text.TemplateLabelChecked",
             .m_pixelSize = 12,                                // Text.qss:92 (QLabel)
@@ -2020,7 +1663,7 @@ namespace O3DE::ProjectManager
             .m_weight = 600,                                  // ProjectManager.qss:986 (#GemCatalogFilterCategoryTitle)
         };
 
-        //! The text of a filter tag (#FilterTagWidgetTextLabel). UNVERIFIED.
+        //! The text of a filter tag (#FilterTagWidgetTextLabel).
         const TextElement FilterTagTextText{
             .m_name = "ProjectManager.Text.FilterTagText",
             .m_pixelSize = 10,                                // ProjectManager.qss:916 (#FilterTagWidgetTextLabel)
@@ -2035,7 +1678,7 @@ namespace O3DE::ProjectManager
             .m_italic = 1,                                    // ProjectManager.qss:878 (#GemCatalogHeaderShowCountLabel)
         };
 
-        //! The notices of the gem inspector. UNVERIFIED.
+        //! The notices of the gem inspector.
         const TextElement InspectorNoticeText{
             .m_name = "ProjectManager.Text.InspectorNotice",
             // ProjectManager.qss:851 (#GemCatalogInspector #GemCatalogCompatibilityWarning), :851 (#GemCatalogInspector
@@ -2046,7 +1689,7 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0xDD, 0xDD, 0xDD),
         };
 
-        //! The small text of a gem sub-widget (#gemSubWidgetTextLabel). UNVERIFIED.
+        //! The small text of a gem sub-widget (#gemSubWidgetTextLabel).
         const TextElement InspectorSubTextText{
             .m_name = "ProjectManager.Text.InspectorSubText",
             .m_pixelSize = 10,                                // ProjectManager.qss:936 (#gemSubWidgetTextLabel)
@@ -2054,7 +1697,7 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0xDD, 0xDD, 0xDD),
         };
 
-        //! A section title of the cart (#GemCatalogCartOverlaySectionLabel). UNVERIFIED.
+        //! A section title of the cart (#GemCatalogCartOverlaySectionLabel).
         const TextElement CartSectionLabelText{
             .m_name = "ProjectManager.Text.CartSectionLabel",
             .m_pixelSize = 12,                                // Text.qss:92 (QLabel)
@@ -2088,14 +1731,14 @@ namespace O3DE::ProjectManager
 
         // ---- Dialogs and the toast
 
-        //! The sub-title of a dialog (#dialogSubTitle). UNVERIFIED.
+        //! The sub-title of a dialog (#dialogSubTitle).
         const TextElement DialogSubtitleText{
             .m_name = "ProjectManager.Text.DialogSubtitle",
             .m_pixelSize = 14,                                // ProjectManager.qss:477 (#dialogSubTitle)
             .m_weight = 600,                                  // ProjectManager.qss:478 (#dialogSubTitle)
         };
 
-        //! The address in the external link dialog. UNVERIFIED.
+        //! The address in the external link dialog.
         const TextElement ExternalLinkText{
             .m_name = "ProjectManager.Text.ExternalLink",
             .m_pixelSize = 12,                                // ProjectManager.qss:492 (#ExternalLinkDialog #externalLink)
@@ -2103,7 +1746,7 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0x94, 0xD2, 0xFF),
         };
 
-        //! The instruction titles of the remote project dialog. UNVERIFIED.
+        //! The instruction titles of the remote project dialog.
         const TextElement RemoteInstructionText{
             .m_name = "ProjectManager.Text.RemoteInstruction",
             // ProjectManager.qss:786 (#remoteProjectDialogDownloadProjectLabel), :786 (#remoteProjectDialogInstructionTitleLabel)
@@ -2114,7 +1757,7 @@ namespace O3DE::ProjectManager
             .m_disabledColor = QColor(0xAA, 0xAA, 0xAA),
         };
 
-        //! The section titles of the remote project dialog: light. UNVERIFIED.
+        //! The section titles of the remote project dialog: light.
         const TextElement RemoteSectionText{
             .m_name = "ProjectManager.Text.RemoteSection",
             // ProjectManager.qss:792 (#remoteProjectDialogLicensesTitleLabel), :792 (#remoteProjectDialogRequirementsTitleLabel)
@@ -2125,7 +1768,7 @@ namespace O3DE::ProjectManager
             .m_disabledColor = QColor(0xAA, 0xAA, 0xAA),
         };
 
-        //! Any other label of the remote project dialog: grey while disabled (#addRemoteProjectDialog > QLabel:disabled). UNVERIFIED.
+        //! Any other label of the remote project dialog: grey while disabled (#addRemoteProjectDialog > QLabel:disabled).
         const TextElement RemoteLabelText{
             .m_name = "ProjectManager.Text.RemoteLabel",
             .m_pixelSize = 12,                                // Text.qss:92 (QLabel)
@@ -2133,14 +1776,14 @@ namespace O3DE::ProjectManager
             .m_disabledColor = QColor(0xAA, 0xAA, 0xAA),
         };
 
-        //! The instruction of the add repository dialog. UNVERIFIED.
+        //! The instruction of the add repository dialog.
         const TextElement RepoInstructionText{
             .m_name = "ProjectManager.Text.RepoInstruction",
             .m_pixelSize = 14,                                // ProjectManager.qss:1068 (#gemRepoAddDialogInstructionTitleLabel)
             .m_weight = 700,                                  // ProjectManager.qss:1069 (#gemRepoAddDialogInstructionTitleLabel)
         };
 
-        //! The warning of the add repository dialog: italic. UNVERIFIED.
+        //! The warning of the add repository dialog: italic.
         const TextElement RepoWarningText{
             .m_name = "ProjectManager.Text.RepoWarning",
             .m_pixelSize = 12,                                // ProjectManager.qss:1073 (#gemRepoAddDialogWarningLabel)
@@ -2307,7 +1950,6 @@ namespace O3DE::ProjectManager
         const QColor EngineTabPressedText(0x66, 0xBC, 0xFA);        // TOKENIZE: EngineTabPressedText; ProjectManager.qss:1033
 
         //! QTabBar::tab: the tabs of the window (Projects, Gems, Engine)
-        //! UNVERIFIED states: hover, pressed, focus (no capture shows a tab in them)
         const TabElement HeaderTab{
             .m_name = "ProjectManager.Tab.Header",
             // ProjectManager.qss:69,73 (QTabBar::tab); the text colour is BaseStyleSheet.qss:18
@@ -2339,7 +1981,6 @@ namespace O3DE::ProjectManager
         };
 
         //! #projectSettingsTabBar::tab: the same tabs, 50px tall, the bar 60px in
-        //! UNVERIFIED states: hover, pressed, focus (no capture shows a tab in them)
         const TabElement SettingsTab{
             .m_name = "ProjectManager.Tab.Settings",
             // ProjectManager.qss:69,73 (QTabBar::tab); the text colour is BaseStyleSheet.qss:18
@@ -2371,7 +2012,6 @@ namespace O3DE::ProjectManager
         };
 
         //! #engineTabBar::tab: the sub-tabs of the engine page, in light blue, with no focus face
-        //! UNVERIFIED states: hover, pressed (no capture shows a tab in them)
         const TabElement EngineTab{
             .m_name = "ProjectManager.Tab.Engine",
             // ProjectManager.qss:73 (QTabBar::tab), :1018 (#engineTabBar::tab font-weight)

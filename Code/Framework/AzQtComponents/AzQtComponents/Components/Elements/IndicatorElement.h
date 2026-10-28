@@ -32,6 +32,16 @@ namespace AzQtComponents
         int m_focusMargin = 0;              //!< Around the image on every side, focused
         bool m_hidden = false;              //!< The box draws no image (a rule's image that does not load); it still places the label
 
+        //! The image of a check box and of a radio button, at rest: CheckBox.qss:25-26, RadioButton.qss:24-25
+        //! $size.check-indicator.idle.width.Alt1 $size.check-indicator.idle.height
+        static constexpr QSize ImageSize{ 16, 16 };
+
+        // ---- The expander's own box (QCheckBox.Expander, a caret with no label, has no indicator element)
+        //! CheckBox.qss:129, :127 $size.check.idle.min-width.Alt1 $size.check.idle.min-height
+        static constexpr QSize ExpanderMinSize{ 16, 16 };
+        //! CheckBox.qss:130, :128 $size.check.idle.max-width $size.check.idle.max-height
+        static constexpr QSize ExpanderMaxSize{ 16, 16 };
+
         // ---- Geometry
         //! The box: the image and its margin
         QSize boxSize() const;

@@ -6,8 +6,9 @@
  *
  */
 
-#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ColorPickerElements.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -35,24 +36,21 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        const QColor SurfaceFill(0x00, 0x00, 0x00, 0x00);           // BaseStyleSheet.qss:17 $fill.surface.idle.Clear
 
         // ---- The scroll area, the palette views and the labels of the picker
-        const QColor ScrollAreaFill(0x00, 0x00, 0x00, 0x00);        // ColorPicker.qss:42 $fill.surface.idle.Clear
-        const QColor PaletteViewFill(0x00, 0x00, 0x00, 0x00);       // ColorPicker.qss:36 $fill.view.idle.fill.Clear
-        constexpr const char* TitleFamily = "Open Sans";            // Text.qss:91 $type.label.idle.family.Alt1
-        constexpr int PickerFontSize = 12;                          // ColorPicker.qss:18 $type.surface.idle.size
+        const QColor ScrollAreaFill = Foundations::Clear;           // ColorPicker.qss:42 $fill.surface.idle.Clear
+        const QColor PaletteViewFill = Foundations::Clear;          // ColorPicker.qss:36 $fill.view.idle.fill.Clear
         constexpr int PaletteTitleWeight = 400;                     // ColorPicker.qss:58 (normal) $type.label.idle.weight.Alt2
         const QColor ModifiedPaletteTitleText(0xFF, 0xA5, 0x00);    // ColorPicker.qss:63 $text.label.modified
 
         // ---- The separators between its sections
-        const QColor SeparatorFill(0x22, 0x22, 0x22);               // ColorPicker.qss:89 $fill.surface.idle.BG
+        const QColor SeparatorFill = Foundations::BG;               // ColorPicker.qss:89 $fill.surface.idle.BG
         // ColorPicker.qss:85-86 $line.surface.idle.width.Alt1 $line.surface.idle.color.Alt2 (the top and the bottom edge alike)
         const BoxElement::Edge SeparatorLine{ 1, QColor(0x39, 0x3A, 0x3C) };
 
         // ---- The frames of the color grid, the preview, the swatches and the button that adds one
         // ColorPicker.qss:108 $line.surface.idle.width.Alt1 $line.surface.idle.color.Low
-        const BoxElement::Edge FrameLine{ 1, QColor(0x33, 0x33, 0x33) };
+        const BoxElement::Edge FrameLine{ 1, Foundations::Low };
         constexpr int FrameRadius = 2;                              // ColorPicker.qss:109 $radius.surface.idle.all.Alt3
         // ColorPicker.qss:115 $line.surface.selected.width $line.surface.selected.color
         const BoxElement::Edge SelectedSwatchLine{ 2, QColor(0xC8, 0xAB, 0xFF) };
@@ -99,7 +97,7 @@ namespace AzQtComponents
             .m_name = "Global.Box.PickerLabel",
             .m_hasBox = true,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
             },
         };
 
@@ -107,8 +105,8 @@ namespace AzQtComponents
         //! orange, in the picker's size and the weight a palette card gives its title
         const TextElement ModifiedPaletteTitle{
             .m_name = "Global.Text.PickerModifiedPaletteTitle",
-            .m_family = TitleFamily,
-            .m_pixelSize = PickerFontSize,
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Surface::Size,
             .m_weight = PaletteTitleWeight,
             .m_color = ModifiedPaletteTitleText,
         };
@@ -136,7 +134,7 @@ namespace AzQtComponents
             .m_nativeBorder = false,
             .m_radius = FrameRadius,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
                 .m_edges = { FrameLine, FrameLine, FrameLine, FrameLine },
             },
         };
@@ -150,7 +148,7 @@ namespace AzQtComponents
             .m_nativeBorder = false,
             .m_radius = FrameRadius,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
                 .m_edges = { SelectedSwatchLine, SelectedSwatchLine, SelectedSwatchLine, SelectedSwatchLine },
             },
         };
@@ -164,7 +162,7 @@ namespace AzQtComponents
             .m_hasBox = true,
             .m_nativeBorder = false,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
             },
         };
 

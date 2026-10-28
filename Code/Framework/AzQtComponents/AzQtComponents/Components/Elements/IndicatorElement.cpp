@@ -24,8 +24,6 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        // CheckBox.qss:25-26, RadioButton.qss:24-25 $size.check-indicator.idle.width.Alt1 $size.check-indicator.idle.height
-        constexpr QSize IndicatorImageSize(16, 16);
         // CheckBox.qss:27, :80, RadioButton.qss:26 $space.check-indicator.idle.margin.Alt1
         constexpr int IndicatorMargin = 2;
         // CheckBox.qss:77-78 $size.check-indicator.idle.width.Alt2 $size.check-indicator.idle.height
@@ -48,9 +46,9 @@ namespace AzQtComponents
         //! QCheckBox::indicator: no focus size of its own
         const IndicatorElement CheckBoxIndicator{
             .m_name = "Global.Indicator.CheckBox",
-            .m_imageSize = IndicatorImageSize,
+            .m_imageSize = IndicatorElement::ImageSize,
             .m_margin = IndicatorMargin,
-            .m_focusImageSize = IndicatorImageSize,
+            .m_focusImageSize = IndicatorElement::ImageSize,
             .m_focusMargin = IndicatorMargin,
         };
 
@@ -66,7 +64,7 @@ namespace AzQtComponents
         //! QRadioButton::indicator
         const IndicatorElement RadioButtonIndicator{
             .m_name = "Global.Indicator.RadioButton",
-            .m_imageSize = IndicatorImageSize,
+            .m_imageSize = IndicatorElement::ImageSize,
             .m_margin = IndicatorMargin,
             .m_focusImageSize = RadioButtonImageSizeFocus,
             .m_focusMargin = RadioButtonMarginFocus,

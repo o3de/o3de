@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Elements/FrameElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 
 #include <QAbstractScrollArea>
 #include <QApplication>
@@ -25,8 +26,7 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        const QColor SurfaceFill(0x00, 0x00, 0x00, 0x00);   // BaseStyleSheet.qss:17 $fill.surface.idle.Clear
-        const QColor PanelFill(0x44, 0x44, 0x44);           // BaseStyleSheet.qss:47 $fill.surface.idle.Mid
+        const QColor PanelFill = Foundations::Mid;          // BaseStyleSheet.qss:47 $fill.surface.idle.Mid
         const QColor SeparatorLine(0x99, 0x99, 0x99);       // Card.qss:262 $text.surface.idle.Alt5
 
         // ------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ namespace AzQtComponents
         //! The background of a frame of this shape: the element's on the shapes it covers, else none
         QColor fillOf(const FrameElement& element, int frameShape)
         {
-            return ((element.m_fillShapes >> frameShape) & 1u) ? element.m_fill : SurfaceFill;
+            return ((element.m_fillShapes >> frameShape) & 1u) ? element.m_fill : Foundations::Surface::Fill;
         }
     } // namespace FrameElementInternal
 

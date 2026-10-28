@@ -115,6 +115,7 @@ namespace AzQtComponents
 
     private:
         friend class BrowseEdit;
+        friend class ColorLabel;
         friend class Style;
 
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // needs to have dll-interface to be used by clients of class 'AzQtComponents::LineEdit'
@@ -140,7 +141,7 @@ namespace AzQtComponents
         // ---- flattened mode (the legacy box LineEdit.qss gave a field)
         //! A line edit inside a spin box or a combo box, which has the box of its container
         static bool isEmbedded(const QWidget* lineEdit);
-        //! The left padding of a field: 0, or -6 with a search action
+        //! The left padding of a field, a search field's own
         static int flattenedPaddingLeft(const QWidget* lineEdit);
         //! The border and padding around the text of a field
         static QMargins flattenedFieldBox(const QWidget* lineEdit);

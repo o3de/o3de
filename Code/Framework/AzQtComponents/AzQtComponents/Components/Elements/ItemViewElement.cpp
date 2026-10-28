@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Elements/ComboPopupElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
 #include <QAbstractItemView>
@@ -58,7 +59,7 @@ namespace AzQtComponents
         constexpr int TreeIndentation = 20;                         // TreeView::IndentationWidth $size.view.idle.indentation
 
         // ---- A header whose sections are declared transparent (TableViewPage::TableViewPage, the Gallery)
-        const QColor TransparentSectionFill(0x00, 0x00, 0x00, 0x00);    // TableViewPage::TableViewPage $fill.header.idle.Clear
+        const QColor TransparentSectionFill = Foundations::Clear;       // TableViewPage::TableViewPage $fill.header.idle.Clear
 
         // ------------------------------------------------------------------------------
         // Elements

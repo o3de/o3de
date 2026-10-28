@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <QColor>
 #include <QFrame>
 #endif
@@ -28,10 +29,10 @@ namespace AzQtComponents
         static constexpr unsigned PanelShapes =
             (1u << QFrame::Box) | (1u << QFrame::Panel) | (1u << QFrame::HLine) | (1u << QFrame::VLine) | (1u << QFrame::StyledPanel);
 
-        const char* m_name = "";                        //!< Scope.Frame.Look
-        QColor m_fill = QColor(0x00, 0x00, 0x00, 0x00); //!< The background. BaseStyleSheet.qss:17 $fill.surface.idle.Clear
-        unsigned m_fillShapes = 0;                      //!< Bit n: the background covers QFrame::Shape n
-        QColor m_foreground = QColor(0xFF, 0xFF, 0xFF); //!< The lines of a Plain frame. BaseStyleSheet.qss:18 $text.surface.idle.Alt1
+        const char* m_name = "";                            //!< Scope.Frame.Look
+        QColor m_fill = Foundations::Surface::Fill;         //!< The background (the universal rule's)
+        unsigned m_fillShapes = 0;                          //!< Bit n: the background covers QFrame::Shape n
+        QColor m_foreground = Foundations::Surface::Text;   //!< The lines of a Plain frame (the universal rule's text colour)
 
         // ---- Drawing
         //! CE_ShapedFrame: paints the background and gives the option the palette the base style draws the frame from

@@ -6,8 +6,10 @@
  *
  */
 
-#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/PropertyEditorElements.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
@@ -31,11 +33,6 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        const QColor SurfaceFill(0x00, 0x00, 0x00, 0x00);           // BaseStyleSheet.qss:17 $fill.surface.idle.Clear
-        // Text.qss:93-94 $space.label.idle.margin-top.Alt1 $space.label.idle.margin-bottom.Alt1 (every QLabel)
-        constexpr int LabelMarginV = 1;
-        constexpr const char* LabelFamily = "Open Sans";            // Text.qss:91 $type.label.idle.family.Alt1
-        constexpr int LabelSize = 12;                               // Text.qss:92 $type.label.idle.size.Alt1
 
         // ---- The labels of a property row
         // ReflectedPropertyEditor.qss:14 (left), :13 (the others) $space.label.idle.margin-left.Alt1 $space.label.idle.margin.Alt1
@@ -49,15 +46,11 @@ namespace AzQtComponents
 
         // ---- The parts of a card header: its layout has no spacing, the gaps are the parts' margins
         constexpr QMargins ExpanderMargin(0, 0, 4, 0);              // Card.qss:211 $space.check.idle.margin.Alt2
-        // CheckBox.qss:129, :127 $size.check.idle.min-width.Alt1 $size.check.idle.min-height
-        constexpr QSize ExpanderMinSize(16, 16);
-        // CheckBox.qss:130, :128 $size.check.idle.max-width $size.check.idle.max-height
-        constexpr QSize ExpanderMaxSize(16, 16);
-        const QColor ExpanderFill(0x00, 0x00, 0x00, 0x00);          // CheckBox.qss:123 $fill.check.idle
+        const QColor ExpanderFill = Foundations::Clear;             // CheckBox.qss:123 $fill.check.idle
         constexpr int IconMarginRight = 4;                          // Card.qss:219 $space.label.idle.margin-right.Alt2
         constexpr int WarningIconMarginLeft = 4;                    // Card.qss:226 $space.label.idle.margin-left.Alt1
-        const QColor IconFill(0x00, 0x00, 0x00, 0x00);              // Card.qss:221 $fill.label.idle.Clear
-        const QColor FlatButtonFill(0x00, 0x00, 0x00, 0x00);        // PushButton.qss:51 $fill.button.flat
+        const QColor IconFill = Foundations::Clear;                 // Card.qss:221 $fill.label.idle.Clear
+        const QColor FlatButtonFill = Foundations::Clear;           // PushButton.qss:51 $fill.button.flat
         constexpr bool ButtonFlat = true;                           // Card.qss:233, :243, :253 $other.button.idle.flat
         // Card.qss:251 $asset.button.idle.icon.Alt4
         constexpr const char* HelpIcon = ":/Cards/img/UI20/Cards/help.svg";
@@ -88,7 +81,7 @@ namespace AzQtComponents
             .m_minSize = RowLabelMinSize,
             .m_maxSize = RowLabelMaxSize,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
             },
         };
 
@@ -96,11 +89,11 @@ namespace AzQtComponents
         //! control, 16px high, with the 1px above and below Text.qss gave every label
         const BoxElement PropertyRowDefaultLabel{
             .m_name = "Global.Box.PropertyRowDefaultLabel",
-            .m_margin = QMargins(0, LabelMarginV, 0, LabelMarginV),
+            .m_margin = QMargins(0, Foundations::Label::MarginV, 0, Foundations::Label::MarginV),
             .m_minSize = RowLabelMinSize,
             .m_maxSize = RowLabelMaxSize,
             .m_idle = {
-                .m_fill = QBrush(SurfaceFill),
+                .m_fill = QBrush(Foundations::Surface::Fill),
             },
         };
 
@@ -109,8 +102,8 @@ namespace AzQtComponents
         //! gives the label an inline sheet; flattened, none. A label not overridden keeps the QLabel's Global element.
         const TextElement OverriddenPropertyLabel{
             .m_name = "Global.Text.OverriddenPropertyLabel",
-            .m_family = LabelFamily,
-            .m_pixelSize = LabelSize,
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
             .m_weight = OverriddenWeight,
         };
 
@@ -119,8 +112,8 @@ namespace AzQtComponents
         const BoxElement CardHeaderExpander{
             .m_name = "Global.Box.CardHeaderExpander",
             .m_margin = ExpanderMargin,
-            .m_minSize = ExpanderMinSize,
-            .m_maxSize = ExpanderMaxSize,
+            .m_minSize = IndicatorElement::ExpanderMinSize,
+            .m_maxSize = IndicatorElement::ExpanderMaxSize,
             .m_idle = {
                 .m_fill = QBrush(ExpanderFill),
             },
@@ -131,7 +124,7 @@ namespace AzQtComponents
         //! a label sizes itself from its pixmap.
         const BoxElement CardHeaderIcon{
             .m_name = "Global.Box.CardHeaderIcon",
-            .m_margin = QMargins(0, LabelMarginV, IconMarginRight, LabelMarginV),
+            .m_margin = QMargins(0, Foundations::Label::MarginV, IconMarginRight, Foundations::Label::MarginV),
             .m_nativeBorder = false,
             .m_idle = {
                 .m_fill = QBrush(IconFill),
@@ -141,7 +134,7 @@ namespace AzQtComponents
         //! AzQtComponents--CardHeader #WarningIcon: the icon of a header with a warning, with a margin at the left as well
         const BoxElement CardHeaderWarningIcon{
             .m_name = "Global.Box.CardHeaderWarningIcon",
-            .m_margin = QMargins(WarningIconMarginLeft, LabelMarginV, IconMarginRight, LabelMarginV),
+            .m_margin = QMargins(WarningIconMarginLeft, Foundations::Label::MarginV, IconMarginRight, Foundations::Label::MarginV),
             .m_nativeBorder = false,
             .m_idle = {
                 .m_fill = QBrush(IconFill),

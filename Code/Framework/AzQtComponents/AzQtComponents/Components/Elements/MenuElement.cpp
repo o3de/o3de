@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Elements/MenuElement.h>
 #include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 
 #include <AzCore/Debug/Trace.h>
 
@@ -30,14 +31,13 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        const QColor SurfaceText(0xFF, 0xFF, 0xFF);                 // BaseStyleSheet.qss:18 $text.surface.idle.Alt1
 
         // ---- A popup menu
-        const QColor MenuFill(0x22, 0x22, 0x22);                    // Menu.qss:12 $fill.menu.idle
+        const QColor MenuFill = Foundations::BG;                    // Menu.qss:12 $fill.menu.idle
         constexpr int MenuPaddingV = 4;                             // Menu.qss:13 $space.menu.idle (top and bottom)
         constexpr int MenuPaddingH = 2;                             // Menu.qss:13 $space.menu.idle (left and right)
-        const QColor SelectedItemFill(0x44, 0x44, 0x44);            // Menu.qss:20 $fill.item.selected.Mid
-        const QColor DisabledItemText(0x55, 0x55, 0x55);            // Menu.qss:25 $text.item.disabled.Highest
+        const QColor SelectedItemFill = Foundations::Mid;           // Menu.qss:20 $fill.item.selected.Mid
+        const QColor DisabledItemText = Foundations::Highest;       // Menu.qss:25 $text.item.disabled.Highest
         constexpr int SeparatorLineWidth = 1;                       // Menu.qss:31 $line.separator.idle.width
         const QColor SeparatorLine(0x45, 0x45, 0x45);               // Menu.qss:31 $line.separator.idle.color
         constexpr int SeparatorMarginTop = 2;                       // Menu.qss:32 $space.separator.idle.margin-top
@@ -47,11 +47,11 @@ namespace AzQtComponents
         // MenuBar.qss:11-12 $size.menubar.idle.min-height $size.menubar.idle.height
         constexpr int BarHeight = 28;
         constexpr int BarLineWidth = 2;                             // MenuBar.qss:17 $line.menubar.idle.width
-        const QColor BarLine(0x11, 0x11, 0x11);                     // MenuBar.qss:18 $line.menubar.idle.color
+        const QColor BarLine = Foundations::FarBG;                  // MenuBar.qss:18 $line.menubar.idle.color
         // MenuBar.qss:24-25 $space.item.idle.padding-left.Alt2 $space.item.idle.padding-right.Alt1
         constexpr int BarItemPadding = 14;
-        const QColor BarSelectedItemFill(0x55, 0x55, 0x55);         // MenuBar.qss:30 $fill.item.selected.Highest
-        const QColor BarPressedItemFill(0x22, 0x22, 0x22);          // MenuBar.qss:35 $fill.item.pressed
+        const QColor BarSelectedItemFill = Foundations::Highest;    // MenuBar.qss:30 $fill.item.selected.Highest
+        const QColor BarPressedItemFill = Foundations::BG;          // MenuBar.qss:35 $fill.item.pressed
 
         // ------------------------------------------------------------------------------
         // Elements
@@ -64,7 +64,7 @@ namespace AzQtComponents
             .m_surface = MenuFill,
             .m_paddingH = MenuPaddingH,
             .m_paddingV = MenuPaddingV,
-            .m_text = SurfaceText,
+            .m_text = Foundations::Surface::Text,
             .m_selectedFill = SelectedItemFill,
             .m_disabledText = DisabledItemText,
             .m_separatorMarginTop = SeparatorMarginTop,
@@ -81,7 +81,7 @@ namespace AzQtComponents
             .m_borderWidth = BarLineWidth,
             .m_borderColor = BarLine,
             .m_itemPadding = BarItemPadding,
-            .m_text = SurfaceText,
+            .m_text = Foundations::Surface::Text,
             .m_selectedFill = BarSelectedItemFill,
             .m_pressedFill = BarPressedItemFill,
         };

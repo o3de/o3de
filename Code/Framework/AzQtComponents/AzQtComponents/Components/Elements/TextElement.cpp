@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 
 #include <AzCore/Debug/Trace.h>
 
@@ -29,18 +30,11 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        // ColorPicker.qss:18, Text.qss:92 (.Label), the application font of StyleManager::initialize $type.surface.idle.size
-        constexpr int SurfaceSize = 12;
-        // Text.qss:91 (QLabel) and :57, :66, :74, :83, :99, :114, :122 (the tiers), TitleBar.qss:33 $type.label.idle.family.Alt1
-        constexpr const char* LabelFamily = "Open Sans";
-        constexpr int LabelSize = 12;                           // Text.qss:84, :92, :100, :115, :123 $type.label.idle.size.Alt1
         constexpr const char* ToolTipFamily = "Open Sans";      // ToolTip.qss:19 $type.tooltip.idle.family
         constexpr int ToolTipSize = 12;                         // ToolTip.qss:16 $type.tooltip.idle.size
         constexpr const char* PushButtonFamily = "Open Sans";   // PushButton.qss:33 $type.button.idle.family
         constexpr int PushButtonSize = 12;                      // PushButton.qss:34 $type.button.idle.size.Alt1
         constexpr int CheckSize = 12;                           // CheckBox.qss:13, RadioButton.qss:12 $type.check.idle.Alt1
-        constexpr const char* FieldFamily = "Open Sans";        // BaseStyleSheet.qss:78 $type.field.idle.family
-        constexpr int FieldSize = 12;                           // BaseStyleSheet.qss:82 $type.field.idle.size.Alt1
         constexpr const char* MenuBarFamily = "Amazon Ember";   // MenuBar.qss:13 $type.menubar.idle.family
         constexpr int MenuBarSize = 12;                         // MenuBar.qss:14 $type.menubar.idle.size
         constexpr int ProgressBarSize = 1;                      // ProgressBar.qss:16 $type.progress.idle
@@ -58,11 +52,15 @@ namespace AzQtComponents
         // ------------------------------------------------------------------------------
 
         //! A widget no class rule reaches: '*' over the application font
-        const TextElement BaseText{ .m_name = "Global.Text.Base", .m_pixelSize = SurfaceSize };
+        const TextElement BaseText{ .m_name = "Global.Text.Base", .m_pixelSize = Foundations::Surface::Size };
         //! Only '*' reaches the widget: family and weight; the size stays the platform's or the code's
         const TextElement AnyText{ .m_name = "Global.Text.Any" };
         //! QLabel, and the .Menu, .Paragraph and .Tooltip tiers
-        const TextElement LabelText{ .m_name = "Global.Text.Label", .m_family = LabelFamily, .m_pixelSize = LabelSize };
+        const TextElement LabelText{
+            .m_name = "Global.Text.Label",
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
+        };
         //! QToolTip (Qt's QTipLabel)
         const TextElement ToolTipText{ .m_name = "Global.Text.ToolTip", .m_family = ToolTipFamily, .m_pixelSize = ToolTipSize };
         //! QPushButton
@@ -74,7 +72,11 @@ namespace AzQtComponents
         //! QCheckBox, QRadioButton
         const TextElement CheckText{ .m_name = "Global.Text.Check", .m_pixelSize = CheckSize };
         //! The entry fields: QTextEdit, QPlainTextEdit, QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox
-        const TextElement FieldText{ .m_name = "Global.Text.Field", .m_family = FieldFamily, .m_pixelSize = FieldSize };
+        const TextElement FieldText{
+            .m_name = "Global.Text.Field",
+            .m_family = Foundations::Field::Family,
+            .m_pixelSize = Foundations::Field::Size,
+        };
         const TextElement MenuBarText{ .m_name = "Global.Text.MenuBar", .m_family = MenuBarFamily, .m_pixelSize = MenuBarSize };
         //! So that Qt sizes a progress bar for no text: its minimum size hint follows the font
         const TextElement ProgressBarText{ .m_name = "Global.Text.ProgressBar", .m_pixelSize = ProgressBarSize };
@@ -82,42 +84,42 @@ namespace AzQtComponents
         //! The Text.qss tiers
         const TextElement HeadlineText{
             .m_name = "Global.Text.Headline",
-            .m_family = LabelFamily,
+            .m_family = Foundations::Label::Family,
             .m_pixelSize = HeadlineSize,
             .m_weight = HeadingWeight,
         };
-        const TextElement TitleText{ .m_name = "Global.Text.Title", .m_family = LabelFamily, .m_pixelSize = TitleSize };
+        const TextElement TitleText{ .m_name = "Global.Text.Title", .m_family = Foundations::Label::Family, .m_pixelSize = TitleSize };
         const TextElement SubtitleText{
             .m_name = "Global.Text.Subtitle",
-            .m_family = LabelFamily,
+            .m_family = Foundations::Label::Family,
             .m_pixelSize = SubtitleSize,
             .m_weight = HeadingWeight,
         };
         const TextElement ButtonText{
             .m_name = "Global.Text.Button",
-            .m_family = LabelFamily,
-            .m_pixelSize = LabelSize,
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
             .m_weight = ButtonWeight,
         };
 
         //! `AzQtComponents--TitleBar #title`
         const TextElement TitleBarTitleText{
             .m_name = "Global.Text.TitleBarTitle",
-            .m_family = LabelFamily,
+            .m_family = Foundations::Label::Family,
             .m_pixelSize = TitleBarTitleSize,
         };
         //! `AzQtComponents--CardHeader #Title`
         const TextElement CardTitleText{
             .m_name = "Global.Text.CardTitle",
-            .m_family = LabelFamily,
-            .m_pixelSize = LabelSize,
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
             .m_weight = CardTitleWeight,
         };
         //! `AzQtComponents--PaletteCardBase AzQtComponents--CardHeader #Title`
         const TextElement PaletteCardTitleText{
             .m_name = "Global.Text.PaletteCardTitle",
-            .m_family = LabelFamily,
-            .m_pixelSize = LabelSize,
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
             .m_weight = PaletteCardTitleWeight,
         };
 

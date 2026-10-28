@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Elements/ComboPopupElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 
 #include <QAbstractItemView>
@@ -24,11 +25,11 @@ namespace AzQtComponents
         // Values
         // ------------------------------------------------------------------------------
 
-        const QColor PopupSurface(0x22, 0x22, 0x22);            // ComboBox.qss:81 $fill.field.idle.BG
+        const QColor PopupSurface = Foundations::BG;            // ComboBox.qss:81 $fill.field.idle.BG
         const QColor ItemText(0xFF, 0xFF, 0xFF);                // ComboBox.qss:89 $text.item.idle
-        const QColor SelectedItemFill(0x44, 0x44, 0x44);        // ComboBox.qss:104 $fill.item.selected.Mid
+        const QColor SelectedItemFill = Foundations::Mid;       // ComboBox.qss:104 $fill.item.selected.Mid
         const QColor SelectedItemText(0xFF, 0xFF, 0xFF);        // ComboBox.qss:105 $text.item.selected
-        const QColor DisabledItemText(0x55, 0x55, 0x55);        // ComboBox.qss:110 $text.item.disabled.Highest
+        const QColor DisabledItemText = Foundations::Highest;   // ComboBox.qss:110 $text.item.disabled.Highest
         constexpr int ItemPaddingLeft = 24;                     // ComboBox.qss:92 $space.item.idle.padding-left.Alt3
         constexpr int ItemPaddingRight = 24;                    // ComboBox.qss:90 $space.item.idle.padding-right.Alt2
 

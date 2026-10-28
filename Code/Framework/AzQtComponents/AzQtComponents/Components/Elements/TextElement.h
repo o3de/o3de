@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <QColor>
 #endif
 
@@ -25,13 +26,13 @@ namespace AzQtComponents
     //! the widget's children: give one to the widgets that draw the text, not to a container.
     struct AZ_QT_COMPONENTS_API TextElement
     {
-        const char* m_name = "";                //!< Scope.Text.Look
-        const char* m_family = "Open Sans";     //!< BaseStyleSheet.qss:19 $type.surface.idle.family
-        int m_pixelSize = 0;                    //!< 0: no rule sets it
-        int m_weight = 400;                     //!< BaseStyleSheet.qss:20 $type.surface.idle.weight
-        int m_italic = -1;                      //!< -1: no rule sets it
-        QColor m_color;                         //!< The text, enabled; invalid: the widget keeps its palette
-        QColor m_disabledColor;                 //!< The text, disabled; invalid: m_color
+        const char* m_name = "";                                //!< Scope.Text.Look
+        const char* m_family = Foundations::Surface::Family;    //!< the universal rule's
+        int m_pixelSize = 0;                                    //!< 0: no rule sets it
+        int m_weight = Foundations::Surface::Weight;            //!< the universal rule's
+        int m_italic = -1;                                      //!< -1: no rule sets it
+        QColor m_color;                                         //!< The text, enabled; invalid: the widget keeps its palette
+        QColor m_disabledColor;                                 //!< The text, disabled; invalid: m_color
 
         //! Sets this element's attributes over the font; true if it changed
         bool overlay(QFont& font) const;

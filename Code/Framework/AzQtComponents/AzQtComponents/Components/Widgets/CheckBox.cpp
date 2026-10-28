@@ -64,9 +64,9 @@ bool CheckBox::polish(Style* style, QWidget* widget, const CheckBox::Config& con
 
     if (style->hasClass(widget, g_expanderClass))
     {
-        // CheckBox.qss:127-130 QCheckBox.Expander { min-height, max-height, min-width, max-width: 16px }.
-        // TOKENIZE: ExpanderSize
-        widget->setFixedSize(16, 16);
+        // The expander's own box: QCheckBox.Expander's limits
+        widget->setMinimumSize(IndicatorElement::ExpanderMinSize);
+        widget->setMaximumSize(IndicatorElement::ExpanderMaxSize);
     }
 
     return true;
@@ -78,9 +78,8 @@ QSize CheckBox::sizeFromContents(const Style* style, QStyle::ContentsType type, 
 
     if (StyleManager::stylesheetsDisabled() && style->hasClass(widget, g_expanderClass))
     {
-        // CheckBox.qss QCheckBox.Expander: min/max-height 16, min-width 16, no text.
-        // TOKENIZE: ExpanderSize
-        return QSize(16, 16);
+        // QCheckBox.Expander has no label: its size is its limits (QRenderRule::adjustSize)
+        return size.boundedTo(IndicatorElement::ExpanderMaxSize).expandedTo(IndicatorElement::ExpanderMinSize);
     }
 
     if (StyleManager::stylesheetsDisabled())

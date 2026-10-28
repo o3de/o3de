@@ -196,77 +196,6 @@ namespace AzQtComponents
     };
 
     // ----------------------------------------------------------------------------------
-    // T-CPS.1: the picker separator is Native's band (ColorPicker.qss:83-90), not the universal frame line
-    // ----------------------------------------------------------------------------------
-
-    TEST_F(FlatFramePaintTests, HorizontalSeparator_IsTheNativeBandAtAWholeDevicePixelOffset)
-    {
-        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
-
-        // Gallery 07_color-picker__dialog0 (n1 and m0 qss), first separator: 270x3 at logical y 236, ratio 1.5.
-        // Device rows at x 228: 354 #393a3c, 355 #2d2e2f, 356 #222222, 357 #393a3c, 358 #2d2e2f
-        const QImage image = paintFrame(QFrame::HLine, QStringLiteral("HorizontalSeparator"),
-            QPoint(17, 236), QSize(270, 3), 1.5, QSize(456, 400), DialogColor);
-
-        EXPECT_EQ(pixelAt(image, 228, 353), DialogColor);
-        EXPECT_EQ(pixelAt(image, 228, 354), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 228, 355), 0x2D2E2Fu);
-        EXPECT_EQ(pixelAt(image, 228, 356), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 228, 357), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 228, 358), 0x2D2E2Fu);
-        EXPECT_EQ(pixelAt(image, 228, 359), DialogColor);
-
-        // The ends: the clip takes the 25.5 and 430.5 device edges to columns 26 and 430, and the antialiased top
-        // border blends there horizontally too (Native n1: row 356 reads #444444 #222222 ... #222222 #444444 at
-        // columns 25 26 ... 430 431, and row 354 reads #2d2e2f at column 430)
-        EXPECT_EQ(pixelAt(image, 25, 356), DialogColor);
-        EXPECT_EQ(pixelAt(image, 26, 356), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 430, 356), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 431, 356), DialogColor);
-        EXPECT_EQ(pixelAt(image, 430, 354), 0x2D2E2Fu);
-    }
-
-    TEST_F(FlatFramePaintTests, HorizontalSeparator_IsTheNativeBandAtAHalfDevicePixelOffset)
-    {
-        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
-
-        // The fourth separator of the same capture, logical y 535 (device 802.5). The band stays inside the
-        // device rect of the widget: 802 #444444, 803 #393a3c, 804 #222222, 805 #2d2e2f, 806 #393a3c, 807 #444444
-        const QImage image = paintFrame(QFrame::HLine, QStringLiteral("HorizontalSeparator"),
-            QPoint(17, 535), QSize(270, 3), 1.5, QSize(456, 900), DialogColor);
-
-        EXPECT_EQ(pixelAt(image, 228, 802), DialogColor);
-        EXPECT_EQ(pixelAt(image, 228, 803), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 228, 804), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 228, 805), 0x2D2E2Fu);
-        EXPECT_EQ(pixelAt(image, 228, 806), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 228, 807), DialogColor);
-    }
-
-    TEST_F(FlatFramePaintTests, HorizontalSeparator_IsOneLogicalPixelBordersAndNoSideBorders)
-    {
-        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
-
-        // ColorPicker.qss:85-88: border-top and border-bottom 1px solid #393a3c, border-left and border-right none
-        const QImage image = paintFrame(QFrame::HLine, QStringLiteral("HorizontalSeparator"),
-            QPoint(17, 10), QSize(270, 3), 1.0, QSize(456, 40), DialogColor);
-
-        EXPECT_EQ(pixelAt(image, 100, 9), DialogColor);
-        EXPECT_EQ(pixelAt(image, 100, 10), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 100, 11), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 100, 12), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 100, 13), DialogColor);
-
-        // The fill reaches both ends of the middle row; the border rows run the whole width
-        EXPECT_EQ(pixelAt(image, 16, 11), DialogColor);
-        EXPECT_EQ(pixelAt(image, 17, 11), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 286, 11), 0x222222u);
-        EXPECT_EQ(pixelAt(image, 287, 11), DialogColor);
-        EXPECT_EQ(pixelAt(image, 17, 10), 0x393A3Cu);
-        EXPECT_EQ(pixelAt(image, 286, 12), 0x393A3Cu);
-    }
-
-    // ----------------------------------------------------------------------------------
     // T-FE.1: the universal rule's frames (BaseStyleSheet.qss:41-48): the fill, then the base style's lines over a
     // palette derived from it, as QStyleSheetStyle drew them
     // ----------------------------------------------------------------------------------
@@ -290,10 +219,10 @@ namespace AzQtComponents
     {
         ASSERT_TRUE(StyleManager::stylesheetsDisabled());
 
-        // The picker's container tag starts with the separator tag; Style::hasClass compares whole words, so a
-        // frame carrying it must not take the picker band. A QFrame with a class tag is not matched by
-        // `.QFrame[frameShape]` (the tag replaces the class name, qstylesheetstyle.cpp:1543-1551): it has no fill, and
-        // the base style draws its Plain line in the '*' rule's white over the parent
+        // The picker's container tag starts with the separator tag: a frame carrying it is a QFrame with a class tag, which
+        // `.QFrame[frameShape]` does not match (the tag replaces the class name, QStyleSheetStyleSelector::attributeValue): it
+        // has no fill, and the base style draws its Plain line in the '*' rule's white over the parent. (The picker's own
+        // separators are its element's: ColorPickerElementTests, T-CP.4.)
         const QImage image = paintFrame(QFrame::HLine, QStringLiteral("HorizontalSeparatorContainer"),
             QPoint(17, 10), QSize(270, 3), 1.0, QSize(456, 40), CardColor);
 
