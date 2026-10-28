@@ -17,12 +17,13 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
-
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
@@ -65,6 +66,38 @@ namespace AzToolsFramework
                 return false;
             }
             outComponent = outEntity->FindComponent(componentPair.GetComponentId());
+
+            auto isSameComponentFn = [&](AZ::Component* component)
+            {
+                return component->GetId() == componentPair.GetComponentId();
+            };
+
+            if (!outComponent)
+            {
+                // It could be a disabled - Check for those, too:
+                AZ::Entity::ComponentArrayType disabledComponents;
+
+                EditorDisabledCompositionRequestBus::Event(componentPair.GetEntityId(), &EditorDisabledCompositionRequestBus::Events::GetDisabledComponents,
+                    disabledComponents);
+
+                if (auto it = AZStd::find_if(disabledComponents.begin(), disabledComponents.end(), isSameComponentFn); it != disabledComponents.end())
+                {
+                    outComponent = *it;
+                }
+            }
+
+            if (!outComponent)
+            {
+                // it could be pending, ie, added, but unable to activate, since it is missing required services.
+                // ask the EditorPendingCompositionRequestBus if it is pending, and if so, return it.
+                AZ::Entity::ComponentArrayType pendingComponents;
+                EditorPendingCompositionRequestBus::Event(componentPair.GetEntityId(), &EditorPendingCompositionRequestBus::Events::GetPendingComponents, pendingComponents);
+
+                if (auto it = AZStd::find_if(pendingComponents.begin(), pendingComponents.end(), isSameComponentFn); it != pendingComponents.end())
+                {
+                    outComponent = *it;
+                }
+            }
             return outComponent != nullptr;
         }
     } // namespace ComponentEditorInternal
