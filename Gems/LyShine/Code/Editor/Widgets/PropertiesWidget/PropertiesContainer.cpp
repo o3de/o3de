@@ -309,7 +309,7 @@ AZ::Entity::ComponentArrayType PropertiesContainer::GetSelectedComponents()
 
     for (auto componentEditor : selectedComponentEditors)
     {
-        const auto& components = componentEditor->GetComponents();
+        const auto& components = componentEditor->ResolveComponentPointers();
         selectedComponents.insert(selectedComponents.end(), components.begin(), components.end());
     }
 
