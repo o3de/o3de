@@ -49,7 +49,7 @@ namespace AzQtComponents
         //! The element a frame has, by name ("" for none)
         const char* elementNameOf(const QWidget* widget)
         {
-            const FrameElement* element = FrameElement::forFrame(widget);
+            const FrameElement* element = FrameElement::forWidget(widget);
             return element ? element->m_name : "";
         }
 
@@ -59,12 +59,12 @@ namespace AzQtComponents
 
         bool isFrameTestTimer(const QWidget* widget)
         {
-            return TextElement::named(widget, "frameElementTestsTimer");
+            return Selectors::named(widget, "frameElementTestsTimer");
         }
 
         bool isFrameTestLate(const QWidget* widget)
         {
-            return TextElement::named(widget, "frameElementTestsLate");
+            return Selectors::named(widget, "frameElementTestsLate");
         }
     } // namespace
 

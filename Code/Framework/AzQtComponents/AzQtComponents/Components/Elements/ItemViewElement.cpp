@@ -8,11 +8,9 @@
 
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Elements/ComboPopupElement.h>
-#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
 #include <QAbstractItemView>
-#include <QApplication>
 #include <QCoreApplication>
 #include <QHash>
 #include <QHeaderView>
@@ -34,87 +32,112 @@
 
 namespace AzQtComponents
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
-    //! with others into one translation unit, where anonymous namespaces merge (FrameElement.cpp does the same).
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace ItemViewElementInternal
     {
         // ------------------------------------------------------------------------------
-        // Global elements. Each value cites the declaration that grants it, as file:line of the legacy sheets in Components/Widgets/.
-        // What an element leaves out is what TableView.qss gave every view (the defaults of ItemViewElement).
+        // Values
         // ------------------------------------------------------------------------------
 
-        //! A plain QTreeView (the outliner, the asset browser, every tree of the engine): TableView.qss gave it the item and the
-        //! header (:31-40, :62-76), the colours (:21-24, :42-60), the disabled text (:99-102), the check box margin (:78-85), the
-        //! two carets (:87-97) and the indentation of TreeView::polish (TreeView.h:39, TreeView.cpp:250). TOKENIZE: TreeViewIndentation
+        // ---- The faces of every view
+        const QColor SelectedItemFill(0x65, 0x65, 0x65);            // TableView.qss:49 $fill.item.selected.Alt1
+        const QColor SelectedBranchFill(0x65, 0x65, 0x65);          // TableView.qss:49 $fill.tree-branch.selected.Alt1
+        const QColor HoveredItemFill(0x5A, 0x5A, 0x5A);             // TableView.qss:59 $fill.item.hover.Alt1
+        const QColor HoveredBranchFill(0x5A, 0x5A, 0x5A);           // TableView.qss:59 $fill.tree-branch.hover.Alt1
+
+        // ---- A tree: its check box, its carets, its disabled text and its indentation
+        // TableView.qss:84, :81 $space.check-indicator.idle.margin-left $space.check-indicator.idle.margin.Alt2
+        constexpr QMargins TreeIndicatorMargin(-3, 0, 0, 0);
+        // TableView.qss:89 $asset.tree-branch.closed+branch $asset.tree-branch.branch+closed (one rule for two selectors)
+        constexpr const char* ClosedBranchImage = ":/TreeView/closed.svg";
+        // TableView.qss:90 $space.tree-branch.closed+branch $space.tree-branch.branch+closed (one rule for two selectors)
+        constexpr QMargins ClosedBranchPadding(6, 8, 6, 8);
+        constexpr const char* OpenBranchImage = ":/TreeView/open.svg";  // TableView.qss:95 $asset.tree-branch.open+branch
+        constexpr QMargins OpenBranchPadding(4, 10, 4, 10);         // TableView.qss:96 $space.tree-branch.open+branch
+        const QColor DisabledItemText(0x77, 0x77, 0x77);            // TableView.qss:101 $text.item.disabled.Alt1
+        constexpr int TreeIndentation = 20;                         // TreeView::IndentationWidth $size.view.idle.indentation
+
+        // ---- A header whose sections are declared transparent (TableViewPage::TableViewPage, the Gallery)
+        const QColor TransparentSectionFill(0x00, 0x00, 0x00, 0x00);    // TableViewPage::TableViewPage $fill.header.idle.Clear
+
+        // ------------------------------------------------------------------------------
+        // Elements
+        // ------------------------------------------------------------------------------
+
+        //! A plain QTreeView (the outliner, the asset browser, every tree of the engine): TableView.qss's item, header, colours, disabled
+        //! text, check box margin and carets, and the indentation of TreeView::polish
         const ItemViewElement TreeLook{
             .m_name = "Global.ItemView.Tree",
-            .m_indicatorMargin = QMargins(-3, 0, 0, 0),                         // :80-84 QTreeView::indicator { margin: 0px; margin-left: -3px }
-            .m_closed = { ":/TreeView/closed.svg", QMargins(6, 8, 6, 8) },      // :87-91 closed.svg, padding: 8px 6px
-            .m_open = { ":/TreeView/open.svg", QMargins(4, 10, 4, 10) },        // :93-97 open.svg, padding: 10px 4px
-            .m_indentation = 20,                                                // TreeView.h:39 IndentationWidth
+            .m_indicatorMargin = TreeIndicatorMargin,
+            .m_closed = { ClosedBranchImage, ClosedBranchPadding },
+            .m_open = { OpenBranchImage, OpenBranchPadding },
+            .m_indentation = TreeIndentation,
             .m_faces = {
-                { ItemViewElement::Selected, { QColor(101, 101, 101), QColor(), QColor() } },   // :42-50 :selected { background: rgb(101,101,101) }. TOKENIZE: ItemViewSelection
-                { ItemViewElement::Hover, { QColor(90, 90, 90), QColor(), QColor() } },         // :52-60 :hover { background: rgb(90,90,90) }. TOKENIZE: ItemViewHover. UNVERIFIED: no Native capture holds a hovered item
-                { ItemViewElement::Disabled, { QColor(), QColor(0x77, 0x77, 0x77), QColor() } },    // :99-102 QTreeView::item:disabled { color: #777777 }. TOKENIZE: ItemViewDisabledText.
-                                                                                                    // UNVERIFIED: no Native capture holds a disabled item with a text
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Disabled, .m_face = { .m_text = DisabledItemText } },
             },
         };
 
-        //! An AzQtComponents::TableView (and the AssetFolderListView, a TableView): the same as a tree, with no indentation of its own
-        //! (TableView::polish sets none). Its sheet's `image: none` for its branches (TableView.qss:104-108) never applies: it names two
-        //! pseudo-classes where the rules of the carets above name three, which outrank it, so a row with children shows a caret as in a
-        //! tree (the legacy twin of the tests has it so), as the PNG carets of AssetFolderListView.qss:14-24 do not apply either: a rule
-        //! of equal specificity declared later wins, and TableView.qss comes after AssetFolderListView.qss in the application sheet.
+        //! An AzQtComponents::TableView (and the AssetFolderListView, a TableView): a tree with no indentation of its own. Its sheet's
+        //! `image: none` for the branches never applies (the carets' rules above outrank it), so a row with children shows a caret.
         const ItemViewElement TableViewLook{
             .m_name = "Global.ItemView.TableView",
-            .m_indicatorMargin = QMargins(-3, 0, 0, 0),                         // :80-84
-            .m_closed = { ":/TreeView/closed.svg", QMargins(6, 8, 6, 8) },      // :87-91
-            .m_open = { ":/TreeView/open.svg", QMargins(4, 10, 4, 10) },        // :93-97
+            .m_indicatorMargin = TreeIndicatorMargin,
+            .m_closed = { ClosedBranchImage, ClosedBranchPadding },
+            .m_open = { OpenBranchImage, OpenBranchPadding },
             .m_faces = {
-                { ItemViewElement::Selected, { QColor(101, 101, 101), QColor(), QColor() } },   // :42-50. TOKENIZE: ItemViewSelection
-                { ItemViewElement::Hover, { QColor(90, 90, 90), QColor(), QColor() } },         // :52-60. TOKENIZE: ItemViewHover. UNVERIFIED (see TreeLook)
-                { ItemViewElement::Disabled, { QColor(), QColor(0x77, 0x77, 0x77), QColor() } },    // :99-102 (a TableView is a QTreeView). TOKENIZE: ItemViewDisabledText. UNVERIFIED
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Disabled, .m_face = { .m_text = DisabledItemText } },
             },
         };
 
-        //! A QTableView: the item and the header of TableView.qss, the check box of CheckBox.qss:23-28 (margin 2px), no caret
+        //! A QTableView: TableView.qss's item and header, CheckBox.qss's check box, no caret
         const ItemViewElement TableLook{
             .m_name = "Global.ItemView.Table",
+            .m_faces = {
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredBranchFill }, .m_scope = ItemViewElement::OnBranch },
+            },
         };
 
-        //! A QListView (not the list of a combo box popup, which ComboPopupElement owns): the same as a table
+        //! A QListView (not a combo box popup's list, which ComboPopupElement owns): the same as a table
         const ItemViewElement ListLook{
             .m_name = "Global.ItemView.List",
+            .m_faces = {
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Selected, .m_face = { .m_fill = SelectedBranchFill }, .m_scope = ItemViewElement::OnBranch },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredItemFill }, .m_scope = ItemViewElement::OnItem },
+                { .m_states = ItemViewElement::Hover, .m_face = { .m_fill = HoveredBranchFill }, .m_scope = ItemViewElement::OnBranch },
+            },
         };
 
         // ------------------------------------------------------------------------------
-        // Resolution
+        // Helpers
         // ------------------------------------------------------------------------------
 
-        //! The name of the dynamic property that keeps the element of a view
-        constexpr const char* ElementProperty = "_o3de_itemViewElement";
-        //! ... and the one that says a tree has been shown
+        //! The dynamic property that says a tree has been shown
         constexpr const char* ShownProperty = "_o3de_itemViewShown";
 
-        struct Row
+        ElementRegistry<ItemViewElement>& registry()
         {
-            const ItemViewElement* m_element;
-            const QMetaObject* m_widgetClass;
-            ItemViewElement::Matcher m_matcher;
-        };
-
-        //! The elements modules registered, checked before the Global ones
-        QVector<Row>& moduleRows()
-        {
-            static QVector<Row> rows;
+            static ElementRegistry<ItemViewElement> rows("_o3de_itemViewElement");
             return rows;
         }
 
-        //! The Global element of the kind of a view, or null: it is none of the kinds an element covers (a header is no view of this
-        //! element, the list of a combo box popup is ComboPopupElement's, and a QAbstractItemView of another kind had no rule of the sheets)
-        const ItemViewElement* globalFor(const QWidget* widget)
+        //! The Global element of a view's kind; none for a header, a combo box popup's list (ComboPopupElement's) and a QAbstractItemView
+        //! of a kind no rule covered
+        const ItemViewElement* globalElement(const QWidget* widget)
         {
-            if (!qobject_cast<const QAbstractItemView*>(widget) || qobject_cast<const QHeaderView*>(widget) || ComboPopupElement::coversView(widget))
+            if (!qobject_cast<const QAbstractItemView*>(widget) || qobject_cast<const QHeaderView*>(widget)
+                || ComboPopupElement::coversView(widget))
             {
                 return nullptr;
             }
@@ -139,12 +162,12 @@ namespace AzQtComponents
 
         bool used(const ItemViewElement::StateFace& entry)
         {
-            return entry.m_states != 0 || entry.m_face.m_fill.isValid() || entry.m_face.m_text.isValid() || entry.m_face.m_selectedText.isValid();
+            return entry.m_states != 0 || entry.m_face.m_fill.isValid() || entry.m_face.m_text.isValid()
+                || entry.m_face.m_selectedText.isValid();
         }
 
-        //! A module's element over the Global one of the kind of its view (see ItemViewElement::registerElement): the Global element where
-        //! the module's member has the value of the defaults, the module's where it changed it, and the faces of both, the module's last.
-        //! One per pair, kept for the life of the process, as the elements are.
+        //! A module's element over the Global one of its view's kind: the module's members where they differ from the defaults, the
+        //! Global element's otherwise, and the faces of both, the module's last. One per pair, kept for the process's life.
         const ItemViewElement* layered(const ItemViewElement* module, const ItemViewElement* global)
         {
             static QHash<QPair<const ItemViewElement*, const ItemViewElement*>, const ItemViewElement*> cache;
@@ -222,19 +245,13 @@ namespace AzQtComponents
         //! The element of a view, or null: a module's over the Global one of its kind, else the Global one
         const ItemViewElement* findElement(const QWidget* widget)
         {
-            const ItemViewElement* global = globalFor(widget);
+            const ItemViewElement* global = globalElement(widget);
             if (!global)
             {
                 return nullptr;
             }
-            for (const Row& row : moduleRows())
-            {
-                if (widget->metaObject()->inherits(row.m_widgetClass) && row.m_matcher(widget))
-                {
-                    return layered(row.m_element, global);
-                }
-            }
-            return global;
+            const ItemViewElement* module = registry().find(widget);
+            return module ? layered(module, global) : global;
         }
 
         //! The icon of a resource, as the sheet made it for an `image:` (QStyleSheetImageData holds a QIcon of the url)
@@ -297,10 +314,9 @@ namespace AzQtComponents
             return headers;
         }
 
-        //! The header of a view: its sections have the colour of the section rule and the area beside them has none. The legacy header and
-        //! its viewport were transparent (BaseStyleSheet.qss:15-21 `*`; qstylesheetstyle.cpp:2952-2959 took the viewport's own fill away):
-        //! what shows beyond the last section is what is behind the header, and a section declared transparent shows it too.
-        //! The Button role is the section's colour, as the base style would paint it.
+        //! The header of a view: its sections in the section rule's colour (the Button role, as the base style paints it) and nothing
+        //! beside them: the legacy header and its viewport were transparent (BaseStyleSheet.qss:15 `*`; QStyleSheetStyle::polish took the
+        //! viewport's own fill away), so what shows beyond the last section is what is behind the header
         void applyHeader(QHeaderView* header)
         {
             QPalette palette = header->palette();
@@ -311,12 +327,12 @@ namespace AzQtComponents
     } // namespace ItemViewElementInternal
 
     // ----------------------------------------------------------------------------------
-    // Element
+    // Geometry and drawing
     // ----------------------------------------------------------------------------------
 
     unsigned ItemViewElement::statesOf(const QStyleOption* option)
     {
-        // The pseudo-classes of qstylesheetstyle.cpp:1757-1804: a disabled item is not hovered, and a window is active or is not
+        // The pseudo-classes (pseudoClass, qstylesheetstyle.cpp): a disabled item is not hovered, and a window is active or is not
         unsigned states = 0;
         if (!option->state.testFlag(QStyle::State_Enabled))
         {
@@ -376,7 +392,7 @@ namespace AzQtComponents
     QSize ItemViewElement::itemSize(const QSize& base) const
     {
         // QRenderRule::adjustSize gives the contents the rule's height, QRenderRule::boxSize the margin and the padding around them
-        // (qstylesheetstyle.cpp:560-571, 1096-1122; border: none has no width)
+        // (border: none has no width)
         const int height = (m_itemHeight == Unset) ? base.height() : m_itemHeight;
         return QSize(base.width() + m_itemMargin.left() + m_itemMargin.right() + m_itemPadding.left() + m_itemPadding.right(),
             height + m_itemMargin.top() + m_itemMargin.bottom() + m_itemPadding.top() + m_itemPadding.bottom());
@@ -389,7 +405,7 @@ namespace AzQtComponents
 
     QSize ItemViewElement::indicatorBox() const
     {
-        // The rule's size is the image's plus the margin around it (QRenderRule::size, qstylesheetstyle.cpp:555)
+        // The rule's size is the image's plus the margin around it (QRenderRule::size)
         return QSize(m_indicatorSize.width() + m_indicatorMargin.left() + m_indicatorMargin.right(),
             m_indicatorSize.height() + m_indicatorMargin.top() + m_indicatorMargin.bottom());
     }
@@ -402,7 +418,7 @@ namespace AzQtComponents
     void ItemViewElement::prepareItem(QStyleOptionViewItem* option) const
     {
         // QRenderRule::configurePalette(palette, Text | HighlightedText, ...): the rule's colour is the text, window text and the item's
-        // text role, its selection colour the selected text (qstylesheetstyle.cpp:1393-1422)
+        // text role, its selection colour the selected text
         const unsigned states = statesOf(option);
         const bool selected = option->state.testFlag(QStyle::State_Selected);
         if (const QColor text = textOf(states); text.isValid())
@@ -426,12 +442,14 @@ namespace AzQtComponents
         }
     }
 
-    bool ItemViewElement::drawBranch(const QStyle* style, const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget) const
+    bool ItemViewElement::drawBranch(
+        const QStyle* style, const QStyleOptionViewItem* option, QPainter* painter, const QWidget* widget) const
     {
-        // The rule of a branch is drawn when it has a background or an image (QRenderRule::hasDrawable); otherwise the base style
-        // draws the branch, and what it draws is no caret for a view that has a rule for each (qstylesheetstyle.cpp:4777-4790)
+        // A branch's rule is drawn when it has a background or an image (QRenderRule::hasDrawable); otherwise the base style draws the
+        // branch (QStyleSheetStyle::drawPrimitive, PE_IndicatorBranch)
         const QColor fill = fillOf(statesOf(option), OnBranch);
-        const Branch& branch = option->state.testFlag(QStyle::State_Children) ? (option->state.testFlag(QStyle::State_Open) ? m_open : m_closed) : Branch{};
+        const bool children = option->state.testFlag(QStyle::State_Children);
+        const Branch& branch = children ? (option->state.testFlag(QStyle::State_Open) ? m_open : m_closed) : Branch{};
         const bool hasImage = branch.m_image && *branch.m_image;
         if (!fill.isValid() && !hasImage)
         {
@@ -456,27 +474,18 @@ namespace AzQtComponents
     // Resolution
     // ----------------------------------------------------------------------------------
 
-    void ItemViewElement::registerElement(const ItemViewElement* element, const QMetaObject* widgetClass, Matcher matcher)
+    void ItemViewElement::registerElement(
+        const ItemViewElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
     {
-        ItemViewElementInternal::moduleRows().append({ element, widgetClass, matcher });
-        if (!StyleManager::stylesheetsDisabled())
-        {
-            return;
-        }
-
-        // A module builds some windows before it sets up its styles: resolve the views polished before this call
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
-        {
-            if (widget->testAttribute(Qt::WA_WState_Polished) && widget->metaObject()->inherits(widgetClass))
+        ItemViewElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, [](QWidget* widget)
             {
-                apply(widget);
+                resolve(widget);
                 widget->update();
-            }
-        }
+            });
     }
 
-    void ItemViewElement::apply(QWidget* widget)
+    void ItemViewElement::resolve(QWidget* widget)
     {
         auto view = qobject_cast<QAbstractItemView*>(widget);
         if (!view || qobject_cast<QHeaderView*>(widget))
@@ -486,21 +495,21 @@ namespace AzQtComponents
 
         // Kept on the view: a draw reads it back without resolving again (a null element is kept too)
         const ItemViewElement* element = ItemViewElementInternal::findElement(view);
-        view->setProperty(ItemViewElementInternal::ElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
+        ItemViewElementInternal::registry().keep(view, element);
         if (!element)
         {
             return;
         }
 
-        // The roles of the view: the sheet's alternate-background-color, selection-background-color and selection-color were the view's
-        // palette (QRenderRule::configurePalette, qstylesheetstyle.cpp:1393-1422), for every colour group
+        // The view's roles: alternate-background-color, selection-background-color and selection-color were the view's palette in
+        // every colour group (QRenderRule::configurePalette)
         QPalette palette = view->palette();
         palette.setColor(QPalette::AlternateBase, element->m_alternate);
         palette.setColor(QPalette::Highlight, element->m_selection);
         palette.setColor(QPalette::HighlightedText, element->m_selectionText);
         view->setPalette(palette);
 
-        // The sheet style tracked the pointer of a view whose rules have a :hover (qstylesheetstyle.cpp:2894-2903): every view's item rules do
+        // The sheet tracked the pointer of a view whose rules have a :hover (QStyleSheetStyle::polish): every view's item rules do
         view->setAttribute(Qt::WA_Hover);
         view->viewport()->setAttribute(Qt::WA_Hover);
         view->viewport()->setMouseTracking(true);
@@ -523,8 +532,7 @@ namespace AzQtComponents
         {
             return nullptr;
         }
-        const QVariant stored = widget->property(ItemViewElementInternal::ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const ItemViewElement*>(stored.value<quintptr>()) : nullptr;
+        return ItemViewElementInternal::registry().kept(widget).value_or(nullptr);
     }
 
     const ItemViewElement* ItemViewElement::forHeader(const QWidget* header)
@@ -534,17 +542,18 @@ namespace AzQtComponents
         {
             return nullptr;
         }
-        // The header can be polished before its view: the element of a view not resolved yet is looked up now (and not kept: no property is set here)
-        const QVariant stored = view->property(ItemViewElementInternal::ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const ItemViewElement*>(stored.value<quintptr>()) : ItemViewElementInternal::findElement(view);
+        // The header can be polished before its view: a view not resolved yet is looked up now, and nothing is kept
+        const std::optional<const ItemViewElement*> kept = ItemViewElementInternal::registry().kept(view);
+        return kept ? *kept : ItemViewElementInternal::findElement(view);
     }
 
     QColor ItemViewElement::headerFillOf(const QWidget* header)
     {
-        // The Gallery's log table sets its sections transparent: Native had an inline sheet `QHeaderView::section { background: transparent }`
-        if (header && header->property("SectionBackground").toString() == QLatin1String("transparent"))
+        // The Gallery's log table sets its sections transparent, where the legacy page had an inline sheet
+        // `QHeaderView::section { background: transparent }`
+        if (header && Selectors::hasProperty(header, "SectionBackground", "transparent"))
         {
-            return QColor(0, 0, 0, 0);
+            return ItemViewElementInternal::TransparentSectionFill;
         }
         static const QColor tableViewFill = ItemViewElement().m_headerFill;
         const ItemViewElement* element = forHeader(header);

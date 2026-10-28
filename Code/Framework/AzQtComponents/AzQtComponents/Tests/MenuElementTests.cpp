@@ -314,7 +314,7 @@ namespace AzQtComponents
         separator.menuItemType = QStyleOptionMenuItem::Separator;
         separator.state = QStyle::State_Enabled;
         EXPECT_TRUE(m_style->sizeFromContents(QStyle::CT_MenuItem, &separator, QSize(2, 2), &flat) == QSize(2, 6));
-        EXPECT_EQ(MenuElement::popup().separatorHeight(), 6);
+        EXPECT_EQ(MenuElement::forWidget(nullptr).separatorHeight(), 6);
 
         QStyleOption option;
         option.initFrom(&flat);
@@ -454,7 +454,7 @@ namespace AzQtComponents
         image.setDevicePixelRatio(1.5);
         image.fill(QColor::fromRgb(SurfaceColor));
         QPainter painter(&image);
-        MenuElement::popup().drawSeparator(&painter, QRect(2, 29, 243, 6));
+        MenuElement::forWidget(nullptr).drawSeparator(&painter, QRect(2, 29, 243, 6));
         painter.end();
 
         EXPECT_EQ(pixelOf(image, 100, 45), SurfaceColor);
@@ -472,7 +472,7 @@ namespace AzQtComponents
         QImage image(QSize(247, 60), QImage::Format_ARGB32_Premultiplied);
         image.fill(QColor::fromRgb(SurfaceColor));
         QPainter painter(&image);
-        MenuElement::popup().drawSeparator(&painter, QRect(2, 29, 243, 6));
+        MenuElement::forWidget(nullptr).drawSeparator(&painter, QRect(2, 29, 243, 6));
         painter.end();
 
         EXPECT_EQ(pixelOf(image, 100, 30), SurfaceColor);
@@ -782,7 +782,7 @@ namespace AzQtComponents
 
     TEST_F(MenuElementTests, ItemPalette_IsWhatTheSheetStyleHandedTheBaseStyle)
     {
-        const MenuElement& popup = MenuElement::popup();
+        const MenuElement& popup = MenuElement::forWidget(nullptr);
         const QPalette menuPalette;
 
         // enabled, not selected: white text, and no fill of its own (the menu's shows)
@@ -815,12 +815,12 @@ namespace AzQtComponents
         ASSERT_TRUE(StyleManager::stylesheetsDisabled()); // the test environment sets it (AzQtComponentTests.cpp)
 
         // A module's element, registered once for the process and matched by the object name of its menu
-        static MenuElement moduleElement = MenuElement::popup();
+        static MenuElement moduleElement = MenuElement::forWidget(nullptr);
         moduleElement.m_name = "Test.Menu.Module";
         moduleElement.m_surface = QColor(0x10, 0x20, 0x30);
         moduleElement.m_paddingH = 5;
         moduleElement.m_paddingV = 7;
-        MenuElement::registerElement(&moduleElement,
+        MenuElement::registerElement(&moduleElement, &QMenu::staticMetaObject,
             [](const QWidget* menu)
             {
                 return menu->objectName() == QLatin1String("MenuElementTests.ModuleMenu");
@@ -834,9 +834,9 @@ namespace AzQtComponents
         other.setStyle(m_style.get());
         other.ensurePolished();
 
-        EXPECT_EQ(&MenuElement::forMenu(&module), &moduleElement);
-        EXPECT_EQ(&MenuElement::forMenu(&other), &MenuElement::popup());
-        EXPECT_EQ(&MenuElement::forMenu(nullptr), &MenuElement::popup());
+        EXPECT_EQ(&MenuElement::forWidget(&module), &moduleElement);
+        EXPECT_EQ(&MenuElement::forWidget(&other), &MenuElement::forWidget(nullptr));
+        EXPECT_STREQ(MenuElement::forWidget(nullptr).m_name, "Global.Menu.Popup");
 
         // metrics and the surface follow the element of the menu
         QStyleOption option;

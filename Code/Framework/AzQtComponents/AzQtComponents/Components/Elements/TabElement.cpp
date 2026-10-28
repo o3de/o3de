@@ -8,9 +8,8 @@
 
 #include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Style.h>
-#include <AzQtComponents/Components/StyleManager.h>
 
-#include <QApplication>
+#include <QBrush>
 #include <QHash>
 #include <QIcon>
 #include <QImageReader>
@@ -21,194 +20,222 @@
 #include <QStyleOption>
 #include <QTabBar>
 #include <QTabWidget>
-#include <QVariant>
-#include <QVector>
 #include <QWidget>
 
 namespace AzQtComponents
 {
-    namespace
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
+    namespace TabElementInternal
     {
         // ------------------------------------------------------------------------------
-        // Values of the Global tab elements: each is what the legacy GUI finally renders.
-        // The comments name the declaration that grants it, as file:line of the legacy
-        // stylesheets in Components/Widgets/; a value no rule sets is Qt's own.
+        // Values
         // ------------------------------------------------------------------------------
 
-        const QColor Black111(0x11, 0x11, 0x11);
-        const QColor Grey333(0x33, 0x33, 0x33);
-        const QColor Grey444(0x44, 0x44, 0x44);
-        const QColor White(0xFF, 0xFF, 0xFF);
-        const QColor Muted959(0x95, 0x95, 0x95);
-        const QColor HoverVeil(0xFF, 0xFF, 0xFF, 0x26);          // rgba(255, 255, 255, 0.15)
-        const QColor CloseHover(0xFF, 0xFF, 0xFF, 0x33);         // rgba(255, 255, 255, 0.2)
-        const QColor CloseRed(0xB8, 0x0D, 0x1C);
-        const QColor SelectedUnderline(0x00, 0x8D, 0xE5);
-        const QColor PaneLine(0x2B, 0x2B, 0x2B);
+        // ---- Every tab bar
+        constexpr int TabMaxWidth = 200;                            // TabWidget.qss:18 $size.tab.idle.max-width
+        const QColor PlainFill(0x44, 0x44, 0x44);                   // TabWidget.qss:13 $fill.tab.idle.Mid
 
-        constexpr const char* CloseIcon = ":/stylesheet/img/close_small.svg";
-        constexpr const char* ElementProperty = "_o3de_tabElement";
+        // ---- AzQtComponents' TabBar: the bar, and a tab of the Primary look
+        const QColor BarFill(0x44, 0x44, 0x44);                     // TabWidget.qss:28 $fill.surface.idle.Mid
+        constexpr int BarMinHeight = 28;                            // TabWidget.qss:51 $size.tab.idle.min-height.Alt1
+        constexpr int MoveAnimationDuration = 0;                    // TabWidget.qss:54 $other.tab.idle.widget-animation-duration
+        const QColor TabFill(0x33, 0x33, 0x33);                     // TabWidget.qss:60 $fill.tab.idle.Low
+        // TabWidget.qss:59 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
+        const TabElement::Edge TabLine{ 1, QColor(0x11, 0x11, 0x11) };
+        constexpr QMargins TabPadding(9, 6, 21, 6);                 // TabWidget.qss:61 $space.tab.idle.padding.Alt1
+        const QColor TabText(0xFF, 0xFF, 0xFF);                     // BaseStyleSheet.qss:18 $text.surface.idle.Alt1
+        const QColor HoverFill(0x44, 0x44, 0x44);                   // TabWidget.qss:90 $fill.tab.hover.Mid
+        const QColor SelectedFill(0x44, 0x44, 0x44);                // TabWidget.qss:90 $fill.tab.selected.Mid
+        // TabWidget.qss:84 $line.tab.selected.width.Alt1 $line.tab.selected.color.Mid
+        const TabElement::Edge SelectedLine{ 1, QColor(0x44, 0x44, 0x44) };
 
-        TabElement::Edges box(int width, const QColor& color)
-        {
-            return { { width, color }, { width, color }, { width, color }, { width, color } };
-        }
+        // ---- A tab of the Secondary look, and of the bordered one
+        const QColor SecondaryFill(0x44, 0x44, 0x44);               // TabWidget.qss:138 $fill.tab.idle.Mid
+        // TabWidget.qss:140 $line.tab.idle.width.Alt3 $line.tab.idle.color.Low
+        const TabElement::Edge SecondaryLine{ 3, QColor(0x33, 0x33, 0x33) };
+        constexpr QMargins SecondaryPadding(14, 7, 14, 5);          // TabWidget.qss:141 $space.tab.idle.padding.Alt3
+        const QColor SecondaryText(0x95, 0x95, 0x95);               // TabWidget.qss:142 $text.tab.idle
+        const QColor SecondaryHoverFill(0xFF, 0xFF, 0xFF, 0x26);    // TabWidget.qss:147 $fill.tab.hover.Alt1
+        // TabWidget.qss:148 $line.tab.hover.width $line.tab.hover.color
+        const TabElement::Edge SecondaryHoverLine{ 3, QColor(0x44, 0x44, 0x44) };
+        const QColor SecondaryHoverText(0xFF, 0xFF, 0xFF);          // TabWidget.qss:149 $text.tab.hover.Alt1
+        // TabWidget.qss:160 $line.tab.selected.width.Alt2 $line.tab.selected.color.Alt1
+        const TabElement::Edge SecondarySelectedLine{ 3, QColor(0x00, 0x8D, 0xE5) };
+        const QColor SecondarySelectedText(0xFF, 0xFF, 0xFF);       // TabWidget.qss:161 $text.tab.selected.Alt1
+        // TabWidget.qss:154 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
+        const TabElement::Edge BorderedTopLine{ 1, QColor(0x11, 0x11, 0x11) };
+        constexpr QMargins BorderedPadding(14, 6, 14, 6);           // TabWidget.qss:155 $space.tab.idle.padding.Alt2
+        // TabWidget.qss:132-133 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG (one rule for the left and top edges)
+        const TabElement::Edge BorderedBarLine{ 1, QColor(0x11, 0x11, 0x11) };
+
+        // ---- The close button of a tab, and the hover fill of a dock tab's (a DockBarButton)
+        constexpr const char* CloseIcon = ":/stylesheet/img/close_small.svg";   // TabWidget.qss:66 $asset.button.idle.image
+        constexpr int CloseMarginRight = 4;                         // TabWidget.qss:67 $space.button.idle.margin-right.Alt1
+        const QColor CloseHoverFill(0xFF, 0xFF, 0xFF, 0x33);        // TabWidget.qss:72 $fill.button.hover.fill.Alt1
+        constexpr int CloseHoverRadius = 2;                         // TabWidget.qss:73 $radius.button.hover
+        const QColor DockCloseHoverFill(0xB8, 0x0D, 0x1C);          // TitleBar.qss:104 $fill.button.hover.fill.Alt3
+
+        // ---- The tab widget, its pane and the action toolbar container in its corner
+        const QColor WidgetFill(0x11, 0x11, 0x11);                  // TabWidget.qss:23 $fill.tab.idle.FarBG
+        constexpr int EmptyPaneOffset = 30;                         // TabWidget.qss:43 $space.tab-pane.idle.margin-top
+        constexpr int CornerMinHeight = 28;                 // TabWidgetActionToolBar.qss:4, :29 $size.tab.idle.min-height.Alt1
+        constexpr int CornerMarginBottom = 9;               // TabWidgetActionToolBar.qss:6, :31 $space.tab.idle.margin-bottom.Alt2
+        const QColor SecondaryWidgetFill(0x44, 0x44, 0x44);         // TabWidget.qss:103 $fill.tab.idle.Mid
+        // TabWidget.qss:108 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
+        const TabElement::Edge BorderedWidgetLine{ 1, QColor(0x11, 0x11, 0x11) };
+        // TabWidget.qss:114 $line.tab-pane.idle.width.Alt2 $line.tab-pane.idle.color
+        const TabElement::Edge SecondaryPaneLine{ 2, QColor(0x2B, 0x2B, 0x2B) };
+        // TabWidget.qss:115, :116 $space.tab-pane.idle.padding $space.tab-pane.idle.padding-top
+        constexpr QMargins SecondaryPanePadding(3, 0, 3, 3);
+        constexpr int SecondaryBarLeft = 1;                         // TabWidget.qss:121 $other.tab.idle.left.Alt1
+        constexpr int SecondaryBarAreaMinHeight = 30;               // TabWidget.qss:122 $size.tab.idle.min-height.Alt2
 
         // ------------------------------------------------------------------------------
-        // Global elements
+        // Elements
         // ------------------------------------------------------------------------------
 
-        //! TabWidget.qss primary tabs: Gallery tab widgets, Asset Bundler, Lua IDE find.
+        //! AzQtComponents' TabBar (Gallery tab widgets, the Asset Bundler, the Lua IDE's find). A selected tab under the pointer has
+        //! the hover fill (TabWidget.qss:90 names both states) and the selected bottom edge.
         const TabElement Primary{
             .m_name = "Global.Tab.Primary",
-            .m_barFill = Grey444,                                           // TabWidget.qss:26
-            .m_barMinHeight = 28,                                           // TabWidget.qss:46
-            .m_idle = { Grey333, White, box(1, Black111) },                 // TabWidget.qss:57; text BaseStyleSheet.qss:15
-            .m_hover = { Grey444, White, box(1, Black111) },                // fill TabWidget.qss:87, edges :57
-            // fill TabWidget.qss:87, bottom edge :82, other edges :57
-            .m_selected = { Grey444, White, { { 1, Black111 }, { 1, Black111 }, { 1, Grey444 }, { 1, Black111 } } },
-            .m_selectedHover = { Grey444, White, { { 1, Black111 }, { 1, Black111 }, { 1, Grey444 }, { 1, Black111 } } },
-            .m_padding = QMargins(9, 6, 21, 6),                             // TabWidget.qss:57
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_closeIcon = CloseIcon,                                       // TabWidget.qss:64
-            .m_closeHoverFill = CloseHover,                                 // TabWidget.qss:70
-            .m_closeRadius = 2,                                             // TabWidget.qss:70
-            .m_closeMarginRight = 4,                                        // TabWidget.qss:64
-            .m_widgetFill = Black111,                                       // TabWidget.qss:21
-            .m_paneEmptyOffset = 30,                                        // TabWidget.qss:41
-            .m_cornerMinHeight = 28,                                        // TabWidgetActionToolBar.qss:1
-            .m_cornerMarginBottom = 9,                                      // TabWidgetActionToolBar.qss:1
-            .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
+            .m_barFill = BarFill,
+            .m_barMinHeight = BarMinHeight,
+            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
+            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, TabLine } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
+            .m_padding = TabPadding,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_closeIcon = CloseIcon,
+            .m_closeHoverFill = CloseHoverFill,
+            .m_closeRadius = CloseHoverRadius,
+            .m_closeMarginRight = CloseMarginRight,
+            .m_widgetFill = WidgetFill,
+            .m_paneEmptyOffset = EmptyPaneOffset,
+            .m_cornerMinHeight = CornerMinHeight,
+            .m_cornerMarginBottom = CornerMarginBottom,
+            .m_moveAnimationDuration = MoveAnimationDuration,
         };
 
-        //! Docked panel groups (DockTabBar inside a DockTabWidget): primary without the left edge.
-        //! A dock tab's close button is a DockBarButton (DockTabBar::tabInserted, box and margin
-        //! from TitleBar.qss:79, icon from TitleBar.qss:112); the element gives its hover fill.
+        //! A DockTabBar in a DockTabWidget (docked panel groups): the Primary look with no left edge on any tab. StyledDockWidget.qss:33
+        //! names `::tab:only`, which is no Qt pseudo-class (Qt's is :only-one), so Qt applies the rule to every tab. The close button
+        //! is a DockBarButton (DockTabBar::tabInserted); the element gives only its hover fill.
         const TabElement DockGroup{
             .m_name = "Global.Tab.DockGroup",
-            .m_barFill = Grey444,                                           // TabWidget.qss:26
-            .m_barMinHeight = 28,                                           // TabWidget.qss:46
-            // fill and edges TabWidget.qss:57 (hover and selected fill :87, selected bottom edge :82).
-            // No left edge on any tab: StyledDockWidget.qss:30 lists ::tab:only, and :only is not a Qt
-            // pseudo-class (Qt's is :only-one), so Qt applies the rule to every tab.
-            .m_idle = { Grey333, White, { { 1, Black111 }, { 1, Black111 }, { 1, Black111 }, {} } },
-            .m_hover = { Grey444, White, { { 1, Black111 }, { 1, Black111 }, { 1, Black111 }, {} } },
-            .m_selected = { Grey444, White, { { 1, Black111 }, { 1, Black111 }, { 1, Grey444 }, {} } },
-            .m_selectedHover = { Grey444, White, { { 1, Black111 }, { 1, Black111 }, { 1, Grey444 }, {} } },
-            .m_padding = QMargins(9, 6, 21, 6),                             // TabWidget.qss:57
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_closeHoverFill = CloseRed,                                   // TitleBar.qss:103
-            .m_widgetFill = Black111,                                       // TabWidget.qss:21
-            .m_paneEmptyOffset = 30,                                        // TabWidget.qss:41
-            .m_cornerMinHeight = 28,                                        // TabWidgetActionToolBar.qss:26
-            .m_cornerMarginBottom = 9,                                      // TabWidgetActionToolBar.qss:26
-            .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
+            .m_barFill = BarFill,
+            .m_barMinHeight = BarMinHeight,
+            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, {} } },
+            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, TabLine, {} } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, {} } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { TabLine, TabLine, SelectedLine, {} } },
+            .m_padding = TabPadding,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_closeHoverFill = DockCloseHoverFill,
+            .m_widgetFill = WidgetFill,
+            .m_paneEmptyOffset = EmptyPaneOffset,
+            .m_cornerMinHeight = CornerMinHeight,
+            .m_cornerMarginBottom = CornerMarginBottom,
+            .m_moveAnimationDuration = MoveAnimationDuration,
         };
 
-        //! Tab strips drawn in dock title bars (DockTabBar outside a DockTabWidget): no bar fill,
-        //! no top or left edge. Close button as in DockGroup.
+        //! A DockTabBar in a dock's title bar (outside a DockTabWidget): the Primary look with no bar fill (the title bar shows), no
+        //! top edge (TitleBar.qss:156) and no left edge on any tab (TitleBar.qss:150, `::tab:only` as in DockGroup). Its close button
+        //! is DockGroup's.
         const TabElement DockTitle{
             .m_name = "Global.Tab.DockTitle",
-            .m_barMinHeight = 28,                                           // TabWidget.qss:46
-            // fill and edges TabWidget.qss:57 (hover and selected fill :87, selected bottom edge :82).
-            // No top edge: TitleBar.qss:153. No left edge on any tab: TitleBar.qss:147 (::tab:only,
-            // applied to every tab as in DockGroup).
-            .m_idle = { Grey333, White, { {}, { 1, Black111 }, { 1, Black111 }, {} } },
-            .m_hover = { Grey444, White, { {}, { 1, Black111 }, { 1, Black111 }, {} } },
-            .m_selected = { Grey444, White, { {}, { 1, Black111 }, { 1, Grey444 }, {} } },
-            .m_selectedHover = { Grey444, White, { {}, { 1, Black111 }, { 1, Grey444 }, {} } },
-            .m_padding = QMargins(9, 6, 21, 6),                             // TabWidget.qss:57
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_closeHoverFill = CloseRed,                                   // TitleBar.qss:103
-            .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
+            .m_barMinHeight = BarMinHeight,
+            .m_idle = { .m_fill = TabFill, .m_text = TabText, .m_edges = { {}, TabLine, TabLine, {} } },
+            .m_hover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { {}, TabLine, TabLine, {} } },
+            .m_selected = { .m_fill = SelectedFill, .m_text = TabText, .m_edges = { {}, TabLine, SelectedLine, {} } },
+            .m_selectedHover = { .m_fill = HoverFill, .m_text = TabText, .m_edges = { {}, TabLine, SelectedLine, {} } },
+            .m_padding = TabPadding,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_closeHoverFill = DockCloseHoverFill,
+            .m_moveAnimationDuration = MoveAnimationDuration,
         };
 
-        //! TabWidget::applySecondaryStyle(widget, false): Editor tab widgets, Asset Editor, Gallery.
+        //! TabWidget::applySecondaryStyle(widget, false): Editor tab widgets, the Asset Editor, the Gallery. A selected tab under the
+        //! pointer has the hover fill and the selected text and bottom edge (TabWidget.qss:158 follows :145).
         const TabElement Secondary{
             .m_name = "Global.Tab.Secondary",
-            .m_barFill = Grey444,                                           // TabWidget.qss:26
-            .m_barMinHeight = 28,                                           // TabWidget.qss:46
-            .m_idle = { Grey444, Muted959, { {}, {}, { 3, Grey333 }, {} } },                     // TabWidget.qss:136
-            .m_hover = { HoverVeil, White, { {}, {}, { 3, Grey444 }, {} } },                     // TabWidget.qss:145
-            .m_selected = { Grey444, White, { {}, {}, { 3, SelectedUnderline }, {} } },          // fill :136, text and edge :158
-            .m_selectedHover = { HoverVeil, White, { {}, {}, { 3, SelectedUnderline }, {} } },   // fill :145, text and edge :158
-            .m_padding = QMargins(14, 7, 14, 5),                            // TabWidget.qss:136
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_closeIcon = CloseIcon,                                       // TabWidget.qss:64
-            .m_closeHoverFill = CloseHover,                                 // TabWidget.qss:70
-            .m_closeRadius = 2,                                             // TabWidget.qss:70
-            .m_closeMarginRight = 4,                                        // TabWidget.qss:64
-            .m_widgetFill = Grey444,                                        // TabWidget.qss:101
-            .m_paneEdges = { { 2, PaneLine }, {}, {}, {} },                 // TabWidget.qss:111
-            .m_panePadding = QMargins(3, 0, 3, 3),                          // TabWidget.qss:111
-            .m_paneEmptyOffset = 30,                                        // TabWidget.qss:41
-            .m_barLeft = 1,                                                 // TabWidget.qss:119
-            .m_barAreaMinHeight = 30,                                       // TabWidget.qss:119
-            .m_cornerMinHeight = 28,                                        // TabWidgetActionToolBar.qss:1
-            .m_cornerMarginBottom = 9,                                      // TabWidgetActionToolBar.qss:1
-            .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
+            .m_barFill = BarFill,
+            .m_barMinHeight = BarMinHeight,
+            .m_idle = { .m_fill = SecondaryFill, .m_text = SecondaryText, .m_edges = { {}, {}, SecondaryLine, {} } },
+            .m_hover = { .m_fill = SecondaryHoverFill, .m_text = SecondaryHoverText, .m_edges = { {}, {}, SecondaryHoverLine, {} } },
+            .m_selected = { .m_fill = SecondaryFill, .m_text = SecondarySelectedText, .m_edges = { {}, {}, SecondarySelectedLine, {} } },
+            .m_selectedHover = { .m_fill = SecondaryHoverFill, .m_text = SecondarySelectedText,
+                .m_edges = { {}, {}, SecondarySelectedLine, {} } },
+            .m_padding = SecondaryPadding,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_closeIcon = CloseIcon,
+            .m_closeHoverFill = CloseHoverFill,
+            .m_closeRadius = CloseHoverRadius,
+            .m_closeMarginRight = CloseMarginRight,
+            .m_widgetFill = SecondaryWidgetFill,
+            .m_paneEdges = { SecondaryPaneLine, {}, {}, {} },
+            .m_panePadding = SecondaryPanePadding,
+            .m_paneEmptyOffset = EmptyPaneOffset,
+            .m_barLeft = SecondaryBarLeft,
+            .m_barAreaMinHeight = SecondaryBarAreaMinHeight,
+            .m_cornerMinHeight = CornerMinHeight,
+            .m_cornerMarginBottom = CornerMarginBottom,
+            .m_moveAnimationDuration = MoveAnimationDuration,
         };
 
-        //! TabWidget::applySecondaryStyle(widget, true): Gallery, Lua IDE, Material and Pass
-        //! Canvas documents, every log panel.
+        //! TabWidget::applySecondaryStyle(widget, true): the Gallery, the Lua IDE, the Material and Pass Canvas documents, every log
+        //! panel. The Secondary look with a top edge on the bar and on every tab, and a border around the tab widget.
         const TabElement SecondaryBordered{
             .m_name = "Global.Tab.Secondary.Bordered",
-            .m_barFill = Grey444,                                           // TabWidget.qss:26
-            .m_barEdges = { { 1, Black111 }, {}, {}, { 1, Black111 } },     // TabWidget.qss:130
-            .m_barMinHeight = 28,                                           // TabWidget.qss:46
-            // as Secondary (TabWidget.qss:136, :145, :158), plus the top edge of TabWidget.qss:152
-            .m_idle = { Grey444, Muted959, { { 1, Black111 }, {}, { 3, Grey333 }, {} } },
-            .m_hover = { HoverVeil, White, { { 1, Black111 }, {}, { 3, Grey444 }, {} } },
-            .m_selected = { Grey444, White, { { 1, Black111 }, {}, { 3, SelectedUnderline }, {} } },
-            .m_selectedHover = { HoverVeil, White, { { 1, Black111 }, {}, { 3, SelectedUnderline }, {} } },
-            .m_padding = QMargins(14, 6, 14, 6),                            // TabWidget.qss:152
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_closeIcon = CloseIcon,                                       // TabWidget.qss:64
-            .m_closeHoverFill = CloseHover,                                 // TabWidget.qss:70
-            .m_closeRadius = 2,                                             // TabWidget.qss:70
-            .m_closeMarginRight = 4,                                        // TabWidget.qss:64
-            .m_widgetFill = Grey444,                                        // TabWidget.qss:101
-            .m_widgetEdges = box(1, Black111),                              // TabWidget.qss:106
-            .m_paneEdges = { { 2, PaneLine }, {}, {}, {} },                 // TabWidget.qss:111
-            .m_panePadding = QMargins(3, 0, 3, 3),                          // TabWidget.qss:111
-            .m_paneEmptyOffset = 30,                                        // TabWidget.qss:41
-            .m_barLeft = 1,                                                 // TabWidget.qss:119
-            .m_barAreaMinHeight = 30,                                       // TabWidget.qss:119
-            .m_cornerMinHeight = 28,                                        // TabWidgetActionToolBar.qss:1
-            .m_cornerMarginBottom = 9,                                      // TabWidgetActionToolBar.qss:1
-            .m_moveAnimationDuration = 0,                                   // TabWidget.qss:46
+            .m_barFill = BarFill,
+            .m_barEdges = { BorderedBarLine, {}, {}, BorderedBarLine },
+            .m_barMinHeight = BarMinHeight,
+            .m_idle = { .m_fill = SecondaryFill, .m_text = SecondaryText, .m_edges = { BorderedTopLine, {}, SecondaryLine, {} } },
+            .m_hover = { .m_fill = SecondaryHoverFill, .m_text = SecondaryHoverText,
+                .m_edges = { BorderedTopLine, {}, SecondaryHoverLine, {} } },
+            .m_selected = { .m_fill = SecondaryFill, .m_text = SecondarySelectedText,
+                .m_edges = { BorderedTopLine, {}, SecondarySelectedLine, {} } },
+            .m_selectedHover = { .m_fill = SecondaryHoverFill, .m_text = SecondarySelectedText,
+                .m_edges = { BorderedTopLine, {}, SecondarySelectedLine, {} } },
+            .m_padding = BorderedPadding,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_closeIcon = CloseIcon,
+            .m_closeHoverFill = CloseHoverFill,
+            .m_closeRadius = CloseHoverRadius,
+            .m_closeMarginRight = CloseMarginRight,
+            .m_widgetFill = SecondaryWidgetFill,
+            .m_widgetEdges = { BorderedWidgetLine, BorderedWidgetLine, BorderedWidgetLine, BorderedWidgetLine },
+            .m_paneEdges = { SecondaryPaneLine, {}, {}, {} },
+            .m_panePadding = SecondaryPanePadding,
+            .m_paneEmptyOffset = EmptyPaneOffset,
+            .m_barLeft = SecondaryBarLeft,
+            .m_barAreaMinHeight = SecondaryBarAreaMinHeight,
+            .m_cornerMinHeight = CornerMinHeight,
+            .m_cornerMarginBottom = CornerMarginBottom,
+            .m_moveAnimationDuration = MoveAnimationDuration,
         };
 
-        //! Plain tab widgets and tab bars, which no other element covers (a QTabWidget of Qt's, as the Asset Processor's
-        //! Builders and Assets pages): the tabs and the pane are Qt's own (Fusion's), over the palette TabWidget.qss:10
-        //! gave them. That rule's background-color filled the bar and became the palette's Base, Button and Window
-        //! (qstylesheetstyle.cpp:1434-1441); Fusion derives the look from them: the pane #535353, the selected tab #565656
-        //! fading to #535353, an idle tab #4d4d4d (qfusionstyle.cpp:783-785, 1671-1686; the Asset Processor captures of
-        //! Builders and Assets show those). They are Fusion's values and not carried: the colour the rule gave is. No rule
-        //! gives a plain tab a hover, pressed or focus look, a margin, padding, edge or size but the width bound.
+        //! Plain tab widgets and bars, which no other element covers (a QTabWidget of Qt's, as the Asset Processor's Builders and
+        //! Assets pages). The rule of TabWidget.qss:13 filled the bar and its background-color became the palette's Base, Button and
+        //! Window (QRenderRule::configurePalette); the tabs and the pane are the base style's over that palette. No rule gives a plain
+        //! tab a state, margin, padding, edge or size but the width bound.
         const TabElement Plain{
             .m_name = "Global.Tab.Plain",
-            .m_barFill = Grey444,                                           // TabWidget.qss:10
-            .m_maxContentWidth = 200,                                       // TabWidget.qss:16
-            .m_basePalette = Grey444,                                       // TabWidget.qss:10
+            .m_barFill = PlainFill,
+            .m_maxContentWidth = TabMaxWidth,
+            .m_basePalette = PlainFill,
         };
 
         // ------------------------------------------------------------------------------
-        // Registry
+        // Helpers
         // ------------------------------------------------------------------------------
 
-        struct Registration
+        ElementRegistry<TabElement>& registry()
         {
-            const TabElement* m_element;
-            TabElement::Matcher m_matcher;
-        };
-
-        QVector<Registration>& registrations()
-        {
-            static QVector<Registration> list;
-            return list;
+            static ElementRegistry<TabElement> rows("_o3de_tabElement");
+            return rows;
         }
 
+        //! The Global element of a tab bar; none for a widget that is no tab bar
         const TabElement* globalElement(const QWidget* tabBar)
         {
             if (tabBar->inherits("AzQtComponents::DockTabBar"))
@@ -224,19 +251,14 @@ namespace AzQtComponents
                 }
                 return &Primary;
             }
-            // Any other QTabBar is a plain one; a widget that is none is not ours
             return tabBar->inherits("QTabBar") ? &Plain : nullptr;
         }
 
-        //! The element kept on a bar (resolved at its polish; now, if it was asked before), null for none
-        const TabElement* tabElementOf(const QWidget* tabBar)
+        //! The element of a tab bar: a module's first, then the Global one
+        const TabElement* findElement(const QWidget* tabBar)
         {
-            if (!tabBar)
-            {
-                return nullptr;
-            }
-            const QVariant stored = tabBar->property(ElementProperty);
-            return stored.isValid() ? reinterpret_cast<const TabElement*>(stored.value<quintptr>()) : TabElement::resolve(tabBar);
+            const TabElement* element = registry().find(tabBar);
+            return element ? element : globalElement(tabBar);
         }
 
         //! The bar of a tab widget, null for none
@@ -255,6 +277,7 @@ namespace AzQtComponents
             return nullptr;
         }
 
+        //! The size of an image file, read once
         QSize naturalSize(const QString& image)
         {
             static QHash<QString, QSize> sizes;
@@ -266,19 +289,40 @@ namespace AzQtComponents
             return found.value();
         }
 
-        int horizontal(const TabElement::Edges& edges)
+        //! Margin, edges and padding of a tab in one: its contents sit inside them. The edge widths are m_idle's, those of every face.
+        QMargins boxOf(const TabElement& element)
         {
-            return edges.m_left.m_width + edges.m_right.m_width;
+            const TabElement::Edges& edges = element.m_idle.m_edges;
+            const QMargins widths(edges.m_left.m_width, edges.m_top.m_width, edges.m_right.m_width, edges.m_bottom.m_width);
+            return element.m_margin + widths + element.m_padding;
         }
-
-        int vertical(const TabElement::Edges& edges)
-        {
-            return edges.m_top.m_width + edges.m_bottom.m_width;
-        }
-    } // namespace
+    } // namespace TabElementInternal
 
     // ----------------------------------------------------------------------------------
-    // Use
+    // Geometry
+    // ----------------------------------------------------------------------------------
+
+    QSize TabElement::tabSize(const QSize& contents) const
+    {
+        // QStyleSheetStyle::sizeFromContents, CT_TabBarTab: the size rules bound the contents (the maximum first, the minimum over it,
+        // and a height rule replaces the text's: QRenderRule::adjustSize), then margin, edges and padding are added around them
+        int width = contents.width();
+        if (m_maxContentWidth > 0)
+        {
+            width = qMin(width, m_maxContentWidth);
+        }
+        width = qMax(width, m_minContentWidth);
+        const int height = (m_contentHeight > 0) ? m_contentHeight : contents.height();
+        return QSize(width, height).grownBy(TabElementInternal::boxOf(*this));
+    }
+
+    QRect TabElement::contentsRect(const QRect& tabRect) const
+    {
+        return tabRect.marginsRemoved(TabElementInternal::boxOf(*this));
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Drawing
     // ----------------------------------------------------------------------------------
 
     const TabElement::TabFace& TabElement::face(const QStyleOption* option) const
@@ -288,7 +332,7 @@ namespace AzQtComponents
         const bool hover = enabled && (option->state.testFlag(QStyle::State_MouseOver) || pressed);
         const bool selected = option->state.testFlag(QStyle::State_Selected);
 
-        // Pressed and focus are states of the current tab (m_pressed, m_focus); the later rule wins (PM.qss:122-143)
+        // Focus, then pressed: states of the current tab only
         if (selected && option->state.testFlag(QStyle::State_HasFocus) && m_focus.isSet())
         {
             return m_focus;
@@ -304,45 +348,17 @@ namespace AzQtComponents
         return hover ? m_hover : m_idle;
     }
 
-    QSize TabElement::tabSize(const QSize& contents) const
-    {
-        // QStyleSheetStyle CT_TabBarTab: the size rules bound the contents (the maximum first, the minimum over
-        // it, and a height rule replaces the text's: QRenderRule::adjustSize), then margin, padding and border
-        // are added around them.
-        int width = contents.width();
-        if (m_maxContentWidth > 0)
-        {
-            width = qMin(width, m_maxContentWidth);
-        }
-        width = qMax(width, m_minContentWidth);
-        const int height = (m_contentHeight > 0) ? m_contentHeight : contents.height();
-        return QSize(width + m_margin.left() + m_margin.right() + m_padding.left() + m_padding.right() + horizontal(m_idle.m_edges),
-            height + m_margin.top() + m_margin.bottom() + m_padding.top() + m_padding.bottom() + vertical(m_idle.m_edges));
-    }
-
-    QRect TabElement::contentsRect(const QRect& tabRect) const
-    {
-        const Edges& edges = m_idle.m_edges;
-        return tabRect.adjusted(m_margin.left() + edges.m_left.m_width + m_padding.left(), m_margin.top() + edges.m_top.m_width + m_padding.top(),
-            -(m_margin.right() + edges.m_right.m_width + m_padding.right()), -(m_margin.bottom() + edges.m_bottom.m_width + m_padding.bottom()));
-    }
-
     void TabElement::drawTab(QPainter* painter, const QStyleOption* option) const
     {
-        // The stylesheet drew the background and the border in the tab's box: its rect inside the margin
+        // The rule drew the tab's box: its rect inside the margin
         const TabFace& tabFace = face(option);
-        const QRect tabBox = option->rect.marginsRemoved(m_margin);
-        if (tabFace.m_fill.isValid())
-        {
-            painter->fillRect(tabBox, tabFace.m_fill);
-        }
-        drawEdges(painter, tabBox, tabFace.m_edges);
+        drawFrame(painter, option->rect.marginsRemoved(m_margin), tabFace.m_fill, tabFace.m_edges);
     }
 
     void TabElement::drawClose(QPainter* painter, const QStyleOption* option) const
     {
         // QTabBar::close-button { image; margin-right } with :hover { background; border-radius }
-        const QRect area = option->rect.adjusted(0, 0, -m_closeMarginRight, 0);
+        const QRect area = option->rect.marginsRemoved(QMargins(0, 0, m_closeMarginRight, 0));
         const bool hover = option->state.testFlag(QStyle::State_MouseOver) || option->state.testFlag(QStyle::State_Sunken);
         if (hover && m_closeHoverFill.isValid())
         {
@@ -353,45 +369,16 @@ namespace AzQtComponents
             painter->fillPath(path, m_closeHoverFill);
             painter->restore();
         }
-        // The stylesheet draws the image at its own size, centered (no scaling).
+        // The image at its own size, centered
         const QString icon = QString::fromLatin1(m_closeIcon);
-        QRect imageRect(QPoint(0, 0), naturalSize(icon));
+        QRect imageRect(QPoint(0, 0), TabElementInternal::naturalSize(icon));
         imageRect.moveCenter(area.center());
         QIcon(icon).paint(painter, imageRect);
     }
 
-    void TabElement::drawEdges(QPainter* painter, const QRect& rect, const Edges& edges)
+    void TabElement::drawFrame(QPainter* painter, const QRect& borderBox, const QColor& fill, const Edges& edges)
     {
-        // QRenderRule::drawBorder draws the edges antialiased (qstylesheetstyle.cpp:1282-1285), each a strip as long as its side, in qDrawBorder's
-        // order (bottom, right, left, top: a later edge takes the corner; qcssutil.cpp:313-369, qDrawEdge :165-195). At a fractional device
-        // ratio a 1px edge is 1.5 device pixels wide: a full row and a blended one, where a fill with no antialiasing covers one row or two
-        // (n2 Gallery 27_tab-widget: the tab edges are #111111 over #444444 as 17, 42, not 17, 17). Qt draws an edge wider than 1px that meets
-        // a visible edge of another colour as a trapezoid (qDrawEdge :165-195, paintsOver :296-311): no element has one.
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing);
-        painter->setPen(Qt::NoPen);
-        const QRectF box(rect);
-        if (edges.m_bottom.m_width > 0)
-        {
-            painter->setBrush(edges.m_bottom.m_color);
-            painter->drawRect(QRectF(box.left(), box.bottom() - edges.m_bottom.m_width, box.width(), edges.m_bottom.m_width));
-        }
-        if (edges.m_right.m_width > 0)
-        {
-            painter->setBrush(edges.m_right.m_color);
-            painter->drawRect(QRectF(box.right() - edges.m_right.m_width, box.top(), edges.m_right.m_width, box.height()));
-        }
-        if (edges.m_left.m_width > 0)
-        {
-            painter->setBrush(edges.m_left.m_color);
-            painter->drawRect(QRectF(box.left(), box.top(), edges.m_left.m_width, box.height()));
-        }
-        if (edges.m_top.m_width > 0)
-        {
-            painter->setBrush(edges.m_top.m_color);
-            painter->drawRect(QRectF(box.left(), box.top(), box.width(), edges.m_top.m_width));
-        }
-        painter->restore();
+        BoxElement::drawFrame(painter, borderBox, fill.isValid() ? QBrush(fill) : QBrush(), edges, BoxElement::Radii());
     }
 
     void TabElement::applyPalette(QPalette& palette) const
@@ -406,118 +393,50 @@ namespace AzQtComponents
     // Resolution
     // ----------------------------------------------------------------------------------
 
-    void TabElement::registerElement(const TabElement* element, Matcher matcher)
+    void TabElement::registerElement(
+        const TabElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
     {
-        registrations().append({ element, matcher });
-        if (!StyleManager::stylesheetsDisabled())
-        {
-            return;
-        }
-
-        // A module builds some windows before it registers its elements: the bars resolved before this call are
-        // resolved again (a null kept, too, or a cached element), and those polished are polished again with
-        // their tab widget when the element changed. A bar not polished yet resolves at its polish.
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
-        {
-            if (!widget->inherits("QTabBar"))
+        TabElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, [](QWidget* tabBar)
             {
-                continue;
-            }
-            const QVariant before = widget->property(ElementProperty);
-            widget->setProperty(ElementProperty, QVariant());
-            if (!widget->testAttribute(Qt::WA_WState_Polished))
-            {
-                continue;
-            }
-            resolve(widget);
-            if (widget->property(ElementProperty) != before)
-            {
-                polish(widget);
-                polish(widget->parentWidget());
-            }
-        }
+                // A bar whose element changed is resolved again, with its tab widget
+                if (TabElementInternal::findElement(tabBar) != forWidget(tabBar))
+                {
+                    resolve(tabBar);
+                    resolve(tabBar->parentWidget());
+                }
+            });
     }
 
-    const TabElement* TabElement::resolve(const QWidget* tabBar)
-    {
-        if (!tabBar)
-        {
-            return nullptr;
-        }
-        const TabElement* element = nullptr;
-        for (const Registration& registration : registrations())
-        {
-            if (registration.m_matcher(tabBar))
-            {
-                element = registration.m_element;
-                break;
-            }
-        }
-        if (!element)
-        {
-            element = globalElement(tabBar);
-        }
-        // Kept on the widget: draws and metrics read it back without resolving again (a null
-        // element is kept too, so a widget that is no tab bar is not resolved on every paint).
-        const_cast<QWidget*>(tabBar)->setProperty(ElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
-        return element;
-    }
-
-    const TabElement* TabElement::forTabBar(const QWidget* tabBar)
-    {
-        const TabElement* element = tabElementOf(tabBar);
-        return (element && !element->isPlain()) ? element : nullptr;
-    }
-
-    const TabElement* TabElement::forTabWidget(const QWidget* tabWidget)
-    {
-        return forTabBar(tabBarOf(tabWidget));
-    }
-
-    const TabElement* TabElement::plainForTabBar(const QWidget* tabBar)
-    {
-        const TabElement* element = tabElementOf(tabBar);
-        return (element && element->isPlain()) ? element : nullptr;
-    }
-
-    const TabElement* TabElement::plainForTabWidget(const QWidget* tabWidget)
-    {
-        return plainForTabBar(tabBarOf(tabWidget));
-    }
-
-    // ----------------------------------------------------------------------------------
-    // Polish
-    // ----------------------------------------------------------------------------------
-
-    void TabElement::polish(QWidget* widget)
+    void TabElement::resolve(QWidget* widget)
     {
         if (auto tabBar = qobject_cast<QTabBar*>(widget))
         {
-            // Resolved once, here: adding or removing a class tag polishes again, and so does a module that registers
-            // an element after this bar was polished (registerElement)
-            const TabElement* element = resolve(tabBar);
+            // Resolved once, here: adding or removing a class tag polishes again, and so does a module that registers an element
+            // after this bar was polished (registerElement)
+            const TabElement* element = TabElementInternal::findElement(tabBar);
+            TabElementInternal::registry().keep(tabBar, element);
             if (!element)
             {
                 return;
             }
-            // The bar and its tab widget paint their own boxes through PE_Widget (the sheet's rule gave them a
-            // background; a plain bar's fill is its sheet's background-color, TabWidget.qss:10)
+            // The bar and its tab widget paint their own boxes through PE_Widget (a plain bar's fill is TabWidget.qss:13's)
             tabBar->setAttribute(Qt::WA_StyledBackground, true);
             tabBar->setAutoFillBackground(false);
             if (element->isPlain())
             {
                 return;
             }
+            // No base line under the tabs (qproperty-drawBase of AzQtComponents' TabBar, TabWidget.qss:48)
             tabBar->setDrawBase(false);
-            // The stylesheet set the minimum outright (replacing a code-set one, e.g. the DockTabBar's fixed 32), as
-            // min-height plus the bar's own edges; an element no rule gives one leaves the widget's own
+            // The sheet's minimum replaced one the code set (the DockTabBar's fixed 32), as min-height plus the bar's own edges
             if (element->m_barMinHeight > 0)
             {
-                tabBar->setMinimumHeight(element->m_barMinHeight + element->m_barEdges.m_top.m_width + element->m_barEdges.m_bottom.m_width);
+                const Edges& edges = element->m_barEdges;
+                tabBar->setMinimumHeight(element->m_barMinHeight + edges.m_top.m_width + edges.m_bottom.m_width);
             }
-            // QTabBar follows the hovered tab only while it has WA_Hover (qtabbar.cpp:1687-1718); the stylesheet engine
-            // switched it on for a bar with a :hover rule (qstylesheetstyle.cpp:2894-2905)
+            // QTabBar follows the hovered tab only with WA_Hover (QTabBar::event); QStyleSheetStyle::polish set it for a bar with a
+            // :hover rule
             if (element->m_hover.isSet())
             {
                 tabBar->setAttribute(Qt::WA_Hover, true);
@@ -534,12 +453,12 @@ namespace AzQtComponents
             tabWidget->setAutoFillBackground(false);
             if (element->m_widgetHeight > 0)
             {
-                // height + max-height in the stylesheet: the widget is that tall
+                // height + max-height: the widget is that tall
                 tabWidget->setMinimumHeight(element->m_widgetHeight);
                 tabWidget->setMaximumHeight(element->m_widgetHeight);
             }
-            // The action toolbar container in the top-right corner: min-height plus
-            // margin-bottom make its height, and its contents sit above the margin
+            // The action toolbar container in the top-right corner: min-height plus margin-bottom make its height, and its contents
+            // sit above the margin
             QWidget* corner = tabWidget->cornerWidget(Qt::TopRightCorner);
             if (corner && corner->inherits("AzQtComponents::TabWidgetActionToolBarContainer") && element->m_cornerMinHeight > 0)
             {
@@ -547,5 +466,38 @@ namespace AzQtComponents
                 corner->setContentsMargins(0, 0, 0, element->m_cornerMarginBottom);
             }
         }
+    }
+
+    const TabElement* TabElement::forWidget(const QWidget* tabBar)
+    {
+        using namespace TabElementInternal;
+        if (!tabBar)
+        {
+            return nullptr;
+        }
+        const std::optional<const TabElement*> kept = registry().kept(tabBar);
+        return kept ? *kept : findElement(tabBar);
+    }
+
+    const TabElement* TabElement::forTabBar(const QWidget* tabBar)
+    {
+        const TabElement* element = forWidget(tabBar);
+        return (element && !element->isPlain()) ? element : nullptr;
+    }
+
+    const TabElement* TabElement::forTabWidget(const QWidget* tabWidget)
+    {
+        return forTabBar(TabElementInternal::tabBarOf(tabWidget));
+    }
+
+    const TabElement* TabElement::plainForTabBar(const QWidget* tabBar)
+    {
+        const TabElement* element = forWidget(tabBar);
+        return (element && element->isPlain()) ? element : nullptr;
+    }
+
+    const TabElement* TabElement::plainForTabWidget(const QWidget* tabWidget)
+    {
+        return plainForTabBar(TabElementInternal::tabBarOf(tabWidget));
     }
 } // namespace AzQtComponents

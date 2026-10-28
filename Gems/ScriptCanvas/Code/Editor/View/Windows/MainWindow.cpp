@@ -207,9 +207,9 @@ namespace ScriptCanvasEditor
             if (!registered)
             {
                 registered = true;
-                AzQtComponents::TabElement::registerElement(&GraphTabs, [](const QWidget* tabBar)
+                AzQtComponents::TabElement::registerElement(&GraphTabs, &QTabBar::staticMetaObject, [](const QWidget* tabBar)
                     {
-                        return tabBar->parentWidget() && tabBar->parentWidget()->objectName() == QLatin1String("ScriptCanvasTabs");
+                        return AzQtComponents::Selectors::childOf(tabBar, "ScriptCanvasTabs");
                     });
             }
         }

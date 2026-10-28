@@ -12,7 +12,7 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
-#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -447,7 +447,7 @@ namespace AzQtComponents
                 // title is polished before its header sits in a card (ElidingLabel::elide polishes it while the header is built), so the
                 // polish of the label (Style's applyFlattenedDisabledText) did not find the card, and this palette replaces whatever it set.
                 // TOKENIZE: CardDisabledTextColor
-                if (TextElement::withinClass(cardHeader, "AzQtComponents::Card"))
+                if (Selectors::withinClass(cardHeader, "AzQtComponents::Card"))
                 {
                     for (const QPalette::ColorRole role : { QPalette::WindowText, QPalette::Text, QPalette::ButtonText })
                     {

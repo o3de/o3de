@@ -93,40 +93,20 @@ namespace O3DE::ProjectManager
         using AzQtComponents::ItemViewElement;
         using AzQtComponents::TabElement;
         using AzQtComponents::TextElement;
+        using AzQtComponents::Selectors::childOf;
+        using AzQtComponents::Selectors::hasProperty;
+        using AzQtComponents::Selectors::named;
+        using AzQtComponents::Selectors::within;
 
         // ------------------------------------------------------------------------------
-        // Selectors: the QSS each stands for, over TextElement's
+        // Selectors this file composes from AzQtComponents' (ElementCommon.h)
         // ------------------------------------------------------------------------------
-
-        //! #name
-        bool named(const QWidget* w, const char* objectName)
-        {
-            return TextElement::named(w, objectName);
-        }
-
-        //! #parent > W
-        bool childOf(const QWidget* w, const char* parentName)
-        {
-            return TextElement::childOf(w, parentName);
-        }
-
-        //! #ancestor W
-        bool within(const QWidget* w, const char* ancestorName)
-        {
-            return TextElement::within(w, ancestorName);
-        }
 
         //! #name > QFrame > W: the parent of the widget is a QFrame (a label, a scroll area, a stack is one) that is a child of #name
         bool parentChildOf(const QWidget* w, const char* name)
         {
             const QWidget* parent = w->parentWidget();
-            return parent && parent->metaObject()->inherits(&QFrame::staticMetaObject) && TextElement::childOf(parent, name);
-        }
-
-        //! [name="value"]: a property compared as a string (a bool property is "true" or "false")
-        bool hasProperty(const QWidget* w, const char* name, const char* value)
-        {
-            return w->property(name).toString() == QLatin1String(value);
+            return parent && parent->metaObject()->inherits(&QFrame::staticMetaObject) && childOf(parent, name);
         }
 
         //! #outer Class[name="value"] W: some ancestor of the widget, not only its parent, is of the class and passes the test
@@ -2424,9 +2404,10 @@ namespace O3DE::ProjectManager
         {
             // The engine and settings bars are named by the code (EngineScreenCtrl.cpp:34, UpdateProjectCtrl.cpp:65); every other
             // tab bar is the sheet's QTabBar (the window's own)
-            TabElement::registerElement(&EngineTab, [](const QWidget* bar) { return named(bar, "engineTabBar"); });
-            TabElement::registerElement(&SettingsTab, [](const QWidget* bar) { return named(bar, "projectSettingsTabBar"); });
-            TabElement::registerElement(&HeaderTab, [](const QWidget*) { return true; });
+            const QMetaObject* tabBar = &QTabBar::staticMetaObject;
+            TabElement::registerElement(&EngineTab, tabBar, [](const QWidget* bar) { return named(bar, "engineTabBar"); });
+            TabElement::registerElement(&SettingsTab, tabBar, [](const QWidget* bar) { return named(bar, "projectSettingsTabBar"); });
+            TabElement::registerElement(&HeaderTab, tabBar, [](const QWidget*) { return true; });
         }
 
     } // namespace FlatElementsInternal

@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 #include <AzQtComponents/Components/GuiPerfFloor.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -267,7 +268,7 @@ bool VectorElement::drawFlattenedLabel(const QStyleOption* option, QPainter* pai
     // The label's rule drew its fill (the color of the vector's Coordinate) inside the margin it set above and below, which also
     // gave the label its frame box (Style's SE_ShapedFrameContents): so the fill is 4px shorter than the label's rect. A label
     // of a vector without a coordinate has no fill.
-    if (!option || !widget || !widget->inherits("QLabel") || !widget->parentWidget() || !widget->parentWidget()->inherits("AzQtComponents::VectorElement"))
+    if (!option || !widget || !widget->inherits("QLabel") || !Selectors::childOfClass(widget, "AzQtComponents::VectorElement"))
     {
         return false;
     }

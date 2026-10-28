@@ -255,7 +255,7 @@ namespace AzQtComponents
                                 // in it is its element (a combo box in error is another element): resolved again, as the polish ends
                                 // with it. A whole polish would also connect the signals and replace the item delegate again, each
                                 // time the popup opens or closes (the property HasPopupOpen).
-                                BoxElement::apply(cbWidget);
+                                BoxElement::resolve(cbWidget);
                             }
                             // None before the StyleManager exists, as in the unit tests (ScrollBar.cpp and TreeView.cpp guard the same call)
                             else if (auto styleSheet = StyleManager::styleSheetStyle(cbWidget))
@@ -403,7 +403,7 @@ namespace AzQtComponents
         // The look of every combo box (a module's own element is checked before these), the error one first: the rules of
         // [HasError=true] outrank the others (ComboBoxFlat). The element is resolved at polish, and a property that changes resolves it
         // again (ComboBoxWatcher).
-        constexpr BoxElement::Scope global = BoxElement::Scope::Global;
+        constexpr ElementScope global = ElementScope::Global;
         BoxElement::registerElement(&ComboBoxFlat::ComboError, &QComboBox::staticMetaObject,
             [](const QWidget* w) { return w->property(HasError).toBool(); }, global);
         BoxElement::registerElement(&ComboBoxFlat::Combo, &QComboBox::staticMetaObject, [](const QWidget*) { return true; }, global);

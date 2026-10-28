@@ -17,55 +17,40 @@
 
 namespace AzQtComponents
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
-    //! with others into one translation unit, where anonymous namespaces merge.
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace ComboPopupElementInternal
     {
         // ------------------------------------------------------------------------------
-        // The Global element. Each value cites the declaration that grants it, as file:line of
-        // Components/Widgets/ComboBox.qss.
+        // Values
         // ------------------------------------------------------------------------------
 
-        //! QComboBox QAbstractItemView, with its ::item rules. The disabled text is UNVERIFIED: no capture holds a
-        //! disabled item. TOKENIZE: ComboPopupSurface, ComboPopupItemText, ComboPopupSelectedFill, ComboPopupDisabledText
+        const QColor PopupSurface(0x22, 0x22, 0x22);            // ComboBox.qss:81 $fill.field.idle.BG
+        const QColor ItemText(0xFF, 0xFF, 0xFF);                // ComboBox.qss:89 $text.item.idle
+        const QColor SelectedItemFill(0x44, 0x44, 0x44);        // ComboBox.qss:104 $fill.item.selected.Mid
+        const QColor SelectedItemText(0xFF, 0xFF, 0xFF);        // ComboBox.qss:105 $text.item.selected
+        const QColor DisabledItemText(0x55, 0x55, 0x55);        // ComboBox.qss:110 $text.item.disabled.Highest
+        constexpr int ItemPaddingLeft = 24;                     // ComboBox.qss:92 $space.item.idle.padding-left.Alt3
+        constexpr int ItemPaddingRight = 24;                    // ComboBox.qss:90 $space.item.idle.padding-right.Alt2
+
+        // ------------------------------------------------------------------------------
+        // Elements
+        // ------------------------------------------------------------------------------
+
+        //! `QComboBox QAbstractItemView`, with its `::item` rules
         const ComboPopupElement Items{
             .m_name = "Global.ComboPopup.Items",
-            .m_surface = QColor(0x22, 0x22, 0x22),              // :81 QComboBox QAbstractItemView { background-color }
-            .m_text = QColor(0xFF, 0xFF, 0xFF),                 // :89 ::item { color }
-            .m_selectedFill = QColor(0x44, 0x44, 0x44),         // :104 ::item:selected { background-color }
-            .m_selectedText = QColor(0xFF, 0xFF, 0xFF),         // :105 ::item:selected { color }
-            .m_disabledText = QColor(0x55, 0x55, 0x55),         // :110 ::item:disabled { color }
-            .m_itemPaddingLeft = 24,                            // :92 ::item { padding-left }
-            .m_itemPaddingRight = 24,                           // :90 ::item { padding-right }
+            .m_surface = PopupSurface,
+            .m_text = ItemText,
+            .m_selectedFill = SelectedItemFill,
+            .m_selectedText = SelectedItemText,
+            .m_disabledText = DisabledItemText,
+            .m_itemPaddingLeft = ItemPaddingLeft,
+            .m_itemPaddingRight = ItemPaddingRight,
         };
     } // namespace ComboPopupElementInternal
 
     // ----------------------------------------------------------------------------------
-    // Element
-    // ----------------------------------------------------------------------------------
-
-    const ComboPopupElement& ComboPopupElement::global()
-    {
-        return ComboPopupElementInternal::Items;
-    }
-
-    // ----------------------------------------------------------------------------------
-    // Selectors
-    // ----------------------------------------------------------------------------------
-
-    bool ComboPopupElement::coversView(const QWidget* widget)
-    {
-        // The combo box parents the view until its container takes it over, so a view is found under either
-        return qobject_cast<const QAbstractItemView*>(widget) && StyleHelpers::findParent<QComboBox>(widget);
-    }
-
-    bool ComboPopupElement::covers(const QWidget* widget)
-    {
-        return widget && (widget->inherits("QComboBoxPrivateContainer") || coversView(widget));
-    }
-
-    // ----------------------------------------------------------------------------------
-    // Use
+    // Drawing
     // ----------------------------------------------------------------------------------
 
     QPalette ComboPopupElement::palette(const QPalette& base) const
@@ -101,8 +86,28 @@ namespace AzQtComponents
             option.palette.setColor(group, QPalette::Text, text);
         }
 
-        // The fill is painted above, and ComboBox.qss:83 `outline: none` turned the focus outline off; the sheet
-        // had no :hover rule for an item (the current item follows the mouse).
+        // The fill is painted above, and ComboBox.qss:83 `outline: none` turned the focus outline off; the sheet had no :hover rule
+        // for an item (the current item follows the pointer)
         option.state &= ~(QStyle::State_Selected | QStyle::State_HasFocus | QStyle::State_MouseOver);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Resolution
+    // ----------------------------------------------------------------------------------
+
+    const ComboPopupElement& ComboPopupElement::global()
+    {
+        return ComboPopupElementInternal::Items;
+    }
+
+    bool ComboPopupElement::coversView(const QWidget* widget)
+    {
+        // The combo box parents the view until its container takes it over, so a view is found under either
+        return qobject_cast<const QAbstractItemView*>(widget) && StyleHelpers::findParent<QComboBox>(widget);
+    }
+
+    bool ComboPopupElement::covers(const QWidget* widget)
+    {
+        return widget && (widget->inherits("QComboBoxPrivateContainer") || coversView(widget));
     }
 } // namespace AzQtComponents

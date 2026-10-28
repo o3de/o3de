@@ -41,6 +41,8 @@ set(FILES
     Components/Elements/ComboPopupElement.h
     Components/Elements/ControlElements.cpp
     Components/Elements/ControlElements.h
+    Components/Elements/ElementCommon.cpp
+    Components/Elements/ElementCommon.h
     Components/Elements/FrameElement.cpp
     Components/Elements/FrameElement.h
     Components/Elements/IndicatorElement.cpp

@@ -796,7 +796,7 @@ namespace AzQtComponents
     }
 
     // ----------------------------------------------------------------------------------
-    // E: the edges of a tab element, antialiased as the sheet drew them (TabElement::drawEdges)
+    // E: the edges of a tab element, antialiased as the sheet drew them (TabElement::drawFrame)
     // ----------------------------------------------------------------------------------
 
     namespace ChromeTwinTestsInternal
@@ -919,8 +919,7 @@ namespace AzQtComponents
                     const QImage legacyImage = drawn(size, ratio, [&](QPainter* painter) { button->style()->drawControl(QStyle::CE_PushButtonBevel, &option, painter, button); });
                     const QImage flatImage = drawn(size, ratio, [&](QPainter* painter)
                         {
-                            painter->fillRect(QRect(QPoint(0, 0), size), fill);
-                            TabElement::drawEdges(painter, QRect(QPoint(0, 0), size), edgeCase.m_edges);
+                            TabElement::drawFrame(painter, QRect(QPoint(0, 0), size), fill, edgeCase.m_edges);
                         });
                     EXPECT_EQ(differing(legacyImage, flatImage), 0) << edgeCase.m_name << ", size " << sizeText(size) << ", ratio " << ratio;
                 }
@@ -945,8 +944,7 @@ namespace AzQtComponents
         const QSize size(40, 20);               // 60 x 30 device pixels
         const QImage image = drawn(size, 1.5, [&](QPainter* painter)
             {
-                painter->fillRect(QRect(QPoint(0, 0), size), fill);
-                TabElement::drawEdges(painter, QRect(QPoint(0, 0), size), edges);
+                TabElement::drawFrame(painter, QRect(QPoint(0, 0), size), fill, edges);
             });
         ASSERT_EQ(image.size(), QSize(60, 30));
         // Left and top: the whole pixel is outside, the blended one inside it

@@ -46,29 +46,10 @@ namespace AssetBundler
         using AzQtComponents::BoxElement;
         using AzQtComponents::ItemViewElement;
         using AzQtComponents::TextElement;
+        using AzQtComponents::Selectors::named;
+        using AzQtComponents::Selectors::within;
+        using AzQtComponents::Selectors::withinClass;
         using Widget = const QWidget*;
-
-        // ------------------------------------------------------------------------------
-        // Selectors: the QSS each function stands for
-        // ------------------------------------------------------------------------------
-
-        //! `#name`: the object name (qstylesheetstyle.cpp:1604-1605)
-        bool named(Widget widget, const char* objectName)
-        {
-            return TextElement::named(widget, objectName);
-        }
-
-        //! `#name W`: any ancestor of the widget has the object name (qstylesheetstyle.cpp:1608-1609)
-        bool within(Widget widget, const char* ancestorName)
-        {
-            return TextElement::within(widget, ancestorName);
-        }
-
-        //! `Class W`: any ancestor is of the class or of one derived from it (qstylesheetstyle.cpp:1579-1600)
-        bool withinClass(Widget widget, const char* ancestorClass)
-        {
-            return TextElement::withinClass(widget, ancestorClass);
-        }
 
         // ------------------------------------------------------------------------------
         // Fills and lines shared by several elements

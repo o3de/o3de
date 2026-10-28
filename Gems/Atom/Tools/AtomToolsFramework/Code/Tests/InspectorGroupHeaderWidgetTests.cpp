@@ -70,7 +70,7 @@ namespace UnitTest
             void flatten(QWidget& widget)
             {
                 widget.setStyle(m_style.get());
-                AzQtComponents::BoxElement::apply(&widget);
+                AzQtComponents::BoxElement::resolve(&widget);
             }
 
             static const char* elementOf(const QWidget& widget)

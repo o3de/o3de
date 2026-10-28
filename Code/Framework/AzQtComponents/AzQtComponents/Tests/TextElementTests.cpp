@@ -55,7 +55,7 @@ namespace AzQtComponents
         static void polishAndApply(QWidget* widget)
         {
             widget->ensurePolished();
-            TextElement::apply(widget);
+            TextElement::resolve(widget);
         }
 
     protected:
@@ -96,6 +96,24 @@ namespace AzQtComponents
         EXPECT_TRUE(menuBar.family() == QStringLiteral("Amazon Ember"));
         EXPECT_EQ(menuBar.pixelSize(), 12);
         EXPECT_EQ(QApplication::font("QProgressBar").pixelSize(), 1);
+    }
+
+    TEST_F(TextElementTests, InstallClassFonts_EveryClassARuleSizesHasAFontOfItsOwn)
+    {
+        // Each class keeps the element of its own rule, whatever the platform supplies: a font of its own, not the base
+        TextElement::installClassFonts();
+
+        const QFont base = QApplication::font("QWidget");
+        for (const char* className : { "QLabel", "QTipLabel", "QPushButton", "QCheckBox", "QRadioButton", "QTextEdit", "QPlainTextEdit",
+                 "QLineEdit", "QSpinBox", "QDoubleSpinBox", "QComboBox" })
+        {
+            const QFont font = QApplication::font(className);
+            EXPECT_FALSE(font.isCopyOf(QApplication::font())) << className;
+            EXPECT_FALSE(font.isCopyOf(base)) << className;
+            EXPECT_TRUE(font.family() == QStringLiteral("Open Sans")) << className;
+            EXPECT_EQ(font.pixelSize(), 12) << className;
+            EXPECT_EQ(font.weight(), QFont::Normal) << className;
+        }
     }
 
     TEST_F(TextElementTests, InstallClassFonts_LeavesTheKeysQtReadsItself)
@@ -214,9 +232,9 @@ namespace AzQtComponents
         QLabel* label = new QLabel(&panel);
         QWidget* plain = new QWidget(&panel);
         panel.ensurePolished();
-        TextElement::apply(&panel);
-        TextElement::apply(label);
-        TextElement::apply(plain);
+        TextElement::resolve(&panel);
+        TextElement::resolve(label);
+        TextElement::resolve(plain);
 
         EXPECT_EQ(label->font().pixelSize(), 12);   // the QLabel rule (Text.qss:92)
         EXPECT_TRUE(plain->font().family() == QStringLiteral("Open Sans"));
@@ -251,7 +269,7 @@ namespace AzQtComponents
 
         bool isTestModuleTitle(const QWidget* widget)
         {
-            return TextElement::named(widget, "textElementTestsModuleTitle");
+            return Selectors::named(widget, "textElementTestsModuleTitle");
         }
     } // namespace
 
@@ -282,12 +300,12 @@ namespace AzQtComponents
 
         bool isTestModuleLink(const QWidget* widget)
         {
-            return TextElement::named(widget, "textElementTestsModuleLink");
+            return Selectors::named(widget, "textElementTestsModuleLink");
         }
 
         bool isTestModuleField(const QWidget* widget)
         {
-            return TextElement::named(widget, "textElementTestsModuleField");
+            return Selectors::named(widget, "textElementTestsModuleField");
         }
 
         //! The text roles a `color` sets in one group, and the placeholder at half the alpha (qstylesheetstyle.cpp:1454-1464)

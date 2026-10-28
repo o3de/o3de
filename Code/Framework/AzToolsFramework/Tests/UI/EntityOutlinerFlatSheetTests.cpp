@@ -80,7 +80,7 @@ namespace UnitTest
             void flatten(QWidget& widget)
             {
                 widget.setStyle(m_style.get());
-                AzQtComponents::BoxElement::apply(&widget);
+                AzQtComponents::BoxElement::resolve(&widget);
             }
 
             static const char* elementOf(const QWidget& widget)
@@ -163,8 +163,8 @@ namespace UnitTest
         QTreeView* strayTree = new QTreeView(&elsewhere);
         strayTree->setObjectName("m_objectTree");
 
-        ItemViewElement::apply(tree);
-        ItemViewElement::apply(strayTree);
+        ItemViewElement::resolve(tree);
+        ItemViewElement::resolve(strayTree);
 
         const ItemViewElement* element = ItemViewElement::forWidget(tree);
         ASSERT_TRUE(element != nullptr);

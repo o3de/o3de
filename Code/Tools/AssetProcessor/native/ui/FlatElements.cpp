@@ -68,41 +68,12 @@ namespace AssetProcessor
         using AzQtComponents::FrameElement;
         using AzQtComponents::ItemViewElement;
         using AzQtComponents::TextElement;
+        using AzQtComponents::Selectors::hasProperty;
+        using AzQtComponents::Selectors::named;
+        using AzQtComponents::Selectors::tagged;
+        using AzQtComponents::Selectors::within;
+        using AzQtComponents::Selectors::withinClass;
         using Widget = const QWidget*;
-
-        // ------------------------------------------------------------------------------
-        // Selectors: the QSS each function stands for
-        // ------------------------------------------------------------------------------
-
-        //! `#name`: the object name (qstylesheetstyle.cpp:1604-1605)
-        bool named(Widget widget, const char* objectName)
-        {
-            return TextElement::named(widget, objectName);
-        }
-
-        //! `.tag`: a whole word of the class property, compared with case (qcssparser.cpp:2166-2178)
-        bool tagged(Widget widget, const char* tag)
-        {
-            return TextElement::tagged(widget, tag);
-        }
-
-        //! `#name W`: any ancestor of the widget has the object name (qstylesheetstyle.cpp:1608-1609)
-        bool within(Widget widget, const char* ancestorName)
-        {
-            return TextElement::within(widget, ancestorName);
-        }
-
-        //! `Class W`: any ancestor is of the class or of one derived from it (qstylesheetstyle.cpp:1579-1600)
-        bool withinClass(Widget widget, const char* ancestorClass)
-        {
-            return TextElement::withinClass(widget, ancestorClass);
-        }
-
-        //! `[name="value"]`: the property read as text (qstylesheetstyle.cpp:1529-1577; qcssparser.cpp:2163-2165)
-        bool hasValue(Widget widget, const char* property, const char* value)
-        {
-            return widget->property(property).toString() == QLatin1String(value);
-        }
 
         // ------------------------------------------------------------------------------
         // Fills shared by several elements
@@ -557,15 +528,15 @@ namespace AssetProcessor
         // ---- boxes: the shared cache page
         BoxElement::registerElement(&SharedCacheStatusNotice, &QLabel::staticMetaObject, [](Widget w)
             {
-                return named(w, "sharedCacheStatus") && hasValue(w, "highlight", "blue");
+                return named(w, "sharedCacheStatus") && hasProperty(w, "highlight", "blue");
             });
         BoxElement::registerElement(&SharedCacheStatusActive, &QLabel::staticMetaObject, [](Widget w)
             {
-                return named(w, "sharedCacheStatus") && hasValue(w, "highlight", "green");
+                return named(w, "sharedCacheStatus") && hasProperty(w, "highlight", "green");
             });
         BoxElement::registerElement(&SharedCacheStatusError, &QLabel::staticMetaObject, [](Widget w)
             {
-                return named(w, "sharedCacheStatus") && hasValue(w, "highlight", "red");
+                return named(w, "sharedCacheStatus") && hasProperty(w, "highlight", "red");
             });
         BoxElement::registerElement(&ServerAddressToolButton, &QToolButton::staticMetaObject, [](Widget w)
             {

@@ -10,7 +10,6 @@
 
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
-#include <AzQtComponents/Components/Elements/TextElement.h>
 
 #include <QBrush>
 #include <QColor>
@@ -22,7 +21,9 @@ namespace EditorFlatSheet
 {
     using AzQtComponents::BoxElement;
     using AzQtComponents::ItemViewElement;
-    using AzQtComponents::TextElement;
+    using AzQtComponents::Selectors::childOfClass;
+    using AzQtComponents::Selectors::named;
+    using AzQtComponents::Selectors::withinClass;
 
     //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one
     //! translation unit, where anonymous namespaces merge.
@@ -115,25 +116,25 @@ namespace EditorFlatSheet
         //! `#AssetEditorStatusBar` (Editor.qss:180)
         bool isAssetEditorStatusBar(const QWidget* widget)
         {
-            return TextElement::named(widget, "AssetEditorStatusBar");
+            return named(widget, "AssetEditorStatusBar");
         }
 
         //! `AzAssetBrowserWindow #searchButtonContainer` (Editor.qss:20): that name, below the asset browser window
         bool isAssetBrowserSearchButtons(const QWidget* widget)
         {
-            return TextElement::named(widget, "searchButtonContainer") && TextElement::withinClass(widget, "AzAssetBrowserWindow");
+            return named(widget, "searchButtonContainer") && withinClass(widget, "AzAssetBrowserWindow");
         }
 
         //! `AzAssetBrowserWindow #m_separator` (Editor.qss:26): that name, below the asset browser window
         bool isAssetBrowserSeparator(const QWidget* widget)
         {
-            return TextElement::named(widget, "m_separator") && TextElement::withinClass(widget, "AzAssetBrowserWindow");
+            return named(widget, "m_separator") && withinClass(widget, "AzAssetBrowserWindow");
         }
 
         //! `AzToolsFramework--ComponentPaletteWidget > QTreeView` (Editor.qss:38): a tree whose parent is the palette widget
         bool isComponentPaletteTree(const QWidget* widget)
         {
-            return widget->parentWidget() && widget->parentWidget()->inherits("AzToolsFramework::ComponentPaletteWidget");
+            return childOfClass(widget, "AzToolsFramework::ComponentPaletteWidget");
         }
 
         //! `GraphCanvas--NodePaletteTreeView` (Editor.qss:110): the tree itself, or one of a class derived from it
@@ -145,7 +146,7 @@ namespace EditorFlatSheet
         //! The `QListWidget::item` rule that the New Level dialog sets on itself (NewLevelDialog.cpp:79): any list widget below that dialog
         bool isNewLevelTemplateList(const QWidget* widget)
         {
-            return TextElement::withinClass(widget, "CNewLevelDialog");
+            return withinClass(widget, "CNewLevelDialog");
         }
     } // namespace EditorFlatSheetInternal
 

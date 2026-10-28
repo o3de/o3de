@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/DockTabWidget.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -189,15 +190,15 @@ namespace AzQtComponents
             if (!registered)
             {
                 registered = true;
-                TabElement::registerElement(&HeaderTab, &isHeaderBar);
-                TabElement::registerElement(&SettingsTab, &isSettingsBar);
-                TabElement::registerElement(&EngineTab, &isEngineBar);
-                TabElement::registerElement(&RegularLabelTab, &isRegularLabelBar);
-                TabElement::registerElement(&NormalLabelTab, &isNormalLabelBar);
-                TabElement::registerElement(&BoldLabelTab, &isBoldLabelBar);
-                TabElement::registerElement(&ShownFocusTab, &isShownFocusBar);
-                TabElement::registerElement(&HiddenFocusTab, &isHiddenFocusBar);
-                TabElement::registerElement(&NoHoverTab, &isNoHoverBar);
+                TabElement::registerElement(&HeaderTab, &QTabBar::staticMetaObject, &isHeaderBar);
+                TabElement::registerElement(&SettingsTab, &QTabBar::staticMetaObject, &isSettingsBar);
+                TabElement::registerElement(&EngineTab, &QTabBar::staticMetaObject, &isEngineBar);
+                TabElement::registerElement(&RegularLabelTab, &QTabBar::staticMetaObject, &isRegularLabelBar);
+                TabElement::registerElement(&NormalLabelTab, &QTabBar::staticMetaObject, &isNormalLabelBar);
+                TabElement::registerElement(&BoldLabelTab, &QTabBar::staticMetaObject, &isBoldLabelBar);
+                TabElement::registerElement(&ShownFocusTab, &QTabBar::staticMetaObject, &isShownFocusBar);
+                TabElement::registerElement(&HiddenFocusTab, &QTabBar::staticMetaObject, &isHiddenFocusBar);
+                TabElement::registerElement(&NoHoverTab, &QTabBar::staticMetaObject, &isNoHoverBar);
             }
         }
 
@@ -314,7 +315,7 @@ namespace AzQtComponents
             return count;
         }
 
-        //! One bar of each Global element, which the tests resolve without polishing them. An AzQtComponents TabBar is
+        //! One bar of each Global element, which the tests resolve without showing them. An AzQtComponents TabBar is
         //! made by its tab widget (its constructor is protected), which carries the class tags of the secondary looks.
         struct GlobalBars
         {
@@ -325,12 +326,18 @@ namespace AzQtComponents
                 TabWidget::applySecondaryStyle(&m_bordered, true);
             }
 
-            //! In the order primary, secondary, bordered, dock title, dock group
+            //! In the order primary, secondary, bordered, dock title, dock group, each resolved as its polish resolves it (a class
+            //! tag added in a constructor polishes the bar while it is still of its base class)
             QVector<const TabElement*> elements()
             {
-                return { TabElement::resolve(m_primary.findChild<QTabBar*>()), TabElement::resolve(m_secondary.findChild<QTabBar*>()),
-                    TabElement::resolve(m_bordered.findChild<QTabBar*>()), TabElement::resolve(&m_dockTitle),
-                    TabElement::resolve(m_dockTabs.findChild<QTabBar*>()) };
+                QVector<const TabElement*> resolved;
+                for (QTabBar* bar : { m_primary.findChild<QTabBar*>(), m_secondary.findChild<QTabBar*>(), m_bordered.findChild<QTabBar*>(),
+                         static_cast<QTabBar*>(&m_dockTitle), m_dockTabs.findChild<QTabBar*>() })
+                {
+                    TabElement::resolve(bar);
+                    resolved.append(TabElement::forWidget(bar));
+                }
+                return resolved;
             }
 
             QWidget m_mainWindowStandIn;
@@ -598,7 +605,7 @@ namespace AzQtComponents
                 {
                     expectedPainter.fillRect(rect, face.m_fill);
                 }
-                TabElement::drawEdges(&expectedPainter, rect, face.m_edges);
+                BoxElement::drawEdges(&expectedPainter, rect, face.m_edges, BoxElement::Radii());
                 expectedPainter.end();
 
                 EXPECT_EQ(TabElementTestsInternal::differingPixels(drawn, expected), 0) << element->m_name << ", state bits " << bits;
@@ -966,7 +973,7 @@ namespace AzQtComponents
         // The element matches from here on (the matcher reads this property): resolved again, by the registration alone
         bar->setProperty("tabElementTestsLate", true);
         EXPECT_TRUE(TabElement::plainForTabBar(bar) != nullptr);
-        TabElement::registerElement(&TabElementTestsInternal::LateTab, &TabElementTestsInternal::isLateBar);
+        TabElement::registerElement(&TabElementTestsInternal::LateTab, &QTabBar::staticMetaObject, &TabElementTestsInternal::isLateBar);
 
         // The bar is resolved again (the plain element kept before is gone), and both it and its tab widget polished again
         EXPECT_TRUE(TabElement::forTabBar(bar) == &TabElementTestsInternal::LateTab);
@@ -987,11 +994,11 @@ namespace AzQtComponents
         tabs.ensurePolished();
         QTabBar* primary = tabs.findChild<QTabBar*>();
         ASSERT_TRUE(primary != nullptr);
-        const TabElement* before = TabElement::resolve(primary);
+        const TabElement* before = TabElement::forWidget(primary);
         ASSERT_TRUE(before != nullptr);
         primary->setMinimumHeight(50);
 
-        TabElement::registerElement(&TabElementTestsInternal::UnmatchedTab, &TabElementTestsInternal::matchesNoBar);
+        TabElement::registerElement(&TabElementTestsInternal::UnmatchedTab, &QTabBar::staticMetaObject, &TabElementTestsInternal::matchesNoBar);
 
         EXPECT_TRUE(TabElement::forTabBar(primary) == before);
         EXPECT_EQ(primary->minimumHeight(), 50); // not polished again: the element did not change
@@ -1013,7 +1020,7 @@ namespace AzQtComponents
         QTabBar* bar = tabs.findChild<QTabBar*>();
         ASSERT_TRUE(bar != nullptr);
 
-        const TabElement* element = TabElement::resolve(bar);
+        const TabElement* element = TabElement::forWidget(bar);
         ASSERT_TRUE(element != nullptr);
         EXPECT_STREQ(element->m_name, "Global.Tab.Plain");
         EXPECT_TRUE(element->isPlain());
@@ -1029,7 +1036,7 @@ namespace AzQtComponents
 
         // A widget that is no tab bar resolves to nothing, not to the plain element
         QWidget other;
-        EXPECT_TRUE(TabElement::resolve(&other) == nullptr);
+        EXPECT_TRUE(TabElement::forWidget(&other) == nullptr);
     }
 
     TEST_F(TabElementTests, Plain_PaneAndIdleTabAreFusionsOverTheSheetsColour)

@@ -50,16 +50,8 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
-            // The menu's element, resolved here once and kept on the menu (draws and metrics read it back). Its colours are
-            // also what the menu's own palette carries, for the widgets a QWidgetAction hosts in it (Menu.qss:12 QMenu
-            // { background-color }, :25 ::item:disabled { color }). The font is the QMenu class font (TextElement::installClassFonts).
-            const MenuElement& element = MenuElement::resolve(menu);
-            QPalette menuPalette = menu->palette();
-            menuPalette.setColor(QPalette::Window, element.m_surface);
-            menuPalette.setColor(QPalette::Base, element.m_surface);
-            menuPalette.setColor(QPalette::Disabled, QPalette::Text, element.m_disabledText);
-            menuPalette.setColor(QPalette::Disabled, QPalette::WindowText, element.m_disabledText);
-            menu->setPalette(menuPalette);
+            // The font is the QMenu class font (TextElement::installClassFonts)
+            MenuElement::resolve(menu);
         }
 
         style->repolishOnSettingsChange(widget);

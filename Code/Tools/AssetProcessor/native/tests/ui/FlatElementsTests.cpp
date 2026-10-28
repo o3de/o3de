@@ -129,7 +129,7 @@ namespace AssetProcessor
                 for (QWidget* widget : widgets)
                 {
                     FrameElement::resolve(widget);
-                    BoxElement::apply(widget);
+                    BoxElement::resolve(widget);
                 }
             }
 
@@ -139,14 +139,14 @@ namespace AssetProcessor
                 const QList<QAbstractItemView*> views = root->findChildren<QAbstractItemView*>();
                 for (QAbstractItemView* view : views)
                 {
-                    ItemViewElement::apply(view);
+                    ItemViewElement::resolve(view);
                 }
             }
 
             //! What Style::polish does for the text of a label: the element over the font, then its colour
             static void resolveText(QLabel* label)
             {
-                TextElement::apply(label);
+                TextElement::resolve(label);
                 TextElement::applyColor(label);
             }
 
@@ -184,9 +184,9 @@ namespace AssetProcessor
             }
 
             //! The name of the frame element a widget has, "" for none
-            static const char* frameNameOf(const QWidget* widget)
+            static const char* frameNameOf(QWidget* widget)
             {
-                const FrameElement* element = FrameElement::resolve(widget);
+                const FrameElement* element = FrameElement::forWidget(widget);
                 return element ? element->m_name : "";
             }
 
@@ -333,33 +333,33 @@ namespace AssetProcessor
 
             // Native, blue: contents [1, 2, 1, 2] (the 1px border, and the margin of 1px above and below it) and a 10% tint of #588CBC
             status->setProperty("highlight", QStringLiteral("blue"));
-            BoxElement::apply(status);
+            BoxElement::resolve(status);
             expectBox(status, "AssetProcessor.Box.SharedCacheStatus.Notice", QMargins(1, 2, 1, 2));
             EXPECT_TRUE(BoxElement::forWidget(status)->m_idle.m_fill.color() == QColor(88, 140, 188, 25));
 
             // The label is repolished when the property changes (MainWindow.cpp:949-989): the element follows
             status->setProperty("highlight", QStringLiteral("green"));
-            BoxElement::apply(status);
+            BoxElement::resolve(status);
             expectBox(status, "AssetProcessor.Box.SharedCacheStatus.Active", QMargins(1, 2, 1, 2));
             EXPECT_TRUE(BoxElement::forWidget(status)->m_idle.m_fill.color() == QColor(88, 188, 97, 25));
 
             status->setProperty("highlight", QStringLiteral("red"));
-            BoxElement::apply(status);
+            BoxElement::resolve(status);
             expectBox(status, "AssetProcessor.Box.SharedCacheStatus.Error", QMargins(1, 2, 1, 2));
             EXPECT_TRUE(BoxElement::forWidget(status)->m_idle.m_fill.color() == QColor(255, 0, 0, 25));
 
             // No highlight, or one the sheet does not know, is a plain label
             status->setProperty("highlight", QStringLiteral("yellow"));
-            BoxElement::apply(status);
+            BoxElement::resolve(status);
             expectNoBox(status);
             status->setProperty("highlight", QVariant());
-            BoxElement::apply(status);
+            BoxElement::resolve(status);
             expectNoBox(status);
 
             // Another label with the property
             auto* other = add<QLabel>(&page, "somethingElse");
             other->setProperty("highlight", QStringLiteral("blue"));
-            BoxElement::apply(other);
+            BoxElement::resolve(other);
             expectNoBox(other);
         }
 
@@ -409,8 +409,8 @@ namespace AssetProcessor
             status->setFrameShape(QFrame::StyledPanel);
             status->setProperty("highlight", QStringLiteral("blue"));
             auto* overlay = add<QWidget>(&stack, "SharedCachePage");
-            BoxElement::apply(status);
-            BoxElement::apply(overlay);
+            BoxElement::resolve(status);
+            BoxElement::resolve(overlay);
 
             const QImage label = paintBox(status, QSize(60, 20), 0x333333);
             EXPECT_EQ(rgbAt(label, 30, 0), 0x333333u);          // the margin of 1px above the label shows the page
@@ -551,13 +551,13 @@ namespace AssetProcessor
             // A field without the search action is not the sheet's search field
             QLineEdit plain;
             plain.setObjectName(QStringLiteral("textSearch"));
-            BoxElement::apply(&plain);
+            BoxElement::resolve(&plain);
             expectNoBox(&plain);
 
             // The container outside a bar is no container of one
             QFrame loose;
             loose.setObjectName(QStringLiteral("textSearchContainer"));
-            BoxElement::apply(&loose);
+            BoxElement::resolve(&loose);
             expectNoBox(&loose);
 
             // The tree of the type popup of a bar under the two ids (uncaptured), none under the assets page's bar

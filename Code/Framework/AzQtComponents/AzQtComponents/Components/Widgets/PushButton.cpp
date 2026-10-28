@@ -9,6 +9,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
@@ -110,7 +111,7 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
         // geometry came after this and replaced the maximum height (qstylesheetstyle.cpp:2875-2890). The flattened BrowseEdit
         // fixed the button at 16x16 (BrowseEdit.cpp:78), which the maximum of the default frame must not raise again.
         const bool browseEditButton = StyleManager::stylesheetsDisabled() && pushButton->objectName() == QLatin1String("attached-button")
-            && pushButton->parentWidget() && pushButton->parentWidget()->inherits("AzQtComponents::BrowseEdit");
+            && Selectors::childOfClass(pushButton, "AzQtComponents::BrowseEdit");
         if (!browseEditButton)
         {
             widget->setMaximumHeight(config.defaultFrame.height);

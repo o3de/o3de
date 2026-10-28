@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/Internal/RectangleWidget.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -487,7 +488,7 @@ namespace AzQtComponents
         const bool containerHeader = Style::hasClass(this, g_containerCardHeaderClass);
         const bool secondaryHeader = Style::hasClass(this, QStringLiteral("secondaryCardHeader"));
         // ColorPicker.qss: PaletteCardBase CardHeader { background-color: transparent }
-        const bool paletteHeader = parentWidget() && parentWidget()->inherits("AzQtComponents::PaletteCardBase");
+        const bool paletteHeader = Selectors::childOfClass(this, "AzQtComponents::PaletteCardBase");
         const qreal radius = (sectionHeader || containerHeader || secondaryHeader) ? 0.0 : 2.0;
         const QRectF box(m_backgroundFrame->geometry());
 

@@ -1796,7 +1796,7 @@ namespace AzQtComponents
                     EXPECT_EQ(m_style->subElementRect(element, &option, button), m_style->baseStyle()->subElementRect(element, &option, button)) << name << " " << int(element);
                 }
                 EXPECT_EQ(m_style->subElementRect(isRadio ? QStyle::SE_RadioButtonClickRect : QStyle::SE_CheckBoxClickRect, &option, button),
-                    isRadio ? rect : indicator->clickRect(m_style.get(), option, spacing)) << name;
+                    isRadio ? rect : indicator->clickRect(m_style.get(), option, spacing, option.rect)) << name;
 
                 // the indicator element draws the image and the label, and no box: the corners of the rect stay as they were
                 const QImage image = drawn(rect.size(), 1.0, [&](QPainter* painter)

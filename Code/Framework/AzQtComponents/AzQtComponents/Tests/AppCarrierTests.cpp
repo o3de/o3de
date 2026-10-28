@@ -544,13 +544,13 @@ namespace AzQtComponents
             registered = true;
 
             const QMetaObject* radio = &QRadioButton::staticMetaObject;
-            BoxElement::registerElement(&WizardStep, radio, [](const QWidget* w) { return flatTwin(w) && TextElement::within(w, "createAGemLHS"); });
-            TextElement::registerElement(&WizardStepText, radio, [](const QWidget* w) { return flatTwin(w) && TextElement::within(w, "createAGemLHS"); });
+            BoxElement::registerElement(&WizardStep, radio, [](const QWidget* w) { return flatTwin(w) && Selectors::within(w, "createAGemLHS"); });
+            TextElement::registerElement(&WizardStepText, radio, [](const QWidget* w) { return flatTwin(w) && Selectors::within(w, "createAGemLHS"); });
             // the indicator the witness shows (only where the radio button says so), and the hidden one of every step
             IndicatorElement::registerElement(&WizardStepShown, radio,
-                [](const QWidget* w) { return flatLook(w, "shown") && TextElement::within(w, "createAGemLHS"); });
+                [](const QWidget* w) { return flatLook(w, "shown") && Selectors::within(w, "createAGemLHS"); });
             IndicatorElement::registerElement(&WizardStepHidden, radio,
-                [](const QWidget* w) { return flatTwin(w) && TextElement::within(w, "createAGemLHS"); });
+                [](const QWidget* w) { return flatTwin(w) && Selectors::within(w, "createAGemLHS"); });
         }
 
         //! The steps in a list that is #createAGemLHS: one checked, one not, one disabled; and a radio button outside the list, which the rules

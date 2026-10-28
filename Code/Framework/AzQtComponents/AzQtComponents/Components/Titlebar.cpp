@@ -316,7 +316,7 @@ namespace AzQtComponents
             // the page. The flattened mode resolves the element of the frame again, now that the property has changed.
             if (StyleManager::stylesheetsDisabled())
             {
-                BoxElement::apply(m_tabButtonsContainer);
+                BoxElement::resolve(m_tabButtonsContainer);
             }
 
             update();

@@ -1234,7 +1234,7 @@ namespace O3DE::ProjectManager
             explicit ElementOfLook(const char* look)
                 : m_widgets(ChainOf(look))
             {
-                AzQtComponents::BoxElement::apply(m_widgets.Leaf());
+                AzQtComponents::BoxElement::resolve(m_widgets.Leaf());
                 m_element = AzQtComponents::BoxElement::forWidget(m_widgets.Leaf());
             }
 
@@ -1281,7 +1281,7 @@ namespace O3DE::ProjectManager
         static QByteArray BoxLookOf(const char* chain)
         {
             FlatElementsTestsInternal::WidgetChain widgets(chain);
-            AzQtComponents::BoxElement::apply(widgets.Leaf());
+            AzQtComponents::BoxElement::resolve(widgets.Leaf());
             const AzQtComponents::BoxElement* element = AzQtComponents::BoxElement::forWidget(widgets.Leaf());
             return element ? QByteArray(element->m_name).mid(sizeof("ProjectManager.Box.") - 1) : QByteArray();
         }
@@ -1513,7 +1513,7 @@ namespace O3DE::ProjectManager
         {
             FlatElementsTestsInternal::WidgetChain widgets(textCase.m_chain);
             QWidget* widget = widgets.Leaf();
-            AzQtComponents::TextElement::apply(widget);
+            AzQtComponents::TextElement::resolve(widget);
             AzQtComponents::TextElement::applyColor(widget);
 
             const QFont font = widget->font();
@@ -1614,7 +1614,7 @@ namespace O3DE::ProjectManager
         {
             FlatElementsTestsInternal::WidgetChain widgets(limitCase.m_chain);
             QWidget* widget = widgets.Leaf();
-            AzQtComponents::BoxElement::apply(widget);
+            AzQtComponents::BoxElement::resolve(widget);
 
             EXPECT_EQ(widget->minimumWidth(), limitCase.m_minWidth) << limitCase.m_chain;
             EXPECT_EQ(widget->minimumHeight(), limitCase.m_minHeight) << limitCase.m_chain;
@@ -1663,7 +1663,7 @@ namespace O3DE::ProjectManager
         for (const TabCase& tabCase : cases)
         {
             FlatElementsTestsInternal::WidgetChain widgets(tabCase.m_chain);
-            const AzQtComponents::TabElement* element = AzQtComponents::TabElement::resolve(widgets.Leaf());
+            const AzQtComponents::TabElement* element = AzQtComponents::TabElement::forWidget(widgets.Leaf());
             ASSERT_NE(element, nullptr) << tabCase.m_chain;
             EXPECT_STREQ(element->m_name, (QByteArray("ProjectManager.Tab.") + tabCase.m_look).constData()) << tabCase.m_chain;
             EXPECT_EQ(AzQtComponents::TabElement::forTabBar(widgets.Leaf()), element) << tabCase.m_chain;
@@ -1702,7 +1702,7 @@ namespace O3DE::ProjectManager
         for (const TabValues& values : cases)
         {
             FlatElementsTestsInternal::WidgetChain widgets(values.m_chain);
-            const AzQtComponents::TabElement* element = AzQtComponents::TabElement::resolve(widgets.Leaf());
+            const AzQtComponents::TabElement* element = AzQtComponents::TabElement::forWidget(widgets.Leaf());
             ASSERT_NE(element, nullptr) << values.m_chain;
 
             EXPECT_EQ(element->m_barLeft, values.m_barLeft) << values.m_chain;
@@ -1766,7 +1766,7 @@ namespace O3DE::ProjectManager
             QFrame frame;
             frame.setObjectName(QString::fromLatin1(frameCase.m_name));
             frame.setFrameShape(frameCase.m_shape);
-            const AzQtComponents::FrameElement* element = AzQtComponents::FrameElement::resolve(&frame);
+            const AzQtComponents::FrameElement* element = AzQtComponents::FrameElement::forWidget(&frame);
             ASSERT_NE(element, nullptr) << frameCase.m_name;
             if (frameCase.m_element[0])
             {
@@ -1840,7 +1840,7 @@ namespace O3DE::ProjectManager
         auto* table = qobject_cast<QTableWidget*>(widgets.Leaf());
         ASSERT_NE(table, nullptr);
         table->setColumnCount(3);
-        ItemViewElement::apply(table);
+        ItemViewElement::resolve(table);
         const ItemViewElement* element = ItemViewElement::forWidget(table);
         ASSERT_NE(element, nullptr);
         EXPECT_STREQ(element->m_name, "ProjectManager.ItemView.AdjustableHeader");
@@ -1862,7 +1862,7 @@ namespace O3DE::ProjectManager
             auto* otherTable = qobject_cast<QTableWidget*>(other.Leaf());
             ASSERT_NE(otherTable, nullptr) << chain;
             otherTable->setColumnCount(3);
-            ItemViewElement::apply(otherTable);
+            ItemViewElement::resolve(otherTable);
             const ItemViewElement* otherElement = ItemViewElement::forWidget(otherTable);
             ASSERT_NE(otherElement, nullptr) << chain;
             EXPECT_STREQ(otherElement->m_name, "Global.ItemView.Table") << chain;
@@ -1906,7 +1906,7 @@ namespace O3DE::ProjectManager
 
         FlatElementsTestsInternal::WidgetChain widgets("QFrame#formFrame > QLineEdit");
         QWidget* flatEdit = widgets.Leaf();
-        AzQtComponents::BoxElement::apply(flatEdit);
+        AzQtComponents::BoxElement::resolve(flatEdit);
         const AzQtComponents::BoxElement* element = AzQtComponents::BoxElement::forWidget(flatEdit);
         ASSERT_NE(element, nullptr);
         EXPECT_STREQ(element->m_name, "ProjectManager.Box.FormLineEdit");

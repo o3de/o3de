@@ -8,72 +8,88 @@
 
 #include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Style.h>
-#include <AzQtComponents/Components/StyleManager.h>
 
-#include <QApplication>
+#include <QMargins>
 #include <QPainter>
 #include <QStyle>
 #include <QStyleOption>
-#include <QVariant>
-#include <QVector>
 #include <QWidget>
 
 namespace AzQtComponents
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
-    //! with others into one translation unit, where anonymous namespaces merge (CheckBox and RadioButton are
-    //! classes of this library).
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace IndicatorElementInternal
     {
         // ------------------------------------------------------------------------------
-        // Global elements. Each value cites the declaration that grants it, as file:line of the
-        // legacy stylesheets in Components/Widgets/.
+        // Values
         // ------------------------------------------------------------------------------
 
-        //! QCheckBox::indicator: 16x16 with a 2px margin, 20x20 with it. A focus rule changes only its image.
-        //! The focus values are UNVERIFIED: no capture holds a focused check box.
-        //! TOKENIZE: CheckBoxImageSize, CheckBoxIndicatorMargin
+        // CheckBox.qss:25-26, RadioButton.qss:24-25 $size.check-indicator.idle.width.Alt1 $size.check-indicator.idle.height
+        constexpr QSize IndicatorImageSize(16, 16);
+        // CheckBox.qss:27, :80, RadioButton.qss:26 $space.check-indicator.idle.margin.Alt1
+        constexpr int IndicatorMargin = 2;
+        // CheckBox.qss:77-78 $size.check-indicator.idle.width.Alt2 $size.check-indicator.idle.height
+        constexpr QSize ToggleSwitchImageSize(32, 16);
+        // CheckBox.qss:95-96, :114-115 $size.check-indicator.unchecked+focus.width $size.check-indicator.unchecked+focus.height
+        // $size.check-indicator.checked+focus.width $size.check-indicator.checked+focus.height
+        constexpr QSize ToggleSwitchImageSizeFocus(34, 18);
+        // CheckBox.qss:98, :117 $space.check-indicator.unchecked+focus $space.check-indicator.checked+focus
+        constexpr int ToggleSwitchMarginFocus = 1;
+        // RadioButton.qss:31-32 $size.check-indicator.focus.width $size.check-indicator.focus.height
+        constexpr QSize RadioButtonImageSizeFocus(18, 18);
+        constexpr int RadioButtonMarginFocus = 1;           // RadioButton.qss:33 $space.check-indicator.focus
+
+        constexpr QMargins LabelFocusMargins(3, 2, 3, 2);   // QCommonStyle::subElementRect (SE_CheckBoxFocusRect) $space.check.focus.label
+
+        // ------------------------------------------------------------------------------
+        // Elements
+        // ------------------------------------------------------------------------------
+
+        //! QCheckBox::indicator: no focus size of its own
         const IndicatorElement CheckBoxIndicator{
-            .m_name = "Global.CheckBox.Box",
-            .m_imageSize = QSize(16, 16),                   // CheckBox.qss:25-26
-            .m_margin = 2,                                  // CheckBox.qss:27
-            .m_focusImageSize = QSize(16, 16),              // no :focus size in CheckBox.qss: the same box
-            .m_focusMargin = 2,
+            .m_name = "Global.Indicator.CheckBox",
+            .m_imageSize = IndicatorImageSize,
+            .m_margin = IndicatorMargin,
+            .m_focusImageSize = IndicatorImageSize,
+            .m_focusMargin = IndicatorMargin,
         };
 
-        //! QCheckBox.ToggleSwitch::indicator: 32x16 with a 2px margin, 36x20; focused 34x18 with a 1px margin,
-        //! 36x20 as well. The focus values are UNVERIFIED: no capture holds a focused toggle switch.
-        //! TOKENIZE: ToggleSwitchImageSize, ToggleSwitchFocusImageSize
+        //! QCheckBox.ToggleSwitch::indicator
         const IndicatorElement ToggleSwitchIndicator{
-            .m_name = "Global.CheckBox.ToggleSwitch",
-            .m_imageSize = QSize(32, 16),                   // CheckBox.qss:77-78
-            .m_margin = 2,                                  // CheckBox.qss:80
-            .m_focusImageSize = QSize(34, 18),              // CheckBox.qss:95-96 (checked: :114-115)
-            .m_focusMargin = 1,                             // CheckBox.qss:98 (checked: :117)
+            .m_name = "Global.Indicator.ToggleSwitch",
+            .m_imageSize = ToggleSwitchImageSize,
+            .m_margin = IndicatorMargin,
+            .m_focusImageSize = ToggleSwitchImageSizeFocus,
+            .m_focusMargin = ToggleSwitchMarginFocus,
         };
 
-        //! QRadioButton::indicator: 16x16 with a 2px margin, 20x20; focused 18x18 with a 1px margin, 20x20 as well.
-        //! The focus values are UNVERIFIED: no capture holds a focused radio button.
-        //! TOKENIZE: RadioButtonImageSize, RadioButtonFocusImageSize
+        //! QRadioButton::indicator
         const IndicatorElement RadioButtonIndicator{
-            .m_name = "Global.RadioButton.Box",
-            .m_imageSize = QSize(16, 16),                   // RadioButton.qss:24-25
-            .m_margin = 2,                                  // RadioButton.qss:26
-            .m_focusImageSize = QSize(18, 18),              // RadioButton.qss:31-32
-            .m_focusMargin = 1,                             // RadioButton.qss:33
+            .m_name = "Global.Indicator.RadioButton",
+            .m_imageSize = IndicatorImageSize,
+            .m_margin = IndicatorMargin,
+            .m_focusImageSize = RadioButtonImageSizeFocus,
+            .m_focusMargin = RadioButtonMarginFocus,
         };
 
-        constexpr const char* ElementProperty = "_o3de_indicatorElement";
+        // ------------------------------------------------------------------------------
+        // Helpers
+        // ------------------------------------------------------------------------------
 
-        //! The element of a check box or radio button; null for those that have a box of their own
+        ElementRegistry<IndicatorElement>& registry()
+        {
+            static ElementRegistry<IndicatorElement> rows("_o3de_indicatorElement");
+            return rows;
+        }
+
+        //! The Global element of a check box or radio button; null for those with a box of their own: the expander (a bare caret,
+        //! CheckBox.qss:121-139) and the outliner's toggles (EntityOutliner.qss:37-62)
         const IndicatorElement* globalElement(const QWidget* widget)
         {
             if (widget->inherits("QRadioButton"))
             {
                 return &RadioButtonIndicator;
             }
-            // The expander is a bare 16px caret (CheckBox.qss:121-139); the outliner's visibility and lock toggles
-            // are another sheet's (EntityOutliner.qss:37-62)
             if (!widget->inherits("QCheckBox") || widget->inherits("AzToolsFramework::EntityOutlinerCheckBox")
                 || Style::hasClass(widget, QStringLiteral("Expander")))
             {
@@ -82,36 +98,16 @@ namespace AzQtComponents
             return Style::hasClass(widget, QStringLiteral("ToggleSwitch")) ? &ToggleSwitchIndicator : &CheckBoxIndicator;
         }
 
-        struct Row
-        {
-            const IndicatorElement* m_element;
-            const QMetaObject* m_widgetClass;
-            IndicatorElement::Matcher m_matcher;
-        };
-
-        //! The elements modules registered, checked before the Global ones, in the order they were registered
-        QVector<Row>& moduleRows()
-        {
-            static QVector<Row> rows;
-            return rows;
-        }
-
-        //! The element of a check box or radio button: a module's, else the Global one of its class (null for the widgets that have a box of their own)
+        //! The element of a check box or radio button: a module's first, then the Global one
         const IndicatorElement* findElement(const QWidget* widget)
         {
-            for (const Row& row : moduleRows())
-            {
-                if (widget->metaObject()->inherits(row.m_widgetClass) && row.m_matcher(widget))
-                {
-                    return row.m_element;
-                }
-            }
-            return globalElement(widget);
+            const IndicatorElement* element = registry().find(widget);
+            return element ? element : globalElement(widget);
         }
     } // namespace IndicatorElementInternal
 
     // ----------------------------------------------------------------------------------
-    // Use
+    // Geometry
     // ----------------------------------------------------------------------------------
 
     QSize IndicatorElement::boxSize() const
@@ -121,7 +117,6 @@ namespace AzQtComponents
 
     QRect IndicatorElement::imageRect(const QRect& widgetRect, bool focused, Qt::LayoutDirection direction) const
     {
-        // qstylesheetstyle.cpp:6184-6191: the box aligned left and centered vertically (defaultPosition, :2218-2224)
         const QRect box = QStyle::alignedRect(direction, Qt::AlignLeft | Qt::AlignVCenter, boxSize(), widgetRect);
         const int margin = focused ? m_focusMargin : m_margin;
         const QSize image = focused ? m_focusImageSize : m_imageSize;
@@ -130,7 +125,6 @@ namespace AzQtComponents
 
     QRect IndicatorElement::contentsRect(const QRect& widgetRect, int spacing, Qt::LayoutDirection direction) const
     {
-        // qstylesheetstyle.cpp:6193-6207: after the box and the label spacing
         const int offset = boxSize().width() + spacing;
         const QRect logical(widgetRect.left() + offset, widgetRect.top(), widgetRect.width() - offset, widgetRect.height());
         return QStyle::visualRect(direction, widgetRect, logical);
@@ -138,14 +132,8 @@ namespace AzQtComponents
 
     QSize IndicatorElement::sizeFromContents(const QSize& contents, int spacing) const
     {
-        // qstylesheetstyle.cpp:5397-5411
         const QSize box = boxSize();
         return QSize(contents.width() + box.width() + spacing, qMax(contents.height(), box.height()));
-    }
-
-    QRect IndicatorElement::clickRect(const QStyle* style, const QStyleOptionButton& option, int spacing) const
-    {
-        return clickRect(style, option, spacing, option.rect);
     }
 
     QRect IndicatorElement::clickRect(const QStyle* style, const QStyleOptionButton& option, int spacing, const QRect& area) const
@@ -153,63 +141,15 @@ namespace AzQtComponents
         QRect click = QStyle::alignedRect(option.direction, Qt::AlignLeft | Qt::AlignVCenter, boxSize(), area);
         if (!option.text.isEmpty())
         {
-            // QCommonStyle's focus rectangle, laid on the contents above (qcommonstyle.cpp:2487-2515, 2660-2663)
+            // The label's text with QCommonStyle's focus rectangle around it
             const QRect contents = QStyle::visualRect(option.direction, option.rect, contentsRect(area, spacing, option.direction));
             QRect text = style->itemTextRect(option.fontMetrics, contents,
                 Qt::AlignAbsolute | Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic,
                 option.state.testFlag(QStyle::State_Enabled), option.text);
-            text = text.adjusted(-3, -2, 3, 2).intersected(option.rect);
+            text = text.marginsAdded(IndicatorElementInternal::LabelFocusMargins).intersected(option.rect);
             click |= QStyle::visualRect(option.direction, option.rect, text);
         }
         return click;
-    }
-
-    // ----------------------------------------------------------------------------------
-    // Resolution
-    // ----------------------------------------------------------------------------------
-
-    const IndicatorElement* IndicatorElement::resolve(const QWidget* widget)
-    {
-        if (!widget)
-        {
-            return nullptr;
-        }
-        const IndicatorElement* element = IndicatorElementInternal::findElement(widget);
-        // Kept on the widget: sizes and draws read it back without resolving again (a null element is kept as well)
-        const_cast<QWidget*>(widget)->setProperty(IndicatorElementInternal::ElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
-        return element;
-    }
-
-    const IndicatorElement* IndicatorElement::forWidget(const QWidget* widget)
-    {
-        if (!widget)
-        {
-            return nullptr;
-        }
-        const QVariant stored = widget->property(IndicatorElementInternal::ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const IndicatorElement*>(stored.value<quintptr>()) : resolve(widget);
-    }
-
-    void IndicatorElement::registerElement(const IndicatorElement* element, const QMetaObject* widgetClass, Matcher matcher)
-    {
-        IndicatorElementInternal::moduleRows().append({ element, widgetClass, matcher });
-        if (!StyleManager::stylesheetsDisabled())
-        {
-            return;
-        }
-
-        // A module builds some windows before it sets up its styles: a button that has an element kept (it was sized or drawn, or polished
-        // and asked) is resolved again. One that has none yet resolves with the module's rows when it is first asked.
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
-        {
-            if (widget->metaObject()->inherits(widgetClass) && widget->property(IndicatorElementInternal::ElementProperty).isValid())
-            {
-                resolve(widget);
-                widget->updateGeometry();
-                widget->update();
-            }
-        }
     }
 
     // ----------------------------------------------------------------------------------
@@ -225,13 +165,11 @@ namespace AzQtComponents
         }
 
         const bool radio = widget->inherits("QRadioButton");
-        // The label sits where SE_CheckBoxContents and SE_RadioButtonContents put it, which ask the spacing with no option
-        // (qstylesheetstyle.cpp:6200): a rule's spacing for a state (`:checked { spacing }`) sizes the button but does not move its label
-        const int spacing = style->pixelMetric(radio ? QStyle::PM_RadioButtonLabelSpacing : QStyle::PM_CheckBoxLabelSpacing, nullptr, widget);
-        // An enabled widget with the focus draws its focus image: the larger one of a radio button or toggle switch
+        // The spacing asked with no option, as the label's position is: a rule's spacing for one state sizes the button only
+        const int spacing =
+            style->pixelMetric(radio ? QStyle::PM_RadioButtonLabelSpacing : QStyle::PM_CheckBoxLabelSpacing, nullptr, widget);
         const bool focused = option->state.testFlag(QStyle::State_HasFocus) && option->state.testFlag(QStyle::State_Enabled);
 
-        // A hidden indicator has its box (the label starts after it) and no image in it
         if (!element->m_hidden)
         {
             QStyleOptionButton indicator = *option;
@@ -239,10 +177,47 @@ namespace AzQtComponents
             style->drawPrimitive(radio ? QStyle::PE_IndicatorRadioButton : QStyle::PE_IndicatorCheckBox, &indicator, painter, widget);
         }
 
-        // No focus rectangle after the label: CheckBox.qss:15 and RadioButton.qss:14 set `outline: 0`
+        // No focus rectangle after the label: `outline: 0` (CheckBox.qss:15, RadioButton.qss:14)
         QStyleOptionButton label = *option;
         label.rect = element->contentsRect(option->rect, spacing, option->direction);
         style->drawControl(radio ? QStyle::CE_RadioButtonLabel : QStyle::CE_CheckBoxLabel, &label, painter, widget);
         return true;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Resolution
+    // ----------------------------------------------------------------------------------
+
+    void IndicatorElement::registerElement(
+        const IndicatorElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
+    {
+        IndicatorElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, [](QWidget* widget)
+            {
+                resolve(widget);
+                widget->updateGeometry();
+                widget->update();
+            });
+    }
+
+    void IndicatorElement::resolve(QWidget* widget)
+    {
+        using namespace IndicatorElementInternal;
+        if (widget)
+        {
+            // A null element is kept too: sizes and draws read it back without resolving again
+            registry().keep(widget, findElement(widget));
+        }
+    }
+
+    const IndicatorElement* IndicatorElement::forWidget(const QWidget* widget)
+    {
+        using namespace IndicatorElementInternal;
+        if (!widget)
+        {
+            return nullptr;
+        }
+        const std::optional<const IndicatorElement*> kept = registry().kept(widget);
+        return kept ? *kept : findElement(widget);
     }
 } // namespace AzQtComponents

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Elements/SpinBoxElement.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Style.h>
@@ -1022,7 +1023,7 @@ bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, 
             // VectorInput.qss: VectorElement spin boxes have margin-left 0 (flush with the
             // coordinate label); SpinBox.qss [hasAcceptableInput=false] / [HasError=true]:
             // margin 0, 2px #E25243 border, radius 4. TOKENIZE: SpinBoxErrorBorder
-            const bool vectorElement = widget && widget->parentWidget() && widget->parentWidget()->inherits("AzQtComponents::VectorElement");
+            const bool vectorElement = widget && Selectors::childOfClass(widget, "AzQtComponents::VectorElement");
             auto abstractSpinBox = qobject_cast<const QAbstractSpinBox*>(widget);
             const bool hasError = widget && enabled
                 && ((abstractSpinBox && !abstractSpinBox->hasAcceptableInput()) || widget->property("HasError").toBool());
@@ -1098,7 +1099,7 @@ QRect SpinBox::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex
             // ends 3 above its bottom: 4 less than the box is tall, whatever height a layout gives it (23 by default,
             // 18 in an inspector row). Padding-right 12 (:16) and the 6px up/down buttons (:81, none in a color
             // picker) take the right side. TOKENIZE: SpinBoxEditInset
-            const bool vectorElement = widget && widget->parentWidget() && widget->parentWidget()->inherits("AzQtComponents::VectorElement");
+            const bool vectorElement = widget && Selectors::childOfClass(widget, "AzQtComponents::VectorElement");
             const int left = vectorElement ? 0 : 2;
             const int buttonWidth = spinBoxFlattenedInsideColorPicker(widget) ? 0 : 6;
             const int right = 2 + 12 + buttonWidth;

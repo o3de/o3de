@@ -860,13 +860,13 @@ namespace AzQtComponents
 
         TEST_F(BoxElementTests, Registry_TheFirstRegisteredMatchWinsInAnyClassOfTheChainAndAWidgetWithNoElementKeepsNothing)
         {
-            const BoxElement::Matcher matches = [](const QWidget* w) { return named(w, "resolutionFirst"); };
+            const ElementMatcher matches = [](const QWidget* w) { return named(w, "resolutionFirst"); };
             BoxElement::registerElement(&WideA, &QFrame::staticMetaObject, matches);
             BoxElement::registerElement(&WideB, &QFrame::staticMetaObject, matches);
             BoxElement::registerElement(&TallC, &QLabel::staticMetaObject, matches);        // a more derived class, registered later
             // The own class is looked at first, but the order of registration decides: a registration on the class itself, made
             // before the one on its base class, wins
-            const BoxElement::Matcher matchesOwn = [](const QWidget* w) { return named(w, "resolutionOwn"); };
+            const ElementMatcher matchesOwn = [](const QWidget* w) { return named(w, "resolutionOwn"); };
             BoxElement::registerElement(&TallC, &QLabel::staticMetaObject, matchesOwn);
             BoxElement::registerElement(&WideB, &QFrame::staticMetaObject, matchesOwn);
 
@@ -1028,10 +1028,10 @@ namespace AzQtComponents
         {
             // AzQtComponents registers the Global elements when it starts, before a module has set up its styles
             BoxElement::registerElement(&GlobalFrame, &QFrame::staticMetaObject,
-                [](const QWidget* w) { return named(w, "scopeBoth") || named(w, "scopeGlobalOnly"); }, BoxElement::Scope::Global);
+                [](const QWidget* w) { return named(w, "scopeBoth") || named(w, "scopeGlobalOnly"); }, ElementScope::Global);
             BoxElement::registerElement(&ModuleFrame, &QFrame::staticMetaObject, [](const QWidget* w) { return named(w, "scopeBoth"); });
             BoxElement::registerElement(&GlobalFrameLater, &QFrame::staticMetaObject,
-                [](const QWidget* w) { return named(w, "scopeGlobalOnly") || named(w, "scopeChain"); }, BoxElement::Scope::Global);
+                [](const QWidget* w) { return named(w, "scopeGlobalOnly") || named(w, "scopeChain"); }, ElementScope::Global);
             // a module element on a base class of the widget still comes before a Global one on the class itself
             BoxElement::registerElement(&ModuleWidget, &QWidget::staticMetaObject, [](const QWidget* w) { return named(w, "scopeChain"); });
 

@@ -7,8 +7,6 @@
  */
 
 #include <AzQtComponents/Components/Elements/FrameElement.h>
-#include <AzQtComponents/Components/Elements/TextElement.h>
-#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QAbstractScrollArea>
 #include <QApplication>
@@ -16,159 +14,115 @@
 #include <QPalette>
 #include <QStyle>
 #include <QStyleOption>
-#include <QVariant>
-#include <QVector>
 #include <QWidget>
 
 namespace AzQtComponents
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
-    //! with others into one translation unit, where anonymous namespaces merge (TextElement.cpp does the same).
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace FrameElementInternal
     {
         // ------------------------------------------------------------------------------
-        // Global elements. Each value cites the declaration that grants it, as file:line of the legacy
-        // stylesheets in Components/Widgets/. What an element leaves at the defaults of FrameElement is what
-        // the '*' rule (BaseStyleSheet.qss:15-21) gave every widget: a transparent background and white text.
+        // Values
         // ------------------------------------------------------------------------------
 
-        const QColor PanelFill(0x44, 0x44, 0x44);       // TOKENIZE: FramePanelFill
-        const QColor SeparatorLine(0x99, 0x99, 0x99);   // TOKENIZE: FrameSeparatorLine
-
-        //! Only '*' reaches the frame, so Qt derives its bevel and its outline from a transparent background, and they
-        //! are not seen: the frame of a scroll area (no rule gave one a background; Fusion outlines a panel from
-        //! Window.darker(140), qfusionstyle.cpp:471-481) and a QFrame with a class tag that no element names.
-        const FrameElement Clear{ .m_name = "Global.Frame.Clear" };
-
-        //! `.QFrame[frameShape="1"|"2"|"4"|"5"|"6"] { background-color: #444444 }` (BaseStyleSheet.qss:41-48): the
-        //! dividers, boxes and panels of every window, drawn by a QFrame itself (not a subclass: its comment says so).
-        //! Captured: HLine and VLine (Sunken, Plain) and StyledPanel (Raised, Plain). UNVERIFIED by capture: Box, Panel
-        //! and a WinPanel (which the rule leaves out, so it is transparent); they follow from the same two rules.
-        const FrameElement Panel{ .m_name = "Global.Frame.Panel", .m_fill = PanelFill, .m_fillShapes = FrameElement::PanelShapes };
-
-        //! `.separator { color: #999999 }` (Card.qss:259-264): the separator of a Card (Card.cpp:127-129), a QFrame with
-        //! the class tag "separator", so `.QFrame[frameShape]` does not reach it and it has no fill of its own.
-        const FrameElement Separator{ .m_name = "Global.Frame.Separator", .m_foreground = SeparatorLine };
+        const QColor SurfaceFill(0x00, 0x00, 0x00, 0x00);   // BaseStyleSheet.qss:17 $fill.surface.idle.Clear
+        const QColor PanelFill(0x44, 0x44, 0x44);           // BaseStyleSheet.qss:47 $fill.surface.idle.Mid
+        const QColor SeparatorLine(0x99, 0x99, 0x99);       // Card.qss:262 $text.surface.idle.Alt5
 
         // ------------------------------------------------------------------------------
-        // Resolution
+        // Elements
         // ------------------------------------------------------------------------------
 
-        //! The name of the dynamic property that keeps a widget's element
-        constexpr const char* ElementProperty = "_o3de_frameElement";
+        //! A frame no rule gave a background: a scroll area's, or a QFrame with a class tag no element names
+        const FrameElement ClearFrame{ .m_name = "Global.Frame.Clear" };
 
-        struct Row
+        //! `.QFrame[frameShape]`: the dividers, boxes and panels a QFrame draws itself
+        const FrameElement PanelFrame{ .m_name = "Global.Frame.Panel", .m_fill = PanelFill, .m_fillShapes = FrameElement::PanelShapes };
+
+        //! `.separator`: the separator line of a Card
+        const FrameElement SeparatorFrame{ .m_name = "Global.Frame.Separator", .m_foreground = SeparatorLine };
+
+        // ------------------------------------------------------------------------------
+        // Helpers
+        // ------------------------------------------------------------------------------
+
+        ElementRegistry<FrameElement>& registry()
         {
-            const FrameElement* m_element;
-            const QMetaObject* m_widgetClass;
-            FrameElement::Matcher m_matcher;
-        };
-
-        //! The elements modules registered, checked before the Global ones
-        QVector<Row>& moduleRows()
-        {
-            static QVector<Row> rows;
+            static ElementRegistry<FrameElement> rows("_o3de_frameElement");
             return rows;
         }
 
-        bool coveredByAModule(const QWidget* widget)
-        {
-            for (const Row& row : moduleRows())
-            {
-                if (widget->metaObject()->inherits(row.m_widgetClass))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        //! A QFrame itself, as Qt's `.QFrame` selector sees it: `.QFrame` is [class~=QFrame], and the class attribute
-        //! of a widget is its class tag if it has one, else its class name (qstylesheetstyle.cpp:1543-1551). A subclass
-        //! without Q_OBJECT is a QFrame to Qt, and so is a QFrame made in Python (a dynamic meta object of that name).
+        //! A QFrame itself, as `.QFrame` matches it: by class name (a subclass without Q_OBJECT and a QFrame made in Python count)
         bool isExactFrame(const QWidget* widget)
         {
             const QMetaObject* metaObject = widget->metaObject();
             return metaObject == &QFrame::staticMetaObject || qstrcmp(metaObject->className(), "QFrame") == 0;
         }
 
-        //! The widgets that may have an element: no lookup is spent on the others (labels, buttons, menus, ...).
-        //! The Global elements are for a QFrame itself and for a scroll area, whatever it is called.
+        //! The widgets that may have an element: a QFrame itself, a scroll area, or a class a module registered
         bool isCandidate(const QWidget* widget)
         {
-            return isExactFrame(widget)
-                || qobject_cast<const QAbstractScrollArea*>(widget)
-                || coveredByAModule(widget);
+            return isExactFrame(widget) || qobject_cast<const QAbstractScrollArea*>(widget) || registry().covers(widget);
         }
 
-        //! The element of a candidate, or null. Modules first, then the Global elements, the most specific first.
-        const FrameElement* findElement(const QWidget* widget)
+        //! The Global element of a candidate; none for a class only a module covers
+        const FrameElement* globalElement(const QWidget* widget)
         {
-            for (const Row& row : moduleRows())
-            {
-                if (widget->metaObject()->inherits(row.m_widgetClass) && row.m_matcher(widget))
-                {
-                    return row.m_element;
-                }
-            }
             if (isExactFrame(widget))
             {
-                // A tag replaces the class name in the class attribute, so a tagged QFrame is not matched by Panel's rule
+                // A class tag replaces the class name `.QFrame` matches
                 if (!widget->property("class").isValid())
                 {
-                    return &Panel;
+                    return &PanelFrame;
                 }
-                return TextElement::tagged(widget, "separator") ? &Separator : &Clear;
+                return Selectors::tagged(widget, "separator") ? &SeparatorFrame : &ClearFrame;
             }
-            return qobject_cast<const QAbstractScrollArea*>(widget) ? &Clear : nullptr;
+            return qobject_cast<const QAbstractScrollArea*>(widget) ? &ClearFrame : nullptr;
+        }
+
+        //! The element of a candidate: a module's first, then the Global one
+        const FrameElement* findElement(const QWidget* widget)
+        {
+            const FrameElement* element = registry().find(widget);
+            return element ? element : globalElement(widget);
+        }
+
+        //! The background of a frame of this shape: the element's on the shapes it covers, else none
+        QColor fillOf(const FrameElement& element, int frameShape)
+        {
+            return ((element.m_fillShapes >> frameShape) & 1u) ? element.m_fill : SurfaceFill;
         }
     } // namespace FrameElementInternal
 
     // ----------------------------------------------------------------------------------
-    // Element
+    // Drawing
     // ----------------------------------------------------------------------------------
 
-    QColor FrameElement::fillFor(int frameShape) const
+    void FrameElement::drawBackground(QStyleOptionFrame* option, QPainter* painter, const QWidget* widget) const
     {
-        return ((m_fillShapes >> frameShape) & 1u) ? m_fill : QColor(0, 0, 0, 0);
-    }
-
-    void FrameElement::apply(QStyleOptionFrame* option, QPainter* painter, const QWidget* widget) const
-    {
-        // TRANSITIONAL, until no widget is drawn through a style sheet. QStyleSheetStyle calls this style for the frame
-        // of a widget under an inline sheet, with the option's palette configured from the sheet's own rule: a rule that
-        // gave the widget a background, a border or a box owns its fill and its shades (QStyleSheetStyle::polish sets
-        // WA_StyledBackground then, qstylesheetstyle.cpp:2925-2949), and a color it declared is in the widget's palette
-        // (qstylesheetstyle.cpp:1454-1458). Those stay; what no inline rule gave is the element's.
+        // Under an inline style sheet, the background and the color the sheet's own rule gave the widget stay
         const bool throughSheet = widget->style()->inherits("QStyleSheetStyle");
 
         if (!(throughSheet && widget->testAttribute(Qt::WA_StyledBackground)))
         {
-            // The background first: PE_Widget drew it over the whole widget (qstylesheetstyle.cpp:4719-4722), then CE_ShapedFrame
-            // the frame (qstylesheetstyle.cpp:4502-4511)
-            const QColor fill = fillFor(option->frameShape);
+            // The background over the whole widget, then the frame's palette: Window, Base and Button are the background and the
+            // shades derive from it; setColor sets every color group
+            const QColor fill = FrameElementInternal::fillOf(*this, option->frameShape);
             if (fill.alpha() > 0)
             {
                 painter->fillRect(widget->rect(), fill);
             }
-
-            // The palette the base style draws the frame from: Window, Base and Button are the fill
-            // (qstylesheetstyle.cpp:1436-1440), the shades derive from it (qstylesheetstyle.cpp:1399-1404).
-            // QPalette::setColor sets every color group, as the sheet does.
             QPalette& palette = option->palette;
             palette.setColor(QPalette::Base, fill);
             palette.setColor(QPalette::Button, fill);
             palette.setColor(QPalette::Window, fill);
-            palette.setColor(QPalette::Light, fill.lighter(115));
-            palette.setColor(QPalette::Midlight, fill.lighter(107));
-            palette.setColor(QPalette::Dark, fill.darker(150));
-            palette.setColor(QPalette::Shadow, fill.darker(300));
+            setShades(palette, fill);
         }
 
-        // The lines of a Plain frame draw in WindowText (qcommonstyle.cpp:2344-2412); the sheet gave it Text and
-        // WindowText alike (qstylesheetstyle.cpp:1410-1414), over any palette the widget has from code or a .ui
+        // The lines of a Plain frame draw in WindowText
         const bool sheetColor = throughSheet
-            && widget->palette().color(QPalette::Active, QPalette::WindowText) != QApplication::palette(widget).color(QPalette::Active, QPalette::WindowText);
+            && widget->palette().color(QPalette::Active, QPalette::WindowText)
+                != QApplication::palette(widget).color(QPalette::Active, QPalette::WindowText);
         if (!sheetColor)
         {
             option->palette.setColor(QPalette::WindowText, m_foreground);
@@ -180,47 +134,35 @@ namespace AzQtComponents
     // Resolution
     // ----------------------------------------------------------------------------------
 
-    void FrameElement::registerElement(const FrameElement* element, const QMetaObject* widgetClass, Matcher matcher)
+    void FrameElement::registerElement(
+        const FrameElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
     {
-        FrameElementInternal::moduleRows().append({ element, widgetClass, matcher });
-        if (!StyleManager::stylesheetsDisabled())
-        {
-            return;
-        }
-
-        // A module builds some windows before it sets up its styles: resolve the widgets polished before this call
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
-        {
-            if (widget->testAttribute(Qt::WA_WState_Polished) && widget->metaObject()->inherits(widgetClass))
+        FrameElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, [](QWidget* widget)
             {
                 resolve(widget);
                 widget->update();
-            }
+            });
+    }
+
+    void FrameElement::resolve(QWidget* widget)
+    {
+        using namespace FrameElementInternal;
+        if (isCandidate(widget))
+        {
+            // A null element is kept too, so a widget a module's matcher rejected is not asked again on every paint
+            registry().keep(widget, findElement(widget));
         }
     }
 
-    const FrameElement* FrameElement::resolve(const QWidget* widget)
+    const FrameElement* FrameElement::forWidget(const QWidget* widget)
     {
-        if (!FrameElementInternal::isCandidate(widget))
+        using namespace FrameElementInternal;
+        if (!widget || !isCandidate(widget))
         {
             return nullptr;
         }
-        // Kept on the widget: the draw reads it back without resolving again (a null element is kept too, so a widget
-        // a module's matcher rejected is not asked on every paint)
-        const FrameElement* element = FrameElementInternal::findElement(widget);
-        const_cast<QWidget*>(widget)->setProperty(FrameElementInternal::ElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
-        return element;
-    }
-
-    const FrameElement* FrameElement::forFrame(const QWidget* widget)
-    {
-        if (!FrameElementInternal::isCandidate(widget))
-        {
-            return nullptr;
-        }
-        // A widget never polished (painted into an image, say) is resolved now, and not kept: no property is set while painting
-        const QVariant stored = widget->property(FrameElementInternal::ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const FrameElement*>(stored.value<quintptr>()) : FrameElementInternal::findElement(widget);
+        const std::optional<const FrameElement*> kept = registry().kept(widget);
+        return kept ? *kept : findElement(widget);
     }
 } // namespace AzQtComponents

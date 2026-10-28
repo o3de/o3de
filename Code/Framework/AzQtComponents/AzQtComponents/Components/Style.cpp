@@ -299,9 +299,8 @@ namespace AzQtComponents
     //! The line edit the breadcrumbs show while their path is edited: the second page of the stack beside the label (BreadCrumbs.cpp:93-102)
     static bool isBreadCrumbsPathEdit(const QWidget* widget)
     {
-        const QWidget* stack = widget->parentWidget();
-        return widget->inherits("QLineEdit") && stack && stack->inherits("QStackedWidget")
-            && stack->parentWidget() && stack->parentWidget()->inherits("AzQtComponents::BreadCrumbs");
+        return widget->inherits("QLineEdit") && Selectors::childOfClass(widget, "QStackedWidget")
+            && Selectors::childOfClass(widget->parentWidget(), "AzQtComponents::BreadCrumbs");
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -335,8 +334,8 @@ namespace AzQtComponents
 
         // BrowseEdit's line edit carries flagToIgnore (hasStyle == false); BrowseEdit.qss
         // QLineEdit { height: 16px; border-width: 0 }. TOKENIZE: BrowseEditLineEditHeight
-        if (StyleManager::stylesheetsDisabled() && type == CT_LineEdit && widget && widget->parentWidget()
-            && widget->parentWidget()->inherits("AzQtComponents::BrowseEdit"))
+        if (StyleManager::stylesheetsDisabled() && type == CT_LineEdit && widget
+            && Selectors::childOfClass(widget, "AzQtComponents::BrowseEdit"))
         {
             QSize lineEditSize = QProxyStyle::sizeFromContents(type, option, size, widget);
             lineEditSize.setHeight(16);
@@ -512,7 +511,7 @@ namespace AzQtComponents
                     auto menuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
                     if (menuItem && menuItem->menuItemType == QStyleOptionMenuItem::Separator)
                     {
-                        return QSize(size.width(), MenuElement::forMenu(widget).separatorHeight());
+                        return QSize(size.width(), MenuElement::forWidget(widget).separatorHeight());
                     }
                     break;
                 }
@@ -681,11 +680,11 @@ namespace AzQtComponents
                 {
                     const auto frameOption = qstyleoption_cast<const QStyleOptionFrame*>(option);
                     const FrameElement* frameElement =
-                        (frameOption && frameOption->frameShape != QFrame::NoFrame) ? FrameElement::forFrame(widget) : nullptr;
+                        (frameOption && frameOption->frameShape != QFrame::NoFrame) ? FrameElement::forWidget(widget) : nullptr;
                     if (frameElement)
                     {
                         QStyleOptionFrame framed(*frameOption);
-                        frameElement->apply(&framed, painter, widget);
+                        frameElement->drawBackground(&framed, painter, widget);
                         QProxyStyle::drawControl(element, &framed, painter, widget);
                         return;
                     }
@@ -804,7 +803,7 @@ namespace AzQtComponents
                 {
                     if (auto menuItem = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
                     {
-                        if (MenuElement::forMenu(widget).drawItem(painter, *menuItem, widget))
+                        if (MenuElement::forWidget(widget).drawItem(painter, *menuItem, widget))
                         {
                             return;
                         }
@@ -1286,7 +1285,7 @@ namespace AzQtComponents
             // CheckBox.qss:130-132, :137-139 gave a disabled expander the faded caret; in a card header Card.qss:277-287 (`AzQtComponents--
             // CardHeader QCheckBox.Expander::indicator:unchecked:disabled`, one more type selector) takes it back to the full one, "at
             // full opacity even when card is disabled"
-            if (!enabled && !TextElement::withinClass(widget, "AzQtComponents::CardHeader"))
+            if (!enabled && !Selectors::withinClass(widget, "AzQtComponents::CardHeader"))
             {
                 name += QStringLiteral("-disabled");
             }
@@ -1468,11 +1467,7 @@ namespace AzQtComponents
                         }
                         if (tabElement)
                         {
-                            if (tabElement->m_barFill.isValid())
-                            {
-                                painter->fillRect(option->rect, tabElement->m_barFill);
-                            }
-                            TabElement::drawEdges(painter, option->rect, tabElement->m_barEdges);
+                            TabElement::drawFrame(painter, option->rect, tabElement->m_barFill, tabElement->m_barEdges);
                             return;
                         }
                     }
@@ -1481,11 +1476,7 @@ namespace AzQtComponents
                         if (const TabElement* tabElement = TabElement::forTabWidget(widget))
                         {
                             const QRect box = option->rect.marginsRemoved(tabElement->m_widgetMargins);
-                            if (tabElement->m_widgetFill.isValid())
-                            {
-                                painter->fillRect(box, tabElement->m_widgetFill);
-                            }
-                            TabElement::drawEdges(painter, box, tabElement->m_widgetEdges);
+                            TabElement::drawFrame(painter, box, tabElement->m_widgetFill, tabElement->m_widgetEdges);
                             return;
                         }
                     }
@@ -1882,7 +1873,7 @@ namespace AzQtComponents
                 if (StyleManager::stylesheetsDisabled())
                 {
                     // Menu.qss:12 QMenu { background-color }, no frame (the menu element's surface)
-                    painter->fillRect(option->rect, MenuElement::forMenu(widget).m_surface);
+                    painter->fillRect(option->rect, MenuElement::forWidget(widget).m_surface);
                     return;
                 }
             }
@@ -1904,11 +1895,7 @@ namespace AzQtComponents
                 {
                     if (const TabElement* tabElement = TabElement::forTabWidget(widget))
                     {
-                        if (tabElement->m_paneFill.isValid())
-                        {
-                            painter->fillRect(option->rect, tabElement->m_paneFill);
-                        }
-                        TabElement::drawEdges(painter, option->rect, tabElement->m_paneEdges);
+                        TabElement::drawFrame(painter, option->rect, tabElement->m_paneFill, tabElement->m_paneEdges);
                         return;
                     }
                     // A plain pane is the base style's, drawn over the palette the legacy sheet gave the tab widget
@@ -2375,7 +2362,7 @@ namespace AzQtComponents
             // VectorInput.qss: VectorElement QLabel { margin-top: 2px; margin-bottom: 2px }
             return option->rect.adjusted(0, 2, 0, -2);
         }
-        if (TextElement::named(widget, "title") && TextElement::withinClass(widget, "AzQtComponents::TitleBar"))
+        if (Selectors::named(widget, "title") && Selectors::withinClass(widget, "AzQtComponents::TitleBar"))
         {
             // TitleBar.qss:31-37 `AzQtComponents--TitleBar #title { margin-left: 10px; margin-right: 16px }` and
             // Text.qss:93-94 QLabel { margin-top: 1px; margin-bottom: 1px }. The label sits in a container of the
@@ -2385,23 +2372,23 @@ namespace AzQtComponents
 
         // Text.qss tier margins; a tag is a whole word compared with case, as Qt's [class~=] (qcssparser.cpp:2168-2180)
         int margin = 1; // .Label, QLabel
-        if (TextElement::tagged(widget, "Headline") || TextElement::tagged(widget, "Paragraph"))
+        if (Selectors::tagged(widget, "Headline") || Selectors::tagged(widget, "Paragraph"))
         {
             margin = 4;
         }
-        else if (TextElement::tagged(widget, "Title"))
+        else if (Selectors::tagged(widget, "Title"))
         {
             margin = 7;
         }
-        else if (TextElement::tagged(widget, "Subtitle"))
+        else if (Selectors::tagged(widget, "Subtitle"))
         {
             margin = 8;
         }
-        else if (TextElement::tagged(widget, "Menu") || TextElement::tagged(widget, "Button"))
+        else if (Selectors::tagged(widget, "Menu") || Selectors::tagged(widget, "Button"))
         {
             margin = 6;
         }
-        else if (TextElement::tagged(widget, "Tooltip"))
+        else if (Selectors::tagged(widget, "Tooltip"))
         {
             margin = 2;
         }
@@ -2721,10 +2708,10 @@ namespace AzQtComponents
                     return 16;
                 case PM_MenuHMargin:
                     // Menu.qss:13 QMenu padding: 4px 2px (the left padding), in the menu element
-                    return MenuElement::forMenu(widget).m_paddingH;
+                    return MenuElement::forWidget(widget).m_paddingH;
                 case PM_MenuVMargin:
                     // Menu.qss:13 (the top padding)
-                    return MenuElement::forMenu(widget).m_paddingV;
+                    return MenuElement::forWidget(widget).m_paddingV;
                 case PM_ScrollBarExtent:
                     // ScrollBar.qss QScrollBar:vertical width / :horizontal height
                     return 8;
@@ -2956,15 +2943,15 @@ namespace AzQtComponents
 
         // Text.qss colour tags, whole words compared with case (qcssparser.cpp:2168-2180)
         QColor textColor;
-        if (TextElement::tagged(widget, "secondaryText"))
+        if (Selectors::tagged(widget, "secondaryText"))
         {
             textColor = QColor(0x88, 0x88, 0x88);
         }
-        else if (TextElement::tagged(widget, "highlightedText"))
+        else if (Selectors::tagged(widget, "highlightedText"))
         {
             textColor = QColor(0x44, 0xB2, 0xF8);
         }
-        else if (TextElement::tagged(widget, "blackText"))
+        else if (Selectors::tagged(widget, "blackText"))
         {
             textColor = QColor(0x00, 0x00, 0x00);
         }
@@ -3092,7 +3079,7 @@ namespace AzQtComponents
         {
             // PushButton.qss:43 QPushButton:disabled { color: #999999 } (510 push buttons in the dumps); :60
             // QPushButton.Primary:disabled and QPushButton:default:disabled { color: #BBBBBB } (14), the later rule
-            const bool primary = pushButton->isDefault() || TextElement::tagged(widget, "Primary");
+            const bool primary = pushButton->isDefault() || Selectors::tagged(widget, "Primary");
             setFlattenedDisabledColor(widget, primary ? QColor(0xBB, 0xBB, 0xBB) : disabledGrey,
                 { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
         }
@@ -3110,7 +3097,7 @@ namespace AzQtComponents
             // a spin box are left to their own polish, and take the colour here.
             setFlattenedDisabledColor(widget, disabledGrey, { QPalette::WindowText, QPalette::Text, QPalette::ButtonText });
         }
-        else if (widget->inherits("QLabel") && TextElement::withinClass(widget, "AzQtComponents::Card"))
+        else if (widget->inherits("QLabel") && Selectors::withinClass(widget, "AzQtComponents::Card"))
         {
             // Card.qss:272 `AzQtComponents--Card QLabel:disabled { color: #999999 }` (474 labels in the dumps), more
             // specific than a colour tag such as `.secondaryText` (Text.qss:16-19)
@@ -3184,7 +3171,7 @@ namespace AzQtComponents
         {
             // Fonts first: the text element of the widget (its class tags, its place in the window) over the font
             // Qt gives it. Under an inline style sheet too: QStyleSheetStyle::polish calls this style's polish first.
-            TextElement::apply(widget);
+            TextElement::resolve(widget);
 
             // Frames: the frame element of a QFrame, a scroll area or a module's frame, resolved once here (adding or
             // removing a class tag re-polishes, so it is resolved again)
@@ -3305,8 +3292,7 @@ namespace AzQtComponents
             }
 
             // TabWidget.qss: the stacked page area of a tab widget sits on #444444
-            if (widget->inherits("QStackedWidget") && widget->parentWidget()
-                && widget->parentWidget()->inherits("AzQtComponents::TabWidget"))
+            if (widget->inherits("QStackedWidget") && Selectors::childOfClass(widget, "AzQtComponents::TabWidget"))
             {
                 QPalette pageAreaPalette = widget->palette();
                 pageAreaPalette.setColor(QPalette::Window, QColor(0x44, 0x44, 0x44));
@@ -3317,7 +3303,7 @@ namespace AzQtComponents
             // Tab elements: a tab bar resolves its element here, once (adding or removing a class tag
             // re-polishes; a module registering an element later has TabElement polish the bars again),
             // and the bar and its tab widget get what the element sets on them.
-            TabElement::polish(widget);
+            TabElement::resolve(widget);
 
             // SegmentControl.qss:14-77: what the sheet set on the buttons of a segment bar when it polished them (ControlElements.cpp)
             ControlElements::polishSegmentBar(widget);
@@ -3332,7 +3318,7 @@ namespace AzQtComponents
             // Menu.qss:18 `QMenu::item .WidgetAction:hover`: a widget a menu hosts is filled while it is hovered
             // (MenuElement::drawHostedWidget, at PE_Widget). The sheet style gave such a widget a styled background
             // and hover (qstylesheetstyle.cpp:2894-2905, 2925-2950). UNVERIFIED: no capture shows one hovered.
-            if (TextElement::tagged(widget, "WidgetAction") && TextElement::withinClass(widget, "QMenu"))
+            if (Selectors::tagged(widget, "WidgetAction") && Selectors::withinClass(widget, "QMenu"))
             {
                 widget->setAttribute(Qt::WA_StyledBackground, true);
                 widget->setAttribute(Qt::WA_Hover, true);
@@ -3343,7 +3329,7 @@ namespace AzQtComponents
             {
                 QPalette headerPalette = widget->palette();
                 // The colour of the section rule: the view's element has it (a module's header is its own colour), and fills the
-                // area of the header beyond its sections too (ItemViewElement::apply does the same when the view resolves)
+                // area of the header beyond its sections too (ItemViewElement::resolve does the same)
                 headerPalette.setColor(QPalette::Button, ItemViewElement::headerFillOf(widget));
                 // The section rule sets no colour: the '*' rule's white (BaseStyleSheet.qss:18) reached the label
                 // (ButtonText) and the sort arrow (WindowText) in every state, disabled included (the legacy
@@ -3433,8 +3419,8 @@ namespace AzQtComponents
         // qstylesheetstyle.cpp:2875-2890), and the text colour of a module's rule over the Global palettes above
         if (StyleManager::stylesheetsDisabled())
         {
-            BoxElement::apply(widget);
-            ItemViewElement::apply(widget);
+            BoxElement::resolve(widget);
+            ItemViewElement::resolve(widget);
             ScrollBar::applyBackgroundColor(widget);        // a console's colour: the inline sheet it had outranked every rule above
             TextElement::applyColor(widget);
             // The widgets under a color picker resolved again, the header of a palette card polished again (ColorPickerElements.h)

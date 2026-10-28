@@ -75,7 +75,7 @@ namespace UnitTest
                 // Once for the process, as the flattened GUI runs the registrar of a sheet once: a Global element first, then the sheet's
                 static const bool registered = (AzQtComponents::BoxElement::registerElement(&GlobalProbe, &QWidget::staticMetaObject,
                     [](const QWidget* widget) { return widget->objectName() == QLatin1String("AssetEditorStatusBar"); },
-                    AzQtComponents::BoxElement::Scope::Global), EditorFlatSheet::RegisterElements(), true);
+                    AzQtComponents::ElementScope::Global), EditorFlatSheet::RegisterElements(), true);
                 ASSERT_TRUE(registered);
             }
 
@@ -90,7 +90,7 @@ namespace UnitTest
             void flatten(QWidget& widget)
             {
                 widget.setStyle(m_style.get());
-                AzQtComponents::BoxElement::apply(&widget);
+                AzQtComponents::BoxElement::resolve(&widget);
             }
 
             const char* elementOf(const QWidget& widget) const
@@ -409,8 +409,8 @@ namespace UnitTest
         QTreeView other;
         other.setObjectName("treeView");
 
-        ItemViewElement::apply(&palette);
-        ItemViewElement::apply(&other);
+        ItemViewElement::resolve(&palette);
+        ItemViewElement::resolve(&other);
 
         const ItemViewElement* element = ItemViewElement::forWidget(&palette);
         ASSERT_TRUE(element != nullptr);
@@ -446,8 +446,8 @@ namespace UnitTest
         QListWidget* other = new QListWidget(&elsewhere);
         other->setObjectName("listTemplates");
 
-        ItemViewElement::apply(templates);
-        ItemViewElement::apply(other);
+        ItemViewElement::resolve(templates);
+        ItemViewElement::resolve(other);
 
         const ItemViewElement* element = ItemViewElement::forWidget(templates);
         ASSERT_TRUE(element != nullptr);

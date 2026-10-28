@@ -100,7 +100,7 @@ namespace AssetBundler
                 widgets.prepend(root);
                 for (QWidget* widget : widgets)
                 {
-                    BoxElement::apply(widget);
+                    BoxElement::resolve(widget);
                 }
             }
 
@@ -255,9 +255,9 @@ namespace AssetBundler
             QWidget tab;
             auto* heading = add<QLabel>(&tab, "activeProjectLabel");
             auto* other = add<QLabel>(&tab, "seedListsLabel");
-            TextElement::apply(heading);
+            TextElement::resolve(heading);
             TextElement::applyColor(heading);
-            TextElement::apply(other);
+            TextElement::resolve(other);
 
             // The family is the string of the sheet: Native drew Tahoma for it, as the machine has no such font
             EXPECT_TRUE(heading->font().family() == QStringLiteral("Amazon Ember Light"));
@@ -330,7 +330,7 @@ namespace AssetBundler
             for (QTreeView* view : { static_cast<QTreeView*>(log), static_cast<QTreeView*>(fileTable), static_cast<QTreeView*>(seedTable),
                                      static_cast<QTreeView*>(tabLog), plainTree, tabTree })
             {
-                ItemViewElement::apply(view);
+                ItemViewElement::resolve(view);
             }
 
             const auto fill = [](const QTreeView* view) { return ItemViewElement::headerFillOf(view->header()); };

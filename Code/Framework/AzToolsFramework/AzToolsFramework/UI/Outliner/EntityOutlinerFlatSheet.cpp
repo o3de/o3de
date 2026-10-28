@@ -10,7 +10,6 @@
 
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
-#include <AzQtComponents/Components/Elements/TextElement.h>
 
 #include <QBrush>
 #include <QColor>
@@ -23,7 +22,8 @@ namespace AzToolsFramework::EntityOutliner
 {
     using AzQtComponents::BoxElement;
     using AzQtComponents::ItemViewElement;
-    using AzQtComponents::TextElement;
+    using AzQtComponents::Selectors::named;
+    using AzQtComponents::Selectors::withinClass;
 
     //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one
     //! translation unit, where anonymous namespaces merge.
@@ -72,13 +72,13 @@ namespace AzToolsFramework::EntityOutliner
         //! `AzToolsFramework--EntityOutlinerWidget #m_display_options` (EntityOutliner.qss:9): that name, below the outliner widget
         bool isDisplayOptionsButton(const QWidget* widget)
         {
-            return TextElement::named(widget, "m_display_options") && TextElement::withinClass(widget, "AzToolsFramework::EntityOutlinerWidget");
+            return named(widget, "m_display_options") && withinClass(widget, "AzToolsFramework::EntityOutlinerWidget");
         }
 
         //! `AzToolsFramework--EntityOutlinerWidget QTreeView` (EntityOutliner.qss:15): any tree below the outliner widget
         bool isOutlinerTree(const QWidget* widget)
         {
-            return TextElement::withinClass(widget, "AzToolsFramework::EntityOutlinerWidget");
+            return withinClass(widget, "AzToolsFramework::EntityOutlinerWidget");
         }
     } // namespace EntityOutlinerFlatSheetInternal
 

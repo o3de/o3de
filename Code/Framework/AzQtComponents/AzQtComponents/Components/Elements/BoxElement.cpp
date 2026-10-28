@@ -9,17 +9,14 @@
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Style.h>
-#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QAbstractScrollArea>
 #include <QAbstractSpinBox>
-#include <QApplication>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDialog>
 #include <QEvent>
 #include <QFrame>
-#include <QHash>
 #include <QHeaderView>
 #include <QIcon>
 #include <QLineEdit>
@@ -37,79 +34,48 @@
 #include <QStyleOption>
 #include <QTabBar>
 #include <QToolButton>
-#include <QVector>
 #include <QWidget>
 #include <qdrawutil.h>
 
 namespace AzQtComponents
 {
-    //! Private to this file: a named namespace, as a unity build merges anonymous ones.
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace BoxElementInternal
     {
-        constexpr const char* ElementProperty = "_o3de_boxElement";
-        constexpr const char* AutoFillProperty = "_o3de_boxElementAutoFill";    //!< the element took the autofill of the widget's background
-
         // ------------------------------------------------------------------------------
-        // Registry: registrations by the class of the widgets they cover; a widget looks at the buckets of its own
-        // class chain only, whatever the number of elements
+        // Values
         // ------------------------------------------------------------------------------
 
-        struct Row
+        constexpr int ArrowSize = 16;                   // ComboBox.qss:66-67 $size.arrow.idle.width $size.arrow.idle.height
+        constexpr int ArrowMarginRight = 4;             // ComboBox.qss:68 $space.arrow.idle
+        // QStyleSheetStyle::drawControl (CE_PushButtonLabel), as QPushButton::sizeHint has it $space.button.idle.icon-spacing
+        constexpr int PushButtonIconSpacing = 4;
+        // QStyleSheetStyle::defaultSize (a tool button's ::menu-indicator) $size.menu-indicator.idle
+        constexpr QSize MenuIndicatorSize(13, 13);
+        // QStyleSheetStyle::sizeFromContents (CT_ComboBox: what the base style leaves in the label) $space.field.idle.label
+        constexpr int ComboLabelExtra = 2;
+        // QStyleSheetStyle::drawControl (CE_ComboBoxLabel, a rule with no spacing) $space.field.idle.icon-spacing
+        constexpr int ComboIconSpacing = 6;
+
+        // ------------------------------------------------------------------------------
+        // Helpers: resolution
+        // ------------------------------------------------------------------------------
+
+        //! The dynamic property that says the element took the autofill of the widget's background
+        constexpr const char* AutoFillProperty = "_o3de_boxElementAutoFill";
+
+        ElementRegistry<BoxElement>& registry()
         {
-            const BoxElement* m_element;
-            BoxElement::Matcher m_matcher;
-            bool m_global;                      //!< a Global element comes after every module's
-            int m_order;                        //!< registration order, within the module's and within the Global ones
-
-            //! Of two matching rows the first wins: a module's, then the earlier registered
-            bool before(const Row& other) const
-            {
-                return m_global != other.m_global ? other.m_global : m_order < other.m_order;
-            }
-        };
-
-        using Rows = QHash<const QMetaObject*, QVector<Row>>;
-
-        Rows& rows()
-        {
-            static Rows registered;
-            return registered;
-        }
-
-        //! The first match: a module's element wins over a Global one, whichever was registered first
-        const BoxElement* resolve(const QWidget* widget)
-        {
-            const Row* winner = nullptr;
-            for (const QMetaObject* meta = widget->metaObject(); meta; meta = meta->superClass())
-            {
-                const auto bucket = rows().constFind(meta);
-                if (bucket == rows().constEnd())
-                {
-                    continue;
-                }
-                for (const Row& row : bucket.value())
-                {
-                    if (winner && !row.before(*winner))
-                    {
-                        break;                  // the rows of a class are in order: no later one beats the winner
-                    }
-                    if (row.m_matcher(widget))
-                    {
-                        winner = &row;
-                        break;
-                    }
-                }
-            }
-            return winner ? winner->m_element : nullptr;
+            static ElementRegistry<BoxElement> rows("_o3de_boxElement");
+            return rows;
         }
 
         // ------------------------------------------------------------------------------
-        // The state of an option (QStyleSheetStyle::renderRule, qstylesheetstyle.cpp:1860-2128)
+        // Helpers: the state of an option (QStyleSheetStyle::renderRule)
         // ------------------------------------------------------------------------------
 
-        //! The States the rule is computed for: the pseudo-classes of qstylesheetstyle.cpp:1757-1804, :hover needing :enabled and
-        //! :pressed being Sunken. No option is State_None, which Qt reads as Disabled alone (renderRule, :1862). A line edit gives its
-        //! option State_Sunken for its sunken frame, which is no press: the sheet leaves it out (:2121-2123).
+        //! The States the rule is computed for (pseudoClass, qstylesheetstyle.cpp): :hover needs :enabled, :pressed is Sunken, and no
+        //! option is Disabled alone (QStyleSheetStyle::renderRule). A line edit's Sunken is its frame, no press: the sheet leaves it out.
         unsigned statesOf(const QStyleOption* option)
         {
             QStyle::State state = option ? option->state : QStyle::State(QStyle::State_None);
@@ -138,7 +104,7 @@ namespace AzQtComponents
         }
 
         // ------------------------------------------------------------------------------
-        // The box in numbers (QRenderRule, qstylesheetstyle.cpp:1061-1157)
+        // Helpers: the box in numbers (QRenderRule)
         // ------------------------------------------------------------------------------
 
         //! The margin, the radius and the spacing of a face: its own, else the element's
@@ -157,15 +123,14 @@ namespace AzQtComponents
             return face.m_spacing != BoxElement::Unset ? face.m_spacing : element.m_spacing;
         }
 
-        //! QRenderRule::hasBox() of the rule of a face: a margin or a padding, even a 0, or a spacing (qcssparser.cpp:570-596)
+        //! QRenderRule::hasBox() of a face's rule: a margin or a padding, even a 0, or a spacing (ValueExtractor::extractBox)
         bool hasBox(const BoxElement& element, const BoxElement::Face& face)
         {
             return element.m_hasBox || !element.m_margin.isNull() || !element.m_padding.isNull() || element.m_spacing != BoxElement::Unset
                 || face.m_margin.has_value() || face.m_spacing != BoxElement::Unset;
         }
 
-        //! The same for the rule of the widget in every state (PseudoClass_Any, qstylesheetstyle.cpp:2921), which a rule of any state
-        //! gives a box
+        //! The same for the widget's rule in every state (PseudoClass_Any, QStyleSheetStyle::polish): a box in any state gives it one
         bool hasBoxInAnyState(const BoxElement& element)
         {
             bool result = hasBox(element, element.m_idle);
@@ -176,11 +141,9 @@ namespace AzQtComponents
             return result;
         }
 
-        //! The states in which the rule has no native border once it is drawn and sized: a flat push button, whose rule is
-        //! QPushButton:flat { border: none } (PushButton.qss:48-52), and a line edit without a frame, QLineEdit:no-frame { border: none }
-        //! (qstylesheetstyle_default.cpp:155-169; the pseudo class follows QLineEdit::hasFrame, qstylesheetstyle.cpp:2123-2129), unless
-        //! it is drawn by the rule of its container. The rule of the polish knows neither state (:2572), so the limits count the
-        //! native border (applyLimits).
+        //! The states with no native border once drawn and sized: a flat push button (QPushButton:flat { border: none },
+        //! PushButton.qss:48-52) and a line edit without a frame (QLineEdit:no-frame { border: none }, Qt's default sheet), unless its
+        //! container's rule draws it. The rule of the polish knows neither state, so the limits count the native border (applyLimits).
         bool isFlat(const QStyleOption* option)
         {
             const auto* button = qstyleoption_cast<const QStyleOptionButton*>(option);
@@ -192,10 +155,9 @@ namespace AzQtComponents
             return lineEdit && !lineEdit->hasFrame() && BoxElement::containerOf(lineEdit) == lineEdit;
         }
 
-        //! QStyleSheetStyle::nativeFrameWidth (qstylesheetstyle.cpp:1721-1755) for the classes Qt's default sheet gives a native
-        //! border (qstylesheetstyle_default.cpp:130-153, 171-184, 246-300): a line edit (isFlat: none once drawn without a frame), a
-        //! QFrame (none for one without a frame), a push button, a tool button and a combo box have the base style's frame width.
-        //! Any other class has no border unless a rule declares one.
+        //! QStyleSheetStyle::nativeFrameWidth for the classes Qt's default sheet gives a native border: a line edit (none once drawn
+        //! without a frame), a QFrame (none without a frame), push and tool buttons and a combo box have the base style's frame width.
+        //! Any other class has a border only where a rule declares one.
         int nativeWidth(const QWidget* widget)
         {
             if (qobject_cast<const QComboBox*>(widget))
@@ -215,30 +177,29 @@ namespace AzQtComponents
             return widget->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, widget);
         }
 
-        //! The border widths of a face (QRenderRule::fixupBorder, qstylesheetstyle.cpp:1124-1157): the declared edges, the
-        //! style's own width for the others
+        //! The border widths of a face (QRenderRule::fixupBorder): the declared edges, the style's own width for the others
         QMargins borderOf(const BoxElement& element, const BoxElement::Face& face, bool flat, const QWidget* widget)
         {
-            // (a border image has no style's width: fixupBorder leaves the declared widths alone, :1159-1164)
+            // a border image has no style's width: fixupBorder leaves the declared widths alone
             const int native = (element.m_nativeBorder && !flat && !hasBorderImage(face)) ? nativeWidth(widget) : 0;
             const auto width = [native](const BoxElement::Edge& edge)
             {
                 return edge.m_color.isValid() ? edge.m_width : native;
             };
-            return QMargins(width(face.m_edges.m_left), width(face.m_edges.m_top), width(face.m_edges.m_right), width(face.m_edges.m_bottom));
+            return QMargins(
+                width(face.m_edges.m_left), width(face.m_edges.m_top), width(face.m_edges.m_right), width(face.m_edges.m_bottom));
         }
 
-        //! Margin, border and padding in one, of the box of a face: the contents sit inside it, and the contents' size grows by it.
-        //! A rect and a size are the box of the state of the option (the face of the option, as QStyleSheetStyle reads the rule of the
-        //! option it is given); the limits a widget gets at polish are those of the box it was polished in (setGeometry,
-        //! qstylesheetstyle.cpp:2572: PseudoClass_Enabled), which is the idle face.
+        //! Margin, border and padding in one, of a face's box: the contents sit inside it and their size grows by it. A rect and a size
+        //! are the box of the option's state; the limits a widget gets at polish are those of the idle face, the state it was polished
+        //! in (QStyleSheetStyle::setGeometry reads PseudoClass_Enabled).
         QMargins around(const BoxElement& element, const BoxElement::Face& face, bool flat, const QWidget* widget)
         {
             return marginOf(element, face) + borderOf(element, face, flat, widget) + element.m_padding;
         }
 
-        //! The width of the box of the drop-down: QRenderRule::size() of its rule (boxSize, qstylesheetstyle.cpp:1116-1122), the width of its
-        //! contents and its padding. With no width the rule has no size, and Qt makes it DropDownWidth wide (defaultSize, :2302-2305).
+        //! The width of the drop-down's box (QRenderRule::boxSize): its contents' width and its padding. With no width its rule has no
+        //! size, and Qt makes it DropDownWidth wide (QStyleSheetStyle::defaultSize).
         int dropDownBoxWidth(const BoxElement& element)
         {
             return element.m_dropDownWidth != BoxElement::Unset
@@ -262,10 +223,10 @@ namespace AzQtComponents
         }
 
         // ------------------------------------------------------------------------------
-        // Polish (QStyleSheetStyle::polish, qstylesheetstyle.cpp:2873-2970)
+        // Helpers: polish (QStyleSheetStyle::polish)
         // ------------------------------------------------------------------------------
 
-        //! The widget a rule's background and hover reach: a scroll area's viewport (qstylesheetstyle.cpp:2440-2462)
+        //! The widget a rule's background and hover reach: a scroll area's viewport (embeddedWidget, qstylesheetstyle.cpp)
         QWidget* embeddedWidget(QWidget* widget)
         {
             auto* area = qobject_cast<QAbstractScrollArea*>(widget);
@@ -279,9 +240,8 @@ namespace AzQtComponents
                     || element->m_maxSize.width() >= 0 || element->m_maxSize.height() >= 0);
         }
 
-        //! One limit of QStyleSheetStyle::setGeometry (qstylesheetstyle.cpp:2596-2615): the contents' limit grown by the box
-        //! (a declared width or height raises a minimum and lowers a maximum). A limit of the previous element that this one
-        //! does not declare is lifted, as the sheet lifted what it had set (:2574-2593).
+        //! One limit of QStyleSheetStyle::setGeometry: the contents' limit grown by the box (a declared width or height raises a minimum
+        //! and lowers a maximum). A limit of the previous element this one does not declare is lifted, as the sheet lifted its own.
         void setLimit(int& limit, int before, int declared, int size, int grow, bool minimum)
         {
             if (declared >= 0)
@@ -294,9 +254,9 @@ namespace AzQtComponents
             }
         }
 
-        //! The sheet's geometry came after the polish of the base style and the components (PushButton::polish gives every
-        //! push button a maximum height, which a max-height of the element replaces), in the state Enabled alone
-        //! (qstylesheetstyle.cpp:2572): the flat state of a button is not part of the box it grows by.
+        //! The sheet's geometry came after the base style's and the components' polish (PushButton::polish gives every push button a
+        //! maximum height, which the element's max-height replaces), in the Enabled state alone: a button's flat state is not part of
+        //! the box it grows by.
         void applyLimits(QWidget* widget, const BoxElement* previous, const BoxElement* element)
         {
             if (!setsLimits(previous) && !setsLimits(element))
@@ -309,15 +269,19 @@ namespace AzQtComponents
             const QMargins grow = element ? around(*element, element->m_idle, false, widget) : QMargins();
             QSize minimum = widget->minimumSize();
             QSize maximum = widget->maximumSize();
-            setLimit(minimum.rwidth(), before.m_minSize.width(), after.m_minSize.width(), after.m_size.width(), grow.left() + grow.right(), true);
-            setLimit(minimum.rheight(), before.m_minSize.height(), after.m_minSize.height(), after.m_size.height(), grow.top() + grow.bottom(), true);
-            setLimit(maximum.rwidth(), before.m_maxSize.width(), after.m_maxSize.width(), after.m_size.width(), grow.left() + grow.right(), false);
-            setLimit(maximum.rheight(), before.m_maxSize.height(), after.m_maxSize.height(), after.m_size.height(), grow.top() + grow.bottom(), false);
+            setLimit(minimum.rwidth(), before.m_minSize.width(), after.m_minSize.width(), after.m_size.width(),
+                grow.left() + grow.right(), true);
+            setLimit(minimum.rheight(), before.m_minSize.height(), after.m_minSize.height(), after.m_size.height(),
+                grow.top() + grow.bottom(), true);
+            setLimit(maximum.rwidth(), before.m_maxSize.width(), after.m_maxSize.width(), after.m_size.width(),
+                grow.left() + grow.right(), false);
+            setLimit(maximum.rheight(), before.m_maxSize.height(), after.m_maxSize.height(), after.m_size.height(),
+                grow.top() + grow.bottom(), false);
             widget->setMinimumSize(minimum);
             widget->setMaximumSize(maximum);
         }
 
-        //! QStyleSheetStyle::setProperties (qstylesheetstyle.cpp:2618-2678): the value takes the type of the property it sets
+        //! QStyleSheetStyle::setProperties: the value takes the type of the property it sets
         void applyProperties(QWidget* widget, const BoxElement& element)
         {
             for (const BoxElement::Property& property : element.m_properties)
@@ -335,17 +299,18 @@ namespace AzQtComponents
             }
         }
 
-        //! The classes whose own background a rule paints (qstylesheetstyle.cpp:2925-2950): a plain widget, a header view, a tab
-        //! bar, a frame, a main window, an MDI sub-window, a menu bar and a dialog
+        //! The classes whose own background a rule paints (QStyleSheetStyle::polish): a plain widget, a header view, a tab bar, a
+        //! frame, a main window, an MDI sub-window, a menu bar and a dialog
         bool paintsStyledBackground(const QWidget* widget)
         {
             return widget->metaObject() == &QWidget::staticMetaObject || qobject_cast<const QHeaderView*>(widget)
                 || qobject_cast<const QTabBar*>(widget) || qobject_cast<const QFrame*>(widget) || qobject_cast<const QMainWindow*>(widget)
-                || qobject_cast<const QMdiSubWindow*>(widget) || qobject_cast<const QMenuBar*>(widget) || qobject_cast<const QDialog*>(widget);
+                || qobject_cast<const QMdiSubWindow*>(widget) || qobject_cast<const QMenuBar*>(widget)
+                || qobject_cast<const QDialog*>(widget);
         }
 
-        //! What QStyleSheetStyle::polish set for the rules of a widget: WA_Hover and mouse tracking for a :hover (:2894-2905),
-        //! the styled background of a rule that draws or has a box (:2925-2950), and the autofill it replaces (:2951-2959)
+        //! What QStyleSheetStyle::polish set for a widget's rules: WA_Hover and mouse tracking for a :hover, the styled background of a
+        //! rule that draws or has a box, and the autofill that background replaces
         void applyAttributes(QWidget* widget, const BoxElement& element)
         {
             QWidget* embedded = embeddedWidget(widget);
@@ -367,8 +332,7 @@ namespace AzQtComponents
                 }
                 if (embedded->autoFillBackground())
                 {
-                    // The background is the style's to paint from now on: the embedded widget (the viewport of a scroll area) paints it
-                    // through the style too (qstylesheetstyle.cpp:2951-2959)
+                    // The background is the style's to paint from now on, through the embedded widget too (a scroll area's viewport)
                     embedded->setAutoFillBackground(false);
                     widget->setProperty(AutoFillProperty, true);
                     if (embedded != widget)
@@ -380,11 +344,8 @@ namespace AzQtComponents
         }
 
         // ------------------------------------------------------------------------------
-        // Painting (QRenderRule::drawRule, qstylesheetstyle.cpp:1167-1390; qcssutil.cpp:44-369)
+        // Helpers: painting (QRenderRule::drawRule; qcssutil.cpp)
         // ------------------------------------------------------------------------------
-
-        constexpr int ArrowSize = 16;                   //!< ComboBox.qss:66-67 `QComboBox::down-arrow { width; height }`
-        constexpr int ArrowMarginRight = 4;             //!< ComboBox.qss:68 `margin-right`
 
         enum Side       // QCss::Edge
         {
@@ -394,14 +355,14 @@ namespace AzQtComponents
             LeftSide,
         };
 
-        //! qNormalizeRadii (qcssutil.cpp:279-294) for one radius: a corner that does not fit is square
+        //! qNormalizeRadii for one radius: a corner that does not fit is square
         int fittingRadius(int radius, const QRect& rect)
         {
             return (radius > 0 && 2 * radius <= rect.width() && 2 * radius <= rect.height()) ? radius : 0;
         }
 
-        //! qNormalizeRadii (qcssutil.cpp:279-294) for the four corners: none below 0, and two corners that together are wider than their
-        //! side are both square (the top pair, then the bottom pair), as are two that are higher than theirs (left, then right)
+        //! qNormalizeRadii for the four corners: none below 0, and two corners wider together than their side are both square (the top
+        //! pair, then the bottom pair), as are two higher than theirs (left, then right)
         BoxElement::Radii normalizedRadii(BoxElement::Radii radii, const QRect& rect)
         {
             radii.m_topLeft = qMax(0, radii.m_topLeft);
@@ -437,14 +398,14 @@ namespace AzQtComponents
             return { radius, radius, radius, radius };
         }
 
-        //! A fill that shows nothing is not drawn (the fill of the legacy '*' rule, BaseStyleSheet.qss:15, is one)
+        //! A fill that shows nothing is not drawn (the legacy '*' rule's, BaseStyleSheet.qss:15, is one)
         bool isInvisible(const QBrush& brush)
         {
             return brush.style() == Qt::NoBrush || (brush.style() == Qt::SolidPattern && brush.color().alpha() == 0);
         }
 
-        //! QRenderRule::configurePalette (qstylesheetstyle.cpp:1393-1405) for a fill: it is the background of the control, of its
-        //! window, and the style derives the shades of a bevel from a solid one
+        //! QRenderRule::configurePalette for a fill: the background of the control and of its window, and the shades of a bevel from a
+        //! solid one
         void applyFill(QPalette& palette, const QBrush& fill, QPalette::ColorRole role)
         {
             if (fill.style() == Qt::NoBrush)
@@ -455,16 +416,11 @@ namespace AzQtComponents
             palette.setBrush(QPalette::Window, fill);
             if (fill.style() == Qt::SolidPattern)
             {
-                const QColor color = fill.color();
-                palette.setBrush(QPalette::Light, color.lighter(115));
-                palette.setBrush(QPalette::Midlight, color.lighter(107));
-                palette.setBrush(QPalette::Dark, color.darker(150));
-                palette.setBrush(QPalette::Shadow, color.darker(300));
+                setShades(palette, fill.color());
             }
         }
 
-        //! QRenderRule::borderClip (qstylesheetstyle.cpp:1288-1324): the path through the middle of the border. The radii are normalized
-        //! (normalizedRadii) and one of them at least is round.
+        //! QRenderRule::borderClip: the path through the middle of the border. The radii are normalized and one at least is round.
         QPainterPath borderPath(const QRect& rect, const QMargins& border, const BoxElement::Radii& radii)
         {
             const QRectF r(rect);
@@ -473,7 +429,8 @@ namespace AzQtComponents
             path.moveTo(r.x() + radii.m_topLeft, curY);
             path.lineTo(r.right() - radii.m_topRight, curY);
             qreal curX = r.right() - border.right() / 2.0;
-            path.arcTo(curX - 2 * radii.m_topRight + border.right(), curY, radii.m_topRight * 2 - border.right(), radii.m_topRight * 2 - border.top(), 90, -90);
+            path.arcTo(curX - 2 * radii.m_topRight + border.right(), curY, radii.m_topRight * 2 - border.right(),
+                radii.m_topRight * 2 - border.top(), 90, -90);
             path.lineTo(curX, r.bottom() - radii.m_bottomRight);
             curY = r.bottom() - border.bottom() / 2.0;
             path.arcTo(curX - 2 * radii.m_bottomRight + border.right(), curY - 2 * radii.m_bottomRight + border.bottom(),
@@ -483,7 +440,8 @@ namespace AzQtComponents
             path.arcTo(curX, r.bottom() - 2 * radii.m_bottomLeft + border.bottom() / 2.0, radii.m_bottomLeft * 2 - border.left(),
                 radii.m_bottomLeft * 2 - border.bottom(), 270, -90);
             path.lineTo(curX, r.top() + radii.m_topLeft);
-            path.arcTo(curX, r.top() + border.top() / 2.0, radii.m_topLeft * 2 - border.left(), radii.m_topLeft * 2 - border.top(), 180, -90);
+            path.arcTo(
+                curX, r.top() + border.top() / 2.0, radii.m_topLeft * 2 - border.left(), radii.m_topLeft * 2 - border.top(), 180, -90);
             path.closeSubpath();
             return path;
         }
@@ -494,9 +452,9 @@ namespace AzQtComponents
             return borderPath(rect, border, allCorners(radius));
         }
 
-        //! qDrawRoundedCorners (qcssutil.cpp:44-146) for a solid edge: the quarter-circle arcs at the ends of its straight part, stroked as
-        //! wide as the edge. `first` is the radius of the corner at the start of the edge (left of a top or bottom edge, top of a left or
-        //! right one), `second` that at its end (qDrawRoundedCorners' r1 and r2); a corner of 0 has no arc.
+        //! qDrawRoundedCorners for a solid edge: the quarter-circle arcs at the ends of its straight part, stroked as wide as the edge.
+        //! `first` is the radius of the corner at the edge's start (left of a top or bottom edge, top of a side), `second` at its end;
+        //! a corner of 0 has no arc.
         void drawCorners(QPainter* painter, const QRectF& strip, qreal first, qreal second, Side side, const QColor& color)
         {
             const bool horizontal = side == TopSide || side == BottomSide;
@@ -539,11 +497,10 @@ namespace AzQtComponents
             painter->restore();
         }
 
-        //! qDrawBorder (qcssutil.cpp:313-369) for solid edges, antialiased as QRenderRule::drawBorder draws them: the edges
-        //! in increasing precedence (bottom, right, left, top), each a strip between the corners, and arcs where the radius
-        //! is. Qt draws an edge wider than 1px that meets a visible edge of another colour as a trapezoid (qDrawEdge, qcssutil.cpp:165-195,
-        //! with paintsOver, :296-311); here the later edge takes the corner (no winner has one).
-        //! The radii are normalized (normalizedRadii).
+        //! qDrawBorder for solid edges, antialiased as QRenderRule::drawBorder draws them: the edges in increasing precedence (bottom,
+        //! right, left, top), each a strip between its corners, with arcs where the radius is. Qt draws an edge wider than 1px that
+        //! meets a visible edge of another colour as a trapezoid (qDrawEdge); here the later edge takes the corner (no element has one).
+        //! The radii are normalized.
         void drawBorder(QPainter* painter, const QRect& rect, const BoxElement::Edges& edges, const BoxElement::Radii& radii)
         {
             const auto shows = [](const BoxElement::Edge& edge)
@@ -569,10 +526,12 @@ namespace AzQtComponents
             };
             const Entry order[] = {
                 { BottomSide, &edges.m_bottom,
-                    QRectF(box.left() + bottomLeft, box.bottom() - edges.m_bottom.m_width, box.width() - bottomLeft - bottomRight, edges.m_bottom.m_width),
+                    QRectF(box.left() + bottomLeft, box.bottom() - edges.m_bottom.m_width, box.width() - bottomLeft - bottomRight,
+                        edges.m_bottom.m_width),
                     bottomLeft, bottomRight },
                 { RightSide, &edges.m_right,
-                    QRectF(box.right() - edges.m_right.m_width, box.top() + topRight, edges.m_right.m_width, box.height() - topRight - bottomRight),
+                    QRectF(box.right() - edges.m_right.m_width, box.top() + topRight, edges.m_right.m_width,
+                        box.height() - topRight - bottomRight),
                     topRight, bottomRight },
                 { LeftSide, &edges.m_left,
                     QRectF(box.left(), box.top() + topLeft, edges.m_left.m_width, box.height() - topLeft - bottomLeft),
@@ -606,8 +565,8 @@ namespace AzQtComponents
             drawBorder(painter, rect, edges, allCorners(radius));
         }
 
-        //! The offset the contents of a scroll area are scrolled by, which its background image scrolls with
-        //! (QAbstractScrollAreaPrivate::contentsOffset, qabstractscrollarea.cpp:1390-1403)
+        //! The offset a scroll area's contents are scrolled by, which its background image scrolls with
+        //! (QAbstractScrollAreaPrivate::contentsOffset)
         QPoint scrollOffset(const QWidget* widget)
         {
             const auto* area = qobject_cast<const QAbstractScrollArea*>(widget);
@@ -624,11 +583,11 @@ namespace AzQtComponents
             return offset;
         }
 
-        //! QRenderRule::drawBackgroundImage (qstylesheetstyle.cpp:1205-1259) for an image that does not repeat: the file at
-        //! its natural size (loadPixmap, :6537-6560), placed in the origin box by the alignment, moved by the offset of the
-        //! scrolled contents, clipped to the border box
-        void drawImage(QPainter* painter, const BoxElement& element, const QRect& border, const QMargins& widths, int radius, const char* resource,
-            const QPoint& offset)
+        //! QRenderRule::drawBackgroundImage for an image that does not repeat: the file at its natural size
+        //! (QStyleSheetStyle::loadPixmap), placed in the origin box by the alignment, moved with the scrolled contents, clipped to the
+        //! border box
+        void drawImage(QPainter* painter, const BoxElement& element, const QRect& border, const QMargins& widths, int radius,
+            const char* resource, const QPoint& offset)
         {
             const QPixmap pixmap = Style::cachedPixmap(QString::fromLatin1(resource));
             if (pixmap.isNull())
@@ -647,16 +606,15 @@ namespace AzQtComponents
                 painter->setClipPath(borderPath(border, widths, radius), Qt::IntersectClip);
             }
             painter->setClipRect(border, Qt::IntersectClip);
-            painter->drawPixmap(visible.x(), visible.y(), pixmap, visible.x() - aligned.x() + offset.x(), visible.y() - aligned.y() + offset.y(),
-                pixmap.width(), pixmap.height());
+            painter->drawPixmap(visible.x(), visible.y(), pixmap, visible.x() - aligned.x() + offset.x(),
+                visible.y() - aligned.y() + offset.y(), pixmap.width(), pixmap.height());
             painter->restore();
         }
 
-        //! QRenderRule::drawBorderImage (qstylesheetstyle.cpp:1167-1188) for `border-image: url() 0 0 0 0 stretch stretch`, which is
-        //! qDrawBorderPixmap over the border box: the target margins are the widths of the border, the cuts of the image 0, the tile
-        //! rules stretch. Only the center of the image is drawn then (qdrawutil.cpp:1119-1145), stretched over what the margins leave
-        //! of the box, smooth, clipped to the radius (QRenderRule::setClip, :1329-1338). False: the file does not load, which Qt answers
-        //! by dropping the border image (fixupBorder, :1129-1130).
+        //! QRenderRule::drawBorderImage for `border-image: url() 0 0 0 0 stretch stretch`: qDrawBorderPixmap over the border box with
+        //! the border's widths as margins, cuts of 0 and stretch tiles, which draws only the image's center, stretched over what the
+        //! margins leave, smooth, clipped to the radius (QRenderRule::setClip). False: the file does not load, and Qt drops the border
+        //! image (QRenderRule::fixupBorder).
         bool drawBorderImage(QPainter* painter, const QRect& border, const QMargins& widths, int radius, const char* resource)
         {
             const QPixmap pixmap = Style::cachedPixmap(QString::fromLatin1(resource));
@@ -678,18 +636,18 @@ namespace AzQtComponents
     } // namespace BoxElementInternal
 
     // ----------------------------------------------------------------------------------
-    // The box
+    // Geometry
     // ----------------------------------------------------------------------------------
 
     bool BoxElement::hasNativeBorder(const QStyleOption* option) const
     {
-        // (a border image is the rule's own border: QRenderRule::hasNativeBorder, qstylesheetstyle.cpp:511-514)
+        // a border image is the rule's own border (QRenderRule::hasNativeBorder)
         return m_nativeBorder && !BoxElementInternal::isFlat(option) && !BoxElementInternal::hasBorderImage(face(option));
     }
 
     bool BoxElement::ownsBox(const QStyleOption* option) const
     {
-        // QRenderRule::hasBox() || !hasNativeBorder(), the test of every geometry function (qstylesheetstyle.cpp:5336-5350, 6155-6182)
+        // QRenderRule::hasBox() || !hasNativeBorder(), the test of every geometry function of QStyleSheetStyle
         return BoxElementInternal::hasBox(*this, face(option)) || !hasNativeBorder(option);
     }
 
@@ -711,8 +669,7 @@ namespace AzQtComponents
 
     QSize BoxElement::adjustSize(const QSize& contents) const
     {
-        // QRenderRule::adjustSize (qstylesheetstyle.cpp:560-571): the declared size replaces the contents' size,
-        // the maximum caps it, the minimum raises it
+        // QRenderRule::adjustSize: the declared size replaces the contents' size, the maximum caps it, the minimum raises it
         QSize size(m_size.width() >= 0 ? m_size.width() : contents.width(), m_size.height() >= 0 ? m_size.height() : contents.height());
         if (m_maxSize.width() >= 0)
         {
@@ -731,15 +688,15 @@ namespace AzQtComponents
     }
 
     // ----------------------------------------------------------------------------------
-    // Faces and paint
+    // Drawing
     // ----------------------------------------------------------------------------------
 
     const BoxElement::Face& BoxElement::face(const QStyleOption* option) const
     {
         const unsigned states = BoxElementInternal::statesOf(option);
 
-        // A rule contributes while all of its pseudo-classes hold, and a later rule overrides an earlier one
-        // (qstylesheetstyle.cpp:1714-1715)
+        // A rule applies while all of its pseudo-classes hold, and a later rule overrides an earlier one (declarations,
+        // qstylesheetstyle.cpp)
         const Face* result = &m_idle;
         for (const StateFace& stateFace : m_stateFaces)
         {
@@ -753,7 +710,7 @@ namespace AzQtComponents
 
     bool BoxElement::draw(QPainter* painter, const QStyleOption* option, const QWidget* widget) const
     {
-        // QRenderRule::hasDrawable() of the state (qstylesheetstyle.cpp:536): a native border with no fill and no image draws nothing
+        // QRenderRule::hasDrawable() of the state: a native border with no fill and no image draws nothing
         const Face& state = face(option);
         const bool image = state.m_image[0] != 0;
         if (hasNativeBorder(option) && state.m_fill.style() == Qt::NoBrush && !image)
@@ -761,8 +718,8 @@ namespace AzQtComponents
             return false;
         }
 
-        // drawRule: the fill covers the border box, rounded (antialiased) where the border is (:1348-1370); then the
-        // image, then the border (or the border image) over both. The box is the one of the state.
+        // drawRule: the fill over the border box, rounded (antialiased) where the border is, then the image, then the border or the
+        // border image over both; the box is the state's
         const QRect border = borderRect(option);
         const QMargins widths = BoxElementInternal::borderOf(*this, state, BoxElementInternal::isFlat(option), widget);
         const int radius = BoxElementInternal::fittingRadius(BoxElementInternal::radiusOf(*this, state), border);
@@ -784,7 +741,8 @@ namespace AzQtComponents
         {
             BoxElementInternal::drawImage(painter, *this, border, widths, radius, state.m_image, BoxElementInternal::scrollOffset(widget));
         }
-        if (!BoxElementInternal::hasBorderImage(state) || !BoxElementInternal::drawBorderImage(painter, border, widths, radius, state.m_borderImage))
+        if (!BoxElementInternal::hasBorderImage(state)
+            || !BoxElementInternal::drawBorderImage(painter, border, widths, radius, state.m_borderImage))
         {
             BoxElementInternal::drawBorder(painter, border, state.m_edges, radius);
         }
@@ -793,38 +751,57 @@ namespace AzQtComponents
 
     void BoxElement::drawFrame(QPainter* painter, const QRect& borderBox, const QBrush& fill, const Edges& edges, const Radii& radii)
     {
-        // QRenderRule::drawBackground: a fillRect where no corner is round, else the fill of the path through the middle of the border,
-        // antialiased (drawn instead of clipped to, for the quality: qstylesheetstyle.cpp:1357-1363)
-        const Radii fitted = BoxElementInternal::normalizedRadii(radii, borderBox);
-        if (!BoxElementInternal::isInvisible(fill))
+        drawFill(painter, borderBox, fill, edges, radii);
+        drawEdges(painter, borderBox, edges, radii);
+    }
+
+    void BoxElement::drawFill(QPainter* painter, const QRect& borderBox, const QBrush& fill, const Edges& edges, const Radii& radii)
+    {
+        if (BoxElementInternal::isInvisible(fill))
         {
-            if (BoxElementInternal::anyRound(fitted))
-            {
-                const auto width = [](const Edge& edge)
-                {
-                    return edge.m_color.isValid() ? edge.m_width : 0;
-                };
-                const QMargins widths(width(edges.m_left), width(edges.m_top), width(edges.m_right), width(edges.m_bottom));
-                painter->save();
-                painter->setRenderHint(QPainter::Antialiasing);
-                painter->fillPath(BoxElementInternal::borderPath(borderBox, widths, fitted), fill);
-                painter->restore();
-            }
-            else
-            {
-                painter->fillRect(borderBox, fill);
-            }
+            return;
         }
-        BoxElementInternal::drawBorder(painter, borderBox, edges, fitted);
+        // The path is filled rather than clipped to, for the quality
+        const QPainterPath path = borderPath(borderBox, edges, radii);
+        if (path.isEmpty())
+        {
+            painter->fillRect(borderBox, fill);
+            return;
+        }
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->fillPath(path, fill);
+        painter->restore();
+    }
+
+    void BoxElement::drawEdges(QPainter* painter, const QRect& borderBox, const Edges& edges, const Radii& radii)
+    {
+        BoxElementInternal::drawBorder(painter, borderBox, edges, BoxElementInternal::normalizedRadii(radii, borderBox));
+    }
+
+    QPainterPath BoxElement::borderPath(const QRect& borderBox, const Edges& edges, const Radii& radii)
+    {
+        const Radii fitted = BoxElementInternal::normalizedRadii(radii, borderBox);
+        if (!BoxElementInternal::anyRound(fitted))
+        {
+            return QPainterPath();
+        }
+        const auto width = [](const Edge& edge)
+        {
+            return edge.m_color.isValid() ? edge.m_width : 0;
+        };
+        const QMargins widths(width(edges.m_left), width(edges.m_top), width(edges.m_right), width(edges.m_bottom));
+        return BoxElementInternal::borderPath(borderBox, widths, fitted);
     }
 
     bool BoxElement::baseStyleCanDraw(const Face& face, const QWidget* styled)
     {
-        // An image is the rule's to draw (qstylesheetstyle.cpp:524-525), a gradient the base style's only where the class lists the
-        // gradient among its features (:526-527)
+        // An image is the rule's to draw, a gradient the base style's only where the class lists it among its features
+        // (QRenderRule::baseStyleCanDraw)
         const Qt::BrushStyle fill = face.m_fill.style();
         const bool gradient = fill >= Qt::LinearGradientPattern && fill <= Qt::ConicalGradientPattern;
-        return face.m_image[0] == 0 && (fill == Qt::NoBrush || fill == Qt::SolidPattern || (gradient && qobject_cast<const QComboBox*>(styled)));
+        return face.m_image[0] == 0
+            && (fill == Qt::NoBrush || fill == Qt::SolidPattern || (gradient && qobject_cast<const QComboBox*>(styled)));
     }
 
     void BoxElement::configurePalette(QPalette& palette, const Face& face)
@@ -834,7 +811,7 @@ namespace AzQtComponents
 
     void BoxElement::configurePalette(QPalette& palette, const Face& face, QPalette::ColorRole foreground, QPalette::ColorRole background)
     {
-        // The colour of the state goes to the role of the control's text, to WindowText and to Text (qstylesheetstyle.cpp:1410-1415)
+        // The state's colour goes to the role of the control's text, to WindowText and to Text (QRenderRule::configurePalette)
         if (background != QPalette::NoRole)
         {
             BoxElementInternal::applyFill(palette, face.m_fill, background);
@@ -849,7 +826,7 @@ namespace AzQtComponents
 
     QBrush BoxElement::vertical(const QColor& top, const QColor& bottom)
     {
-        // relative to the box the brush fills (qcssparser.cpp:927-935)
+        // relative to the box the brush fills (parseBrushValue, qcssparser.cpp)
         QLinearGradient gradient(0.0, 0.0, 0.0, 1.0);
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
         gradient.setColorAt(0.0, top);
@@ -867,15 +844,16 @@ namespace AzQtComponents
     // Push buttons
     // ----------------------------------------------------------------------------------
 
-    bool BoxElement::drawPushButtonLabel(const QStyle* style, const QStyleOptionButton* option, QPainter* painter, const QWidget* widget) const
+    bool BoxElement::drawPushButtonLabel(
+        const QStyle* style, const QStyleOptionButton* option, QPainter* painter, const QWidget* widget) const
     {
         if (!m_textAlign)
         {
             return false;
         }
 
-        // QStyleSheetStyle::drawControl, CE_PushButtonLabel (qstylesheetstyle.cpp:3688-3783) for a rule with a position and no `icon` of its
-        // own (the icon is the button's). The alignment of the rule, centered where it names none:
+        // QStyleSheetStyle::drawControl, CE_PushButtonLabel, for a rule with a position and no `icon` of its own (the icon is the
+        // button's). The rule's alignment, centered where it names none:
         constexpr uint horizontalAlignMask = Qt::AlignHCenter | Qt::AlignLeft | Qt::AlignRight;
         constexpr uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignBottom;
         const uint alignment = uint(m_textAlign);
@@ -894,7 +872,7 @@ namespace AzQtComponents
 
         if (!option->icon.isNull())
         {
-            // The icon and the text in one group, 4px apart (hard-coded, as QPushButton::sizeHint's is, :3731), placed by the alignment
+            // The icon and the text in one group, 4px apart as QPushButton::sizeHint has them, placed by the alignment
             QIcon::Mode mode = (option->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
             if (mode == QIcon::Normal && (option->state & QStyle::State_HasFocus))
             {
@@ -904,12 +882,12 @@ namespace AzQtComponents
             const QPixmap pixmap = option->icon.pixmap(option->iconSize, painter->device()->devicePixelRatio(), mode, iconState);
             const int pixmapWidth = static_cast<int>(pixmap.width() / pixmap.devicePixelRatio());
             const int pixmapHeight = static_cast<int>(pixmap.height() / pixmap.devicePixelRatio());
-            constexpr int iconSpacing = 4;
             int labelWidth = pixmapWidth;
             const int labelHeight = pixmapHeight;
             if (!option->text.isEmpty())
             {
-                labelWidth += option->fontMetrics.boundingRect(option->rect, int(textFlags), option->text).width() + iconSpacing;
+                labelWidth += option->fontMetrics.boundingRect(option->rect, int(textFlags), option->text).width()
+                    + BoxElementInternal::PushButtonIconSpacing;
             }
 
             QRect iconRect;
@@ -934,11 +912,11 @@ namespace AzQtComponents
             textFlags |= Qt::AlignLeft;
             if (option->direction == Qt::RightToLeft)
             {
-                textRect.setRight(iconRect.left() - iconSpacing);
+                textRect.setRight(iconRect.left() - BoxElementInternal::PushButtonIconSpacing);
             }
             else
             {
-                textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing);
+                textRect.setLeft(iconRect.left() + iconRect.width() + BoxElementInternal::PushButtonIconSpacing);
             }
 
             iconRect.translate(shiftX, shiftY);
@@ -949,9 +927,11 @@ namespace AzQtComponents
         if (option->features & QStyleOptionButton::HasMenu)
         {
             const int indicatorSize = style->pixelMetric(QStyle::PM_MenuButtonIndicator, option, widget);
-            textRect = (option->direction == Qt::LeftToRight) ? textRect.adjusted(0, 0, -indicatorSize, 0) : textRect.adjusted(indicatorSize, 0, 0, 0);
+            textRect = (option->direction == Qt::LeftToRight) ? textRect.adjusted(0, 0, -indicatorSize, 0)
+                                                               : textRect.adjusted(indicatorSize, 0, 0, 0);
         }
-        style->drawItemText(painter, textRect, int(textFlags), option->palette, (option->state & QStyle::State_Enabled) != 0, option->text, QPalette::ButtonText);
+        style->drawItemText(painter, textRect, int(textFlags), option->palette, (option->state & QStyle::State_Enabled) != 0, option->text,
+            QPalette::ButtonText);
         return true;
     }
 
@@ -959,24 +939,23 @@ namespace AzQtComponents
     // Tool buttons
     // ----------------------------------------------------------------------------------
 
-    bool BoxElement::drawToolButton(const QStyle* style, const QStyleOptionToolButton* option, QPainter* painter, const QWidget* widget) const
+    bool BoxElement::drawToolButton(
+        const QStyle* style, const QStyleOptionToolButton* option, QPainter* painter, const QWidget* widget) const
     {
-        // UNVERIFIED: a fill under the style's own border reaches the base style's bevel through the palette in the sheet
-        // (qstylesheetstyle.cpp:3278-3302), where ToolButton::drawToolButton draws none; no drafted element has one
         if (hasNativeBorder(option))
         {
             return false;
         }
 
-        // The rule over the whole rect, then the label in its contents rect, in the palette of the rule (:3242, 3308-3314)
+        // The rule over the whole rect, then the label in its contents rect, in the rule's palette (QStyleSheetStyle::drawComplexControl)
         QStyleOptionToolButton tool(*option);
         configurePalette(tool.palette, face(option), QPalette::ButtonText, QPalette::Button);
         draw(painter, option, widget);
         tool.rect = contentsRect(option, widget);
         style->drawControl(QStyle::CE_ToolButtonLabel, &tool, painter, widget);
 
-        // The drop-down of a split button, or the indicator of a menu, as the base style draws them where the rule has no
-        // ::menu-button, ::menu-arrow or ::menu-indicator (:3318-3354)
+        // The drop-down of a split button, or a menu's indicator, as the base style draws them where the rule has no ::menu-button,
+        // ::menu-arrow or ::menu-indicator
         const bool hasMenu = option->features.testFlag(QStyleOptionToolButton::HasMenu);
         if (option->features.testFlag(QStyleOptionToolButton::MenuButtonPopup))
         {
@@ -992,9 +971,10 @@ namespace AzQtComponents
         }
         else if (hasMenu)
         {
-            // positionRect (:2395-2424): right and bottom of the padding box, 13 x 13 (defaultSize, :2307-2319)
+            // QStyleSheetStyle::positionRect: right and bottom of the padding box, 13 x 13 (QStyleSheetStyle::defaultSize)
             const QRect padding = contentsRect(option, widget).marginsAdded(m_padding);
-            tool.rect = QStyle::alignedRect(option->direction, Qt::AlignRight | Qt::AlignBottom, QSize(13, 13), padding);
+            tool.rect = QStyle::alignedRect(
+                option->direction, Qt::AlignRight | Qt::AlignBottom, BoxElementInternal::MenuIndicatorSize, padding);
             style->drawPrimitive(QStyle::PE_IndicatorArrowDown, &tool, painter, widget);
         }
         return true;
@@ -1005,7 +985,7 @@ namespace AzQtComponents
         const QRect border = borderRect(option);
         if (subControl == QStyle::SC_ToolButtonMenu)
         {
-            // positionRect (:2395-2424) of a ::menu-button the rule does not have: right and top of the border box, its height
+            // QStyleSheetStyle::positionRect of a ::menu-button the rule does not have: right and top of the border box, its height
             return QStyle::alignedRect(option->direction, Qt::AlignRight | Qt::AlignTop, QSize(menuWidth, border.height()), border);
         }
         return border;
@@ -1017,12 +997,13 @@ namespace AzQtComponents
 
     QSize BoxElement::comboBoxSize(const QStyleOption* option, const QWidget* widget, const QSize& contents) const
     {
-        return boxSize(option, widget, contents + QSize(BoxElementInternal::dropDownBoxWidth(*this) + 2, 0));
+        return boxSize(
+            option, widget, contents + QSize(BoxElementInternal::dropDownBoxWidth(*this) + BoxElementInternal::ComboLabelExtra, 0));
     }
 
     QRect BoxElement::dropDownRect(const QStyleOption* option, const QWidget* widget) const
     {
-        // The origin of a drop-down is the padding box (Origin_Padding, qstylesheetstyle.cpp:2186-2194): the contents and the padding
+        // A drop-down's origin is the padding box (defaultOrigin, qstylesheetstyle.cpp): the contents and the padding
         const QRect padding = contentsRect(option, widget).marginsAdded(m_padding);
         return QStyle::alignedRect(option->direction, Qt::AlignRight | Qt::AlignTop,
             QSize(BoxElementInternal::dropDownBoxWidth(*this), padding.height()), padding);
@@ -1036,32 +1017,33 @@ namespace AzQtComponents
 
     QRect BoxElement::arrowRect(const QStyleOption* option, const QWidget* widget) const
     {
-        // The image is 16 x 16 and its rule has a margin of 4px on the right: the box of both is centered in the contents of the drop-down
-        // (qstylesheetstyle.cpp:2395-2424), the image is the box less that margin
+        // The image and its margin on the right are centered in the drop-down's contents (QStyleSheetStyle::positionRect); the image
+        // is that box less the margin
         const int size = BoxElementInternal::ArrowSize;
         const QRect box = QStyle::alignedRect(option->direction, Qt::AlignCenter, QSize(size + BoxElementInternal::ArrowMarginRight, size),
             dropDownRect(option, widget).marginsRemoved(m_dropDownPadding));
         return QRect(box.topLeft(), QSize(size, size));
     }
 
-    bool BoxElement::drawComboBoxLabel(const QStyle* style, const QStyleOptionComboBox* option, QPainter* painter, const QWidget* widget) const
+    bool BoxElement::drawComboBoxLabel(
+        const QStyle* style, const QStyleOptionComboBox* option, QPainter* painter, const QWidget* widget) const
     {
-        // QRenderRule::hasDrawable() of the state: a rule that draws nothing leaves the label to the base style (:4022-4023)
+        // QRenderRule::hasDrawable() of the state: a rule that draws nothing leaves the label to the base style
         const Face& state = face(option);
         if (hasNativeBorder(option) && state.m_fill.style() == Qt::NoBrush && state.m_image[0] == 0)
         {
             return false;
         }
 
-        // The label in the edit field, clipped to it (:4025-4054): the icon at its left, the text after it and the spacing of the state,
-        // 6px where the rule has none (:4029-4031)
+        // The label in the edit field, clipped to it (QStyleSheetStyle::drawControl, CE_ComboBoxLabel): the icon at its left, the text
+        // after it and the state's spacing, 6px where the rule has none
         QRect editRect = editFieldRect(option, widget);
         painter->save();
         painter->setClipRect(editRect);
         if (!option->currentIcon.isNull())
         {
             const int labelSpacing = spacing(option);
-            const int gap = labelSpacing != Unset ? labelSpacing : 6;
+            const int gap = labelSpacing != Unset ? labelSpacing : BoxElementInternal::ComboIconSpacing;
             const QIcon::Mode mode = option->state.testFlag(QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
             const QPixmap pixmap = option->currentIcon.pixmap(option->iconSize, painter->device()->devicePixelRatio(), mode);
             QRect iconRect(editRect);
@@ -1085,7 +1067,8 @@ namespace AzQtComponents
     // Check boxes and radio buttons
     // ----------------------------------------------------------------------------------
 
-    bool BoxElement::drawIndicatorButton(const QStyle* style, const QStyleOptionButton* option, QPainter* painter, const QWidget* widget) const
+    bool BoxElement::drawIndicatorButton(
+        const QStyle* style, const QStyleOptionButton* option, QPainter* painter, const QWidget* widget) const
     {
         if (!IndicatorElement::forWidget(widget))
         {
@@ -1105,48 +1088,71 @@ namespace AzQtComponents
     // Resolution
     // ----------------------------------------------------------------------------------
 
-    void BoxElement::registerElement(const BoxElement* element, const QMetaObject* widgetClass, Matcher matcher, Scope scope)
+    void BoxElement::registerElement(
+        const BoxElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
     {
-        // The rows of a class stay in the order that decides: the module's, then the Global ones, each in registration order
-        static int order = 0;
-        const BoxElementInternal::Row row{ element, matcher, scope == Scope::Global, order++ };
-        QVector<BoxElementInternal::Row>& bucket = BoxElementInternal::rows()[widgetClass];
-        int at = 0;
-        while (at < bucket.size() && !row.before(bucket[at]))
+        BoxElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, &BoxElement::resolve);
+    }
+
+    void BoxElement::resolve(QWidget* widget)
+    {
+        using namespace BoxElementInternal;
+        if (registry().isEmpty() || !Style::hasStyle(widget))
         {
-            ++at;
+            return;
         }
-        bucket.insert(at, row);
-        if (!StyleManager::stylesheetsDisabled())
+        const BoxElement* previous = forWidget(widget);
+        // The sheet styles no line edit of a combo box or a spin box and no viewport by a rule of its own: the rule of the container is
+        // drawn for it (unstylable, qstylesheetstyle.cpp)
+        const BoxElement* element = (containerOf(widget) == widget) ? registry().find(widget) : nullptr;
+        if (!previous && !element)
         {
             return;
         }
 
-        // A module builds some windows before it sets up its styles: resolve the widgets polished before this call
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
+        // Kept on the widget for the contact points of Style; a widget with no element keeps nothing
+        if (previous != element)
         {
-            if (widget->testAttribute(Qt::WA_WState_Polished) && widget->metaObject()->inherits(widgetClass))
+            if (element)
             {
-                apply(widget);
+                registry().keep(widget, element);
             }
+            else
+            {
+                registry().forget(widget);
+            }
+        }
+
+        applyLimits(widget, previous, element);
+        if (element)
+        {
+            applyProperties(widget, *element);
+            applyAttributes(widget, *element);
+        }
+
+        // The first polish is followed by the Polish event, on which a QFrame reads its box. A widget polished already is told
+        // its style changed, as QStyleSheetStyle told the widgets it repolished (updateObjects, qstylesheetstyle.cpp)
+        if (previous != element && widget->testAttribute(Qt::WA_WState_Polished))
+        {
+            QEvent styleChange(QEvent::StyleChange);
+            QCoreApplication::sendEvent(widget, &styleChange);
         }
     }
 
     const BoxElement* BoxElement::forWidget(const QWidget* widget)
     {
-        if (!widget || BoxElementInternal::rows().isEmpty())
+        if (!widget || BoxElementInternal::registry().isEmpty())
         {
             return nullptr;
         }
-        const QVariant stored = widget->property(BoxElementInternal::ElementProperty);
-        return stored.isValid() ? reinterpret_cast<const BoxElement*>(stored.value<quintptr>()) : nullptr;
+        return BoxElementInternal::registry().kept(widget).value_or(nullptr);
     }
 
     bool BoxElement::fillsBackgroundRole(const QWidget* widget, const QStyleOption* option)
     {
-        // A viewport takes the element of its scroll area. It is filled where the scroll area has no background; a widget whose own
-        // element draws nothing is filled as well (qstylesheetstyle.cpp:4682-4691)
+        // A viewport takes its scroll area's element. It is filled where the scroll area has no background, and a widget whose own
+        // element draws nothing is filled too (QStyleSheetStyle::drawPrimitive, PE_Widget)
         const QWidget* container = containerOf(widget);
         const BoxElement* box = forWidget(container);
         if (!box || !container->property(BoxElementInternal::AutoFillProperty).toBool())
@@ -1159,48 +1165,12 @@ namespace AzQtComponents
 
     const QWidget* BoxElement::containerOf(const QWidget* widget)
     {
-        // The line edit of a combo box or a spin box and the viewport of a scroll area take the rule of their container
-        // (qstylesheetstyle.cpp:2472-2493)
+        // The line edit of a combo box or a spin box and the viewport of a scroll area take their container's rule (containerWidget,
+        // qstylesheetstyle.cpp)
         const QWidget* parent = widget ? widget->parentWidget() : nullptr;
-        const bool lineEdit = qobject_cast<const QLineEdit*>(widget) && (qobject_cast<const QComboBox*>(parent) || qobject_cast<const QAbstractSpinBox*>(parent));
+        const bool lineEdit = qobject_cast<const QLineEdit*>(widget)
+            && (qobject_cast<const QComboBox*>(parent) || qobject_cast<const QAbstractSpinBox*>(parent));
         const auto* area = qobject_cast<const QAbstractScrollArea*>(parent);
         return (lineEdit || (area && area->viewport() == widget)) ? parent : widget;
-    }
-
-    void BoxElement::apply(QWidget* widget)
-    {
-        if (BoxElementInternal::rows().isEmpty() || !Style::hasStyle(widget))
-        {
-            return;
-        }
-        const BoxElement* previous = forWidget(widget);
-        // The sheet styles no line edit of a combo box or a spin box and no viewport by a rule of its own: the rule of the container is
-        // drawn for it (qstylesheetstyle.cpp:2499-2506, 2855-2866)
-        const BoxElement* element = (containerOf(widget) == widget) ? BoxElementInternal::resolve(widget) : nullptr;
-        if (!previous && !element)
-        {
-            return;
-        }
-
-        // Kept on the widget for the contact points of Style; a widget with no element keeps nothing
-        if (previous != element)
-        {
-            widget->setProperty(BoxElementInternal::ElementProperty, element ? QVariant::fromValue(reinterpret_cast<quintptr>(element)) : QVariant());
-        }
-
-        BoxElementInternal::applyLimits(widget, previous, element);
-        if (element)
-        {
-            BoxElementInternal::applyProperties(widget, *element);
-            BoxElementInternal::applyAttributes(widget, *element);
-        }
-
-        // The first polish is followed by the Polish event, on which a QFrame reads its box. A widget polished already is told
-        // its style changed, as QStyleSheetStyle told the widgets it repolished (qstylesheetstyle.cpp:2782-2796)
-        if (previous != element && widget->testAttribute(Qt::WA_WState_Polished))
-        {
-            QEvent styleChange(QEvent::StyleChange);
-            QCoreApplication::sendEvent(widget, &styleChange);
-        }
     }
 } // namespace AzQtComponents

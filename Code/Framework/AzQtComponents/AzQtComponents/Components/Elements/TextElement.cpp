@@ -7,7 +7,6 @@
  */
 
 #include <AzQtComponents/Components/Elements/TextElement.h>
-#include <AzQtComponents/Components/StyleManager.h>
 
 #include <AzCore/Debug/Trace.h>
 
@@ -18,101 +17,167 @@
 #include <QFont>
 #include <QLineEdit>
 #include <QPalette>
-#include <QStringList>
 #include <QVariant>
-#include <QVector>
 #include <QWidget>
 
 namespace AzQtComponents
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this
-    //! file with others into one translation unit, where anonymous namespaces merge (TabElement.cpp has a
-    //! globalElement of its own, and ProgressBar and TitleBar are classes of this library).
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
     namespace TextElementInternal
     {
         // ------------------------------------------------------------------------------
-        // Global elements. Each value cites the declaration that grants it, as file:line of
-        // the legacy stylesheets in Components/Widgets/ (or of the code that sets it).
+        // Values
         // ------------------------------------------------------------------------------
 
-        //! The base: what a widget no class font and no rule reaches renders. '*' (BaseStyleSheet.qss:19-20)
-        //! over the application font, Open Sans 12px (StyleManager.cpp:220-222). TOKENIZE: BodyTextSize
-        const TextElement Base{ .m_name = "Global.Text.Base", .m_pixelSize = 12 };
-        //! Only '*' reaches the widget: family and weight. Its size stays (the platform's class font, or what
-        //! code set).
-        const TextElement Any{ .m_name = "Global.Text.Any" };
-        //! A rule sets 12px: Text.qss:92 (.Label, QLabel), ToolTip.qss:16 (QToolTip, Qt's QTipLabel),
-        //! PushButton.qss:34, CheckBox.qss:13, RadioButton.qss:12, ComboBox.qss:18, BaseStyleSheet.qss:82
-        //! (QTextEdit, QPlainTextEdit, QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox), ColorPicker.qss:16-18
-        //! (every widget inside a color picker) and :56-58 (a palette card's title, not bold).
-        //! TOKENIZE: BodyTextSize
-        const TextElement Body{ .m_name = "Global.Text.Body", .m_pixelSize = 12 };
-        const TextElement MenuBar{ .m_name = "Global.Text.MenuBar", .m_family = "Amazon Ember", .m_pixelSize = 12 }; // MenuBar.qss:13-14
-        //! ProgressBar.qss:16, so that Qt sizes the bar for no text (its minimum size hint follows the font)
-        const TextElement ProgressBar{ .m_name = "Global.Text.ProgressBar", .m_pixelSize = 1 };
-
-        // ---- Text.qss tiers. TOKENIZE: HeadlineTextSize, TitleTextSize, SubtitleTextSize, LightTextWeight, ButtonTextWeight
-        const TextElement Headline{ .m_name = "Global.Text.Headline", .m_pixelSize = 24, .m_weight = 250 };   // Text.qss:58-59
-        const TextElement Title{ .m_name = "Global.Text.Title", .m_pixelSize = 18 };                          // Text.qss:67
-        const TextElement Subtitle{ .m_name = "Global.Text.Subtitle", .m_pixelSize = 16, .m_weight = 250 };   // Text.qss:75-76
-        const TextElement Button{ .m_name = "Global.Text.Button", .m_pixelSize = 12, .m_weight = 570 };       // Text.qss:123-124
-
-        // ---- named labels of AzQtComponents widgets
-        const TextElement TitleBarTitle{ .m_name = "Global.Text.TitleBarTitle", .m_pixelSize = 14 };          // TitleBar.qss:31-34
-        //! Card.qss:202-205 (bold) over the QLabel's 12px (Text.qss:92). TOKENIZE: CardTitleFontWeight
-        const TextElement CardTitle{ .m_name = "Global.Text.CardTitle", .m_pixelSize = 12, .m_weight = 700 };
+        // ColorPicker.qss:18, Text.qss:92 (.Label), the application font of StyleManager::initialize $type.surface.idle.size
+        constexpr int SurfaceSize = 12;
+        // Text.qss:91 (QLabel) and :57, :66, :74, :83, :99, :114, :122 (the tiers), TitleBar.qss:33 $type.label.idle.family.Alt1
+        constexpr const char* LabelFamily = "Open Sans";
+        constexpr int LabelSize = 12;                           // Text.qss:84, :92, :100, :115, :123 $type.label.idle.size.Alt1
+        constexpr const char* ToolTipFamily = "Open Sans";      // ToolTip.qss:19 $type.tooltip.idle.family
+        constexpr int ToolTipSize = 12;                         // ToolTip.qss:16 $type.tooltip.idle.size
+        constexpr const char* PushButtonFamily = "Open Sans";   // PushButton.qss:33 $type.button.idle.family
+        constexpr int PushButtonSize = 12;                      // PushButton.qss:34 $type.button.idle.size.Alt1
+        constexpr int CheckSize = 12;                           // CheckBox.qss:13, RadioButton.qss:12 $type.check.idle.Alt1
+        constexpr const char* FieldFamily = "Open Sans";        // BaseStyleSheet.qss:78 $type.field.idle.family
+        constexpr int FieldSize = 12;                           // BaseStyleSheet.qss:82 $type.field.idle.size.Alt1
+        constexpr const char* MenuBarFamily = "Amazon Ember";   // MenuBar.qss:13 $type.menubar.idle.family
+        constexpr int MenuBarSize = 12;                         // MenuBar.qss:14 $type.menubar.idle.size
+        constexpr int ProgressBarSize = 1;                      // ProgressBar.qss:16 $type.progress.idle
+        constexpr int HeadlineSize = 24;                        // Text.qss:58 $type.label.idle.size.Alt6
+        constexpr int TitleSize = 18;                           // Text.qss:67 $type.label.idle.size.Alt3
+        constexpr int SubtitleSize = 16;                        // Text.qss:75 $type.label.idle.size.Alt5
+        constexpr int HeadingWeight = 250;                      // Text.qss:59, :76 $type.label.idle.weight.Alt3
+        constexpr int ButtonWeight = 570;                       // Text.qss:124 $type.label.idle.weight.Alt5
+        constexpr int TitleBarTitleSize = 14;                   // TitleBar.qss:34 $type.label.idle.size.Alt2
+        constexpr int CardTitleWeight = 700;                    // Card.qss:205 (bold) $type.label.idle.weight.Alt1
+        constexpr int PaletteCardTitleWeight = 400;             // ColorPicker.qss:58 (normal) $type.label.idle.weight.Alt2
 
         // ------------------------------------------------------------------------------
-        // Class fonts. Qt looks one up for a widget by its class, then each superclass up
-        // to QWidget (qapplication.cpp:1307-1316), and applies it right after the style's
-        // polish (qwidget.cpp:9107-9111).
+        // Elements
         // ------------------------------------------------------------------------------
 
-        struct ClassFont
+        //! A widget no class rule reaches: '*' over the application font
+        const TextElement BaseText{ .m_name = "Global.Text.Base", .m_pixelSize = SurfaceSize };
+        //! Only '*' reaches the widget: family and weight; the size stays the platform's or the code's
+        const TextElement AnyText{ .m_name = "Global.Text.Any" };
+        //! QLabel, and the .Menu, .Paragraph and .Tooltip tiers
+        const TextElement LabelText{ .m_name = "Global.Text.Label", .m_family = LabelFamily, .m_pixelSize = LabelSize };
+        //! QToolTip (Qt's QTipLabel)
+        const TextElement ToolTipText{ .m_name = "Global.Text.ToolTip", .m_family = ToolTipFamily, .m_pixelSize = ToolTipSize };
+        //! QPushButton
+        const TextElement PushButtonText{
+            .m_name = "Global.Text.PushButton",
+            .m_family = PushButtonFamily,
+            .m_pixelSize = PushButtonSize,
+        };
+        //! QCheckBox, QRadioButton
+        const TextElement CheckText{ .m_name = "Global.Text.Check", .m_pixelSize = CheckSize };
+        //! The entry fields: QTextEdit, QPlainTextEdit, QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox
+        const TextElement FieldText{ .m_name = "Global.Text.Field", .m_family = FieldFamily, .m_pixelSize = FieldSize };
+        const TextElement MenuBarText{ .m_name = "Global.Text.MenuBar", .m_family = MenuBarFamily, .m_pixelSize = MenuBarSize };
+        //! So that Qt sizes a progress bar for no text: its minimum size hint follows the font
+        const TextElement ProgressBarText{ .m_name = "Global.Text.ProgressBar", .m_pixelSize = ProgressBarSize };
+
+        //! The Text.qss tiers
+        const TextElement HeadlineText{
+            .m_name = "Global.Text.Headline",
+            .m_family = LabelFamily,
+            .m_pixelSize = HeadlineSize,
+            .m_weight = HeadingWeight,
+        };
+        const TextElement TitleText{ .m_name = "Global.Text.Title", .m_family = LabelFamily, .m_pixelSize = TitleSize };
+        const TextElement SubtitleText{
+            .m_name = "Global.Text.Subtitle",
+            .m_family = LabelFamily,
+            .m_pixelSize = SubtitleSize,
+            .m_weight = HeadingWeight,
+        };
+        const TextElement ButtonText{
+            .m_name = "Global.Text.Button",
+            .m_family = LabelFamily,
+            .m_pixelSize = LabelSize,
+            .m_weight = ButtonWeight,
+        };
+
+        //! `AzQtComponents--TitleBar #title`
+        const TextElement TitleBarTitleText{
+            .m_name = "Global.Text.TitleBarTitle",
+            .m_family = LabelFamily,
+            .m_pixelSize = TitleBarTitleSize,
+        };
+        //! `AzQtComponents--CardHeader #Title`
+        const TextElement CardTitleText{
+            .m_name = "Global.Text.CardTitle",
+            .m_family = LabelFamily,
+            .m_pixelSize = LabelSize,
+            .m_weight = CardTitleWeight,
+        };
+        //! `AzQtComponents--PaletteCardBase AzQtComponents--CardHeader #Title`
+        const TextElement PaletteCardTitleText{
+            .m_name = "Global.Text.PaletteCardTitle",
+            .m_family = LabelFamily,
+            .m_pixelSize = LabelSize,
+            .m_weight = PaletteCardTitleWeight,
+        };
+
+        // ------------------------------------------------------------------------------
+        // Helpers
+        // ------------------------------------------------------------------------------
+
+        //! A class name, or a class tag, and the element its rule gives
+        struct Rule
         {
-            const char* m_className;
+            const char* m_key;
             const TextElement* m_element;
         };
 
-        //! Installed whatever the platform supplies: a rule reaches every widget of these classes.
-        const ClassFont OwnClassFonts[] = {
-            { "QWidget", &Base },               // every class without a class font of its own
-            { "QMenuBar", &MenuBar },
-            { "QProgressBar", &ProgressBar },
+        //! The classes a rule gives a size, installed as class fonts whatever the platform supplies, and set over a font code set.
+        //! A class comes before its base classes (QTipLabel is a QLabel).
+        const Rule ClassRules[] = {
+            { "QMenuBar", &MenuBarText },
+            { "QProgressBar", &ProgressBarText },
+            { "QTipLabel", &ToolTipText },
+            { "QLabel", &LabelText },
+            { "QPushButton", &PushButtonText },
+            { "QCheckBox", &CheckText },
+            { "QRadioButton", &CheckText },
+            { "QTextEdit", &FieldText },
+            { "QPlainTextEdit", &FieldText },
+            { "QLineEdit", &FieldText },
+            { "QSpinBox", &FieldText },
+            { "QDoubleSpinBox", &FieldText },
+            { "QComboBox", &FieldText },
         };
 
-        //! Qt's class-font keys that name widget classes (qapplication.cpp:556-608), overlaid where the platform
-        //! supplies a font (Windows: QMenu, QMessageBox, QStatusBar, QAbstractItemView and QTipLabel, at 9pt).
-        //! The keys Qt code reads for itself are left alone, as no rule reaches them: QMdiSubWindowTitleBar
-        //! (QMessageBox sizes its title with it, StyleManager.cpp:340-345), QDockWidgetTitle (qdockwidget.cpp:620),
-        //! QComboMenuItem (qcombobox.cpp:317), QMenuItem, QTitleBar, QListBox and QComboLineEdit.
-        const ClassFont PlatformClassFonts[] = {
-            { "QMenu", &Any },
-            { "QMessageBox", &Any },
-            { "QStatusBar", &Any },
-            { "QToolButton", &Any },
-            { "QAbstractItemView", &Any },
-            { "QListView", &Any },
-            { "QHeaderView", &Any },
-            { "QSmallFont", &Any },             // macOS small and mini controls (qapplication.cpp:1299-1306)
-            { "QMiniFont", &Any },
-            { "QLabel", &Body },
-            { "QTipLabel", &Body },
-            { "QPushButton", &Body },
-            { "QCheckBox", &Body },
-            { "QRadioButton", &Body },
+        //! Qt's class-font keys of classes no rule gives a size: '*' over the font the platform supplies (Windows: QMenu, QMessageBox,
+        //! QStatusBar, QAbstractItemView). The keys Qt reads for itself are left alone, as no rule reaches them: QMdiSubWindowTitleBar,
+        //! QDockWidgetTitle, QComboMenuItem, QMenuItem, QTitleBar, QListBox, QComboLineEdit.
+        const char* const PlatformClasses[] = { "QMenu", "QMessageBox", "QStatusBar", "QToolButton", "QAbstractItemView", "QListView",
+            "QHeaderView", "QSmallFont", "QMiniFont" };
+
+        //! The Text.qss tiers in declaration order: of several tags the later is taken whole (the sheet merged them attribute by
+        //! attribute; no widget carries two)
+        const Rule TierRules[] = {
+            { "Headline", &HeadlineText },
+            { "Title", &TitleText },
+            { "Subtitle", &SubtitleText },
+            { "Menu", &LabelText },
+            { "Label", &BaseText },
+            { "Paragraph", &LabelText },
+            { "Tooltip", &LabelText },
+            { "Button", &ButtonText },
         };
 
-        //! The class fonts modules registered, installed again whenever installClassFonts runs
-        QVector<ClassFont>& moduleClassFonts()
+        ElementRegistry<TextElement>& registry()
         {
-            static QVector<ClassFont> fonts;
-            return fonts;
+            static ElementRegistry<TextElement> rows("_o3de_textColorElement");
+            return rows;
         }
 
-        //! One class font: the element over the platform's font for the class, which keeps what the element
-        //! leaves unset. A class the platform supplies no font for gets one of its own if 'always': never a copy
-        //! of the application font, as Qt tells a class font from it by identity (qwidget.cpp:4758-4766).
+        //! One class font: the element over the platform's font for the class. A class the platform supplies none for gets one of
+        //! its own if `always`, never a copy of the application font: Qt tells a class font from it by identity
+        //! (QWidgetPrivate::naturalWidgetFont).
         void installClassFont(const char* className, const TextElement& element, bool always)
         {
             QFont font = QApplication::font(className); // the platform's, else the application font
@@ -131,139 +196,77 @@ namespace AzQtComponents
             }
         }
 
-        // ------------------------------------------------------------------------------
-        // Widget elements
-        // ------------------------------------------------------------------------------
-
-        //! Code set font attributes on the widget or on an ancestor (QWidget::setFont, a .ui font): Qt keeps
-        //! both in the mask of the widget's font (qwidget.cpp:4841-4846). Class fonts add none (qwidget.cpp:4779).
+        //! Code set font attributes on the widget or on an ancestor: Qt keeps both in the mask of the widget's font, class fonts add
+        //! none (QWidgetPrivate::resolveFont)
         bool hasCodeFont(const QWidget* widget)
         {
             return widget->font().resolveMask() != 0;
         }
 
-        //! The classes a rule gives a size (see Body; a QTipLabel is a QLabel). Not QAbstractSpinBox: no rule
-        //! reaches QDateTimeEdit.
-        const char* const SizeRuleClasses[] = { "QLabel", "QPushButton", "QCheckBox", "QRadioButton", "QComboBox",
-            "QTextEdit", "QPlainTextEdit", "QLineEdit", "QSpinBox", "QDoubleSpinBox" };
-
-        //! Native renders the rules over a font code set, attribute by attribute (qstylesheetstyle.cpp:6455-6457):
-        //! the element of the widget's class rules, over its font.
+        //! The element of a widget's class rule, which the sheet set over a font code set (QStyleSheetStyle::updateStyleSheetFont)
         const TextElement* classElement(const QWidget* widget)
         {
-            if (widget->inherits("QMenuBar"))
+            for (const Rule& rule : ClassRules)
             {
-                return &MenuBar;
-            }
-            if (widget->inherits("QProgressBar"))
-            {
-                return &ProgressBar;
-            }
-            for (const char* className : SizeRuleClasses)
-            {
-                if (widget->inherits(className))
+                if (widget->inherits(rule.m_key))
                 {
-                    return &Body;
+                    return rule.m_element;
                 }
             }
-            return &Any;
+            return &AnyText;
         }
-
-        //! Text.qss tiers in declaration order, .Tier being [class~=Tier] (qcssparser.cpp:2780-2786). Of several tags
-        //! the later declaration is taken whole; Native merges them attribute by attribute (no m0 widget carries
-        //! two). .Menu, .Label, .Paragraph and .Tooltip are 12px (Text.qss:84, 92, 100, 115).
-        struct Tier
-        {
-            const char* m_tag;
-            const TextElement* m_element;
-        };
-        const Tier Tiers[] = {
-            { "Headline", &Headline },
-            { "Title", &Title },
-            { "Subtitle", &Subtitle },
-            { "Menu", &Body },
-            { "Label", &Body },
-            { "Paragraph", &Body },
-            { "Tooltip", &Body },
-            { "Button", &Button },
-        };
 
         const TextElement* tierElement(const QWidget* widget)
         {
-            const QVariant tags = widget->property("class");
-            if (!tags.isValid())
-            {
-                return nullptr;
-            }
-            // Whole words, compared with case (qcssparser.cpp:2168-2180)
-            const QStringList words = tags.toString().split(QLatin1Char(' '), Qt::SkipEmptyParts);
             const TextElement* element = nullptr;
-            for (const Tier& tier : Tiers)
+            if (widget->property("class").isValid())
             {
-                if (words.contains(QLatin1String(tier.m_tag), Qt::CaseSensitive))
+                for (const Rule& tier : TierRules)
                 {
-                    element = tier.m_element;
+                    if (Selectors::tagged(widget, tier.m_key))
+                    {
+                        element = tier.m_element;
+                    }
                 }
             }
             return element;
         }
 
-        //! The Global element a widget's place or tags give it, or null; the most specific declaration first.
-        //! fromBase: the widget's font is the untouched base.
+        //! The Global element a widget's place or tags give it, or none; the most specific rule first. fromBase: the widget's font is
+        //! the untouched base.
         const TextElement* globalElement(const QWidget* widget, bool fromBase)
         {
             if (widget->inherits("QLabel"))
             {
-                // AzQtComponents--TitleBar #title (TitleBar.qss:31-34)
-                if (TextElement::named(widget, "title") && TextElement::withinClass(widget, "AzQtComponents::TitleBar"))
+                if (Selectors::named(widget, "title") && Selectors::withinClass(widget, "AzQtComponents::TitleBar"))
                 {
-                    return &TitleBarTitle;
+                    return &TitleBarTitleText;
                 }
-                // AzQtComponents--CardHeader #Title (Card.qss:202-205); not bold on a palette card
-                // (AzQtComponents--PaletteCardBase AzQtComponents--CardHeader #Title, ColorPicker.qss:56-58)
-                if (TextElement::named(widget, "Title") && TextElement::withinClass(widget, "AzQtComponents::CardHeader"))
+                if (Selectors::named(widget, "Title") && Selectors::withinClass(widget, "AzQtComponents::CardHeader"))
                 {
-                    return TextElement::withinClass(widget, "AzQtComponents::PaletteCardBase") ? &Body : &CardTitle;
+                    return Selectors::withinClass(widget, "AzQtComponents::PaletteCardBase") ? &PaletteCardTitleText : &CardTitleText;
                 }
                 if (const TextElement* element = tierElement(widget))
                 {
                     return element;
                 }
             }
-            // AzQtComponents--ColorPicker * (ColorPicker.qss:16-18): every widget inside a color picker, the menu
-            // and message boxes it opens too (those UNVERIFIED: no capture shows them). A widget that starts from
-            // the base has the 12px already, so only the others look for the ancestor.
-            if (!fromBase && TextElement::withinClass(widget, "AzQtComponents::ColorPicker"))
+            // `AzQtComponents--ColorPicker *`: every widget inside a color picker, and the menus and message boxes it opens. A widget
+            // that starts from the base has its size already.
+            if (!fromBase && Selectors::withinClass(widget, "AzQtComponents::ColorPicker"))
             {
-                return &Body;
+                return &BaseText;
             }
             return nullptr;
         }
 
-        struct Row
+        //! A module's element first, then the Global one, then the class rule over a font code set; none: the widget keeps its
+        //! class font
+        const TextElement* findElement(const QWidget* widget, const QFont& classFont)
         {
-            const TextElement* m_element;
-            const QMetaObject* m_widgetClass;
-            TextElement::Matcher m_matcher;
-        };
-
-        //! The widget elements modules registered, checked before the Global ones
-        QVector<Row>& moduleRows()
-        {
-            static QVector<Row> rows;
-            return rows;
-        }
-
-        //! Modules first, then the Global elements, then the class rules over a font code set. A widget nothing
-        //! matches keeps the font Qt gives it: its class font, or the base.
-        const TextElement* resolve(const QWidget* widget, const QFont& classFont)
-        {
-            for (const Row& row : moduleRows())
+            if (const TextElement* element = registry().find(widget))
             {
-                if (widget->metaObject()->inherits(row.m_widgetClass) && row.m_matcher(widget))
-                {
-                    return row.m_element;
-                }
+                return element;
             }
             const bool codeFont = hasCodeFont(widget);
             const bool fromBase = !codeFont && classFont.isCopyOf(QApplication::font("QWidget"));
@@ -274,34 +277,26 @@ namespace AzQtComponents
             return codeFont ? classElement(widget) : nullptr;
         }
 
-        // ------------------------------------------------------------------------------
-        // Colour
-        // ------------------------------------------------------------------------------
-
-        //! The name of the dynamic property that keeps the element whose colour the polish applies last. Only a widget
-        //! whose element has a colour carries it.
-        constexpr const char* ColorElementProperty = "_o3de_textColorElement";
-
         bool hasColor(const TextElement* element)
         {
             return element && (element->m_color.isValid() || element->m_disabledColor.isValid());
         }
 
+        //! Only a widget whose element has a colour keeps it, for applyColor
         void keepColorElement(QWidget* widget, const TextElement* element)
         {
             if (hasColor(element))
             {
-                widget->setProperty(ColorElementProperty, QVariant::fromValue(reinterpret_cast<quintptr>(element)));
+                registry().keep(widget, element);
             }
-            else if (widget->property(ColorElementProperty).isValid())
+            else
             {
-                widget->setProperty(ColorElementProperty, QVariant());
+                registry().forget(widget);
             }
         }
 
-        //! The widget inside that the sheet gave the same palette (QStyleSheetStyle's embeddedWidget,
-        //! qstylesheetstyle.cpp:2440-2462): the line edit of an editable combo box or of a spin box, the viewport
-        //! of a scroll area
+        //! The widget inside that the sheet gave the same palette (embeddedWidget, qstylesheetstyle.cpp): the line edit of an
+        //! editable combo box or of a spin box, the viewport of a scroll area
         QWidget* embeddedWidget(QWidget* widget)
         {
             if (auto* comboBox = qobject_cast<QComboBox*>(widget))
@@ -319,9 +314,8 @@ namespace AzQtComponents
             return widget;
         }
 
-        //! A `color` in one colour group, as QRenderRule::configurePalette set it (qstylesheetstyle.cpp:1454-1464): the
-        //! text roles, the foreground role of the embedded widget, and the placeholder at half the alpha. Whatever the
-        //! palette had there before (setDefault, qstylesheetstyle.cpp:1424-1432).
+        //! A `color` in one colour group, as QRenderRule::configurePalette sets it over whatever the palette had: the text roles,
+        //! the foreground role of the embedded widget, and the placeholder at half the alpha
         void setForeground(QPalette& palette, QPalette::ColorGroup group, const QColor& color, const QWidget* embedded)
         {
             palette.setColor(group, QPalette::ButtonText, color);
@@ -360,65 +354,47 @@ namespace AzQtComponents
 
     void TextElement::installClassFonts()
     {
-        for (const TextElementInternal::ClassFont& classFont : TextElementInternal::OwnClassFonts)
-        {
-            TextElementInternal::installClassFont(classFont.m_className, *classFont.m_element, true);
-        }
-        for (const TextElementInternal::ClassFont& classFont : TextElementInternal::PlatformClassFonts)
-        {
-            TextElementInternal::installClassFont(classFont.m_className, *classFont.m_element, false);
-        }
-        for (const TextElementInternal::ClassFont& classFont : TextElementInternal::moduleClassFonts())
-        {
-            TextElementInternal::installClassFont(classFont.m_className, *classFont.m_element, true);
-        }
-    }
+        using namespace TextElementInternal;
 
-    void TextElement::registerClassFont(const TextElement* element, const char* className)
-    {
-        TextElementInternal::moduleClassFonts().append({ className, element });
-        if (StyleManager::stylesheetsDisabled())
+        // Qt looks a class font up by the widget's class, then each base class up to QWidget (QApplication::font), and applies it
+        // right after the style's polish (QWidget::event, QEvent::Polish)
+        installClassFont("QWidget", BaseText, true);
+        for (const Rule& rule : ClassRules)
         {
-            TextElementInternal::installClassFont(className, *element, true);
+            installClassFont(rule.m_key, *rule.m_element, true);
+        }
+        for (const char* className : PlatformClasses)
+        {
+            installClassFont(className, AnyText, false);
         }
     }
 
     // ----------------------------------------------------------------------------------
-    // Widget elements
+    // Resolution
     // ----------------------------------------------------------------------------------
 
-    void TextElement::registerElement(const TextElement* element, const QMetaObject* widgetClass, Matcher matcher)
+    void TextElement::registerElement(
+        const TextElement* element, const QMetaObject* widgetClass, ElementMatcher matcher, ElementScope scope)
     {
-        TextElementInternal::moduleRows().append({ element, widgetClass, matcher });
-        if (!StyleManager::stylesheetsDisabled())
-        {
-            return;
-        }
-
-        // A module builds some windows before it sets up its styles: resolve the widgets polished before this call
-        const QWidgetList widgets = QApplication::allWidgets();
-        for (QWidget* widget : widgets)
-        {
-            if (widget->testAttribute(Qt::WA_WState_Polished) && widget->metaObject()->inherits(widgetClass))
+        TextElementInternal::registry().add(element, widgetClass, matcher, scope);
+        resolvePolished(widgetClass, [](QWidget* widget)
             {
-                apply(widget);
+                resolve(widget);
                 applyColor(widget);
-            }
-        }
+            });
     }
 
-    void TextElement::apply(QWidget* widget)
+    void TextElement::resolve(QWidget* widget)
     {
-        // The class font Qt applies right after this polish: the base for most widgets
+        // The class font Qt applies right after this polish
         const QFont classFont = QApplication::font(widget);
 
-        // Tripwire: while the flattened GUI runs, every widget has a class font (at least the base). A
-        // QApplication::setFont(font) without a class name clears them all (qapplication.cpp:1362-1365), and
-        // a widget would take its parent's whole font again.
+        // Tripwire: in the flattened GUI every widget has a class font, the base at least. QApplication::setFont(font) without a
+        // class name clears them all, and a widget would take its parent's whole font again.
         AZ_WarningOnce("TextElement", !classFont.isCopyOf(QApplication::font()),
             "The class fonts of the flattened GUI were cleared by QApplication::setFont: call it before QApplication::setStyle.");
 
-        const TextElement* element = TextElementInternal::resolve(widget, classFont);
+        const TextElement* element = TextElementInternal::findElement(widget, classFont);
         TextElementInternal::keepColorElement(widget, element);
         if (!element)
         {
@@ -434,21 +410,20 @@ namespace AzQtComponents
 
     void TextElement::applyColor(QWidget* widget)
     {
-        const QVariant kept = widget->property(TextElementInternal::ColorElementProperty);
-        if (!kept.isValid())
+        const std::optional<const TextElement*> kept = TextElementInternal::registry().kept(widget);
+        if (!kept)
         {
             return;
         }
-        const TextElement* element = reinterpret_cast<const TextElement*>(kept.value<quintptr>());
+        const TextElement* element = *kept;
         QWidget* embedded = TextElementInternal::embeddedWidget(widget);
         if (!embedded)
         {
             embedded = widget;                  // a spin box without its line edit yet
         }
 
-        // Each colour group as the sheet built it from the rules of its state, into the widget's own palette, and the
-        // same palette to the widget inside (QStyleSheetStyle::setPalette, qstylesheetstyle.cpp:2680-2727): Active and
-        // Inactive from the enabled rules, Disabled from :disabled
+        // Each colour group as the sheet built it from the rules of its state, into the widget's palette and the one of the widget
+        // inside (QStyleSheetStyle::setPalette): Active and Inactive from the enabled rules, Disabled from :disabled
         const QColor disabled = element->m_disabledColor.isValid() ? element->m_disabledColor : element->m_color;
         QPalette palette = widget->palette();
         if (element->m_color.isValid())
@@ -465,53 +440,5 @@ namespace AzQtComponents
         {
             embedded->setPalette(palette);
         }
-    }
-
-    // ----------------------------------------------------------------------------------
-    // Selectors
-    // ----------------------------------------------------------------------------------
-
-    bool TextElement::named(const QWidget* widget, const char* objectName)
-    {
-        return widget->objectName() == QLatin1String(objectName);
-    }
-
-    bool TextElement::childOf(const QWidget* widget, const char* parentObjectName)
-    {
-        const QWidget* parent = widget->parentWidget();
-        return parent && named(parent, parentObjectName);
-    }
-
-    bool TextElement::within(const QWidget* widget, const char* ancestorObjectName)
-    {
-        for (const QWidget* ancestor = widget->parentWidget(); ancestor; ancestor = ancestor->parentWidget())
-        {
-            if (named(ancestor, ancestorObjectName))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool TextElement::withinClass(const QWidget* widget, const char* ancestorClass)
-    {
-        for (const QWidget* ancestor = widget->parentWidget(); ancestor; ancestor = ancestor->parentWidget())
-        {
-            if (ancestor->inherits(ancestorClass))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool TextElement::tagged(const QWidget* widget, const char* token)
-    {
-        // .token is [class~=token]: a whole word of the class property, compared with case (qcssparser.cpp:2168-2180;
-        // Style::hasClass compares without case)
-        const QVariant tags = widget->property("class");
-        return tags.isValid()
-            && tags.toString().split(QLatin1Char(' '), Qt::SkipEmptyParts).contains(QLatin1String(token), Qt::CaseSensitive);
     }
 } // namespace AzQtComponents

@@ -1335,8 +1335,8 @@ namespace AzQtComponents
                 int tall = 0;
                 for (const auto* slider : picker.findChildren<GradientSlider*>())
                 {
-                    const bool inHslOrHsv = TextElement::withinClass(slider, "AzQtComponents::HSLSliders")
-                        || TextElement::withinClass(slider, "AzQtComponents::HSVSliders");
+                    const bool inHslOrHsv = Selectors::withinClass(slider, "AzQtComponents::HSLSliders")
+                        || Selectors::withinClass(slider, "AzQtComponents::HSVSliders");
                     const QPoint expected = slider->orientation() == Qt::Vertical ? QPoint(8, -24) : (inHslOrHsv ? QPoint(0, -40) : QPoint(0, -24));
                     EXPECT_EQ(slider->toolTipOffset(), expected) << slider->toolTipOffsetX() << ", " << slider->toolTipOffsetY();
                     tall += inHslOrHsv ? 1 : 0;
