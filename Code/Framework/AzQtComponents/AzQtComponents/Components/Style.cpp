@@ -95,6 +95,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QTableView>
 #include <QTextEdit>
 #include <QToolButton>
+#include <QToolTip>
 AZ_POP_DISABLE_WARNING
 
 #include <limits>
@@ -303,7 +304,7 @@ namespace AzQtComponents
 
     //////////////////////////////////////////////////////////////////////////
     // Flattened chrome: the separators of a main window and of a toolbar, the handle of a splitter, the title strip of a plain dock
-    // widget, the chips of a search field and the frame of a decorated window
+    // widget, the chips of a search field, the frame of a decorated window and the margin of a tooltip
     //////////////////////////////////////////////////////////////////////////
     //! BaseStyleSheet.qss:52, ToolBar.qss:73 $fill.separator.idle.FarBG
     static constexpr QColor g_separatorFill = Foundations::FarBG;
@@ -322,6 +323,7 @@ namespace AzQtComponents
     static constexpr qreal g_chipRadius = 2.0;                             // FilteredSearchWidget.qss:29, :71 $radius.button.idle.all.Alt1
     static constexpr int g_segmentBarMarginBottom = 15;                    // SegmentControl.qss:11 $space.surface.idle.margin-bottom.Alt3
     static constexpr int g_windowFrameWidth = 1;                           // WindowDecorationWrapper.qss:11 $line.surface.idle.width.Alt1
+    static constexpr QMargins g_toolTipMargins(2, 4, 0, 4);                // ToolTip.qss:15, :17-18 (margin-left, -top, -bottom)
 
     //! The breadcrumbs' path edit: the second page of the stack beside the label (BreadCrumbs.cpp:93-102)
     static bool isBreadCrumbsPathEdit(const QWidget* widget)
@@ -1821,6 +1823,17 @@ namespace AzQtComponents
             }
             break;
 
+            case PE_PanelTipLabel:
+            {
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    // ToolTip.qss:13 QToolTip { background-color }, no frame (:14 names no border style: Qt reads none)
+                    painter->fillRect(option->rect, option->palette.toolTipBase());
+                    return;
+                }
+            }
+            break;
+
             case PE_FrameTabWidget:
             {
                 // The tab element's pane fill and edges, on the pane rect (SE_TabWidgetTabPane)
@@ -2378,6 +2391,11 @@ namespace AzQtComponents
                         // The box of the window frame, whose line WindowDecorationWrapper::paintEvent draws
                         r = option->rect.adjusted(g_windowFrameWidth, g_windowFrameWidth, -g_windowFrameWidth, -g_windowFrameWidth);
                     }
+                    if (r.isNull() && widget && widget->inherits("QTipLabel"))
+                    {
+                        // A tooltip's margin: no QLabel rule reaches it (the sheet names a QTipLabel QToolTip only)
+                        r = option->rect.marginsRemoved(g_toolTipMargins);
+                    }
                     if (r.isNull())
                     {
                         r = flattenedLabelFrameContents(option, widget);
@@ -2923,6 +2941,9 @@ namespace AzQtComponents
 
         // Fusion paints the closed face of a combo box and the buttons of a spin box from Button and ButtonText: the field's too
         const bool buttonFace = widget->inherits("QComboBox") || widget->inherits("QAbstractSpinBox");
+        // The selection is the application's: under the sheet no field took its parent's palette (QWidgetPrivate::naturalWidgetPalette),
+        // so an editor in a view does not show the view's selection roles
+        const QPalette application = QApplication::palette(widget);
         QPalette entryPalette = widget->palette();
         for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
         {
@@ -2931,6 +2952,8 @@ namespace AzQtComponents
             const QColor text = disabled ? Foundations::Field::DisabledText : (isTextEdit ? g_textEditText : Foundations::Field::Text);
             entryPalette.setColor(group, QPalette::Base, fill);
             entryPalette.setColor(group, QPalette::Text, text);
+            entryPalette.setColor(group, QPalette::Highlight, application.color(group, QPalette::Highlight));
+            entryPalette.setColor(group, QPalette::HighlightedText, application.color(group, QPalette::HighlightedText));
             if (buttonFace)
             {
                 entryPalette.setColor(group, QPalette::Button, fill);
@@ -3853,6 +3876,10 @@ namespace AzQtComponents
             // No class palettes for QMenu and QMenuBar: one set through QApplication::setPalette goes through polish(QPalette&) and comes
             // out as the base palette (QApplication::setPalette), so they never took effect. The menu and menu bar elements carry the
             // colours of both (MenuElement.cpp).
+
+            // A tooltip takes the palette of QToolTip, which Qt filled from the platform theme (qt_init_tooltip_palette), never the
+            // application's: ToolTipBase and ToolTipText are ToolTip.qss:12-13
+            QToolTip::setPalette(m_data->palette);
 
             // Class fonts: Qt rebuilt them from the platform in this setStyle, right before this polish
             TextElement::installClassFonts();
