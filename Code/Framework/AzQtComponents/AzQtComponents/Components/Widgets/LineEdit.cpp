@@ -13,6 +13,7 @@
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 
 #include <QLineEdit>
 #include <QAction>
@@ -771,9 +772,7 @@ namespace AzQtComponents
         auto errorToolButton = lineEdit->findChild<QToolButton*>(ErrorToolButton);
         if (!errorToolButton)
         {
-            QIcon icon;
-            icon.addFile(config.errorImage, config.errorImageSize);
-            auto errorAction = lineEdit->addAction(icon, QLineEdit::TrailingPosition);
+            auto errorAction = lineEdit->addAction(CachedIcon(config.errorImage, config.errorImageSize), QLineEdit::TrailingPosition);
 
             auto childToolButtons = lineEdit->findChildren<QToolButton*>();
             for (auto toolButton : childToolButtons)
@@ -806,10 +805,7 @@ namespace AzQtComponents
         Q_UNUSED(option);
         Q_UNUSED(widget);
 
-        QIcon icon;
-        icon.addFile(config.clearImage, config.clearImageSize, QIcon::Normal);
-        icon.addFile(config.clearImageDisabled, config.clearImageSize, QIcon::Disabled);
-        return icon;
+        return CachedIcon(config.clearImage, config.clearImageSize, config.clearImageDisabled);
     }
 
     QRect LineEdit::lineEditContentsRect(const Style* style, QStyle::SubElement element, const QStyleOption* option, const QWidget* widget, const Config& config)

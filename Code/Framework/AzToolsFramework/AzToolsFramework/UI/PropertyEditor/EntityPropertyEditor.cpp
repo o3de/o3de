@@ -83,6 +83,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
 #include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
@@ -1104,7 +1105,7 @@ namespace AzToolsFramework
         // setIcon schedules the icon's paint. No repaint(): its only caller is UpdateContents, whose updates are disabled, and there
         // Qt 6 still sends the update request at once, painting and flushing the dirty region of the whole window in the middle of the
         // rebuild (about 54 ms per 27-component selection); setUpdatesEnabled(true) at the end of the rebuild repaints it anyway.
-        m_gui->m_entityIcon->setIcon(QIcon(iconSourcePath.c_str()));
+        m_gui->m_entityIcon->setIcon(AzQtComponents::CachedIcon(QString(iconSourcePath.c_str())));
     }
 
     EntityPropertyEditor::InspectorLayout EntityPropertyEditor::GetCurrentInspectorLayout() const

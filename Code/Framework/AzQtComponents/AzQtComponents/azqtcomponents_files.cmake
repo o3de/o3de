@@ -317,6 +317,8 @@ set(FILES
     Utilities/DesktopUtilities.h
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h
+    Utilities/IconUtilities.cpp
+    Utilities/IconUtilities.h
     Utilities/MouseHider.h
     Utilities/PixmapScaleUtilities.cpp
     Utilities/PixmapScaleUtilities.h

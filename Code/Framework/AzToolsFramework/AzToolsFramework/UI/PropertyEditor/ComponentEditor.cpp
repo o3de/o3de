@@ -25,6 +25,7 @@
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 #include <QMenu>
@@ -770,7 +771,7 @@ namespace AzToolsFramework
 
         AZStd::string iconPath;
         AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
-        GetHeader()->SetIcon(QIcon(iconPath.c_str()));
+        GetHeader()->SetIcon(AzQtComponents::CachedIcon(QString(iconPath.c_str())));
 
         bool isExpanded = true;
         AzToolsFramework::EditorEntityInfoRequestBus::EventResult(isExpanded, componentInstance.GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsComponentExpanded, componentInstance.GetId());

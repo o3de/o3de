@@ -11,6 +11,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 
 #include <QAbstractItemView>
 #include <QApplication>
@@ -45,7 +46,7 @@ namespace AzQtComponents
     //! for the device ratio of the painter, not of the widget's screen
     static void drawFlattenedComboArrow(QPainter* painter, const QPoint& topLeft, bool enabled)
     {
-        QIcon(enabled
+        CachedIcon(enabled
             ? QStringLiteral(":/stylesheet/img/UI20/combobox-arrow.svg")
             : QStringLiteral(":/stylesheet/img/UI20/combobox-arrow-disabled.svg")).paint(painter, QRect(topLeft, QSize(16, 16)));
     }
@@ -659,11 +660,9 @@ namespace AzQtComponents
         auto errorToolButton = cb->findChild<QToolButton*>(ErrorToolButton);
         if (!errorToolButton)
         {
-            QIcon errorIcon;
-            errorIcon.addFile(config.errorImage, config.errorImageSize);
             auto toolButton = new QToolButton(cb);
             toolButton->setObjectName(ErrorToolButton);
-            toolButton->setIcon(errorIcon);
+            toolButton->setIcon(CachedIcon(config.errorImage, config.errorImageSize));
             toolButton->resize(config.errorImageSize.width(), config.errorImageSize.height());
             toolButton->hide();
         }

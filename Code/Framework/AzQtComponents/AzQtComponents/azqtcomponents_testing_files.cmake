@@ -33,6 +33,7 @@ set(FILES
     Tests/GuiPerfFloorTests.cpp
     Tests/HeaderSectionTests.cpp
     Tests/HexParsingTests.cpp
+    Tests/IconUtilitiesTests.cpp
     Tests/IndicatorElementTests.cpp
     Tests/ItemViewElementTests.cpp
     Tests/LineEditFieldTests.cpp

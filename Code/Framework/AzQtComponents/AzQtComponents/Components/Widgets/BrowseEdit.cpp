@@ -11,6 +11,7 @@
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <QPushButton>
 #include <QHBoxLayout>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
@@ -126,7 +127,7 @@ namespace AzQtComponents
         }
         boxLayout->addWidget(m_data->m_attachedButton);
         connect(m_data->m_attachedButton, &QPushButton::clicked, this, &BrowseEdit::attachedButtonTriggered);
-        setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
+        setAttachedButtonIcon(CachedIcon(QStringLiteral(":/stylesheet/img/UI20/browse-edit.svg")));
 
         AzQtComponents::Style::addClass(this, "AzQtComponentsBrowseEdit");
     }

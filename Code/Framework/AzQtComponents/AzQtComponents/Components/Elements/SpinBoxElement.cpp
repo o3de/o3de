@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Elements/SpinBoxElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 
 #include <QColor>
 #include <QDoubleSpinBox>
@@ -482,7 +483,7 @@ namespace AzQtComponents
             const QRect padding = rect.marginsRemoved(face.m_margin + face.m_border);
             QRect glyph = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignRight | Qt::AlignVCenter, GlyphSize, padding);
             glyph.translate(-(up ? UpGlyphInset : DownGlyphInset), 0);
-            QIcon(QString::fromLatin1(glyphImage(widget, up))).paint(painter, glyph, Qt::AlignCenter);
+            CachedIcon(QString::fromLatin1(glyphImage(widget, up))).paint(painter, glyph, Qt::AlignCenter);
         }
 
         //! Whether the widget is a spin box of the classes the sheet's rules name (QSpinBox and QDoubleSpinBox, and what derives)
