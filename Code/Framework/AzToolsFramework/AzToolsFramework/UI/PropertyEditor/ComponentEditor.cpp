@@ -609,7 +609,7 @@ namespace AzToolsFramework
             AzToolsFramework::GetAllComponentsForEntity(entity, componentsOnEntity);
 
             AZStd::vector<AZ::Component*> resolved = ResolveComponentPointers();
-            for (auto component : resolved)
+            for (auto component : componentsOnEntity)
             {
                 //for each component, get any pending info/warnings
                 AzToolsFramework::EntityCompositionRequests::PendingComponentInfo pendingComponentInfo;
