@@ -381,7 +381,9 @@ namespace EMotionFX
         if (!AZ::IsClose(keytrack.m_times.back(), endTimeToMatch, AZ::Constants::FloatEpsilon))
         {
             keytrack.m_times.emplace_back(endTimeToMatch);
-            keytrack.m_values.emplace_back(keytrack.m_values.back());
+            // Copy first: emplace_back can reallocate m_values, which would leave a reference to back() dangling.
+            const auto lastValue = keytrack.m_values.back();
+            keytrack.m_values.emplace_back(lastValue);
         }
     }
 
