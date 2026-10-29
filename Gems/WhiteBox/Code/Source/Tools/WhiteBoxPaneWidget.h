@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 #endif
@@ -52,6 +53,7 @@ namespace WhiteBox
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
         , private AzToolsFramework::EntityCompositionNotificationBus::Handler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
+        , private AzToolsFramework::FocusModeNotificationBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private EditorWhiteBoxComponentNotificationBus::Handler
     {
@@ -93,6 +95,10 @@ namespace WhiteBox
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
             AzToolsFramework::ViewportEditorMode mode) override;
 
+        // FocusModeNotificationBus overrides ...
+        // Entering or leaving prefab edit mode changes which White Box entities may be edited.
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
+
         // AZ::TransformNotificationBus overrides ... (live-update the Entity Transform section)
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
@@ -112,10 +118,13 @@ namespace WhiteBox
         //! Run @p fn on the current component inside a single undo batch, then refresh the pane.
         void ModifyComponent(const char* undoLabel, const AZStd::function<void(EditorWhiteBoxComponent*)>& fn);
 
-        //! Repopulate the entity dropdown with every entity that has a White Box component.
+        //! Repopulate the entity dropdown with every editable entity that has a White Box component.
         void RefreshEntityList();
         //! Reload every control from the current component's state.
         void RefreshFromComponent();
+        //! RefreshEntityList + RefreshFromComponent once, next event-loop pass, so a prefab reload does
+        //! not rebuild the pane per entity or switch away from the current White Box.
+        void QueueRefresh();
         //! Reload the layer list / active-layer combo / per-layer meta editors.
         void RefreshLayerControls(EditorWhiteBoxComponent* component);
         //! Move layer row @p from to row @p to (drag-and-drop in the list, or Move Up/Down),
@@ -134,6 +143,7 @@ namespace WhiteBox
         AZ::EntityId m_transformBusEntityId; //!< The entity the TransformNotificationBus handler follows.
         AZ::EntityComponentIdPair m_meshBusPair; //!< The pair the white box notification handler follows.
         bool m_updating = false; //!< Guard: true while the pane writes to its own controls.
+        bool m_refreshQueued = false; //!< A QueueRefresh is pending.
 
         //! Viewport gizmo for the selected layer's Position/Rotation/Scale.
         AZStd::unique_ptr<WhiteBoxLayerGizmo> m_layerGizmo;

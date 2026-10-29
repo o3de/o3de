@@ -51,13 +51,25 @@ namespace WhiteBox
         //! component's "Draw Collider" toggle when the game entity is built).
         void SetDrawCollider(bool draw) { m_drawCollider = draw; }
 
-        //! Supply the actual cooked collider geometry (as a triangle list) so the runtime "Draw
-        //! Collider" overlay shows the real physics shape - e.g. the greedy-merged voxel collider -
-        //! rather than the render mesh. Set from the editor collider when the game entity is built.
-        void SetDebugMesh(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices)
+        //! The cooked collider triangles for the runtime "Draw Collider" overlay, set when the game entity
+        //! is built. bakedNonUniformScale is the non-uniform scale already in these vertices.
+        void SetDebugMesh(
+            const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices,
+            const AZ::Vector3& bakedNonUniformScale = AZ::Vector3::CreateOne())
         {
             m_debugVertices = vertices;
             m_debugIndices = indices;
+            m_debugBakedNonUniformScale = bakedNonUniformScale;
+        }
+
+        //! The non-uniform scale already baked into each variant (and the render data), so the runtime
+        //! applies only current / baked.
+        void SetBakedNonUniformScale(
+            const AZ::Vector3& baseScale, const AZ::Vector3& booleanScale, const AZ::Vector3& renderDataScale)
+        {
+            m_bakedNonUniformScale = baseScale;
+            m_bakedBooleanNonUniformScale = booleanScale;
+            m_bakedRenderDataNonUniformScale = renderDataScale;
         }
 
         //! Cooked Convex Parts; when present they replace the single shape, one PhysX shape per part.
@@ -95,6 +107,8 @@ namespace WhiteBox
         void DestroyBody();
         //! The cooked mesh currently selected by m_useBooleanMesh.
         const Physics::CookedMeshShapeConfiguration& ActiveShapeConfiguration() const;
+        //! The scale still to be applied on top of geometry that already has bakedScale baked in.
+        static AZ::Vector3 RelativeScale(const AZ::Vector3& currentScale, const AZ::Vector3& bakedScale);
 
         Physics::CookedMeshShapeConfiguration m_shapeConfiguration; //!< The base physics representation of the mesh.
         Physics::CookedMeshShapeConfiguration
@@ -106,6 +120,10 @@ namespace WhiteBox
         bool m_drawCollider = false; //!< Draw the collision shape as a wireframe at runtime (opt-in).
         AZStd::vector<AZ::Vector3> m_debugVertices; //!< Cooked collider geometry for the runtime wireframe overlay.
         AZStd::vector<AZ::u32> m_debugIndices; //!< Triangle indices into m_debugVertices for the wireframe overlay.
+        AZ::Vector3 m_bakedNonUniformScale = AZ::Vector3::CreateOne(); //!< Non-uniform scale already baked into the base cooked geometry.
+        AZ::Vector3 m_bakedBooleanNonUniformScale = AZ::Vector3::CreateOne(); //!< Same, for the boolean cooked geometry.
+        AZ::Vector3 m_debugBakedNonUniformScale = AZ::Vector3::CreateOne(); //!< Same, for m_debugVertices.
+        AZ::Vector3 m_bakedRenderDataNonUniformScale = AZ::Vector3::CreateOne(); //!< Same, for the physics render data fallback.
         float m_builtScale = 1.0f; //!< Uniform scale the current physics shape was built with.
         AZ::Vector3 m_builtNonUniformScale = AZ::Vector3::CreateOne(); //!< Non-uniform scale folded into the current shape.
         //! Rebuilds the body when the entity's Non-Uniform Scale component changes (the cooked

@@ -147,8 +147,7 @@ namespace WhiteBox
     {
         if (!m_batchActive)
         {
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, label);
+            m_batchLabel = label;
             m_batchActive = true;
         }
     }
@@ -157,10 +156,13 @@ namespace WhiteBox
     {
         if (m_batchActive)
         {
-            AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(m_entityId);
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
             m_batchActive = false;
+            // Open the undo batch here, not across the drag: something between mouse events could close it
+            // and drop the dirty mark, leaving the prefab unsaved.
+            {
+                AzToolsFramework::ScopedUndoBatch undoBatch(m_batchLabel.c_str());
+                undoBatch.MarkEntityDirty(m_entityId);
+            }
             if (m_changedCallback)
             {
                 m_changedCallback();

@@ -107,8 +107,7 @@ namespace WhiteBox
     {
         if (!m_batchActive)
         {
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, label);
+            m_batchLabel = label;
             m_batchActive = true;
         }
     }
@@ -117,10 +116,13 @@ namespace WhiteBox
     {
         if (m_batchActive)
         {
-            AzToolsFramework::ScopedUndoBatch::MarkEntityDirty(m_entityId);
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
             m_batchActive = false;
+            // The engine only accepts a dirty entity inside an open undo batch, so open it here rather than
+            // holding one across the drag, where something else can close it and drop the dirty mark.
+            {
+                AzToolsFramework::ScopedUndoBatch undoBatch(m_batchLabel.c_str());
+                undoBatch.MarkEntityDirty(m_entityId);
+            }
             if (m_changedCallback)
             {
                 m_changedCallback();

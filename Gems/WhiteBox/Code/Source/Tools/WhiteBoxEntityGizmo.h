@@ -64,7 +64,8 @@ namespace WhiteBox
         AZStd::unique_ptr<AzToolsFramework::ScaleManipulators> m_scale;
 
         float m_startScale = 1.0f; //!< Entity uniform scale at scale-drag start.
-        bool m_batchActive = false;
+        bool m_batchActive = false; //!< A drag is in progress. No engine undo batch is held open for it.
+        AZStd::string m_batchLabel; //!< Undo label of the drag in progress.
         bool m_applying = false; //!< Guard: the gizmo itself is writing the transform.
         AZStd::function<void()> m_changedCallback;
     };

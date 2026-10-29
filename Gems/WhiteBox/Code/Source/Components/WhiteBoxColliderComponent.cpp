@@ -41,6 +41,10 @@ namespace WhiteBox
                 ->Field("DrawCollider", &WhiteBoxColliderComponent::m_drawCollider)
                 ->Field("DebugVertices", &WhiteBoxColliderComponent::m_debugVertices)
                 ->Field("DebugIndices", &WhiteBoxColliderComponent::m_debugIndices)
+                ->Field("BakedNonUniformScale", &WhiteBoxColliderComponent::m_bakedNonUniformScale)
+                ->Field("BakedBooleanNonUniformScale", &WhiteBoxColliderComponent::m_bakedBooleanNonUniformScale)
+                ->Field("DebugBakedNonUniformScale", &WhiteBoxColliderComponent::m_debugBakedNonUniformScale)
+                ->Field("BakedRenderDataNonUniformScale", &WhiteBoxColliderComponent::m_bakedRenderDataNonUniformScale)
                 ->Field("Configuration", &WhiteBoxColliderComponent::m_physicsColliderConfiguration)
                 ->Field("WhiteBoxConfiguration", &WhiteBoxColliderComponent::m_whiteBoxColliderConfiguration);
         }
@@ -80,6 +84,18 @@ namespace WhiteBox
     const Physics::CookedMeshShapeConfiguration& WhiteBoxColliderComponent::ActiveShapeConfiguration() const
     {
         return (m_useBooleanMesh && m_hasBooleanMesh) ? m_booleanShapeConfiguration : m_shapeConfiguration;
+    }
+
+    AZ::Vector3 WhiteBoxColliderComponent::RelativeScale(const AZ::Vector3& currentScale, const AZ::Vector3& bakedScale)
+    {
+        const auto divide = [](const float current, const float baked)
+        {
+            return AZ::IsClose(baked, 0.0f) ? 1.0f : current / baked;
+        };
+        return AZ::Vector3(
+            divide(currentScale.GetX(), bakedScale.GetX()),
+            divide(currentScale.GetY(), bakedScale.GetY()),
+            divide(currentScale.GetZ(), bakedScale.GetZ()));
     }
 
     void WhiteBoxColliderComponent::Activate()
@@ -129,22 +145,15 @@ namespace WhiteBox
         Physics::CookedMeshShapeConfiguration shapeConfiguration = ActiveShapeConfiguration();
         m_builtScale = worldTransform.GetUniformScale();
 
-        // Fold in the entity's CURRENT non-uniform scale as well as the uniform scale, so a runtime
-        // resize (game mode) is reflected in the collider. The cooked triangle-mesh shape honours a
-        // Vector3 m_scale (that is how the uniform path below already works), so a non-uniform value
-        // scales it the same way.
-        //
-        // Note: the editor bakes any non-uniform scale that exists AT BAKE TIME straight into the
-        // cooked mesh geometry (BakeEntityScaleIntoPhysicsMesh). This runtime scale multiplies that,
-        // so it is correct as long as the mesh was baked with an identity (1,1,1) non-uniform scale
-        // in the editor - which is the normal case. If a non-identity non-uniform scale was baked in
-        // the editor, that baked factor would need to be recorded and divided out here to avoid
-        // double-applying it.
+        // Also apply the current non-uniform scale, relative to the factor the editor baked into the
+        // mesh, so a runtime resize is reflected without applying it twice.
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
             nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
         m_builtNonUniformScale = nonUniformScale;
-        shapeConfiguration.m_scale = AZ::Vector3(m_builtScale) * nonUniformScale;
+        const AZ::Vector3 bakedScale =
+            (m_useBooleanMesh && m_hasBooleanMesh) ? m_bakedBooleanNonUniformScale : m_bakedNonUniformScale;
+        shapeConfiguration.m_scale = AZ::Vector3(m_builtScale) * RelativeScale(nonUniformScale, bakedScale);
 
         // Convex Parts become one shape each; otherwise the single cooked mesh is the shape.
         const auto& parts = (m_useBooleanMesh && m_hasBooleanMesh) ? m_booleanPartShapeConfigurations : m_partShapeConfigurations;
@@ -277,15 +286,18 @@ namespace WhiteBox
         AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-        // The AZ::Transform only carries uniform scale, so fold in the entity's current non-uniform
-        // scale exactly as RebuildBody does for the physics shape - otherwise the overlay would show
-        // the baked (un-scaled) collider while the real body is non-uniformly scaled.
+        // The transform has no non-uniform scale; apply the part not already baked into the debug vertices.
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(
             nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-        const auto toWorld = [&worldTransform, &nonUniformScale](const AZ::Vector3& localPoint)
+        const auto toWorldScaled = [&worldTransform](const AZ::Vector3& scale, const AZ::Vector3& localPoint)
         {
-            return worldTransform.TransformPoint(nonUniformScale * localPoint);
+            return worldTransform.TransformPoint(scale * localPoint);
+        };
+        const AZ::Vector3 debugScale = RelativeScale(nonUniformScale, m_debugBakedNonUniformScale);
+        const auto toWorld = [&](const AZ::Vector3& localPoint)
+        {
+            return toWorldScaled(debugScale, localPoint);
         };
 
         debugDisplay.DepthTestOn();
@@ -312,11 +324,12 @@ namespace WhiteBox
             return;
         }
         const WhiteBoxRenderData& renderData = whiteBoxComponent->GetPhysicsRenderData();
+        const AZ::Vector3 renderScale = RelativeScale(nonUniformScale, m_bakedRenderDataNonUniformScale);
         for (const WhiteBoxFace& face : renderData.m_faces)
         {
-            const AZ::Vector3 a = toWorld(face.m_v1.m_position);
-            const AZ::Vector3 b = toWorld(face.m_v2.m_position);
-            const AZ::Vector3 c = toWorld(face.m_v3.m_position);
+            const AZ::Vector3 a = toWorldScaled(renderScale, face.m_v1.m_position);
+            const AZ::Vector3 b = toWorldScaled(renderScale, face.m_v2.m_position);
+            const AZ::Vector3 c = toWorldScaled(renderScale, face.m_v3.m_position);
             debugDisplay.DrawLine(a, b);
             debugDisplay.DrawLine(b, c);
             debugDisplay.DrawLine(c, a);

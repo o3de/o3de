@@ -86,7 +86,9 @@ namespace WhiteBox
         bool m_snapAnchorResolved = false;
 
         AZ::Vector3 m_startScale = AZ::Vector3::CreateOne(); //!< Layer scale at scale-drag start.
-        bool m_batchActive = false; //!< An undo batch is open (mouse drag in progress).
+        //! A drag is in progress. No engine undo batch is held open for it (see EndBatch).
+        bool m_batchActive = false;
+        AZStd::string m_batchLabel; //!< Undo label of the drag in progress.
         AZStd::function<void()> m_changedCallback; //!< Owner notification after a finished drag.
     };
 } // namespace WhiteBox

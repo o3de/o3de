@@ -41,6 +41,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <Components/EditorWhiteBoxColliderComponent.h>
 #include <SubComponentModes/EditorWhiteBoxDefaultModeBus.h>
 #include <SubComponentModes/EditorWhiteBoxTransformModeBus.h>
@@ -1223,10 +1224,14 @@ namespace WhiteBox
                     SerializeWhiteBox(); // a preview left the working mesh out of the layer's stream
                 }
                 RebuildBakedRenderData();
-                // The bake writes SERIALIZED members; without a dirty mark the prefab state
-                // (what play-in-editor spawns from) would keep the stale previous bake.
-                AzToolsFramework::ScopedUndoBatch undoBatch("White Box Bake");
-                undoBatch.MarkEntityDirty(GetEntityId());
+                // The bake writes serialized members, so mark the entity dirty - but never outside the prefab
+                // being edited, where it would propagate through the template endlessly.
+                const auto* focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+                if (focusModeInterface == nullptr || focusModeInterface->IsInFocusSubTree(GetEntityId()))
+                {
+                    AzToolsFramework::ScopedUndoBatch undoBatch("White Box Bake");
+                    undoBatch.MarkEntityDirty(GetEntityId());
+                }
             }
         }
     }
