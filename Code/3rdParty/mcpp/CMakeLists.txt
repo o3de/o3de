@@ -8,9 +8,9 @@
 o3de_fetch_content(mcpp
     VERSION "2.7.2"
     LICENSE "BSD-2-Clause AND (Apache-2.0 OR MIT)"
-    URL "https://github.com/EnterTheArcane/mcpp/archive/c8da19d04e248b129bfd90a4fd7882585148e4e5.tar.gz"
+    URL "https://github.com/o3de/mcpp/archive/c8da19d04e248b129bfd90a4fd7882585148e4e5.tar.gz"
     URL_HASH "b5b4face7d46a0ba74f97680814c1e714d2b729db74961b89dadc59e97c3c48d"
-    GIT "https://github.com/EnterTheArcane/mcpp.git"
+    GIT "https://github.com/o3de/mcpp.git"
     GIT_HASH "c8da19d04e248b129bfd90a4fd7882585148e4e5"
     NO_ADD_SUBDIR
 )
