@@ -15,6 +15,7 @@
 #include <Source/Integration/Assets/ActorAsset.h>
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
+#include <SceneAPIExt/Rules/SocketSetupRule.h>
 
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -109,6 +110,12 @@ namespace EMotionFX
             if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::SimulatedObjectSetupRule>(actorGroup, simulatedObjectSetup))
             {
                 m_actor->SetSimulatedObjectSetup(simulatedObjectSetup);
+            }
+
+            AZStd::shared_ptr<EMotionFX::SocketSetup> socketSetup;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::SocketSetupRule>(actorGroup, socketSetup))
+            {
+                m_actor->SetSocketSetup(socketSetup);
             }
 
             return result.GetResult();
