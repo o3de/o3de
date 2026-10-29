@@ -124,12 +124,14 @@ namespace AzQtComponents
         //! Requests that the label re-elide its text.
         void requestElide();
 
+        //! The rect the text is elided to and the filter highlight is drawn in (less, in IconElidingLabel, which draws beside the text)
+        virtual QRect TextRect();
+
         QString m_filterString;
         QRegularExpression m_filterRegex;
 
     private:
         void elide();
-        QRect TextRect();
 
         const QColor backgroundColor{ "#707070" };
 

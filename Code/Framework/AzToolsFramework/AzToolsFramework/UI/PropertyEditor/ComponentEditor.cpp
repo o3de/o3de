@@ -25,6 +25,7 @@
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 #include <QMenu>
@@ -217,34 +218,26 @@ namespace AzToolsFramework
                 // not in multi-edit, just set the adapter component to this instance.
                 m_adapter->SetComponent(componentInstance);
 
-                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter
+                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter. The
+                // aggregate is detached first (ClearAdapters empties the view), so the adapter's queued reset rebuilds no view, and the
+                // view is then attached to the current contents: one build of the right contents.
                 if (m_aggregateAdapter)
                 {
+                    m_aggregateAdapter->ClearAdapters();
+                    m_adapter->ExecuteQueuedReset();
                     m_filterAdapter->SetSourceAdapter(m_adapter);
                     m_aggregateAdapter.reset();
                 }
             }
+            else if (IsContentBuildHeld())
+            {
+                // multi-edit in a held card (lazy cards): the aggregate generates every instance's contents as it adds it, so the
+                // card's release adds them
+                m_pendingAggregateInstances.push_back(componentInstance);
+            }
             else
             {
-                // there's an aggregateInstance, so we're in multi-edit. Create the AggregateAdapter if it doesn't exist yet
-                if (!m_aggregateAdapter)
-                {
-                    m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
-
-                    // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
-                    // and the output is noisy and unpleasant.
-                    m_aggregateAdapter->SetGenerateDiffRows(false);
-
-                    // add the original adapter which was already set in a prior AddInstance with a null aggregateInstance
-                    m_aggregateAdapter->AddAdapter(m_adapter);
-                    m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
-                }
-
-                // create the new ComponentAdapter for the componentInstance using the factory from our constructor
-                auto newAdapter = m_adapterFactory();
-                AZ_Assert(newAdapter, "m_adapterFactory should always return a valid ComponentAdapter in DPE mode!");
-                newAdapter->SetComponent(componentInstance);
-                m_aggregateAdapter->AddAdapter(newAdapter);
+                AddAggregateInstance(componentInstance);
             }
         }
         else
@@ -268,8 +261,33 @@ namespace AzToolsFramework
         GetHeader()->setToolTip(BuildHeaderTooltip());
     }
 
+    void ComponentEditor::AddAggregateInstance(AZ::Component* componentInstance)
+    {
+        // there's an aggregateInstance, so we're in multi-edit. Create the AggregateAdapter if it doesn't exist yet
+        if (!m_aggregateAdapter)
+        {
+            m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+
+            // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
+            // and the output is noisy and unpleasant.
+            m_aggregateAdapter->SetGenerateDiffRows(false);
+
+            // Attach the view to the (still empty) aggregate first, then add the original adapter (set in a prior AddInstance): its
+            // queued reset then rebuilds no view, and the aggregate queues one reset for all the instances, which InvalidateAll runs.
+            m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
+            m_aggregateAdapter->AddAdapter(m_adapter);
+        }
+
+        // create the new ComponentAdapter for the componentInstance using the factory from our constructor
+        auto newAdapter = m_adapterFactory();
+        AZ_Assert(newAdapter, "m_adapterFactory should always return a valid ComponentAdapter in DPE mode!");
+        newAdapter->SetComponent(componentInstance);
+        m_aggregateAdapter->AddAdapter(newAdapter);
+    }
+
     void ComponentEditor::ClearInstances(bool invalidateImmediately)
     {
+        m_pendingAggregateInstances.clear();
         GetPropertyEditor()->SetDynamicEditDataProvider(nullptr);
 
         //clear warning flag and icon
@@ -602,6 +620,54 @@ namespace AzToolsFramework
         GetPropertyEditor()->InvalidateAll(filter);
     }
 
+    void ComponentEditor::HoldContentBuild()
+    {
+        if (m_dpe)
+        {
+            m_dpe->SetContentBuildHeld(true);
+        }
+    }
+
+    void ComponentEditor::ReleaseContentBuild()
+    {
+        if (m_dpe)
+        {
+            // a multi-edit card held before its instances were added builds its aggregate first (see AddInstance)
+            for (AZ::Component* componentInstance : m_pendingAggregateInstances)
+            {
+                AddAggregateInstance(componentInstance);
+            }
+            m_pendingAggregateInstances.clear();
+
+            // The rows are built in the hidden property editor and shown with it, as in a card that is built hidden: rows added to a
+            // shown parent are shown later (QLayout::addChildWidget queues it), after the card has taken its height without them
+            const bool shown = m_dpe->isVisible();
+            if (shown)
+            {
+                m_dpe->hide();
+            }
+            m_dpe->SetContentBuildHeld(false);
+            if (shown)
+            {
+                m_dpe->show();
+            }
+        }
+    }
+
+    void ComponentEditor::DiscardContentBuild()
+    {
+        m_pendingAggregateInstances.clear();
+        if (m_dpe)
+        {
+            m_dpe->DiscardHeldContentBuild();
+        }
+    }
+
+    bool ComponentEditor::IsContentBuildHeld() const
+    {
+        return m_dpe && m_dpe->IsContentBuildHeld();
+    }
+
     void ComponentEditor::QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel)
     {
         GetPropertyEditor()->QueueInvalidation(refreshLevel);
@@ -701,7 +767,7 @@ namespace AzToolsFramework
 
         AZStd::string iconPath;
         AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
-        GetHeader()->SetIcon(QIcon(iconPath.c_str()));
+        GetHeader()->SetIcon(AzQtComponents::CachedIcon(QString(iconPath.c_str())));
 
         bool isExpanded = true;
         AzToolsFramework::EditorEntityInfoRequestBus::EventResult(isExpanded, componentInstance.GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsComponentExpanded, componentInstance.GetId());

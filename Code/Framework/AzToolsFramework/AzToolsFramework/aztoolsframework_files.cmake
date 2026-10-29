@@ -526,6 +526,7 @@ set(FILES
     UI/PropertyEditor/EntityIdQLineEdit.cpp
     UI/PropertyEditor/EntityPropertyEditor.hxx
     UI/PropertyEditor/EntityPropertyEditor.cpp
+    UI/PropertyEditor/EntityPropertyEditorLoading.cpp
     UI/PropertyEditor/ExeSelectPropertyHandler.cpp
     UI/PropertyEditor/ExeSelectPropertyHandler.h
     UI/PropertyEditor/GenericComboBoxCtrl.h
@@ -1038,6 +1039,8 @@ set(FILES
     UI/LegacyFramework/CustomMenus/CustomMenusComponent.cpp
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.h
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
+    UI/Outliner/EntityOutlinerFlatSheet.h
+    UI/Outliner/EntityOutlinerFlatSheet.cpp
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx

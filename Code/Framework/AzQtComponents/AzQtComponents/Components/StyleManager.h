@@ -27,6 +27,7 @@ namespace AzQtComponents
     class StyleSheetCache;
     class StylesheetPreprocessor;
     class AutoCustomWindowDecorations;
+    class StyleManagerTests;
 
     /**
      * Wrapper around classes dealing with Open 3D Engine style.
@@ -51,6 +52,8 @@ namespace AzQtComponents
     {
         Q_OBJECT
 
+        friend StyleManagerTests;
+
         static StyleManager* s_instance;
 
     public:
@@ -61,6 +64,14 @@ namespace AzQtComponents
 
         static bool setStyleSheet(QWidget* widget, QString styleFileName);
 
+        //! Flattened GUI only (see stylesheetsDisabled): the function that defines the rules of a style sheet as
+        //! elements (TextElement::registerElement, ...), registered under the name the sheet is set by (with or
+        //! without the extension). setStyleSheet runs it the first time that sheet is set on a widget, and a
+        //! registration after that runs at once, so the order of calls does not matter. Several functions may
+        //! register for one sheet (a sheet shared by modules); legacy mode never runs any.
+        using FlatSheetRegistrar = void (*)();
+        static void registerFlatSheet(const QString& styleFileName, FlatSheetRegistrar registrar);
+
         static QStyle* styleSheetStyle(const QWidget* widget);
         static QStyle* baseStyle(const QWidget* widget);
 
@@ -68,6 +79,19 @@ namespace AzQtComponents
 
         //! Utility - set an object property, and return true if it changed.
         static bool setObjectProperty(QWidget* widget, const char* propertyName, const QVariant& value);
+
+        //! True when the O3DE_DISABLE_STYLESHEETS environment variable is set or the application
+        //! was launched with --disable-stylesheets (GUI flattening work). In that mode no Qt style
+        //! sheets are installed anywhere and widgets render through the plain style chain
+        //! (Style -> Fusion base), driven by the palette instead of .qss rules.
+        //! The noop and passthrough rungs of the GuiPerfFloor ladder (--stylesheets-noop, --style-passthrough)
+        //! imply it: it is true at flat, noop and passthrough.
+        static bool stylesheetsDisabled();
+
+        //! True when the flattened GUI's own styling is in effect: stylesheetsDisabled(), and not the passthrough
+        //! rung of the GuiPerfFloor ladder, where Style hands every call to its base style and the widgets leave out
+        //! what they set on themselves in place of a rule (palettes, sizes, their own painting).
+        static bool flatStylingActive();
 
         explicit StyleManager(QObject* parent);
         ~StyleManager() override;
@@ -105,6 +129,9 @@ namespace AzQtComponents
         void stopTrackingWidget(QObject* object);
 
     private:
+        //! The flat branch of setStyleSheet
+        static void applyFlatSheet(QWidget* widget, const QString& styleFileName);
+
         void initializeFonts();
         void initializeSearchPaths(QApplication* application, const AZ::IO::PathView& engineRootPath);
 

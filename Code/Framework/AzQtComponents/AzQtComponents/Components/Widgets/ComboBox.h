@@ -73,6 +73,10 @@ namespace AzQtComponents
         //! Same as AzQtComponents::Style::addClass(comboBox, "CustomCheckState")
         static void addCustomCheckStateStyle(QComboBox* cb);
 
+        //! Flattened GUI only, from Style::polish(QApplication*) (and the fixtures of the tests): registers the Global elements that give a
+        //! combo box the look of ComboBox.qss, once, whatever the number of calls.
+        static void registerFlatElements();
+
     private:
         friend class Style;
 

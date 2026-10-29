@@ -69,6 +69,8 @@ set(FILES
     native/resourcecompiler/RCJobSortFilterProxyModel.h
     native/resourcecompiler/RCQueueSortModel.cpp
     native/resourcecompiler/RCQueueSortModel.h
+    native/ui/FlatElements.cpp
+    native/ui/FlatElements.h
     native/utilities/ApplicationManagerAPI.h
     native/utilities/ApplicationManager.cpp
     native/utilities/ApplicationManager.h

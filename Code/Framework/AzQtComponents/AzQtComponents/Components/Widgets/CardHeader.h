@@ -194,6 +194,8 @@ namespace AzQtComponents
 
         void mouseDoubleClickEvent(QMouseEvent* event) override;
         void contextMenuEvent(QContextMenuEvent* event) override;
+        //! Flattened styling: paints the Card.qss header box (fill, warning tile, selection).
+        void paintEvent(QPaintEvent* event) override;
         void triggerContextMenuUnderButton();
         void triggerHelpButton();
         void triggerIconLabelClicked(const QPoint& position);

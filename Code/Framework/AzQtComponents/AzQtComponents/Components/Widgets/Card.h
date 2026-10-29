@@ -152,6 +152,9 @@ namespace AzQtComponents
         // implemented this way so that AzToolsFramework::ComponentEditorHeader can still be used
         Card(CardHeader* customHeader, QWidget* parent = nullptr);
 
+        //! Flattened styling: paints the Card.qss shadow border-image and body box.
+        void paintEvent(QPaintEvent* event) override;
+
     private:
         bool hasSecondaryContent() const;
         void updateSecondaryContentVisibility();
@@ -159,6 +162,10 @@ namespace AzQtComponents
         // methods used by Style
         static bool polish(Style* style, QWidget* widget, const Config& config);
         static bool unpolish(Style* style, QWidget* widget, const Config& config);
+        //! Flattened styling: the Card.qss box model (margin/border/padding) of the Card,
+        //! its #contentContainer and the CardHeader #Background, delivered through
+        //! SE_ShapedFrameContents exactly like the style sheet did. Null when not ours.
+        static QRect shapedFrameContents(const QStyleOption* option, const QWidget* widget);
         static QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const QWidget* widget, const Config& config);
 
         QVBoxLayout* m_rootLayout = nullptr;

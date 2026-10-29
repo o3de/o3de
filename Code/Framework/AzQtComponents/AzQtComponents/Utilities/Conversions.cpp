@@ -87,9 +87,11 @@ namespace AzQtComponents
             }
 
             // Remove trailing zeros, since the locale conversion won't do
-            // it for us
-            QString trailingZeros = QString("%1+$").arg(zeroDigit);
-            retValue.remove(QRegularExpression(trailingZeros));
+            // it for us. A plain loop: a QRegularExpression here was compiled for every number shown in a property editor
+            while (!zeroDigit.isEmpty() && retValue.endsWith(zeroDigit))
+            {
+                retValue.chop(zeroDigit.size());
+            }
 
             // It's possible we could be left with a decimal point on the end
             // if we stripped the trailing zeros, so if that's the case, then

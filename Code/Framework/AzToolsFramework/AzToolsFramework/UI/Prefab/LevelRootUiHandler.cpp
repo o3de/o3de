@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -39,7 +40,7 @@ namespace AzToolsFramework
 
     QIcon LevelRootUiHandler::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
-        return QIcon(m_levelRootIconPath);
+        return AzQtComponents::CachedIcon(m_levelRootIconPath);
     }
 
     QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const

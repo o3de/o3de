@@ -7,6 +7,8 @@
  */
 
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -14,6 +16,8 @@
 #include <AzCore/std/limits.h>
 
 #include <QLabel>
+#include <QPainter>
+#include <QPainterPath>
 #include <QStyleOptionSpinBox>
 #include <QHBoxLayout>
 #include <QEvent>
@@ -24,6 +28,58 @@ namespace AzQtComponents
 static constexpr const char* g_CoordinatePropertyName = "Coordinate";
 
 static int g_CoordLabelMargins = 2; // Keep this up to date with css
+
+//! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+//! with others into one translation unit, where anonymous namespaces merge.
+namespace VectorInputFlat
+{
+    //! VectorInput.qss:9-16 `AzQtComponents--VectorElement QLabel { margin-top: 2px; margin-bottom: 2px; border-top-left-radius: 2px;
+    //! border-bottom-left-radius: 2px }`: the label's fill lies 2px inside its rect above and below, with its two left corners rounded.
+    //! TOKENIZE: VectorLabelMargin, VectorLabelRadius
+    constexpr int LabelMargin = 2;
+    constexpr int LabelRadius = 2;
+
+    //! The fill of each coordinate, VectorInput.qss:37-55. TOKENIZE: VectorXColor, VectorYColor, VectorZColor, VectorWColor
+    QColor coordinateColor(const QString& coordinate)
+    {
+        if (coordinate == QLatin1String("X"))
+        {
+            return QColor(0xE2, 0x52, 0x43);
+        }
+        if (coordinate == QLatin1String("Y"))
+        {
+            return QColor(0x58, 0xBC, 0x61);
+        }
+        if (coordinate == QLatin1String("Z"))
+        {
+            return QColor(0x42, 0x85, 0xF4);
+        }
+        if (coordinate == QLatin1String("W"))
+        {
+            return QColor(0xE5, 0x78, 0x29);
+        }
+        return QColor();
+    }
+
+    //! QRenderRule::borderClip (qstylesheetstyle.cpp:1288-1325) of that rule, which has no border: a path along the box with the arcs of
+    //! its two left corners. QRenderRule::drawBackground fills it antialiased (:1348-1370), so at a fractional device ratio the rows at
+    //! the edges blend.
+    QPainterPath labelPath(const QRectF& box)
+    {
+        const qreal radius = LabelRadius;
+        QPainterPath path;
+        path.moveTo(box.left() + radius, box.top());
+        path.lineTo(box.right(), box.top());
+        path.lineTo(box.right(), box.bottom());
+        path.lineTo(box.left() + radius, box.bottom());
+        path.arcTo(QRectF(box.left(), box.bottom() - 2 * radius, 2 * radius, 2 * radius), 270, -90);
+        path.lineTo(box.left(), box.top() + radius);
+        path.arcTo(QRectF(box.left(), box.top(), 2 * radius, 2 * radius), 180, -90);
+        path.closeSubpath();
+        return path;
+    }
+} // namespace VectorInputFlat
+
 // To be populated by VectorInput::initStaticVars
 static int g_labelSize = -1;
 
@@ -207,6 +263,28 @@ bool VectorElement::unpolish(QProxyStyle* style, QWidget* widget, const SpinBox:
     return true;
 }
 
+bool VectorElement::drawFlattenedLabel(const QStyleOption* option, QPainter* painter, const QWidget* widget)
+{
+    // The label's rule drew its fill (the color of the vector's Coordinate) inside the margin it set above and below, which also
+    // gave the label its frame box (Style's SE_ShapedFrameContents): so the fill is 4px shorter than the label's rect. A label
+    // of a vector without a coordinate has no fill.
+    if (!option || !widget || !widget->inherits("QLabel") || !Selectors::childOfClass(widget, "AzQtComponents::VectorElement"))
+    {
+        return false;
+    }
+
+    const QColor fill = VectorInputFlat::coordinateColor(widget->parentWidget()->property(g_CoordinatePropertyName).toString());
+    if (fill.isValid())
+    {
+        const QRectF box(option->rect.adjusted(0, VectorInputFlat::LabelMargin, 0, -VectorInputFlat::LabelMargin));
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->fillPath(VectorInputFlat::labelPath(box), fill);
+        painter->restore();
+    }
+    return true;
+}
+
 void VectorElement::initStaticVars(int labelSize)
 {
     g_labelSize = labelSize;
@@ -312,7 +390,8 @@ void VectorInput::setLabelStyle(int index, const QString& qss)
         "This control handles only %i controls", m_elementCount);
     if (index < m_elementCount)
     {
-        m_elements[index]->getLabelWidget()->setStyleSheet(qss);
+        // an inline sheet of every vector label that has a style (StyleForX..W): the GuiPerfFloor noop and passthrough rungs leave it out
+        AzQtComponents::GuiPerfFloor::setInlineStyleSheet(m_elements[index]->getLabelWidget(), qss);
     }
 }
 

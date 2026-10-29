@@ -21,6 +21,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
@@ -43,6 +44,10 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, DPE will use widget pooling to attempt to improve performance.");
+
+//! The time HandleReset spent in its two widget phases (DocumentPropertyEditor::TakeResetTimings). Main thread only, as widgets are.
+static AZ::u64 s_resetRowsMicroseconds = 0;
+static AZ::u64 s_resetDirtyHandlersMicroseconds = 0;
 
 static constexpr const char* GetHandlerPropertyName()
 {
@@ -208,6 +213,20 @@ namespace AzToolsFramework
         return { (m_enforceMinWidth ? cumulativeWidth : 0), minimumHeight };
     }
 
+    //! A shared column's layout only places the row's items for one layout pass. It gives the items back to the row's layout, which
+    //! owns them, then deletes the spacers CloseColumn gave it, and itself.
+    static void ReleaseColumnLayout(const QLayout& rowLayout, QHBoxLayout* columnLayout)
+    {
+        while (QLayoutItem* item = columnLayout->takeAt(0))
+        {
+            if (rowLayout.indexOf(item) < 0)
+            {
+                delete item; // a spacer of CloseColumn
+            }
+        }
+        delete columnLayout;
+    }
+
     void DPELayout::CloseColumn(
         QHBoxLayout* currentColumnLayout,
         QRect& itemGeometry,
@@ -238,6 +257,7 @@ namespace AzToolsFramework
             itemGeometry.setRight(itemGeometry.left() + columnWidth);
         }
         currentColumnLayout->setGeometry(itemGeometry);
+        ReleaseColumnLayout(*this, currentColumnLayout);
 
         // Count completed columns.
         ++currentColumnCount;
@@ -1095,7 +1115,12 @@ namespace AzToolsFramework
 
     void DPERowWidget::PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
-        rowWidget->setParent(this);
+        // A new row is parented once, by the main layout that takes it (AddAfterWidget: insertWidget reparents it to the scroll
+        // surface). A row that is moved is parented here first, as before: its parent decides which layout Qt takes it out of.
+        if (rowWidget->parentWidget())
+        {
+            rowWidget->setParent(this);
+        }
         auto dpe = GetDPE();
 
         // determine where to put this new row in the main DPE layout
@@ -1358,6 +1383,8 @@ namespace AzToolsFramework
         m_layout = new QVBoxLayout(scrollSurface);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(2);
+        // The stretch below the rows, added once: rows are always inserted before it (AddAfterWidget)
+        m_layout->addStretch();
 
         setWidget(scrollSurface);
         setWidgetResizable(true);
@@ -1403,9 +1430,15 @@ namespace AzToolsFramework
         }
 
         m_adapter = theAdapter;
+        // A held editor builds nothing for its adapter's events, it only marks its rows pending (SetContentBuildHeld)
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->HandleReset();
             });
         m_adapter->ConnectResetHandler(m_resetHandler);
@@ -1413,6 +1446,11 @@ namespace AzToolsFramework
         m_resetQueuedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetQueuedEvent::Handler(
             [this]()
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->RequestExecuteQueuedReset();
             });
         m_adapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
@@ -1420,6 +1458,11 @@ namespace AzToolsFramework
         m_changedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
             [this](const AZ::Dom::Patch& patch)
             {
+                if (m_contentBuildHeld)
+                {
+                    m_contentBuildPending = true;
+                    return;
+                }
                 this->HandleDomChange(patch);
             });
         m_adapter->ConnectChangedHandler(m_changedHandler);
@@ -1590,6 +1633,49 @@ namespace AzToolsFramework
     {
         m_dpeSettings.reset();
         Clear();
+    }
+
+    void DocumentPropertyEditor::SetContentBuildHeld(bool held)
+    {
+        // Holding, or nothing held to release: only the flag changes
+        if (held || !m_contentBuildHeld)
+        {
+            m_contentBuildHeld = held;
+            return;
+        }
+
+        // Release: first run the reset the adapter may still have queued, while its events still only mark the rows pending (the
+        // reset posted for it, if any, finds nothing left to do); then build the rows once, from the adapter's current contents
+        m_executeQueuedResetAlreadyQueued = false;
+        if (m_adapter)
+        {
+            m_adapter->ExecuteQueuedReset();
+        }
+        m_contentBuildHeld = false;
+        if (m_contentBuildPending)
+        {
+            m_contentBuildPending = false;
+            if (m_adapter)
+            {
+                HandleReset();
+            }
+        }
+    }
+
+    void DocumentPropertyEditor::DiscardHeldContentBuild()
+    {
+        m_contentBuildHeld = false;
+        m_contentBuildPending = false;
+    }
+
+    bool DocumentPropertyEditor::IsContentBuildHeld() const
+    {
+        return m_contentBuildHeld;
+    }
+
+    bool DocumentPropertyEditor::IsContentBuildPending() const
+    {
+        return m_contentBuildPending;
     }
 
     void DocumentPropertyEditor::InvalidateAll([[maybe_unused]] const char* filter)
@@ -1832,6 +1918,7 @@ namespace AzToolsFramework
 
         auto topContents = m_adapter->GetContents();
 
+        const AZStd::chrono::steady_clock::time_point rowsStart = AZStd::chrono::steady_clock::now();
         for (size_t arrayIndex = 0, numIndices = topContents.ArraySize(); arrayIndex < numIndices; ++arrayIndex)
         {
             auto& rowValue = topContents[arrayIndex];
@@ -1844,10 +1931,25 @@ namespace AzToolsFramework
                 m_rootNode->AddChildFromDomValue(topContents[arrayIndex], arrayIndex);
             }
         }
-        m_layout->addStretch();
+        const AZStd::chrono::steady_clock::time_point dirtyHandlersStart = AZStd::chrono::steady_clock::now();
         UpdateDirtyHandlers();
+        const AZStd::chrono::steady_clock::time_point dirtyHandlersEnd = AZStd::chrono::steady_clock::now();
+
+        s_resetRowsMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(dirtyHandlersStart - rowsStart).count());
+        s_resetDirtyHandlersMicroseconds += aznumeric_cast<AZ::u64>(
+            AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(dirtyHandlersEnd - dirtyHandlersStart).count());
+
         updateGeometry();
         emit RequestSizeUpdate();
+    }
+
+    void DocumentPropertyEditor::TakeResetTimings(AZ::u64& rowsMicroseconds, AZ::u64& dirtyHandlersMicroseconds)
+    {
+        rowsMicroseconds = s_resetRowsMicroseconds;
+        dirtyHandlersMicroseconds = s_resetDirtyHandlersMicroseconds;
+        s_resetRowsMicroseconds = 0;
+        s_resetDirtyHandlersMicroseconds = 0;
     }
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)

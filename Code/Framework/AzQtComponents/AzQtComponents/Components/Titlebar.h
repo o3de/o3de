@@ -178,6 +178,7 @@ namespace AzQtComponents
         void windowTitleOverrideChanged(const QString& windowTitleOverride);
 
     protected:
+        void paintEvent(QPaintEvent* event) override;
         void mousePressEvent(QMouseEvent* ev) override;
         void mouseReleaseEvent(QMouseEvent* ev) override;
         void mouseMoveEvent(QMouseEvent* ev) override;

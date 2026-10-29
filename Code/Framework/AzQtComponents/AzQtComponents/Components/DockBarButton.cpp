@@ -8,8 +8,10 @@
 
 #include <AzQtComponents/Components/DockBarButton.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QApplication>
 #include <QEvent>
@@ -114,6 +116,8 @@ namespace AzQtComponents
         QStylePainter p(this);
         QStyleOptionToolButton option;
         initStyleOption(&option);
+        // Contents margins stand for a stylesheet margin (flattened GUI); none are set otherwise
+        option.rect = contentsRect();
 
         // Set the icon based on m_buttonType. This allows the icon to be changed in a QStyle, or in
         // a Qt Style Sheet by changing the titlebar-close-icon, titlebar-maximize-icon, and
@@ -183,14 +187,24 @@ namespace AzQtComponents
 
         QStyleOptionToolButton label = *buttonOption;
 
-        // Do not draw hover rect if the button is used in a Tab
+        // Do not draw the config's hover rect if the button is used in a Tab. In the legacy GUI Qt's
+        // stylesheet path paints a dock tab's close button (TitleBar.qss) and never reaches this
+        // function; the flattened GUI takes that button's hover fill from the tab element.
         auto tabBarParent = qobject_cast<const AzQtComponents::TabBar*>(widget->parent());
+        const TabElement* tabElement = (tabBarParent && dockBarButton->m_buttonType == DockBarButton::CloseButton && StyleManager::stylesheetsDisabled())
+            ? TabElement::forTabBar(tabBarParent)
+            : nullptr;
 
         bool mouseOver = buttonOption->state & QStyle::State_MouseOver;
         Qt::MouseButtons mouseButtons = QApplication::mouseButtons();
         bool mouseDown = mouseButtons & Qt::LeftButton;
 
-        if (!tabBarParent && mouseOver)
+        if (tabElement && mouseOver && tabElement->m_closeHoverFill.isValid())
+        {
+            // over the button's box, its margin excluded (paintEvent passes the contents rect)
+            painter->fillRect(buttonOption->rect, tabElement->m_closeHoverFill);
+        }
+        else if (!tabBarParent && mouseOver)
         {
             painter->setPen(Qt::NoPen);
 

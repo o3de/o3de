@@ -12,21 +12,34 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <QMenu>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QStyle>
 #include <QPoint>
 #include <QSettings>
 #include <QStyleOption>
+#include <qdrawutil.h>
 
 namespace AzQtComponents
 {
 
     static QString g_containerCardClass = QStringLiteral("ContainerCard");
     static QString g_sectionCardClass = QStringLiteral("SectionCard");
+
+    // ContainerCard / SectionCard have no shadow border-image and no body fill (Card.qss).
+    static bool cardHasFlatFrame(const Card* card)
+    {
+        return Style::hasClass(card, g_containerCardClass) || Style::hasClass(card, g_sectionCardClass);
+    }
 
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
@@ -86,7 +99,9 @@ namespace AzQtComponents
 
         // has to be done here, otherwise it will affect all tooltips
         // as tooltips do not support any kind of css matchers other than QToolTip
-        m_header->setStyleSheet(QStringLiteral("QToolTip { padding: %1px; }").arg(defaultConfigValues.toolTipPaddingInPixels));
+        // (an inline sheet of every card header: the GuiPerfFloor noop and passthrough rungs leave it out)
+        GuiPerfFloor::setInlineStyleSheet(
+            m_header, QStringLiteral("QToolTip { padding: %1px; }").arg(defaultConfigValues.toolTipPaddingInPixels));
 
         m_rootLayout = new QVBoxLayout(this);
         m_rootLayout->setSizeConstraint(QLayout::SetMinimumSize);
@@ -381,6 +396,22 @@ namespace AzQtComponents
             card->m_warningIconSize = config.warningIconSize;
 
             card->m_rootLayout->setSpacing(config.rootLayoutSpacing);
+
+            if (StyleManager::stylesheetsDisabled())
+            {
+                // Card.qss resolved to one layer (legacy capture 2026-09-23): the boxes
+                // come from Card::shapedFrameContents (SE_ShapedFrameContents, the same
+                // contact point QStyleSheetStyle used), the fills from Card::paintEvent.
+                // The frames themselves stay unfilled and their layouts carry no margins.
+                card->setAutoFillBackground(false);
+                card->m_contentContainer->setAutoFillBackground(false);
+                card->m_rootLayout->setContentsMargins(0, 0, 0, 0);
+                card->m_mainLayout->setContentsMargins(0, 0, 0, 0);
+
+                // .separator { color: #999999 } on the QFrame::HLine (Plain, line width 1: QFrame's defaults) is the
+                // frame element Global.Frame.Separator (FrameElement.cpp), resolved when the class tag is added
+            }
+
             style->repolishOnSettingsChange(card);
             polished = true;
         }
@@ -388,10 +419,56 @@ namespace AzQtComponents
         {
             CardHeader::setIconSize(config.headerIconSizeInPixels);
 
-            QString newStyleSheet = QStringLiteral("QToolTip { padding: %1px; }").arg(config.toolTipPaddingInPixels);
-            if (newStyleSheet != cardHeader->styleSheet())
+            if (StyleManager::stylesheetsDisabled())
             {
-                cardHeader->setStyleSheet(newStyleSheet);
+                // Card.qss header, one layer. The header fill is painted by
+                // CardHeader::paintEvent; #Background stays transparent and gets its
+                // 2/7/3/7 padding + 1px border as the frame box (8, 3, 8, 3) from
+                // Card::shapedFrameContents. The per-child margins (#Expander, #Icon,
+                // #WarningIcon, #Help) are the boxes of the Global elements of
+                // PropertyEditorElements.cpp: the layout has no spacing, as in Native
+                // (CardHeader.cpp:152).
+                cardHeader->m_backgroundFrame->setAutoFillBackground(false);
+                cardHeader->m_backgroundLayout->setContentsMargins(0, 0, 0, 0);
+
+                // #Title { font-weight: bold }, normal inside a palette card: TextElement CardTitle, applied when
+                // each #Title label of the header is polished (the title and the hidden label its ElidingLabel
+                // measures the size hint with; ElidingLabel::setObjectName names both)
+
+                // CardHeader[contentModified=true] * { color: #E57829 }
+                // TOKENIZE: CardModifiedTextColor
+                QPalette titlePalette;
+                if (cardHeader->isContentModified())
+                {
+                    titlePalette.setColor(QPalette::WindowText, QColor(0xE5, 0x78, 0x29));
+                }
+                // Card.qss:272 `AzQtComponents--Card QLabel:disabled { color: #999999 }` (two type selectors and a pseudo-class: it outranks the
+                // line above, an attribute, a type and `*`): the title of a disabled card, mock disabled or not, is #999999 either way. The
+                // title is polished before its header sits in a card (ElidingLabel::elide polishes it while the header is built), so the
+                // polish of the label (Style's applyFlattenedDisabledText) did not find the card, and this palette replaces whatever it set.
+                // TOKENIZE: CardDisabledTextColor
+                if (Selectors::withinClass(cardHeader, "AzQtComponents::Card"))
+                {
+                    for (const QPalette::ColorRole role : { QPalette::WindowText, QPalette::Text, QPalette::ButtonText })
+                    {
+                        titlePalette.setColor(QPalette::Disabled, role, QColor(0x99, 0x99, 0x99));
+                    }
+                }
+                cardHeader->m_titleLabel->setPalette(titlePalette);
+
+                // #ContextMenu / #ContextMenuPlusIcon / #Help: qproperty-icon, iconSize,
+                // flat, max-width/max-height are the Global elements' too, applied
+                // when each button is polished (PropertyEditorElements.cpp).
+            }
+            else
+            {
+                // Installing this per-widget sheet would re-interpose QStyleSheetStyle
+                // over the flattened chain, so it is qss-mode only.
+                QString newStyleSheet = QStringLiteral("QToolTip { padding: %1px; }").arg(config.toolTipPaddingInPixels);
+                if (newStyleSheet != cardHeader->styleSheet())
+                {
+                    cardHeader->setStyleSheet(newStyleSheet);
+                }
             }
 
             cardHeader->configSettingsChanged();
@@ -418,6 +495,114 @@ namespace AzQtComponents
         }
 
         return unpolished;
+    }
+
+    QRect Card::shapedFrameContents(const QStyleOption* option, const QWidget* widget)
+    {
+        // Card.qss box model, resolved to the frame widths QStyleSheetStyle realized
+        // (read off the legacy capture, 2026-09-23). Negative values are what the
+        // negative qss padding produced and are kept as-is.
+        if (!option || !widget)
+        {
+            return QRect();
+        }
+        const QRect rect = option->rect;
+
+        if (auto card = qobject_cast<const Card*>(widget))
+        {
+            // Card: border-image 5/7/9/7, padding -4/-5/-4/-5, margin-bottom 4 -> (2, 1, 2, 9)
+            // ContainerCard / SectionCard: border none, same padding          -> (-5, -4, -5, 0)
+            // Card[hideFrame=true]: border 1px transparent, same padding     -> (-4, -3, -4, 1)
+            // TOKENIZE: CardShadowInset
+            if (cardHasFlatFrame(card))
+            {
+                return rect.adjusted(-5, -4, 5, 0);
+            }
+            if (card->property("hideFrame").toBool())
+            {
+                return rect.adjusted(-4, -3, 4, -1);
+            }
+            return rect.adjusted(2, 1, -2, -9);
+        }
+
+        const QWidget* parent = widget->parentWidget();
+        if (widget->objectName() == QLatin1String("contentContainer"))
+        {
+            // #contentContainer: padding 8/7/7/7 + 1px border (no top) -> (8, 8, 8, 8)
+            // ContainerCard / SectionCard body: no border               -> (7, 8, 7, 7)
+            // TOKENIZE: CardBodyInset
+            if (auto card = qobject_cast<const Card*>(parent))
+            {
+                return cardHasFlatFrame(card) ? rect.adjusted(7, 8, -7, -7) : rect.adjusted(8, 8, -8, -8);
+            }
+        }
+        else if (widget->objectName() == QLatin1String("Background"))
+        {
+            // CardHeader #Background: padding 2/7/3/7 + 1px border (no bottom) -> (8, 3, 8, 3)
+            // .secondaryCardHeader #Background: padding 2/0/2/0, no border      -> (0, 2, 0, 2)
+            // TOKENIZE: CardHeaderInset
+            if (auto header = qobject_cast<const CardHeader*>(parent))
+            {
+                return Style::hasClass(header, QStringLiteral("secondaryCardHeader"))
+                    ? rect.adjusted(0, 2, 0, -2)
+                    : rect.adjusted(8, 3, -8, -3);
+            }
+        }
+
+        return QRect();
+    }
+
+    void Card::paintEvent(QPaintEvent* event)
+    {
+        // Not the flattened painting at the passthrough rung either: the frame as the style draws it
+        if (!StyleManager::flatStylingActive())
+        {
+            QFrame::paintEvent(event);
+            return;
+        }
+
+        // Card.qss, one layer:
+        //   Card: border-image shadow.png sliced 5/7/9/7 over the box left after the
+        //         4px bottom margin (ContainerCard / SectionCard / hideFrame: none)
+        //   #contentContainer: #555555 with its 1px same-colour border, bottom corners
+        //         2px (ContainerCard / SectionCard: transparent)
+        //   Card[selected=true] > #contentContainer: 1px #94D2FF border, no top edge
+        // TOKENIZE: CardShadowImage, CardBodyColor, CardCornerRadius, CardSelectedBorderColor
+        const bool flatFrame = cardHasFlatFrame(this);
+        QPainter painter(this);
+
+        if (!flatFrame && !property("hideFrame").toBool())
+        {
+            static const QPixmap shadow(QStringLiteral(":/Cards/img/UI20/Cards/shadow.png"));
+            const QMargins shadowSlices(7, 5, 7, 9); // left, top, right, bottom
+            qDrawBorderPixmap(&painter, rect().adjusted(0, 0, 0, -4), shadowSlices, shadow);
+        }
+
+        if (!flatFrame && !m_contentContainer->isHidden())
+        {
+            const QRectF body(m_contentContainer->geometry());
+            const qreal radius = 2.0;
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QColor(0x55, 0x55, 0x55));
+            painter.drawRoundedRect(body, radius, radius);
+            painter.drawRect(body.adjusted(0, 0, 0, -radius)); // square top corners
+
+            if (m_selected)
+            {
+                const QRectF stroke = body.adjusted(0.5, 0.5, -0.5, -0.5);
+                QPainterPath outline;
+                outline.moveTo(stroke.left(), stroke.top());
+                outline.lineTo(stroke.left(), stroke.bottom() - radius);
+                outline.arcTo(QRectF(stroke.left(), stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 180, 90);
+                outline.lineTo(stroke.right() - radius, stroke.bottom());
+                outline.arcTo(QRectF(stroke.right() - 2 * radius, stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 270, 90);
+                outline.lineTo(stroke.right(), stroke.top());
+                painter.setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
+                painter.setBrush(Qt::NoBrush);
+                painter.drawPath(outline);
+            }
+        }
     }
 
     QPixmap Card::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const QWidget* widget, const Config& config)

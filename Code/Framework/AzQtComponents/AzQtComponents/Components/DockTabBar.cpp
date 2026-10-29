@@ -13,6 +13,7 @@
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/DockTabBar.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Titlebar.h>
 
 #include <QAction>
@@ -185,6 +186,14 @@ namespace AzQtComponents
     void DockTabBar::tabInserted(int index)
     {
         auto closeButton = new DockBarButton(DockBarButton::CloseButton);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // TitleBar.qss: AzQtComponents--TabBar AzQtComponents--DockBarButton: 14px box, icon
+            // 12px, margin-right 4px (the margin belongs to the widget, outside the drawn box)
+            closeButton->setFixedSize(14 + 4, 14);
+            closeButton->setContentsMargins(0, 0, 4, 0);
+            closeButton->setIconSize(QSize(12, 12));
+        }
         connect(closeButton, &DockBarButton::clicked, this, [closeButton, this] {
             int widgetIndex = tabAt(closeButton->pos());
             if (widgetIndex >= 0)

@@ -202,6 +202,16 @@ namespace AzToolsFramework
          *  to make the DPE arbitrarily narrow. */
         void SetEnforceMinWidth(bool enforceMinWidth);
 
+        //! Holds or releases the build of the rows (the inspector's lazy cards). While held, a reset, a queued reset or a change of the
+        //! adapter builds nothing: the rows are only marked pending. Releasing builds them once, from the adapter's current contents;
+        //! with nothing pending it builds nothing.
+        void SetContentBuildHeld(bool held);
+        //! Drops a hold without building the pending rows (the editor is being cleared for other contents)
+        void DiscardHeldContentBuild();
+        bool IsContentBuildHeld() const;
+        //! True while held, once a reset, a queued reset or a change arrived
+        bool IsContentBuildPending() const;
+
         auto GetAdapter()
         {
             return m_adapter;
@@ -243,6 +253,11 @@ namespace AzToolsFramework
 
         static bool ShouldReplaceCVarEditor();
         static bool ShouldUseWidgetPooling();
+
+        //! Inspector diagnostics (ed_inspectorRefreshDiagnostics): the time HandleReset of every property editor spent building the
+        //! rows from its adapter's contents, and refreshing the new handlers (UpdateDirtyHandlers), since the last call, in
+        //! microseconds. Both restart at 0. The time the adapter takes to generate its contents is in neither.
+        static void TakeResetTimings(AZ::u64& rowsMicroseconds, AZ::u64& dirtyHandlersMicroseconds);
 
         static constexpr const char* GetEnableCVarEditorName()
         {
@@ -303,6 +318,8 @@ namespace AzToolsFramework
         void UpdateDirtyHandlers();
 
         bool m_executeQueuedResetAlreadyQueued = false;
+        bool m_contentBuildHeld = false;    //!< SetContentBuildHeld
+        bool m_contentBuildPending = false; //!< the adapter asked for a build while held
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;

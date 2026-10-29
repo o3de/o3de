@@ -8,6 +8,7 @@
 
 #include <source/utils/GUIApplicationManager.h>
 
+#include <source/ui/FlatElements.h>
 #include <source/ui/MainWindow.h>
 #include <source/utils/utils.h>
 
@@ -185,6 +186,8 @@ namespace AssetBundler
             engineRootDir.filePath(QStringLiteral("Code/Tools/AssetBundler/source/ui/style")),
             QStringLiteral(":/AssetBundler/style"),
             engineRoot);
+        // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget
+        AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:AssetBundler.qss"), &RegisterFlatElements);
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:AssetBundler.qss"));
 
         AzQtComponents::ConfigHelpers::loadConfig<Config, GUIApplicationManager>(

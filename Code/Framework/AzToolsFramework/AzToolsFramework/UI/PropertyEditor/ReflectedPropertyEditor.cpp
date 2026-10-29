@@ -27,6 +27,9 @@ AZ_POP_DISABLE_WARNING
 #include <QSet>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzCore/std/sort.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AzToolsFramework
 {
@@ -877,6 +880,23 @@ namespace AzToolsFramework
     {
         Q_EMIT releasePrompt();
 
+        // D1e: split the RPE rebuild into reflection-Build / AddProperty (widget creation) / RefreshStyle (QSS polish),
+        // gated by ed_inspectorRefreshDiagnostics. Localizes whether the per-component floor cost is reflection
+        // traversal, Qt widget construction, or stylesheet polishing.
+        bool rpeDiag = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_inspectorRefreshDiagnostics", rpeDiag);
+        }
+        AZ::s64 reflBuildUs = 0;
+        AZ::s64 addPropertyUs = 0;
+        AZ::s64 refreshStyleUs = 0;
+        const auto diagNow = []() { return AZStd::chrono::steady_clock::now(); };
+        const auto diagAddUs = [](AZ::s64& accumUs, AZStd::chrono::steady_clock::time_point from, AZStd::chrono::steady_clock::time_point to)
+        {
+            accumUs += AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(to - from).count();
+        };
+
         setUpdatesEnabled(false);
         m_impl->m_selectedRow = nullptr;
         if (m_impl->m_ptrNotify && m_impl->m_selectedRow)
@@ -891,17 +911,32 @@ namespace AzToolsFramework
 
         for (auto& instance : m_impl->m_instances)
         {
+            const auto tBuildStart = rpeDiag ? diagNow() : AZStd::chrono::steady_clock::time_point{};
             instance.Build(m_impl->m_context, AZ::SerializeContext::ENUM_ACCESS_FOR_READ, m_impl->m_dynamicEditDataProvider, m_impl->m_editorParent);
+            const auto tBuildEnd = rpeDiag ? diagNow() : AZStd::chrono::steady_clock::time_point{};
             m_impl->FilterNode(instance.GetRootNode(), filter);
             m_impl->AddProperty(instance.GetRootNode(), nullptr, 0);
+            if (rpeDiag)
+            {
+                const auto tAddEnd = diagNow();
+                diagAddUs(reflBuildUs, tBuildStart, tBuildEnd);
+                diagAddUs(addPropertyUs, tBuildEnd, tAddEnd);
+            }
         }
 
         m_impl->UpdateExpansionState();
 
+        const auto tStyleStart = rpeDiag ? diagNow() : AZStd::chrono::steady_clock::time_point{};
         for (PropertyRowWidget* widget : m_impl->m_widgetsInDisplayOrder)
         {
             widget->RefreshStyle();
             m_impl->m_containerWidget->layout()->addWidget(widget);
+        }
+        AZ::s64 layoutEmitUs = 0;
+        const auto tTailStart = rpeDiag ? diagNow() : AZStd::chrono::steady_clock::time_point{};
+        if (rpeDiag)
+        {
+            diagAddUs(refreshStyleUs, tStyleStart, tTailStart);
         }
 
         if (m_impl->m_mainScrollArea)
@@ -923,6 +958,19 @@ namespace AzToolsFramework
         layout()->update();
         layout()->activate();
         emit OnExpansionContractionDone();
+
+        // D1f: time the layout-activation + expansion-signal tail -- the suspected per-component layout-thrash cost
+        // that the earlier (build/addProperty/refreshStyle) split did not cover.
+        if (rpeDiag)
+        {
+            diagAddUs(layoutEmitUs, tTailStart, diagNow());
+            AZ_Printf("RPE", "InvalidateAll: reflBuild=%.2f addProperty=%.2f refreshStyle=%.2f layoutEmit=%.2f widgets=%d (ms)",
+                static_cast<double>(reflBuildUs) / 1000.0,
+                static_cast<double>(addPropertyUs) / 1000.0,
+                static_cast<double>(refreshStyleUs) / 1000.0,
+                static_cast<double>(layoutEmitUs) / 1000.0,
+                static_cast<int>(m_impl->m_widgetsInDisplayOrder.size()));
+        }
 
         // Active property editors should all support transient state saving for the current session, at a minimum.
         // A key must still be manually provided for persistent saving across sessions.

@@ -22,6 +22,11 @@ public:
         // needed for the controller tests - only ever needs to be run once
         qRegisterMetaType<AZ::Color>();
         qRegisterMetaType<AzQtComponents::Palette>();
+
+        // The flattened GUI (stylesheets disabled) is what the style tests cover. StyleManager::stylesheetsDisabled()
+        // keeps its first answer for the whole process (StyleManager.cpp:67), so the switch is set here, before any
+        // test reads it; legacy rules are tested through Qt's own sheet style, which does not read it.
+        qputenv("O3DE_DISABLE_STYLESHEETS", "1");
     }
 
     ~AzQtComponentsTestEnvironment() override {}

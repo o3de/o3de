@@ -7,8 +7,11 @@
  */
 #pragma once
 
+#include <AzQtComponents/Components/GuiPerfCounters.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
+#include <QList>
 #include <QWidget>
 
 namespace AzQtComponents
@@ -48,13 +51,21 @@ namespace AzQtComponents
                     return;
                 }
 
+                // Passthrough (GuiPerfFloor): no rule and no element reads the property, so there is nothing to polish again
+                if (GuiPerfFloor::isPassthrough())
+                {
+                    return;
+                }
+
                 if (QStyle* styleSheet = StyleManager::styleSheetStyle(widget))
                 {
                     // Qt6: unpolish() clears the cached render rules; polish() re-evaluates
                     // them with the new property value. Child render rules must be explicitly invalidated.
                     styleSheet->unpolish(widget);
                     styleSheet->polish(widget);
-                    for (QWidget* child : widget->template findChildren<QWidget*>())
+                    const QList<QWidget*> children = widget->template findChildren<QWidget*>();
+                    GuiPerfCounters::onRepolishHelper(1 + children.size());     // GUI performance counters: the widget and its children
+                    for (QWidget* child : children)
                     {
                         styleSheet->unpolish(child);
                         styleSheet->polish(child);

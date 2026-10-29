@@ -11,4 +11,8 @@ set(FILES
     tests/tests_main.cpp
     tests/main.h
     tests/UtilsTests.cpp
+    tests/FlatElementsTests.cpp
+    # The elements of the GUI's sheet, which assetbundlergui_files.cmake builds too: the tests reach them here
+    source/ui/FlatElements.h
+    source/ui/FlatElements.cpp
 )

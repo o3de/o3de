@@ -184,6 +184,12 @@ namespace AzToolsFramework
         float GetMoveIndicatorAlpha() const;
         PropertyRowWidget* GetRowToHighlight();
 
+        //! The lazy cards (ed_inspectorLazyCards): builds the rows of every card that still holds them, now,
+        //! top to bottom (tests, and anything that needs every card's rows)
+        void CompleteLazyCards();
+        //! The cards that still hold their rows (0 once every card has its rows)
+        int GetLazyCardsPending() const;
+
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
 
@@ -573,6 +579,94 @@ namespace AzToolsFramework
         AZ::s32 m_componentEditorLastSelectedIndex;
         AZ::s32 m_componentEditorsUsed;
         ComponentEditorVector m_componentEditors;
+
+        // I.2 refresh diagnostics (ed_inspectorRefreshDiagnostics): component composition of the last completed
+        // UpdateContents, used to measure how often consecutive full rebuilds share composition -- i.e. how many
+        // could instead be value-only refreshes that reuse the existing widget tree.
+        AZStd::vector<AZ::Uuid> m_lastBuiltComponentSignature;
+        size_t m_lastBuiltSelectionCount = 0;
+
+        // D1c per-component sub-phase accumulators (microseconds), populated by BuildSharedComponentUI and reported by
+        // UpdateContents when m_inspectorDiagnosticsActive. Localizes which per-component call dominates the buildUI phase.
+        bool m_inspectorDiagnosticsActive = false;
+        AZ::s64 m_diagCreateEditorUs = 0;
+        AZ::s64 m_diagAddInstanceUs = 0;
+        AZ::s64 m_diagOverrideVizUs = 0;
+        AZ::s64 m_diagNotificationsUs = 0;
+        AZ::s64 m_diagInvalidateUs = 0;
+        AZ::s64 m_diagShowUs = 0;
+
+        // Per-substep timing of the pool-wide teardown loop in ClearInstances (microseconds), to localize whether the
+        // clear cost is hide() (layout, NOT deferrable) or the per-editor content clear (deferrable). Reported when
+        // m_inspectorDiagnosticsActive.
+        AZ::s64 m_diagClearHideUs = 0;
+        AZ::s64 m_diagClearContentUs = 0;
+        AZ::s64 m_diagClearPreventUs = 0;
+
+        // Component list layout: SettleComponentList lays the list out now, as it stays, so that the inspector never paints a card
+        // where it was before (see its definition)
+        enum class SettleOrigin
+        {
+            Build,          //!< the end of a rebuild or of an idle lazy cards step (only with ed_inspectorSettleLayout)
+            Interaction     //!< a card or a row expanded or collapsed, a card's size asked for, held cards the view reaches
+        };
+        void SettleComponentList(SettleOrigin origin);
+        //! A layout that keeps asking for another round (a scroll bar showing and hiding) stops here
+        static constexpr int SettleRoundsMax = 16;
+        bool m_componentListSettling = false;
+
+        // Lazy cards (ed_inspectorLazyCards): a card past the view, or collapsed, holds the build of its rows.
+        // The rows are built later, always top to bottom (so that they join the Tab chain in the cards' order), at idle, as soon as
+        // the view reaches the card (scroll, resize), or when the card is expanded. A rebuild cancels what is left.
+        //! Builds the held cards from the top through the card at lastIndex, or until budgetUs is spent (after one card at least) when it
+        //! is not 0; a card above the view moves the scroll value by the height it gains, so that the view stays on what it shows. The
+        //! list is then settled as settleOrigin asks.
+        void ReleaseLazyCardsThrough(int lastIndex, SettleOrigin settleOrigin, AZ::s64 budgetUs = 0);
+        //! Not inside a release, during a rebuild, or with one queued, and only with held cards
+        bool CanReleaseLazyCards() const;
+        //! Builds the held cards through the last one in the view or one screen below it
+        void ReleaseLazyCardsInView();
+        void QueueLazyCardsStep(int delayMs = 0);
+        void RunLazyCardsStep(AZ::u64 generation);
+        void FinishLazyCards();
+        void UpdateLazyCardsPendingProperty();
+
+        AZ::u64 m_lazyCardsGeneration = 0;      //!< a rebuild queued or cards cleared: the steps of an older generation do nothing
+        bool m_lazyCardsReleasing = false;      //!< inside ReleaseLazyCardsThrough (its scroll changes release nothing more)
+        int m_lazyCardsHeldAtBuild = 0;
+        int m_lazyCardsSteps = 0;
+        bool m_lazyCardsDiagnostics = false;    //!< ed_inspectorRefreshDiagnostics, as the rebuild that held the cards read it
+        AZ::s64 m_lazyCardsStartUs = 0;         //!< that rebuild's start, steady clock microseconds
+
+        // Interruptible load (ed_inspectorInterruptibleLoad)
+        //! The rebuild QueuePropertyRefresh queues: the pending paints first (the outliner's new selection), then UpdateContents, which
+        //! may then hold every card and freeze the view (m_interruptibleRebuild)
+        void RunQueuedRefresh();
+        //! The end of UpdateContents: an interruptible rebuild builds the cards in view for its inline budget and keeps the last
+        //! picture until they are built; any other shows the inspector. Returns when the rebuild showed the view itself (steady clock
+        //! microseconds, interruptible rebuilds only), else 0.
+        AZ::s64 ShowRebuiltView();
+        bool m_interruptibleRebuild = false;
+        // The view freeze: after an interruptible rebuild the inspector keeps its last picture (updates disabled, mouse input ignored)
+        // while the idle steps build the cards in view, then shows them in one paint
+        //! The first card from the top down to the bottom of the view the rebuild restores that holds its rows (a collapsed card needs
+        //! none), or -1 when they are all built
+        int FirstViewCardHeld() const;
+        bool ViewCardsBuilt() const { return FirstViewCardHeld() < 0; }
+        //! Builds the held cards in view from the top, until they are built or budgetUs is spent (after one card at least); an
+        //! interruptible rebuild does so for ed_inspectorInterruptibleInlineMs before it lets the event loop run
+        void BuildViewCards(AZ::s64 budgetUs);
+        void StartViewFreeze();
+        void EndViewFreeze();
+        //! Diagnostics: "firstView:" the cards in view of an interruptible rebuild were shown at shownUs (steady clock microseconds),
+        //! reported as ms since the rebuild started
+        void ReportFirstView(AZ::s64 shownUs) const;
+        //! Mouse input the frozen inspector ignores (it would act on cards that are not the ones shown)
+        bool IgnoredWhileFrozen(const QObject* object, const QEvent* event) const;
+        bool m_viewFrozen = false;
+        AZ::u64 m_viewFreezeGeneration = 0;
+        //! The freeze ends by then even if the idle steps have not built the view (the rest is built at once)
+        static constexpr int ViewFreezeMaxMs = 1000;
 
         using ComponentPropertyEditorMap = AZStd::unordered_map<AZ::Component*, ComponentEditor*>;
         ComponentPropertyEditorMap m_componentToEditorMap;
