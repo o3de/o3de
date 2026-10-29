@@ -64,7 +64,9 @@ namespace GraphModelIntegration
 
         double GetMax() const
         {
-            return static_cast<double>(AZStd::numeric_limits<T>::max());
+            return AZStd::min(
+                static_cast<double>(AZStd::numeric_limits<T>::max()),
+                static_cast<double>(AZStd::numeric_limits<int>::max()));
         }
 
     private:

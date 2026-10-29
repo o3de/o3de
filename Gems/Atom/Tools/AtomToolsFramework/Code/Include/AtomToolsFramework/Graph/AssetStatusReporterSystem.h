@@ -34,6 +34,7 @@ namespace AtomToolsFramework
         void StopReporting(const AZ::Uuid& requestId) override;
         void StopReportingAll() override;
         AssetStatusReporterState GetStatus(const AZ::Uuid& requestId) const override;
+        AZStd::string GetStatusMessage(const AZ::Uuid& requestId) const override;
 
     private:
         void Update();

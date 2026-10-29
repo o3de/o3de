@@ -189,14 +189,14 @@ namespace AZ
 
             // Note we report dependencies based on GetMaterialPipelinePaths() rather than LoadMaterialPipelines(), because dependencies are
             // needed even for pipelines that fail to load, so that the job will re-process when the broken pipeline gets fixed.
-            for (const auto& materialPipelineFilePath : GetMaterialPipelinePaths())
+            for (const auto& materialPipelineFilePath : GetMaterialPipelinePaths(&materialTypeSourceData))
             {
                 addPossibleDependencies(materialTypeSourcePath, materialPipelineFilePath);
             }
 
             // Add dependencies for each material pipeline, since the output of this builder is a combination of the .materialtype data and
             // the .materialpipeline data.
-            for (const auto& [materialPipelineFilePath, materialPipeline] : LoadMaterialPipelines())
+            for (const auto& [materialPipelineFilePath, materialPipeline] : LoadMaterialPipelines(&materialTypeSourceData))
             {
                 for (const MaterialPipelineSourceData::ShaderTemplate& shaderTemplate : materialPipeline.m_shaderTemplates)
                 {
@@ -313,6 +313,8 @@ namespace AZ
             AzFramework::StringFunc::Path::ConstructFull(
                 request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialTypeSourcePath, true);
 
+            MaterialBuilderUtils::JobPhaseTimer jobTimer(MaterialTypeBuilderName, request.m_sourceFile);
+
             auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath, nullptr, nullptr);
             if (!materialTypeSourceDataOutcome)
             {
@@ -320,6 +322,8 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
+
+            jobTimer.Mark("load material type source");
 
             auto materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
             switch (materialTypeSourceData.GetFormat())
@@ -341,39 +345,112 @@ namespace AZ
             }
         }
 
-        AZStd::set<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths() const
+        AZStd::set<AZStd::string> MaterialTypeBuilder::PipelineStage::GetMaterialPipelinePaths(
+            const MaterialTypeSourceData* materialTypeSourceData) const
         {
-            AZStd::set<AZStd::string> combinedMaterialPipelines;
+            AZStd::set<AZStd::string> defaultMaterialPipelinePaths;
+            AZStd::set<AZStd::string> optInMaterialPipelinePaths;
 
-            auto ResolvePathAndAddToReturnValue = [&](const AZStd::string& path)
+            auto ResolvePathAndAddTo = [](AZStd::set<AZStd::string>& container, const AZStd::string& path)
             {
                 AZ::IO::FixedMaxPath pathWithoutAlias;
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath(pathWithoutAlias, AZ::IO::PathView{ path });
-                combinedMaterialPipelines.insert(pathWithoutAlias.StringAsPosix());
+                container.insert(pathWithoutAlias.StringAsPosix());
             };
 
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
                 AZStd::vector<AZStd::string> defaultMaterialPipelines;
                 settingsRegistry->GetObject(defaultMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFiles");
-                AZStd::for_each(defaultMaterialPipelines.begin(), defaultMaterialPipelines.end(), ResolvePathAndAddToReturnValue);
+                for (const auto& path : defaultMaterialPipelines)
+                {
+                    ResolvePathAndAddTo(defaultMaterialPipelinePaths, path);
+                }
 
                 AZStd::map<AZStd::string, AZStd::vector<AZStd::string>> gemMaterialPipelines;
                 settingsRegistry->GetObject(gemMaterialPipelines, "/O3DE/Atom/RPI/MaterialPipelineFilesByGem");
                 for (const auto& [_ /*gemName*/, gemMaterialPipelinePaths] : gemMaterialPipelines)
                 {
-                    AZStd::for_each(gemMaterialPipelinePaths.begin(), gemMaterialPipelinePaths.end(), ResolvePathAndAddToReturnValue);
+                    for (const auto& path : gemMaterialPipelinePaths)
+                    {
+                        ResolvePathAndAddTo(defaultMaterialPipelinePaths, path);
+                    }
+                }
+
+                // Registered but only built for material types that name one, unlike MaterialPipelineFiles.
+                AZStd::vector<AZStd::string> optInMaterialPipelines;
+                settingsRegistry->GetObject(optInMaterialPipelines, "/O3DE/Atom/RPI/OptInMaterialPipelineFiles");
+                for (const auto& path : optInMaterialPipelines)
+                {
+                    ResolvePathAndAddTo(optInMaterialPipelinePaths, path);
                 }
             }
 
-            return combinedMaterialPipelines;
+            // No material type or no declaration means the project-wide default list, so non-opting types are unaffected.
+            AZStd::string declaredPipelines;
+            if (materialTypeSourceData)
+            {
+                const auto buildSettingIter = materialTypeSourceData->m_buildSettings.find("materialPipelines");
+                if (buildSettingIter != materialTypeSourceData->m_buildSettings.end())
+                {
+                    declaredPipelines = buildSettingIter->second;
+                }
+            }
+
+            if (declaredPipelines.empty())
+            {
+                return defaultMaterialPipelinePaths;
+            }
+
+            AZStd::vector<AZStd::string> declaredPipelineNames;
+            AzFramework::StringFunc::Tokenize(declaredPipelines, declaredPipelineNames, ",; \t", false, false);
+
+            AZStd::set<AZStd::string> availableMaterialPipelinePaths = defaultMaterialPipelinePaths;
+            availableMaterialPipelinePaths.insert(optInMaterialPipelinePaths.begin(), optInMaterialPipelinePaths.end());
+
+            // Matched by file stem, the same name GetMaterialPipelineName reports and generated shader files use.
+            AZStd::set<AZStd::string> selectedMaterialPipelinePaths;
+            for (const AZStd::string& declaredPipelineName : declaredPipelineNames)
+            {
+                [[maybe_unused]] bool matchedAnyPipeline = false;
+                for (const AZStd::string& availablePath : availableMaterialPipelinePaths)
+                {
+                    if (AzFramework::StringFunc::Equal(
+                            GetMaterialPipelineName(AZ::IO::Path(availablePath)).GetCStr(), declaredPipelineName.c_str()))
+                    {
+                        selectedMaterialPipelinePaths.insert(availablePath);
+                        matchedAnyPipeline = true;
+                    }
+                }
+
+                AZ_Warning(
+                    MaterialTypeBuilderName,
+                    matchedAnyPipeline,
+                    "Material type declares material pipeline '%s', which is not registered in MaterialPipelineFiles, "
+                    "MaterialPipelineFilesByGem or OptInMaterialPipelineFiles. It will be ignored.",
+                    declaredPipelineName.c_str());
+            }
+
+            // Nothing matched: fall back to the default list rather than produce a material type with no shaders.
+            if (selectedMaterialPipelinePaths.empty())
+            {
+                AZ_Warning(
+                    MaterialTypeBuilderName,
+                    false,
+                    "None of the declared material pipelines ('%s') are registered. Falling back to the default list.",
+                    declaredPipelines.c_str());
+                return defaultMaterialPipelinePaths;
+            }
+
+            return selectedMaterialPipelinePaths;
         }
 
-        AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> MaterialTypeBuilder::PipelineStage::LoadMaterialPipelines() const
+        AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> MaterialTypeBuilder::PipelineStage::LoadMaterialPipelines(
+            const MaterialTypeSourceData* materialTypeSourceData) const
         {
             AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines;
 
-            for (const AZStd::string& file : GetMaterialPipelinePaths())
+            for (const AZStd::string& file : GetMaterialPipelinePaths(materialTypeSourceData))
             {
                 auto loadResult = MaterialUtils::LoadMaterialPipelineSourceData(file.c_str());
                 if (!loadResult.IsSuccess())
@@ -391,6 +468,18 @@ namespace AZ
         Name MaterialTypeBuilder::PipelineStage::GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const
         {
             return Name{ materialPipelineFilePath.Stem().Native() };
+        }
+
+        Name MaterialTypeBuilder::PipelineStage::GetMaterialPipelineTag(
+            const AZ::IO::Path& materialPipelineFilePath, const MaterialPipelineSourceData& materialPipeline) const
+        {
+            // The tag (file stem unless overridden) names the runtime's shader collection, letting a pipeline stand in for another.
+            if (!materialPipeline.m_materialPipelineTag.empty())
+            {
+                return Name{ materialPipeline.m_materialPipelineTag };
+            }
+
+            return GetMaterialPipelineName(materialPipelineFilePath);
         }
 
         //! Returns the number of redundant additions.
@@ -437,11 +526,13 @@ namespace AZ
             const AZStd::string& materialTypeSourcePath,
             MaterialTypeSourceData& materialTypeSourceData) const
         {
+            MaterialBuilderUtils::JobPhaseTimer phaseTimer(MaterialTypeBuilderName, "PipelineStage");
+
             AZ::u32 nextProductSubID = MaterialTypeSourceData::IntermediateMaterialTypeSubId + 1;
 
             const AZStd::string materialTypeName = AZ::IO::Path{ materialTypeSourcePath }.Stem().Native();
 
-            const AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines();
+            const AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> materialPipelines = LoadMaterialPipelines(&materialTypeSourceData);
 
             // A list of pointers to lists
             // Each leaf element is a line that will be included in the object SRG of every shader
@@ -467,6 +558,9 @@ namespace AZ
 
             // Some shader templates may be reused by multiple pipelines, so first collect a full picture of all the dependencies
             AZStd::map<MaterialPipelineSourceData::ShaderTemplate, AZStd::vector<Name /*materialPipielineName*/>> shaderTemplateReferences;
+
+            // Pipelines are tracked by name (file stem) but collections are keyed by tag, which can differ; this maps name to tag.
+            AZStd::unordered_map<Name, Name> materialPipelineTagsByName;
             {
                 bool foundProblems = false;
 
@@ -484,6 +578,7 @@ namespace AZ
                     }
 
                     const Name materialPipelineName = GetMaterialPipelineName(materialPipelineFilePath);
+                    materialPipelineTagsByName[materialPipelineName] = GetMaterialPipelineTag(materialPipelineFilePath, materialPipeline);
 
                     const MaterialPipelineScriptRunner::ShaderTemplatesList& shaderTemplateList = scriptRunner.GetRelevantShaderTemplates();
 
@@ -626,6 +721,9 @@ namespace AZ
             materialTypeSourceData.m_pipelineData.clear();
 
             u32 commonCounter = 0;
+
+            // Loading pipeline files, running their Lua and building material parameters; roughly independent of shader count.
+            phaseTimer.Mark("material pipelines + lua");
 
             // Generate the required shaders
             for (const auto& [shaderTemplate, materialPipelineList] : shaderTemplateReferences)
@@ -770,8 +868,13 @@ namespace AZ
 
                 for (const Name& materialPipelineName : materialPipelineList)
                 {
+                    // Keyed by tag, not pipeline name, so a stand-in pipeline's shaders land in the collection the runtime asks for.
+                    const auto materialPipelineTagIter = materialPipelineTagsByName.find(materialPipelineName);
+                    const Name& materialPipelineTag =
+                        materialPipelineTagIter != materialPipelineTagsByName.end() ? materialPipelineTagIter->second : materialPipelineName;
+
                     MaterialTypeSourceData::MaterialPipelineState& pipelineData =
-                        materialTypeSourceData.m_pipelineData[materialPipelineName];
+                        materialTypeSourceData.m_pipelineData[materialPipelineTag];
 
                     MaterialTypeSourceData::ShaderVariantReferenceData shaderVariantReferenceData;
                     shaderVariantReferenceData.m_shaderFilePath = AZ::IO::Path{ outputShaderFilePath.Filename() }.c_str();
@@ -789,6 +892,9 @@ namespace AZ
                 // list.
             }
 
+            // Per shader: loading the template JSON, assembling the azsl and writing both; this part scales with shader count.
+            phaseTimer.Mark("generate shaders");
+
             // Sort the shader file reference just for convenience, for when the user inspects the intermediate .materialtype file
             for (auto& pipelineDataPair : materialTypeSourceData.m_pipelineData)
             {
@@ -805,7 +911,7 @@ namespace AZ
             // Add the material pipeline functors
             for (const auto& [materialPipelineFilePath, materialPipeline] : materialPipelines)
             {
-                const Name materialPipelineName = GetMaterialPipelineName(materialPipelineFilePath);
+                const Name materialPipelineName = GetMaterialPipelineTag(materialPipelineFilePath, materialPipeline);
                 MaterialTypeSourceData::MaterialPipelineState& pipelineData = materialTypeSourceData.m_pipelineData[materialPipelineName];
                 pipelineData.m_materialFunctorSourceData = materialPipeline.m_runtimeControls.m_materialFunctorSourceData;
                 pipelineData.m_pipelinePropertyLayout = materialPipeline.m_runtimeControls.m_materialTypeInternalProperties;
@@ -874,6 +980,8 @@ namespace AZ
             const AZStd::string& materialTypeSourcePath,
             const MaterialTypeSourceData& materialTypeSourceData) const
         {
+            MaterialBuilderUtils::JobPhaseTimer finalStageTimer(MaterialTypeBuilderName, "FinalStage");
+
             AZStd::string materialProductPath;
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(materialTypeSourcePath.c_str(), fileName);
@@ -885,6 +993,8 @@ namespace AZ
             {
                 AZ_TraceContext("Product", fileName);
                 AZ_TracePrintf(MaterialTypeBuilderName, AZStd::string::format("Producing %s...", fileName.c_str()).c_str());
+
+                finalStageTimer.Mark("prepare");
 
                 // Load the material type file and create the MaterialTypeAsset object
                 auto materialTypeAssetOutcome =
