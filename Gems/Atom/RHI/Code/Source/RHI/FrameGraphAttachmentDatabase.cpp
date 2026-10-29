@@ -141,15 +141,24 @@ namespace AZ::RHI
         }
         m_scopeAttachments.clear();
 
+        // Recreation can shut down the swap chain images, which is only valid after the attachments deleted below have
+        // detached from them. The swap chain attachments are among those, so hold the swap chains across the delete.
+        AZStd::vector<Ptr<SwapChain>> swapChains;
+        swapChains.reserve(m_swapChainAttachments.size());
+        for (SwapChainFrameAttachment* swapChainAttachment : m_swapChainAttachments)
+        {
+            swapChains.emplace_back(swapChainAttachment->GetSwapChain());
+        }
+
         for (FrameAttachment* attachment : m_attachments)
         {
             delete attachment;
         }
         m_attachments.clear();
 
-        for (auto swapchainAttachment : m_swapChainAttachments)
+        for (const Ptr<SwapChain>& swapChain : swapChains)
         {
-            swapchainAttachment->GetSwapChain()->ProcessRecreation();
+            swapChain->ProcessRecreation();
         }
 
         m_swapChainAttachments.clear();
