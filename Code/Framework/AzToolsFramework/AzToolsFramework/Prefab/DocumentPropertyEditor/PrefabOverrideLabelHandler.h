@@ -87,7 +87,7 @@ namespace AzToolsFramework::Prefab
 
         bool ResetToDefaults() override;
 
-        void SetFilter(const QString& filter) override;
+        void SetFilter(const QString& filter) override { AzQtComponents::IconElidingLabel::SetFilter(filter); }
 
         static constexpr const AZStd::string_view GetHandlerName()
         {

@@ -642,6 +642,10 @@ namespace AzToolsFramework
         //! The rebuild QueuePropertyRefresh queues: the pending paints first (the outliner's new selection), then UpdateContents, which
         //! may then hold every card and freeze the view (m_interruptibleRebuild)
         void RunQueuedRefresh();
+        //! The end of UpdateContents: an interruptible rebuild builds the cards in view for its inline budget and keeps the last
+        //! picture until they are built; any other shows the inspector. Returns when the rebuild showed the view itself (steady clock
+        //! microseconds, interruptible rebuilds only), else 0.
+        AZ::s64 ShowRebuiltView();
         bool m_interruptibleRebuild = false;
         // The view freeze: after an interruptible rebuild the inspector keeps its last picture (updates disabled, mouse input ignored)
         // while the idle steps build the cards in view, then shows them in one paint

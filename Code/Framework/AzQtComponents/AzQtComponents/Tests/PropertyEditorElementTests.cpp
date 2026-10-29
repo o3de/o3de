@@ -644,53 +644,8 @@ namespace AzQtComponents
         }
 
         // ----------------------------------------------------------------------------------
-        // T1b: the name label of a DPE row with a prefab override: PrefabOverrideLabelHandler's inline sheet
-        // ----------------------------------------------------------------------------------
-
-        TEST_F(PropertyEditorElementTests, PrefabOverride_AnOverriddenLabelIsBoldAsTheHandlersSheetMadeItAndPlainAgainAfter)
-        {
-            // The handler's label (PrefabOverrideLabelHandler.cpp): an ElidingLabel whose `overridden` property starts false; with
-            // style sheets it carries the handler's inline sheet, flattened it carries none
-            Twins twins(*this, [](QWidget& root)
-                {
-                    auto* layout = new QHBoxLayout(&root);
-                    auto* label = new ElidingLabel(&root);
-                    label->setText(QStringLiteral("Width"));
-                    label->setProperty("overridden", false);
-                    layout->addWidget(label);
-                }, QSize(300, 40), nullptr);
-            auto* legacyLabel = twins.m_legacy.findChild<ElidingLabel*>();
-            auto* flatLabel = twins.m_flat.findChild<ElidingLabel*>();
-            ASSERT_TRUE(legacyLabel != nullptr && flatLabel != nullptr);
-            legacyLabel->setStyleSheet(QStringLiteral("[overridden=\"true\"] { font-weight: bold }"));
-            QApplication::processEvents();
-
-            // What RefreshUI does when the row's override state changes: set the property, repolish the label
-            const auto setOverridden = [](ElidingLabel* label, bool overridden)
-            {
-                StyleManager::setObjectProperty(label, "overridden", overridden);
-                label->RefreshStyle();
-            };
-
-            for (const bool overridden : { false, true, false, true })
-            {
-                setOverridden(legacyLabel, overridden);
-                setOverridden(flatLabel, overridden);
-                QApplication::processEvents();
-
-                const QFont legacyFont = legacyLabel->font();
-                const QFont flatFont = flatLabel->font();
-                EXPECT_EQ(legacyFont.weight(), overridden ? QFont::Bold : QFont::Normal);
-                EXPECT_EQ(flatFont.weight(), legacyFont.weight()) << "overridden " << overridden;
-                EXPECT_EQ(flatFont.pixelSize(), legacyFont.pixelSize()) << "overridden " << overridden;
-                EXPECT_EQ(flatFont.family(), legacyFont.family()) << "overridden " << overridden;
-                EXPECT_EQ(flatLabel->sizeHint(), legacyLabel->sizeHint()) << "overridden " << overridden;
-            }
-            EXPECT_TRUE(flatLabel->styleSheet().isEmpty());
-        }
-
-        // ----------------------------------------------------------------------------------
-        // T1c: the compact override label (IconElidingLabel) against the composite it stands in for
+        // T1b / T1c: the override label of a DPE row: PrefabOverrideLabelHandler's composite, whose label its inline sheet makes bold
+        // when overridden, and the compact label (IconElidingLabel) that stands in for it
         // ----------------------------------------------------------------------------------
 
         //! The override label of a DPE row both ways, each alone in a root of the same size: the composite of
@@ -791,6 +746,28 @@ namespace AzQtComponents
             ElidingLabel* m_label = nullptr;
             IconElidingLabel* m_compact = nullptr;
         };
+
+        TEST_F(PropertyEditorElementTests, PrefabOverride_AnOverriddenLabelIsBoldAsTheHandlersSheetMadeItAndPlainAgainAfter)
+        {
+            // The composite's label as RefreshUI leaves it: with style sheets its inline sheet gives the weight, flattened the element
+            // for an overridden label does (and the label carries no sheet)
+            OverrideLabelTwins legacy(*this, false, QSize(300, 40));
+            OverrideLabelTwins flat(*this, true, QSize(300, 40));
+            for (const bool overridden : { false, true, false, true })
+            {
+                legacy.set(QStringLiteral("Width"), overridden);
+                flat.set(QStringLiteral("Width"), overridden);
+
+                const QFont legacyFont = legacy.m_label->font();
+                const QFont flatFont = flat.m_label->font();
+                EXPECT_EQ(legacyFont.weight(), overridden ? QFont::Bold : QFont::Normal);
+                EXPECT_EQ(flatFont.weight(), legacyFont.weight()) << "overridden " << overridden;
+                EXPECT_EQ(flatFont.pixelSize(), legacyFont.pixelSize()) << "overridden " << overridden;
+                EXPECT_EQ(flatFont.family(), legacyFont.family()) << "overridden " << overridden;
+                EXPECT_EQ(flat.m_label->sizeHint(), legacy.m_label->sizeHint()) << "overridden " << overridden;
+            }
+            EXPECT_TRUE(flat.m_label->styleSheet().isEmpty());
+        }
 
         TEST_F(PropertyEditorElementTests, CompactOverrideLabel_LooksAndSizesAsTheCompositeWithAndWithoutTheOverride)
         {

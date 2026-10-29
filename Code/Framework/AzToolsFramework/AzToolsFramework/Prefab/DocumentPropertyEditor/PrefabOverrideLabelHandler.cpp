@@ -211,11 +211,6 @@ namespace AzToolsFramework::Prefab
         return true;
     }
 
-    void CompactPrefabOverrideLabelHandler::SetFilter(const QString& filter)
-    {
-        AzQtComponents::IconElidingLabel::SetFilter(filter);
-    }
-
     void CompactPrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
     {
         if (!m_overridden)
