@@ -1,6 +1,11 @@
 <RCC>
     <qresource prefix="/StartupLogoDialog">
         <file>o3de_logo.svg</file>
-        <file>splashscreen_background.png</file>
+        <file>splashscreen_background_0.png</file>
+        <file>splashscreen_background_1.png</file>
+        <file>splashscreen_background_2.png</file>
+        <file>splashscreen_background_3.png</file>
+        <file>splashscreen_background_4.png</file>
+        <file>splashscreen_background_5.png</file>
     </qresource>
 </RCC>
