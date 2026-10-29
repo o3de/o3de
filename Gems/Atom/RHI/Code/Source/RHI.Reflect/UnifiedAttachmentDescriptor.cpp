@@ -17,32 +17,24 @@ namespace AZ::RHI
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor)
-        : m_buffer(bufferDescriptor)
-        , m_bufferView(BufferViewDescriptor{})
-        , m_type(AttachmentType::Buffer)
+        : Base{ BufferAttachment{ bufferDescriptor } }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const ImageDescriptor& imageDescriptor)
-        : m_image(imageDescriptor)
-        , m_imageView(ImageViewDescriptor{})
-        , m_type(AttachmentType::Image)
+        : Base{ ImageAttachment{ imageDescriptor } }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(
         const BufferDescriptor& bufferDescriptor, const BufferViewDescriptor& bufferViewDescriptor)
-        : m_buffer(bufferDescriptor)
-        , m_bufferView(bufferViewDescriptor)
-        , m_type(AttachmentType::Buffer)
+        : Base{ BufferAttachment{ bufferDescriptor, bufferViewDescriptor } }
     {
     }
 
     UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(
         const ImageDescriptor& imageDescriptor, const ImageViewDescriptor& imageViewDescriptor)
-        : m_image(imageDescriptor)
-        , m_imageView(imageViewDescriptor)
-        , m_type(AttachmentType::Image)
+        : Base{ ImageAttachment{ imageDescriptor, imageViewDescriptor } }
     {
     }
 
