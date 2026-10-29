@@ -6,22 +6,11 @@
  *
  */
 
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/sort.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
-#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
-#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <Prefab/PrefabTestFixture.h>
+#include <UI/EntityPropertyEditorTestFixture.h>
 
-#include <QApplication>
 #include <QCheckBox>
-#include <QElapsedTimer>
 #include <QScrollArea>
 #include <QScrollBar>
 
@@ -35,34 +24,6 @@ namespace UnitTest
 
     namespace EntityPropertyEditorLayoutTestsInternal
     {
-        //! A short card: one number
-        class LayoutShortTestComponent : public AzToolsFramework::Components::EditorComponentBase
-        {
-        public:
-            AZ_EDITOR_COMPONENT(
-                LayoutShortTestComponent, "{178694D7-EFB2-4A4C-95FD-C8D8800D19BA}", AzToolsFramework::Components::EditorComponentBase);
-
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<LayoutShortTestComponent, AzToolsFramework::Components::EditorComponentBase>()
-                        ->Version(1)
-                        ->Field("value", &LayoutShortTestComponent::m_value);
-
-                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                    {
-                        editContext->Class<LayoutShortTestComponent>("Layout Short Test", "A short card")
-                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LayoutShortTestComponent::m_value, "Value", "");
-                    }
-                }
-            }
-
-            float m_value = 0.0f;
-        };
-
         //! Six numbers under a row of their own, which expands and collapses
         struct LayoutNestedTestData
         {
@@ -143,18 +104,12 @@ namespace UnitTest
             QRect m_geometry;           //!< in the component list
             int m_rowsScroll = 0;       //!< the card's rows scrolled inside the card
             QList<QRect> m_rows;        //!< the shown rows, in the card's rows
-
-            bool operator==(const CardPlace& other) const
-            {
-                return m_geometry == other.m_geometry && m_rowsScroll == other.m_rowsScroll && m_rows == other.m_rows;
-            }
         };
     } // namespace EntityPropertyEditorLayoutTestsInternal
 
-    class EntityPropertyEditorLayoutTests : public PrefabTestFixture
+    class EntityPropertyEditorLayoutTests : public EntityPropertyEditorTestFixture
     {
     protected:
-        using LayoutShortTestComponent = EntityPropertyEditorLayoutTestsInternal::LayoutShortTestComponent;
         using LayoutTallTestComponent = EntityPropertyEditorLayoutTestsInternal::LayoutTallTestComponent;
         using CardPlace = EntityPropertyEditorLayoutTestsInternal::CardPlace;
 
@@ -162,98 +117,23 @@ namespace UnitTest
 
         void SetUpEditorFixtureImpl() override
         {
-            PrefabTestFixture::SetUpEditorFixtureImpl();
-            GetApplication()->RegisterComponentDescriptor(LayoutShortTestComponent::CreateDescriptor());
+            EntityPropertyEditorTestFixture::SetUpEditorFixtureImpl();
+            GetApplication()->RegisterComponentDescriptor(InspectorShortTestComponent::CreateDescriptor());
             GetApplication()->RegisterComponentDescriptor(LayoutTallTestComponent::CreateDescriptor());
 
-            // one entity of the transform and a short card, one of the transform and four tall cards: the cards that show one entity
-            // after the other are reused for different components
-            m_shortEntityId = CreateEditorEntityUnderRoot("LayoutShortEntity");
-            AZ::Entity* shortEntity = AzToolsFramework::GetEntityById(m_shortEntityId);
-            shortEntity->Deactivate();
-            shortEntity->CreateComponent<LayoutShortTestComponent>()->SetSerializedIdentifier("LayoutShortTestComponent_0");
-            shortEntity->Activate();
-
-            m_tallEntityId = CreateEditorEntityUnderRoot("LayoutTallEntity");
-            AZ::Entity* tallEntity = AzToolsFramework::GetEntityById(m_tallEntityId);
-            tallEntity->Deactivate();
-            for (int index = 0; index < TallComponents; ++index)
-            {
-                tallEntity->CreateComponent<LayoutTallTestComponent>()->SetSerializedIdentifier(
-                    AZStd::string::format("LayoutTallTestComponent_%d", index));
-            }
-            tallEntity->Activate();
-        }
-
-        void TearDownEditorFixtureImpl() override
-        {
-            m_inspector.reset();
-            SetLazyCards(true);         // the defaults
-            SetSettleLayout(false);
-            PrefabTestFixture::TearDownEditorFixtureImpl();
-        }
-
-        static void SetLazyCards(bool lazy)
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(lazy ? "ed_inspectorLazyCards true" : "ed_inspectorLazyCards false");
-        }
-
-        //! ed_inspectorSettleLayout: the list also settles at the end of a rebuild (an expand or a collapse always settles it)
-        static void SetSettleLayout(bool settle)
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(settle ? "ed_inspectorSettleLayout true" : "ed_inspectorSettleLayout false");
+            // the transform and a short card, the transform and four tall cards: the cards that show one entity after the other are
+            // reused for different components
+            m_shortEntityId = CreateEntityOf<InspectorShortTestComponent>("LayoutShortEntity", 1);
+            m_tallEntityId = CreateEntityOf<LayoutTallTestComponent>("LayoutTallEntity", TallComponents);
         }
 
         //! A new inspector of the given height, shown, with lazy cards on or off, showing the entity
         void Show(bool lazy, int windowHeight, AZ::EntityId entityId)
         {
-            m_inspector.reset();
-            SetLazyCards(lazy);
-            m_inspector = AZStd::make_unique<AzToolsFramework::EntityPropertyEditor>(nullptr, Qt::WindowFlags(), false);
-            m_inspector->setAttribute(Qt::WA_DontShowOnScreen);
-            m_inspector->resize(420, windowHeight);
-            m_inspector->show();
-            QApplication::processEvents();
-            Select(entityId);
+            SetCvar("ed_inspectorLazyCards", lazy);
+            NewInspector(windowHeight);
+            Select({ entityId });
             RunTheEventLoop();
-        }
-
-        //! The rebuild a new selection runs (it returns here, before the event loop runs again)
-        void Select(AZ::EntityId entityId)
-        {
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
-            QMetaObject::invokeMethod(m_inspector.get(), "UpdateContents", Qt::DirectConnection);
-        }
-
-        //! The event loop's next turns: what it would lay out, show or rebuild after the inspector painted
-        static void RunTheEventLoop()
-        {
-            QElapsedTimer timer;
-            timer.start();
-            while (timer.elapsed() < 100)
-            {
-                QApplication::processEvents();
-            }
-        }
-
-        //! The inspector's shown cards, top to bottom
-        AZStd::vector<AzToolsFramework::ComponentEditor*> Cards() const
-        {
-            AZStd::vector<AzToolsFramework::ComponentEditor*> cards;
-            for (AzToolsFramework::ComponentEditor* card : m_inspector->findChildren<AzToolsFramework::ComponentEditor*>())
-            {
-                if (card->isVisible())
-                {
-                    cards.push_back(card);
-                }
-            }
-            AZStd::sort(cards.begin(), cards.end(),
-                [](const QWidget* a, const QWidget* b)
-                {
-                    return a->geometry().y() < b->geometry().y();
-                });
-            return cards;
         }
 
         //! Where the cards and their rows are now
@@ -341,12 +221,11 @@ namespace UnitTest
 
         AZ::EntityId m_shortEntityId;
         AZ::EntityId m_tallEntityId;
-        AZStd::unique_ptr<AzToolsFramework::EntityPropertyEditor> m_inspector;
     };
 
     TEST_F(EntityPropertyEditorLayoutTests, TheCardsAreWhereTheyStayWhenARebuildReturnsWithSettleLayout)
     {
-        SetSettleLayout(true);
+        SetCvar("ed_inspectorSettleLayout", true);
         for (const bool lazy : { false, true })
         {
             SCOPED_TRACE(lazy ? "lazy cards" : "full build");
@@ -355,7 +234,7 @@ namespace UnitTest
             Show(lazy, 320, m_shortEntityId);
             for (const AZ::EntityId next : { m_tallEntityId, m_shortEntityId })
             {
-                Select(next);
+                Select({ next });
                 const AZStd::vector<CardPlace> atReturn = Places();
                 const size_t built = CardsBuilt();
                 ASSERT_GE(built, 2u);

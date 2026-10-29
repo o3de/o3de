@@ -49,9 +49,6 @@ namespace AZ::Dom::Utils
         MarshalCacheScope(const MarshalCacheScope&) = delete;
         MarshalCacheScope& operator=(const MarshalCacheScope&) = delete;
 
-        //! The outermost scope on the calling thread, or null
-        static MarshalCacheScope* Current();
-
         AZStd::unordered_map<AZ::TypeId, Value> m_typeIdValues; //!< TypeIdToDomValue's value of each type converted so far
         int m_buildPointerObjects = -1;                          //!< -1 not checked yet, 0 PointerObjects take the JSON path, 1 built
 

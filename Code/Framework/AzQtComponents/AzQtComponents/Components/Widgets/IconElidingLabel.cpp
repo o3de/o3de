@@ -32,6 +32,33 @@ namespace AzQtComponents
         {
             return QStringLiteral("IconElidingLabelButton");
         }
+
+        //! The hidden tool button of the label's window, or none while the label is not in a window. One for every label of the
+        //! window, made at the first one's need, and gone with the window; hidden, so never in the Tab chain.
+        IconButton* ButtonOf(const QWidget* label)
+        {
+            QWidget* labelWindow = label->window();
+            if (labelWindow == label)
+            {
+                return nullptr;
+            }
+            auto* button = static_cast<IconButton*>(labelWindow->findChild<QToolButton*>(IconButtonName(), Qt::FindDirectChildrenOnly));
+            if (!button)
+            {
+                button = new IconButton(labelWindow);
+                button->setObjectName(IconButtonName());
+                button->hide();
+            }
+
+            // A style set on the label (and not a style sheet's, which reaches the button through the window) is the button's too, as
+            // the owner of a container set it on the button beside the label
+            QStyle* labelStyle = label->style();
+            if (button->style() != labelStyle && !labelStyle->inherits("QStyleSheetStyle"))
+            {
+                button->setStyle(labelStyle);
+            }
+            return button;
+        }
     } // namespace IconElidingLabelInternal
 
     // ----------------------------------------------------------------------------------
@@ -59,45 +86,14 @@ namespace AzQtComponents
     }
 
     // ----------------------------------------------------------------------------------
-    // The button: the hidden tool button of the window, and its size
+    // The button's size
     // ----------------------------------------------------------------------------------
-
-    QToolButton* IconElidingLabel::iconButton() const
-    {
-        using IconElidingLabelInternal::IconButton;
-
-        QWidget* labelWindow = window();
-        if (labelWindow == this)
-        {
-            return nullptr;
-        }
-
-        // One for every label of the window, made at the first one's need, and gone with the window. It is hidden, so it is never
-        // in the Tab chain.
-        auto* button = static_cast<IconButton*>(
-            labelWindow->findChild<QToolButton*>(IconElidingLabelInternal::IconButtonName(), Qt::FindDirectChildrenOnly));
-        if (!button)
-        {
-            button = new IconButton(labelWindow);
-            button->setObjectName(IconElidingLabelInternal::IconButtonName());
-            button->hide();
-        }
-
-        // A style set on the label (and not a style sheet's, which reaches the button through the window) is the button's too, as the
-        // owner of a container set it on the button beside the label
-        QStyle* labelStyle = style();
-        if (button->style() != labelStyle && !labelStyle->inherits("QStyleSheetStyle"))
-        {
-            button->setStyle(labelStyle);
-        }
-        return button;
-    }
 
     QSize IconElidingLabel::iconButtonSize() const
     {
         if (!m_buttonSize.isValid())
         {
-            QToolButton* button = iconButton();
+            QToolButton* button = IconElidingLabelInternal::ButtonOf(this);
             if (!button || !m_iconSize.isValid())
             {
                 return QSize(0, 0);
@@ -186,7 +182,7 @@ namespace AzQtComponents
     {
         ElidingLabel::paintEvent(event);
 
-        auto* button = static_cast<IconElidingLabelInternal::IconButton*>(iconButton());
+        auto* button = IconElidingLabelInternal::ButtonOf(this);
         if (!button || !m_iconSize.isValid())
         {
             return;

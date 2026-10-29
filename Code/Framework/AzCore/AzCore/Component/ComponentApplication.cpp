@@ -189,9 +189,8 @@ namespace AZ
 
     ReflectionManager* ReflectionEnvironment::GetReflectionManager()
     {
-        // The variable's id is the CRC32 of its constant name: hash it once instead of on every call. This runs for every
-        // GetSerializeContext / GetBehaviorContext / GetJsonRegistrationContext, which the property editors and the JSON serializer
-        // call per value: hashing the name was about a quarter of an Entity Inspector rebuild. Same id, same lookup as before.
+        // The variable's id is the CRC32 of its constant name: hashed once, not on every GetSerializeContext / GetBehaviorContext /
+        // GetJsonRegistrationContext (the property editors and the JSON serializer call them per value). Same id, same lookup.
         static const u32 s_reflectionEnvironmentId = AZ::Internal::EnvironmentVariableNameToId(s_reflectionEnvironmentName);
         AZ::EnvironmentVariable<ReflectionEnvironment> environment = AZ::Environment::FindVariable<ReflectionEnvironment>(s_reflectionEnvironmentId);
         return environment ? environment->Get() : nullptr;

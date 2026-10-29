@@ -214,7 +214,7 @@ namespace AzToolsFramework
     }
 
     //! A shared column's layout only places the row's items for one layout pass. It gives the items back to the row's layout, which
-    //! owns them, then deletes the spacers CloseColumn gave it, and itself: a pass used to leak both.
+    //! owns them, then deletes the spacers CloseColumn gave it, and itself.
     static void ReleaseColumnLayout(const QLayout& rowLayout, QHBoxLayout* columnLayout)
     {
         while (QLayoutItem* item = columnLayout->takeAt(0))
@@ -1383,8 +1383,7 @@ namespace AzToolsFramework
         m_layout = new QVBoxLayout(scrollSurface);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(2);
-        // The stretch below the rows: rows are always inserted before it (AddAfterWidget). Added once here; a reset used to add another
-        // every time, so the layout of a reused property editor grew by one item per reset.
+        // The stretch below the rows, added once: rows are always inserted before it (AddAfterWidget)
         m_layout->addStretch();
 
         setWidget(scrollSurface);
@@ -1638,13 +1637,10 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::SetContentBuildHeld(bool held)
     {
-        if (held == m_contentBuildHeld)
+        // Holding, or nothing held to release: only the flag changes
+        if (held || !m_contentBuildHeld)
         {
-            return;
-        }
-        if (held)
-        {
-            m_contentBuildHeld = true;
+            m_contentBuildHeld = held;
             return;
         }
 

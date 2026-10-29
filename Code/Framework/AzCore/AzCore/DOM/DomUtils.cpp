@@ -132,14 +132,9 @@ namespace AZ::Dom::Utils
         }
     }
 
-    MarshalCacheScope* MarshalCacheScope::Current()
-    {
-        return MarshalCacheInternal::t_scope;
-    }
-
     Value TypeIdToDomValue(const AZ::TypeId& typeId)
     {
-        MarshalCacheScope* scope = MarshalCacheScope::Current();
+        MarshalCacheScope* scope = MarshalCacheInternal::t_scope;
         if (!scope)
         {
             return MarshalCacheInternal::ConvertTypeId(typeId);
@@ -623,7 +618,7 @@ namespace AZ::Dom::Utils
             // A PointerObject inside a marshal cache scope: built directly, as the JSON path below would give it (DomUtils.h)
             if (typeTraits.m_typeId == azrtti_typeid<AZ::PointerObject>())
             {
-                if (MarshalCacheScope* scope = MarshalCacheScope::Current())
+                if (MarshalCacheScope* scope = MarshalCacheInternal::t_scope)
                 {
                     if (scope->m_buildPointerObjects < 0)
                     {

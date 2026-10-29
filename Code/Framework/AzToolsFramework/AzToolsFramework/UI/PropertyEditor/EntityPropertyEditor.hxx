@@ -184,7 +184,7 @@ namespace AzToolsFramework
         float GetMoveIndicatorAlpha() const;
         PropertyRowWidget* GetRowToHighlight();
 
-        //! The lazy cards (ed_inspectorLazyCards, inspector build plan I.4): builds the rows of every card that still holds them, now,
+        //! The lazy cards (ed_inspectorLazyCards): builds the rows of every card that still holds them, now,
         //! top to bottom (tests, and anything that needs every card's rows)
         void CompleteLazyCards();
         //! The cards that still hold their rows (0 once every card has its rows)
@@ -607,41 +607,25 @@ namespace AzToolsFramework
         // where it was before (see its definition)
         enum class SettleOrigin
         {
-            Rebuild,        //!< the end of a rebuild (only with ed_inspectorSettleLayout)
-            LazyStep,       //!< an idle lazy cards step, below the view (only with ed_inspectorSettleLayout)
+            Build,          //!< the end of a rebuild or of an idle lazy cards step (only with ed_inspectorSettleLayout)
             Interaction     //!< a card or a row expanded or collapsed, a card's size asked for, held cards the view reaches
         };
-        //! Returns the rounds of layout requests it sent
-        int SettleComponentList(SettleOrigin origin);
+        void SettleComponentList(SettleOrigin origin);
         //! A layout that keeps asking for another round (a scroll bar showing and hiding) stops here
         static constexpr int SettleRoundsMax = 16;
         bool m_componentListSettling = false;
 
-        //! Diagnostics (ed_inspectorRefreshDiagnostics): the cards that move after a rebuild returns, and the component list's repaints
-        void ReportLayoutSettling(int settleRounds, AZ::s64 rebuildStartUs);
-        void RecordListPaint(const QObject* object);
-        AZ::u64 m_layoutSettlingGeneration = 0;
-        bool m_listPaintWatch = false;
-        AZ::s64 m_listPaintWatchStartUs = 0;     //!< steady clock microseconds
-        AZ::s64 m_listPaintLastUs = 0;
-        AZStd::vector<AZStd::pair<double, int>> m_listPaintBursts;    //!< per repaint: ms since the rebuild started, widgets painted
-
-        // Lazy cards (ed_inspectorLazyCards, inspector build plan I.4): a card past the view, or collapsed, holds the build of its rows.
+        // Lazy cards (ed_inspectorLazyCards): a card past the view, or collapsed, holds the build of its rows.
         // The rows are built later, always top to bottom (so that they join the Tab chain in the cards' order), at idle, as soon as
         // the view reaches the card (scroll, resize), or when the card is expanded. A rebuild cancels what is left.
-        bool LazyCardsEnabled() const;
         //! Builds the held cards from the top through the card at lastIndex, or until budgetUs is spent (after one card at least) when it
         //! is not 0; a card above the view moves the scroll value by the height it gains, so that the view stays on what it shows. The
         //! list is then settled as settleOrigin asks.
         void ReleaseLazyCardsThrough(int lastIndex, SettleOrigin settleOrigin, AZ::s64 budgetUs = 0);
         //! Not inside a release, during a rebuild, or with one queued, and only with held cards
         bool CanReleaseLazyCards() const;
-        //! The used card that is or holds the widget, or -1
-        int IndexOfCardHolding(const QWidget* widget) const;
         //! Builds the held cards through the last one in the view or one screen below it
         void ReleaseLazyCardsInView();
-        //! Builds the held cards through the expanded card
-        void ReleaseLazyCardExpanded(const ComponentEditor* componentEditor);
         void QueueLazyCardsStep(int delayMs = 0);
         void RunLazyCardsStep(AZ::u64 generation);
         void FinishLazyCards();
@@ -654,15 +638,17 @@ namespace AzToolsFramework
         bool m_lazyCardsDiagnostics = false;    //!< ed_inspectorRefreshDiagnostics, as the rebuild that held the cards read it
         AZ::s64 m_lazyCardsStartUs = 0;         //!< that rebuild's start, steady clock microseconds
 
-        // Interruptible load (ed_inspectorInterruptibleLoad, inspector build plan I.7)
+        // Interruptible load (ed_inspectorInterruptibleLoad)
         //! The rebuild QueuePropertyRefresh queues: the pending paints first (the outliner's new selection), then UpdateContents, which
         //! may then hold every card and freeze the view (m_interruptibleRebuild)
         void RunQueuedRefresh();
         bool m_interruptibleRebuild = false;
         // The view freeze: after an interruptible rebuild the inspector keeps its last picture (updates disabled, mouse input ignored)
         // while the idle steps build the cards in view, then shows them in one paint
-        //! The cards from the top down to the bottom of the view the rebuild restores have their rows (a collapsed card needs none)
-        bool ViewCardsBuilt() const;
+        //! The first card from the top down to the bottom of the view the rebuild restores that holds its rows (a collapsed card needs
+        //! none), or -1 when they are all built
+        int FirstViewCardHeld() const;
+        bool ViewCardsBuilt() const { return FirstViewCardHeld() < 0; }
         //! Builds the held cards in view from the top, until they are built or budgetUs is spent (after one card at least); an
         //! interruptible rebuild does so for ed_inspectorInterruptibleInlineMs before it lets the event loop run
         void BuildViewCards(AZ::s64 budgetUs);
@@ -677,13 +663,6 @@ namespace AzToolsFramework
         AZ::u64 m_viewFreezeGeneration = 0;
         //! The freeze ends by then even if the idle steps have not built the view (the rest is built at once)
         static constexpr int ViewFreezeMaxMs = 1000;
-        //! Diagnostics: when the last refresh was queued, when its rebuild started and returned, and when the outliner first painted
-        //! after it (steady clock microseconds; 0 = not yet), reported by ReportSelectionPaint
-        void ReportSelectionPaint(AZ::s64 queuedUs);
-        AZ::s64 m_refreshQueuedUs = 0;
-        AZ::s64 m_refreshStartUs = 0;
-        AZ::s64 m_refreshReturnUs = 0;
-        AZ::s64 m_outlinerPaintUs = 0;
 
         using ComponentPropertyEditorMap = AZStd::unordered_map<AZ::Component*, ComponentEditor*>;
         ComponentPropertyEditorMap m_componentToEditorMap;

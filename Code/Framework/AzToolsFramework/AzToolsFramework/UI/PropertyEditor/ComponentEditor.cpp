@@ -218,11 +218,9 @@ namespace AzToolsFramework
                 // not in multi-edit, just set the adapter component to this instance.
                 m_adapter->SetComponent(componentInstance);
 
-                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter.
-                // Detach the aggregate from this adapter first: ClearAdapters drops its handlers (and empties the view, whose rows
-                // the next build replaces anyway), so running the adapter's queued reset rebuilds no view. The view is then attached
-                // to the current contents: one build of the right contents, instead of a build of the previous instance's cached
-                // contents and a second one in InvalidateAll.
+                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter. The
+                // aggregate is detached first (ClearAdapters empties the view), so the adapter's queued reset rebuilds no view, and the
+                // view is then attached to the current contents: one build of the right contents.
                 if (m_aggregateAdapter)
                 {
                     m_aggregateAdapter->ClearAdapters();
@@ -274,10 +272,8 @@ namespace AzToolsFramework
             // and the output is noisy and unpleasant.
             m_aggregateAdapter->SetGenerateDiffRows(false);
 
-            // Attach the view to the (still empty) aggregate first, then add the original adapter, which was already set in
-            // a prior AddInstance with a null aggregateInstance. In this order, running that adapter's queued reset inside
-            // AddAdapter rebuilds no view, and attaching builds an empty one; the aggregate queues one reset for all the
-            // instances, which InvalidateAll runs.
+            // Attach the view to the (still empty) aggregate first, then add the original adapter (set in a prior AddInstance): its
+            // queued reset then rebuilds no view, and the aggregate queues one reset for all the instances, which InvalidateAll runs.
             m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
             m_aggregateAdapter->AddAdapter(m_adapter);
         }

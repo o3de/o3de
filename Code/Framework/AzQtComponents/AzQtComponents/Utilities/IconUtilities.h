@@ -16,9 +16,8 @@
 
 namespace AzQtComponents
 {
-    //! The icon of an image file (added in the given size when it is valid, with the second file for the disabled mode when one is
-    //! given), built once and shared after: building a QIcon from an SVG file parses the file twice (QIcon checks the file as it
-    //! adds it, and a new icon renders its first pixmap from the file), where a shared icon paints from its pixmap cache. A null icon
+    //! The icon of an image file (in the given size when it is valid, with the second file for the disabled mode when one is given),
+    //! built once and shared: a new QIcon of an SVG file parses the file again, a shared one paints from its pixmap cache. A null icon
     //! (no such file yet) is not kept. For the GUI thread only.
     AZ_QT_COMPONENTS_API QIcon CachedIcon(const QString& filePath, const QSize& size = QSize(), const QString& disabledFilePath = QString());
 } // namespace AzQtComponents

@@ -202,9 +202,9 @@ namespace AzToolsFramework
          *  to make the DPE arbitrarily narrow. */
         void SetEnforceMinWidth(bool enforceMinWidth);
 
-        //! Holds or releases the build of the rows (the inspector's lazy cards, inspector build plan I.4). While held, a reset, a queued
-        //! reset or a change of the adapter builds nothing: the rows are only marked pending. Releasing builds them once, from the
-        //! adapter's current contents; with nothing pending it builds nothing.
+        //! Holds or releases the build of the rows (the inspector's lazy cards). While held, a reset, a queued reset or a change of the
+        //! adapter builds nothing: the rows are only marked pending. Releasing builds them once, from the adapter's current contents;
+        //! with nothing pending it builds nothing.
         void SetContentBuildHeld(bool held);
         //! Drops a hold without building the pending rows (the editor is being cleared for other contents)
         void DiscardHeldContentBuild();

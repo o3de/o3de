@@ -3643,8 +3643,7 @@ namespace AzQtComponents
         return flagToContinueProcessingEvent;
     }
 
-    //! The separator of the class tags. Compiled once: building the expression per call JIT-compiled it every time, about 3 % of an
-    //! Entity Inspector rebuild (hasClass runs for every widget polish).
+    //! The separator of the class tags, compiled once: hasClass runs for every widget polish
     static const QRegularExpression& classTagSeparator()
     {
         static const QRegularExpression separator(QStringLiteral("\\s+"));

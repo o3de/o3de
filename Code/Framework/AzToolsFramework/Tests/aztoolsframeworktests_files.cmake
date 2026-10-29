@@ -190,6 +190,7 @@ set(FILES
     UI/EntityPropertyEditorInterruptibleLoadTests.cpp
     UI/EntityPropertyEditorLayoutTests.cpp
     UI/EntityPropertyEditorLazyCardsTests.cpp
+    UI/EntityPropertyEditorTestFixture.h
     UI/EntityPropertyEditorTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp

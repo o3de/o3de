@@ -83,9 +83,9 @@ namespace AzToolsFramework
         void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
 
-        //! The inspector's lazy cards (inspector build plan I.4): holds the build of the card's rows until it is released, which builds
-        //! them once; discarding drops the hold without building (the card is being cleared). Only a DPE card holds. A multi-edit card
-        //! held before its instances are added also defers its aggregate (I.7c): the release adds the instances after the first.
+        //! The inspector's lazy cards: holds the build of the card's rows until it is released, which builds them once; discarding
+        //! drops the hold without building (the card is being cleared). Only a DPE card holds. A multi-edit card held before its
+        //! instances are added also defers its aggregate: the release adds the instances after the first.
         void HoldContentBuild();
         void ReleaseContentBuild();
         void DiscardContentBuild();

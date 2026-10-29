@@ -333,8 +333,7 @@ namespace AZ::Reflection
             SerializeContext::EnumerateInstanceCallContext* m_enumerateContext;
 
             //! The class elements of the UI nodes (groups and UI elements) this visit makes: nothing outside the visit refers to them, so
-            //! the visitor owns them and they go with it (they used to be allocated per visit and never freed). A deque keeps their
-            //! addresses while it grows.
+            //! the visitor owns them and they go with it; a deque keeps their addresses while it grows.
             AZStd::deque<AZ::SerializeContext::ClassElement> m_uiClassElements;
 
             struct StackEntry

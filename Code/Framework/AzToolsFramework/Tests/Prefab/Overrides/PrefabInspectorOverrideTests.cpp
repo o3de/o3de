@@ -148,17 +148,8 @@ namespace UnitTest
             GenerateComponentAdapterDoms(newEntityId);
         }
 
-        AZStd::vector<const AzToolsFramework::ComponentEditor*> componentEditors;
-        AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
-            &AzToolsFramework::EntityPropertyEditorRequestBus::Events::VisitComponentEditors,
-            [&componentEditors](const AzToolsFramework::ComponentEditor* componentEditor)
-            {
-                componentEditors.push_back(componentEditor);
-                return true;
-            });
-        ASSERT_EQ(componentEditors.size(), 1);
-        const auto* propertyEditor = componentEditors.front()->findChild<AzToolsFramework::DocumentPropertyEditor*>();
-        ASSERT_NE(propertyEditor, nullptr);
+        const auto* propertyEditor = PrefabInspectorOverrideTestInternal::FindPropertyEditor();
+        ASSERT_NE(propertyEditor, nullptr);     // the inspector's one card has one
 
         // the rows of the last rebuild and the one stretch below them
         const QLayout* rowLayout = propertyEditor->widget()->layout();

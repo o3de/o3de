@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Elements/ComboPopupElement.h>
 #include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 
 #include <QAbstractItemView>
 #include <QCoreApplication>
@@ -255,19 +256,6 @@ namespace AzQtComponents
             return module ? layered(module, global) : global;
         }
 
-        //! The icon of a resource, as the sheet made it for an `image:` (QStyleSheetImageData holds a QIcon of the url)
-        const QIcon& iconOf(const char* resource)
-        {
-            static QHash<QByteArray, QIcon> icons;
-            const QByteArray key(resource);
-            auto found = icons.find(key);
-            if (found == icons.end())
-            {
-                found = icons.insert(key, QIcon(QString::fromUtf8(resource)));
-            }
-            return found.value();
-        }
-
         //! Tells a tree it has been shown (ItemViewElement::showTree). It filters the events of the trees an element covers.
         class ShowWatcher
             : public QObject
@@ -458,7 +446,8 @@ namespace AzQtComponents
         }
 
         // The panel of the row first (the sheet asked its proxy, which is the style), then the rule: its background over the whole cell
-        // and its image in the cell less the padding (QRenderRule::drawRule), where QIcon::paint fits and centres it
+        // and its image (a QIcon of the url, as QStyleSheetImageData holds it) in the cell less the padding (QRenderRule::drawRule),
+        // where QIcon::paint fits and centres it
         style->drawPrimitive(QStyle::PE_PanelItemViewRow, option, painter, widget);
         if (fill.isValid() && fill.alpha() > 0)
         {
@@ -466,7 +455,7 @@ namespace AzQtComponents
         }
         if (hasImage)
         {
-            ItemViewElementInternal::iconOf(branch.m_image).paint(painter, option->rect.marginsRemoved(branch.m_padding), Qt::AlignCenter);
+            CachedIcon(QString::fromUtf8(branch.m_image)).paint(painter, option->rect.marginsRemoved(branch.m_padding), Qt::AlignCenter);
         }
         return true;
     }

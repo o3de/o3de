@@ -28,12 +28,6 @@ namespace AzToolsFramework::Prefab
     QWeakPointer<QIcon> PrefabOverrideLabelHandler::s_sharedEmptyIcon;
     constexpr QSize kIconSize(6, 6);
 
-    namespace PrefabOverrideLabelInternal
-    {
-        //! The override icon of the compact labels: one for all of them while any is alive
-        QWeakPointer<QIcon> s_sharedCompactOverrideIcon;
-    } // namespace PrefabOverrideLabelInternal
-
     // ----------------------------------------------------------------------------------
     // Registration: the composite handler or the compact one, as ed_dpeCompactOverrideLabel says
     // ----------------------------------------------------------------------------------
@@ -81,11 +75,9 @@ namespace AzToolsFramework::Prefab
         }
 
         m_textLabel->setProperty(OverriddenPropertyName, false);
-        // The label of an overridden property is bold. With style sheets: an inline sheet on every label, as before (the
-        // GuiPerfFloor noop and passthrough rungs leave it out). Flat (no style sheets): the flattened GUI's element for an
-        // overridden label (Global.Text.OverriddenPropertyLabel, AzQtComponents PropertyEditorElements.cpp) gives the weight
-        // when RefreshUI repolishes the label, so no row label carries a sheet of its own (a sheet gave each one a
-        // QStyleSheetStyle, restyled on every reparent).
+        // The label of an overridden property is bold: with style sheets, an inline sheet on every label (the GuiPerfFloor noop and
+        // passthrough rungs leave it out); flat, the element Global.Text.OverriddenPropertyLabel (PropertyEditorElements.cpp) when
+        // RefreshUI repolishes the label, so that no row label carries a sheet (and a QStyleSheetStyle) of its own.
         if (!AzQtComponents::StyleManager::stylesheetsDisabled())
         {
             AzQtComponents::GuiPerfFloor::setInlineStyleSheet(
@@ -170,14 +162,7 @@ namespace AzToolsFramework::Prefab
     // ----------------------------------------------------------------------------------
 
     CompactPrefabOverrideLabelHandler::CompactPrefabOverrideLabelHandler()
-        : m_overrideIcon(PrefabOverrideLabelInternal::s_sharedCompactOverrideIcon.lock())
     {
-        if (!m_overrideIcon)
-        {
-            m_overrideIcon = QSharedPointer<QIcon>(new QIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg")));
-            PrefabOverrideLabelInternal::s_sharedCompactOverrideIcon = m_overrideIcon;
-        }
-
         // Bold when overridden, as PrefabOverrideLabelHandler's label is: the inline sheet with style sheets, the flattened GUI's
         // element without (Global.Text.OverriddenPropertyLabel, which matches an ElidingLabel and so this one)
         setProperty(PrefabOverrideLabelHandler::OverriddenPropertyName, false);
@@ -212,7 +197,8 @@ namespace AzToolsFramework::Prefab
         {
             RefreshStyle();
         }
-        setIcon(m_overridden ? *m_overrideIcon : QIcon(), kIconSize);
+        static const QIcon s_overrideIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg"));
+        setIcon(m_overridden ? s_overrideIcon : QIcon(), kIconSize);
     }
 
     bool CompactPrefabOverrideLabelHandler::ResetToDefaults()

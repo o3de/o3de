@@ -6,25 +6,15 @@
  *
  */
 
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/sort.h>
 #include <AzCore/std/tuple.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
-#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditorHeader.hxx>
-#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
-#include <Prefab/PrefabTestFixture.h>
+#include <UI/EntityPropertyEditorTestFixture.h>
 
 #include <QAbstractSpinBox>
-#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QKeyEvent>
@@ -36,61 +26,12 @@
 namespace UnitTest
 {
     // ----------------------------------------------------------------------------------
-    // The inspector's lazy cards (ed_inspectorLazyCards, inspector build plan I.4b): the cards past the view and collapsed cards
-    // hold their rows; the rows are built top to bottom later. Once built, the inspector is the one a full build gives.
+    // The inspector's lazy cards (ed_inspectorLazyCards): the cards past the view and collapsed cards hold their rows; the rows are
+    // built top to bottom later. Once built, the inspector is the one a full build gives.
     // ----------------------------------------------------------------------------------
 
     namespace EntityPropertyEditorLazyCardsTestsInternal
     {
-        //! A component with a tall card: eight numbers
-        class LazyCardsTestComponent : public AzToolsFramework::Components::EditorComponentBase
-        {
-        public:
-            AZ_EDITOR_COMPONENT(
-                LazyCardsTestComponent, "{7B1E7A2C-0C5D-4D5E-9E3B-5B8E6E2F4A11}", AzToolsFramework::Components::EditorComponentBase);
-
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-                {
-                    serializeContext->Class<LazyCardsTestComponent, AzToolsFramework::Components::EditorComponentBase>()
-                        ->Version(1)
-                        ->Field("value0", &LazyCardsTestComponent::m_value0)
-                        ->Field("value1", &LazyCardsTestComponent::m_value1)
-                        ->Field("value2", &LazyCardsTestComponent::m_value2)
-                        ->Field("value3", &LazyCardsTestComponent::m_value3)
-                        ->Field("value4", &LazyCardsTestComponent::m_value4)
-                        ->Field("value5", &LazyCardsTestComponent::m_value5)
-                        ->Field("value6", &LazyCardsTestComponent::m_value6)
-                        ->Field("value7", &LazyCardsTestComponent::m_value7);
-
-                    if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                    {
-                        editContext->Class<LazyCardsTestComponent>("Lazy Cards Test", "A tall card")
-                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value0, "Value 0", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value1, "Value 1", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value2, "Value 2", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value3, "Value 3", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value4, "Value 4", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value5, "Value 5", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value6, "Value 6", "")
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &LazyCardsTestComponent::m_value7, "Value 7", "");
-                    }
-                }
-            }
-
-            float m_value0 = 0.0f;
-            float m_value1 = 1.0f;
-            float m_value2 = 2.0f;
-            float m_value3 = 3.0f;
-            float m_value4 = 4.0f;
-            float m_value5 = 5.0f;
-            float m_value6 = 6.0f;
-            float m_value7 = 7.0f;
-        };
-
         //! What the DPE's Tab stops on (DocumentPropertyEditor.cpp IsInputWidget), not counting a widget whose focus goes to another
         bool IsTabStop(const QWidget* widget)
         {
@@ -107,132 +48,69 @@ namespace UnitTest
             int m_height = 0;
             QStringList m_numbers;  //!< the texts of the card's spin boxes, top to bottom
         };
+
+        //! The texts of the card's shown widgets of a type (a label, a spin box), top to bottom
+        template<class Widget>
+        QStringList ShownTexts(const QWidget* card)
+        {
+            QList<Widget*> widgets = card->findChildren<Widget*>();
+            AZStd::sort(widgets.begin(), widgets.end(),
+                [](const QWidget* a, const QWidget* b)
+                {
+                    return a->mapTo(a->window(), QPoint(0, 0)).y() < b->mapTo(b->window(), QPoint(0, 0)).y();
+                });
+            QStringList texts;
+            for (const Widget* widget : widgets)
+            {
+                if (widget->isVisible())
+                {
+                    texts.push_back(widget->text());
+                }
+            }
+            return texts;
+        }
     } // namespace EntityPropertyEditorLazyCardsTestsInternal
 
-    class EntityPropertyEditorLazyCardsTests : public PrefabTestFixture
+    class EntityPropertyEditorLazyCardsTests : public EntityPropertyEditorTestFixture
     {
     protected:
-        using LazyCardsTestComponent = EntityPropertyEditorLazyCardsTestsInternal::LazyCardsTestComponent;
         using CardRecord = EntityPropertyEditorLazyCardsTestsInternal::CardRecord;
 
         static constexpr int TestComponents = 6;
 
         void SetUpEditorFixtureImpl() override
         {
-            PrefabTestFixture::SetUpEditorFixtureImpl();
-            GetApplication()->RegisterComponentDescriptor(LazyCardsTestComponent::CreateDescriptor());
+            EntityPropertyEditorTestFixture::SetUpEditorFixtureImpl();
+            GetApplication()->RegisterComponentDescriptor(InspectorTallTestComponent::CreateDescriptor());
 
             // the transform and six tall cards: the inspector of a short window shows the first two
-            m_entityId = CreateEditorEntityUnderRoot("LazyCardsEntity");
-            AZ::Entity* entity = AzToolsFramework::GetEntityById(m_entityId);
-            entity->Deactivate();
-            for (int index = 0; index < TestComponents; ++index)
-            {
-                LazyCardsTestComponent* component = entity->CreateComponent<LazyCardsTestComponent>();
-                component->SetSerializedIdentifier(AZStd::string::format("LazyCardsTestComponent_%d", index));
-                m_components.push_back(component);
-            }
-            entity->Activate();
-        }
-
-        void TearDownEditorFixtureImpl() override
-        {
-            m_inspector.reset();
-            SetLazyCards(true);     // the default
-            PrefabTestFixture::TearDownEditorFixtureImpl();
-        }
-
-        static void SetLazyCards(bool lazy)
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(lazy ? "ed_inspectorLazyCards true" : "ed_inspectorLazyCards false");
+            m_entityId = CreateEntityOf<InspectorTallTestComponent>("LazyCardsEntity", TestComponents);
         }
 
         //! A new inspector of the given height, shown, with lazy cards on or off, showing the entity (its rebuild has just run)
         void Show(bool lazy, int windowHeight = 320)
         {
-            m_inspector.reset();
-            SetLazyCards(lazy);
-            m_inspector = AZStd::make_unique<AzToolsFramework::EntityPropertyEditor>(nullptr, Qt::WindowFlags(), false);
-            m_inspector->setAttribute(Qt::WA_DontShowOnScreen);
-            m_inspector->resize(420, windowHeight);
-            m_inspector->show();
-            QApplication::processEvents();
-            Rebuild();
+            SetCvar("ed_inspectorLazyCards", lazy);
+            NewInspector(windowHeight);
+            Select({ m_entityId });
         }
 
-        //! The rebuild a new selection runs
-        void Rebuild()
+        //! The test components, in their order on the entity
+        AZStd::vector<InspectorTallTestComponent*> Components() const
         {
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ m_entityId });
-            QMetaObject::invokeMethod(m_inspector.get(), "UpdateContents", Qt::DirectConnection);
-        }
-
-        //! Lets the event loop run until no card holds its rows (the idle steps), within a bound
-        void RunTheIdleSteps()
-        {
-            for (int turn = 0; turn < 1000 && m_inspector->GetLazyCardsPending() > 0; ++turn)
-            {
-                QApplication::processEvents();
-            }
-        }
-
-        //! The inspector's shown cards, top to bottom
-        AZStd::vector<AzToolsFramework::ComponentEditor*> Cards() const
-        {
-            AZStd::vector<AzToolsFramework::ComponentEditor*> cards;
-            for (AzToolsFramework::ComponentEditor* card : m_inspector->findChildren<AzToolsFramework::ComponentEditor*>())
-            {
-                if (card->isVisible())
-                {
-                    cards.push_back(card);
-                }
-            }
-            AZStd::sort(cards.begin(), cards.end(),
-                [](const QWidget* a, const QWidget* b)
-                {
-                    return a->mapTo(a->window(), QPoint(0, 0)).y() < b->mapTo(b->window(), QPoint(0, 0)).y();
-                });
-            return cards;
+            return AzToolsFramework::GetEntityById(m_entityId)->FindComponents<InspectorTallTestComponent>();
         }
 
         //! The cards as the user sees them: titles, labels, the numbers shown, heights
         AZStd::vector<CardRecord> Record() const
         {
+            using EntityPropertyEditorLazyCardsTestsInternal::ShownTexts;
             QCoreApplication::sendPostedEvents(nullptr, QEvent::LayoutRequest);
             AZStd::vector<CardRecord> records;
             for (const AzToolsFramework::ComponentEditor* card : Cards())
             {
-                CardRecord record;
-                record.m_title = card->GetHeader()->titleLabel()->text();
-                QList<AzQtComponents::ElidingLabel*> labels = card->findChildren<AzQtComponents::ElidingLabel*>();
-                AZStd::sort(labels.begin(), labels.end(),
-                    [](const QWidget* a, const QWidget* b)
-                    {
-                        return a->mapTo(a->window(), QPoint(0, 0)).y() < b->mapTo(b->window(), QPoint(0, 0)).y();
-                    });
-                for (const AzQtComponents::ElidingLabel* label : labels)
-                {
-                    if (label->isVisible())
-                    {
-                        record.m_labels.push_back(label->text());
-                    }
-                }
-                record.m_height = card->height();
-                QList<QAbstractSpinBox*> spinBoxes = card->findChildren<QAbstractSpinBox*>();
-                AZStd::sort(spinBoxes.begin(), spinBoxes.end(),
-                    [](const QWidget* a, const QWidget* b)
-                    {
-                        return a->mapTo(a->window(), QPoint(0, 0)).y() < b->mapTo(b->window(), QPoint(0, 0)).y();
-                    });
-                for (const QAbstractSpinBox* spinBox : spinBoxes)
-                {
-                    if (spinBox->isVisible())
-                    {
-                        record.m_numbers.push_back(spinBox->text());
-                    }
-                }
-                records.push_back(AZStd::move(record));
+                records.push_back({ card->GetHeader()->titleLabel()->text(), ShownTexts<AzQtComponents::ElidingLabel>(card), card->height(),
+                    ShownTexts<QAbstractSpinBox>(card) });
             }
             return records;
         }
@@ -313,8 +191,6 @@ namespace UnitTest
         }
 
         AZ::EntityId m_entityId;
-        AZStd::vector<LazyCardsTestComponent*> m_components;
-        AZStd::unique_ptr<AzToolsFramework::EntityPropertyEditor> m_inspector;
     };
 
     TEST_F(EntityPropertyEditorLazyCardsTests, TheCardsPastTheViewHoldTheirRowsAndCompleteToTheInspectorOfAFullBuild)
@@ -338,15 +214,7 @@ namespace UnitTest
     TEST_F(EntityPropertyEditorLazyCardsTests, AHeldMultiEditCardGeneratesItsInstancesContentsOnlyWhenItIsBuilt)
     {
         // a second entity of the same components: the inspector edits both at once (one card per component, one adapter per entity)
-        const AZ::EntityId secondEntityId = CreateEditorEntityUnderRoot("LazyCardsSecondEntity");
-        AZ::Entity* secondEntity = AzToolsFramework::GetEntityById(secondEntityId);
-        secondEntity->Deactivate();
-        for (int index = 0; index < TestComponents; ++index)
-        {
-            secondEntity->CreateComponent<LazyCardsTestComponent>()->SetSerializedIdentifier(
-                AZStd::string::format("LazyCardsTestComponent_%d", index));
-        }
-        secondEntity->Activate();
+        const AZ::EntityId secondEntityId = CreateEntityOf<InspectorTallTestComponent>("LazyCardsSecondEntity", TestComponents);
 
         // the inspector shows one entity, then both; the contents generated by the second rebuild are counted (verify mode counts
         // every generation)
@@ -356,13 +224,10 @@ namespace UnitTest
         {
             Show(lazy);
             AZ::DocumentPropertyEditor::ReflectionAdapter::TakeVerifyCounts(generations, mismatches);
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
-                AzToolsFramework::EntityIdList{ m_entityId, secondEntityId });
-            QMetaObject::invokeMethod(m_inspector.get(), "UpdateContents", Qt::DirectConnection);
+            Select({ m_entityId, secondEntityId });
             AZ::DocumentPropertyEditor::ReflectionAdapter::TakeVerifyCounts(generations, mismatches);
         };
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("ed_dpeVerifyContentCaches true");
+        SetCvar("ed_dpeVerifyContentCaches", true);
 
         rebuildBoth(false);
         const AZStd::vector<CardRecord> fullBuild = Record();
@@ -380,8 +245,6 @@ namespace UnitTest
         EXPECT_EQ(generations, 2u * held);
         EXPECT_EQ(mismatches, 0u);
         ExpectSameCards(fullBuild, Record());
-
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("ed_dpeVerifyContentCaches false");
     }
 
     TEST_F(EntityPropertyEditorLazyCardsTests, TheIdleStepsBuildEveryHeldCard)
@@ -407,10 +270,9 @@ namespace UnitTest
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
         AZ::Entity* entity = AzToolsFramework::GetEntityById(m_entityId);
         entity->Deactivate();
-        LazyCardsTestComponent* last = m_components.back();
+        InspectorTallTestComponent* last = Components().back();
         entity->RemoveComponent(last);
         delete last;
-        m_components.pop_back();
         entity->Activate();
 
         RunTheIdleSteps();      // the queued rebuild runs, then the idle steps of its own cards
@@ -422,7 +284,7 @@ namespace UnitTest
     {
         // a window tall enough for every card: only the collapsed one holds its rows
         AzToolsFramework::EditorEntityInfoRequestBus::Event(
-            m_entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::SetComponentExpanded, m_components[0]->GetId(), false);
+            m_entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::SetComponentExpanded, Components().front()->GetId(), false);
         Show(true, 4000);
         EXPECT_EQ(m_inspector->GetLazyCardsPending(), 1);
 

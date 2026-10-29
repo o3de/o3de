@@ -19,8 +19,8 @@
 namespace UnitTest
 {
     // ----------------------------------------------------------------------------------
-    // A held DocumentPropertyEditor (the inspector's lazy cards, inspector build plan I.4a): the adapter's resets, queued resets and
-    // changes build nothing while it is held; releasing builds the rows once, from the adapter's current contents
+    // A held DocumentPropertyEditor (the inspector's lazy cards): the adapter's resets, queued resets and changes build nothing while
+    // it is held; releasing builds the rows once, from the adapter's current contents
     // ----------------------------------------------------------------------------------
 
     namespace DocumentPropertyEditorHoldTestsInternal
@@ -74,18 +74,6 @@ namespace UnitTest
         private:
             AZStd::vector<AZStd::string> m_labels;
         };
-
-        //! The labels the editor shows, in order (the rows a clear released are deleted first)
-        QStringList ShownLabels(const AzToolsFramework::DocumentPropertyEditor& editor)
-        {
-            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-            QStringList labels;
-            for (const AzQtComponents::ElidingLabel* label : editor.findChildren<AzQtComponents::ElidingLabel*>())
-            {
-                labels.push_back(label->text());
-            }
-            return labels;
-        }
     } // namespace DocumentPropertyEditorHoldTestsInternal
 
     class DocumentPropertyEditorHoldTests : public ToolsApplicationFixture<>
@@ -105,9 +93,16 @@ namespace UnitTest
             m_adapter.reset();
         }
 
+        //! The labels the editor shows, in order (the rows a clear released are deleted first)
         QStringList Shown() const
         {
-            return DocumentPropertyEditorHoldTestsInternal::ShownLabels(*m_editor);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+            QStringList labels;
+            for (const AzQtComponents::ElidingLabel* label : m_editor->findChildren<AzQtComponents::ElidingLabel*>())
+            {
+                labels.push_back(label->text());
+            }
+            return labels;
         }
 
         AZStd::shared_ptr<DocumentPropertyEditorHoldTestsInternal::CountingAdapter> m_adapter;

@@ -124,8 +124,7 @@ namespace AzQtComponents
         //! Requests that the label re-elide its text.
         void requestElide();
 
-        //! The rect the text is elided to and the filter highlight is drawn in. A subclass that draws something beside the text
-        //! (IconElidingLabel) gives the text less.
+        //! The rect the text is elided to and the filter highlight is drawn in (less, in IconElidingLabel, which draws beside the text)
         virtual QRect TextRect();
 
         QString m_filterString;

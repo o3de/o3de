@@ -18,18 +18,14 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file with others into one
-    //! translation unit, where anonymous namespaces merge.
+    //! Everything private to this file (a named namespace: a unity build joins this file with others, where anonymous ones merge)
     namespace ExpanderSettingsInternal
     {
         // ------------------------------------------------------------------------------
-        // Settings file merges
-        //
-        // All the expander settings of one property editor share one settings file, and from the first merge on the settings registry
-        // holds its contents (a save writes the registry back to the file). So the file is merged once, and again only when it changed
-        // on disk: merging it for every component editor of every inspector selection read and parsed the file each time. The registry
-        // keeps the stamp the file had at its last merge or save here, under a runtime key that is never saved; a new registry has
-        // none, so it merges the file again.
+        // Settings file merges: the expander settings of one property editor share one settings file, and the registry holds its
+        // contents from the first merge on (a save writes it back to the file), so the file is merged again only when it changed on
+        // disk. The registry keeps the file's stamp from its last merge or save under a runtime key that is never saved; a new
+        // registry has none.
         // ------------------------------------------------------------------------------
 
         constexpr const char* MergedSettingsFilesKey = "/O3DE/Runtime/Internal/DocumentPropertyEditor/MergedSettingsFiles";

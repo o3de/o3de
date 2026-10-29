@@ -220,12 +220,6 @@ namespace AzQtComponents
             return Selectors::withinClass(widget, "AzToolsFramework::PropertyRowWidget");
         }
 
-        //! `[overridden="true"]`: an attribute selector compares the property's text (a bool reads "true")
-        bool overriddenProperty(const QWidget* widget)
-        {
-            return widget->property("overridden").toString() == QLatin1String("true");
-        }
-
         //! `AzQtComponents--CardHeader W`
         bool inCardHeader(const QWidget* widget)
         {
@@ -265,9 +259,9 @@ namespace AzQtComponents
         BoxElement::registerElement(&PropertyRowDefaultLabel, label,
             [](const QWidget* w) { return Selectors::named(w, "DefaultLabel") && inPropertyRow(w); }, global);
 
-        // The handler's sheet sat on its label only; no other widget has the property
+        // `[overridden="true"]`: the handler's sheet sat on its label only; no other widget has the property
         TextElement::registerElement(&OverriddenPropertyLabel, &ElidingLabel::staticMetaObject,
-            [](const QWidget* w) { return overriddenProperty(w); });
+            [](const QWidget* w) { return Selectors::hasProperty(w, "overridden", "true"); });
 
         BoxElement::registerElement(&CardHeaderExpander, checkBox,
             [](const QWidget* w)

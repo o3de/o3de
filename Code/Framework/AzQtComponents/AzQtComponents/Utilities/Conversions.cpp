@@ -87,8 +87,7 @@ namespace AzQtComponents
             }
 
             // Remove trailing zeros, since the locale conversion won't do
-            // it for us. A plain loop: building a QRegularExpression here JIT-compiled it for every number shown in a property
-            // editor (about 2 % of an Entity Inspector rebuild)
+            // it for us. A plain loop: a QRegularExpression here was compiled for every number shown in a property editor
             while (!zeroDigit.isEmpty() && retValue.endsWith(zeroDigit))
             {
                 retValue.chop(zeroDigit.size());

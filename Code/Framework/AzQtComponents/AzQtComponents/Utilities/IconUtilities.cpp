@@ -9,15 +9,11 @@
 #include <AzQtComponents/Utilities/IconUtilities.h>
 
 #include <QHash>
-#include <QtGlobal>
 
 namespace AzQtComponents
 {
     QIcon CachedIcon(const QString& filePath, const QSize& size, const QString& disabledFilePath)
     {
-        // A/B switch (inspector build plan I.8a): O3DE_ICON_CACHE_OFF set builds a new icon every time. Removed in finalization
-        static const bool s_cacheOff = qEnvironmentVariableIsSet("O3DE_ICON_CACHE_OFF");
-
         // The icons built so far, by their files and size
         static QHash<QString, QIcon> s_icons;
         const QString key = (size.isValid() || !disabledFilePath.isEmpty())
@@ -35,7 +31,7 @@ namespace AzQtComponents
         {
             icon.addFile(disabledFilePath, size, QIcon::Disabled);
         }
-        if (!icon.isNull() && !s_cacheOff)
+        if (!icon.isNull())
         {
             s_icons.insert(key, icon);
         }
