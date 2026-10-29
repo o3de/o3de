@@ -35,22 +35,22 @@ struct SFileVersion
         v[0] = v[1] = v[2] = v[3] = 0;
 
         AZStd::vector<AZStd::string> tokens;
-        AZ::StringFunc::Tokenize(s, tokens, '.', true, true);
-        if (tokens.size()>0)
+        AZ::StringFunc::Tokenize(s, tokens, '.', false, true);
+        if (tokens.size() > 0)
         {
-            v[0] = AZ::StringFunc::ToInt(tokens[0].c_str());
+            v[3] = AZ::StringFunc::ToInt(tokens[0].c_str());
         }
-        if (tokens.size()>1)
+        if (tokens.size() > 1)
         {
-            v[1] = AZ::StringFunc::ToInt(tokens[1].c_str());
+            v[2] = AZ::StringFunc::ToInt(tokens[1].c_str());
         }
-        if (tokens.size()>2)
+        if (tokens.size() > 2)
         {
-            v[2] = AZ::StringFunc::ToInt(tokens[2].c_str());
+            v[1] = AZ::StringFunc::ToInt(tokens[2].c_str());
         }
-        if (tokens.size()>3)
+        if (tokens.size() > 3)
         {
-            v[3] = AZ::StringFunc::ToInt(tokens[3].c_str());
+            v[0] = AZ::StringFunc::ToInt(tokens[3].c_str());
         }
     }
 
