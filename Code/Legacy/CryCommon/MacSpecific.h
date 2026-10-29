@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Mac declarations
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MACSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_MACSPECIFIC_H
-#pragma once
 
 
 #include "AppleSpecific.h"
@@ -31,5 +28,3 @@
 
 
 #define VK_CONTROL  0
-
-#endif // CRYINCLUDE_CRYCOMMON_MACSPECIFIC_H

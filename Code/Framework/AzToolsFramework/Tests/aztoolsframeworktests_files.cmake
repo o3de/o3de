@@ -192,6 +192,7 @@ set(FILES
     UI/EntityPropertyEditorLazyCardsTests.cpp
     UI/EntityPropertyEditorTestFixture.h
     UI/EntityPropertyEditorTests.cpp
+    UI/PropertyAssetCtrlTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp

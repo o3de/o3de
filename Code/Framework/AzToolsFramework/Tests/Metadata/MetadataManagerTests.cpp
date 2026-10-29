@@ -110,42 +110,37 @@ namespace UnitTest
             using namespace AZ;
 
             ON_CALL(*m_fileIOMock, Open(_, _, _))
-                .WillByDefault(Invoke(
-                    [](auto filePath, auto, IO::HandleType& handle)
+                .WillByDefault([](auto filePath, auto, IO::HandleType& handle)
                     {
                         handle = AZ::u32(AZStd::hash<AZStd::string>{}( filePath ));
                         return AZ::IO::Result(AZ::IO::ResultCode::Success);
-                    }));
+                    });
 
             ON_CALL(*m_fileIOMock, Size(An<AZ::IO::HandleType>(), _))
-                .WillByDefault(Invoke(
-                    [this](auto handle, AZ::u64& size)
+                .WillByDefault([this](auto handle, AZ::u64& size)
                     {
                         size = m_mockFiles[handle].size();
                         return AZ::IO::ResultCode::Success;
-                    }));
+                    });
 
             ON_CALL(*m_fileIOMock, Size(An<const char*>(), _))
-                .WillByDefault(Invoke(
-                    [this](const char* filePath, AZ::u64& size)
+                .WillByDefault([this](const char* filePath, AZ::u64& size)
                     {
                         auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
                         size = m_mockFiles[handle].size();
                         return AZ::IO::ResultCode::Success;
-                    }));
+                    });
 
             ON_CALL(*m_fileIOMock, Exists(_))
-                .WillByDefault(Invoke(
-                    [this](const char* filePath)
+                .WillByDefault([this](const char* filePath)
                     {
                         auto handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
                         auto itr = m_mockFiles.find(handle);
                         return itr != m_mockFiles.end() && itr->second.size() > 0;
-                    }));
+                    });
 
             ON_CALL(*m_fileIOMock, Read(_, _, _, _, _))
-                .WillByDefault(Invoke(
-                    [this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
+                .WillByDefault([this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
                     {
                         auto itr = m_mockFiles.find(handle);
 
@@ -157,11 +152,10 @@ namespace UnitTest
                         memcpy(buffer, itr->second.c_str(), itr->second.size());
                         *bytesRead = itr->second.size();
                         return AZ::IO::ResultCode::Success;
-                    }));
+                    });
 
             ON_CALL(*m_fileIOMock, Write(_, _, _, _))
-                .WillByDefault(Invoke(
-                    [this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
+                .WillByDefault([this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
                     {
                         AZStd::string& file = m_mockFiles[fileHandle];
 
@@ -169,7 +163,7 @@ namespace UnitTest
                         memcpy((void*)file.c_str(), buffer, size);
                         *bytesWritten = size;
                         return AZ::IO::ResultCode::Success;
-                    }));
+                    });
 
             m_metadata = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
 

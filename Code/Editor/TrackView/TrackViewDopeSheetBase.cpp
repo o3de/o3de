@@ -29,6 +29,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
@@ -3292,7 +3293,7 @@ void CTrackViewDopeSheetBase::SetTickDisplayMode(ETVTickMode mode)
     SetTimeScale(GetTimeScale(), 0); // for refresh
 }
 
-void CTrackViewDopeSheetBase::SetSnapFPS(UINT fps)
+void CTrackViewDopeSheetBase::SetSnapFPS(unsigned int fps)
 {
     m_snapFrameTime = (fps == 0) ? 0.033333f : (1.0f / float(fps));
 }
@@ -3744,7 +3745,7 @@ void CTrackViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect& 
         AZ::Vector3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorToQColor(AZ::Color(vColor).ToU32LinearToGamma()));
+        painter->setPen(AzQtComponents::AzColorToQtColor(AZ::Color(vColor).LinearToGamma()));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);

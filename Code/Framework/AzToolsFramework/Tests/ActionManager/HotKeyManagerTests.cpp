@@ -62,6 +62,7 @@ namespace UnitTest
 
         QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.test");
         EXPECT_TRUE(action->shortcut() == QKeySequence("Ctrl+Z"));
+        EXPECT_FALSE(action->autoRepeat());
     }
 
     TEST_F(ActionManagerFixture, VerifyActionHotkeyTriggered)
@@ -83,7 +84,7 @@ namespace UnitTest
         m_widget->setFocus();
 
         // Trigger a shortcut event to our widget, which should in turn trigger our action
-        QShortcutEvent testEvent(QKeySequence("Ctrl+Z"), 0, true);
+        QShortcutEvent testEvent(QKeySequence("Ctrl+Z"), nullptr, false);
         QApplication::sendEvent(m_widget, &testEvent);
 
         EXPECT_TRUE(actionTriggered);
@@ -129,7 +130,7 @@ namespace UnitTest
         QCoreApplication::processEvents();
 
         // Trigger a shortcut event to our child widget, which should in turn only trigger our child action
-        QShortcutEvent testEvent(QKeySequence("Ctrl+Z"), 0, true);
+        QShortcutEvent testEvent(QKeySequence("Ctrl+Z"), nullptr, true);
         QApplication::sendEvent(childWidget, &testEvent);
 
         EXPECT_TRUE(childActionTriggered);

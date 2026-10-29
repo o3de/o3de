@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

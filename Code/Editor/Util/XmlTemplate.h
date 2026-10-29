@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : CXmlTemplate declaration.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_XMLTEMPLATE_H
-#define CRYINCLUDE_EDITOR_UTIL_XMLTEMPLATE_H
-#pragma once
 
 
 /*!
@@ -55,5 +52,3 @@ public:
 private:
     StdMap<QString, XmlNodeRef> m_templates;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_XMLTEMPLATE_H

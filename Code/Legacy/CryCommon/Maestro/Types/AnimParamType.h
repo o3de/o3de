@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H
-#define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H
 #pragma once
 
 // Static common parameters IDs of animation node.
@@ -130,5 +127,3 @@ enum class AnimParamType
 };
 
 static const int OLD_APARAM_USER = 100;
-
-#endif // CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef AZCORE_RAPIDXML_PRINT_H_INCLUDED
-#define AZCORE_RAPIDXML_PRINT_H_INCLUDED
+#pragma once
 
 #define RAPIDXML_SKIP_AZCORE_ERROR
 
@@ -16,5 +15,3 @@
 #include <rapidxml/rapidxml_print.h>
 
 #undef INCLUDING_RAPIDXML_VIA_AZCORE
-
-#endif // AZCORE_RAPIDXML_PRINT_H_INCLUDED

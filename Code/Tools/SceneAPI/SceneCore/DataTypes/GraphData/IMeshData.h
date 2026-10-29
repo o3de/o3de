@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,8 +6,7 @@
  *
  */
 
-#ifndef AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMESHDATA_H_
-#define AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMESHDATA_H_
+#pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Vector3.h>
@@ -107,5 +104,3 @@ namespace AZStd
         }
     };
 }
-
-#endif // AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMESHDATA_H_

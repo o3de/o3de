@@ -309,7 +309,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
-                    ->DataElement(0, &AreaSystemComponent::m_configuration, QT_TRANSLATE_NOOP("Vegetation", "Configuration"), "")
+                    ->DataElement(nullptr, &AreaSystemComponent::m_configuration, QT_TRANSLATE_NOOP("Vegetation", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ;
             }
@@ -983,7 +983,7 @@ namespace Vegetation
     }
 
 
-    void AreaSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+    void AreaSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
     {
         AZ_PROFILE_FUNCTION(Entity);
 

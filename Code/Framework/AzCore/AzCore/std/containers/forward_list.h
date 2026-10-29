@@ -61,21 +61,21 @@ namespace AZStd
         typedef base_node_type*                     base_node_ptr_type;
 
         AZ_FORCE_INLINE forward_list_iterator()
-            : m_node(0) {}
+            : m_node(nullptr) {}
         AZ_FORCE_INLINE explicit forward_list_iterator(base_node_ptr_type baseNode)
             : m_node(baseNode) {}
         AZ_FORCE_INLINE reference operator*() const { return static_cast<node_ptr_type>(m_node)->m_value; }
         AZ_FORCE_INLINE pointer operator->() const { return &static_cast<node_ptr_type>(m_node)->m_value; }
         AZ_FORCE_INLINE this_type& operator++()
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::forward_list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::forward_list::const_iterator_impl invalid node!");
             m_node = m_node->m_next;
             return *this;
         }
 
         AZ_FORCE_INLINE this_type operator++(int)
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::forward_list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::forward_list::const_iterator_impl invalid node!");
             this_type temp = *this;
             m_node = m_node->m_next;
             return temp;
@@ -523,7 +523,7 @@ namespace AZStd
             base_node_ptr_type node = toEraseNext.base().get_iterator().m_node;
             orphan_node(node);
 #else
-            AZSTD_CONTAINER_ASSERT(toEraseNext.base().m_node != 0, "AZStd::forward_list::erase_after - invalid node!");
+            AZSTD_CONTAINER_ASSERT(toEraseNext.base().m_node != nullptr, "AZStd::forward_list::erase_after - invalid node!");
             base_node_ptr_type prevNode = toEraseNext.base().m_node;
             base_node_ptr_type node = prevNode->m_next;
 #endif
@@ -1168,7 +1168,7 @@ namespace AZStd
             {
                 node = node->m_next;
                 // This check makes sense for the linear forward_list only.
-                AZSTD_CONTAINER_ASSERT(node != 0, "This node it's not in the list or the list is corrupted!");
+                AZSTD_CONTAINER_ASSERT(node != nullptr, "This node it's not in the list or the list is corrupted!");
             }
             return node;
         }

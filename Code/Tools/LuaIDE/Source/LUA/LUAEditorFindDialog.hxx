@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef LUAEDITOR_FINDDIALOG_H
-#define LUAEDITOR_FINDDIALOG_H
 #pragma once
 
 #include <AzCore/std/parallel/thread.h>
@@ -49,7 +47,7 @@ namespace LUAEditor
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(LUAEditorFindDialog, AZ::SystemAllocator);
-        LUAEditorFindDialog(QWidget *parent = 0);
+        LUAEditorFindDialog(QWidget *parent = nullptr);
         ~LUAEditorFindDialog();
 
         void SetAnyDocumentsOpen(bool value);
@@ -187,5 +185,3 @@ namespace LUAEditor
     };
 
 }
-
-#endif //LUAEDITOR_FINDDIALOG_H

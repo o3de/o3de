@@ -594,7 +594,7 @@ namespace
         // Keep track of the last space char we encountered as ideal
         // locations for inserting newlines for word-wrapping. We also need
         // to track which DrawBatch contained the last-encountered space.
-        const char* pLastSpace = NULL;
+        const char* pLastSpace = nullptr;
         UiTextComponent::DrawBatch* lastSpaceBatch = nullptr;
         int lastSpace = -1;
         int lastSpaceIndexInBatch = -1;
@@ -3093,7 +3093,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiTextComponent::m_text, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The text string"))
+            editInfo->DataElement(nullptr, &UiTextComponent::m_text, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The text string"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnTextChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isMarkupEnabled, QT_TRANSLATE_NOOP("LyShine", "Enable markup"), QT_TRANSLATE_NOOP("LyShine", "Enable to support XML markup in the text string"))
@@ -3126,12 +3126,12 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(IDraw2d::VAlign::Center, QT_TRANSLATE_NOOP("LyShine", "Center"))
                 ->EnumAttribute(IDraw2d::VAlign::Bottom, QT_TRANSLATE_NOOP("LyShine", "Bottom"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnAlignmentChange);
-            editInfo->DataElement(0, &UiTextComponent::m_charSpacing, QT_TRANSLATE_NOOP("LyShine", "Character Spacing"),
+            editInfo->DataElement(nullptr, &UiTextComponent::m_charSpacing, QT_TRANSLATE_NOOP("LyShine", "Character Spacing"),
                 QT_TRANSLATE_NOOP("LyShine", "The spacing in 1/1000th of ems to add between each two consecutive characters.\n"
                 "One em is equal to the currently specified font size."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnCharSpacingChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(0, &UiTextComponent::m_lineSpacing, QT_TRANSLATE_NOOP("LyShine", "Line Spacing"), QT_TRANSLATE_NOOP("LyShine", "The amount of pixels to add between each two consecutive lines."))
+            editInfo->DataElement(nullptr, &UiTextComponent::m_lineSpacing, QT_TRANSLATE_NOOP("LyShine", "Line Spacing"), QT_TRANSLATE_NOOP("LyShine", "The amount of pixels to add between each two consecutive lines."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnLineSpacingChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_overflowMode, QT_TRANSLATE_NOOP("LyShine", "Overflow mode"), QT_TRANSLATE_NOOP("LyShine", "How text should fit within the element"))

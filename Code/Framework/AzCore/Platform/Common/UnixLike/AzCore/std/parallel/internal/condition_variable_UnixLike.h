@@ -19,13 +19,13 @@ namespace AZStd
     // Condition variable
     inline condition_variable::condition_variable()
     {
-        pthread_cond_init (&m_cond_var, NULL);
+        pthread_cond_init (&m_cond_var, nullptr);
     }
 
     inline condition_variable::condition_variable(const char* name)
     {
         (void)name;
-        pthread_cond_init (&m_cond_var, NULL);
+        pthread_cond_init (&m_cond_var, nullptr);
     }
 
     inline condition_variable::~condition_variable()
@@ -109,15 +109,15 @@ namespace AZStd
     // Condition variable any
     inline condition_variable_any::condition_variable_any()
     {
-        pthread_mutex_init(&m_mutex, NULL);
-        pthread_cond_init (&m_cond_var, NULL);
+        pthread_mutex_init(&m_mutex, nullptr);
+        pthread_cond_init (&m_cond_var, nullptr);
     }
 
     inline condition_variable_any::condition_variable_any(const char* name)
     {
-        pthread_mutex_init(&m_mutex, NULL);
+        pthread_mutex_init(&m_mutex, nullptr);
         (void)name;
-        pthread_cond_init (&m_cond_var, NULL);
+        pthread_cond_init (&m_cond_var, nullptr);
     }
 
     inline condition_variable_any::~condition_variable_any()

@@ -119,19 +119,19 @@ namespace ImageProcessingAtom
                 , m_depth(1)
                 , m_rowCount(0)
                 , m_pitch(0)
-                , m_pData(0)
+                , m_pData(nullptr)
             {
             }
 
             ~MipLevel()
             {
                 delete[] m_pData;
-                m_pData = 0;
+                m_pData = nullptr;
             }
 
             void Alloc()
             {
-                AZ_Assert(m_pData == 0, "Mip data must be empty before Allocation!");
+                AZ_Assert(m_pData == nullptr, "Mip data must be empty before Allocation!");
                 m_pData = new AZ::u8[GetSize()];
             }
 

@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
-#define CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
 #pragma once
 
 #include <AzCore/std/string/string.h>
@@ -150,5 +147,3 @@ private:
     TToolNamesMap m_toolNames;
     TToolNamesMap m_toolVersions;
 };
-
-#endif // CRYINCLUDE_EDITOR_SETTINGSMANAGER_H

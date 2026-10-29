@@ -48,7 +48,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorSimpleLODComponent::m_configuration,
+                        ->DataElement(nullptr, &EditorSimpleLODComponent::m_configuration,
                             QT_TRANSLATE_NOOP("EMotionFX", "LOD Configuration"), "");
                 }
             }

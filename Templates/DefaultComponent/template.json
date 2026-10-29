@@ -101,6 +101,11 @@
                 "args": { "component_name": "Editor${Name}${ComponentSuffix}", "module_kind": "editor" }
             },
             {
+                "command": "add_editor_gem_dependency",
+                "condition": "include_editor",
+                "args": { "dependency": "AZ::AzToolsFramework" }
+            },
+            {
                 "command": "replace_text",
                 "condition": "include_editor",
                 "args": {

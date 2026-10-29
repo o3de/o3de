@@ -15,11 +15,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

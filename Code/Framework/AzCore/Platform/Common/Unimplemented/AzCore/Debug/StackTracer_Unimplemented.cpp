@@ -35,7 +35,7 @@ namespace AZ
 
         const SymbolStorage::ModuleInfo* SymbolStorage::GetModuleInfo(unsigned int)
         {
-            return 0;
+            return nullptr;
         }
 
         void SymbolStorage::RegisterModuleListeners()
@@ -52,7 +52,7 @@ namespace AZ
 
         const char* SymbolStorage::GetMapFilename()
         {
-            return 0;
+            return nullptr;
         }
 
         void SymbolStorage::DecodeFrames(const StackFrame*, unsigned int, StackLine*)

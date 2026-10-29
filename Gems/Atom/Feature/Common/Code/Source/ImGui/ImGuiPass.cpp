@@ -13,7 +13,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 #include <Atom/RHI/CommandList.h>
 

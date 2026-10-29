@@ -2488,7 +2488,7 @@ namespace AZ::Serialize
     template<class T>
     bool DataElementNode::Convert(SerializeContext& sc, const char* name)
     {
-        AZ_Assert(name != NULL && strlen(name) > 0, "Empty name is an INVALID element name!");
+        AZ_Assert(name != nullptr && strlen(name) > 0, "Empty name is an INVALID element name!");
         Crc32 nameCrc(name);
 
 #if defined(AZ_DEBUG_BUILD)

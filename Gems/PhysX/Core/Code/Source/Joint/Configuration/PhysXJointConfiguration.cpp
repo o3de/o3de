@@ -264,8 +264,8 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &PhysX::JointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint"))
-                    ->DataElement(0, &PhysX::JointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value"));
+                    ->DataElement(nullptr, &PhysX::JointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint"))
+                    ->DataElement(nullptr, &PhysX::JointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value"));
             }
         }
     }

@@ -12,7 +12,6 @@
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 
 #include <Atom/Feature/RenderCommon.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
@@ -23,6 +22,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
 #include <particle/core/ParticleHelper.h>
@@ -313,10 +313,12 @@ namespace OpenParticle
             world.emitterTransform = m_transform;
 
             auto emitters = m_particleSystem->GetVisibleEmitters();
+            m_drawOrder = 0;
             for (auto emitter : emitters) {
                 if (emitter == nullptr) {
                     continue;
                 }
+                ++m_drawOrder;
                 const AZ::u32 emitterId = emitter->GetEmitterId();
                 auto& instance = m_emitterInstances[emitter];
 
@@ -494,7 +496,7 @@ namespace OpenParticle
                 if (it != m_emitterInstances.end())
                 {
                     AZ::Data::Asset<AZ::RPI::MaterialAsset> typedAsset(asset);
-                    it->second.Setup(typedAsset);
+                    it->second.Setup(typedAsset, archive.m_emitterInfos[emitter.first].m_materialOverrides);
 
                     AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
                     if (it->second.m_objSrg != nullptr)
@@ -972,7 +974,9 @@ namespace OpenParticle
         if (drawPacket != nullptr)
         {
             m_drawPacket.emplace_back(drawPacket);
-            view.AddDrawPacket(drawPacket.get());
+            // every draw item used to share one depth, so equal emitters were drawn in an order that changed from frame to frame;
+            // a depth that drops with the emitter's sort order keeps later emitters on top, and stays nearer than any other object
+            view.AddDrawPacket(drawPacket.get(), -0.001f * static_cast<float>(m_drawOrder));
         }
     }
 
@@ -1045,12 +1049,15 @@ namespace OpenParticle
 
             HandleSkeletonModel(*emitter.second);
             auto& materialAsset = archive.m_emitterInfos[emitter.first].m_material;
+            const auto& materialOverrides = archive.m_emitterInfos[emitter.first].m_materialOverrides;
             if (materialAsset && materialAsset->IsReady())
             {
-                efd.Setup(materialAsset);
+                efd.Setup(materialAsset, materialOverrides);
             }
             else if (materialAsset)
             {
+                // Remember the overrides now so they are applied as soon as OnAssetReady runs Setup.
+                efd.m_materialOverrides = materialOverrides;
                 AZ::Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
             }
 

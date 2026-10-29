@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
@@ -15,7 +14,7 @@
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

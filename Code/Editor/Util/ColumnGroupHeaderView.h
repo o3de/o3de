@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPHEADERVIEW_H
-#define COLUMNGROUPHEADERVIEW_H
+
+#pragma once
 
 #include <QHeaderView>
 #include <QVector>
@@ -19,7 +19,7 @@ class ColumnGroupHeaderView
     Q_OBJECT
 
 public:
-    ColumnGroupHeaderView(QWidget* parent = 0);
+    ColumnGroupHeaderView(QWidget* parent = nullptr);
 
     void setModel(QAbstractItemModel* model) override;
 
@@ -50,5 +50,3 @@ private:
 
     QVector<Group> m_groups;
 };
-
-#endif // COLUMNGROUPHEADERVIEW_H

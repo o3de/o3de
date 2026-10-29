@@ -274,7 +274,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_minWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_minWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify minimum width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_minWidthOverridden)
@@ -285,7 +285,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_minHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_minHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify minimum height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_minHeightOverridden)
@@ -296,7 +296,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_targetWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_targetWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify target width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_targetWidthOverridden)
@@ -307,7 +307,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_targetHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_targetHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify target height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_targetHeightOverridden)
@@ -318,7 +318,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_maxWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_maxWidth, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify max width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_maxWidthOverridden)
@@ -329,7 +329,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_maxHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_maxHeight, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify max height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_maxHeightOverridden)
@@ -340,7 +340,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_extraWidthRatio, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_extraWidthRatio, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify extra width ratio."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_extraWidthRatioOverridden)
@@ -351,7 +351,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_extraHeightRatio, QT_TRANSLATE_NOOP("LyShine", "Value"),
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_extraHeightRatio, QT_TRANSLATE_NOOP("LyShine", "Value"),
                 QT_TRANSLATE_NOOP("LyShine", "Specify extra height ratio."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_extraHeightRatioOverridden)

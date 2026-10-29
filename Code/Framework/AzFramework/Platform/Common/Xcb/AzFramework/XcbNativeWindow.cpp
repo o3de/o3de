@@ -170,7 +170,7 @@ namespace AzFramework
     xcb_atom_t XcbNativeWindow::GetAtom(const char* atomName)
     {
         xcb_intern_atom_cookie_t intern_atom_cookie = xcb_intern_atom(m_xcbConnection, 0, strlen(atomName), atomName);
-        XcbStdFreePtr<xcb_intern_atom_reply_t> xkbinternAtom{ xcb_intern_atom_reply(m_xcbConnection, intern_atom_cookie, NULL) };
+        XcbStdFreePtr<xcb_intern_atom_reply_t> xkbinternAtom{ xcb_intern_atom_reply(m_xcbConnection, intern_atom_cookie, nullptr) };
 
         if (!xkbinternAtom)
         {

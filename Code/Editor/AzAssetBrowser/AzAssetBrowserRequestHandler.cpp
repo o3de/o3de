@@ -670,13 +670,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     newAssetBrowser->SelectAsset(fullFilePath.c_str());
                 });
 
-            AZStd::vector<const ProductAssetBrowserEntry*> products;
-            entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-            if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
-            {
-                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
-            }
             if (calledFromAssetBrowser && selectionIsSource)
             {
                 // Add Rename option
@@ -758,6 +751,9 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             action->setShortcut(QKeySequence("Ctrl+D"));
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
+            menu->addSeparator();
+            CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+
             // Add Move to option
             menu->addAction(
                 QObject::tr("Move to"),
@@ -781,13 +777,20 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     }
                 });
         }
+        if (!calledFromAssetBrowser || !selectionIsSource)
+        {
+            CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+        }
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
     {
         fullFilePath = entry->GetFullPath();
 
-        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+        if (!calledFromAssetBrowser || numOfEntries != 1)
+        {
+            CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+        }
 
         if (calledFromAssetBrowser)
         {
@@ -842,6 +845,9 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
                 action->setShortcut(QKeySequence::Delete);
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                menu->addSeparator();
+                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
 
                 // Add Move to option
                 menu->addAction(

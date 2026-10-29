@@ -95,6 +95,28 @@ namespace AZ
             }
         }
 
+        DecalTextureArray::PackingLayout DecalTextureArray::GetPackingLayout(AZ::RPI::MaterialAsset& materialAsset)
+        {
+            PackingLayout layout;
+
+            for (int i = 0; i < DecalMapType_Num; ++i)
+            {
+                const auto mapType = aznumeric_cast<DecalMapType>(i);
+                const auto& imageAsset = GetStreamingImageAsset(materialAsset, GetMapName(mapType));
+                if (imageAsset.IsReady())
+                {
+                    const RHI::ImageDescriptor& descriptor = imageAsset->GetImageDescriptor();
+                    layout.m_maps[i].m_size = descriptor.m_size;
+                    layout.m_maps[i].m_format = descriptor.m_format;
+                    layout.m_maps[i].m_mipLevels = descriptor.m_mipLevels;
+                }
+                // An absent map keeps its default layout on purpose -- see PackingLayout.
+                // IsValidDecalMaterial() separately rejects materials with no diffuse map.
+            }
+
+            return layout;
+        }
+
         int DecalTextureArray::FindMaterial(const AZ::Data::AssetId materialAssetId) const
         {
             int iter = m_materials.begin();

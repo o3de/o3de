@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -37,7 +38,7 @@ namespace AZ
                 AZStd::array<uint32_t, 2> m_originInSlice{ {0, 0} };
             };
 
-            //! ShadowmapIndexTree is used to determine shadowmap index from 
+            //! ShadowmapIndexTree is used to determine shadowmap index from
             //! a coordinate in the shadowmap atlas resource.  It enables a single dispatch
             //! to compute for all shadowmaps in the atlas, instead of multiple dispatches
             //! for each shadowmap.
@@ -92,8 +93,8 @@ namespace AZ
             //! @return buffer which a computer shader look up for the shadowmap index.
             //!
             //! The buffer contains a table ShadowmapIndexTable which consists of "subtables."
-            //! A subtable is an array of ShadowmapIndexNodes, and corresponds to 
-            //! a shadowmap Location.  A ShadowmapIndexNode offers either the offset to 
+            //! A subtable is an array of ShadowmapIndexNodes, and corresponds to
+            //! a shadowmap Location.  A ShadowmapIndexNode offers either the offset to
             //! another subtable or ths shadowmap index.  So a subtable offers the offsets
             //! of the sub-subtable and shadowmap indices for direct children Location
             //! of the corresponding Location.
@@ -106,7 +107,7 @@ namespace AZ
             //! subtable's offset from the beginning of the buffer.
             //! If m_nextTableOffset == 0, then m_shadowmapIndex is the required shadowmap index.
             //!
-            //! For example, we assume baseShadowmapSize = 2048 
+            //! For example, we assume baseShadowmapSize = 2048
             //! light #0 uses Location [0], #1 does [1,0], and #2 does [1,1].
             //! Then the resulting array "table" of T has size 6 and would be like below:
             //!

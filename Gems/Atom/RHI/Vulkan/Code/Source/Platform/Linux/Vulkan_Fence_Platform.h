@@ -22,7 +22,7 @@ namespace AZ::Vulkan
         int fd;
         VkSemaphoreGetFdInfoKHR semaphoreGetFdInfoKHR = {};
         semaphoreGetFdInfoKHR.sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR;
-        semaphoreGetFdInfoKHR.pNext = NULL;
+        semaphoreGetFdInfoKHR.pNext = nullptr;
         semaphoreGetFdInfoKHR.semaphore = originalSemaphore;
         semaphoreGetFdInfoKHR.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
         [[maybe_unused]] const VkResult error = originalDevice.GetContext().GetSemaphoreFdKHR(originalDevice.GetNativeDevice(), &semaphoreGetFdInfoKHR, &fd);

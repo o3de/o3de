@@ -98,7 +98,7 @@ namespace AZ
                                                                                                     error:&error];
                         AZ_Assert(!error, "Unable to create samplingBuffer for pipeline counters");
                         
-                        error = 0;
+                        error = nullptr;
                         m_statisticsCounterSamplerBufferEnd = [mtlDevice newCounterSampleBufferWithDescriptor:counterSampleBufferDescriptor
                                                                                                         error:&error];
                         AZ_Assert(!error, "Unable to create samplingBuffer for pipeline counters");

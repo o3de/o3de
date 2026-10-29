@@ -18,7 +18,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RPI.Public

@@ -30,7 +30,7 @@ WCHAR* GetFullPathToFaultrepDll(void)
     UINT rc = GetSystemWindowsDirectoryW(szPath, ARRAYSIZE(szPath));
     if (rc == 0 || rc > ARRAYSIZE(szPath) - ARRAYSIZE(szFR) - 1)
     {
-        return NULL;
+        return nullptr;
     }
 
     wcscat_s(szPath, szFR);
@@ -68,7 +68,7 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
 
     AZStd::wstring szDumpPathW;
     AZStd::to_wstring(szDumpPathW, szDumpPath);
-    HANDLE hFile = ::CreateFileW(szDumpPathW.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = ::CreateFileW(szDumpPathW.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (hFile == INVALID_HANDLE_VALUE)
     {
         CryLogAlways("Failed to record DMP file: could not open file '%s' for writing - error code: %d", szDumpPath, GetLastError());
@@ -80,7 +80,7 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
     ExInfo.ExceptionPointers = pExceptionPointers;
     ExInfo.ClientPointers = NULL;
 
-    BOOL bOK = dumpFnPtr(GetCurrentProcess(), GetCurrentProcessId(), hFile, DumpType, &ExInfo, NULL, NULL);
+    BOOL bOK = dumpFnPtr(GetCurrentProcess(), GetCurrentProcessId(), hFile, DumpType, &ExInfo, nullptr, nullptr);
     ::CloseHandle(hFile);
 
     if (bOK)

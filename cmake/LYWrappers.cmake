@@ -128,6 +128,9 @@ function(ly_add_target)
         set(ly_add_target_SHARED ${ly_add_target_GEM_SHARED})
     endif()
 
+    # Targets can be declared recursively while resolving another targets dependencies.
+    # Do not inherit the consumers accumulated source list.
+    set(ALLFILES "")
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
         ly_include_cmake_file_list(${file_cmake})
     endforeach()
@@ -262,8 +265,6 @@ function(ly_add_target)
 
     ly_apply_debug_strip_options(${ly_add_target_NAME})
 
-    # Parse the 3rdParty library dependencies
-    ly_parse_third_party_dependencies("${ly_add_target_BUILD_DEPENDENCIES}")
     ly_target_link_libraries(${ly_add_target_NAME}
         ${ly_add_target_BUILD_DEPENDENCIES}
     )
@@ -431,8 +432,18 @@ function(ly_target_link_libraries TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
 
+    if(NOT ARGN)
+        return()
+    endif()
+    ly_parse_third_party_dependencies("${ARGN}")
+    # Preserve the declaration history for installer generation.
     set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
-    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
+    set_property(TARGET ${TARGET} APPEND PROPERTY O3DE_PENDING_LINK ${ARGN})
+    get_property(queued TARGET ${TARGET} PROPERTY O3DE_LINK_QUEUED)
+    if(NOT queued)
+        set_property(TARGET ${TARGET} PROPERTY O3DE_LINK_QUEUED TRUE)
+        set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET})
+    endif()
 
 endfunction()
 
@@ -514,106 +525,136 @@ endfunction()
 #     if the target is already declared, if not, it will fail later at linking time.
 
 function(ly_delayed_target_link_libraries)
-
-    set(visibilities PRIVATE PUBLIC INTERFACE)
-
-    get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
-    list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
-
+    # Settings-registry generation precedes this phase. Runtime/install follows.
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-    foreach(target ${delayed_targets})
-
-        get_property(delayed_link TARGET ${target} PROPERTY LY_DELAYED_LINK)
-        if(delayed_link)
-
-            cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
-
-            foreach(visibility ${visibilities})
-                foreach(alias_item ${ly_delayed_target_link_libraries_${visibility}})
-
-                    if(TARGET ${alias_item})
-                        get_target_property(item_type ${alias_item} TYPE)
-                        ly_de_alias_target(${alias_item} item)
-                    else()
-                        unset(item_type)
-                        set(item ${alias_item})
+    while(delayed_targets)
+        set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
+        foreach(target IN LISTS delayed_targets)
+            get_property(delayed_link TARGET "${target}" PROPERTY O3DE_PENDING_LINK)
+            set_property(TARGET "${target}" PROPERTY O3DE_PENDING_LINK)
+            set_property(TARGET "${target}" PROPERTY O3DE_LINK_QUEUED FALSE)
+            unset(visibility)
+            unset(batch)
+            unset(qualifier)
+            foreach(item IN LISTS delayed_link)
+                if(item MATCHES "^(PRIVATE|PUBLIC|INTERFACE)$")
+                    if(batch)
+                        target_link_libraries("${target}" ${visibility} ${batch})
+                        unset(batch)
                     endif()
-
-                    if(item_type STREQUAL MODULE_LIBRARY)
-                        target_include_directories(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>)
-                        target_link_libraries(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>)
-                        target_compile_definitions(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>)
-                        target_compile_options(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>)
-                    else()
-                        ly_parse_third_party_dependencies(${item})
-                        target_link_libraries(${target} ${visibility} ${item})
+                    set(visibility "${item}")
+                    continue()
+                elseif(item MATCHES "^(debug|optimized|general)$")
+                    set(qualifier "${item}")
+                    continue()
+                endif()
+                unset(item_type)
+                if(TARGET "${item}")
+                    get_target_property(item_type "${item}" TYPE)
+                endif()
+                if(item_type STREQUAL "MODULE_LIBRARY")
+                    if(batch)
+                        target_link_libraries("${target}" ${visibility} ${batch})
+                        unset(batch)
                     endif()
-
-                endforeach()
+                    set(module_visibility "${visibility}")
+                    if(NOT module_visibility)
+                        set(module_visibility PUBLIC)
+                    endif()
+                    set(condition "1")
+                    if(qualifier AND NOT qualifier STREQUAL "general")
+                        get_property(debug_configs GLOBAL PROPERTY DEBUG_CONFIGURATIONS)
+                        if(NOT debug_configs)
+                            set(debug_configs Debug)
+                        endif()
+                        list(JOIN debug_configs "," debug_configs)
+                        set(condition "$<CONFIG:${debug_configs}>")
+                        if(qualifier STREQUAL "optimized")
+                            set(condition "$<NOT:${condition}>")
+                        endif()
+                    endif()
+                    target_include_directories("${target}" ${module_visibility} "$<${condition}:$<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>>")
+                    target_link_libraries("${target}" ${module_visibility} "$<${condition}:$<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>>")
+                    target_compile_definitions("${target}" ${module_visibility} "$<${condition}:$<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>>")
+                    target_compile_options("${target}" ${module_visibility} "$<${condition}:$<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>>")
+                else()
+                    list(APPEND batch ${qualifier} "${item}")
+                endif()
+                unset(qualifier)
             endforeach()
-
-        endif()
-
-    endforeach()
-    set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
+            if(qualifier)
+                message(FATAL_ERROR "Missing library after ${qualifier} in dependencies of ${target}")
+            endif()
+            if(batch)
+                target_link_libraries("${target}" ${visibility} ${batch})
+            endif()
+        endforeach()
+        get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
+    endwhile()
 endfunction()
 
-#! ly_parse_third_party_dependencies: Validates any 3rdParty library dependencies through the find_package command
+#! ly_parse_third_party_dependencies: Activates source providers or legacy Find modules for third-party targets.
+# Automatic discovery supports literal target names only. Explicitly activate targets
+# used in generator expressions; the original link expressions are passed to CMake unchanged.
 #
-# \arg:ly_THIRD_PARTY_LIBRARIES name of the target libraries to validate existance of through the find_package command.
+# \arg:ly_THIRD_PARTY_LIBRARIES names of third-party targets to activate.
 #
 function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
-    # Support for deprecated LY_VERSION_ENGINE_NAME used in 3p-package-source and misc 3p packages
+    set(dependencies "${ly_THIRD_PARTY_LIBRARIES};${ARGN}")
+    if(NOT dependencies MATCHES "3rdParty::")
+        return()
+    endif()
     set(LY_VERSION_ENGINE_NAME ${O3DE_ENGINE_NAME})
-
-    # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
-    # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
-    unset(all_thirdparty_dependencies_found)
-
-    foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})
-        string(REPLACE "::" ";" dependency_list ${dependency})
-        list(GET dependency_list 0 dependency_namespace)
-        if(${dependency_namespace} STREQUAL "3rdParty")
-            list(APPEND all_thirdparty_dependencies_found ${dependency})
-            if (NOT TARGET ${dependency})
-                if (O3DE_SCRIPT_ONLY)
-                    # we don't actually need 3p deps to try to download the package or call find_package.
-                    # instead we use pre-created part-of-the-installer 3p targets baked in from the above list
-                    # which will have been made at install time.
-                    # instead, we execute a pregenerated file that was created as part of install to 
-                    # create this target:
-                    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${dependency}")  
-                    # not all 3ps actually exist as real targets, so this is an OPTIONAL include.
-                    include(${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${CLEAN_TARGET_NAME}.cmake OPTIONAL)
-                else()
-                    list(GET dependency_list 1 dependency_package)
-                    list(LENGTH dependency_list dependency_list_length)
-                    ly_download_associated_package(${dependency_package})
-                    if (dependency_list_length GREATER 2)
-                        # There's an optional interface specified
-                        list(GET dependency_list 2 component)
-                        list(APPEND packages_with_components ${dependency_package})
-                        list(APPEND ${dependency_package}_components ${component})
-                    else()
-                        find_package(${dependency_package} REQUIRED MODULE)
+    unset(thirdparty_dependencies)
+    unset(packages)
+    if(dependencies MATCHES "\\$<")
+        # Keep a '$' marker outside each expression so stripping a computed name
+        # cannot leave a misleading literal prefix or suffix.
+        string(REPLACE "$<" "$$<" dependencies "${dependencies}")
+        string(GENEX_STRIP "${dependencies}" dependencies)
+    endif()
+    foreach(dependency IN LISTS dependencies)
+        if(dependency MATCHES "^3rdParty::[^$<>;]+$")
+            list(APPEND thirdparty_dependencies "${dependency}")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES thirdparty_dependencies)
+    foreach(dependency IN LISTS thirdparty_dependencies)
+        if(NOT TARGET "${dependency}")
+            if(O3DE_SCRIPT_ONLY)
+                string(REPLACE "::" "__" clean_target_name "${dependency}")
+                include("${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${clean_target_name}.cmake" OPTIONAL)
+            else()
+                o3de_resolve_3rdparty_target("${dependency}" resolved)
+                if(NOT resolved)
+                    string(REPLACE "::" ";" dependency_parts "${dependency}")
+                    list(GET dependency_parts 1 package)
+                    list(REMOVE_AT dependency_parts 0 1)
+                    if(NOT dependency_parts)
+                        # A module can define other requested targets as a
+                        # side effect (e.g. miniaudio and miniaudio_libvorbis).
+                        o3de_find_3rdparty_package("${package}")
+                        continue()
                     endif()
+                    if(NOT package IN_LIST packages)
+                        unset(${package}_components)
+                        list(APPEND packages "${package}")
+                    endif()
+                    list(APPEND ${package}_components ${dependency_parts})
                 endif()
-
             endif()
         endif()
     endforeach()
-
-    foreach(dependency IN LISTS packages_with_components)
-        find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
+    foreach(package IN LISTS packages)
+        list(REMOVE_DUPLICATES ${package}_components)
+        o3de_find_3rdparty_package("${package}" ${${package}_components})
     endforeach()
-    
-    foreach(dependency ${all_thirdparty_dependencies_found})
-        if (TARGET ${dependency})
-            # keep track of all the 3p dependencies we actually depended on.
-            get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
-            if(NOT ${dependency} IN_LIST o3de_all_3rdparty_targets)
+    foreach(dependency IN LISTS thirdparty_dependencies)
+        if(TARGET "${dependency}")
+            get_property(recorded GLOBAL PROPERTY "O3DE_3RDPARTY_REFERENCED_${dependency}")
+            if(NOT recorded)
                 set_property(GLOBAL APPEND PROPERTY O3DE_ALL_3RDPARTY_TARGETS "${dependency}")
+                set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_REFERENCED_${dependency}" TRUE)
             endif()
         endif()
     endforeach()
@@ -781,13 +822,10 @@ function(ly_de_alias_target target_name output_variable_name)
         message(FATAL_ERROR "ly_de_alias_target called on non-existent target: ${target_name}")
     endif()
 
-    while(target_name)
-        set(de_aliased_target_name ${target_name})
-        get_target_property(target_name ${target_name} ALIASED_TARGET)
-    endwhile()
-
+    # CMake does not permit an ALIAS to name another ALIAS.
+    get_target_property(de_aliased_target_name ${target_name} ALIASED_TARGET)
     if(NOT de_aliased_target_name)
-        message(FATAL_ERROR "Empty de_aliased for ${target_name}")
+        set(de_aliased_target_name ${target_name})
     endif()
     set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
 endfunction()

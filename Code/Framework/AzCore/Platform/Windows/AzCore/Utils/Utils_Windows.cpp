@@ -22,7 +22,7 @@ namespace AZ::Utils
         AZStd::to_wstring(wtitle, title);
         AZStd::wstring wmessage;
         AZStd::to_wstring(wmessage, message);
-        ::MessageBoxW(0, wmessage.c_str(), wtitle.c_str(), MB_OK | MB_ICONERROR);
+        ::MessageBoxW(nullptr, wmessage.c_str(), wtitle.c_str(), MB_OK | MB_ICONERROR);
     }
 
     AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
@@ -44,7 +44,7 @@ namespace AZ::Utils
         }
 
         wchar_t sysUserProfilePathW[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPath(0, CSIDL_PROFILE, 0, SHGFP_TYPE_DEFAULT, sysUserProfilePathW)))
+        if (SUCCEEDED(SHGetFolderPath(nullptr, CSIDL_PROFILE, nullptr, SHGFP_TYPE_DEFAULT, sysUserProfilePathW)))
         {
             AZ::IO::FixedMaxPathString sysUserProfilePathStr;
             AZStd::to_string(sysUserProfilePathStr, sysUserProfilePathW);

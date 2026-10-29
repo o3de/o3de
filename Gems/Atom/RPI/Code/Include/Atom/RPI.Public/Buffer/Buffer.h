@@ -15,12 +15,11 @@
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Fence.h>
 
-
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -46,7 +45,7 @@ namespace AZ
 
             //! Instantiates or returns an existing buffer instance using its paired asset.
             static Data::Instance<Buffer> FindOrCreate(const Data::Asset<BufferAsset>& bufferAsset);
-            
+
             //! Blocks until a streaming upload has completed (if one is currently in flight).
             void WaitForUpload();
 
@@ -78,7 +77,7 @@ namespace AZ
 
             //! Get attachment id if this buffer is used as scope attachment
             const RHI::AttachmentId& GetAttachmentId() const;
-            
+
             //! Set default buffer view descriptor with specific structure
             template <class structureType>
             void SetAsStructured();

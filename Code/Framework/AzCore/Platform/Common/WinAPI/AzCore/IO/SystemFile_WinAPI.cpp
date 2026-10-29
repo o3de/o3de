@@ -170,7 +170,7 @@ namespace AZ::IO
             return false;
         }
         m_handle = INVALID_HANDLE_VALUE;
-        m_handle = CreateFileW(fileNameW.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
+        m_handle = CreateFileW(fileNameW.c_str(), dwDesiredAccess, dwShareMode, nullptr, dwCreationDisposition, dwFlagsAndAttributes, nullptr);
 
         if (m_handle == INVALID_HANDLE_VALUE)
         {
@@ -180,7 +180,7 @@ namespace AZ::IO
         {
             if (mode & SF_OPEN_APPEND)
             {
-                SetFilePointer(m_handle, 0, NULL, FILE_END);
+                SetFilePointer(m_handle, 0, nullptr, FILE_END);
             }
         }
 
@@ -243,7 +243,7 @@ namespace AZ::IO::Platform
             LARGE_INTEGER distToMove;
             distToMove.QuadPart = offset;
 
-            SetFilePointerEx(handle, distToMove, 0, dwMoveMethod);
+            SetFilePointerEx(handle, distToMove, nullptr, dwMoveMethod);
         }
     }
 
@@ -320,7 +320,7 @@ namespace AZ::IO::Platform
         {
             DWORD dwNumBytesRead = 0;
             DWORD nNumberOfBytesToRead = (DWORD)byteSize;
-            if (!ReadFile(handle, buffer, nNumberOfBytesToRead, &dwNumBytesRead, 0))
+            if (!ReadFile(handle, buffer, nNumberOfBytesToRead, &dwNumBytesRead, nullptr))
             {
                 return 0;
             }
@@ -336,7 +336,7 @@ namespace AZ::IO::Platform
         {
             DWORD dwNumBytesWritten = 0;
             DWORD nNumberOfBytesToWrite = (DWORD)byteSize;
-            if (!WriteFile(handle, buffer, nNumberOfBytesToWrite, &dwNumBytesWritten, 0))
+            if (!WriteFile(handle, buffer, nNumberOfBytesToWrite, &dwNumBytesWritten, nullptr))
             {
                 return 0;
             }

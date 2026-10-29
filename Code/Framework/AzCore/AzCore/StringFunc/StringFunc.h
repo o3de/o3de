@@ -750,7 +750,7 @@ namespace AZ
              StringFunc::Path::IsValid(a="C:\\p4\\game") == true
              StringFunc::Path::IsValid(a="C:\\p4\\game\\some.file") == true
              */
-            AZCORE_API bool IsValid(const char* in, bool bHasDrive = false, bool bHasExtension = false, AZStd::string* errors = NULL);
+            AZCORE_API bool IsValid(const char* in, bool bHasDrive = false, bool bHasExtension = false, AZStd::string* errors = nullptr);
 
             //! ConstructFull
             /*! Constructs a full path from pieces and does some minimal smart normalization to make it easier, returns if it was successful

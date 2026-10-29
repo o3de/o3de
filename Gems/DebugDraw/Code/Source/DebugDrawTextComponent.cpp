@@ -39,16 +39,16 @@ namespace DebugDraw
                     QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw text element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawTextElement::m_text,
+                    ->DataElement(nullptr, &DebugDrawTextElement::m_text,
                         QT_TRANSLATE_NOOP("DebugDraw", "Text"),
                         QT_TRANSLATE_NOOP("DebugDraw", "The Debug Text."))
-                    ->DataElement(0, &DebugDrawTextElement::m_color,
+                    ->DataElement(nullptr, &DebugDrawTextElement::m_color,
                         QT_TRANSLATE_NOOP("DebugDraw", "Color"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Text Color."))
-                    ->DataElement(0, &DebugDrawTextElement::m_size,
+                    ->DataElement(nullptr, &DebugDrawTextElement::m_size,
                         QT_TRANSLATE_NOOP("DebugDraw", "Size"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Text size."))
-                    ->DataElement(0, &DebugDrawTextElement::m_drawMode,
+                    ->DataElement(nullptr, &DebugDrawTextElement::m_drawMode,
                         QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode Preference."))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugDrawTextElement::m_drawMode,
@@ -58,7 +58,7 @@ namespace DebugDraw
                         QT_TRANSLATE_NOOP("DebugDraw", "Screen Space"))
                     ->EnumAttribute(DrawMode::InWorld,
                         QT_TRANSLATE_NOOP("DebugDraw", "World Space"))
-                    ->DataElement(0, &DebugDrawTextElement::m_centered,
+                    ->DataElement(nullptr, &DebugDrawTextElement::m_centered,
                         QT_TRANSLATE_NOOP("DebugDraw", "Centered"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Center align the text if enabled, otherwise left align."))
                     // Currently supports World Space placement on component owners location Or exact placement via behavior context / scripting (TBC)

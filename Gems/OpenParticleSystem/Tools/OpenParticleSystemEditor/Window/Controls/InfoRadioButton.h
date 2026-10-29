@@ -20,7 +20,7 @@ namespace OpenParticleSystemEditor
     {
         Q_OBJECT
     public:
-        InfoRadioButton(const QString& text, int count, QWidget* parent = 0);
+        InfoRadioButton(const QString& text, int count, QWidget* parent = nullptr);
         ~InfoRadioButton() override;
         void SetCurrentChecked(int index);
 

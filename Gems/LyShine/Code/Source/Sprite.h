@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <LyShine/ISprite.h>
@@ -16,7 +17,7 @@
 #include "TextureAtlas/TextureAtlasNotificationBus.h"
 
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ::RPI
 {

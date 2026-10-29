@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_COMPRESSOR_ZLIB_H
-#define AZCORE_COMPRESSOR_ZLIB_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
@@ -47,11 +47,11 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(CompressorZLibData, AZ::SystemAllocator);
 
-            CompressorZLibData(IAllocator* zlibMemAllocator = 0)
+            CompressorZLibData(IAllocator* zlibMemAllocator = nullptr)
                 : m_zlib(zlibMemAllocator)
                 , m_decompressNextOffset(0)
                 , m_decompressLastOffset(0)
-                , m_decompressedCache(0)
+                , m_decompressedCache(nullptr)
                 , m_decompressedCacheDataSize(0)
                 , m_decompressedCacheOffset(0)
             {}
@@ -137,6 +137,3 @@ namespace AZ
         };
     }   // namespace IO
 }   // namespace AZ
-
-#endif  // AZCORE_COMPRESSOR_ZLIB_H
-#pragma once

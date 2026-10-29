@@ -34,7 +34,7 @@ namespace GraphModelIntegration
         QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
         //! Override from QGraphicsItem
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
     protected:
         QPixmap m_pixmap;

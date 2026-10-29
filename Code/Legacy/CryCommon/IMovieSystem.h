@@ -417,7 +417,7 @@ struct IAnimTrack
     virtual void Animate([[maybe_unused]] SAnimContext& ec) {};
 
     // Get access to the internal spline of the track.
-    virtual ISplineInterpolator* GetSpline() const { return 0; };
+    virtual ISplineInterpolator* GetSpline() const { return nullptr; };
 
     //! @return True if a specified key is selected (has selected flag).
     virtual bool IsKeySelected([[maybe_unused]] int keyIndex) const { return false; }
@@ -999,7 +999,7 @@ struct IAnimSequence
 
     // Summary:
     //   Called to trigger a track event.
-    virtual void TriggerTrackEvent(const char* event, const char* param = NULL) = 0;
+    virtual void TriggerTrackEvent(const char* event, const char* param = nullptr) = 0;
 
     //! Track event listener
     virtual void AddTrackEventListener(ITrackEventListener* pListener) = 0;

@@ -17,6 +17,7 @@
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorColliderComponent.h>
+#include <Editor/InertiaPropertyHandler.h>
 
 namespace PhysX
 {
@@ -50,7 +51,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
 
                     ->DataElement(
-                        0,
+                        nullptr,
                         &ArticulationLinkConfiguration::m_selfCollide,
                         QT_TRANSLATE_NOOP("PhysX", "Self Collide"),
                         QT_TRANSLATE_NOOP("PhysX", "Enable collisions between the articulation's links (note that parent/child collisions are disabled internally in either case)."))
@@ -77,6 +78,20 @@ namespace PhysX
                         QT_TRANSLATE_NOOP("PhysX", "COM offset"),
                         QT_TRANSLATE_NOOP("PhysX", "Local space offset for the center of mass (COM)."))
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_computeInertiaTensor,
+                        QT_TRANSLATE_NOOP("PhysX", "Compute inertia"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, inertia is computed based on the mass and shape of the articulation link."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        Editor::InertiaHandler,
+                        &ArticulationLinkConfiguration::m_inertiaTensor,
+                        QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal"),
+                        QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal elements that specify an inertia tensor; determines the "
+                        "torque required to rotate the articulation link on each axis."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetInertiaVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_linearDamping,
@@ -142,13 +157,13 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
-                        0,
+                        nullptr,
                         &PhysX::ArticulationLinkConfiguration::m_localPosition,
                         QT_TRANSLATE_NOOP("PhysX", "Local Position"),
                         QT_TRANSLATE_NOOP("PhysX", "Local Position of joint, relative to its entity."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
-                        0,
+                        nullptr,
                         &PhysX::ArticulationLinkConfiguration::m_localRotation,
                         QT_TRANSLATE_NOOP("PhysX", "Local Rotation"),
                         QT_TRANSLATE_NOOP("PhysX", "Local Rotation of joint, relative to its entity."))
@@ -156,7 +171,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
-                        0,
+                        nullptr,
                         &ArticulationLinkConfiguration::m_fixJointLocation,
                         QT_TRANSLATE_NOOP("PhysX", "Fix Joint Location"),
                         QT_TRANSLATE_NOOP("PhysX", "When enabled the joint will remain in the same location when moving the entity."))
@@ -177,37 +192,38 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Joint limits"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_isLimited, QT_TRANSLATE_NOOP("PhysX", "Limit"), QT_TRANSLATE_NOOP("PhysX", "When active, the joint's degrees of freedom are limited."))
+                        nullptr, &ArticulationLinkConfiguration::m_isLimited, QT_TRANSLATE_NOOP("PhysX", "Limit"), QT_TRANSLATE_NOOP("PhysX", "When active, the joint's degrees of freedom are limited."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_linearLimitLower, QT_TRANSLATE_NOOP("PhysX", "Lower Linear Limit"), QT_TRANSLATE_NOOP("PhysX", "Lower limit of linear motion."))
+                        nullptr, &ArticulationLinkConfiguration::m_linearLimitLower, QT_TRANSLATE_NOOP("PhysX", "Lower Linear Limit"), QT_TRANSLATE_NOOP("PhysX", "Lower limit of linear motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::PrismaticPropertiesVisible)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_linearLimitUpper, QT_TRANSLATE_NOOP("PhysX", "Upper Linear Limit"), QT_TRANSLATE_NOOP("PhysX", "Upper limit for linear motion."))
+                        nullptr, &ArticulationLinkConfiguration::m_linearLimitUpper, QT_TRANSLATE_NOOP("PhysX", "Upper Linear Limit"), QT_TRANSLATE_NOOP("PhysX", "Upper limit for linear motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::PrismaticPropertiesVisible)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_angularLimitNegative, QT_TRANSLATE_NOOP("PhysX", "Lower Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Lower limit of angular motion."))
+                        nullptr, &ArticulationLinkConfiguration::m_angularLimitNegative, QT_TRANSLATE_NOOP("PhysX", "Lower Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Lower limit of angular motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::HingePropertiesVisible)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_angularLimitPositive, QT_TRANSLATE_NOOP("PhysX", "Upper Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Upper limit of angular motion."))
+                        nullptr, &ArticulationLinkConfiguration::m_angularLimitPositive, QT_TRANSLATE_NOOP("PhysX", "Upper Angular Limit"), QT_TRANSLATE_NOOP("PhysX", "Upper limit of angular motion."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::HingePropertiesVisible)
                     ->EndGroup()
 
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
+                        nullptr, &ArticulationLinkConfiguration::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_jointFriction, QT_TRANSLATE_NOOP("PhysX", "Joint Friction"), QT_TRANSLATE_NOOP("PhysX", "Joint's friction coefficient."))
+                    ->DataElement(nullptr, &ArticulationLinkConfiguration::m_jointFriction, QT_TRANSLATE_NOOP("PhysX", "Joint Friction"), QT_TRANSLATE_NOOP("PhysX", "Joint's friction coefficient."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_armature, QT_TRANSLATE_NOOP("PhysX", "Armature"), QT_TRANSLATE_NOOP("PhysX", "Mass for prismatic joints, inertia for hinge"))
+                    ->DataElement(nullptr, &ArticulationLinkConfiguration::m_armature, QT_TRANSLATE_NOOP("PhysX", "Armature"), QT_TRANSLATE_NOOP("PhysX", "Mass for prismatic joints, inertia for hinge"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Sensors"))
+
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
+                    ->DataElement(nullptr, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
                     ->EndGroup()
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Joint Offset")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

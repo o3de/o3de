@@ -59,6 +59,7 @@ namespace OpenParticle
             newEmitter->m_config = emitter->m_config;
             newEmitter->m_renderConfig = emitter->m_renderConfig;
             newEmitter->m_material = emitter->m_material;
+            newEmitter->m_materialOverrides = emitter->m_materialOverrides;
             newEmitter->m_model = emitter->m_model;
             newEmitter->m_skeletonModel = emitter->m_skeletonModel;
             newEmitter->m_meshSampleType = emitter->m_meshSampleType;
@@ -99,6 +100,7 @@ namespace OpenParticle
             newEmitter->m_config = emitter->m_config;
             newEmitter->m_renderConfig = emitter->m_renderConfig;
             newEmitter->m_material = emitter->m_material;
+            newEmitter->m_materialOverrides = emitter->m_materialOverrides;
             newEmitter->m_model = emitter->m_model;
             newEmitter->m_skeletonModel = emitter->m_skeletonModel;
             newEmitter->m_meshSampleType = emitter->m_meshSampleType;
@@ -282,6 +284,7 @@ namespace OpenParticle
             fn(emitter->m_updateModules);
             fn(emitter->m_eventModules);
             archive.Material(materialAsset);
+            archive.MaterialOverrides(emitter->m_materialOverrides);
             if (emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>())
             {
                 archive.Model(modelAsset);

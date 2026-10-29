@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef WATCHES_VIEW_H
-#define WATCHES_VIEW_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -113,7 +111,7 @@ class DHWatchesWidget
 
 public:
 
-    DHWatchesWidget( QWidget * parent = 0 );
+    DHWatchesWidget( QWidget * parent = nullptr );
     virtual ~DHWatchesWidget();
 
     void SetOperatingMode( WatchesOperatingMode newMode );
@@ -156,5 +154,3 @@ public Q_SLOTS:
     void OnItemChanged();
     void OnDoubleClicked( const QModelIndex & );
 };
-
-#endif

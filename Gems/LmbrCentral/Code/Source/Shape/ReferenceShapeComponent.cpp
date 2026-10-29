@@ -32,7 +32,7 @@ namespace LmbrCentral
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ReferenceShapeConfig::m_shapeEntityId,
+                    ->DataElement(nullptr, &ReferenceShapeConfig::m_shapeEntityId,
                         QT_TRANSLATE_NOOP("LmbrCentral", "Shape Entity Id"),
                         QT_TRANSLATE_NOOP("LmbrCentral", "Entity with shape component to reference."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))

@@ -505,18 +505,18 @@ constexpr bool operator!=(EnumType lhs, EnumType rhs) \
 
 #ifndef SAFE_DELETE
 // Delete a raw pointer and set it to nullptr to prevent dangling pointers
-#define SAFE_DELETE(p) { if (p) { delete (p); (p) = NULL; } \
+#define SAFE_DELETE(p) { if (p) { delete (p); (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_DELETE_ARRAY
 // Delete a raw pointer to an array and set it to nullptr to prevent dangling pointers
-#define SAFE_DELETE_ARRAY(p) { if (p) { delete [] (p); (p) = NULL; } \
+#define SAFE_DELETE_ARRAY(p) { if (p) { delete [] (p); (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_RELEASE
 // For object pointers that releases itself using a `Release()` call, call the release on the pointer and set it to nullptr
-#define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } \
+#define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = nullptr; } \
 }
 #endif

@@ -11,8 +11,8 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

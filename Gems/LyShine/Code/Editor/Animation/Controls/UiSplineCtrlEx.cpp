@@ -9,13 +9,14 @@
 
 #include <Animation/Controls/UiSplineCtrlEx.h>
 #include <Editor/Resource.h>
-//#include "MemDC.h"
 #include <Animation/Controls/UiTimelineCtrl.h>
 #include "Clipboard.h"
 #include "GridUtils.h"
 #include "../UiAnimUndo.h"
 
 #include <QtUtil.h>
+
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 
 #include <QPaintEvent>
 #include <QPainter>
@@ -78,7 +79,7 @@ protected:
         AbstractSplineWidget* pCtrl = FindControl(m_pCtrl);
         m_splineEntries.resize(m_splineEntries.size() + 1);
         SplineEntry& entry = m_splineEntries.back();
-        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
+        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : nullptr);
         entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : AZStd::string{});
         entry.pSpline = pSpline;
 
@@ -143,7 +144,7 @@ private:
     void SerializeSplines(_smart_ptr<ISplineBackup> SplineEntry::* backup, bool bLoading)
     {
         AbstractSplineWidget* pCtrl = FindControl(m_pCtrl);
-        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
+        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : nullptr);
         for (auto it = m_splineEntries.begin(); it != m_splineEntries.end(); ++it)
         {
             SplineEntry& entry = *it;
@@ -172,13 +173,13 @@ public:
     {
         if (!pCtrl)
         {
-            return 0;
+            return nullptr;
         }
 
         auto iter = std::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
         if (iter == s_activeCtrls.end())
         {
-            return 0;
+            return nullptr;
         }
 
         return *iter;
@@ -205,7 +206,7 @@ public:
     virtual bool IsSelectionChanged() const
     {
         AbstractSplineWidget* pCtrl = FindControl(m_pCtrl);
-        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
+        ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : nullptr);
 
         for (auto it = m_splineEntries.begin(); it != m_splineEntries.end(); ++it)
         {
@@ -263,11 +264,11 @@ SplineWidget::~SplineWidget()
 AbstractSplineWidget::AbstractSplineWidget()
     : m_defaultKeyTangentType(SPLINE_KEY_TANGENT_NONE)
 {
-    m_pTimelineCtrl = 0;
+    m_pTimelineCtrl = nullptr;
 
     m_totalSplineCount = 0;
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
     m_bHitIncomingHandle = true;
@@ -307,7 +308,7 @@ AbstractSplineWidget::AbstractSplineWidget()
 
     m_boLeftMouseButtonDown = false;
 
-    m_pSplineSet = 0;
+    m_pSplineSet = nullptr;
 
     m_controlAmplitude = false;
 
@@ -1699,7 +1700,7 @@ ISplineInterpolator* AbstractSplineWidget::HitSpline(const QPoint& point)
         return m_pHitSpline;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1713,8 +1714,8 @@ AbstractSplineWidget::EHitCode AbstractSplineWidget::HitTest(const QPoint& point
     PointToTimeValue(point, time, val);
 
     m_hitCode = HIT_NOTHING;
-    m_pHitSpline = NULL;
-    m_pHitDetailSpline = NULL;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
     m_bHitIncomingHandle = true;
@@ -1861,8 +1862,8 @@ void AbstractSplineWidget::StopTracking()
 void AbstractSplineWidget::ScaleAmplitudeKeys(float time, float startValue, float offset)
 {
     //TODO: Test it in the facial animation pane and fix it...
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
 
@@ -1964,8 +1965,8 @@ void AbstractSplineWidget::TimeScaleKeys(float time, float startTime, float endT
     float timeScaleC = endTime - startTime * timeScaleM;
 
     // Loop through all keys that are selected.
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
 
     float affectedRangeMin = FLT_MAX;
@@ -2072,8 +2073,8 @@ void AbstractSplineWidget::ValueScaleKeys(float startValue, float endValue)
     }
 
     // Loop through all keys that are selected.
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
 
@@ -2105,8 +2106,8 @@ void AbstractSplineWidget::ValueScaleKeys(float startValue, float endValue)
 //////////////////////////////////////////////////////////////////////////
 void AbstractSplineWidget::MoveSelectedKeys(Vec2 offset, bool copyKeys)
 {
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     m_nHitDimension = -1;
 
@@ -2207,8 +2208,8 @@ void AbstractSplineWidget::RemoveKey(ISplineInterpolator* pSpline, int nKey)
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
     pSpline->RemoveKey(nKey);
 
@@ -2224,8 +2225,8 @@ void AbstractSplineWidget::RemoveSelectedKeys()
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
 
     for (int splineIndex = 0, splineCount = static_cast<int>(m_splines.size()); splineIndex < splineCount; ++splineIndex)
@@ -2489,8 +2490,8 @@ public:
 };
 void AbstractSplineWidget::DuplicateSelectedKeys()
 {
-    m_pHitSpline = 0;
-    m_pHitDetailSpline = 0;
+    m_pHitSpline = nullptr;
+    m_pHitDetailSpline = nullptr;
     m_nHitKeyIndex = -1;
 
     typedef std::vector<CKeyCopyInfo> KeysToAddContainer;
@@ -2653,7 +2654,7 @@ void SplineWidget::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF color)
+void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color& color)
 {
     for (int i = 0; i < (int)m_splines.size(); i++)
     {
@@ -2666,7 +2667,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
 
     for (int nCurrentDimension = 0; nCurrentDimension < pSpline->GetNumDimensions(); nCurrentDimension++)
     {
-        si.anColorArray[nCurrentDimension] = color;
+        si.anColorArray[nCurrentDimension] = AzQtComponents::AzColorToQtColor(color);
     }
 
     si.pSpline = pSpline;
@@ -2676,7 +2677,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
     update();
 }
 
-void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF anColorArray[4])
+void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color anColorArray[4])
 {
     for (int i = 0; i < (int)m_splines.size(); i++)
     {
@@ -2689,7 +2690,7 @@ void AbstractSplineWidget::AddSpline(ISplineInterpolator* pSpline, ISplineInterp
 
     for (int nCurrentDimension = 0; nCurrentDimension < pSpline->GetNumDimensions(); nCurrentDimension++)
     {
-        si.anColorArray[nCurrentDimension] = anColorArray[nCurrentDimension];
+        si.anColorArray[nCurrentDimension] =  AzQtComponents::AzColorToQtColor(anColorArray[nCurrentDimension]);
     }
 
     si.pSpline = pSpline;
@@ -3066,7 +3067,7 @@ void AbstractSplineWidget::FitSplineToViewHeight()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void AbstractSplineWidget::OnUserCommand(UINT cmd)
+void AbstractSplineWidget::OnUserCommand(unsigned int cmd)
 {
     switch (cmd)
     {

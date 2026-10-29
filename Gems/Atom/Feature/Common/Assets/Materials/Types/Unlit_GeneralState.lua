@@ -8,16 +8,20 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"castShadows"}
+    return {"general.castShadows", "opacity.mode"}
 end
 
+local OpacityMode_Blended = 2
+
 function Process(context)
-    local castShadows = context:GetMaterialPropertyValue_bool("castShadows")
+    local castShadows = context:GetMaterialPropertyValue_bool("general.castShadows")
+    local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
+    local enableShadowPass = castShadows and opacityMode ~= OpacityMode_Blended
 
     if context:HasShaderWithTag("shadow") then
         local shadowShader = context:GetShaderByTag("shadow")
         if shadowShader then
-            shadowShader:SetEnabled(castShadows)
+            shadowShader:SetEnabled(enableShadowPass)
         end
     end
 end

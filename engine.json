@@ -1,7 +1,7 @@
 {
-    "engine_name": "o3de_sourcedev",
+    "engine_name": "o3de",
     "display_version": "00.00",
-    "version": "2.7.0",
+    "version": "2.8.0",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.2.1",
@@ -111,12 +111,14 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/GameplayGem",
         "Templates/AssetGem",
         "Templates/AddTestsToProject",
         "Templates/CppToolGem",
         "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
+        "Templates/EngineFinder",
         "Templates/GemRepo",
         "Templates/GraphicsGem",
         "Templates/MinimalProject",

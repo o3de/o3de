@@ -1,0 +1,49 @@
+
+struct VertexInput
+{
+     float3 m_position : POSITION;
+     float3 m_normal : NORMAL;
+     float3 m_tangent : TANGENT;
+     float3 m_bitangent : BITANGENT;
+     float2 m_uv : UV0;
+};
+
+struct VertexOutput
+{
+     float4 m_position : SV_Position;
+     float3 m_normal : NORMAL;
+     float3 m_tangent : TANGENT;
+     float2 m_uv : UV0;
+     float3 m_view : VIEW;
+};
+
+ShaderResourceGroupSemantic UpdatePerEmpty
+{
+    FrequencyId = 0u;
+};
+
+static const int kSize = 13;
+
+ShaderResourceGroup PerMaterial : UpdatePerEmpty
+{
+    struct MaterialConstants
+    {
+        float4 m_diffuseColor;
+    };
+    
+    ConstantBuffer<MaterialConstants> m_materialConstants;
+
+    Texture2D<float4> m_diffuseMap[kSize];
+    RWTexture2D<float3> m_normalMap;
+    Texture2D m_specularMap;
+    TextureCube m_environmentMap;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+};
+

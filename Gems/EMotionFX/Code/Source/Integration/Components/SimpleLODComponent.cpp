@@ -48,17 +48,17 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->DataElement(0, &SimpleLODComponent::Configuration::m_lodDistances,
+                        ->DataElement(nullptr, &SimpleLODComponent::Configuration::m_lodDistances,
                             QT_TRANSLATE_NOOP("EMotionFX", "LOD distance (Max)"), QT_TRANSLATE_NOOP("EMotionFX", "The maximum camera distance of this LOD."))
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->ElementAttribute(AZ::Edit::Attributes::Step, 0.01f)
                             ->ElementAttribute(AZ::Edit::Attributes::Suffix, " m")
                             ->ElementAttribute(AZ::Edit::Attributes::Min, 0.00f)
-                        ->DataElement(0, &SimpleLODComponent::Configuration::m_enableLodSampling,
+                        ->DataElement(nullptr, &SimpleLODComponent::Configuration::m_enableLodSampling,
                             QT_TRANSLATE_NOOP("EMotionFX", "Enable LOD anim graph sampling"), QT_TRANSLATE_NOOP("EMotionFX", "AnimGraph sample rate will adjust based on LOD level."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                        ->DataElement(0, &SimpleLODComponent::Configuration::m_lodSampleRates,
+                        ->DataElement(nullptr, &SimpleLODComponent::Configuration::m_lodSampleRates,
                             QT_TRANSLATE_NOOP("EMotionFX", "Anim graph sample rates"), QT_TRANSLATE_NOOP("EMotionFX", "The sample rate of anim graph based on LOD. Setting it to O means the maximum sample rate."))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &SimpleLODComponent::Configuration::GetEnableLodSampling)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)

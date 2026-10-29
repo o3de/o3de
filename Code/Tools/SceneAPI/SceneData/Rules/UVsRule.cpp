@@ -118,7 +118,7 @@ namespace AZ
                             "Specify the UVs generation method when UVs are generated.")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::UVsGenerationMethod::LeaveSceneDataAsIs, "Do not generate UVs")
                         ->EnumAttribute(AZ::SceneAPI::DataTypes::UVsGenerationMethod::SphericalProjection, "Spherical Projection")
-                        ->DataElement(0, &AZ::SceneAPI::SceneData::UVsRule::m_replaceExisting,
+                        ->DataElement(nullptr, &AZ::SceneAPI::SceneData::UVsRule::m_replaceExisting,
                             "Replace existing UVs",
                             "If true, will replace UVs in the source scene even if present in the incoming data.")
                     ;

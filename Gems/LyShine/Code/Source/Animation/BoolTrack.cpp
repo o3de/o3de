@@ -20,7 +20,7 @@ UiBoolTrack::UiBoolTrack()
 //////////////////////////////////////////////////////////////////////////
 void UiBoolTrack::GetKeyInfo([[maybe_unused]] int index, const char*& description, float& duration)
 {
-    description = 0;
+    description = nullptr;
     duration = 0;
 }
 

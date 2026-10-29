@@ -9,7 +9,7 @@
 #pragma once
 
 #include<Atom/RHI/DeviceDrawItem.h>
-#include<AtomCore/Instance/InstanceId.h>
+#include<AzCore/Instance/InstanceId.h>
 
 namespace AZ
 {

@@ -34,7 +34,7 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceMaskGradientConfig::m_surfaceTagList, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tag List"), QT_TRANSLATE_NOOP("GradientSignal", "Identifiers used to compare against underlying surfaces."))
+                    ->DataElement(nullptr, &SurfaceMaskGradientConfig::m_surfaceTagList, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tag List"), QT_TRANSLATE_NOOP("GradientSignal", "Identifiers used to compare against underlying surfaces."))
                     ;
             }
         }

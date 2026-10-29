@@ -21,7 +21,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 
-#include <mikkelsen/mikktspace.h>
+#include <mikktspace.h>
 
 namespace AZ::TangentGeneration::Mesh::MikkT
 {

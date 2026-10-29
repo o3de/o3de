@@ -25,9 +25,8 @@
 #include <Atom/RPI.Public/SceneBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 
-#include <AtomCore/Instance/Instance.h>
-
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>

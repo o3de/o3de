@@ -24,7 +24,7 @@ namespace AZStd
 
         HANDLE CreateThread(unsigned stackSize, unsigned (__stdcall* threadRunFunction)(void*), AZStd::Internal::thread_info* ti, unsigned int* id)
         {
-            return (HANDLE)_beginthreadex(0, stackSize, threadRunFunction, ti, CREATE_SUSPENDED, id);
+            return (HANDLE)_beginthreadex(nullptr, stackSize, threadRunFunction, ti, CREATE_SUSPENDED, id);
         }
 
         unsigned HardwareConcurrency()

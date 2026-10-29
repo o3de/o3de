@@ -140,7 +140,7 @@ namespace AZStd
             }
             void* get_deleter(Internal::sp_typeinfo const&) override
             {
-                return 0;
+                return nullptr;
             }
         };
 
@@ -189,7 +189,7 @@ namespace AZStd
 
             void* get_deleter(Internal::sp_typeinfo const& ti) override
             {
-                return ti == aztypeid(D) ? &reinterpret_cast<char&>(d_) : 0;
+                return ti == aztypeid(D) ? &reinterpret_cast<char&>(d_) : nullptr;
             }
         };
         //////////////////////////////////////////////////////////////////////////
@@ -210,16 +210,16 @@ namespace AZStd
             friend class weak_count;
         public:
             shared_count()
-                : pi_(0)           // nothrow
+                : pi_(nullptr)     // nothrow
             {}
             template<class Y, class A>
             explicit shared_count(Y* p, const A& a)
-                : pi_(0)
+                : pi_(nullptr)
             {
                 typedef sp_counted_impl_pa<Y, A> impl_type;
                 A a2(a);
                 pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     new(static_cast<void*>(pi_))impl_type(p, a);
                 }
@@ -230,12 +230,12 @@ namespace AZStd
             }
             template<class P, class D, class A>
             shared_count(P p, D d, const A& a)
-                : pi_(0)
+                : pi_(nullptr)
             {
                 typedef sp_counted_impl_pda<P, D, A> impl_type;
                 A a2(a);
                 pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     new(static_cast< void* >(pi_))impl_type(p, d, a);
                 }
@@ -247,12 +247,12 @@ namespace AZStd
 
             template< class P, class D, class A >
             shared_count(P p, sp_inplace_tag<D>, const A& a)
-                : pi_(0)
+                : pi_(nullptr)
             {
                 typedef sp_counted_impl_pda<P, D, A> impl_type;
                 A a2(a);
                 pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     new(static_cast<void*>(pi_))impl_type(p, a);
                 }
@@ -284,7 +284,7 @@ namespace AZStd
 
             ~shared_count() // nothrow
             {
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     pi_->release();
                 }
@@ -299,7 +299,7 @@ namespace AZStd
                 , id_(shared_count_id)
 #endif
             {
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     pi_->add_ref_copy();
                 }
@@ -310,7 +310,7 @@ namespace AZStd
                 , id_(shared_count_id)
 #endif
             {
-                r.pi_ = 0;
+                r.pi_ = nullptr;
             }
 
             explicit shared_count(weak_count const& r);  // throws bad_weak_ptr when r.use_count() == 0
@@ -321,11 +321,11 @@ namespace AZStd
 
                 if (tmp != pi_)
                 {
-                    if (tmp != 0)
+                    if (tmp != nullptr)
                     {
                         tmp->add_ref_copy();
                     }
-                    if (pi_ != 0)
+                    if (pi_ != nullptr)
                     {
                         pi_->release();
                     }
@@ -344,7 +344,7 @@ namespace AZStd
 
             long use_count() const // nothrow
             {
-                return pi_ != 0 ? pi_->use_count() : 0;
+                return pi_ != nullptr ? pi_->use_count() : 0;
             }
 
             bool unique() const // nothrow
@@ -354,7 +354,7 @@ namespace AZStd
 
             bool empty() const // nothrow
             {
-                return pi_ == 0;
+                return pi_ == nullptr;
             }
 
             friend inline bool operator==(shared_count const& a, shared_count const& b)
@@ -370,7 +370,7 @@ namespace AZStd
 
             void* get_deleter(sp_typeinfo const& ti) const
             {
-                return pi_ ? pi_->get_deleter(ti) : 0;
+                return pi_ ? pi_->get_deleter(ti) : nullptr;
             }
         };
 
@@ -384,7 +384,7 @@ namespace AZStd
             friend class shared_count;
         public:
             weak_count()
-                : pi_(0)         // nothrow
+                : pi_(nullptr)   // nothrow
 #if defined(AZSTD_SP_ENABLE_DEBUG_HOOKS)
                 , id_(weak_count_id)
 #endif
@@ -396,7 +396,7 @@ namespace AZStd
                 , id_(weak_count_id)
 #endif
             {
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     pi_->weak_add_ref();
                 }
@@ -408,7 +408,7 @@ namespace AZStd
                 , id_(weak_count_id)
 #endif
             {
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     pi_->weak_add_ref();
                 }
@@ -420,11 +420,11 @@ namespace AZStd
                 , id_(weak_count_id)
 #endif
             {
-                r.pi_ = 0;
+                r.pi_ = nullptr;
             }
             ~weak_count() // nothrow
             {
-                if (pi_ != 0)
+                if (pi_ != nullptr)
                 {
                     pi_->weak_release();
                 }
@@ -439,11 +439,11 @@ namespace AZStd
 
                 if (tmp != pi_)
                 {
-                    if (tmp != 0)
+                    if (tmp != nullptr)
                     {
                         tmp->weak_add_ref();
                     }
-                    if (pi_ != 0)
+                    if (pi_ != nullptr)
                     {
                         pi_->weak_release();
                     }
@@ -459,11 +459,11 @@ namespace AZStd
 
                 if (tmp != pi_)
                 {
-                    if (tmp != 0)
+                    if (tmp != nullptr)
                     {
                         tmp->weak_add_ref();
                     }
-                    if (pi_ != 0)
+                    if (pi_ != nullptr)
                     {
                         pi_->weak_release();
                     }
@@ -482,12 +482,12 @@ namespace AZStd
 
             long use_count() const // nothrow
             {
-                return pi_ != 0 ? pi_->use_count() : 0;
+                return pi_ != nullptr ? pi_->use_count() : 0;
             }
 
             bool empty() const // nothrow
             {
-                return pi_ == 0;
+                return pi_ == nullptr;
             }
 
             friend inline bool operator==(weak_count const& a, weak_count const& b)
@@ -508,9 +508,9 @@ namespace AZStd
             , id_(shared_count_id)
 #endif
         {
-            if (pi_ == 0 || !pi_->add_ref_lock())
+            if (pi_ == nullptr || !pi_->add_ref_lock())
             {
-                AZ_Assert(pi_ != 0, "Bad weak pointer");
+                AZ_Assert(pi_ != nullptr, "Bad weak pointer");
             }
         }
 
@@ -520,9 +520,9 @@ namespace AZStd
             , id_(shared_count_id)
 #endif
         {
-            if (pi_ != 0 && !pi_->add_ref_lock())
+            if (pi_ != nullptr && !pi_->add_ref_lock())
             {
-                pi_ = 0;
+                pi_ = nullptr;
             }
         }
     } // namespace Internal

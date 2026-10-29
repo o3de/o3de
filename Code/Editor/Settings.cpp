@@ -30,6 +30,8 @@
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
+#include <AzQtComponents/Utilities/ColorUtilities.h>
+
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
@@ -246,7 +248,10 @@ void SEditorSettings::SaveValue(const char* sSection, const char* sKey, int valu
 void SEditorSettings::SaveValue(const char* sSection, const char* sKey, const QColor& value)
 {
     const SettingsGroup sg(sSection);
-    s_editorSettings()->setValue(sKey, QVariant::fromValue<int>(RGB(value.red(), value.green(), value.blue())));
+    AZ::Color azColorValue = AzQtComponents::QtColorToAzColor(value);
+    int intValue = static_cast<int>(azColorValue.ToU32() & 0x00FFFFFF); // Mask out the alpha channel for legacy compatibility
+
+    s_editorSettings()->setValue(sKey, intValue);
 
     if (!bSettingsManagerMode)
     {
@@ -326,9 +331,8 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, QColor& 
     else
     {
         const SettingsGroup sg(sSection);
-        int defaultValue = RGB(value.red(), value.green(), value.blue());
-        int v = s_editorSettings()->value(sKey, QVariant::fromValue<int>(defaultValue)).toInt();
-        value = QColor(GetRValue(v), GetGValue(v), GetBValue(v));
+        int intValue = s_editorSettings()->value(sKey, value).toInt();
+        value = AzQtComponents::ARGBToQColor(static_cast<uint32_t>(intValue) | 0xFF000000); // Add back the alpha channel for editor color settings
 
         if (GetIEditor()->GetSettingsManager())
         {
@@ -538,8 +542,8 @@ void SEditorSettings::Save(bool isEditorClosing)
     //////////////////////////////////////////////////////////////////////////
     // Object Highlight Colors
     //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\ObjectColors", "groupHighlight", objectColorSettings.groupHighlight);
-    SaveValue("Settings\\ObjectColors", "entityHighlight", objectColorSettings.entityHighlight);
+    SaveValue("Settings\\ObjectColors", "GroupHighlight", objectColorSettings.groupHighlight);
+    SaveValue("Settings\\ObjectColors", "EntityHighlight", objectColorSettings.entityHighlight);
     SaveValue("Settings\\ObjectColors", "BBoxAlpha", objectColorSettings.fBBoxAlpha);
     SaveValue("Settings\\ObjectColors", "GeometryHighlightColor", objectColorSettings.geometryHighlightColor);
     SaveValue("Settings\\ObjectColors", "SolidBrushGeometryHighlightColor", objectColorSettings.solidBrushGeometryColor);

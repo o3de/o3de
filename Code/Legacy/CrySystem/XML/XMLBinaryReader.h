@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYREADER_H
-#define CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYREADER_H
 #pragma once
-
 
 #include "XMLBinaryHeaders.h"
 #include "IXml.h"
@@ -60,5 +56,3 @@ namespace XMLBinary
         char m_errorDescription[64];
     };
 }
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_XMLBINARYREADER_H

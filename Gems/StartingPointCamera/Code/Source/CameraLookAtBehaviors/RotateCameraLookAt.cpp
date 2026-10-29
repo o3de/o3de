@@ -42,13 +42,13 @@ namespace Camera
                         ->EnumAttribute(AxisOfRotation::X_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's X Axis"))
                         ->EnumAttribute(AxisOfRotation::Y_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's Y Axis"))
                         ->EnumAttribute(AxisOfRotation::Z_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's Z Axis"))
-                    ->DataElement(0, &RotateCameraLookAt::m_eventName,
+                    ->DataElement(nullptr, &RotateCameraLookAt::m_eventName,
                         QT_TRANSLATE_NOOP("Camera", "Event Name"),
                         QT_TRANSLATE_NOOP("Camera", "The Name of the expected Event"))
-                    ->DataElement(0, &RotateCameraLookAt::m_shouldInvertAxis,
+                    ->DataElement(nullptr, &RotateCameraLookAt::m_shouldInvertAxis,
                         QT_TRANSLATE_NOOP("Camera", "Invert Axis"),
                         QT_TRANSLATE_NOOP("Camera", "True if you want to rotate along a negative axis"))
-                    ->DataElement(0, &RotateCameraLookAt::m_rotationSpeedScale,
+                    ->DataElement(nullptr, &RotateCameraLookAt::m_rotationSpeedScale,
                         QT_TRANSLATE_NOOP("Camera", "Rotation Speed Scale"),
                         QT_TRANSLATE_NOOP("Camera", "Scale greater than 1 to speed up, between 0 and 1 to slow down"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)

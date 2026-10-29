@@ -495,7 +495,7 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(0, &UiLayoutGridComponent::m_spacing, QT_TRANSLATE_NOOP("LyShine", "Spacing"), QT_TRANSLATE_NOOP("LyShine", "The spacing between children"))
+            editInfo->DataElement(nullptr, &UiLayoutGridComponent::m_spacing, QT_TRANSLATE_NOOP("LyShine", "Spacing"), QT_TRANSLATE_NOOP("LyShine", "The spacing between children"))
                 ->Attribute(AZ::Edit::Attributes::LabelForX, QT_TRANSLATE_NOOP("LyShine", "Horizontal"))
                 ->Attribute(AZ::Edit::Attributes::LabelForY, QT_TRANSLATE_NOOP("LyShine", "Vertical"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
@@ -503,7 +503,7 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(0, &UiLayoutGridComponent::m_cellSize, QT_TRANSLATE_NOOP("LyShine", "Cell size"), QT_TRANSLATE_NOOP("LyShine", "The size of the cells"))
+            editInfo->DataElement(nullptr, &UiLayoutGridComponent::m_cellSize, QT_TRANSLATE_NOOP("LyShine", "Cell size"), QT_TRANSLATE_NOOP("LyShine", "The size of the cells"))
                 ->Attribute(AZ::Edit::Attributes::LabelForX, QT_TRANSLATE_NOOP("LyShine", "Width"))
                 ->Attribute(AZ::Edit::Attributes::LabelForY, QT_TRANSLATE_NOOP("LyShine", "Height"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden

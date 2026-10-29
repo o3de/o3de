@@ -35,7 +35,7 @@ namespace MaterialCanvas
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialCanvasMainWindow(
-            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
+            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = nullptr);
         ~MaterialCanvasMainWindow() = default;
 
     protected:

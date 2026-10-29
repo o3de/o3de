@@ -11,8 +11,8 @@
 #include <Draw/EditorStateMeshDrawPacket.h>
 
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ::Render

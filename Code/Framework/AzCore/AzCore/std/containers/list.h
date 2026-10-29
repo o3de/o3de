@@ -71,14 +71,14 @@ namespace AZStd
         AZ_FORCE_INLINE pointer operator->() const { return &static_cast<node_ptr_type>(m_node)->m_value; }
         AZ_FORCE_INLINE this_type& operator++()
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::list::const_iterator_impl invalid node!");
             m_node = m_node->m_next;
             return *this;
         }
 
         AZ_FORCE_INLINE this_type operator++(int)
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::list::const_iterator_impl invalid node!");
             this_type temp = *this;
             m_node = m_node->m_next;
             return temp;
@@ -86,14 +86,14 @@ namespace AZStd
 
         AZ_FORCE_INLINE this_type& operator--()
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::list::const_iterator_impl invalid node!");
             m_node = m_node->m_prev;
             return *this;
         }
 
         AZ_FORCE_INLINE this_type operator--(int)
         {
-            AZSTD_CONTAINER_ASSERT(m_node != 0, "AZSTD::list::const_iterator_impl invalid node!");
+            AZSTD_CONTAINER_ASSERT(m_node != nullptr, "AZSTD::list::const_iterator_impl invalid node!");
             this_type temp = *this;
             m_node = m_node->m_prev;
             return temp;

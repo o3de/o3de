@@ -91,7 +91,7 @@ namespace AZStd
 
         T* operator->() const  // never throws
         {
-            AZ_Assert(px != 0, "You can't access a null pointer");
+            AZ_Assert(px != nullptr, "You can't access a null pointer");
             return px;
         }
 
@@ -105,7 +105,7 @@ namespace AZStd
             return px == 0 ? 0 : &this_type::px;
         }                                                                              // never throws
         // operator! is redundant, but some compilers need it
-        bool operator! () const { return px == 0; } // never throws
+        bool operator! () const { return px == nullptr; } // never throws
 
         void swap(scoped_ptr& b)  // never throws
         {

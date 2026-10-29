@@ -62,7 +62,7 @@ namespace Vegetation
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &DistributionFilterConfig::m_thresholdMax, QT_TRANSLATE_NOOP("Vegetation", "Threshold Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum value accepted from input gradient that allows the distribution filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &DistributionFilterConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as input signal tested against threshold range."))
+                    ->DataElement(nullptr, &DistributionFilterConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as input signal tested against threshold range."))
                     ;
             }
         }

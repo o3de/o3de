@@ -8,16 +8,16 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include "TextureAtlas/TextureAtlas.h"
 #include "TextureAtlas/TextureAtlasBus.h"
 
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/Instance.h>
 
 namespace TextureAtlasNamespace
 {

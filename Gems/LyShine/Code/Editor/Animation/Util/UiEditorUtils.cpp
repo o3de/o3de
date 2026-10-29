@@ -25,7 +25,7 @@ void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int li
 #include <QCursor>
 #include <QPixmap>
 
-QCursor CMFCUtils::LoadCursor(UINT nIDResource, int hotX, int hotY)
+QCursor CMFCUtils::LoadCursor(unsigned int nIDResource, int hotX, int hotY)
 {
     QString path;
     switch (nIDResource)

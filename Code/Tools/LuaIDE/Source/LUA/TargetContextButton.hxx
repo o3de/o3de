@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef INC_TARGETCONTEXTBUTTON_H
-#define INC_TARGETCONTEXTBUTTON_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -28,7 +26,7 @@ namespace LUA
     public:
         AZ_CLASS_ALLOCATOR(TargetContextButton, AZ::SystemAllocator);
 
-        TargetContextButton(QWidget *pParent = 0);
+        TargetContextButton(QWidget *pParent = nullptr);
         virtual ~TargetContextButton();
 
         // These come from the CONTEXT
@@ -56,5 +54,3 @@ namespace LUA
         virtual QWidget* createWidget(QWidget* pParent);
     };
 }
-
-#endif //INC_TARGETCONTEXTBUTTON_H

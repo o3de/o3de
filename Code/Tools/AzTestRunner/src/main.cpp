@@ -247,13 +247,17 @@ namespace AzTestRunner
         const AZ::Debug::Trace tracer;
         AZ::Debug::Trace::HandleExceptions(true);
 
+        int result = 0;
         if (argc>0 && argv!=nullptr)
         {
-            return wrapped_command_arg_main(argc, argv);
+            result = wrapped_command_arg_main(argc, argv);
         }
-        else
-        {
-            return 0;
-        }
+
+        // The exception handler reports crashes through the tracer, which is destroyed when this function returns.
+        // Restore the default signal handling, so that a crash after the tests have finished (e.g. in a static
+        // destructor at process exit) terminates the process with the signal, instead of an exit code that test
+        // tools such as CTest report as a regular test failure.
+        AZ::Debug::Trace::HandleExceptions(false);
+        return result;
     }
 }

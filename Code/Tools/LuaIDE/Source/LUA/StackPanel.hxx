@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef STACK_VIEW_H
-#define STACK_VIEW_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -25,7 +23,7 @@ class DHStackWidget : public QTableWidget, LUAEditor::LUAStackTrackerMessages::B
 {
     Q_OBJECT;
 public:
-    DHStackWidget( QWidget * parent = 0 );
+    DHStackWidget( QWidget * parent = nullptr );
     virtual ~DHStackWidget();
 
     //////////////////////////////////////////////////////////////////////////
@@ -42,5 +40,3 @@ private:
     public slots:
         void OnDoubleClicked( const QModelIndex & );
 };
-
-#endif

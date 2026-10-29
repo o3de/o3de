@@ -644,11 +644,11 @@ namespace AZ::IO
             .Times(count * 2) // Once for the file meta file retrieval and a second time for the read.
             .WillRepeatedly(Invoke(this, &BlockCacheTest::QueueReadRequest));
         EXPECT_CALL(*m_mock, UpdateStatus(_))
-            .WillRepeatedly(Invoke([](StreamStackEntry::Status& status)
+            .WillRepeatedly([](StreamStackEntry::Status& status)
             {
                 status.m_numAvailableSlots = 64;
                 status.m_isIdle = false;
-            }));
+            });
         EXPECT_CALL(*this, ReadFile(_, _, _, _)).Times(count);
 
         constexpr size_t scratchBufferSize = 128_kib;

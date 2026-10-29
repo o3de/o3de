@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H
-#define CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H
 #pragma once
 
 #include <QDialog>
@@ -152,5 +149,3 @@ protected:
 private:
     bool m_initialized;
 };
-
-#endif // CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H

@@ -6,12 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : A multiplatform base class for handling errors and collecting call stacks
-
-#ifndef CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H
-#define CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H
-#pragma once
 
 #include "System.h"
 
@@ -79,7 +76,3 @@ protected:
 
     AZ::IO::HandleType m_memAllocFileHandle;
 };
-
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_IDEBUGCALLSTACK_H

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H
-#define AZCORE_JOBS_INTERNAL_JOBMANAGER_BASE_H 1
+
+#pragma once
 
 namespace AZ
 {
@@ -23,6 +23,3 @@ namespace AZ
         };
     }
 }
-
-#endif
-

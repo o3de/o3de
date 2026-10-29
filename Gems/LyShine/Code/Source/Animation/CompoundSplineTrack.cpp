@@ -482,7 +482,7 @@ void UiCompoundSplineTrack::GetKeyInfo(int key, const char*& description, float&
     static char str[64];
     duration = 0;
     description = str;
-    const char* subDesc = NULL;
+    const char* subDesc = nullptr;
     float time = GetKeyTime(key);
     int m = 0;
     /// Using the time obtained, combine descriptions from keys of the same time

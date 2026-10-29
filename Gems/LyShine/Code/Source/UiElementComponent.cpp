@@ -1372,17 +1372,17 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                 ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable);
 
-            editInfo->DataElement(0, &UiElementComponent::m_isEnabled, QT_TRANSLATE_NOOP("LyShine", "Start enabled"),
+            editInfo->DataElement(nullptr, &UiElementComponent::m_isEnabled, QT_TRANSLATE_NOOP("LyShine", "Start enabled"),
                 QT_TRANSLATE_NOOP("LyShine", "Determines whether the element is enabled upon creation.\n"
                 "If an element is not enabled, neither it nor any of its children are drawn or interactive."));
 
             // These are not visible in the PropertyGrid since they are managed through the Hierarchy Pane
             // We do want to be able to push them to a slice though.
-            editInfo->DataElement(0, &UiElementComponent::m_isVisibleInEditor, "IsVisibleInEditor", "")
+            editInfo->DataElement(nullptr, &UiElementComponent::m_isVisibleInEditor, "IsVisibleInEditor", "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
-            editInfo->DataElement(0, &UiElementComponent::m_isSelectableInEditor, "IsSelectableInEditor", "")
+            editInfo->DataElement(nullptr, &UiElementComponent::m_isSelectableInEditor, "IsSelectableInEditor", "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
-            editInfo->DataElement(0, &UiElementComponent::m_isExpandedInEditor, "IsExpandedInEditor", "")
+            editInfo->DataElement(nullptr, &UiElementComponent::m_isExpandedInEditor, "IsExpandedInEditor", "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
         }
     }

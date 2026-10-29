@@ -52,7 +52,7 @@ namespace ImageProcessingAtomEditor
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(TexturePreviewWidget, AZ::SystemAllocator);
-        explicit TexturePreviewWidget(EditorTextureSetting& texureSetting, QWidget* parent = 0);
+        explicit TexturePreviewWidget(EditorTextureSetting& texureSetting, QWidget* parent = nullptr);
         ~TexturePreviewWidget();
         bool OnQtEvent(QEvent* event);
 

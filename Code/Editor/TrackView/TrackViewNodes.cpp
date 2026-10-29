@@ -1918,8 +1918,8 @@ void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = static_cast<int>(menu->actions().size());
-    for (UINT i = 0; i < count; ++i)
+    unsigned int count = static_cast<int>(menu->actions().size());
+    for (unsigned int i = 0; i < count; ++i)
     {
         QAction* a = menu->actions()[i];
         QString menuString = a->text();

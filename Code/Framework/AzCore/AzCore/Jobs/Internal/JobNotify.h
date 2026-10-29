@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_INTERNAL_JOBNOTIFY_H
-#define AZCORE_JOBS_INTERNAL_JOBNOTIFY_H 1
+
+#pragma once
 
 #include <AzCore/Jobs/Job.h>
 
@@ -40,6 +40,3 @@ namespace AZ
         };
     }
 }
-
-#endif
-#pragma once

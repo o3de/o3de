@@ -1,0 +1,24 @@
+// It is an error to provide a non-multiple of 4 argument in a [[pad_to(N)]] attribute
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStruct
+{
+    float m_red;
+    [[pad_to(18)]] // EC 132
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyStruct m_data;
+};
+
+float4 PSMain() : SV_Target0
+{
+    float4 color = float4(0, 0, 0, 0);
+    color.r = DemoSrg::m_data.m_red;
+    return color;
+}

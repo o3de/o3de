@@ -196,7 +196,7 @@ void FileServer::EnsureCacheFolderExists(int connId)
         // note, the zero here after GENERIC_READ|GENERIC_WRITE indicates no share access at all!
         std::wstring winFriendly = finalPath.toStdWString();
 
-        HANDLE lockHandle = CreateFileW(winFriendly.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, 0);
+        HANDLE lockHandle = CreateFileW(winFriendly.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
         if (lockHandle != INVALID_HANDLE_VALUE)
         {
             m_locks[connId] = lockHandle;

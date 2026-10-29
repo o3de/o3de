@@ -1,0 +1,33 @@
+ShaderResourceGroupSemantic sem1
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroupSemantic sem2
+{
+    FrequencyId = 1;
+};
+
+// first appearance
+partial ShaderResourceGroup MySrg : sem1
+{
+};
+
+// second appearance.
+// a redundant semantic is not an error.
+partial ShaderResourceGroup MySrg : sem1
+{
+}
+
+// third appearance.
+// No semantic is ok on partial SRG so long as at least one partial definition has the semantic.
+partial ShaderResourceGroup MySrg
+{
+}
+
+// fourth appearance.
+// a different semantic, is an error.
+partial ShaderResourceGroup MySrg : sem2
+{
+}
+// #EC 47  shall not bind a different semantic

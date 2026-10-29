@@ -42,12 +42,12 @@ namespace AZ
         secAttr.bInheritHandle = TRUE;
         secAttr.lpSecurityDescriptor = &secDesc;
         InitializeSecurityDescriptor(secAttr.lpSecurityDescriptor, SECURITY_DESCRIPTOR_REVISION);
-        SetSecurityDescriptorDacl(secAttr.lpSecurityDescriptor, TRUE, 0, FALSE);
+        SetSecurityDescriptorDacl(secAttr.lpSecurityDescriptor, TRUE, nullptr, FALSE);
 
         // Obtain global mutex
         m_globalMutex = CreateMutexW(&secAttr, FALSE, fullName.c_str());
         DWORD error = GetLastError();
-        if (m_globalMutex == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
+        if (m_globalMutex == nullptr || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
             AZ_TracePrintf("AZSystem", "CreateMutex failed with error %d\n", error);
             return CreateFailed;
@@ -57,7 +57,7 @@ namespace AZ
         ComposeName(fullName, name, L"Data");
         m_mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, &secAttr, PAGE_READWRITE, 0, size, fullName.c_str());
         error = GetLastError();
-        if (m_mapHandle == NULL || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
+        if (m_mapHandle == nullptr || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
             AZ_TracePrintf("AZSystem", "CreateFileMapping failed with error %d\n", error);
             return CreateFailed;
@@ -73,8 +73,8 @@ namespace AZ
         ComposeName(fullName, name, L"Mutex");
 
         m_globalMutex = OpenMutex(SYNCHRONIZE, TRUE, fullName.c_str());
-        AZ_Warning("AZSystem", m_globalMutex != NULL, "Failed to open OS mutex [%s]\n", m_name);
-        if (m_globalMutex == NULL)
+        AZ_Warning("AZSystem", m_globalMutex != nullptr, "Failed to open OS mutex [%s]\n", m_name);
+        if (m_globalMutex == nullptr)
         {
             AZ_TracePrintf("AZSystem", "OpenMutex %s failed with error %d\n", m_name, GetLastError());
             return false;
@@ -82,7 +82,7 @@ namespace AZ
 
         ComposeName(fullName, name, L"Data");
         m_mapHandle = OpenFileMapping(FILE_MAP_WRITE, false, fullName.c_str());
-        if (m_mapHandle == NULL)
+        if (m_mapHandle == nullptr)
         {
             AZ_TracePrintf("AZSystem", "OpenFileMapping %s failed with error %d\n", m_name, GetLastError());
             return false;
@@ -93,18 +93,18 @@ namespace AZ
 
     void SharedMemory_Windows::Close()
     {
-        if (m_mapHandle != NULL && !CloseHandle(m_mapHandle))
+        if (m_mapHandle != nullptr && !CloseHandle(m_mapHandle))
         {
             AZ_TracePrintf("AZSystem", "CloseHandle failed with error %d\n", GetLastError());
         }
 
-        if (m_globalMutex != NULL && !CloseHandle(m_globalMutex))
+        if (m_globalMutex != nullptr && !CloseHandle(m_globalMutex))
         {
             AZ_TracePrintf("AZSystem", "CloseHandle failed with error %d\n", GetLastError());
         }
 
-        m_mapHandle = NULL;
-        m_globalMutex = NULL;
+        m_mapHandle = nullptr;
+        m_globalMutex = nullptr;
     }
 
     bool SharedMemory_Windows::Map(AccessMode mode, unsigned int size)

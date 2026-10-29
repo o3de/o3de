@@ -40,8 +40,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
-#include <xxhash/xxhash.h>
 #include <native/utilities/UuidManager.h>
+#include <xxhash.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
@@ -474,7 +474,7 @@ namespace AssetUtilities
 
         // third parameter dwShareMode (0) prevents share access
         const DWORD dwShareMode = 0;
-        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, 0);
+        HANDLE fileHandle = CreateFileW(usableFileName.c_str(), GENERIC_READ, dwShareMode, nullptr, OPEN_EXISTING, 0, nullptr);
 
         if (fileHandle != INVALID_HANDLE_VALUE)
         {

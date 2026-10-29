@@ -82,7 +82,7 @@ namespace AZStd
         AZ_Assert(m_allocator.is_delayed_recycling(),   "Allocator for lock_free_stack must not recycle"
             "allocations, use lock_free_stamped_stack to relax this restriction");
 
-        m_top.store(NULL, memory_order_release);
+        m_top.store(nullptr, memory_order_release);
     }
 
     template<typename T, typename Allocator>
@@ -143,7 +143,7 @@ namespace AZStd
     template<typename T, typename Allocator>
     inline bool lock_free_stack<T, Allocator>::empty() const
     {
-        return (m_top.load(memory_order_acquire) == NULL);
+        return (m_top.load(memory_order_acquire) == nullptr);
     }
 
     template<typename T, typename Allocator>

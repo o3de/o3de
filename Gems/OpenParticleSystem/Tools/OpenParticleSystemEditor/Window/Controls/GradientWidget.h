@@ -18,7 +18,7 @@ namespace OpenParticleSystemEditor
     {
         Q_OBJECT
     public:
-        GradientWidget(QWidget* parent = 0);
+        GradientWidget(QWidget* parent = nullptr);
         virtual ~GradientWidget();
         virtual void paintEvent(QPaintEvent*) override;
 

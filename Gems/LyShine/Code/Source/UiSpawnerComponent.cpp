@@ -83,8 +83,8 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiSpawnerComponent::m_sliceAsset, QT_TRANSLATE_NOOP("LyShine", "Dynamic slice"), QT_TRANSLATE_NOOP("LyShine", "The slice to spawn"));
-            editInfo->DataElement(0, &UiSpawnerComponent::m_spawnOnActivate, QT_TRANSLATE_NOOP("LyShine", "Spawn on activate"),
+            editInfo->DataElement(nullptr, &UiSpawnerComponent::m_sliceAsset, QT_TRANSLATE_NOOP("LyShine", "Dynamic slice"), QT_TRANSLATE_NOOP("LyShine", "The slice to spawn"));
+            editInfo->DataElement(nullptr, &UiSpawnerComponent::m_spawnOnActivate, QT_TRANSLATE_NOOP("LyShine", "Spawn on activate"),
                 QT_TRANSLATE_NOOP("LyShine", "Should the component spawn the selected slice upon activation?"));
         }
     }

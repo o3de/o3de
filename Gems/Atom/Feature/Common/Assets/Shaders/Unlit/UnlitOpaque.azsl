@@ -23,14 +23,6 @@ OpaqueOutput MainPS(VertexShaderOutput IN)
 {
     OpaqueOutput OUT;
 
-    float3 baseColor = UnlitColorSrg::m_unlitColor;
-    float4 sampledBaseColor = SampleBaseColorTexture(IN);
-
-    if (o_baseColor_useTexture)
-    {
-        baseColor *= sampledBaseColor.rgb;
-    }
-
-    OUT.m_color = float4(baseColor, 1.0);
+    OUT.m_color = float4(EvaluateBaseColor(IN).rgb, 1.0);
     return OUT;
 }

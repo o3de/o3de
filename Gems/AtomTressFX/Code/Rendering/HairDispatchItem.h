@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/DispatchItem.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {

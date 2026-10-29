@@ -1,0 +1,6 @@
+enum EStuff{};
+
+int EStuff::Method() { return 2; }
+
+// Semantic Error 2: line 3::0 'Only class and SRG may have deported method definitions'
+// #EC 2

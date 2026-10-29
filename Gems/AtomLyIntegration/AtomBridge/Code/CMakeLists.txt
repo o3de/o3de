@@ -23,7 +23,6 @@ ly_add_target(
             ENABLE_ATOM_DEBUG_DISPLAY=1
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AtomCore
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Bootstrap.Headers

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
@@ -15,7 +16,6 @@
 #include <Atom/RHI/XRRenderingInterface.h>
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <AtomCore/Instance/Instance.h>
 
 namespace AZ::RHI
 {

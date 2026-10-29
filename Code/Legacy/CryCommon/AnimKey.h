@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ANIMKEY_H
-#define CRYINCLUDE_CRYCOMMON_ANIMKEY_H
 #pragma once
 
 #include <IConsole.h> // <> required for Interfuscator
@@ -398,12 +395,12 @@ struct ICaptureKey
         , once(false)
     {
         ICVar* pCaptureFolderCVar = gEnv->pConsole->GetCVar("capture_folder");
-        if (pCaptureFolderCVar != NULL  && pCaptureFolderCVar->GetString())
+        if (pCaptureFolderCVar != nullptr  && pCaptureFolderCVar->GetString())
         {
             folder = pCaptureFolderCVar->GetString();
         }
         ICVar* pCaptureFilePrefixCVar = gEnv->pConsole->GetCVar("capture_file_prefix");
-        if (pCaptureFilePrefixCVar != NULL  && pCaptureFilePrefixCVar->GetString())
+        if (pCaptureFilePrefixCVar != nullptr  && pCaptureFilePrefixCVar->GetString())
         {
             prefix = pCaptureFilePrefixCVar->GetString();
         }
@@ -555,4 +552,3 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(ITimeRangeKey, "{17807C95-C7A1-481B-AD94-C54D83928D0B}");
     AZ_TYPE_INFO_SPECIALIZE(IStringKey, "{A35D94C2-776B-4BA7-BBBC-1A1FD4402023}");
 }
-#endif // CRYINCLUDE_CRYCOMMON_ANIMKEY_H

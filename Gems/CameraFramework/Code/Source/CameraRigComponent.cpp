@@ -137,15 +137,15 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/CameraRig.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera-rig/")
-                    ->DataElement(0, &CameraRigComponent::m_targetAcquirers,
+                    ->DataElement(nullptr, &CameraRigComponent::m_targetAcquirers,
                         QT_TRANSLATE_NOOP("CameraFramework", "Target acquirers"),
                         QT_TRANSLATE_NOOP("CameraFramework", "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &CameraRigComponent::m_lookAtBehaviors,
+                    ->DataElement(nullptr, &CameraRigComponent::m_lookAtBehaviors,
                         QT_TRANSLATE_NOOP("CameraFramework", "Look-at behaviors"),
                         QT_TRANSLATE_NOOP("CameraFramework", "A list of look-at behaviors.  They are run in order, each having the chance to sequentially modify the look-at target transform"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &CameraRigComponent::m_transformBehaviors,
+                    ->DataElement(nullptr, &CameraRigComponent::m_transformBehaviors,
                         QT_TRANSLATE_NOOP("CameraFramework", "Transform behaviors"),
                         QT_TRANSLATE_NOOP("CameraFramework", "A list of behaviors that run in order, each having the chance to sequentially modify the camera's transform based on the look-at transform"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);

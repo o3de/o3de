@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-//! All possible property types.
-#ifndef CRYINCLUDE_EDITOR_UTIL_PROPERTYDEFINITION_H
-#define CRYINCLUDE_EDITOR_UTIL_PROPERTYDEFINITION_H
+
 #pragma once
+
+//! All possible property types.
 
 #include "Include/EditorCoreAPI.h"
 #include "Variable.h"
@@ -86,5 +86,3 @@ namespace Prop
 
     EDITOR_CORE_API const char* GetPropertyTypeToResourceType(PropertyType type);
 }
-
-#endif // CRYINCLUDE_EDITOR_UTIL_PROPERTYDEFINITION_H

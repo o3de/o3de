@@ -159,13 +159,13 @@ namespace AzFramework
         }
 
         // Create the child process.
-        result = CreateProcessW(processExecutableString.size() ? processExecutableString.c_str() : NULL,
-                editableCommandLine.size() ? editableCommandLine.data() : NULL, // command line
-                NULL,  // process security attributes
-                NULL,  // primary thread security attributes
+        result = CreateProcessW(processExecutableString.size() ? processExecutableString.c_str() : nullptr,
+                editableCommandLine.size() ? editableCommandLine.data() : nullptr, // command line
+                nullptr,  // process security attributes
+                nullptr,  // primary thread security attributes
                 processData.inheritHandles,// handles might be inherited
                 createFlags,     // creation flags
-                environmentVariableBlock.size() ? environmentVariableBlock.data() : NULL, // environmentVariableBlock is a proper double null terminated block constructed above
+                environmentVariableBlock.size() ? environmentVariableBlock.data() : nullptr, // environmentVariableBlock is a proper double null terminated block constructed above
                 workingDirectory.empty() ? nullptr : workingDirectory.c_str(),  // use parent's current directory
                 &processData.startupInfo, // STARTUPINFO pointer
                 &processData.processInformation); // receives PROCESS_INFORMATION

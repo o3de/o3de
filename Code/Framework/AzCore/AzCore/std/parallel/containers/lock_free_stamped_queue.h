@@ -93,7 +93,7 @@ namespace AZStd
 
         node_type* sentinel = create_node();
         stamped_node_ptr nullStamp;
-        nullStamp.m_node = NULL;
+        nullStamp.m_node = nullptr;
         nullStamp.m_stamp = 0;
         sentinel->m_next.store(nullStamp, memory_order_release);
         stamped_node_ptr nodeStamp;
@@ -121,7 +121,7 @@ namespace AZStd
     inline void lock_free_stamped_queue<T, Allocator>::push(const T& value)
     {
         stamped_node_ptr nullStamp;
-        nullStamp.m_node = NULL;
+        nullStamp.m_node = nullptr;
         nullStamp.m_stamp = 0;
         stamped_node_ptr newNodeStamp;
         newNodeStamp.m_node = create_node();
@@ -137,7 +137,7 @@ namespace AZStd
             stamped_node_ptr lastStampCheck = m_tail.load(memory_order_acquire);
             if ((lastStamp.m_node == lastStampCheck.m_node) && (lastStamp.m_stamp == lastStampCheck.m_stamp))
             {
-                if (next == NULL)
+                if (next == nullptr)
                 {
                     newNodeStamp.m_stamp = nextStamp.m_stamp + 1;
                     if (last->m_next.compare_exchange_weak(nextStamp, newNodeStamp, memory_order_acq_rel, memory_order_acquire))
@@ -174,7 +174,7 @@ namespace AZStd
             {
                 if (first == last)
                 {
-                    if (next == NULL)
+                    if (next == nullptr)
                     {
                         return false;
                     }
@@ -199,7 +199,7 @@ namespace AZStd
     template<typename T, typename Allocator>
     inline bool lock_free_stamped_queue<T, Allocator>::empty() const
     {
-        return (m_head.load(memory_order_acquire).m_node->m_next.load(memory_order_acquire).m_node == NULL);
+        return (m_head.load(memory_order_acquire).m_node->m_next.load(memory_order_acquire).m_node == nullptr);
     }
 
     template<typename T, typename Allocator>

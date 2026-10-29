@@ -20,7 +20,7 @@
 #include "System.h"
 #include <AzCore/IO/FileIO.h>
 
-IConsole* CConsoleBatchFile::m_pConsole = NULL;
+IConsole* CConsoleBatchFile::m_pConsole = nullptr;
 
 void CConsoleBatchFile::Init()
 {

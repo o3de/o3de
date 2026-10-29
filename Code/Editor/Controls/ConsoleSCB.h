@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
-#define CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
 #pragma once
-
 
 #include "Settings.h"
 #include "IConsole.h"
@@ -190,6 +186,3 @@ private:
     QMenu* m_optionsMenu;
     QAction* m_clearOnPlayAction;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
-

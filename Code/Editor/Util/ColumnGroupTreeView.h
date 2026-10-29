@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPTREEVIEW_H
-#define COLUMNGROUPTREEVIEW_H
+
+#pragma once
 
 #include <QTreeView>
 #include <QPainter>
@@ -20,7 +20,7 @@ class ColumnGroupTreeView
     Q_OBJECT
 
 public:
-    ColumnGroupTreeView(QWidget* parent = 0);
+    ColumnGroupTreeView(QWidget* parent = nullptr);
 
     void setModel(QAbstractItemModel* model) override;
 
@@ -70,5 +70,3 @@ private:
     ColumnGroupProxyModel* m_groupModel;
     QSet<QString> m_openNodes;
 };
-
-#endif // COLUMNGROUPTREEVIEW_H

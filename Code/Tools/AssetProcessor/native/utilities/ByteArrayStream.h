@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETBUILDER_BYTEARRAYSTREAM
-#define ASSETBUILDER_BYTEARRAYSTREAM
+
+#pragma once
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
@@ -80,7 +80,3 @@ namespace AssetProcessor
         return AZ::Utils::LoadObjectFromStreamInPlace(byteStream, message, nullptr, filterToUse);
     }
 }
-
-
-
-#endif // ASSETBUILDER_BYTEARRAYSTREAM

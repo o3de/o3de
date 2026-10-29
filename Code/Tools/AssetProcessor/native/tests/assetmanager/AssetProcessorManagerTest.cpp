@@ -44,7 +44,7 @@ bool AssetProcessorManager_Test::CheckJobKeyToJobRunKeyMap(AZStd::string jobKey)
 
 AssetProcessorManagerTest::AssetProcessorManagerTest()
     : m_argc(0)
-    , m_argv(0)
+    , m_argv(nullptr)
 {
 
     m_qApp.reset(new QCoreApplication(m_argc, m_argv));

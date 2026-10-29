@@ -129,7 +129,7 @@ namespace UnitTest
             // We need to process all events, since AssetProcessorServer is also on the same thread
             while (numberOfConnection.load() && !failureOccurred)
             {
-                QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
                 QCoreApplication::processEvents();
             }
 
@@ -212,7 +212,7 @@ namespace UnitTest
         const int testTimeoutMS = 120 * 1000;
         while (time.elapsed() < testTimeoutMS && !m_eventWasPosted)
         {
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
             QCoreApplication::processEvents();
         }
         EXPECT_TRUE(m_eventWasPosted);

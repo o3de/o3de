@@ -32,11 +32,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AtomCore
+            AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Bootstrap.Headers
             Gem::Atom_Feature_Common.Public
-            Legacy::CryCommon
 )
 
 ly_add_target(
@@ -85,11 +85,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AtomCore
+                AZ::AzCore
+                AZ::AzFramework
                 Gem::Atom_RPI.Public
                 Gem::Atom_Bootstrap.Headers
                 Gem::Atom_Feature_Common.Public
-                Legacy::CryCommon
                 AZ::AzToolsFramework
     )
 

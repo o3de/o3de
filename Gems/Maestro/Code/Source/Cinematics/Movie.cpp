@@ -254,6 +254,11 @@ CMovieSystem::~CMovieSystem()
         AZ::Interface<IMovieSystem>::Unregister(this);
     }
 
+    // The node parameter tables are statics. Release them here, while the
+    // allocator they use is alive: left to the exit handlers, a monolithic
+    // build frees them after the SystemAllocator and aborts with
+    // "pure virtual method called".
+    DoNodeStaticShutdown();
 }
 
 void CMovieSystem::DoNodeStaticInitialisation()
@@ -263,6 +268,16 @@ void CMovieSystem::DoNodeStaticInitialisation()
     Maestro::CAnimScreenFaderNode::Initialize();
     Maestro::CCommentNode::Initialize();
     Maestro::CLayerNode::Initialize();
+}
+
+void CMovieSystem::DoNodeStaticShutdown()
+{
+    Maestro::CAnimPostFXNode::Shutdown();
+    Maestro::CAnimSceneNode::Shutdown();
+    Maestro::CAnimScreenFaderNode::Shutdown();
+    Maestro::CCommentNode::Shutdown();
+    Maestro::CLayerNode::Shutdown();
+    Maestro::CShadowsSetupNode::Shutdown();
 }
 
 IAnimSequence* CMovieSystem::CreateSequence(const char* sequenceName, bool load, uint32 id, SequenceType sequenceType, AZ::EntityId entityId)
@@ -696,7 +711,7 @@ void CMovieSystem::NotifyListeners(IAnimSequence* sequence, IMovieListener::EMov
     // 'NULL' ones are listeners interested in every sequence. Do not send "update" here
     if (event != IMovieListener::eMovieEvent_Updated)
     {
-        TMovieListenerMap::iterator found2 (m_movieListenerMap.find((IAnimSequence*)0));
+        TMovieListenerMap::iterator found2 (m_movieListenerMap.find((IAnimSequence*)nullptr));
         if (found2 != m_movieListenerMap.end())
         {
             TMovieListenerVec listForSeq = (*found2).second;

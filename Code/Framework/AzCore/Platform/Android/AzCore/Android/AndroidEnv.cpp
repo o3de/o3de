@@ -90,7 +90,7 @@ namespace AZ
                 if (status == JNI_EDETACHED)
                 {
                     AZ_TracePrintf("AndroidEnv", "JNI Env not attached to the VM");
-                    if (m_jvm->AttachCurrentThread(&jniEnv, NULL) != JNI_OK)
+                    if (m_jvm->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK)
                     {
                         AZ_Assert(false, "Failed to attach tread to the JVM");
                         return nullptr;

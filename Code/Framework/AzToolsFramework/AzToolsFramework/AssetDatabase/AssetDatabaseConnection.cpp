@@ -3233,7 +3233,10 @@ namespace AzToolsFramework
                 ProductDatabaseEntry product;
                 AZStd::string savedJobKey;
                 AZ::Uuid savedBuilderGuid;
-                int savedJobStatus;
+                // Unfiltered product queries do not select Jobs.Status. Keep the value initialized:
+                // passing an indeterminate int to ResultMatchesJobCriteria is undefined even when
+                // that function would ignore it for JobStatus::Any.
+                int savedJobStatus = static_cast<int>(AssetSystem::JobStatus::Any);
 
                 auto productColumns = product.GetColumns();
                 auto jobKeyColumn = MakeColumn("JobKey", savedJobKey);

@@ -6,14 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : A dialog for getting an aspect ratio info from users
 // Notice      : Refer to ViewportTitleDlg cpp for a use case
 
-
-#ifndef CRYINCLUDE_EDITOR_CUSTOMASPECTRATIODLG_H
-#define CRYINCLUDE_EDITOR_CUSTOMASPECTRATIODLG_H
-#pragma once
 
 #include <QDialog>
 
@@ -40,5 +37,3 @@ protected:
 
     QScopedPointer<Ui::CustomAspectRatioDlg> m_ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_CUSTOMASPECTRATIODLG_H

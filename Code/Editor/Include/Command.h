@@ -125,7 +125,7 @@ protected:
     template <typename T>
     static bool FromString_(T& t, const char* s) { return FromString(t, s); }
     static inline bool FromString_(const char*& val, const char* s)
-    { return (val = s) != 0; }
+    { return (val = s) != nullptr; }
 
     void PrintHelp()
     {

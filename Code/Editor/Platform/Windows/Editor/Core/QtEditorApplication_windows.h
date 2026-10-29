@@ -8,21 +8,35 @@
 
 #pragma once
 
+#include <AzFramework/Input/Buses/Notifications/InputDeviceNotificationBus.h>
+
 #include <Editor/Core/QtEditorApplication.h>
 
 namespace Editor
 {
-    class EditorQtApplicationWindows : public EditorQtApplication
+    class EditorQtApplicationWindows
+    : public EditorQtApplication
+    , private AzFramework::InputDeviceNotificationBus::Handler
     {
     public:
         EditorQtApplicationWindows(int& argc, char** argv)
             : EditorQtApplication(argc, argv)
         {
+            AzFramework::InputDeviceNotificationBus::Handler::BusConnect();
+        }
+
+        ~EditorQtApplicationWindows() override
+        {
+            AzFramework::InputDeviceNotificationBus::Handler::BusDisconnect();
         }
 
         // QAbstractNativeEventFilter:
         bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
 
         bool eventFilter(QObject* object, QEvent* event) override;
+
+    private:
+        void OnInputDeviceConnectedEvent(const AzFramework::InputDevice& inputDevice) override;
+        void OnInputDeviceDisconnectedEvent(const AzFramework::InputDevice& inputDevice) override;
     };
 } // namespace Editor

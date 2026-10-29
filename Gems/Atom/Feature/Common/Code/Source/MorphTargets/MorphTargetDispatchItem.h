@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ConstantsData.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {

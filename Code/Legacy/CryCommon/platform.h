@@ -183,8 +183,8 @@
 #endif
 
 // Indicates potentially dangerous cast on 64bit machines
-typedef UINT_PTR TRUNCATE_PTR;
-typedef UINT_PTR EXPAND_PTR;
+typedef uintptr_t TRUNCATE_PTR;
+typedef uintptr_t EXPAND_PTR;
 
 // Use static branch prediction to improve the generated assembly when possible.
 // This feature has an indirect effect on runtime performance, as it ensures assembly code
@@ -233,8 +233,15 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 // Platform dependent functions that emulate Win32 API.
 // Mostly used only for debugging!
 //////////////////////////////////////////////////////////////////////////
-void   CrySleep(unsigned int dwMilliseconds);
-void   CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
+void CrySleep(unsigned int dwMilliseconds);
+
+enum class EShowMessageType
+{
+    Info,
+    Warning,
+    Error
+};
+void CryMessageBox(const char* lpText, const char* lpCaption, EShowMessageType eType);
 
 //---------------------------------------------------------------------------
 // Useful function to clean the structure.
@@ -321,7 +328,6 @@ void SetFlags(T& dest, U flags, bool b)
 
 // Wrapper code for non-windows builds.
 #if defined(LINUX) || defined(APPLE)
-    #include "Linux_Win32Wrapper.h"
 #elif defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_12
     #include AZ_RESTRICTED_FILE(platform_h)

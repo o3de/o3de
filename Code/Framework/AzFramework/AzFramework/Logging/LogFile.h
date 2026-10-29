@@ -43,7 +43,7 @@ namespace AzFramework
 
         void AppendLog(SeverityLevel severity, const char* category, const char* datasource);
         void AppendLog(SeverityLevel severity, const char* dataSource);
-        void AppendLog(SeverityLevel severity, const char* dataSource, int dataLength, const char* category = NULL, int categoryLen = 0, uintptr_t threadId = 0, AZ::u64 time = 0);
+        void AppendLog(SeverityLevel severity, const char* dataSource, int dataLength, const char* category = nullptr, int categoryLen = 0, uintptr_t threadId = 0, AZ::u64 time = 0);
 
         //! Only call FlushLog in cases of emergencies such as access violation termination.  Do not call it after appending.
         void FlushLog();

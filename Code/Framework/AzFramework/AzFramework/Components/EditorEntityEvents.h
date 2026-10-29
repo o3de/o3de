@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef AZFRAMEWORK_EDITORENTITYEVENTS_H
-#define AZFRAMEWORK_EDITORENTITYEVENTS_H
+#pragma once
 
 #include <AzCore/Math/Transform.h>
 
@@ -44,5 +43,3 @@ namespace AzFramework
         virtual void EditorSetPrimaryAsset(const AZ::Data::AssetId& /*assetId*/) {}
     };
 } // namespace AzFramework
-
-#endif // AZFRAMEWORK_EDITORENTITYEVENTS_H

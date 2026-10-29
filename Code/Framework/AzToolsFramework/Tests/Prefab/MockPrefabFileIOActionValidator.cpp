@@ -79,13 +79,13 @@ namespace UnitTest
                     testing::Return(AZ::IO::Result(expectedSizeResultCode))));
 
         EXPECT_CALL(*m_fileIOMock.get(), Read(fileHandle, testing::_, prefabFileContent.size(), testing::_, testing::_))
-            .WillRepeatedly(testing::Invoke([prefabFileContent, expectedReadResultCode](AZ::IO::HandleType, void* buffer, AZ::u64, bool, AZ::u64* bytesRead)
+            .WillRepeatedly([prefabFileContent, expectedReadResultCode](AZ::IO::HandleType, void* buffer, AZ::u64, bool, AZ::u64* bytesRead)
                 {
                     memcpy(buffer, prefabFileContent.data(), prefabFileContent.size());
                     *bytesRead = prefabFileContent.size();
 
                     return AZ::IO::Result(expectedReadResultCode);
-                }));
+                });
 
         EXPECT_CALL(*m_fileIOMock.get(), Close(fileHandle))
             .WillRepeatedly(testing::Return(AZ::IO::Result(expectedCloseResultCode)));

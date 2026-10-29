@@ -12,9 +12,14 @@
 
 namespace EditorPythonBindings
 {
-    // s_libPythonLibraryFile must match the library name listed in (O3DE Engine Root)/python/runtime/.../python-config.cmake
-    // in the set(${MY}_LIBRARY_xxxx sections.
-    const char* s_libPythonLibraryFile = "libpython3.10.so.1.0"; 
+    // The python shared library to preload so that python extension modules
+    // resolve the interpreter's symbols. The name is provided by the build
+    // from the LY_PYTHON_SHARED_LIB cmake variable, so it always matches the
+    // python the engine is configured against.
+#if !defined(O3DE_PYTHON_SHARED_LIBRARY_NAME)
+    #error O3DE_PYTHON_SHARED_LIBRARY_NAME must be defined; it is wired from LY_PYTHON_SHARED_LIB in the gem CMakeLists.txt
+#endif
+    const char* s_libPythonLibraryFile = O3DE_PYTHON_SHARED_LIBRARY_NAME;
 
     class InitializePython
     {

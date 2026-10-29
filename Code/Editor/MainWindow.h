@@ -113,6 +113,7 @@ public:
 
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
+    void OpenAssetImporter();
 
     void SetActiveView(CLayoutViewPane* vp);
 

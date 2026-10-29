@@ -449,7 +449,7 @@ protected:
     friend class CViewManager;
     bool IsVectorInValidRange(const Vec3& v) const { return fabs(v.x) < 1e+8 && fabs(v.y) < 1e+8 && fabs(v.z) < 1e+8; }
     void AssignConstructionPlane(const Vec3& p1, const Vec3& p2, const Vec3& p3);
-    HWND renderOverlayHWND() const;
+    void* renderOverlayHWND() const;
     void setRenderOverlayVisible(bool);
     bool isRenderOverlayVisible() const;
 
@@ -474,8 +474,8 @@ protected:
     virtual void OnMButtonUp(Qt::KeyboardModifiers, const QPoint&) {}
     virtual void OnLButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
     virtual void OnRButtonDblClk(Qt::KeyboardModifiers, const QPoint&) {}
-    virtual void OnKeyDown([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
-    virtual void OnKeyUp([[maybe_unused]] UINT nChar, [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {}
+    virtual void OnKeyDown([[maybe_unused]] unsigned int nChar, [[maybe_unused]] unsigned int nRepCnt, [[maybe_unused]] unsigned int nFlags) {}
+    virtual void OnKeyUp([[maybe_unused]] unsigned int nChar, [[maybe_unused]] unsigned int nRepCnt, [[maybe_unused]] unsigned int nFlags) {}
     void OnSetCursor();
 
     virtual void BuildDragDropContext(

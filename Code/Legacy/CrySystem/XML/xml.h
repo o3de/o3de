@@ -74,7 +74,7 @@ private:
 };
 
 // Compare function for string comparasion, can be strcmp or _stricmp
-typedef int (__cdecl * XmlStrCmpFunc)(const char* str1, const char* str2);
+typedef int (AZ_CDECL * XmlStrCmpFunc)(const char* str1, const char* str2);
 extern XmlStrCmpFunc g_pXmlStrCmp;
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ public:
     bool getAttr(const char* key, bool& value) const override;
 
     bool getAttr(const char* key, XmlString& value) const override
-    {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
+    {const char*    v(nullptr); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
 
     bool getAttr(const char* key, Vec2& value) const override;
     bool getAttr(const char* key, Ang3& value) const override;
@@ -288,7 +288,7 @@ private:
                 return it->value;
             }
         }
-        return 0;
+        return nullptr;
     }
 
 protected:

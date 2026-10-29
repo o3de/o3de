@@ -15,15 +15,15 @@ namespace AZStd
 {
     inline semaphore::semaphore(unsigned int initialCount, unsigned int maximumCount)
     {
-        m_semaphore = CreateSemaphoreW(NULL, initialCount, maximumCount, 0);
-        AZ_Assert(m_semaphore != NULL, "CreateSemaphore error: %d\n", GetLastError());
+        m_semaphore = CreateSemaphoreW(nullptr, initialCount, maximumCount, nullptr);
+        AZ_Assert(m_semaphore != nullptr, "CreateSemaphore error: %d\n", GetLastError());
     }
 
     inline semaphore::semaphore(const char* name, unsigned int initialCount, unsigned int maximumCount)
     {
         (void)name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
-        m_semaphore = CreateSemaphoreW(NULL, initialCount, maximumCount, 0);
-        AZ_Assert(m_semaphore != NULL, "CreateSemaphore error: %d\n", GetLastError());
+        m_semaphore = CreateSemaphoreW(nullptr, initialCount, maximumCount, nullptr);
+        AZ_Assert(m_semaphore != nullptr, "CreateSemaphore error: %d\n", GetLastError());
     }
 
     inline semaphore::~semaphore()
@@ -61,7 +61,7 @@ namespace AZStd
 
     inline void semaphore::release(unsigned int releaseCount)
     {
-        ReleaseSemaphore(m_semaphore, releaseCount, NULL);
+        ReleaseSemaphore(m_semaphore, releaseCount, nullptr);
     }
 
     inline semaphore::native_handle_type semaphore::native_handle()

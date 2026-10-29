@@ -63,7 +63,7 @@ namespace AtomToolsFramework
             const AZ::Crc32& toolId,
             const GraphCanvas::GraphId& activeGraphId,
             GraphViewSettingsPtr graphViewSettingsPtr,
-            QWidget* parent = 0);
+            QWidget* parent = nullptr);
         ~GraphView();
 
         // Assign the graph ID that will be rendered and edited within the view. Any connected buses will be disconnected from the old ID

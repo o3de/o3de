@@ -1,0 +1,8 @@
+class C
+{
+    void M();
+};
+
+void C::M()
+{
+}

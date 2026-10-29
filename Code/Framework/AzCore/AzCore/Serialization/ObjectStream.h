@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_OBJECT_STREAM_H
-#define AZCORE_OBJECT_STREAM_H
+
+#pragma once
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -102,7 +102,7 @@ namespace AZ
 
         public:
             Handle()
-                : m_job(NULL) {}
+                : m_job(nullptr) {}
             Handle(ObjectStream* job)
                 : m_job(job) {}
 
@@ -214,7 +214,7 @@ namespace AZ
         // Call SaveClass with the potential pointer to derived class fully resolved.
         const void* classPtr = SerializeTypeInfo<T>::RttiCast(obj, SerializeTypeInfo<T>::GetRttiTypeId(obj));
         const Uuid& classId = SerializeTypeInfo<T>::GetUuid(obj);
-        const SerializeContext::ClassData* classData = m_sc->FindClassData(classId, NULL, 0);
+        const SerializeContext::ClassData* classData = m_sc->FindClassData(classId, nullptr, 0);
         if (!classData)
         {
             GenericClassInfo* genericClassInfo = SerializeGenericTypeInfo<T>::GetGenericInfo();
@@ -255,6 +255,3 @@ namespace AZ
     }
 
 } // namespace AZ
-
-#endif  // AZCORE_OBJECT_STREAM_H
-#pragma once

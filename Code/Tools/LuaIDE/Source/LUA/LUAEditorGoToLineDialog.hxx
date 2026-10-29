@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef LUAEDITOR_GOTOLINE_H
-#define LUAEDITOR_GOTOLINE_H
 #pragma once
 
 #include <AzCore/base.h>
@@ -49,5 +47,3 @@ namespace LUAEditor
     };
 
 }
-
-#endif //LUAEDITOR_FINDDIALOG_H

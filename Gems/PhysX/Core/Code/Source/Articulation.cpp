@@ -15,6 +15,7 @@
 #include <PhysX/MathConversion.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <extensions/PxRigidBodyExt.h>
 
 namespace PhysX
 {
@@ -58,6 +59,32 @@ namespace PhysX
         m_pxLink->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, configuration.m_gravityEnabled == false);
 
         AddCollisionShape(thisLinkData);
+
+        // Compute or set inertia tensor from attached shapes.
+        // Note: setMass() alone does NOT update the inertia tensor (PxShape.h:193),
+        // so we must explicitly compute it after shapes are attached.
+        // No scene lock needed: SetupFromLinkData runs during construction (before scene).
+        if (configuration.m_computeInertiaTensor)
+        {
+            if(configuration.m_mass <= 0.0f)
+            {   
+                // Inertia Use the default value, do not set it.
+                AZ_Warning("ArticulationLink::SetupFromLinkData",
+                           false, 
+                           "When calculating inertia, MASS=%f must be Greater Than zero.", configuration.m_mass);
+            }
+            else if (!m_physicsShapes.empty())
+            {
+                physx::PxVec3 pxCenterOfMass = PxMathConvert(configuration.m_centerOfMassOffset);
+                physx::PxRigidBodyExt::setMassAndUpdateInertia(
+                    *m_pxLink, configuration.m_mass, &pxCenterOfMass, false);
+            }
+        }
+        else
+        {
+            m_pxLink->setMassSpaceInertiaTensor(
+                PxMathConvert(configuration.m_inertiaTensor.RetrieveScale()));
+        }
     }
 
     void ArticulationLink::AddCollisionShape(const ArticulationLinkData& thisLinkData)
@@ -179,6 +206,26 @@ namespace PhysX
             return PxMathConvert(m_pxLink->getWorldBounds(1.0f));
         }
         return AZ::Aabb::CreateNull();
+    }
+
+    AZ::Vector3 ArticulationLink::GetLinearVelocity() const
+    {
+        if (m_pxLink)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxLink->getScene());
+            return PxMathConvert(m_pxLink->getLinearVelocity());
+        }
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector3 ArticulationLink::GetAngularVelocity() const
+    {
+        if (m_pxLink)
+        {
+            PHYSX_SCENE_READ_LOCK(m_pxLink->getScene());
+            return PxMathConvert(m_pxLink->getAngularVelocity());
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     ArticulationLink* CreateArticulationLink([[maybe_unused]] const ArticulationLinkConfiguration* articulationConfig)

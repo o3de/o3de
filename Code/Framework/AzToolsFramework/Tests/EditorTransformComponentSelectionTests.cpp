@@ -367,14 +367,15 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
-        // note: entity1 is created in the fixture setup
-        AzToolsFramework::SelectEntity(m_entityId1);
-
+        // Note that creating entities currently selects them for convenience.  We may have to change that.
         AZ::EntityId entity2 = CreateDefaultEditorEntity("Entity2");
         AZ::EntityId entity3 = CreateDefaultEditorEntity("Entity3");
         AZ::EntityId entity4 = CreateDefaultEditorEntity("Entity4");
         AZ::EntityId entity5 = CreateDefaultEditorEntity("Entity5");
         AZ::EntityId entity6 = CreateDefaultEditorEntity("Entity6");
+
+        // note: entity1 is created in the fixture setup
+        AzToolsFramework::SelectEntity(m_entityId1);
 
         AzToolsFramework::SetEntityVisibility(entity2, false);
         AzToolsFramework::SetEntityLockState(entity3, true);
@@ -389,7 +390,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
-        const AzToolsFramework::EntityIdList expectedSelectedEntities = { entity4, entity5, entity6 };
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { GetRootInstanceEntityId(), entity4, entity5, entity6 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -419,7 +420,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
-        const AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId1, entity2, entity3, entity4 };
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { GetRootInstanceEntityId(), m_entityId1, entity2, entity3, entity4 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }

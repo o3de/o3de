@@ -16,7 +16,6 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AtomCore
             AZ::AzCore
             Gem::ImGui.Static
             Gem::Atom_Feature_Common.Public

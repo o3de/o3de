@@ -135,7 +135,7 @@ namespace Maestro
                 }
             }
         }
-        return 0;
+        return nullptr;
     }
 
     IAnimTrack* CAnimNode::GetTrackForParameter(const CAnimParamType& paramType, uint32 index) const
@@ -158,7 +158,7 @@ namespace Maestro
 
             // For this case, no subtracks are considered.
         }
-        return 0;
+        return nullptr;
     }
 
     uint32 CAnimNode::GetTrackParamIndex(const IAnimTrack* pTrack) const
@@ -343,7 +343,7 @@ namespace Maestro
             // Try to get info from paramType, else we can't determine the track data type
             if (!GetParamInfoFromType(paramType, info))
             {
-                return 0;
+                return nullptr;
             }
 
             valueType = info.valueType;
@@ -680,11 +680,11 @@ namespace Maestro
         , m_nodeType(nodeType)
         , m_movieSystem(AZ::Interface<IMovieSystem>::Get())
     {
-        m_pOwner = 0;
-        m_pSequence = 0;
+        m_pOwner = nullptr;
+        m_pSequence = nullptr;
         m_flags = 0;
         m_bIgnoreSetParam = false;
-        m_pParentNode = 0;
+        m_pParentNode = nullptr;
         m_nLoadedParentNodeId = 0;
         m_expanded = true;
 

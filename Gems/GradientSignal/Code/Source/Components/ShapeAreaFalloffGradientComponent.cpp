@@ -37,12 +37,12 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Entity with shape component to test distance against."))
+                    ->DataElement(nullptr, &ShapeAreaFalloffGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Entity with shape component to test distance against."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ShapeAreaFalloffGradientConfig::m_falloffWidth, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Width"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum distance used to calculate gradient in meters."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_falloffType, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Type"), QT_TRANSLATE_NOOP("GradientSignal", "Function for calculating falloff"))
+                    ->DataElement(nullptr, &ShapeAreaFalloffGradientConfig::m_falloffType, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Type"), QT_TRANSLATE_NOOP("GradientSignal", "Function for calculating falloff"))
 
                     // Inner falloff isn't supported yet.
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)

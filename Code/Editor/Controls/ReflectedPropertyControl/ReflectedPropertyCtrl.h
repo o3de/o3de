@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYCTRL_H
-#define CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYCTRL_H
 #pragma once
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -358,5 +356,3 @@ private:
     AzToolsFramework::ComponentEditorHeader* m_header = nullptr;
     ReflectedPropertyControl* m_propertyEditor = nullptr;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTILS_REFLECTEDPROPERTYCTRL_H

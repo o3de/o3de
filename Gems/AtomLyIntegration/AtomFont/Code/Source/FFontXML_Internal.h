@@ -137,8 +137,8 @@ namespace AtomFontInternal
         : m_font(font)
         , m_nElement(ELEMENT_UNKNOWN)
         , m_slotSizes(DefaultSlotWidthSize, DefaultSlotHeightSize)
-        , m_effect(NULL)
-        , m_pass(NULL)
+        , m_effect(nullptr)
+        , m_pass(nullptr)
         , m_FontTexSize(0, 0)
         , m_FontSmoothAmount(AZ::FontSmoothAmount::None)
         , m_FontSmoothMethod(AZ::FontSmoothMethod::None)
@@ -226,7 +226,7 @@ namespace AtomFontInternal
             }
             else if (name == "pass")
             {
-                m_pass = NULL;
+                m_pass = nullptr;
                 m_nElement = ELEMENT_PASS;
                 if (m_effect)
                 {

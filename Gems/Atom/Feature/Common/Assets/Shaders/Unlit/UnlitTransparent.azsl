@@ -23,16 +23,9 @@ TransparentOutput MainPS(VertexShaderOutput IN)
 {
     TransparentOutput OUT;
 
-    float3 baseColor = UnlitColorSrg::m_unlitColor;
-    float4 sampledBaseColor = SampleBaseColorTexture(IN);
+    const float4 baseColor = EvaluateBaseColor(IN);
+    const float alpha = saturate(float(ResolveOpacityAlpha(IN, baseColor.a)) * UnlitColorSrg::m_opacityFactor);
 
-    if (o_baseColor_useTexture)
-    {
-        baseColor *= sampledBaseColor.rgb;
-    }
-
-    float alpha = saturate(float(ResolveOpacityAlpha(IN, sampledBaseColor.a)) * UnlitColorSrg::m_opacityFactor);
-
-    OUT.m_color = float4(baseColor * alpha, alpha);
+    OUT.m_color = float4(baseColor.rgb * alpha, alpha);
     return OUT;
 }

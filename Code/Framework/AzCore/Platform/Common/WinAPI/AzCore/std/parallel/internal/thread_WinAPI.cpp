@@ -56,7 +56,7 @@ namespace AZStd
             }
 
             hThread = Platform::CreateThread(stackSize, &thread_run_function, ti, id);
-            if (hThread == NULL)
+            if (hThread == nullptr)
             {
                 return hThread;
             }

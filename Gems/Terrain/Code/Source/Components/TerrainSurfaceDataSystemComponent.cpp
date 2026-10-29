@@ -65,7 +65,7 @@ namespace Terrain
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Surface Data")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &TerrainSurfaceDataSystemComponent::m_configuration,
+                    ->DataElement(nullptr, &TerrainSurfaceDataSystemComponent::m_configuration,
                         QT_TRANSLATE_NOOP("Terrain", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;

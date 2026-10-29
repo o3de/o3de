@@ -171,7 +171,7 @@ namespace GameStateSamples
             }
         }
 
-        void OnSystemEvent(ESystemEvent systemEvent, UINT_PTR wparam, UINT_PTR /*lparam*/) override
+        void OnSystemEvent(ESystemEvent systemEvent, uintptr_t wparam, uintptr_t /*lparam*/) override
         {
             // This logic is a little confusing, but we need to check for both...
 

@@ -21,8 +21,6 @@ endif()
 
 block()
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
-
     o3de_fetch_content(assimp
         VERSION "v6.0.4"
         LICENSE "Custom BSD-3-Clause"
@@ -30,7 +28,7 @@ block()
         URL_HASH "00e4bf0b9d9d8e9b346fa3dd859c3ce5f3438451822d5933c07f65a76fc04745"
         GIT "https://github.com/assimp/assimp.git"
         GIT_HASH "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"
-        PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
+        PATCH_FILES "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch"
         EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
 
@@ -48,7 +46,7 @@ block()
     # The rest of these are all specific settings that come from Assimp's CMakeLists.txt files.
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
     set(ASSIMP_BUILD_TESTS OFF)
-    set(ASSIMP_BUILD_USD_IMPORTER OFF)
+    set(ASSIMP_BUILD_USD_IMPORTER ON)
     set(ASSIMP_BUILD_USE_CCACHE OFF)
     set(ASSIMP_BUILD_ZLIB OFF)  # Don't rebuild ZLIB. O3DE's comes with its own ZLIB 3rdParty package.
     set(ASSIMP_HUNTER_ENABLED OFF)
@@ -56,6 +54,7 @@ block()
     set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
     set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # Not sure why this doesn't work. Warnings are still treated as error; needed to add warning disabled commandline parameters to PAL_assimp_<compiler>.cmake
     set(TINYUSDZ_USE_CCACHE OFF)
+    set(BUILD_SHARED_LIBS OFF)
 
     # Assimp requires ZLIB
     find_package(ZLIB REQUIRED)

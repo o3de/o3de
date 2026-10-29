@@ -729,6 +729,11 @@ namespace UnitTest
         systemEntity->Deactivate();
         systemEntity->AddComponent(m_editorWhiteBoxSystemComponentDescriptor->CreateComponent());
         systemEntity->Activate();
+
+        // Destroying the system entity actually deletes absolutely everything, nearly equivalent to
+        // restarting the application.  We have to re-initialize things destroyed by this, most notably
+        // the things related to startup in the fixture that it does after starting the app.
+        InitializeRootPrefab();
     }
 
     void EditorWhiteBoxAssetFixture::TearDownEditorFixtureImpl()

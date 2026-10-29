@@ -504,16 +504,16 @@ namespace AZ::SceneAPI::Containers
             m_componentApplication = AZStd::make_unique<::testing::NiceMock<MockSceneComponentApplication>>();
 
             ON_CALL(*m_componentApplication, GetBehaviorContext())
-                .WillByDefault(::testing::Invoke([this]()
+                .WillByDefault([this]()
                     {
                         return this->m_behaviorContext.get();
-                    }));
+                    });
 
             ON_CALL(*m_componentApplication, GetSerializeContext())
-                .WillByDefault(::testing::Invoke([this]()
+                .WillByDefault([this]()
                     {
                         return this->m_serializeContext.get();
-                    }));
+                    });
 
             m_editorPythonConsoleInterface = AZStd::make_unique<MockEditorPythonConsoleInterface>();
         }
@@ -522,7 +522,7 @@ namespace AZ::SceneAPI::Containers
         {
             EXPECT_CALL(*m_editorPythonConsoleInterface, FetchPythonTypeName(::testing::_))
                 .Times(6)
-                .WillRepeatedly(::testing::Invoke([](const AZ::BehaviorParameter&) {return "int"; }));
+                .WillRepeatedly([](const AZ::BehaviorParameter&) {return "int"; });
         }
 
         void TearDown() override
@@ -811,20 +811,20 @@ namespace AZ::SceneAPI::Containers
 
             m_componentApplication = AZStd::make_unique<::testing::NiceMock<MockSceneComponentApplication>>();
 
-            ON_CALL(*m_componentApplication, GetBehaviorContext()).WillByDefault(::testing::Invoke([this]()
+            ON_CALL(*m_componentApplication, GetBehaviorContext()).WillByDefault([this]()
                 {
                     return this->m_behaviorContext.get();
-                }));
+                });
 
-            ON_CALL(*m_componentApplication, GetSerializeContext()).WillByDefault(::testing::Invoke([this]()
+            ON_CALL(*m_componentApplication, GetSerializeContext()).WillByDefault([this]()
                 {
                     return this->m_serializeContext.get();
-                }));
+                });
 
-            ON_CALL(*m_componentApplication, GetJsonRegistrationContext()).WillByDefault(::testing::Invoke([this]()
+            ON_CALL(*m_componentApplication, GetJsonRegistrationContext()).WillByDefault([this]()
                 {
                     return this->m_jsonRegistrationContext.get();
-                }));
+                });
         }
 
         void TearDown() override

@@ -9,6 +9,8 @@
 # File to tweak compiler settings before compiler detection happens (before project() is called)
 # We dont have PAL enabled at this point, so we can only use pure-CMake variables
 
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "")
+
 # if we are in Script Only ("Quick Start") Mode, we override the compiler with a do-nothing fake one
 # doing so is slightly different on each platform, so it uses a different file each.
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")

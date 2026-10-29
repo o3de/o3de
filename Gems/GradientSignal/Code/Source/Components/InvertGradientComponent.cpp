@@ -33,7 +33,7 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &InvertGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be inverted."))
+                    ->DataElement(nullptr, &InvertGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be inverted."))
                     ;
             }
         }

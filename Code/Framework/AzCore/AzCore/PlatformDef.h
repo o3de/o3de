@@ -361,3 +361,15 @@
 #else
     #define AZ_NO_UNIQUE_ADDRESS
 #endif
+
+// Defines to support MSVC compiler-specific keywords for MSVC builds only
+#if defined(AZ_COMPILER_MSVC)
+#    define AZ_CDECL __cdecl
+#    define AZ_STDCALL __stdcall
+#    define AZ_FASTCALL __fastcall
+#else
+#    define AZ_CDECL
+#    define AZ_STDCALL
+#    define AZ_FASTCALL
+#endif
+

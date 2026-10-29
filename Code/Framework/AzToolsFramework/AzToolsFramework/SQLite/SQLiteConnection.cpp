@@ -50,7 +50,7 @@ namespace AzToolsFramework
 
 
         Connection::Connection(void)
-            : m_db(NULL)
+            : m_db(nullptr)
         {
         }
 
@@ -61,7 +61,7 @@ namespace AzToolsFramework
 
         bool Connection::IsOpen() const
         {
-            return (m_db != NULL);
+            return (m_db != nullptr);
         }
 
         bool Connection::Open(const AZStd::string& filename, bool readOnly)
@@ -69,7 +69,7 @@ namespace AzToolsFramework
             AZ_Assert(sqlite3_libversion_number() == SQLITE_VERSION_NUMBER, "Sqlite header version number does not match library");
             AZ_Assert(strncmp(sqlite3_sourceid(), SQLITE_SOURCE_ID, 80) == 0, "Sqlite header source id does not match library");
             AZ_Assert(strcmp(sqlite3_libversion(), SQLITE_VERSION) == 0, "Sqlite header version does not match library");
-            AZ_Assert(m_db == NULL, "You have to close the database prior to opening a new one.");
+            AZ_Assert(m_db == nullptr, "You have to close the database prior to opening a new one.");
             if (m_db)
             {
                 return false;
@@ -91,16 +91,16 @@ namespace AzToolsFramework
                 return false;
             }
 
-            sqlite3_exec(m_db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
             //WAL journal mode enabled for better concurrency with external asset browser.
             //Reads do not block writes
-            sqlite3_exec(m_db, "PRAGMA journal_mode = wal;", NULL, NULL, NULL);  // we'll journal using WAL strategy
-            sqlite3_exec(m_db, "PRAGMA cache_size = 160000;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "PRAGMA journal_mode = wal;", nullptr, nullptr, nullptr);  // we'll journal using WAL strategy
+            sqlite3_exec(m_db, "PRAGMA cache_size = 160000;", nullptr, nullptr, nullptr);
 
             // turn sync off - you will lose data on power loss but all the data can be rebuilt from cache anyway.
             // you still don't lose data if the application crashes, only if you literally lose power while the disk is writing.
             // and because you're in WAL mode, you only lose the current transaction anyway.
-            sqlite3_exec(m_db, "PRAGMA synchronous = 0;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "PRAGMA synchronous = 0;", nullptr, nullptr, nullptr);
             return      (res == SQLITE_OK);
         }
 
@@ -110,7 +110,7 @@ namespace AzToolsFramework
             {
                 FinalizeAll();
                 sqlite3_close(m_db);
-                m_db = NULL;
+                m_db = nullptr;
             }
         }
 
@@ -221,7 +221,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            sqlite3_exec(m_db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
         }
 
         void Connection::CommitTransaction()
@@ -231,7 +231,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            sqlite3_exec(m_db, "COMMIT TRANSACTION;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "COMMIT TRANSACTION;", nullptr, nullptr, nullptr);
         }
 
         void Connection::RollbackTransaction()
@@ -241,7 +241,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            sqlite3_exec(m_db, "ROLLBACK;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "ROLLBACK;", nullptr, nullptr, nullptr);
         }
 
         void Connection::Vacuum()
@@ -251,7 +251,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            sqlite3_exec(m_db, "VACUUM;", NULL, NULL, NULL);
+            sqlite3_exec(m_db, "VACUUM;", nullptr, nullptr, nullptr);
         }
 
         AZ::s64 Connection::GetLastRowID()
@@ -466,7 +466,7 @@ namespace AzToolsFramework
 
 
         Statement::Statement(StatementPrototype* parent)
-            : m_statement(NULL)
+            : m_statement(nullptr)
             , m_parentPrototype(parent)
         {
         }
@@ -501,7 +501,7 @@ namespace AzToolsFramework
             //     to passing an nByte parameter that is the number of bytes in the input string including the null-terminator."
             //    https://www.sqlite.org/c3ref/prepare.html                                      ^^^^^^^^^
 
-            int res = sqlite3_prepare_v2(db, m_parentPrototype->GetSqlText().c_str(), (int)m_parentPrototype->GetSqlText().length() + 1, &m_statement, NULL);
+            int res = sqlite3_prepare_v2(db, m_parentPrototype->GetSqlText().c_str(), (int)m_parentPrototype->GetSqlText().length() + 1, &m_statement, nullptr);
 
             AZ_Assert(res == SQLITE_OK, "Statement::PrepareFirstTime: failed! %s ( prototype is '%s'). Error code returned is %d.", sqlite3_errmsg(db), m_parentPrototype->GetSqlText().c_str(), res);
             return ((res == SQLITE_OK)&&(m_statement));
@@ -509,7 +509,7 @@ namespace AzToolsFramework
 
         bool Statement::Prepared() const
         {
-            return (m_statement != NULL);
+            return (m_statement != nullptr);
         }
 
 
@@ -699,7 +699,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            int res = sqlite3_bind_text(m_statement, idx, data, static_cast<int>(strlen(data)), NULL);
+            int res = sqlite3_bind_text(m_statement, idx, data, static_cast<int>(strlen(data)), nullptr);
             AZ_Assert(res == SQLITE_OK, "Statement::BindValueText: failed to bind!");
             return     (res == SQLITE_OK);
         }

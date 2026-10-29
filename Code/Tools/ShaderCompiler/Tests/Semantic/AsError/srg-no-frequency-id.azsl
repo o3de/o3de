@@ -1,0 +1,12 @@
+ShaderResourceGroupSemantic UpdateFrequency
+{
+
+} 
+
+ShaderResourceGroup SomeSRG : UpdateFrequency
+{
+    
+};
+
+// Semantic Error 29: line 1::0 'FrequencyId is required in SRG semantic'
+// #EC 29

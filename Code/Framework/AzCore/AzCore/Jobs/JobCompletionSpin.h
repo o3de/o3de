@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBCOMPLETION_SPIN_H
-#define AZCORE_JOBS_JOBCOMPLETION_SPIN_H 1
+
+#pragma once
 
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/std/parallel/spin_mutex.h>
@@ -64,6 +64,3 @@ namespace AZ
         AZStd::spin_mutex m_mutex;
     };
 }
-
-#endif
-#pragma once

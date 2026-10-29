@@ -125,7 +125,7 @@ namespace AZ
     };
 
     template<class Allocator>
-    AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
+    AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = nullptr;
 }
 
 namespace AZ::Internal

@@ -170,7 +170,7 @@ public:
     bool SetViewFocus(const char* sViewClassName) override;
 
     // close ALL panels related to classId, used when unloading plugins.
-    bool SelectColor(QColor &color, QWidget *parent = 0) override;
+    bool SelectColor(QColor &color, QWidget *parent = nullptr) override;
     void Update();
     SFileVersion GetFileVersion() override { return m_fileVersion; };
     SFileVersion GetProductVersion() override { return m_productVersion; };

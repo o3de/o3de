@@ -15,8 +15,8 @@
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 ATOM_RPI_PUBLIC_API AZ_DECLARE_BUDGET(RPI);
 

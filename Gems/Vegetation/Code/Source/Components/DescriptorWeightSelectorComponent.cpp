@@ -41,7 +41,7 @@ namespace Vegetation
                     ->EnumAttribute(SortBehavior::Unsorted, QT_TRANSLATE_NOOP("Vegetation", "Unsorted"))
                     ->EnumAttribute(SortBehavior::Ascending, QT_TRANSLATE_NOOP("Vegetation", "Ascending (lowest first)"))
                     ->EnumAttribute(SortBehavior::Descending, QT_TRANSLATE_NOOP("Vegetation", "Descending (highest first)"))
-                    ->DataElement(0, &DescriptorWeightSelectorConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient mapped to range between 0 and total combined weight of all descriptors."))
+                    ->DataElement(nullptr, &DescriptorWeightSelectorConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient mapped to range between 0 and total combined weight of all descriptors."))
                     ;
             }
         }

@@ -9,12 +9,12 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportScene.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Windowing/WindowBus.h>
 

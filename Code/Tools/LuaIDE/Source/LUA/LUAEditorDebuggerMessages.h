@@ -6,14 +6,11 @@
  *
  */
 
-#ifndef LUAEDITOR_LUAEditorDebuggerMessages_H
-#define LUAEDITOR_LUAEditorDebuggerMessages_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptContextDebug.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -27,7 +24,7 @@ namespace LUAEditor
         // we do not allow debugging of all contexts - sometimes we can execute script but not debug.
         // for example, the "local" in-process editor can not debug or else we deadlock, but if its remote, we can debug.
         bool m_allowDebug;
-        TargetInfo(const char* displayName = NULL, AZ::u32 identifier = 0, bool allowDebug = false)
+        TargetInfo(const char* displayName = nullptr, AZ::u32 identifier = 0, bool allowDebug = false)
             : m_displayName(displayName)
             , m_identifier(identifier)
             , m_allowDebug(allowDebug) {}
@@ -104,5 +101,3 @@ namespace LUAEditor
     using LUAEditorDebuggerMessagesRequestBus = AZ::EBus<LUAEditorDebuggerMessages>;
 
 }
-
-#endif//LUAEDITOR_LUAEditorDebuggerMessages_H

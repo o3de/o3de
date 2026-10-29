@@ -27,6 +27,10 @@ namespace O3DE::ProjectManager
         static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
         static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
 
+        // Without the file extension to be cross platform.
+        // %1 to be replaced with project name.
+        static constexpr AZStd::string_view EditorShortcutFilenameFormat = "%1 Editor";
+
         bool RegisterProject(const QString& path, QWidget* parent = nullptr);
         bool UnregisterProject(const QString& path, QWidget* parent = nullptr);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
@@ -108,6 +112,13 @@ namespace O3DE::ProjectManager
          * @return AZ::Outcome with the command result on success
          */
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
+
+        /*
+        * Delete a desktop shortcut previously created.
+        * @param filename the name of the desktop fortcut file
+        * @return bool true if deleted false otherwise
+        */
+        bool DeleteDesktopShortcut(const QString& filename);
 
         /**
          * Lookup the location of an Editor executable executable that can be used with the

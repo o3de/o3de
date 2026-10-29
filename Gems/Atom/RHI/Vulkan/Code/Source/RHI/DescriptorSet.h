@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RHI.Reflect/SamplerState.h>
@@ -13,8 +14,8 @@
 #include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <AtomCore/std/containers/small_vector.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/small_vector.h>
 #include <AzCore/std/containers/span.h>
 #include <RHI/Buffer.h>
 
@@ -42,7 +43,7 @@ namespace AZ
             static constexpr size_t ViewsFixedsize = 2;
 
         public:
-            
+
             //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
             //we create thousands of DescriptorSets related to SRGs
             AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::SystemAllocator);
@@ -132,7 +133,7 @@ namespace AZ
             auto beginInterval = descriptorsInfo.begin();
             auto endInterval = beginInterval;
             bool (*IsNullFuntion)(const T&) = &DescriptorSet::IsNullDescriptorInfo;
-            do 
+            do
             {
                 beginInterval = AZStd::find_if_not(endInterval, descriptorsInfo.end(), IsNullFuntion);
                 if (beginInterval != descriptorsInfo.end())

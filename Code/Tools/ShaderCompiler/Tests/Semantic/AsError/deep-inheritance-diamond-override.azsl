@@ -1,0 +1,16 @@
+interface I
+{
+    void f();
+};
+
+class A : I
+{
+    void f();
+};
+
+class B : A, I
+{
+    void f();  // overrides A::f and I::F (with the latest mandatory)
+};
+
+// Semantic error #34: Found multiple symbols hidden by /B/f() in bases of /B. First was /A/f(), now also found in /I.

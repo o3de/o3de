@@ -77,22 +77,22 @@ namespace AZStd
         // 23.2.4.1 construct/copy/destroy
         /// Construct an empty vector.
         AZ_FORCE_INLINE vector()
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
         {}
 
         AZ_FORCE_INLINE explicit vector(const allocator_type& allocator)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
             , m_allocator(allocator)
         {}
 
         explicit vector(size_type numElements)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
         {
             if (numElements > 0)
             {
@@ -105,9 +105,9 @@ namespace AZStd
         }
 
         vector(size_type numElements, const_reference value)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
         {
             if (numElements > 0)
             {
@@ -119,9 +119,9 @@ namespace AZStd
             }
         }
         vector(size_type numElements, const_reference value, const allocator_type& allocator)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
             , m_allocator(allocator)
         {
             if (numElements > 0)
@@ -166,24 +166,24 @@ namespace AZStd
             }
             else
             {
-                m_start = 0;
-                m_last = 0;
+                m_start = nullptr;
+                m_last = nullptr;
             }
             m_end   = m_last;
         }
 
         vector(this_type&& rhs)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+            : m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
             , m_allocator(rhs.m_allocator)
         {
             assign_rv(AZStd::move(rhs));
         }
         vector(this_type&& rhs, const allocator_type& allocator)
-            :  m_start(0)
-            , m_last(0)
-            , m_end(0)
+            :  m_start(nullptr)
+            , m_last(nullptr)
+            , m_end(nullptr)
             , m_allocator(allocator)
         {
             assign_rv(AZStd::move(rhs));
@@ -224,9 +224,9 @@ namespace AZStd
                 m_last = rhs.m_last;
                 m_end = rhs.m_end;
 
-                rhs.m_start = 0;
-                rhs.m_last = 0;
-                rhs.m_end = 0;
+                rhs.m_start = nullptr;
+                rhs.m_last = nullptr;
+                rhs.m_end = nullptr;
             }
         }
 
@@ -398,9 +398,9 @@ namespace AZStd
                             // Free memory if we need to.
                             deallocate_memory(0);
 
-                            m_start = 0;
-                            m_end = 0;
-                            m_last = 0;
+                            m_start = nullptr;
+                            m_end = nullptr;
+                            m_last = nullptr;
                         }
                     }
                 }
@@ -922,7 +922,7 @@ namespace AZStd
             if (m_allocator != allocator)
             {
                 allocator_type newAllocator = allocator;
-                if (m_start != 0)
+                if (m_start != nullptr)
                 {
                     // if we have something allocated make sure we re-alloc the vector to the new allocator.
                     size_type size = m_last - m_start;
@@ -991,9 +991,9 @@ namespace AZStd
         */
         AZ_FORCE_INLINE void leak_and_reset()
         {
-            m_start = 0;
-            m_end = 0;
-            m_last = 0;
+            m_start = nullptr;
+            m_end = nullptr;
+            m_last = nullptr;
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             orphan_all();
@@ -1035,8 +1035,8 @@ namespace AZStd
                 }
                 else
                 {
-                    newStart = 0;
-                    newLast = 0;
+                    newStart = nullptr;
+                    newLast = nullptr;
                 }
 
                 // Destroy old array

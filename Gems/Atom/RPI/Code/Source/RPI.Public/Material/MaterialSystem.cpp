@@ -18,10 +18,9 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom_RPI_Traits_Platform.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Name/NameDictionary.h>
-
 
 #ifndef AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS
 #define AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS 0

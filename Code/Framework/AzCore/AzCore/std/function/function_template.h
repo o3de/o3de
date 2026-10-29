@@ -501,7 +501,7 @@ namespace AZStd
             if (vtable)
             {
                 reinterpret_cast<vtable_type*>(vtable)->clear(this->functor);
-                vtable = 0;
+                vtable = nullptr;
             }
         }
 
@@ -549,7 +549,7 @@ namespace AZStd
             }
             else
             {
-                vtable = 0;
+                vtable = nullptr;
             }
         }
 
@@ -574,7 +574,7 @@ namespace AZStd
             }
             else
             {
-                vtable = 0;
+                vtable = nullptr;
             }
         }
 
@@ -592,7 +592,7 @@ namespace AZStd
             {
                 this->vtable = f.vtable;
                 f.vtable->manager(f.functor, this->functor, Internal::function_util::move_functor_tag);
-                f.vtable = 0;
+                f.vtable = nullptr;
             }
         }
     };

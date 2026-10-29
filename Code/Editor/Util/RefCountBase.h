@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Reference counted base object.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_REFCOUNTBASE_H
-#define CRYINCLUDE_EDITOR_UTIL_REFCOUNTBASE_H
-#pragma once
 
 #include <Include/EditorCoreAPI.h>
 #include <CryCommon/ISystem.h>
@@ -52,5 +49,3 @@ protected:
 private:
     int m_nRefCount = 0;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_REFCOUNTBASE_H

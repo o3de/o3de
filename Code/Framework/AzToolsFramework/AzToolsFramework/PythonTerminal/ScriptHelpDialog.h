@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : For listing available script commands with their descriptions
 
-
-#ifndef CRYINCLUDE_EDITOR_SCRIPTHELPDIALOG_H
-#define CRYINCLUDE_EDITOR_SCRIPTHELPDIALOG_H
-#pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Debug/Trace.h>
@@ -144,5 +141,3 @@ namespace AzToolsFramework
         QScopedPointer<Ui::ScriptDialog> ui;
     };
 } // namespace AzToolsFramework
-
-#endif // CRYINCLUDE_EDITOR_SCRIPTHELPDIALOG_H

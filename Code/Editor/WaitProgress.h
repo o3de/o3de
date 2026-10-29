@@ -6,8 +6,8 @@
  *
  */
 
-
 #pragma once
+
 ////////////////////////////////////////////////////////////////////////////
 //  Description: CWaitProgress class adds information about lengthy process
 //      Usage:
@@ -17,8 +17,6 @@
 //      wait.SetProgress(35); // 35 percent.
 //
 ////////////////////////////////////////////////////////////////////////////
-#ifndef CRYINCLUDE_EDITOR_WAITPROGRESS_H
-#define CRYINCLUDE_EDITOR_WAITPROGRESS_H
 
 class QProgressBar;
 
@@ -46,4 +44,3 @@ protected:
     QProgressBar* m_progressBar;
     static bool m_bInProgressNow;
 };
-#endif // CRYINCLUDE_EDITOR_WAITPROGRESS_H

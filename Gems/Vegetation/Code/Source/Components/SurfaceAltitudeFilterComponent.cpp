@@ -49,11 +49,11 @@ namespace Vegetation
                     ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
                     ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceAltitudeFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Shape bounds override min/max altitude if specified."))
+                    ->DataElement(nullptr, &SurfaceAltitudeFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Shape bounds override min/max altitude if specified."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMin, QT_TRANSLATE_NOOP("Vegetation", "Altitude Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum acceptable surface altitude."))
+                    ->DataElement(nullptr, &SurfaceAltitudeFilterConfig::m_altitudeMin, QT_TRANSLATE_NOOP("Vegetation", "Altitude Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeFilterConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMax, QT_TRANSLATE_NOOP("Vegetation", "Altitude Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum acceptable surface altitude."))
+                    ->DataElement(nullptr, &SurfaceAltitudeFilterConfig::m_altitudeMax, QT_TRANSLATE_NOOP("Vegetation", "Altitude Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeFilterConfig::IsShapeValid)
                     ;
             }

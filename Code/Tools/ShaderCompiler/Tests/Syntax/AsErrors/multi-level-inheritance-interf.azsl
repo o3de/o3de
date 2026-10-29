@@ -1,0 +1,3 @@
+interface i {}
+
+interface i2 : i {} // Error: deep inheritance forbidden

@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_IPOSTRENDERER_H
-#define CRYINCLUDE_EDITOR_IPOSTRENDERER_H
 #pragma once
-
 
 class IPostRenderer
 {
@@ -34,5 +30,3 @@ protected:
 
     int m_refCount;
 };
-
-#endif // CRYINCLUDE_EDITOR_IPOSTRENDERER_H

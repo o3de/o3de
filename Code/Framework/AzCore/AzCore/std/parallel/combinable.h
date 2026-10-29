@@ -26,7 +26,7 @@ namespace AZStd
         {
             for (int i = 0; i < NUM_BUCKETS; ++i)
             {
-                m_buckets[i].store(NULL, memory_order_release);
+                m_buckets[i].store(nullptr, memory_order_release);
             }
         }
 
@@ -36,7 +36,7 @@ namespace AZStd
         {
             for (int i = 0; i < NUM_BUCKETS; ++i)
             {
-                m_buckets[i].store(NULL, memory_order_release);
+                m_buckets[i].store(nullptr, memory_order_release);
             }
         }
 
@@ -70,7 +70,7 @@ namespace AZStd
                     m_allocator.deallocate(node, sizeof(Node), alignment_of_v<Node>);
                     node = next;
                 }
-                m_buckets[i].store(NULL, memory_order_release);
+                m_buckets[i].store(nullptr, memory_order_release);
             }
         }
 
@@ -104,7 +104,7 @@ namespace AZStd
         template<typename F>
         T combine(F f)
         {
-            Node* currentNode = NULL;
+            Node* currentNode = nullptr;
             int currentNodeBucket = 0;
 
             for (int i = 0; i < NUM_BUCKETS; ++i)
@@ -182,7 +182,7 @@ namespace AZStd
         {
             for (int i = 0; i < NUM_BUCKETS; ++i)
             {
-                m_buckets[i].store(NULL, memory_order_release);
+                m_buckets[i].store(nullptr, memory_order_release);
 
                 Node* otherNode = other.m_buckets[i].load(memory_order_acquire);
                 while (otherNode)
@@ -210,7 +210,7 @@ namespace AZStd
                 }
                 node = node->m_next;
             }
-            return NULL;
+            return nullptr;
         }
 
         Node* AddNode(thread_id threadId)

@@ -30,7 +30,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(EntityIdQLabel, AZ::SystemAllocator);
 
-        explicit EntityIdQLabel(QWidget* parent = 0);
+        explicit EntityIdQLabel(QWidget* parent = nullptr);
         ~EntityIdQLabel() override;
 
         void SetEntityId(AZ::EntityId newId, const AZStd::string_view& nameOverride);

@@ -32,7 +32,6 @@ namespace EditorPythonBindingsUnitTests
 {
     using ::testing::NiceMock;
     using ::testing::Return;
-    using ::testing::Invoke;
     using ::testing::A;
     using ::testing::_;
 
@@ -48,7 +47,7 @@ namespace EditorPythonBindingsUnitTests
         {
             m_cvarType = cvarType;
             ON_CALL(m_cvarMock, GetType()).WillByDefault(Return(m_cvarType));
-            ON_CALL(m_cvarMock, Set(A<T>())).WillByDefault(Invoke(func));
+            ON_CALL(m_cvarMock, Set(A<T>())).WillByDefault(func);
             ON_CALL(m_console, GetCVar(_)).WillByDefault(Return(&m_cvarMock));
             ON_CALL(m_system, GetIConsole()).WillByDefault(Return(&m_console));
             ON_CALL(m_editorMock, GetSystem()).WillByDefault(Return(&m_system));
@@ -294,7 +293,7 @@ namespace EditorPythonBindingsUnitTests
             AZStd::string data;
             MockEditor mockEditor;
             mockEditor.PrepareGetIConsole();
-            ON_CALL(mockEditor.m_console, ExecuteString(_,_,_)).WillByDefault(Invoke([&data](const char* command, const bool, const bool) { data = command; }));
+            ON_CALL(mockEditor.m_console, ExecuteString(_,_,_)).WillByDefault([&data](const char* command, const bool, const bool) { data = command; });
 
             const char* testCvar = "enable_feature game.sim";
             AZStd::array<AZ::BehaviorArgument, 1> args;

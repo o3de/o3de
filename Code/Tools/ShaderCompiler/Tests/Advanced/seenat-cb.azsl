@@ -1,0 +1,53 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+    };
+
+    ConstantBuffer<InnerStruct> materialConstants; // definition here: the CB (0)
+
+    float4 AccessDiffuse()
+    {
+        return materialConstants.m_diffuseColor;  // (0)REF
+    }
+};
+
+// decoy (1)
+static MySRGOne::InnerStruct materialConstants;
+
+float4 AccessDiffuseExt()
+{
+    return (float4)MySRGOne::materialConstants.m_diffuseColor;  // (0)REF
+}
+
+float4 AccessDiffuseExt2()
+{
+    return MySRGOne::AccessDiffuse();
+}
+
+float4 main(float2 uv) : SV_Target0
+{
+    struct MySRGOne  // yes this is legal. in all 3 of: C++, in dxc, and fxc.
+    {
+        // decoy (2)
+        InnerStruct materialConstants;
+    };
+    materialConstants =   // (1)
+                ::MySRGOne::materialConstants;  // (0)REF
+    float4 diff = ::MySRGOne::materialConstants.m_diffuseColor;  // (0)REF
+    ::MySRGOne::InnerStruct inner = ::MySRGOne::materialConstants;  // (0)REF
+    float4 diff2 = materialConstants.m_diffuseColor; // (1)
+    MySRGOne localInstance;  // using decoy type
+    localInstance.materialConstants =   // (2)
+                materialConstants;  // (1)
+    diff2 += MySRGOne::materialConstants.  // (2)
+                                m_diffuseColor;
+    return inner.m_diffuseColor + diff2 + AccessDiffuseExt2();
+}
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

@@ -77,7 +77,7 @@ template <>
 void TUiAnimSplineTrack<Vec2>::GetKey(int index, IKey* key) const
 {
     assert(index >= 0 && index < GetNumKeys());
-    assert(key != 0);
+    assert(key != nullptr);
     Spline::key_type& k = m_spline->key(index);
     I2DBezierKey* bezierkey = (I2DBezierKey*)key;
     bezierkey->time = k.time;
@@ -90,7 +90,7 @@ template <>
 void TUiAnimSplineTrack<Vec2>::SetKey(int index, IKey* key)
 {
     assert(index >= 0 && index < GetNumKeys());
-    assert(key != 0);
+    assert(key != nullptr);
     Spline::key_type& k = m_spline->key(index);
     I2DBezierKey* bezierkey = (I2DBezierKey*)key;
     k.time = bezierkey->time;

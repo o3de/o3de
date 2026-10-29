@@ -35,7 +35,7 @@ namespace PassCanvas
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         PassCanvasMainWindow(
-            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
+            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = nullptr);
         ~PassCanvasMainWindow() = default;
 
     protected:

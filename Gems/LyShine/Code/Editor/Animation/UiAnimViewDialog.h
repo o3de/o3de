@@ -47,7 +47,7 @@ class CUiAnimViewDialog
 public:
     friend CUiAnimationCallback;
 
-    CUiAnimViewDialog(QWidget* pParent = NULL);
+    CUiAnimViewDialog(QWidget* pParent = nullptr);
     ~CUiAnimViewDialog();
 
     static CUiAnimViewDialog* GetCurrentInstance() { return s_pUiAnimViewDialog; }

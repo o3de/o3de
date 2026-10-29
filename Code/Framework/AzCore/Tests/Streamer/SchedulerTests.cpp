@@ -307,7 +307,6 @@ namespace AZ::IO
     {
         using ::testing::_;
         using ::testing::AtLeast;
-        using ::testing::Invoke;
         using ::testing::Return;
 
         EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AtLeast(1));
@@ -315,14 +314,14 @@ namespace AZ::IO
         EXPECT_CALL(*m_mock, PrepareRequest(_)).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, ExecuteRequests()).Times(AtLeast(1));
         EXPECT_CALL(*m_mock, QueueRequest(_)).Times(1)
-            .WillOnce(Invoke([this](FileRequest* request)
+            .WillOnce([this](FileRequest* request)
             {
                 auto* read = request->GetCommandFromChain<Requests::ReadRequestData>();
                 ASSERT_NE(nullptr, read);
                 EXPECT_LT(read->m_deadline, FileRequest::s_noDeadlineTime);
                 EXPECT_EQ(read->m_priority, IStreamerTypes::s_priorityHighest);
                 m_mock->ForwardQueueRequest(request);
-            }));
+            });
 
         AZStd::atomic_int counter = 2;
         AZStd::binary_semaphore sync;
@@ -355,7 +354,6 @@ namespace AZ::IO
     {
         using::testing::_;
         using ::testing::AnyNumber;
-        using ::testing::Invoke;
 
         constexpr static size_t Iterations = 16;
 
@@ -367,7 +365,7 @@ namespace AZ::IO
         // Pretend to be busy [Iterations] times, then set the status to idle so the Scheduler thread can exit.
         EXPECT_CALL(*m_mock, ExecuteRequests())
             .Times(Iterations + 1)
-            .WillRepeatedly(Invoke([this, &counter]()
+            .WillRepeatedly([this, &counter]()
             {
                 if (counter++ >= Iterations)
                 {
@@ -379,7 +377,7 @@ namespace AZ::IO
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
                     return true;
                 }
-            }));
+            });
 
         if (m_streamer)
         {

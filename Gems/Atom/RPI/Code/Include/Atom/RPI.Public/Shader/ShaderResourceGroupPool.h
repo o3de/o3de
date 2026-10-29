@@ -9,10 +9,9 @@
 #pragma once
 
 #include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <AtomCore/Instance/InstanceData.h>
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -27,10 +26,10 @@ namespace AZ
          * Wraps a RHI ShaderResourceGroupPool for use in the RPI to initialize ShaderResourceGroups.
          *
          * This class is a bit unusual in that InstanceData objects usually associate with an AssetData
-         * class of corresponding type (for example, Material and MaterialAsset). In this case, 
+         * class of corresponding type (for example, Material and MaterialAsset). In this case,
          * the ShaderResourceGroupPool instance corresponds to a specific ShaderResourceGroupAsset,
          * not a ShaderResourceGroup[Pool]Asset. This is because there is a 1:1 relationship with
-         * ShaderResourceGroupAsset's ShaderResourceGroupLayout and no additional configuration data 
+         * ShaderResourceGroupAsset's ShaderResourceGroupLayout and no additional configuration data
          * is needed for the pool.
          *
          * User code should not need to access this pool directly; RPI::ShaderResourceGroup uses it internally.
@@ -49,7 +48,7 @@ namespace AZ
              */
             static Data::Instance<ShaderResourceGroupPool> FindOrCreate(
                 const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
-            
+
             RHI::Ptr<RHI::ShaderResourceGroup> CreateRHIShaderResourceGroup();
 
             RHI::ShaderResourceGroupPool* GetRHIPool();

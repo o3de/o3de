@@ -1,0 +1,10 @@
+void f()
+{
+    (a, b, c, d);   // comma expression inside parenthesized expression
+    a, b, c, d; // straight comma expr
+    if (stuff(), a);
+    for (int a = 4, b = 5;
+         call(), a < 7;
+         ++a, ++b) {}
+    half a, b = 3 + (4,6), c;
+}

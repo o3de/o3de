@@ -104,7 +104,7 @@ const char* CSystem::GetUserName()
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 #elif defined(APPLE)
     static const int iNameBufferSize = 1024;
@@ -142,7 +142,7 @@ int CSystem::GetApplicationInstance()
         {
             suffix = AZStd::wstring::format(L"O3DEApplication(%d)", instance);
 
-            CreateMutexW(NULL, TRUE, suffix.c_str());
+            CreateMutexW(nullptr, TRUE, suffix.c_str());
             // search for duplicates
             if (GetLastError() != ERROR_ALREADY_EXISTS)
             {
@@ -167,7 +167,7 @@ int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
     {
         suffix = AZStd::wstring::format(L"%s(%d)", logFilePath, instance);
 
-        CreateMutexW(NULL, TRUE, suffix.c_str());
+        CreateMutexW(nullptr, TRUE, suffix.c_str());
         if (GetLastError() != ERROR_ALREADY_EXISTS)
         {
             break;
@@ -209,31 +209,31 @@ static const char* GetLastSystemErrorMessage()
 
     if (dwError)
     {
-        LPVOID lpMsgBuf = 0;
+        LPVOID lpMsgBuf = nullptr;
 
         if (FormatMessage(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER |
                 FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL,
+                nullptr,
                 GetLastError(),
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
                 (LPTSTR) &lpMsgBuf,
                 0,
-                NULL))
+                nullptr))
         {
             azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), (char*)lpMsgBuf);
             LocalFree(lpMsgBuf);
         }
         else
         {
-            return 0;
+            return nullptr;
         }
 
         return szBuffer;
     }
 #endif //WIN32
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ void CSystem::FatalError(const char* format, ...)
     {
         AZStd::wstring szBufferW;
         AZStd::to_wstring(szBufferW, szBuffer);
-        ::MessageBoxW(NULL, szBufferW.c_str(), L"Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        ::MessageBoxW(nullptr, szBufferW.c_str(), L"Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
     // Dump callstack.
@@ -392,7 +392,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
         {
             // We must be running Vista or newer
             wchar_t* wMyDocumentsPath;
-            HRESULT hr = SHGetKnownFolderPath(FOLDERID_SavedGames, KF_FLAG_CREATE | KF_FLAG_DONT_UNEXPAND, NULL, &wMyDocumentsPath);
+            HRESULT hr = SHGetKnownFolderPath(FOLDERID_SavedGames, KF_FLAG_CREATE | KF_FLAG_DONT_UNEXPAND, nullptr, &wMyDocumentsPath);
             bSucceeded = SUCCEEDED(hr);
             if (bSucceeded)
             {
@@ -408,7 +408,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
     {
         // check pre-vista OS if not succeeded before
         wchar_t wMyDocumentsPath[AZ_MAX_PATH_LEN];
-        bSucceeded = SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, wMyDocumentsPath));
+        bSucceeded = SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, nullptr, 0, wMyDocumentsPath));
         if (bSucceeded)
         {
             AZStd::to_string(szMyDocumentsPath, maxPathSize, wMyDocumentsPath);
@@ -431,9 +431,9 @@ void CSystem::DetectGameFolderAccessRights()
     DWORD DesiredAccess = FILE_GENERIC_WRITE;
     DWORD GrantedAccess = 0;
     DWORD dwRes = 0;
-    PACL pDACL = NULL;
-    PSECURITY_DESCRIPTOR pSD = NULL;
-    HANDLE hClientToken = 0;
+    PACL pDACL = nullptr;
+    PSECURITY_DESCRIPTOR pSD = nullptr;
+    HANDLE hClientToken = nullptr;
     PRIVILEGE_SET PrivilegeSet;
     DWORD PrivilegeSetLength = sizeof(PrivilegeSet);
     BOOL bAccessStatus = FALSE;
@@ -441,7 +441,7 @@ void CSystem::DetectGameFolderAccessRights()
     // Get a pointer to the existing DACL.
     dwRes = GetNamedSecurityInfoW(L".", SE_FILE_OBJECT,
             DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION,
-            NULL, NULL, &pDACL, NULL, &pSD);
+            nullptr, nullptr, &pDACL, nullptr, &pSD);
 
     if (ERROR_SUCCESS != dwRes)
     {
@@ -453,7 +453,7 @@ void CSystem::DetectGameFolderAccessRights()
     {
         return;
     }
-    if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &hClientToken) && hClientToken != 0)
+    if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &hClientToken) && hClientToken != nullptr)
     {
         return;
     }
@@ -481,7 +481,7 @@ void CSystem::DetectGameFolderAccessRights()
 #elif defined(MOBILE)
     char cwd[AZ_MAX_PATH_LEN];
 
-    if (getcwd(cwd, AZ_MAX_PATH_LEN) != NULL)
+    if (getcwd(cwd, AZ_MAX_PATH_LEN) != nullptr)
     {
         if (0 == access(cwd, W_OK))
         {

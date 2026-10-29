@@ -50,7 +50,7 @@ namespace AzFramework
                 VARIANT propertyValue;
                 AZStd::wstring classObjectPropertyName;
                 AZStd::to_wstring(classObjectPropertyName, propertyName);
-                if (!FAILED(classObject->Get(classObjectPropertyName.c_str(), 0, &propertyValue, 0, 0)))
+                if (!FAILED(classObject->Get(classObjectPropertyName.c_str(), 0, &propertyValue, nullptr, nullptr)))
                 {
                     if (propertyValue.vt != VT_NULL &&
                         propertyValue.vt != VT_EMPTY &&
@@ -90,13 +90,13 @@ namespace AzFramework
 
         // Obtain the initial locator to Windows Management on a particular host computer.
         IWbemLocator* locator = nullptr;
-        auto hResult = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&locator);
+        auto hResult = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&locator);
         if (!FAILED(hResult))
         {
             // Connect to the root\cimv2 namespace with the current user and obtain pointer pSvc to make IWbemServices calls.
             IWbemServices* services = nullptr;
             auto serverPath = SysAllocString(TEXT(R"(ROOT\CIMV2)"));
-            hResult = locator->ConnectServer(serverPath, nullptr, nullptr, 0, NULL, 0, 0, &services);
+            hResult = locator->ConnectServer(serverPath, nullptr, nullptr, nullptr, NULL, nullptr, nullptr, &services);
             SysFreeString(serverPath);
 
             if (!FAILED(hResult))

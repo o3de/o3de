@@ -233,7 +233,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     , m_pUiAnimViewDialog(parent)
 {
     ui->setupUi(this);
-    m_pDopeSheet = 0;
+    m_pDopeSheet = nullptr;
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
@@ -655,7 +655,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
 {
-    CRecord* pRecord = 0;
+    CRecord* pRecord = nullptr;
 
     CUiAnimViewSequence* pSequence = nullptr;
     UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
@@ -1190,8 +1190,8 @@ void CUiAnimViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = static_cast<int>(menu->actions().size());
-    for (UINT i = 0; i < count; ++i)
+    unsigned int count = static_cast<int>(menu->actions().size());
+    for (unsigned int i = 0; i < count; ++i)
     {
         QAction* a = menu->actions().at(i);
         QString menuString = a->text();

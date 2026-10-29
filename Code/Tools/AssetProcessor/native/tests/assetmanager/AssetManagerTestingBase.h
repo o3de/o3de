@@ -79,7 +79,7 @@ namespace UnitTests
         : public AssetProcessor::RCController
     {
     public:
-        explicit TestingRCController(QObject* parent = 0)
+        explicit TestingRCController(QObject* parent = nullptr)
             : AssetProcessor::RCController(parent)
         {
 

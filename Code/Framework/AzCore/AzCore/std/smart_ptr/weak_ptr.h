@@ -31,7 +31,7 @@ namespace AZStd
     public:
         typedef T element_type;
         weak_ptr()
-            : px(0)
+            : px(nullptr)
             , pn()              // never throws in 1.30+
         {}
         //  generated copy constructor, assignment, destructor are fine
@@ -70,7 +70,7 @@ namespace AZStd
             : px(r.px)
             , pn(static_cast< AZStd::Internal::weak_count && >(r.pn))                                      // never throws
         {
-            r.px = 0;
+            r.px = nullptr;
         }
 
         // for better efficiency in the T == Y case

@@ -34,7 +34,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Network
             3rdParty::RapidJSON
-            3rdParty::SQLite
+            3rdParty::sqlite
             3rdParty::xxhash
             AZ::AzCore
             AZ::AzFramework

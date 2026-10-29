@@ -22,7 +22,7 @@ class CUiAVNewSequenceDialog
 {
     Q_OBJECT
 public:
-    CUiAVNewSequenceDialog(QWidget* pParent = 0);
+    CUiAVNewSequenceDialog(QWidget* pParent = nullptr);
     virtual ~CUiAVNewSequenceDialog();
 
     const QString& GetSequenceName() const { return m_sequenceName; };

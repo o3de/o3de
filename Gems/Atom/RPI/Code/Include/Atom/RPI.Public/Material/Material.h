@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/InstanceData.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
@@ -19,8 +21,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPipelineState.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyCollection.h>
-
-#include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
@@ -89,7 +89,7 @@ namespace AZ
 
             const MaterialPropertyValue& GetPropertyValue(MaterialPropertyIndex index) const;
             const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
-            
+
             //! Gets flags indicating which properties have been modified.
             const MaterialPropertyFlags& GetPropertyDirtyFlags() const;
 
@@ -100,7 +100,7 @@ namespace AZ
             //! Does nothing if NeedsCompile() is false or CanCompile() is false.
             //! @return whether compilation occurred
             bool Compile();
-            
+
             //! Returns an ID that can be used to track whether the material has changed since the last time client code read it.
             //! This gets incremented every time a change is made, like by calling SetPropertyValue().
             ChangeId GetCurrentChangeId() const;
@@ -226,7 +226,7 @@ namespace AZ
             MaterialPipelineDataMap m_materialPipelineData;
 
             //! Tracks each change made to material properties.
-            //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client 
+            //! Initialized to DEFAULT_CHANGE_ID+1 to ensure that GetCurrentChangeId() will not return DEFAULT_CHANGE_ID (a value that client
             //! code can use to initialize a ChangeId that is immediately dirty).
             ChangeId m_currentChangeId = DEFAULT_CHANGE_ID + 1;
 

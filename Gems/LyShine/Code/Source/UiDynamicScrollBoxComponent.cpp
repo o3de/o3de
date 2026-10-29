@@ -748,21 +748,21 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, QT_TRANSLATE_NOOP("LyShine", "Refresh on activate"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, QT_TRANSLATE_NOOP("LyShine", "Refresh on activate"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether the list should automatically prepare and refresh its content post activation."));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_itemPrototypeElement, QT_TRANSLATE_NOOP("LyShine", "Prototype element"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_itemPrototypeElement, QT_TRANSLATE_NOOP("LyShine", "Prototype element"),
                 QT_TRANSLATE_NOOP("LyShine", "The prototype element to be used for the elements in the list. If empty, the prototype element will default to the first child of the content element."));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Variable element size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_variableItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Variable element size"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether elements in the list can vary in size. If not, the element size is fixed and is determined by the prototype element."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Auto calc element size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Auto calc element size"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether element sizes should be auto calculated or whether they should be requested."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_variableItemElementSize);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_estimatedItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Estimated element size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_estimatedItemElementSize, QT_TRANSLATE_NOOP("LyShine", "Estimated element size"),
                 QT_TRANSLATE_NOOP("LyShine", "The element size to use as an estimate before the element appears in the view. If set to 0, sizes will be calculated up front."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_variableItemElementSize)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
@@ -774,28 +774,28 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Sections"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_hasSections, QT_TRANSLATE_NOOP("LyShine", "Enabled"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_hasSections, QT_TRANSLATE_NOOP("LyShine", "Enabled"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether the list should be divided into sections with headers."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, QT_TRANSLATE_NOOP("LyShine", "Prototype header"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, QT_TRANSLATE_NOOP("LyShine", "Prototype header"),
                 QT_TRANSLATE_NOOP("LyShine", "The prototype element to be used for the section headers in the list."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_stickyHeaders, QT_TRANSLATE_NOOP("LyShine", "Sticky headers"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_stickyHeaders, QT_TRANSLATE_NOOP("LyShine", "Sticky headers"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether headers should stick to the beginning of the visible list area."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Variable header size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Variable header size"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether headers in the list can vary in size. If not, the header size is fixed and is determined by the prototype element."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Auto calc header size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Auto calc header size"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether header sizes should be auto calculated or whether they should be requested."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::HeadersHaveVariableSizes);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_estimatedHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Estimated header size"),
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_estimatedHeaderElementSize, QT_TRANSLATE_NOOP("LyShine", "Estimated header size"),
                 QT_TRANSLATE_NOOP("LyShine", "The header size to use as an estimate before the header appears in the view. If set to 0, sizes will be calculated up front."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::HeadersHaveVariableSizes)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f);

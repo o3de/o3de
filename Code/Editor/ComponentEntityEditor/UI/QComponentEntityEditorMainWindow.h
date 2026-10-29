@@ -39,14 +39,14 @@ class QComponentEntityEditorInspectorWindow
     Q_OBJECT
 
 public:
-    explicit QComponentEntityEditorInspectorWindow(QWidget* parent = 0);
+    explicit QComponentEntityEditorInspectorWindow(QWidget* parent = nullptr);
     ~QComponentEntityEditorInspectorWindow();
 
     void Init();
 
     // Used to receive events from widgets where SIGNALS aren't available or implemented yet.
     // Required override.
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
 
     // ToolsApplicationNotificationBus overrides...
     void AfterEntitySelectionChanged(

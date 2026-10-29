@@ -148,6 +148,50 @@ namespace UnitTest
         ValidateEntryCountEqualsExpectedCount(m_octreeScene, 0);
     }
 
+    TEST_F(OctreeTests, EnumerateWithoutFilterIncludesEmptyNodes)
+    {
+        const IVisibilityScene* visibilityScene = m_octreeScene;
+        AZ::u32 visitedNodes = 0;
+        visibilityScene->Enumerate(
+            [&visitedNodes](const IVisibilityScene::NodeData&)
+            {
+                ++visitedNodes;
+            });
+        EXPECT_EQ(1u, visitedNodes);
+
+        VisibilityEntry entries[2];
+        entries[0].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.9f), AZ::Vector3(-0.6f));
+        entries[1].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.6f), AZ::Vector3(0.9f));
+        for (VisibilityEntry& entry : entries)
+        {
+            m_octreeScene->InsertOrUpdateEntry(entry);
+        }
+
+        visitedNodes = 0;
+        AZ::u32 emptyNodes = 0;
+        visibilityScene->Enumerate(
+            [&visitedNodes, &emptyNodes](const IVisibilityScene::NodeData& nodeData)
+            {
+                ++visitedNodes;
+                emptyNodes += nodeData.m_entries.empty();
+            });
+        EXPECT_EQ(m_octreeScene->GetNodeCount(), visitedNodes);
+        EXPECT_GT(emptyNodes, 0u);
+
+        AZ::u32 occupiedNodes = 0;
+        m_octreeScene->EnumerateNoCull(
+            [&occupiedNodes](const IVisibilityScene::NodeData&)
+            {
+                ++occupiedNodes;
+            });
+        EXPECT_EQ(2u, occupiedNodes);
+
+        for (VisibilityEntry& entry : entries)
+        {
+            m_octreeScene->RemoveEntry(entry);
+        }
+    }
+
     TEST_F(OctreeTests, UpdateSingleEntry)
     {
         AzFramework::VisibilityEntry visEntry;

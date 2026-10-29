@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_EDITOR_CORE_INCLUDE_API_H
-#define CRYINCLUDE_EDITOR_CORE_INCLUDE_API_H
+
 #pragma once
 
 #include <AzCore/PlatformDef.h>
@@ -46,5 +45,3 @@ EDITOR_CORE_API void SetEditorCoreEnvironment(struct SSystemGlobalEnvironment* p
 #if defined(AZ_PLATFORM_WINDOWS)
 #include "../IEditor.h"
 #endif
-
-#endif // CRYINCLUDE_EDITOR_CORE_INCLUDE_API_H

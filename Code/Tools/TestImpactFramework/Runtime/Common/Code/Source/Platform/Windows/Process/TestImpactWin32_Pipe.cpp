@@ -34,13 +34,13 @@ namespace TestImpact
     void Pipe::EmptyPipe()
     {
         DWORD bytesAvailable = 0;
-        while (PeekNamedPipe(m_parent, NULL, 0, NULL, &bytesAvailable, NULL) && bytesAvailable > 0)
+        while (PeekNamedPipe(m_parent, nullptr, 0, nullptr, &bytesAvailable, nullptr) && bytesAvailable > 0)
         {
             // Grow the buffer by the number of bytes available in the pipe and append the new data
             DWORD bytesRead;
             const size_t currentSize = m_buffer.size();
             m_buffer.resize(m_buffer.size() + bytesAvailable);
-            if (!ReadFile(m_parent, m_buffer.data() + currentSize, bytesAvailable, &bytesRead, NULL) || bytesRead == 0)
+            if (!ReadFile(m_parent, m_buffer.data() + currentSize, bytesAvailable, &bytesRead, nullptr) || bytesRead == 0)
             {
                 throw ProcessException("Couldn't read child output from pipe");
             }

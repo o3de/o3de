@@ -158,7 +158,7 @@ namespace AZ
             //If the directory where the PSO cache will reside does not exist create one
             if(![fileManager fileExistsAtPath:directory isDirectory:&isDir])
             {
-                if(![fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:NULL])
+                if(![fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:nullptr])
                 {
                     AZ_Error("PipelineStateCache", false, "Error: Unable to create the folder %s in order to save the PSO Cache", psoCacheFilePath);
                     return false;

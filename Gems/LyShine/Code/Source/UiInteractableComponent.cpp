@@ -485,10 +485,10 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiInteractableComponent::IsHandlingEvents);
 
             // Navigation
-            editInfo->DataElement(0, &UiInteractableComponent::m_navigationSettings, QT_TRANSLATE_NOOP("LyShine", "Navigation"),
+            editInfo->DataElement(nullptr, &UiInteractableComponent::m_navigationSettings, QT_TRANSLATE_NOOP("LyShine", "Navigation"),
                 QT_TRANSLATE_NOOP("LyShine", "How to navigate from this interactbale to the next interactable"));
 
-            editInfo->DataElement(0, &UiInteractableComponent::m_isAutoActivationEnabled, QT_TRANSLATE_NOOP("LyShine", "Auto activate"),
+            editInfo->DataElement(nullptr, &UiInteractableComponent::m_isAutoActivationEnabled, QT_TRANSLATE_NOOP("LyShine", "Auto activate"),
                 QT_TRANSLATE_NOOP("LyShine", "When checked, this interactable will automatically become active when navigated to with a gamepad/keyboard.\n"
                 "When unchecked, a button press is required to activate/deactivate this interactable."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiInteractableComponent::IsAutoActivationSupported);
@@ -498,13 +498,13 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "States"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiInteractableComponent::m_hoverStateActions, QT_TRANSLATE_NOOP("LyShine", "Hover"), QT_TRANSLATE_NOOP("LyShine", "The hover/selected state actions"))
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_hoverStateActions, QT_TRANSLATE_NOOP("LyShine", "Hover"), QT_TRANSLATE_NOOP("LyShine", "The hover/selected state actions"))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiInteractableComponent::OnHoverStateActionsChanged);
 
-                editInfo->DataElement(0, &UiInteractableComponent::m_pressedStateActions, QT_TRANSLATE_NOOP("LyShine", "Pressed"), QT_TRANSLATE_NOOP("LyShine", "The pressed state actions"))
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_pressedStateActions, QT_TRANSLATE_NOOP("LyShine", "Pressed"), QT_TRANSLATE_NOOP("LyShine", "The pressed state actions"))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiInteractableComponent::OnPressedStateActionsChanged);
 
-                editInfo->DataElement(0, &UiInteractableComponent::m_disabledStateActions, QT_TRANSLATE_NOOP("LyShine", "Disabled"), QT_TRANSLATE_NOOP("LyShine", "The disabled state actions"))
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_disabledStateActions, QT_TRANSLATE_NOOP("LyShine", "Disabled"), QT_TRANSLATE_NOOP("LyShine", "The disabled state actions"))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiInteractableComponent::OnDisabledStateActionsChanged);
             }
 
@@ -513,11 +513,11 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiInteractableComponent::m_hoverStartActionName, QT_TRANSLATE_NOOP("LyShine", "Hover start"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on hover start"));
-                editInfo->DataElement(0, &UiInteractableComponent::m_hoverEndActionName, QT_TRANSLATE_NOOP("LyShine", "Hover end"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on hover end"));
-                editInfo->DataElement(0, &UiInteractableComponent::m_pressedActionName, QT_TRANSLATE_NOOP("LyShine", "Pressed"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on press"));
-                editInfo->DataElement(0, &UiInteractableComponent::m_releasedActionName, QT_TRANSLATE_NOOP("LyShine", "Released"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on release"));
-                editInfo->DataElement(0, &UiInteractableComponent::m_outsideReleasedActionName, QT_TRANSLATE_NOOP("LyShine", "Outside Released"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on release outside of element"));
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_hoverStartActionName, QT_TRANSLATE_NOOP("LyShine", "Hover start"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on hover start"));
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_hoverEndActionName, QT_TRANSLATE_NOOP("LyShine", "Hover end"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on hover end"));
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_pressedActionName, QT_TRANSLATE_NOOP("LyShine", "Pressed"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on press"));
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_releasedActionName, QT_TRANSLATE_NOOP("LyShine", "Released"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on release"));
+                editInfo->DataElement(nullptr, &UiInteractableComponent::m_outsideReleasedActionName, QT_TRANSLATE_NOOP("LyShine", "Outside Released"), QT_TRANSLATE_NOOP("LyShine", "Action triggered on release outside of element"));
             }
         }
     }

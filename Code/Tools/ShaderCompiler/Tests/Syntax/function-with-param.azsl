@@ -1,0 +1,1 @@
+void SomeFunc(sometype argument1, sometype argument2);

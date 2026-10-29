@@ -44,7 +44,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 3rdParty::Qt::Widgets
-                3rdParty::mikkelsen
+                3rdParty::mikktspace
                 AZ::AzCore
                 AZ::SceneCore
                 AZ::SceneData

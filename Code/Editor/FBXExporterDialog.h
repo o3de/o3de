@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H
-#define CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H
 #pragma once
 
 #include "Resource.h"
@@ -46,4 +43,3 @@ protected:
 private:
     QScopedPointer<Ui::FBXExporterDialog> m_ui;
 };
-#endif // CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H

@@ -1302,7 +1302,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("LyShine", " degrees"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTransform2dComponent::OnTransformPropertyChanged);
 
-            editInfo->DataElement(0, &UiTransform2dComponent::m_scale, QT_TRANSLATE_NOOP("LyShine", "Scale"),
+            editInfo->DataElement(nullptr, &UiTransform2dComponent::m_scale, QT_TRANSLATE_NOOP("LyShine", "Scale"),
                 QT_TRANSLATE_NOOP("LyShine", "The X and Y scale around the pivot point"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTransform2dComponent::OnTransformPropertyChanged)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)

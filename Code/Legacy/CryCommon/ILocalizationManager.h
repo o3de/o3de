@@ -6,13 +6,9 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H
-#define CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H
 #pragma once
 
 #include "LocalizationManagerBus.h"
-//#include <platform.h> // Needed for LARGE_INTEGER (for consoles).
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -287,8 +283,3 @@ struct ILocalizationManager
 
 // Summary:
 //      Simple bus that notifies listeners that the language (g_language) has changed.
-
-
-
-
-#endif // CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H
