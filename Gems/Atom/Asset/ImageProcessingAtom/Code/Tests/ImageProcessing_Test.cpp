@@ -30,6 +30,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/algorithm.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 
@@ -61,7 +62,13 @@
 #include <QDirIterator>
 #include <QIODevice>
 
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfHeader.h>
+#include <OpenEXR/ImfOutputFile.h>
+
 #include <array>
+#include <initializer_list>
 #include <utility>
 
 //Enable generate image files for result of some tests.
@@ -78,6 +85,44 @@ using namespace ImageProcessingAtom;
 
 namespace UnitTest
 {
+    namespace
+    {
+        struct ExrChannel final
+        {
+            const char* m_name;
+            float m_value;
+        };
+
+        void WriteExr(const char* path, std::initializer_list<ExrChannel> channels)
+        {
+            constexpr int width = 2;
+            constexpr int height = 2;
+            constexpr size_t pixelCount = width * height;
+
+            Imf::Header header(width, height);
+            for (const ExrChannel& channel : channels)
+            {
+                header.channels().insert(channel.m_name, Imf::Channel(Imf::FLOAT));
+            }
+
+            Imf::OutputFile output(path, header);
+            AZStd::vector<float> pixels(pixelCount * channels.size());
+            Imf::FrameBuffer frameBuffer;
+            size_t channelIndex = 0;
+            for (const ExrChannel& channel : channels)
+            {
+                float* channelPixels = pixels.data() + pixelCount * channelIndex++;
+                AZStd::fill_n(channelPixels, pixelCount, channel.m_value);
+                frameBuffer.insert(
+                    channel.m_name,
+                    Imf::Slice(Imf::FLOAT, reinterpret_cast<char*>(channelPixels), sizeof(float), sizeof(float) * width));
+            }
+
+            output.setFrameBuffer(frameBuffer);
+            output.writePixels(height);
+        }
+    }
+
     // Expose AZ::AssetManagerComponent::Reflect function for testing
     class MyAssetManagerComponent
         : public AZ::AssetManagerComponent
@@ -609,6 +654,51 @@ namespace UnitTest
         ASSERT_TRUE(img != nullptr);
     }
 
+    TEST_F(ImageProcessingTest, ExrLoader_LoadsSingleAndPartialRgbaChannelLayouts)
+    {
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+
+        const AZStd::string singleChannelPath = tempDirectory.Resolve("single-channel.exr").Native();
+        WriteExr(singleChannelPath.c_str(), { { "Utility", 0.25f } });
+
+        IImageObjectPtr image(LoadImageFromFile(singleChannelPath));
+        ASSERT_TRUE(image);
+        EXPECT_EQ(image->GetPixelFormat(), ePixelFormat_R32F);
+
+        AZ::u8* imageData = nullptr;
+        AZ::u32 pitch = 0;
+        image->GetImagePointer(0, imageData, pitch);
+        ASSERT_TRUE(imageData);
+        EXPECT_FLOAT_EQ(reinterpret_cast<const float*>(imageData)[0], 0.25f);
+
+        const AZStd::string rgbaPath = tempDirectory.Resolve("partial-rgba.exr").Native();
+        WriteExr(rgbaPath.c_str(), { { "R", 0.25f }, { "G", 0.5f } });
+
+        image = IImageObjectPtr(LoadImageFromFile(rgbaPath));
+        ASSERT_TRUE(image);
+        EXPECT_EQ(image->GetPixelFormat(), ePixelFormat_R32G32B32A32F);
+
+        image->GetImagePointer(0, imageData, pitch);
+        ASSERT_TRUE(imageData);
+        const float* pixel = reinterpret_cast<const float*>(imageData);
+        EXPECT_FLOAT_EQ(pixel[0], 0.25f);
+        EXPECT_FLOAT_EQ(pixel[1], 0.5f);
+        EXPECT_FLOAT_EQ(pixel[2], 0.0f);
+        EXPECT_FLOAT_EQ(pixel[3], 1.0f);
+    }
+
+    TEST_F(ImageProcessingTest, ExrLoader_RejectsMultipleArbitraryChannels)
+    {
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const AZStd::string path = tempDirectory.Resolve("multiple-arbitrary-channels.exr").Native();
+        WriteExr(path.c_str(), { { "Y", 0.25f }, { "Z", 0.75f } });
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        IImageObjectPtr image(LoadImageFromFile(path));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(image);
+    }
+
     TEST_F(ImageProcessingTest, PresetSettingCopyAssignmentOperatorOverload_WithDynamicallyAllocatedSettings_ReturnsTwoSeparateAllocations)
     {
         PresetSettings presetSetting;
@@ -1102,5 +1192,3 @@ namespace UnitTest
 } // UnitTest
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-
-
