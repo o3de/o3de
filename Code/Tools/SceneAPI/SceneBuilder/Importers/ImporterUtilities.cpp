@@ -8,7 +8,6 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/SceneBuilder/ImportContexts/ImportContextProvider.h>
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>

@@ -17,6 +17,7 @@
     "engine": "o3de",
     "restricted": "${Name}",
     "gem_names": [
+        "AssImp",
         "Atom",
         "AudioSystem",
         "CameraFramework",
