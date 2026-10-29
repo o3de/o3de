@@ -35,6 +35,7 @@ namespace EMotionFX
 
         serializeContext->Class<Vector3Parameter, BaseType>()
             ->Version(1)
+            ->Field("space", &Vector3Parameter::m_space)
         ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -43,10 +44,18 @@ namespace EMotionFX
             return;
         }
 
+        editContext->Enum<Space>("Space", "")
+            ->Value("World", Space::World)
+            ->Value("Local", Space::Local)
+        ;
+
         editContext->Class<Vector3Parameter>("Vector3 parameter", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Vector3Parameter::m_space, "Space",
+                "World: the value is a world position. Local: the value is relative to the character, so it moves and turns with it; "
+                "blend tree nodes such as IK and Look At receive it converted to world space.")
         ;
     }
 

@@ -47,5 +47,23 @@ namespace EMotionFX
 
         static AZ::Vector3 GetUnboundedMinValue();
         static AZ::Vector3 GetUnboundedMaxValue();
+
+        //! World values are used as they are. Local values are relative to the character and are converted to world space when a blend tree reads them.
+        enum class Space : AZ::u8
+        {
+            World = 0,
+            Local = 1
+        };
+
+        Space GetSpace() const { return m_space; }
+        void SetSpace(Space space) { m_space = space; }
+
+    private:
+        Space m_space = Space::World;
     };
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(EMotionFX::Vector3Parameter::Space, "{3F7A2C1E-9B4D-4E8A-A6C2-5D1E8F0B7A93}");
 }
