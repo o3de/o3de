@@ -171,7 +171,7 @@ namespace PhysX
         bool m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false; ///< True if rigid body transform needs to be synced to the entity's when physics is re-enabled.
         bool m_isEntityTransformSetManually = false; ///< False when PostPhysicsTick runs in order to handle user-set entity transform.
 
-        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+        AzPhysics::SceneEvents::OnSceneSimulationSynchronizedWithTickHandler m_sceneFinishSimHandler;
         AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler m_activeBodySyncTransformHandler;
     };
 
