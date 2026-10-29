@@ -291,6 +291,12 @@ namespace O3DE::ProjectManager
             {
                 const IPythonBindings::ErrorPair& error = createResult.GetError();
                 ProjectUtils::DisplayDetailedError(tr("Failed to create project"), error.first, error.second, this);
+
+                // CreateProject may have partially created the project directory (it's created before
+                // template files are copied) before erroring out. Clean it up so the user can retry with
+                // the same name/path instead of hitting "already exists and is not empty" next time.
+                [[maybe_unused]] bool filesDeleted = ProjectUtils::DeleteProjectFiles(projectInfo.m_path, /*force*/ true);
+                AZ_Warning("O3DE", filesDeleted, "Unable to delete invalid new project files at %s", projectInfo.m_path.toUtf8().constData());
                 return;
             }
 
