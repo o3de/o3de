@@ -80,6 +80,32 @@ namespace OpenParticle
         m_emitterForDrawPair.clear();
     }
 
+    void EmitterInstance::ConfigureObjectSrg(AZ::u32 objectId)
+    {
+        m_objectId = objectId;
+        m_objSrgDirty = true;
+    }
+
+    void EmitterInstance::ReconfigureObjectSrg()
+    {
+        if (!m_objSrg)
+        {
+            return;
+        }
+
+        m_objSrg->SetConstant(m_objectIdIndex, m_objectId);
+
+        if (m_material && m_material->UsesSceneMaterialSrg())
+        {
+            m_objSrg->SetConstant(m_materialTypeIdIndex, m_material->GetMaterialTypeId());
+            m_objSrg->SetConstant(m_materialInstanceIdIndex, m_material->GetMaterialInstanceId());
+        }
+
+        // Optional input: not every object SRG layout declares lighting channels. SetConstant through a
+        // name index returns false without logging when the input is absent.
+        m_objSrg->SetConstant(m_lightingChannelMaskIndex, m_lightingChannelMask);
+    }
+
     bool EmitterInstance::TryRebuildPipeline()
     {
         if (!m_needsPipelineRebuild && !m_needsMaterialOverrideApply)
@@ -148,6 +174,10 @@ namespace OpenParticle
         {
             auto& objSrgAsset = m_material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
             m_objSrg = AZ::RPI::ShaderResourceGroup::Create(objSrgAsset, objectSrgLayout->GetName());
+            m_objectIdIndex.Reset();
+            m_materialTypeIdIndex.Reset();
+            m_materialInstanceIdIndex.Reset();
+            m_lightingChannelMaskIndex.Reset();
         }
 
         m_material->ForAllShaderItems(
@@ -170,7 +200,7 @@ namespace OpenParticle
                     drawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(shaderAsset->GetDrawListName());
                 }
 
-                if (!m_scene->HasOutputForPipelineState(drawListTag))
+                if (!m_scene || !m_scene->HasOutputForPipelineState(drawListTag))
                 {
                     return true;
                 }
@@ -208,6 +238,7 @@ namespace OpenParticle
             });
 
         m_materialChangeId = m_material->GetCurrentChangeId();
+        m_objSrgDirty = true;
     }
 
     bool ParticlePipelineState::Setup(AZ::u32 key)
