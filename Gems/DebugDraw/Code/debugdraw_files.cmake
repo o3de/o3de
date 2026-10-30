@@ -10,6 +10,8 @@ set(FILES
     Include/DebugDraw/DebugDrawBus.h
     Source/DebugDrawLineComponent.cpp
     Source/DebugDrawLineComponent.h
+    Source/DebugDrawOctreeComponent.cpp
+    Source/DebugDrawOctreeComponent.h
     Source/DebugDrawRayComponent.cpp
     Source/DebugDrawRayComponent.h
     Source/DebugDrawSphereComponent.cpp

@@ -12,8 +12,14 @@ find_library(COREVIDEO_FRAMEWORK CoreVideo)
 
 find_package(OpenGL REQUIRED)
 
+find_package(Qt6GuiPrivate CONFIG REQUIRED GLOBAL
+    PATHS "${QT_PATH}/lib/cmake/Qt6GuiPrivate"
+    NO_DEFAULT_PATH
+)
+
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
+        Qt6::GuiPrivate
         ${IOKIT_LIBRARY}
         ${OpenGL_LIBRARIES}
         ${APPKIT_LIBRARY}

@@ -21,7 +21,7 @@ ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-linux-aarch64            
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-linux-aarch64                               TARGETS Lua                         PACKAGE_HASH 4d30067fc494ac27acd72b0bf18099c19c0a44ac9bd46b23db66ad780e72374a)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.1-rev1-linux-aarch64                         TARGETS mcpp                        PACKAGE_HASH 817d31b94d1217b6e47bd5357b3a07a79ab6aa93452c65ff56831d0590c5169d)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-linux-aarch64                            TARGETS mikkelsen                   PACKAGE_HASH 62f3f316c971239a2b86d7c47a68fee9be744de3a4f9b00533b32f33a4764f8b)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev9-linux-aarch64                               TARGETS Qt                          PACKAGE_HASH da80840ecd3f7a074edecbb3dedb1ff36c568cfe4943e18d9559e9fca9f151bc)
+ly_associate_package(PACKAGE_NAME qt-6.11.2-rev1-linux-aarch64                               TARGETS Qt                          PACKAGE_HASH b62b478b9df69335d66b80373de55bd0db1c56b8301b216bf179637dad60e96a)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-linux-aarch64                              TARGETS PNG                         PACKAGE_HASH fcf646c1b1b4163000efdb56d7c8f086b6ce0a520da5c8d3ffce4e1329ae798a)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-linux-aarch64                     TARGETS libsamplerate               PACKAGE_HASH 751484da1527432cd19263909f69164d67b25644f87ec1d4ec974a343defacea)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev2-linux-aarch64          TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH 2bc6a43f60c8206b2606a65738e0fcf3b3b17e0db16089404d8389d337c85ad6)
@@ -38,3 +38,4 @@ ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev7-linux-aarch64    
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux-aarch64                           TARGETS SQLite                      PACKAGE_HASH 5cc1fd9294af72514eba60509414e58f1a268996940be31d0ab6919383f05118)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux-aarch64               TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 0bac80fc09094c4fd89a845af57ebe4ef86ff8d46e92a448c6986f9880f9ee62)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux-aarch64         TARGETS vulkan-validationlayers     PACKAGE_HASH e67a15a95e14397ccdffd70d17f61079e5720fea22b0d21e135497312419a23f)
+ly_associate_package(PACKAGE_NAME pyside6-6.11.2-py3.10-rev1-linux-aarch64                   TARGETS pyside6                     PACKAGE_HASH f0211df6ad1222af1cf17b4f0a9a6a0bcfe5d722ba178778fd31359b0175ac5a)

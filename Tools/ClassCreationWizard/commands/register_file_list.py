@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from typing import Optional, Tuple
 
+from cmake_text import find_files_block_end
 from command_plugin import WizardCommand, CommandContext, CommandRegistry
 
 
@@ -234,17 +235,14 @@ class RegisterFileListCommand(WizardCommand):
         else:
             text = "set(FILES\n)\n"
 
-        match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-        if match:
-            end_pos = match.end(1)
+        end_pos = find_files_block_end(text)
+        if end_pos is not None:
             if rel_hdr not in text:
                 text = text[:end_pos] + f"    {rel_hdr}\n" + text[end_pos:]
 
-            match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-            if match:
-                end_pos = match.end(1)
-                if rel_cpp not in text:
-                    text = text[:end_pos] + f"    {rel_cpp}\n" + text[end_pos:]
+            end_pos = find_files_block_end(text)
+            if rel_cpp not in text:
+                text = text[:end_pos] + f"    {rel_cpp}\n" + text[end_pos:]
         else:
             text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n    {rel_cpp}\n)\n"
 

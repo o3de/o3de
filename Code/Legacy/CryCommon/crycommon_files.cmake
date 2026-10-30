@@ -69,9 +69,7 @@ set(FILES
     MathConversion.h
     AndroidSpecific.h
     AppleSpecific.h
-    Linux32Specific.h
     Linux64Specific.h
-    Linux_Win32Wrapper.h
     LinuxSpecific.h
     LoadScreenBus.h
     MacSpecific.h

@@ -32,8 +32,6 @@ if(UNIX)
     ly_target_link_libraries(mikktspace PUBLIC m)
 endif()
 
-ly_create_alias(NAME mikkelsen NAMESPACE 3rdParty TARGETS 3rdParty::mikktspace)
-
 ly_install_files(
     FILES
         LICENSE.txt

@@ -156,7 +156,6 @@ function(_o3de_compiler_launcher)
     # and CMAKE_VS_GLOBALS redirects MSBuild to use it.
     # When invoked as cl.exe, ccache/sccache detect they are wrapping MSVC and proxy the call to the real cl.exe found in PATH.
     # Compiler launchers also require embedded debug information (/Z7 instead of /Zi) to work correctly with MSVC.
-    # CMAKE_MSVC_DEBUG_INFORMATION_FORMAT is set here; platform config files should also add /Z7 flags as a fallback.
     if (CMAKE_GENERATOR MATCHES "Visual Studio")
         # Prefer the C++ launcher; fall back to C launcher
         set(cl_vs_launcher "${cl_CXX_resolved}")

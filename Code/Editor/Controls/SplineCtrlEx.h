@@ -116,7 +116,7 @@ public:
 
     float SnapTimeToGridVertical(float time);
 
-    void OnUserCommand(UINT cmd);
+    void OnUserCommand(unsigned int cmd);
     void FitSplineToViewWidth();
     void FitSplineToViewHeight();
     void FitSplineHeightToValueRange();
@@ -247,7 +247,7 @@ protected:
 
     virtual void captureMouseImpl() = 0;
     virtual void releaseMouseImpl() = 0;
-    virtual void setCursorImpl(UINT cursor) = 0;
+    virtual void setCursorImpl(unsigned int cursor) = 0;
 
     virtual ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer);
 
@@ -406,7 +406,7 @@ protected:
 
     void captureMouseImpl() override { grabMouse(); }
     void releaseMouseImpl() override { releaseMouse(); }
-    void setCursorImpl(UINT cursor) override { setCursor(CMFCUtils::LoadCursor(cursor)); }
+    void setCursorImpl(unsigned int cursor) override { setCursor(CMFCUtils::LoadCursor(cursor)); }
 
 protected:
     QRubberBand* m_rubberBand;

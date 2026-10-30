@@ -23,12 +23,12 @@ public:
     virtual bool RegisterListener(ISystemEventListener* pListener);
     virtual bool RemoveListener(ISystemEventListener* pListener);
 
-    virtual void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam);
+    virtual void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam);
     virtual void Update();
 
     // ~ISystemEventDispatcher
 private:
-    void OnSystemEventAnyThread(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam);
+    void OnSystemEventAnyThread(ESystemEvent event, uintptr_t wparam, uintptr_t lparam);
 
     typedef CListenerSet<ISystemEventListener*> TSystemEventListeners;
     TSystemEventListeners   m_listeners;
@@ -37,8 +37,8 @@ private:
     struct SEventParams
     {
         ESystemEvent event;
-        UINT_PTR wparam;
-        UINT_PTR lparam;
+        uintptr_t wparam;
+        uintptr_t lparam;
     };
 
     typedef CryMT::queue<SEventParams> TSystemEventQueue;

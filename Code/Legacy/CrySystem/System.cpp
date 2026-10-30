@@ -844,15 +844,15 @@ void CSystem::Warning(EValidatorModule module, EValidatorSeverity severity, int 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
+void CSystem::ShowMessage(const char* text, const char* caption, EShowMessageType eType)
 {
     if (m_pUserCallback)
     {
-        m_pUserCallback->ShowMessage(text, caption, uType);
+        m_pUserCallback->ShowMessage(text, caption, eType);
     }
     else
     {
-        CryMessageBox(text, caption, uType);
+        CryMessageBox(text, caption, eType);
     }
 }
 
@@ -1180,7 +1180,7 @@ void CSystem::OnLogLevelCvarChanged(ICVar* pArgs)
 }
 
 
-void CSystem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+void CSystem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
 {
     switch (event)
     {

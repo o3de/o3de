@@ -10,18 +10,17 @@
 #include "UiTestScrollBoxDataProviderComponent.h"
 #include "UiCustomImageComponent.h"
 
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 
 namespace LyShineExamples
 {
     class LyShineExamplesModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(LyShineExamplesModule, "{BC028F50-D2C4-4A71-84D1-F1BDC727019A}", CryHooksModule);
+        AZ_RTTI(LyShineExamplesModule, "{BC028F50-D2C4-4A71-84D1-F1BDC727019A}", AZ::Module);
 
         LyShineExamplesModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

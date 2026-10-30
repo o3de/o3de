@@ -344,7 +344,7 @@ private:
     {
         SStringData testData(szString, nStrLen);
         char* szResult = stl::find_in_map(m_stringToExistingStringMap, testData, nullptr);
-        assert(!szResult || !_stricmp(szResult, szString));
+        assert(!szResult || !azstricmp(szResult, szString));
         return szResult;
     }
 };

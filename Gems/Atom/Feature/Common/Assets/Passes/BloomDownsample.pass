@@ -32,6 +32,8 @@
                 {
                     "Name": "BlurImageResource",
                     "SlotType": "Output",
+                    // This slot only owns BlurPassImage for the blur pass, auto binding it would overwrite m_targetMipLevel0.
+                    "ShaderInputName": "NoBind",
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],

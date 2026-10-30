@@ -40,7 +40,7 @@ public:
 
     // Used to receive events from widgets where SIGNALS aren't available or implemented yet.
     // Required override.
-    void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+    void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
 
     // you are required to implement this to satisfy the unregister/registerclass requirements on "AzToolsFramework::RegisterViewPane"
     // make sure you pick a unique GUID
