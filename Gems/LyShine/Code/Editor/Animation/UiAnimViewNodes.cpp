@@ -1291,7 +1291,7 @@ int CUiAnimViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, con
 {
     if (const char* pCh = strstr(nodeName, ".["))
     {
-        char matPath[MAX_PATH];
+        char matPath[AZ_TRAIT_OS_MAX_PATH_LEN];
         azstrncpy(matPath, AZ_ARRAY_SIZE(matPath), nodeName, (size_t)(pCh - nodeName));
         matName = matPath;
         pCh += 2;
