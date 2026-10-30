@@ -191,6 +191,9 @@ namespace AzToolsFramework
         AZ::Crc32 m_lastConsumedInputChannelIdCrc32;
         // Where the mouse cursor was at the last cursor event.
         QPoint m_previousGlobalCursorPosition;
+        // The last cursor position seen while captured with cursor warping. Motion is measured between
+        // consecutive moves because moves queued before a warp took effect carry pre-warp positions.
+        QPoint m_lastCapturedCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
         // Controls the cursor behavior.

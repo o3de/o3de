@@ -278,6 +278,8 @@ namespace AzToolsFramework
             switch (m_cursorMode)
             {
             case CursorInputMode::CursorModeCaptured:
+                // The cursor is warped back to the position it had when capture began.
+                m_lastCapturedCursorPosition = m_previousGlobalCursorPosition;
                 qApp->setOverrideCursor(Qt::BlankCursor);
                 m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
                 break;
@@ -548,7 +550,25 @@ namespace AzToolsFramework
     {
         // Native capture reports movement separately while keeping the cursor stationary.
         const bool nativeCaptureActive = m_nativeCursorCapture && m_nativeCursorCapture->IsActive();
-        const QPoint cursorDelta = nativeCaptureActive ? QPoint(0, 0) : globalCursorPosition - m_previousGlobalCursorPosition;
+        QPoint cursorDelta(0, 0);
+        if (!nativeCaptureActive)
+        {
+            if (m_cursorMode == CursorInputMode::CursorModeCaptured)
+            {
+                // Moves queued before a warp took effect still carry pre-warp positions, so measuring
+                // each one against the anchor would count the same motion again for every queued move.
+                // Measure against the previous move instead. A move landing on the anchor is the warp.
+                if (globalCursorPosition != m_previousGlobalCursorPosition)
+                {
+                    cursorDelta = globalCursorPosition - m_lastCapturedCursorPosition;
+                }
+                m_lastCapturedCursorPosition = globalCursorPosition;
+            }
+            else
+            {
+                cursorDelta = globalCursorPosition - m_previousGlobalCursorPosition;
+            }
+        }
         QScreen* screen = m_sourceWidget->screen();
         const QRect widgetRect(m_sourceWidget->mapToGlobal(QPoint(0, 0)), m_sourceWidget->size());
 
@@ -559,7 +579,7 @@ namespace AzToolsFramework
         switch (m_cursorMode)
         {
         case CursorInputMode::CursorModeCaptured:
-            if (!nativeCaptureActive)
+            if (!nativeCaptureActive && globalCursorPosition != m_previousGlobalCursorPosition)
             {
                 AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
             }
