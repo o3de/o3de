@@ -18,6 +18,8 @@
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Util/WhiteBoxSnapUtil.h"
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
@@ -787,6 +789,8 @@ namespace WhiteBox
             }
         }
 
+        RebuildWireframeMesh();
+
         EditorWhiteBoxComponentModeRequestBus::Event(
             AZ::EntityComponentIdPair{GetEntityId(), GetId()},
             &EditorWhiteBoxComponentModeRequests::MarkWhiteBoxIntersectionDataDirty);
@@ -855,6 +859,10 @@ namespace WhiteBox
             {
                 layerRenderMesh->UpdateTransform(world);
             }
+        }
+        if (m_wireframeRenderMesh)
+        {
+            m_wireframeRenderMesh->UpdateTransform(world);
         }
 
         // Defer the heavy rebuild to OnTick instead of running it synchronously
@@ -1085,6 +1093,7 @@ namespace WhiteBox
     {
         // clear the optional (and any per-layer tinted meshes)
         m_layerRenderMeshes.clear();
+        m_wireframeRenderMesh.reset();
         m_renderMesh.reset();
     }
 
@@ -1093,6 +1102,84 @@ namespace WhiteBox
         // if the optional has a value we know a render mesh exists
         // note: This implicitly implies that the Entity is visible
         return m_renderMesh.has_value();
+    }
+
+    void EditorWhiteBoxComponent::OnWireframeModeChange()
+    {
+        RebuildWireframeMesh();
+    }
+
+    void EditorWhiteBoxComponent::RebuildWireframeMesh()
+    {
+        // Products of Assets/materials/Wireframe in this gem. Overlay edges are dark so they read on the shaded
+        // surface; on their own they are light so they read against the dark viewport.
+        static constexpr const char* OverlayMaterialPath = "materials/wireframe/whiteboxwireframe.azmaterial";
+        static constexpr const char* WireframeOnlyMaterialPath = "materials/wireframe/whiteboxwireframeonly.azmaterial";
+
+        // Needs the shaded mesh's render data, so it also waits for a concrete render mesh (none while the
+        // entity is hidden or Edges Only is on).
+        if (m_wireframeMode == WireframeMode::Off || !m_renderMesh.has_value() || m_renderData.m_faces.empty())
+        {
+            m_wireframeRenderMesh.reset();
+            ApplyWireframeVisibility();
+            return;
+        }
+
+        const AZ::Data::AssetId materialId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(
+            m_wireframeMode == WireframeMode::Overlay ? OverlayMaterialPath : WireframeOnlyMaterialPath,
+            AZ::RPI::AssetUtils::TraceLevel::Warning, azrtti_typeid<AZ::RPI::MaterialAsset>());
+        if (!materialId.IsValid())
+        {
+            m_wireframeRenderMesh.reset();
+            ApplyWireframeVisibility();
+            return;
+        }
+
+        if (!m_wireframeRenderMesh)
+        {
+            WhiteBoxRequestBus::BroadcastResult(
+                m_wireframeRenderMesh, &WhiteBoxRequests::CreateAuxiliaryRenderMeshInterface, GetEntityId());
+        }
+        if (!m_wireframeRenderMesh)
+        {
+            return;
+        }
+
+        // One material group for every face: per-face materials and paint colours would only split the draw.
+        WhiteBoxRenderData wireframeData = m_renderData;
+        wireframeData.m_material.m_materialAsset =
+            AZ::Data::Asset<AZ::RPI::MaterialAsset>(materialId, azrtti_typeid<AZ::RPI::MaterialAsset>());
+        wireframeData.m_material.m_lightmapUvs = false;
+        for (WhiteBoxFace& face : wireframeData.m_faces)
+        {
+            face.m_materialAsset = {};
+            face.m_paintColor = 0;
+        }
+
+        m_wireframeRenderMesh->SetMaterialAssetOverride(materialId);
+        m_wireframeRenderMesh->BuildMesh(wireframeData, m_worldFromLocal);
+        m_wireframeRenderMesh->UpdateMaterial(m_material); // compiles the material instance
+        ApplyWireframeVisibility();
+    }
+
+    void EditorWhiteBoxComponent::ApplyWireframeVisibility()
+    {
+        const bool showShaded = m_wireframeMode != WireframeMode::WireframeOnly || !m_wireframeRenderMesh;
+        if (m_renderMesh.has_value())
+        {
+            (*m_renderMesh)->SetVisiblity(showShaded);
+        }
+        for (auto& layerRenderMesh : m_layerRenderMeshes)
+        {
+            if (layerRenderMesh)
+            {
+                layerRenderMesh->SetVisiblity(showShaded);
+            }
+        }
+        if (m_wireframeRenderMesh)
+        {
+            m_wireframeRenderMesh->SetVisiblity(true);
+        }
     }
 
     void EditorWhiteBoxComponent::OnEdgesOnlyChange()

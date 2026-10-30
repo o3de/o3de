@@ -37,7 +37,7 @@ namespace WhiteBox
 
         for (size_t idxFace = 0; idxFace < faceCount; idxFace++)
         {
-            const auto face = faceData[idxFace];
+            const WhiteBoxFace& face = faceData[idxFace];
 
             // v1
             positions[idxFace * 3 + 0] = face.m_v1.m_position;

@@ -79,7 +79,7 @@ namespace WhiteBox
 
         for (size_t inFaceIndex = 0; inFaceIndex < inFaceCount; ++inFaceIndex)
         {
-            const WhiteBoxFace face = inFaces[inFaceIndex];
+            const WhiteBoxFace& face = inFaces[inFaceIndex];
             const AZ::Vector3& vertex1 = face.m_v1.m_position;
             const AZ::Vector3& vertex2 = face.m_v2.m_position;
             const AZ::Vector3& vertex3 = face.m_v3.m_position;

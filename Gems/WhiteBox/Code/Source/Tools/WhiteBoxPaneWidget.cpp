@@ -12,6 +12,7 @@
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "Tools/WhiteBoxLayerUtil.h"
+#include "Viewport/WhiteBoxViewportConstants.h"
 #include "Util/WhiteBoxModelConvert.h"
 #include "SubComponentModes/EditorWhiteBoxTransformModeBus.h"
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
@@ -24,6 +25,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
@@ -492,6 +494,7 @@ namespace WhiteBox
         mainLayout->addWidget(BuildEntityTransformSection());
         mainLayout->addWidget(BuildModeSection());
         mainLayout->addWidget(BuildLayersSection());
+        mainLayout->addWidget(BuildViewportHandlesSection());
         mainLayout->addStretch();
 
         setWidget(container);
@@ -839,6 +842,56 @@ namespace WhiteBox
         return group;
     }
 
+
+    namespace
+    {
+        constexpr const char* ViewportHandlesObjectName = "WhiteBoxViewportHandlesSection";
+    }
+
+    QWidget* WhiteBoxPaneWidget::BuildViewportHandlesSection()
+    {
+        auto* group = new QGroupBox(tr("Viewport Handles"));
+        group->setObjectName(ViewportHandlesObjectName);
+        auto* layout = new QFormLayout(group);
+
+        // One spin box per setting, in step with its console variable: a change applies at once and is saved for
+        // the next session. The boxes are kept so Reset can put them back without writing the values twice.
+        auto spinBoxes = AZStd::make_shared<AZStd::vector<QDoubleSpinBox*>>();
+        for (const ViewportHandleSetting& setting : ViewportHandleSettings())
+        {
+            auto* spin = new QDoubleSpinBox();
+            spin->setDecimals(3);
+            spin->setRange(setting.m_min, setting.m_max);
+            spin->setSingleStep(setting.m_step);
+            spin->setValue(setting.m_get());
+            spin->setToolTip(tr(setting.m_tooltip));
+            layout->addRow(tr(setting.m_label), spin);
+            spinBoxes->push_back(spin);
+
+            connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                [settingPtr = &setting](const double value)
+                {
+                    settingPtr->m_set(aznumeric_cast<float>(value));
+                    SaveViewportHandleSettings();
+                });
+        }
+
+        auto* resetButton = new QPushButton(tr("Reset to Defaults"));
+        layout->addRow(resetButton);
+        connect(resetButton, &QPushButton::clicked, this,
+            [spinBoxes]()
+            {
+                ResetViewportHandleSettings();
+                const auto settings = ViewportHandleSettings();
+                for (size_t i = 0; i < settings.size() && i < spinBoxes->size(); ++i)
+                {
+                    const QSignalBlocker blocker((*spinBoxes)[i]); // the values were just reset and cleared from the saved set
+                    (*spinBoxes)[i]->setValue(settings[i].m_get());
+                }
+            });
+
+        return group;
+    }
 
     QWidget* WhiteBoxPaneWidget::BuildLayersSection()
     {
@@ -1803,7 +1856,8 @@ namespace WhiteBox
             const QList<QGroupBox*> groups = container->findChildren<QGroupBox*>();
             for (QGroupBox* group : groups)
             {
-                if (group->title() != tr("Entity"))
+                // The viewport handle sizes are global, so that section stays usable with nothing selected.
+                if (group->title() != tr("Entity") && group->objectName() != ViewportHandlesObjectName)
                 {
                     group->setEnabled(hasComponent);
                 }

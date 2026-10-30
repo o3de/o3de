@@ -565,6 +565,7 @@ namespace WhiteBox
                 ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport)
                 ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
                 ->Field("EdgesOnly", &EditorWhiteBoxComponent::m_edgesOnly)
+                ->Field("WireframeMode", &EditorWhiteBoxComponent::m_wireframeMode)
                 ->Field("UseGlobalTint", &EditorWhiteBoxComponent::m_useGlobalTint)
                 ->Field("MaterialOverride", &EditorWhiteBoxComponent::m_materialOverrideAssetId)
                 ->Field("DefaultMaterialAsset", &EditorWhiteBoxComponent::m_defaultMaterialAsset)
@@ -675,6 +676,15 @@ namespace WhiteBox
                         QT_TRANSLATE_NOOP("WhiteBox", "Hide the solid render mesh and draw only the mesh edges."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnEdgesOnlyChange)
                     ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_wireframeMode,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Wireframe"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw the mesh edges on the GPU. Overlay keeps the shaded mesh and draws dark edges over it; "
+                        "Wireframe Only hides the shaded mesh. Editor only: game mode is unaffected."))
+                    ->EnumAttribute(WireframeMode::Off, QT_TRANSLATE_NOOP("WhiteBox", "Off"))
+                    ->EnumAttribute(WireframeMode::Overlay, QT_TRANSLATE_NOOP("WhiteBox", "Overlay"))
+                    ->EnumAttribute(WireframeMode::WireframeOnly, QT_TRANSLATE_NOOP("WhiteBox", "Wireframe Only"))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnWireframeModeChange)
+                    ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_lightmapUvs,
                         QT_TRANSLATE_NOOP("WhiteBox", "Lightmap UVs"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Give the mesh a second, non-overlapping UV set (UV1, exported as glTF TEXCOORD_1) for baked lighting. "
@@ -694,6 +704,12 @@ namespace WhiteBox
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Re-evaluate every non-excluded White Box in the level against the current Cut Others cutters."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnRefreshGlobalBooleans)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Refresh Global Booleans"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_boolean, "",
                         QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's mesh."))
@@ -1178,6 +1194,7 @@ namespace WhiteBox
         m_componentModeDelegate.Disconnect();
         m_editorMeshAsset->Release();
         m_layerRenderMeshes.clear();
+        m_wireframeRenderMesh.reset();
         m_renderMesh.reset();
         m_whiteBox.reset();
         m_displayMesh.reset();

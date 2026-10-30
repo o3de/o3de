@@ -112,6 +112,7 @@ namespace WhiteBox
         QWidget* BuildEntityTransformSection();
         QWidget* BuildModeSection();
         QWidget* BuildLayersSection();
+        QWidget* BuildViewportHandlesSection();
 
         //! The White Box component on the entity currently picked in the dropdown (null if none).
         EditorWhiteBoxComponent* CurrentComponent() const;

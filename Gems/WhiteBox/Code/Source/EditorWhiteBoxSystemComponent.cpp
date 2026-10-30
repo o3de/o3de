@@ -13,6 +13,7 @@
 #include "Components/WhiteBoxConvexDecomposition.h"
 #include "Tools/WhiteBoxPaneWidget.h"
 #include "Tools/WhiteBoxUvEditorPane.h"
+#include "Viewport/WhiteBoxViewportConstants.h"
 #include "WhiteBoxToolApiReflection.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -84,6 +85,7 @@ namespace WhiteBox
     void EditorWhiteBoxSystemComponent::Activate()
     {
         WhiteBoxSystemComponent::Activate();
+        LoadViewportHandleSettings(); // sizes the user set in the pane, applied before any White Box is drawn
         RegisterAsset<Pipeline::WhiteBoxMeshAssetHandler, Pipeline::WhiteBoxMeshAsset>(m_assetHandlers);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();

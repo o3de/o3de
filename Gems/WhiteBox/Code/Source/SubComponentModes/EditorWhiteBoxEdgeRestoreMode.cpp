@@ -262,7 +262,7 @@ namespace WhiteBox
 
             // calculate the radius of the manipulator based
             // on the distance from the camera
-            const float radius = cl_whiteBoxVertexManipulatorSize *
+            const float radius = (hoveredVertexHandle == vertex.m_handle ? cl_whiteBoxVertexHoverSize : cl_whiteBoxVertexDrawSize) *
                 AzToolsFramework::CalculateScreenToWorldMultiplier(
                                      worldFromLocal.TransformPoint(vertex.m_bound.m_center), cameraState);
 

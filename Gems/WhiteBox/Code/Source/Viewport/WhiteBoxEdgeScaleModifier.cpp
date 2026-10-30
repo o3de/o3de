@@ -10,6 +10,7 @@
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
+#include "Viewport/WhiteBoxManipulatorViews.h"
 #include "WhiteBoxEdgeScaleModifier.h"
 
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -95,8 +96,7 @@ namespace WhiteBox
                 return mouseOver ? ed_whiteBoxVertexHover : defaultColor;
             };
 
-            auto sphereView = AzToolsFramework::CreateManipulatorViewSphere(
-                ed_whiteBoxVertexUnselected, cl_whiteBoxVertexManipulatorSize, sphereColor, true);
+            auto sphereView = CreateManipulatorViewVertexDot(ed_whiteBoxVertexUnselected, sphereColor, true);
             views.emplace_back(AZStd::move(sphereView));
             manipulator->SetViews(AZStd::move(views));
             manipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());

@@ -862,7 +862,7 @@ namespace WhiteBox
         {
             auto& vertexIntersection = m_vertexIntersection.value();
             auto handles = AZStd::array<Api::VertexHandle, 1>({ vertexIntersection.GetHandle() });
-            DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexHover);
+            DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexHover, true);
         }
 
         if (m_whiteBoxSelection)

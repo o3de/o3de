@@ -25,6 +25,9 @@
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/PackedVector3.h>
@@ -33,8 +36,131 @@
 
 namespace WhiteBox
 {
+    AZ_CVAR(
+        bool, wb_shareRenderModels, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "White Boxes with identical geometry and material layout draw with one shared model instead of each building their own.");
+
+    //! A model built from one geometry, shared by every White Box whose geometry and material layout match.
+    struct SharedModel
+    {
+        AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
+        AZ::Data::Instance<AZ::RPI::Model> m_model;
+        AZ::u32 m_vertexCount = 0;
+    };
+
+    //! A material instance with one asset's settings applied, shared by every White Box group that wants the same.
+    struct SharedMaterial
+    {
+        AZ::Data::Instance<AZ::RPI::Material> m_instance;
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_asset;
+        bool m_custom = false; //!< The group's own material asset was used, not the built-in one.
+    };
+
     namespace
     {
+        AZStd::unordered_map<AZ::u64, AZStd::weak_ptr<SharedMaterial>>& SharedMaterials()
+        {
+            static AZStd::unordered_map<AZ::u64, AZStd::weak_ptr<SharedMaterial>> materials;
+            return materials;
+        }
+
+        // Process-wide, main thread only. Entries expire with their last user and are dropped on the next insert.
+        AZStd::unordered_map<AZ::u64, AZStd::weak_ptr<SharedModel>>& SharedModels()
+        {
+            static AZStd::unordered_map<AZ::u64, AZStd::weak_ptr<SharedModel>> models;
+            return models;
+        }
+
+        // Every AtomRenderMesh alive, for wb_renderStats and wb_renderVisible. Main thread only.
+        AZStd::unordered_set<const AtomRenderMesh*>& LiveMeshes()
+        {
+            static AZStd::unordered_set<const AtomRenderMesh*> meshes;
+            return meshes;
+        }
+
+        struct MeshBuildStats
+        {
+            AZ::u32 m_built = 0;
+            AZ::u32 m_shared = 0;
+            double m_builtSeconds = 0.0;
+            double m_sharedSeconds = 0.0;
+            // Where a shared mesh's time goes.
+            double m_groupSeconds = 0.0;    //!< Culling and grouping the faces, before the key.
+            double m_keySeconds = 0.0;      //!< Hashing the faces.
+            double m_materialSeconds = 0.0; //!< Finding or making the materials.
+            AZ::u32 m_materialsMade = 0;
+            AZ::u32 m_materialsShared = 0;
+            double m_acquireSeconds = 0.0;  //!< Handing the model to the mesh feature processor.
+        };
+
+        MeshBuildStats& Stats()
+        {
+            static MeshBuildStats stats;
+            return stats;
+        }
+
+        void PrintMeshStats(const AZ::ConsoleCommandContainer&)
+        {
+            const MeshBuildStats& s = Stats();
+            AZ_Printf(
+                "WhiteBox", "Render meshes: %u built (%.1f ms total), %u shared (%.1f ms total), %zu models cached",
+                s.m_built, s.m_builtSeconds * 1000.0, s.m_shared, s.m_sharedSeconds * 1000.0, SharedModels().size());
+            AZ_Printf(
+                "WhiteBox", "Shared mesh time: group %.1f ms, key %.1f ms, materials %.1f ms, acquire %.1f ms",
+                s.m_groupSeconds * 1000.0, s.m_keySeconds * 1000.0, s.m_materialSeconds * 1000.0, s.m_acquireSeconds * 1000.0);
+            AZ_Printf("WhiteBox", "Material instances: %u made, %u shared", s.m_materialsMade, s.m_materialsShared);
+        }
+        AZ_CONSOLEFREEFUNC("wb_meshStats", PrintMeshStats, AZ::ConsoleFunctorFlags::Null, "Print how many White Box render meshes were built or shared.");
+
+        void ResetMeshStats(const AZ::ConsoleCommandContainer&)
+        {
+            Stats() = MeshBuildStats{};
+        }
+        AZ_CONSOLEFREEFUNC("wb_meshStatsReset", ResetMeshStats, AZ::ConsoleFunctorFlags::Null, "Reset the White Box render mesh counters.");
+
+        // FNV-1a over the values that reach the vertex streams.
+        struct KeyHasher
+        {
+            AZ::u64 m_hash = 14695981039346656037ull;
+
+            void Bytes(const void* data, size_t size)
+            {
+                const auto* bytes = static_cast<const AZ::u8*>(data);
+                for (size_t i = 0; i < size; ++i)
+                {
+                    m_hash = (m_hash ^ bytes[i]) * 1099511628211ull;
+                }
+            }
+            template<typename T>
+            void Add(const T& value)
+            {
+                Bytes(&value, sizeof(T));
+            }
+            void Add(const AZ::Vector2& v)
+            {
+                const float f[2] = { v.GetX(), v.GetY() };
+                Bytes(f, sizeof(f));
+            }
+            void Add(const AZ::Vector3& v)
+            {
+                const float f[3] = { v.GetX(), v.GetY(), v.GetZ() };
+                Bytes(f, sizeof(f));
+            }
+            void Add(const AZ::Vector4& v)
+            {
+                const float f[4] = { v.GetX(), v.GetY(), v.GetZ(), v.GetW() };
+                Bytes(f, sizeof(f));
+            }
+            void Add(const WhiteBoxVertex& v)
+            {
+                Add(v.m_position);
+                Add(v.m_uv);
+                Add(v.m_normal);
+                Add(v.m_blend);
+                Add(v.m_lightmapUv);
+            }
+        };
+
         AZStd::string SlotLabel(const AZ::Data::AssetId& material, const AZ::u32 paintColor)
         {
             AZStd::string label = "White Box Default";
@@ -74,6 +200,7 @@ namespace WhiteBox
         : m_entityId(entityId)
         , m_isPrimary(isPrimary)
     {
+        LiveMeshes().insert(this);
         // Only the primary mesh owns the per-entity mesh-handle state (single-handler bus).
         if (m_isPrimary)
         {
@@ -85,6 +212,7 @@ namespace WhiteBox
 
     AtomRenderMesh::~AtomRenderMesh()
     {
+        LiveMeshes().erase(this);
         m_materialGroups.clear();
         if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
         {
@@ -233,7 +361,144 @@ namespace WhiteBox
         return true;
     }
 
-    void AtomRenderMesh::CreateModelAsset()
+    namespace
+    {
+        // Settings a group's material instance is made with. A custom asset keeps its authored colour and texture.
+        void ApplyMaterialSettings(
+            AZ::RPI::Material& materialInstance, const bool customMaterial, const AZ::u32 paintColor, const WhiteBoxMaterial& material)
+        {
+            if (customMaterial && paintColor == 0)
+            {
+                return;
+            }
+            // Per-layer tint travels in COLOR0, so the base colour must be white; global tint uses baseColor.
+            const bool painted = paintColor != 0;
+            const bool useVertexColor = material.m_useVertexColor && !painted;
+            const AZ::Color baseColor = painted
+                ? AZ::Color(
+                    float(paintColor & 255) / 255.0f,
+                    float((paintColor >> 8) & 255) / 255.0f,
+                    float((paintColor >> 16) & 255) / 255.0f, 1.0f)
+                : (useVertexColor ? AZ::Color(1.0f, 1.0f, 1.0f, 1.0f) : AZ::Color(material.m_tint));
+            if (const auto& materialPropertyIndex = materialInstance.FindPropertyIndex(AZ::Name("baseColor.color"));
+                materialPropertyIndex.IsValid())
+            {
+                materialInstance.SetPropertyValue(materialPropertyIndex, baseColor);
+            }
+
+            // Enable StandardPBR's vertex colour group; the property id varies by engine version.
+            for (const char* enableName :
+                 {"vertexColor.enable", "vertexColor.useVertexColor", "vertexColor.enableVertexColor",
+                  "vertexColor.toggle"})
+            {
+                if (const auto& idx = materialInstance.FindPropertyIndex(AZ::Name(enableName)); idx.IsValid())
+                {
+                    materialInstance.SetPropertyValue(idx, useVertexColor);
+                    break;
+                }
+            }
+            if (useVertexColor)
+            {
+                if (const auto& idx = materialInstance.FindPropertyIndex(AZ::Name("vertexColor.factor")); idx.IsValid())
+                {
+                    materialInstance.SetPropertyValue(idx, 1.0f);
+                }
+            }
+
+            if (const auto& materialPropertyIndex = materialInstance.FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                materialPropertyIndex.IsValid())
+            {
+                materialInstance.SetPropertyValue(materialPropertyIndex, material.m_useTexture && !painted);
+            }
+        }
+
+        // Everything ApplyMaterialSettings and the asset choice depend on.
+        AZ::u64 MaterialInstanceKey(const AZ::Data::AssetId& assetId, const AZ::u32 paintColor, const WhiteBoxMaterial& material)
+        {
+            KeyHasher key;
+            key.Add(assetId.m_guid);
+            key.Add(assetId.m_subId);
+            key.Add(paintColor);
+            key.Add(material.m_tint);
+            key.Add(material.m_useTexture);
+            key.Add(material.m_useVertexColor);
+            return key.m_hash;
+        }
+
+        AZStd::shared_ptr<SharedMaterial> AcquireSharedMaterial(
+        const AZ::Data::AssetId& assetId, const AZ::u32 paintColor, const WhiteBoxMaterial& material)
+    {
+        const AZ::u64 key = MaterialInstanceKey(assetId, paintColor, material);
+        auto& cache = SharedMaterials();
+        if (const auto found = cache.find(key); found != cache.end())
+        {
+            if (AZStd::shared_ptr<SharedMaterial> shared = found->second.lock())
+            {
+                Stats().m_materialsShared++;
+                return shared;
+            }
+        }
+
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
+        if (assetId.IsValid())
+        {
+            materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(assetId, AZ::RPI::AssetUtils::TraceLevel::Warning);
+        }
+        const bool custom = static_cast<bool>(materialAsset);
+        if (!materialAsset)
+        {
+            materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("materials/whiteboxdefault.azmaterial");
+        }
+        if (!materialAsset)
+        {
+            AZ_Error("WhiteBox", false, "Could not load WhiteBox material.");
+            return nullptr;
+        }
+
+        auto shared = AZStd::make_shared<SharedMaterial>();
+        shared->m_asset = materialAsset;
+        shared->m_custom = custom;
+        shared->m_instance = AZ::RPI::Material::Create(materialAsset);
+        if (!shared->m_instance)
+        {
+            return nullptr;
+        }
+        ApplyMaterialSettings(*shared->m_instance, custom, paintColor, material);
+        Stats().m_materialsMade++;
+
+        if (cache.size() >= 64 && cache.size() % 64 == 0)
+        {
+            for (auto it = cache.begin(); it != cache.end();)
+            {
+                it = it->second.expired() ? cache.erase(it) : AZStd::next(it);
+            }
+        }
+        cache[key] = shared;
+        return shared;
+    }
+    } // namespace
+
+    bool AtomRenderMesh::CreateMaterialInstances(
+        const WhiteBoxMaterial& material, AZStd::vector<AZ::Data::Asset<AZ::RPI::MaterialAsset>>& assets)
+    {
+        assets.clear();
+        for (MaterialGroup& group : m_materialGroups)
+        {
+            AZStd::shared_ptr<SharedMaterial> shared = AcquireSharedMaterial(group.m_assetId, group.m_paintColor, material);
+            if (!shared)
+            {
+                return false;
+            }
+            group.m_shared = shared;
+            group.m_instance = shared->m_instance;
+            group.m_customMaterial = shared->m_custom;
+            group.m_materialKey = MaterialInstanceKey(group.m_assetId, group.m_paintColor, material);
+            assets.push_back(shared->m_asset);
+        }
+        return true;
+    }
+
+    bool AtomRenderMesh::CreateModelAsset(const AZStd::vector<AZ::Data::Asset<AZ::RPI::MaterialAsset>>& materialAssets)
     {
         AZ::RPI::ModelAssetCreator modelCreator;
         modelCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
@@ -242,37 +507,25 @@ namespace WhiteBox
         
         for (uint32_t slot = 0; slot < m_materialGroups.size(); ++slot)
         {
-            MaterialGroup& group = m_materialGroups[slot];
-            AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
-            if (group.m_assetId.IsValid())
-            {
-                materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(
-                    group.m_assetId, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            }
-            group.m_customMaterial = static_cast<bool>(materialAsset);
-            if (!materialAsset)
-            {
-                materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data());
-            }
-            if (!materialAsset)
-            {
-                AZ_Error("WhiteBox", false, "Could not load WhiteBox material.");
-                return;
-            }
-            group.m_instance = AZ::RPI::Material::Create(materialAsset);
+            const MaterialGroup& group = m_materialGroups[slot];
             AZ::RPI::ModelMaterialSlot materialSlot;
             materialSlot.m_stableId = group.m_stableId;
             materialSlot.m_displayName = AZ::Name(SlotLabel(group.m_assetId, group.m_paintColor));
-            materialSlot.m_defaultMaterialAsset = materialAsset;
+            materialSlot.m_defaultMaterialAsset = materialAssets[slot];
             modelCreator.AddMaterialSlot(materialSlot);
         }
 
-        modelCreator.End(m_modelAsset);
+        return modelCreator.End(m_modelAsset);
     }
 
     bool AtomRenderMesh::CreateModel()
     {
         m_model = AZ::RPI::Model::FindOrCreate(m_modelAsset);
+        return AcquireMesh();
+    }
+
+    bool AtomRenderMesh::AcquireMesh()
+    {
         m_meshFeatureProcessor =
             AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(m_entityId);
 
@@ -307,14 +560,18 @@ namespace WhiteBox
         return meshData.VertexCount() != m_vertexCount;
     }
 
-    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData)
+    bool AtomRenderMesh::CreateMesh(const WhiteBoxMeshAtomData& meshData, const uint64_t modelKey, const WhiteBoxMaterial& material)
     {
         if (!CreateLodAsset(meshData))
         {
             return false;
         }
 
-        CreateModelAsset();
+        AZStd::vector<AZ::Data::Asset<AZ::RPI::MaterialAsset>> materialAssets;
+        if (!CreateMaterialInstances(material, materialAssets) || !CreateModelAsset(materialAssets))
+        {
+            return false;
+        }
 
         if (!CreateModel())
         {
@@ -323,6 +580,49 @@ namespace WhiteBox
 
         m_vertexCount = meshData.VertexCount();
 
+        // Offer the model to the next White Box with the same geometry.
+        auto shared = AZStd::make_shared<SharedModel>();
+        shared->m_modelAsset = m_modelAsset;
+        shared->m_model = m_model;
+        shared->m_vertexCount = meshData.VertexCount();
+        m_sharedModel = shared;
+        auto& models = SharedModels();
+        if (models.size() >= 64 && models.size() % 64 == 0)
+        {
+            for (auto it = models.begin(); it != models.end();)
+            {
+                it = it->second.expired() ? models.erase(it) : AZStd::next(it);
+            }
+        }
+        models[modelKey] = shared;
+
+        return true;
+    }
+
+    bool AtomRenderMesh::UseSharedModel(const AZStd::shared_ptr<SharedModel>& shared, const WhiteBoxMaterial& material)
+    {
+        const auto materialStart = AZStd::chrono::steady_clock::now();
+        AZStd::vector<AZ::Data::Asset<AZ::RPI::MaterialAsset>> materialAssets;
+        if (!CreateMaterialInstances(material, materialAssets))
+        {
+            return false;
+        }
+        const auto acquireStart = AZStd::chrono::steady_clock::now();
+        Stats().m_materialSeconds += AZStd::chrono::duration<double>(acquireStart - materialStart).count();
+
+        m_modelAsset = shared->m_modelAsset;
+        m_model = shared->m_model;
+        if (!AcquireMesh())
+        {
+            return false;
+        }
+        Stats().m_acquireSeconds += AZStd::chrono::duration<double>(AZStd::chrono::steady_clock::now() - acquireStart).count();
+
+        // The buffers of an earlier build of this mesh are no longer needed: the shared model owns its own.
+        m_indexBuffer.reset();
+        m_attributes = {};
+        m_vertexCount = 0;
+        m_sharedModel = shared;
         return true;
     }
 
@@ -338,6 +638,7 @@ namespace WhiteBox
 
     void AtomRenderMesh::BuildMesh(const WhiteBoxRenderData& renderData, const AZ::Transform& worldFromLocal)
     {
+        const auto methodStart = AZStd::chrono::steady_clock::now();
         const WhiteBoxFaces culledFaceList = BuildCulledWhiteBoxFaces(renderData.m_faces);
         m_materialGroups.clear();
         AZStd::vector<WhiteBoxFaces> facesByMaterial;
@@ -402,9 +703,62 @@ namespace WhiteBox
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             }
             m_modelAsset = {};
+            m_sharedModel.reset();
             PublishMaterialSlots();
             return;
         }
+        const auto buildStart = AZStd::chrono::steady_clock::now();
+        const double groupSeconds = AZStd::chrono::duration<double>(buildStart - methodStart).count();
+
+        // Identical geometry and material layout draws with one shared model (see SharedModel).
+        KeyHasher key;
+        key.Add(groupedFaces.size());
+        key.Add(renderData.m_material.m_lightmapUvs);
+        key.Add(renderData.m_material.m_lightmapMargin);
+        for (const MaterialGroup& group : m_materialGroups)
+        {
+            key.Add(group.m_assetId.m_guid);
+            key.Add(group.m_assetId.m_subId);
+            key.Add(group.m_paintColor);
+            key.Add(group.m_stableId);
+            key.Add(group.m_indexOffset);
+            key.Add(group.m_indexCount);
+        }
+        for (const WhiteBoxFace& face : groupedFaces)
+        {
+            key.Add(face.m_v1);
+            key.Add(face.m_v2);
+            key.Add(face.m_v3);
+            key.Add(face.m_color);
+            key.Add(face.m_colorFromBlend);
+            key.Add(face.m_hasLightmapUv);
+        }
+        const AZ::u64 modelKey = key.m_hash;
+        const double keySeconds = AZStd::chrono::duration<double>(AZStd::chrono::steady_clock::now() - buildStart).count();
+
+        const auto secondsSince = [](const AZStd::chrono::steady_clock::time_point start)
+        {
+            return AZStd::chrono::duration<double>(AZStd::chrono::steady_clock::now() - start).count();
+        };
+
+        if (wb_shareRenderModels)
+        {
+            const auto found = SharedModels().find(modelKey);
+            if (found != SharedModels().end())
+            {
+                if (AZStd::shared_ptr<SharedModel> shared = found->second.lock(); shared && UseSharedModel(shared, renderData.m_material))
+                {
+                    PublishMaterialSlots();
+                    UpdateTransform(worldFromLocal);
+                    Stats().m_shared++;
+                    Stats().m_sharedSeconds += secondsSince(methodStart);
+                    Stats().m_groupSeconds += groupSeconds;
+                    Stats().m_keySeconds += keySeconds;
+                    return;
+                }
+            }
+        }
+
         if (renderData.m_material.m_lightmapUvs)
         {
             GenerateLightmapUvs(groupedFaces, renderData.m_material.m_lightmapMargin);
@@ -413,11 +767,13 @@ namespace WhiteBox
 
         if (DoesMeshRequireFullRebuild(meshData))
         {
-            if (!CreateMesh(meshData))
+            if (!CreateMesh(meshData, modelKey, renderData.m_material))
             {
                 return;
             }
             PublishMaterialSlots();
+            Stats().m_built++;
+            Stats().m_builtSeconds += secondsSince(methodStart);
         }
         else
         {
@@ -445,58 +801,110 @@ namespace WhiteBox
 
     void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
+        // A group whose settings changed moves to the instance made for the new settings, so the others sharing
+        // the old one are left alone.
+        bool changed = false;
         for (MaterialGroup& group : m_materialGroups)
         {
-            // Custom assets keep their authored color and texture settings.
-            auto& materialInstance = group.m_instance;
-            if (!materialInstance || (group.m_customMaterial && group.m_paintColor == 0))
+            const AZ::u64 key = MaterialInstanceKey(group.m_assetId, group.m_paintColor, material);
+            if (group.m_instance && key == group.m_materialKey)
             {
                 continue;
             }
-            // Per-layer tint travels in COLOR0, so the base colour must be white; global tint uses baseColor.
-            const bool painted = group.m_paintColor != 0;
-            const bool useVertexColor = material.m_useVertexColor && !painted;
-            const AZ::Color baseColor = painted
-                ? AZ::Color(
-                    float(group.m_paintColor & 255) / 255.0f,
-                    float((group.m_paintColor >> 8) & 255) / 255.0f,
-                    float((group.m_paintColor >> 16) & 255) / 255.0f, 1.0f)
-                : (useVertexColor ? AZ::Color(1.0f, 1.0f, 1.0f, 1.0f) : AZ::Color(material.m_tint));
-            if (const auto& materialPropertyIndex = materialInstance->FindPropertyIndex(AZ::Name("baseColor.color"));
-                materialPropertyIndex.IsValid())
+            if (AZStd::shared_ptr<SharedMaterial> shared = AcquireSharedMaterial(group.m_assetId, group.m_paintColor, material))
             {
-                materialInstance->SetPropertyValue(materialPropertyIndex, baseColor);
+                group.m_shared = shared;
+                group.m_instance = shared->m_instance;
+                group.m_customMaterial = shared->m_custom;
+                group.m_materialKey = key;
+                changed = true;
             }
-
-            // Enable StandardPBR's vertex colour group; the property id varies by engine version.
-            for (const char* enableName :
-                 {"vertexColor.enable", "vertexColor.useVertexColor", "vertexColor.enableVertexColor",
-                  "vertexColor.toggle"})
+        }
+        if (changed)
+        {
+            AZ::Render::MaterialAssignmentMap overrides;
+            if (m_isPrimary)
             {
-                if (const auto& idx = materialInstance->FindPropertyIndex(AZ::Name(enableName)); idx.IsValid())
-                {
-                    materialInstance->SetPropertyValue(idx, useVertexColor);
-                    break;
-                }
+                AZ::Render::MaterialComponentRequestBus::EventResult(
+                    overrides, m_entityId, &AZ::Render::MaterialComponentRequests::GetMaterialMapCopy);
             }
-            if (useVertexColor)
-            {
-                if (const auto& idx = materialInstance->FindPropertyIndex(AZ::Name("vertexColor.factor"));
-                    idx.IsValid())
-                {
-                    materialInstance->SetPropertyValue(idx, 1.0f);
-                }
-            }
-
-            if (const auto& materialPropertyIndex = materialInstance->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
-                materialPropertyIndex.IsValid() && !group.m_customMaterial)
-            {
-                materialInstance->SetPropertyValue(materialPropertyIndex, material.m_useTexture && !painted);
-            }
-
+            BindCustomMaterials(overrides, false);
         }
         OnTick(0.0f, AZ::ScriptTimePoint{});
     }
+
+    // Bytes one vertex takes across the seven streams (position, normal, tangent, bitangent, UV, colour, lightmap UV),
+    // plus its entry in the index buffer.
+    constexpr AZ::u64 VertexStreamBytes = 12 + 12 + 16 + 12 + 8 + 16 + 8;
+    constexpr AZ::u64 IndexBytes = 4;
+
+    void AtomRenderMesh::PrintRenderStats()
+    {
+        AZ::u32 meshes = 0;
+        AZ::u32 visible = 0;
+        AZ::u64 submittedTriangles = 0;
+        AZ::u64 unsharedBytes = 0; // what the buffers would take if no two meshes shared a model
+        AZ::u32 drawCalls = 0;
+        AZStd::unordered_set<const SharedModel*> uniqueModels;
+        AZ::u64 sharedBytes = 0;
+        AZ::u64 uniqueTriangles = 0;
+        for (const AtomRenderMesh* mesh : LiveMeshes())
+        {
+            if (!mesh->m_modelAsset.GetId().IsValid() || mesh->m_materialGroups.empty())
+            {
+                continue;
+            }
+            meshes++;
+            AZ::u64 triangles = 0;
+            for (const MaterialGroup& group : mesh->m_materialGroups)
+            {
+                triangles += group.m_indexCount / 3;
+            }
+            const AZ::u64 vertices = triangles * 3;
+            unsharedBytes += vertices * (VertexStreamBytes + IndexBytes);
+            if (mesh->m_visible)
+            {
+                visible++;
+                submittedTriangles += triangles;
+                drawCalls += static_cast<AZ::u32>(mesh->m_materialGroups.size());
+            }
+            if (mesh->m_sharedModel && uniqueModels.insert(mesh->m_sharedModel.get()).second)
+            {
+                sharedBytes += static_cast<AZ::u64>(mesh->m_sharedModel->m_vertexCount) * (VertexStreamBytes + IndexBytes);
+                uniqueTriangles += mesh->m_sharedModel->m_vertexCount / 3;
+            }
+        }
+        AZ_Printf(
+            "WhiteBox",
+            "Render stats: %u meshes (%u visible), %u draw calls, %llu triangles submitted per view; "
+            "%zu unique models hold %llu triangles; GPU buffers %.2f MiB shared vs %.2f MiB if unshared",
+            meshes, visible, drawCalls, static_cast<unsigned long long>(submittedTriangles), uniqueModels.size(),
+            static_cast<unsigned long long>(uniqueTriangles), sharedBytes / (1024.0 * 1024.0), unsharedBytes / (1024.0 * 1024.0));
+    }
+
+    void AtomRenderMesh::SetAllVisible(const bool visible)
+    {
+        for (const AtomRenderMesh* mesh : LiveMeshes())
+        {
+            const_cast<AtomRenderMesh*>(mesh)->SetVisiblity(visible);
+        }
+    }
+
+    namespace
+    {
+        void PrintRenderStatsCommand(const AZ::ConsoleCommandContainer&)
+        {
+            AtomRenderMesh::PrintRenderStats();
+        }
+        AZ_CONSOLEFREEFUNC("wb_renderStats", PrintRenderStatsCommand, AZ::ConsoleFunctorFlags::Null, "Print what every live White Box render mesh submits and stores.");
+
+        void SetRenderVisibleCommand(const AZ::ConsoleCommandContainer& arguments)
+        {
+            const bool visible = arguments.empty() || arguments[0] != "0";
+            AtomRenderMesh::SetAllVisible(visible);
+        }
+        AZ_CONSOLEFREEFUNC("wb_renderVisible", SetRenderVisibleCommand, AZ::ConsoleFunctorFlags::Null, "Show (1, default) or hide (0) every live White Box render mesh, to compare frame times.");
+    } // namespace
 
     void AtomRenderMesh::SetMaterialAssetOverride(const AZ::Data::AssetId& materialAssetId)
     {

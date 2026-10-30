@@ -12,6 +12,7 @@
 #include "Util/WhiteBoxMeshUtil.h"
 #include "Util/WhiteBoxSnapUtil.h"
 #include "Viewport/WhiteBoxModifierUtil.h"
+#include "Viewport/WhiteBoxManipulatorViews.h"
 #include "WhiteBox/WhiteBoxToolApi.h"
 #include "WhiteBoxVertexTranslationModifier.h"
 
@@ -324,8 +325,8 @@ namespace WhiteBox
 
         if (!m_vertexView)
         {
-            m_vertexView = AzToolsFramework::CreateManipulatorViewSphere(
-                m_color, cl_whiteBoxVertexManipulatorSize,
+            m_vertexView = CreateManipulatorViewVertexDot(
+                m_color,
                 []([[maybe_unused]] const MouseInteraction& mouseInteraction, [[maybe_unused]] const bool mouseOver,
                    const AZ::Color& defaultColor)
                 {

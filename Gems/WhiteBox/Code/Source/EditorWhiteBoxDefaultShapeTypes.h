@@ -21,6 +21,14 @@ namespace WhiteBox
         Asset
     };
 
+    //! How the White Box shows its edges with a GPU wireframe mesh (editor only).
+    enum class WireframeMode : int
+    {
+        Off,           //!< Shaded mesh only.
+        Overlay,       //!< Shaded mesh with dark edges drawn on top of it.
+        WireframeOnly, //!< Edges only; the shaded mesh is hidden.
+    };
+
     //! Solid the Draw Shape tool builds from the drawn footprint + pull height.
     enum class DrawShapeType : int
     {
