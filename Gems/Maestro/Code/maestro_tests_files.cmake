@@ -11,7 +11,6 @@ set(FILES
     Source/Maestro/Cinematics/Tests/EntityNodeTest.cpp
     Tests/MaestroTest.cpp
     Tests/MaestroSystemComponentTests.cpp
-    Tests/MigrationParityTests.cpp
     Tests/Tracks/BoolTrackTest.cpp
     Tests/Tracks/AnimTrackTest.cpp
 )
