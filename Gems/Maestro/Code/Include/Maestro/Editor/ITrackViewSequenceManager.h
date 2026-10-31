@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <QString>
@@ -20,8 +19,6 @@ class CTrackViewSequence;
 //! Interface to expose TrackViewSequenceManager functionality to SequenceComponent
 struct ITrackViewSequenceManager
 {
-    AZ_TYPE_INFO(ITrackViewSequenceManager, "{F49A421A-04C6-4F2A-BC73-BE205CD33019}");
-
     virtual IAnimSequence* OnCreateSequenceObject(
         QString name, bool isLegacySequence = true, AZ::EntityId entityId = AZ::EntityId()) = 0;
 

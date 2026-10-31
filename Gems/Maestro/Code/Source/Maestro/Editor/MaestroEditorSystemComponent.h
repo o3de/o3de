@@ -62,6 +62,8 @@ namespace Maestro
 
         AZStd::unique_ptr<CTrackViewSequenceManager> m_sequenceManager;
         AZStd::unique_ptr<CAnimationContext> m_animationContext;
+
+public:
         bool m_editorInitialized = false;
         bool m_gameEngineInitialized = false;
         bool m_animationContextInitialized = false;

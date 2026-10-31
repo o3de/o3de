@@ -14,13 +14,13 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <Maestro/Editor/AnimationContext.h>
-#include <Maestro/Editor/ITrackViewSequenceManager.h>
 #include <Maestro/Editor/TrackView/TrackViewDialog.h>
 #include <Maestro/Editor/TrackView/TrackViewSequenceManager.h>
 #include <Maestro/IMovieSystem.h>
 
 // Editor
 #include <IEditor.h>
+#include <QtViewPaneManager.h>
 
 namespace Maestro
 {
@@ -121,7 +121,16 @@ namespace Maestro
 
         if (m_viewRegistered)
         {
-            AzToolsFramework::CloseViewPane(Editor::TrackViewPaneName);
+            if (QtViewPaneManager::exists())
+            {
+                QtViewPane* pane = QtViewPaneManager::instance()->GetPane(Editor::TrackViewPaneName);
+                if (pane)
+                {
+                    // Finish removing widget listeners before destroying the services they use.
+                    const QList<DockWidget*> dockWidgets = pane->m_dockWidgetInstances;
+                    qDeleteAll(dockWidgets);
+                }
+            }
             AzToolsFramework::UnregisterViewPane(Editor::TrackViewPaneName);
             m_viewRegistered = false;
         }
@@ -242,7 +251,6 @@ namespace Maestro
         m_editorInitialized = m_editorInitialized || editor->IsInitialized();
         m_sequenceManager = AZStd::make_unique<CTrackViewSequenceManager>();
         Editor::SetSequenceManager(m_sequenceManager.get());
-        AZ::Interface<ITrackViewSequenceManager>::Register(m_sequenceManager.get());
 
         m_animationContext = AZStd::make_unique<CAnimationContext>();
         Editor::SetAnimationContext(m_animationContext.get());
@@ -286,9 +294,8 @@ namespace Maestro
 
         if (m_sequenceManager)
         {
-            AZ::Interface<ITrackViewSequenceManager>::Unregister(m_sequenceManager.get());
-            Editor::SetSequenceManager(nullptr);
             m_sequenceManager.reset();
+            Editor::SetSequenceManager(nullptr);
         }
 
         m_animationContextInitialized = false;
