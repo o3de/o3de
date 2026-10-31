@@ -42,7 +42,7 @@
 #include <AzFramework/Translation/TranslationDef.h>
 
 // this is called the first time a Python script contains "import azlmbr"
-PYBIND11_EMBEDDED_MODULE(azlmbr, m)
+PYBIND11_MODULE(azlmbr, m)
 {
     EditorPythonBindings::EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindings::EditorPythonBindingsNotificationBus::Events::OnImportModule, m.ptr());
 }
@@ -585,7 +585,12 @@ namespace EditorPythonBindings
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
 
-        PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
+        if (PyImport_AppendInittab("azlmbr", PyInit_azlmbr) == -1
+            || PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput) == -1)
+        {
+            AZ_Error("python", false, "Could not register the embedded Python modules.");
+            return false;
+        }
         try
         {
             // Configure and start the interpreter through the PyConfig API
@@ -685,6 +690,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
+        // Python retains this table across restarts, but the binding DLL can be unloaded between applications.
+        _inittab* destination = PyImport_Inittab;
+        for (const _inittab* entry = PyImport_Inittab; entry->name; ++entry)
+        {
+            if (entry->initfunc != PyInit_azlmbr && entry->initfunc != RedirectOutput::PyInit_RedirectOutput)
+            {
+                *destination++ = *entry;
+            }
+        }
+        *destination = {};
         return true;
     }
 
