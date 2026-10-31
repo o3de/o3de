@@ -9,6 +9,7 @@
 #include <Source/ArticulationLinkComponent.h>
 
 #include <ArticulationUtils.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
@@ -228,6 +229,7 @@ namespace PhysX
         {
             physx::PxArticulationKinematicFlags kinematicFlag{};
             kinematicFlag.raise(physx::PxArticulationKinematicFlag::ePOSITION);
+            PHYSX_SCENE_WRITE_LOCK(m_articulation->getScene());
             m_articulation->setRootGlobalPose(PxMathConvert(world));
             m_articulation->updateKinematic(kinematicFlag);
         }
@@ -573,34 +575,41 @@ namespace PhysX
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
         physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
-        PHYSX_SCENE_READ_LOCK(pxScene);
-
-        if (!m_articulation || m_articulation->isSleeping())
+        // The link poses are read under the scene lock, but the entity transforms are set after it is released:
+        // transform change handlers may lock the scene for write, and PhysX can't upgrade a read lock.
+        AZStd::fixed_vector<AZStd::pair<AZ::EntityId, AZ::Transform>, MaxArticulationLinks> linkTransforms;
         {
-            return;
+            PHYSX_SCENE_READ_LOCK(pxScene);
+
+            if (!m_articulation || m_articulation->isSleeping())
+            {
+                return;
+            }
+
+            physx::PxArticulationLink* links[MaxArticulationLinks] = { nullptr };
+            m_articulation->getLinks(links, MaxArticulationLinks);
+
+            const physx::PxU32 linksNum = m_articulation->getNbLinks();
+            AZ_Assert(
+                linksNum <= MaxArticulationLinks,
+                "Error. Number of articulation links %d is greater than the maximum supported %d",
+                linksNum,
+                MaxArticulationLinks);
+
+            for (physx::PxU32 linkIndex = 0; linkIndex < linksNum; ++linkIndex)
+            {
+                physx::PxArticulationLink* link = links[linkIndex];
+                ActorData* linkActorData = Utils::GetUserData(link);
+                if (linkActorData)
+                {
+                    linkTransforms.emplace_back(linkActorData->GetEntityId(), PxMathConvert(link->getGlobalPose()));
+                }
+            }
         }
 
-        physx::PxArticulationLink* links[MaxArticulationLinks] = { nullptr };
-        m_articulation->getLinks(links, MaxArticulationLinks);
-
-        const physx::PxU32 linksNum = m_articulation->getNbLinks();
-        AZ_Assert(
-            linksNum <= MaxArticulationLinks,
-            "Error. Number of articulation links %d is greater than the maximum supported %d",
-            linksNum,
-            MaxArticulationLinks);
-
-        for (physx::PxU32 linkIndex = 0; linkIndex < linksNum; ++linkIndex)
+        for (const auto& [linkEntityId, globalTransform] : linkTransforms)
         {
-            physx::PxArticulationLink* link = links[linkIndex];
-            physx::PxTransform pxGlobalPose = link->getGlobalPose();
-            AZ::Transform globalTransform = PxMathConvert(pxGlobalPose);
-            ActorData* linkActorData = Utils::GetUserData(link);
-            if (linkActorData)
-            {
-                AZ::EntityId linkEntityId = linkActorData->GetEntityId();
-                AZ::TransformBus::Event(linkEntityId, &AZ::TransformBus::Events::SetWorldTM, globalTransform);
-            }
+            AZ::TransformBus::Event(linkEntityId, &AZ::TransformBus::Events::SetWorldTM, globalTransform);
         }
     }
 
@@ -710,7 +719,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.damping = damping;
@@ -756,7 +765,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.driveType =
@@ -799,7 +808,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             joint->setDriveVelocity(GetPxArticulationAxis(jointAxis), targetVelocity);
         }
     }
@@ -838,7 +847,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             joint->setFrictionCoefficient(frictionCoefficient);
         }
     }
@@ -897,6 +906,7 @@ namespace PhysX
         }
 
         AZ::u32 internalIndex = m_sensorIndices[sensorIndex];
+        PHYSX_SCENE_READ_LOCK(m_link->getScene());
         auto& articulation = m_link->getArticulation();
         const auto numSensors = articulation.getNbSensors();
         if (internalIndex >= numSensors)
@@ -934,7 +944,7 @@ namespace PhysX
     {
         if (auto* sensor = GetSensor(sensorIndex))
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
+            PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
             sensor->setRelativePose(PxMathConvert(sensorTransform));
         }
     }
