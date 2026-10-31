@@ -1,0 +1,12 @@
+{
+    "PackageName": "libpng",
+    "Version": "1.6.59",
+    "URL": "https://github.com/pnggroup/libpng",
+    "License": "libpng-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.59.tar.gz",
+        "Revision": "v1.6.59",
+        "SHA256": "2540302a1844ad2b2b501977abecfa850f265f97b78f065a712ab4074a89f5b5"
+    }
+}
