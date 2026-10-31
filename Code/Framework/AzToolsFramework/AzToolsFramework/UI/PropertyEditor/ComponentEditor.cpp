@@ -914,10 +914,9 @@ namespace AzToolsFramework
 
         for (auto component : m_components)
         {
-            AZ::EntityComponentIdPair examineComponent = m_components.front();
             AZ::Entity* entity = nullptr;
             AZ::Component* thisComponent = nullptr;
-            if (!ComponentEditorInternal::ResolveComponentAndEntity(examineComponent, entity, thisComponent))
+            if (!ComponentEditorInternal::ResolveComponentAndEntity(component, entity, thisComponent))
             {
                 return false;
             }
