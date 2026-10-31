@@ -12,6 +12,6 @@ ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.8.2505.1-o3de-rev5-
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac-arm64     TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH 9cbbf7e66f3890af8eadac23076fe26d644f67d79f8fd5823678dde1d3af98bb)
 ly_associate_package(PACKAGE_NAME OpenSSL-3.6.3-rev1-mac-arm64                      TARGETS OpenSSL                     PACKAGE_HASH eebdb8acf4baf483e327206e615c4ebff42af40581822712eda06d8048a8c38d)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                      TARGETS OpenEXR Imath               PACKAGE_HASH 4a093f5ca03836631dc66166b8f493925d0445467219efcbca3a5a0ee2ccbf4b)
-ly_associate_package(PACKAGE_NAME qt-6.11.2-rev1-mac-arm64                          TARGETS Qt                          PACKAGE_HASH 59153297c5656874e154266bd4d0cda33edc53bc0569b7d1da6b3c6be60e85b9)
-ly_associate_package(PACKAGE_NAME pyside6-6.11.2-py3.10-rev1-mac-arm64              TARGETS pyside6                     PACKAGE_HASH 64a3e8da14c54ac220c95bf57897f6f5517babb63141436c06e535890d0d68a9)
+ly_associate_package(PACKAGE_NAME qt-6.12.0-rev1-mac-arm64                          TARGETS Qt                          PACKAGE_HASH f3c4426f79afc79bf216404de4e12fb6c2166ca7604a737688e5f7b19e68beef)
+ly_associate_package(PACKAGE_NAME pyside6-6.12.0-py3.14-rev1-mac-arm64              TARGETS pyside6                     PACKAGE_HASH 837bcda1bc5d57fa0571d883cab6eef5265bdbbbb9640149545cbdebe6c89b3a)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac-arm64                TARGETS ISPCTexComp                 PACKAGE_HASH 0992e6662f193379cdc9ba8ab9b7a24404564df9bcc5f39d9527b7258ae4172c)

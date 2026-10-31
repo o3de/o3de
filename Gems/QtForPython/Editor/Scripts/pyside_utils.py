@@ -91,8 +91,13 @@ class LmbrQtEventLoop(asyncio.AbstractEventLoop):
         self.running = True
         self.shutdown.clear()
         azlmbr.qt_helpers.set_loop_callback(self.event_loop)
-        while not self.shutdown.is_set():
-            qApp.processEvents(QtCore.QEventLoop.AllEvents, 0)
+        previous_loop = asyncio.events._get_running_loop()
+        asyncio.events._set_running_loop(self)
+        try:
+            while not self.shutdown.is_set():
+                qApp.processEvents(QtCore.QEventLoop.AllEvents, 0)
+        finally:
+            asyncio.events._set_running_loop(previous_loop)
 
     def run_forever(self):
         self._wait_future = None
