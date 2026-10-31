@@ -16,10 +16,8 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 
-#define MCPP_DLL_IMPORT 1
 #define MCPP_DONT_USE_SHORT_NAMES 1
 #include <mcpp_lib.h>
-#undef MCPP_DLL_IMPORT
 
 #include <sstream>
 
