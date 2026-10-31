@@ -196,6 +196,22 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         unset(COMPILE_DEFINITIONS_PLACEHOLDER)
     endif()
 
+    get_property(interface_compile_options TARGET ${TARGET_NAME} PROPERTY INTERFACE_COMPILE_OPTIONS)
+    # Select install branches without evaluating consumer expressions.
+    foreach(build_interface IN ITEMS BUILD_INTERFACE BUILD_LOCAL_INTERFACE)
+        string(REPLACE "$<${build_interface}:" "$<0:" interface_compile_options "${interface_compile_options}")
+    endforeach()
+    string(REPLACE "$<INSTALL_INTERFACE:" "$<1:" interface_compile_options "${interface_compile_options}")
+
+    # Quote literally, checking the closing boundary and compensating for the skipped first newline.
+    set(compile_options_equals "")
+    string(FIND "${interface_compile_options}]" "]${compile_options_equals}]" compile_options_bracket)
+    while(NOT compile_options_bracket EQUAL -1)
+        string(APPEND compile_options_equals "=")
+        string(FIND "${interface_compile_options}]" "]${compile_options_equals}]" compile_options_bracket)
+    endwhile()
+    set(COMPILE_OPTIONS_PLACEHOLDER "[${compile_options_equals}[\n${interface_compile_options}]${compile_options_equals}]")
+
     # Includes need additional processing to add the install root
     foreach(include IN LISTS include_directories)
         string(GENEX_STRIP ${include} include_genex_expr)
@@ -352,8 +368,8 @@ set_property(TARGET ${NAME_PLACEHOLDER}
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
-    string(CONFIGURE ${target_cmakelists_template} output_cmakelists_data @ONLY)
-    set(${OUTPUT_CONFIGURED_TARGET} ${output_cmakelists_data} PARENT_SCOPE)
+    string(CONFIGURE "${target_cmakelists_template}" output_cmakelists_data @ONLY)
+    set(${OUTPUT_CONFIGURED_TARGET} "${output_cmakelists_data}" PARENT_SCOPE)
 endfunction()
 
 
