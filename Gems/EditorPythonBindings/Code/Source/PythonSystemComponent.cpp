@@ -270,8 +270,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex& m_lock;
         int& m_lockRecursiveCounter;
         bool m_locked = false;
-        AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
-        AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
+        PyGILState_STATE m_gilState = PyGILState_UNLOCKED;
     };
 
     PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
@@ -313,8 +312,7 @@ namespace EditorPythonBindings
         // to be locked) and therefore it's already got the GIL acquired.
         if (m_lockRecursiveCounter == 1)
         {
-            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
-            m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
+            m_gilState = PyGILState_Ensure();
         }
     }
 
@@ -325,8 +323,10 @@ namespace EditorPythonBindings
             return;
         }
 
-        m_acquireGIL.reset();
-        m_releaseGIL.reset();
+        if (m_lockRecursiveCounter == 1)
+        {
+            PyGILState_Release(m_gilState);
+        }
         m_lockRecursiveCounter--;
         m_locked = false;
         m_lock.unlock();
@@ -416,6 +416,7 @@ namespace EditorPythonBindings
             ExecuteByString("import azlmbr", false);
             ExecuteBootstrapScripts(pythonPathStack);
             EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
+            m_initialThreadState = PyEval_SaveThread();
             return true;
         }
         return false;
@@ -427,6 +428,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", silenceWarnings, "Python is not active!");
             return false;
+        }
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_lock);
+        if (m_initialThreadState)
+        {
+            if (!PyGILState_Check())
+            {
+                PyEval_RestoreThread(m_initialThreadState);
+            }
+            m_initialThreadState = nullptr;
         }
 
         bool result = false;
