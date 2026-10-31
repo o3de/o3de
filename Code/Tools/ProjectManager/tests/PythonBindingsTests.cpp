@@ -9,6 +9,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <PythonBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
@@ -76,6 +77,21 @@ namespace O3DE::ProjectManager
     TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
     {
         EXPECT_TRUE(m_pythonBindings->PythonStarted());
+    }
+
+    TEST_F(PythonBindingsTests, PythonBindings_GetEngineInfo_FromNativeThread_Succeeds)
+    {
+        ASSERT_TRUE(m_pythonBindings->PythonStarted());
+        EXPECT_FALSE(PyGILState_Check());
+        AZStd::thread worker([this]
+        {
+            EXPECT_FALSE(PyGILState_Check());
+            EXPECT_TRUE(m_pythonBindings->GetEngineInfo().IsSuccess());
+            EXPECT_FALSE(PyGILState_Check());
+        });
+        worker.join();
+        EXPECT_TRUE(m_pythonBindings->GetEngineInfo().IsSuccess());
+        EXPECT_FALSE(PyGILState_Check());
     }
 
     TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
