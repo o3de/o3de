@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #include <AzCore/PlatformDef.h>
@@ -28,8 +27,8 @@
 #include "Resource.h"
 
 
-#include <Include/SandboxAPI.h>
-#include <Include/EditorCoreAPI.h>
+#include <EditorCoreAPI.h>
+#include <SandboxAPI.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Simple type definitions.
@@ -90,8 +89,6 @@
 #include <ISystem.h>
 #include <IIndexedMesh.h>
 #include <IXml.h>
-#include <IMovieSystem.h>
-
 //////////////////////////////////////////////////////////////////////////
 // Commonly used Editor includes.
 //////////////////////////////////////////////////////////////////////////

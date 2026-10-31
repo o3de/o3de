@@ -12,8 +12,6 @@
 #include <Editor/EditorParticleSystemComponentRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
-#include "AnimationContext.h"
-
 #include <QMenu>
 #include <QInputDialog>
 #include <QString>

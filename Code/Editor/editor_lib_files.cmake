@@ -210,12 +210,6 @@ set(FILES
     res/toolbar2.bmp
     res/toolbox.bmp
     res/trackvie.bmp
-    res/trackview.bmp
-    res/trackview_key.bmp
-    res/trackview_keys.bmp
-    res/trackview_nodes.bmp
-    res/trackview_play.bmp
-    res/trackview_view.bmp
     res/tree_vie.bmp
     res/uieditor_main.bmp
     res/up_arrow.ico
@@ -264,8 +258,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
-    AnimationContext.cpp
-    AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
     AzAssetBrowser/AzAssetBrowserRequestHandler.h
     AzAssetBrowser/AzAssetBrowserMultiWindow.cpp
@@ -437,10 +429,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    SelectLightAnimationDialog.cpp
-    SelectLightAnimationDialog.h
-    SelectSequenceDialog.cpp
-    SelectSequenceDialog.h
     StartupLogoDialog.cpp
     StartupLogoDialog.h
     StartupLogoDialog.ui
@@ -466,12 +454,10 @@ set(FILES
     GameResourcesExporter.cpp
     GameResourcesExporter.h
     DocMultiArchive.h
-    FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
     IPostRenderer.h
     ToolBox.h
-    TrackViewNewSequenceDialog.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
     PythonEditorFuncs.cpp
@@ -508,12 +494,8 @@ set(FILES
     SettingsManagerDialog.ui
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
-    FBXExporterDialog.cpp
-    FBXExporterDialog.ui
     FileTypeUtils.cpp
     ToolBox.cpp
-    TrackViewNewSequenceDialog.cpp
-    TrackViewNewSequenceDialog.ui
     DisplaySettings.cpp
     DisplaySettings.h
     DisplaySettingsPythonFuncs.h
@@ -521,87 +503,6 @@ set(FILES
     ErrorReport.cpp
     ErrorReport.h
     ProcessInfo.h
-    TrackView/AtomOutputFrameCapture.cpp
-    TrackView/AtomOutputFrameCapture.h
-    TrackView/TrackViewDialog.qrc
-    TrackView/TrackViewDialog.cpp
-    TrackView/TrackViewDialog.h
-    TrackView/TrackViewDopeSheetBase.cpp
-    TrackView/TrackViewDopeSheetBase.h
-    TrackView/TrackViewDoubleSpinBox.cpp
-    TrackView/TrackViewDoubleSpinBox.h
-    TrackView/TrackViewPythonFuncs.h
-    TrackView/TrackViewPythonFuncs.cpp
-    TrackView/TrackViewSequenceManager.cpp
-    TrackView/TrackViewSequenceManager.h
-    TrackView/CommentNodeAnimator.cpp
-    TrackView/DirectorNodeAnimator.cpp
-    TrackView/CommentNodeAnimator.h
-    TrackView/DirectorNodeAnimator.h
-    TrackViewExportKeyTimeDlg.cpp
-    TrackViewExportKeyTimeDlg.ui
-    TrackView/SequenceBatchRenderDialog.cpp
-    TrackView/TrackViewCurveEditor.cpp
-    TrackView/TrackViewFindDlg.cpp
-    TrackView/TrackViewKeyPropertiesDlg.cpp
-    TrackView/TrackViewNodes.cpp
-    TrackView/TrackViewNodes.ui
-    TrackView/TrackViewSplineCtrl.cpp
-    TrackView/TrackViewTimeline.cpp
-    TrackView/TVCustomizeTrackColorsDialog.ui
-    TrackViewFBXImportPreviewDialog.cpp
-    TrackViewFBXImportPreviewDialog.ui
-    TrackViewExportKeyTimeDlg.h
-    TrackView/SequenceBatchRenderDialog.h
-    TrackView/SequenceBatchRenderDialog.ui
-    TrackView/TrackViewCurveEditor.h
-    TrackView/TrackViewCurveEditor.ui
-    TrackView/TrackViewFindDlg.h
-    TrackView/TrackViewFindDlg.ui
-    TrackView/TrackViewKeyPropertiesDlg.h
-    TrackView/TrackViewNodes.h
-    TrackView/TrackViewSplineCtrl.h
-    TrackView/TrackViewTimeline.h
-    TrackView/TVCustomizeTrackColorsDlg.cpp
-    TrackView/TVCustomizeTrackColorsDlg.h
-    TrackViewFBXImportPreviewDialog.h
-    TrackView/KeyUIControls.h
-    TrackView/2DBezierKeyUIControls.cpp
-    TrackView/AssetBlendKeyUIControls.cpp
-    TrackView/CaptureKeyUIControls.cpp
-    TrackView/ConsoleKeyUIControls.cpp
-    TrackView/EventKeyUIControls.cpp
-    TrackView/GotoKeyUIControls.cpp
-    TrackView/SelectKeyUIControls.cpp
-    TrackView/SequenceKeyUIControls.cpp
-    TrackView/SoundKeyUIControls.cpp
-    TrackView/StringKeyUIControls.cpp
-    TrackView/TrackEventKeyUIControls.cpp
-    TrackView/TrackViewTrackPropsDlg.ui
-    TrackView/TVEventsDialog.cpp
-    TrackView/TVEventsDialog.ui
-    TrackView/TVSequenceProps.cpp
-    TrackView/CommentKeyUIControls.cpp
-    TrackView/ScreenFaderKeyUIControls.cpp
-    TrackView/TimeRangeKeyUIControls.cpp
-    TrackView/TVEventsDialog.h
-    TrackView/TVSequenceProps.h
-    TrackView/TVSequenceProps.ui
-    TrackView/TrackViewAnimNode.cpp
-    TrackView/TrackViewTrack.cpp
-    TrackView/TrackViewNode.cpp
-    TrackView/TrackViewSequence.cpp
-    TrackView/TrackViewNodeFactories.cpp
-    TrackView/TrackViewEventNode.cpp
-    TrackView/TrackViewAnimNode.h
-    TrackView/TrackViewTrack.h
-    TrackView/TrackViewNode.h
-    TrackView/TrackViewSequence.h
-    TrackView/TrackViewNodeFactories.h
-    TrackView/TrackViewEventNode.h
-    TrackView/TrackViewMessageBox.cpp
-    TrackView/TrackViewMessageBox.h
-    TrackView/VectorKeyUIControls.cpp
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
@@ -691,6 +592,5 @@ set(FILES
 
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    TrackView/TrackViewPythonFuncs.cpp
     Util/AffineParts.cpp
 )

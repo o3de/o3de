@@ -96,6 +96,16 @@
         <file>tvkeys-11.png</file>
         <file>tvkeys-12.png</file>
     </qresource>
+    <qresource prefix="/UiAnimView">
+        <file>trackview_keys_00.png</file>
+        <file>trackview_keys_01.png</file>
+        <file>trackview_keys_02.png</file>
+        <file>trackview_keys_03.png</file>
+    </qresource>
+    <qresource prefix="/UiAnimView/marker">
+        <file>bmp00016_00.png</file>
+        <file>bmp00016_01.png</file>
+    </qresource>
     <qresource prefix="/cursors/res">
         <file>arr_addkey.cur</file>
         <file>cur00003.cur</file>

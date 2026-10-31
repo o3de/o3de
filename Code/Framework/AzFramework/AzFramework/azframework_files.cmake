@@ -13,6 +13,7 @@ set(FILES
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
     API/ApplicationAPI.cpp
+    API/SequenceSystemLifecycle.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp

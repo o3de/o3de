@@ -12,7 +12,6 @@
 #include <time.h>
 
 #include <IRenderer.h>
-#include <IMovieSystem.h>
 #include <ILog.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN

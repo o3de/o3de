@@ -11,13 +11,13 @@
 
 #include "CrySystem_precompiled.h"
 #include "LevelSystem.h"
-#include "IMovieSystem.h"
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
 #include <CryCommon/LoadScreenBus.h>
 
 #include <AzCore/Time/ITime.h>
+#include <AzFramework/API/SequenceSystemLifecycle.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
@@ -531,16 +531,9 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // Movie system must be reset after entities.
-        //////////////////////////////////////////////////////////////////////////
-        IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-        if (movieSystem)
+        if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
         {
-            // bSeekAllToStart needs to be false here as it's only of interest in the editor
-            constexpr bool playOnReset = true;
-            constexpr bool seekToStart = false;
-            movieSystem->Reset(playOnReset, seekToStart);
+            sequenceSystem->OnLevelEntitiesReady();
         }
 
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
@@ -775,13 +768,9 @@ void CLevelSystem::UnloadLevel()
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
-    IMovieSystem* movieSystem = AZ::Interface<IMovieSystem>::Get();
-    if (movieSystem)
+    if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
     {
-        constexpr bool playOnReset = false;
-        constexpr bool seekToStart = false;
-        movieSystem->Reset(playOnReset, seekToStart);
-        movieSystem->RemoveAllSequences();
+        sequenceSystem->OnLevelUnload();
     }
 
     OnUnloadComplete(m_lastLevelName.c_str());

@@ -18,8 +18,6 @@ set(FILES
     LocalizationManagerBus.inl
     ILog.h
     IMiniLog.h
-    IMovieSystem.cpp
-    IMovieSystem.h
     IRenderer.h
     ISerialize.h
     ISplines.h
@@ -76,16 +74,5 @@ set(FILES
     platform.h
     platform_impl.cpp
     Win64specific.h
-    Maestro/Bus/EditorSequenceAgentComponentBus.h
-    Maestro/Bus/EditorSequenceBus.h
-    Maestro/Bus/EditorSequenceComponentBus.h
-    Maestro/Bus/SequenceComponentBus.h
-    Maestro/Bus/SequenceAgentComponentBus.h
-    Maestro/Types/AnimNodeType.h
-    Maestro/Types/AnimParamType.h
-    Maestro/Types/AnimValueType.h
-    Maestro/Types/AssetBlendKey.h
-    Maestro/Types/AssetBlends.h
-    Maestro/Types/SequenceType.h
     WinBase.cpp
 )

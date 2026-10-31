@@ -109,9 +109,8 @@ AZ_POP_DISABLE_WARNING
 #include "WaitProgress.h"
 
 #include "ToolBox.h"
+#include "Undo/Undo.h"
 #include "EditorPreferencesDialog.h"
-#include "AnimationContext.h"
-
 #include "GotoPositionDlg.h"
 
 #include "ConsoleDialog.h"
@@ -3036,12 +3035,6 @@ void CCryEditApp::OnSwitchcameraNext()
 void CCryEditApp::OnOpenAssetBrowserView()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnOpenTrackView()
-{
-    QtViewPaneManager::instance()->OpenPane(LyViewPane::TrackView);
 }
 
 //////////////////////////////////////////////////////////////////////////
