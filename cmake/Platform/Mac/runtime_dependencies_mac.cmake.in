@@ -7,6 +7,8 @@
 #
 cmake_minimum_required(VERSION 3.24)
 
+set(python_version "@LY_PYTHON_VERSION_MAJOR_MINOR@")
+
 function(gp_resolve_item_override context item exepath dirs resolved_item_var resolved_var)
     # Qt frameworks could resolve the binary to eg qt/lib/QtCore.framework/Headers/QtCore instead of qt/lib/QtCore.framework/Versions/5/QtCore
     # This is because GetPrerequisites.cmake gp_resolve_item function searches for the first file that matches the "frameworks name"
@@ -27,7 +29,7 @@ function(gp_resolve_item_override context item exepath dirs resolved_item_var re
             message(STATUS "Custom resolving file ${item} -> ${resolved_filepath}")
         elseif(is_python)
             unset(resolved_filepath)
-            cmake_path(APPEND resolved_filepath "${target_bundle_framework_dir}" "Python.framework/Versions/3.10/Python")
+            cmake_path(APPEND resolved_filepath "${target_bundle_framework_dir}" "Python.framework/Versions/${python_version}/Python")
             set(${resolved_item_var} "${resolved_filepath}" PARENT_SCOPE)
             set(${resolved_var} TRUE PARENT_SCOPE)
             message(STATUS "Custom resolving file ${item} -> ${resolved_filepath}")
@@ -42,7 +44,7 @@ cmake_policy(SET CMP0009 NEW) # do not traverse symlinks on GLOB_RECURSE
 
 # Stores a set of executable, dylib and frameworks to ignore for fixup bundle
 set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY BUNDLE_IGNORE_FILES
-    "Python;python3.10m;python3.10;dxc-3.7;dxc;dxsc-3.7;dxsc;libdxcompiler.3.7.dylib;libdxcompiler.dylib;shiboken6")
+    "Python;python${python_version}m;python${python_version};dxc-3.7;dxc;dxsc-3.7;dxsc;libdxcompiler.3.7.dylib;libdxcompiler.dylib;shiboken6")
 
 # Values configured for the output locations of the target
 # Gathered from the generator expression for TARGET_FILE_DIR, TARGET_BUNDLE_DIR
@@ -180,11 +182,11 @@ function(o3de_copy_file_to_bundle)
 
             # If 3rdParty python is newer it needs to be removed before copying it to the bundle.
             # Otherwise the copy would file to do a previous invovation of this script
-            # creating symlinks to the "Python.framework/Versions/3.10/Headers" directory
+            # creating symlinks to the Python framework's versioned Headers directory
             # Because the source framework has real "Headers" directory the copy would fail
             # with the following error
             # file COPY cannot make directory
-            #  "<build-dir>/bin/profile/AssetProcessor.app/Contents/Frameworks/Python.framework/Versions/3.10/Headers":
+            #  "<build-dir>/bin/profile/AssetProcessor.app/Contents/Frameworks/Python.framework/Versions/<version>/Headers":
             #  No such file or directory.
             if (is_python_newer)
                 file(REMOVE_RECURSE "${target_file}")
@@ -535,10 +537,10 @@ if(target_bundle_content_dir)
             message(STATUS "Fixing ${target_bundle_framework_dir}/Python.framework...")
             file(REMOVE_RECURSE
                 "${target_bundle_framework_dir}/Python.framework/Versions/Current"
-                "${target_bundle_framework_dir}/Python.framework/Versions/3.10/Headers"
-                "${target_bundle_framework_dir}/Python.framework/Versions/3.10/lib/Python"
-                "${target_bundle_framework_dir}/Python.framework/Versions/3.10/lib/python3.10/test"
-                "${target_bundle_framework_dir}/Python.framework/Versions/3.10/lib/python3.10/site-packages/scipy/io/tests"
+                "${target_bundle_framework_dir}/Python.framework/Versions/${python_version}/Headers"
+                "${target_bundle_framework_dir}/Python.framework/Versions/${python_version}/lib/Python"
+                "${target_bundle_framework_dir}/Python.framework/Versions/${python_version}/lib/python${python_version}/test"
+                "${target_bundle_framework_dir}/Python.framework/Versions/${python_version}/lib/python${python_version}/site-packages/scipy/io/tests"
                 "${target_bundle_framework_dir}/Python.framework/Python"
                 "${target_bundle_framework_dir}/Python.framework/Resources"
                 "${target_bundle_framework_dir}/Python.framework/Headers"
@@ -547,7 +549,7 @@ if(target_bundle_content_dir)
             if(exe_file_list)
                 file(REMOVE_RECURSE ${exe_file_list})
             endif()
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.10 Current
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink "${python_version}" Current
                 WORKING_DIRECTORY "${target_bundle_framework_dir}/Python.framework/Versions/"
             )
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python

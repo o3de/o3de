@@ -101,6 +101,28 @@ namespace UnitTest
         }
     };
 
+    TEST_F(PythonBindingLibTest, ImportEditablePackages)
+    {
+        AZ::Entity entity;
+        entity.CreateComponent<EditorPythonBindings::PythonSystemComponent>();
+        entity.Init();
+        entity.Activate();
+
+        SimulateEditorBecomingInitialized();
+
+        EXPECT_NO_THROW(pybind11::module_::import("ly_test_tools"));
+        EXPECT_NO_THROW(pybind11::module_::import("o3de"));
+
+        EXPECT_NO_THROW(pybind11::exec(R"(
+            import hashlib
+            import ssl
+            assert hashlib.sha256(b'abc').hexdigest() == 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+            ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            )"));
+
+        entity.Deactivate();
+    }
+
     TEST_F(PythonBindingLibTest, ImportBaseModule)
     {
         AZ::Entity entity;
