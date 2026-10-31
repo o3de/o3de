@@ -90,7 +90,7 @@ namespace EditorPythonBindings
 
             return pybind11::cast<pybind11::none>(Py_None);
         }
-        
+
         class PythonProxyNotificationHandler final
         {
         public:
@@ -241,13 +241,13 @@ namespace EditorPythonBindings
             bool CreateHandler(const AZ::BehaviorEBus& ebus)
             {
                 DestroyHandler(ebus);
-                
+
                 AZ_Warning("python", ebus.m_createHandler, "Ebus (%s) does not have a handler creator.", ebus.m_name.c_str());
                 if (!ebus.m_createHandler)
                 {
                     return false;
                 }
-                
+
                 if (!ebus.m_createHandler->InvokeResult(m_handler))
                 {
                     AZ_Warning("python", ebus.m_createHandler, "Ebus (%s) failed to create a handler.", ebus.m_name.c_str());
@@ -276,18 +276,16 @@ namespace EditorPythonBindings
 
                 // find the callback for the event
                 auto* handler = reinterpret_cast<PythonProxyNotificationHandler*>(userData);
-                const auto& callbackEntry = handler->m_callbackMap.find(eventName);
-                if (callbackEntry == handler->m_callbackMap.end())
-                {
-                    return;
-                }
-
                 // This function can reach from multiple threads, which means OnEventGenericHook
                 // will require to acquire the Python GIL, make sure it tries to lock it using TryExecuteWithLock.
                 [[maybe_unused]] const bool executed = editorPythonEventsInterface->TryExecuteWithLock(
-                    [handler, eventName, callback = callbackEntry->second, eventIndex, result, numParameters, parameters]()
+                    [handler, eventName, eventIndex, result, numParameters, parameters]
                     {
-                        handler->OnEventGenericHook(eventName, callback, eventIndex, result, numParameters, parameters);
+                        const auto callbackEntry = handler->m_callbackMap.find(eventName);
+                        if (callbackEntry != handler->m_callbackMap.end())
+                        {
+                            handler->OnEventGenericHook(eventName, callbackEntry->second, eventIndex, result, numParameters, parameters);
+                        }
                     });
 
                 AZ_Error("python", executed,
@@ -308,7 +306,7 @@ namespace EditorPythonBindings
                 {
                     AZ::BehaviorArgument& behaviorValueParameter{ *(parameters + index) };
                     pythonParamters[index] = Convert::BehaviorValueParameterToPython(behaviorValueParameter, stackVariableAllocator);
-                    
+
                     if (pythonParamters[index].is_none())
                     {
                         AZ_Warning("python", false, "Ebus(%s) event(%s) failed to convert parameter at index(%d)", m_ebus->m_name.c_str(), eventName, index);
@@ -320,7 +318,7 @@ namespace EditorPythonBindings
                 {
                     pybind11::object pyResult = callback(pythonParamters);
 
-                    // store the result 
+                    // store the result
                     if (result && pyResult.is_none() == false)
                     {
                         // reset/prepare the stack allocator
