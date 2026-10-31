@@ -544,6 +544,8 @@ namespace PhysX
 
         if (m_controllerManager)
         {
+            // Releasing the manager releases its controllers, which removes their actors from the scene.
+            PHYSX_SCENE_WRITE_LOCK(m_pxScene);
             m_controllerManager->release();
             m_controllerManager = nullptr;
         }
