@@ -317,7 +317,6 @@ class MayaMaterialGenerator(MaterialGenerator):
         except Exception as e:
             _LOGGER.info(f'Exception [{type(e)}]: {e}')
             return {}
-        return {}
 
 
 # +++++++++++++++++++----------------------------------------------->>
