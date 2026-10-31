@@ -6,21 +6,20 @@
 #
 
 o3de_fetch_content(expat
-    VERSION "2.7.3"
+    VERSION "2.9.0"
     LICENSE "MIT"
-    URL "https://github.com/libexpat/libexpat/archive/refs/tags/R_2_7_3.tar.gz"
-    URL_HASH "7c853a76f7c2a562c3edfd84ca47e487d9eff3966786191dfb60cc441daf82d6"
+    URL "https://github.com/libexpat/libexpat/archive/refs/tags/R_2_9_0.tar.gz"
+    URL_HASH "6e8ce7b52ebbaa423c59becc7cf1e6875c42e49228c062ac8123c10e700cec27"
     GIT "https://github.com/libexpat/libexpat.git"
-    GIT_HASH "4575e52f83e0d6d7bd24939eab8952bbc7bc358f"
+    GIT_HASH "a76b1174c1ea52abb639a4c69d52b630a8a106a2"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(expat)
 
-set(EXPAT_WITH_LIBBSD OFF)
 include("${expat_SOURCE_DIR}/expat/ConfigureChecks.cmake")
 
 set(PACKAGE_NAME expat)
-set(PACKAGE_VERSION 2.7.3)
+set(PACKAGE_VERSION 2.9.0)
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "${PACKAGE_NAME}")
 set(PACKAGE_BUGREPORT "https://github.com/libexpat/libexpat/issues")
@@ -29,7 +28,6 @@ set(XML_DTD 1)
 set(XML_GE 1)
 set(XML_NS 1)
 set(XML_DEV_URANDOM 1)
-set(XML_ATTR_INFO OFF)
 
 configure_file(
     "${expat_SOURCE_DIR}/expat/expat_config.h.cmake"
@@ -66,9 +64,7 @@ set_target_properties(expat PROPERTIES
     SYSTEM TRUE
 )
 
-target_compile_options(expat PRIVATE $<$<BOOL:${FLAG_NO_STRICT_ALIASING}>:-fno-strict-aliasing>)
-
-o3de_find_3rdparty_package(expat)
+add_library(expat::expat ALIAS expat)
 
 ly_install_files(
     FILES

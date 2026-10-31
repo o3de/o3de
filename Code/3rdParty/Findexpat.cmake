@@ -5,27 +5,18 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-if(NOT TARGET 3rdParty::expat)
-    o3de_resolve_3rdparty_target(3rdParty::expat expat_resolved)
-endif()
-
-get_target_property(expat_target 3rdParty::expat ALIASED_TARGET)
+o3de_resolve_3rdparty_target(3rdParty::expat expat_resolved)
 
 if(NOT TARGET expat::expat)
+    get_target_property(expat_target 3rdParty::expat ALIASED_TARGET)
     add_library(expat::expat ALIAS ${expat_target})
-endif()
-
-if(NOT TARGET EXPAT::EXPAT)
-    add_library(EXPAT::EXPAT ALIAS ${expat_target})
 endif()
 
 get_target_property(EXPAT_INCLUDE_DIRS 3rdParty::expat INTERFACE_INCLUDE_DIRECTORIES)
 set(EXPAT_INCLUDE_DIR "${EXPAT_INCLUDE_DIRS}")
-set(expat_INCLUDE_DIR "${EXPAT_INCLUDE_DIRS}")
 set(EXPAT_LIBRARY 3rdParty::expat)
 set(EXPAT_LIBRARIES "${EXPAT_LIBRARY}")
-set(expat_LIBRARY "${EXPAT_LIBRARY}")
-set(expat_VERSION 2.7.3)
+set(expat_VERSION 2.9.0)
 set(EXPAT_VERSION "${expat_VERSION}")
 set(EXPAT_VERSION_STRING "${expat_VERSION}")
 
