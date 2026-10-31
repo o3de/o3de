@@ -392,7 +392,7 @@ namespace AZ::Tests
             });
 
         using TL = TypeList< ConstVal<10>, int >;
-        ForEachType< TL >([](auto inst, auto ii_c)
+        ForEachType< TL >([]([[maybe_unused]] auto inst, auto ii_c)
             {
                 using KeyAtii = At_t<decltype(ii_c)::value, TL>;
                 static_assert(ii_c == 0 && isIntegralConstant_v< KeyAtii > && KeyAtii{} == 10

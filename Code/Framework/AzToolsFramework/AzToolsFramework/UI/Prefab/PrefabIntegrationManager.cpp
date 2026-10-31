@@ -851,7 +851,7 @@ namespace AzToolsFramework
                                 {
                                     if (componentEditor->IsSelected())
                                     {
-                                        auto components = componentEditor->GetComponents();
+                                        auto components = componentEditor->GetEntityComponentIdPairs();
 
                                         if (components.size() > 1)
                                         {
@@ -860,8 +860,7 @@ namespace AzToolsFramework
                                         }
 
                                         const auto& component = components.front();
-                                        prefabOverridePublicInterface->RevertComponentOverrides(
-                                            AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                                        prefabOverridePublicInterface->RevertComponentOverrides(component);
                                     }
 
                                     return true;
@@ -923,7 +922,7 @@ namespace AzToolsFramework
                                 {
                                     if (componentEditor->IsSelected())
                                     {
-                                        auto components = componentEditor->GetComponents();
+                                        auto components = componentEditor->GetEntityComponentIdPairs();
 
                                         if (components.size() > 1)
                                         {
@@ -932,8 +931,7 @@ namespace AzToolsFramework
                                         }
 
                                         const auto& component = components.front();
-                                        prefabOverridePublicInterface->ApplyComponentOverrides(
-                                                AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                                        prefabOverridePublicInterface->ApplyComponentOverrides(component);
                                     }
 
                                     return true;
