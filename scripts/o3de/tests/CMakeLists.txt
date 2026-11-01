@@ -26,6 +26,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_get_python_windows
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_get_python_windows.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_disable_gem
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_disable_gem.py
     TEST_SUITE smoke
