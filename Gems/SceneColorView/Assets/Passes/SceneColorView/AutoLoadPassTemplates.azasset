@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            { "Name": "SceneColorViewCaptureTemplate", "Path": "Passes/SceneColorView/Capture.pass" }
+        ]
+    }
+}
