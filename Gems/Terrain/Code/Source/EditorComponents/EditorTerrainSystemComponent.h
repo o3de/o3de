@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace Terrain
@@ -18,6 +19,7 @@ namespace Terrain
     class EditorTerrainSystemComponent
         : public AZ::Component
         , private AzToolsFramework::EditorEvents::Bus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(EditorTerrainSystemComponent, "{5E9f2200-9099-4325-BABD-6A533A1ABEA8}");
@@ -39,5 +41,11 @@ namespace Terrain
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        // Adds the Terrain preset to the editor's "Create Preset" menu; see TerrainPreset.
+        void OnMenuRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
     };
 } // namespace Terrain
