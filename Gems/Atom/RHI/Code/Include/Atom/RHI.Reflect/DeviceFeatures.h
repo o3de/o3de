@@ -21,13 +21,13 @@ namespace AZ::RHI
     struct ATOM_RHI_REFLECT_API DeviceFeatures
     {
         //! Whether the adapter supports geometry shaders.
-        bool m_geometryShader;
+        bool m_geometryShader = false;
 
         //! Whether the adapter supports compute shaders.
-        bool m_computeShader;
+        bool m_computeShader = false;
 
         //! Whether color attachments can utilize independent blend modes.
-        bool m_independentBlend;
+        bool m_independentBlend = false;
 
         //! Whether the adapter supports dual source blending.
         bool m_dualSourceBlending = false;
