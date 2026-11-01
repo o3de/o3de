@@ -10,6 +10,17 @@
 					".aaa",
 					".bbb"
 				]
+			},
+			"ImportProviderFileTypeExtensions":
+			{
+				"FakeImporterA":
+				[
+					".provider_a_ext"
+				],
+				"FakeImporterB":
+				[
+					".provider_b_ext"
+				]
 			}
 		}
 	}

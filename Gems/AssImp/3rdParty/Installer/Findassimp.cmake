@@ -13,13 +13,13 @@ endif()
 # This file is used in the INSTALLER version of O3DE.  
 # This file is included in cmake/3rdParty, which is already part of the search path for Findxxxxx.cmake files.
 
-# The Assimp library is used privately inside the SDKWrapper tool, so neither its headers nor its static library needs
-# to actually be distributed here.  It is not expected for people to link to it, but rather use it via the SDKWrapper Tool's
-# public API.
+# The Assimp library is used privately inside the AssImp Gem's tool modules, so neither its headers nor its static library
+# needs to actually be distributed here.  It is not expected for people to link to it, but rather use it through the
+# SceneAPI import context provider registered by the AssImp Gem.
 
 # It is still worth notifying people that they are accepting a 3rd Party Library here, and what license it uses, and
 # where to get it.
-message(STATUS "SDKWrapper Tool uses Assimp v6.0.4 (Custom BSD-3-Clause) from https://github.com/assimp/assimp.git")
+message(STATUS "AssImp Gem uses Assimp v6.0.4 (Custom BSD-3-Clause) from https://github.com/assimp/assimp.git")
 
 # By providing both an "assimp" and a "3rdParty::assimp target, we stop O3DE from doing anything automatically
 # itself, such as attempting to invoke some other install script or find script or complaining about a missing target.

@@ -13,12 +13,4 @@ set(FILES
     NodeWrapper.cpp
     MaterialWrapper.h
     MaterialWrapper.cpp
-    AssImpSceneWrapper.cpp
-    AssImpNodeWrapper.cpp
-    AssImpSceneWrapper.h
-    AssImpNodeWrapper.h
-    AssImpMaterialWrapper.h
-    AssImpMaterialWrapper.cpp
-    AssImpTypeConverter.cpp
-    AssImpTypeConverter.h
 )

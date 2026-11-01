@@ -26,8 +26,24 @@ namespace SceneBuilder
     {
         using namespace AZ::SceneAPI::Events;
 
+        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Creating entity with scene system components.\n");
+
+        AZ::Entity* sceneSystemEntity = AZ::SceneAPI::SceneCore::EntityConstructor::BuildSceneSystemEntity();
+
+        AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, sceneSystemEntity, "Unable to create a system component for the SceneAPI.\n");
+        if (sceneSystemEntity)
+        {
+            sceneSystemEntity->Init();
+            sceneSystemEntity->Activate();
+        }
+
         AZStd::unordered_set<AZStd::string> extensions;
         AssetImportRequestBus::Broadcast(&AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
+
+        AZ_Warning(
+            AssetBuilderSDK::WarningWindow, !extensions.empty(),
+            "No scene source file extensions are registered, so scene files (for example .fbx and .gltf) will not be processed.\n"
+            "Enable a scene import provider gem for this project, such as AssImp: o3de enable-gem -gn AssImp -pp <project-path>\n");
 
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "Scene Builder";
@@ -50,17 +66,6 @@ namespace SceneBuilder
         m_sceneBuilder.BusConnect(builderDescriptor.m_busId);
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::RegisterBuilderInformation, builderDescriptor);
-
-        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Creating entity with scene system components.\n");
-
-        AZ::Entity* sceneSystemEntity = AZ::SceneAPI::SceneCore::EntityConstructor::BuildSceneSystemEntity();
-
-        AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, sceneSystemEntity, "Unable to create a system component for the SceneAPI.\n");
-        if (sceneSystemEntity)
-        {
-            sceneSystemEntity->Init();
-            sceneSystemEntity->Activate();
-        }
     }
 
     void BuilderPluginComponent::Deactivate()

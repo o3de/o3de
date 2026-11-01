@@ -8,6 +8,7 @@
 
 set(FILES
     Tests/TestsMain.cpp
+    Tests/ImportContextRegistryManagerTests.cpp
     Tests/Importers/SceneImporterUtilitiesTests.cpp
     Tests/Importers/Utilities/RenamedNodesMapTests.cpp
 )

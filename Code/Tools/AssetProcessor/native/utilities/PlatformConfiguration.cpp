@@ -1291,6 +1291,7 @@ namespace AssetProcessor
         AZStd::vector<AZStd::string> supportedFileExtensions;
         AssetImporterPathsVisitor assetImporterVisitor{ settingsRegistry, supportedFileExtensions };
         settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/" + AssetImporterSupportedFileTypeKey);
+        settingsRegistry->Visit(assetImporterVisitor, AssetImporterProviderFileTypesKey);
 
         for (auto& entry : assetImporterVisitor.m_supportedFileExtensions)
         {

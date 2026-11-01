@@ -13,6 +13,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
+#include <SceneAPI/SceneBuilder/ImportContextRegistry.h>
 #include <SceneAPI/SceneBuilder/SceneImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
@@ -67,7 +68,30 @@ namespace AZ
 
         void SceneImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
         {
-            extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
+            AZStd::unordered_set<AZStd::string> rawExtensions(
+                m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
+            // The supported extensions also come from the registered import context providers,
+            // so the advertised set is always the union of every active importer.
+            if (auto* registry = SceneBuilder::ImportContextRegistryInterface::Get())
+            {
+                registry->GetSupportedFileExtensions(rawExtensions);
+            }
+
+            // Normalize to the lower case ".ext" form compared against in LoadAsset, so that job
+            // patterns and load checks agree regardless of how a provider or setting spells them.
+            for (AZStd::string extension : rawExtensions)
+            {
+                if (extension.empty() || extension == ".")
+                {
+                    continue;
+                }
+                AZStd::to_lower(extension.begin(), extension.end());
+                if (extension.front() != '.')
+                {
+                    extension.insert(extension.begin(), '.');
+                }
+                extensions.insert(AZStd::move(extension));
+            }
         }
 
         Events::LoadingResult SceneImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
@@ -75,8 +99,11 @@ namespace AZ
             AZStd::string extension;
             StringFunc::Path::GetExtension(path.c_str(), extension);
             AZStd::to_lower(extension.begin(), extension.end());
-                
-            if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
+
+            AZStd::unordered_set<AZStd::string> supportedExtensions;
+            GetSupportedFileExtensions(supportedExtensions);
+
+            if (!supportedExtensions.contains(extension))
             {
                 return Events::LoadingResult::Ignored;
             }
