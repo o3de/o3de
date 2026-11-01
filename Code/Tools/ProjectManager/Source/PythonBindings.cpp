@@ -342,9 +342,7 @@ namespace O3DE::ProjectManager
                 ExtendSysPath(extendedPaths);
             }
 
-            // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-            pybind11::gil_scoped_acquire acquire;
 
             // sanity import check
             if (PyRun_SimpleString("import sys") != 0)
@@ -368,6 +366,7 @@ namespace O3DE::ProjectManager
             m_pathlib = pybind11::module::import("pathlib");
 
             m_pythonStarted = !PyErr_Occurred();
+            m_initialThreadState = PyEval_SaveThread();
             return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
@@ -379,8 +378,17 @@ namespace O3DE::ProjectManager
 
     bool PythonBindings::StopPython()
     {
+        AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         if (Py_IsInitialized())
         {
+            if (m_initialThreadState != nullptr)
+            {
+                if (!PyGILState_Check())
+                {
+                    PyEval_RestoreThread(m_initialThreadState);
+                }
+                m_initialThreadState = nullptr;
+            }
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
@@ -396,7 +404,6 @@ namespace O3DE::ProjectManager
         }
 
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
-        pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
 
         m_pythonErrorStrings.clear();

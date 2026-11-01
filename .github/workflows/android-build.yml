@@ -56,6 +56,8 @@ env:
 jobs:
   Build:
     runs-on: ${{ inputs.image }}
+    env:
+      LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
 
     steps:
       - name: Check disk space
@@ -249,7 +251,6 @@ jobs:
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
           LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
-          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
         run: |
           scripts/o3de.sh register --this-engine
           python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}

@@ -42,7 +42,7 @@
 #include <AzFramework/Translation/TranslationDef.h>
 
 // this is called the first time a Python script contains "import azlmbr"
-PYBIND11_EMBEDDED_MODULE(azlmbr, m)
+PYBIND11_MODULE(azlmbr, m)
 {
     EditorPythonBindings::EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindings::EditorPythonBindingsNotificationBus::Events::OnImportModule, m.ptr());
 }
@@ -270,8 +270,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex& m_lock;
         int& m_lockRecursiveCounter;
         bool m_locked = false;
-        AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
-        AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
+        PyGILState_STATE m_gilState = PyGILState_UNLOCKED;
     };
 
     PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
@@ -313,8 +312,7 @@ namespace EditorPythonBindings
         // to be locked) and therefore it's already got the GIL acquired.
         if (m_lockRecursiveCounter == 1)
         {
-            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
-            m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
+            m_gilState = PyGILState_Ensure();
         }
     }
 
@@ -325,8 +323,10 @@ namespace EditorPythonBindings
             return;
         }
 
-        m_acquireGIL.reset();
-        m_releaseGIL.reset();
+        if (m_lockRecursiveCounter == 1)
+        {
+            PyGILState_Release(m_gilState);
+        }
         m_lockRecursiveCounter--;
         m_locked = false;
         m_lock.unlock();
@@ -416,6 +416,7 @@ namespace EditorPythonBindings
             ExecuteByString("import azlmbr", false);
             ExecuteBootstrapScripts(pythonPathStack);
             EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
+            m_initialThreadState = PyEval_SaveThread();
             return true;
         }
         return false;
@@ -427,6 +428,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", silenceWarnings, "Python is not active!");
             return false;
+        }
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_lock);
+        if (m_initialThreadState)
+        {
+            if (!PyGILState_Check())
+            {
+                PyEval_RestoreThread(m_initialThreadState);
+            }
+            m_initialThreadState = nullptr;
         }
 
         bool result = false;
@@ -574,7 +585,12 @@ namespace EditorPythonBindings
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
 
-        PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
+        if (PyImport_AppendInittab("azlmbr", PyInit_azlmbr) == -1
+            || PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput) == -1)
+        {
+            AZ_Error("python", false, "Could not register the embedded Python modules.");
+            return false;
+        }
         try
         {
             // Configure and start the interpreter through the PyConfig API
@@ -674,6 +690,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
+        // Python retains this table across restarts, but the binding DLL can be unloaded between applications.
+        _inittab* destination = PyImport_Inittab;
+        for (const _inittab* entry = PyImport_Inittab; entry->name; ++entry)
+        {
+            if (entry->initfunc != PyInit_azlmbr && entry->initfunc != RedirectOutput::PyInit_RedirectOutput)
+            {
+                *destination++ = *entry;
+            }
+        }
+        *destination = {};
         return true;
     }
 

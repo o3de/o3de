@@ -107,7 +107,7 @@ class TestRemoteConsole():
 
         rc_instance._send_message(msg)
 
-        assert mock_socket.sendall.called_once_with(msg)
+        mock_socket.return_value.sendall.assert_called_once_with(msg)
 
     @mock.patch('socket.socket', mock.MagicMock())
     @mock.patch('ly_remote_console.remote_console_commands.threading', mock.MagicMock())

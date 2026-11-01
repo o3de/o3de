@@ -38,6 +38,8 @@ run-name: iOS - ${{ inputs.type }}
 jobs:
   Build:
     runs-on: ${{ inputs.image }}
+    env:
+      LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
 
     steps:
       - name: Checkout repo
@@ -157,7 +159,6 @@ jobs:
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
           LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
-          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
         run: python/python.sh -u scripts/build/ci_build.py --platform iOS --type ${{ inputs.type }}
 
       - name: Compress artifacts
