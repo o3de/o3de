@@ -42,7 +42,8 @@ namespace EMotionFX
         SIMULATEJOINTS = 22,
         EMFX_DEBUG = 23,
         ROOTMOTION = 24,
-        NUM_RENDERFLAGINDEXES = 25
+        SOCKETS = 25,
+        NUM_RENDERFLAGINDEXES = 26
     };
 
     //! A set of combinable flags which indicate which render option in turned on for the actor.
@@ -73,7 +74,8 @@ namespace EMotionFX
         (SimulatedObjectColliders, AZ_BIT(ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS)),
         (SimulatedJoints, AZ_BIT(ActorRenderFlagIndex::SIMULATEJOINTS)),
         (EmfxDebug, AZ_BIT(ActorRenderFlagIndex::EMFX_DEBUG)),
-        (RootMotion, AZ_BIT(ActorRenderFlagIndex::ROOTMOTION))
+        (RootMotion, AZ_BIT(ActorRenderFlagIndex::ROOTMOTION)),
+        (Sockets, AZ_BIT(ActorRenderFlagIndex::SOCKETS))
     );
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ActorRenderFlags);
@@ -84,7 +86,7 @@ namespace EMotionFX
         ActorRenderFlags::Skeleton | ActorRenderFlags::LineSkeleton | ActorRenderFlags::NodeOrientation | ActorRenderFlags::NodeNames |
         ActorRenderFlags::RagdollColliders | ActorRenderFlags::RagdollJointLimits | ActorRenderFlags::HitDetectionColliders |
         ActorRenderFlags::ClothColliders | ActorRenderFlags::SimulatedObjectColliders | ActorRenderFlags::SimulatedJoints |
-        ActorRenderFlags::EmfxDebug;
+        ActorRenderFlags::EmfxDebug | ActorRenderFlags::Sockets;
 
     class ActorRenderFlagUtil
     {
