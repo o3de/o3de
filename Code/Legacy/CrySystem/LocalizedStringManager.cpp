@@ -1893,7 +1893,7 @@ static void LogDecompTimer(AZStd::sys_time_t nTotalTicks, AZStd::sys_time_t nDec
 
     if (!pDecompLog)
     {
-        char szFilenameBuffer[MAX_PATH];
+        char szFilenameBuffer[AZ_TRAIT_OS_MAX_PATH_LEN];
         time_t rawTime;
         time(&rawTime);
         struct tm* pTimeInfo = localtime(&rawTime);
