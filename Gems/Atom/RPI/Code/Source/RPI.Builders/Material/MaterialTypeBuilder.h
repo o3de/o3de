@@ -62,9 +62,16 @@ namespace AZ
                     MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
-                AZStd::set<AZStd::string> GetMaterialPipelinePaths() const;
-                AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines() const;
+                //! The project's default pipelines, or only those named by the material type's "materialPipelines" build setting.
+                AZStd::set<AZStd::string> GetMaterialPipelinePaths(const MaterialTypeSourceData* materialTypeSourceData = nullptr) const;
+                AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines(
+                    const MaterialTypeSourceData* materialTypeSourceData = nullptr) const;
+                //! The addressable name of a pipeline: its file stem. This is what a material type names in "materialPipelines".
                 Name GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const;
+
+                //! Shader collection name the runtime looks up via m_materialPipelineTag; the file stem unless overridden.
+                Name GetMaterialPipelineTag(
+                    const AZ::IO::Path& materialPipelineFilePath, const MaterialPipelineSourceData& materialPipeline) const;
 
             } m_pipelineStage;
 

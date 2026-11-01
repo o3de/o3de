@@ -30,14 +30,16 @@ namespace AtomToolsFramework
     {
         using NodeValueTypeRef = typename NodeContainer::const_reference;
 
-        // Pre-calculate and cache sorting scores for all nodes to avoid reprocessing during the sort
+        // Cache sort scores; node ID breaks ties so the order stays stable when the unordered node map rehashes.
         AZStd::mutex nodeScoreMapMutex;
-        AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t>> nodeScoreMap;
+        AZStd::unordered_map<GraphModel::NodeId, AZStd::tuple<bool, bool, uint32_t, GraphModel::NodeId>> nodeScoreMap;
         nodeScoreMap.reserve(nodes.size());
 
         AZ::parallel_for_each(nodes.begin(), nodes.end(), [&](NodeValueTypeRef node) {
             AZStd::scoped_lock lock(nodeScoreMapMutex);
-            nodeScoreMap.emplace(node->GetId(), AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth()));
+            nodeScoreMap.emplace(
+                node->GetId(),
+                AZStd::make_tuple(node->HasInputSlots(), !node->HasOutputSlots(), node->GetMaxInputDepth(), node->GetId()));
         });
 
         AZStd::stable_sort(nodes.begin(), nodes.end(), [&](NodeValueTypeRef nodeA, NodeValueTypeRef nodeB) {

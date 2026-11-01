@@ -18,9 +18,10 @@ namespace AtomToolsFramework
 
     AssetStatusReporterState AssetStatusReporter::Update()
     {
-        if (GetCurrentState() == AssetStatusReporterState::Processing)
+        // Advance past all settled paths per call, not one, to avoid a 10 ms-per-path floor; terminates as m_index only grows.
+        while (GetCurrentState() == AssetStatusReporterState::Processing)
         {
-            const AZStd::string& sourcePath = GetCurrentPath();
+            const AZStd::string sourcePath = GetCurrentPath();
 
             AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
@@ -46,7 +47,7 @@ namespace AtomToolsFramework
                     {
                     case AzToolsFramework::AssetSystem::JobStatus::Queued:
                     case AzToolsFramework::AssetSystem::JobStatus::InProgress:
-                        // If any of the asset jobs are queued or in progress then return early until the next status request.
+                        // This path still has work outstanding. Stop draining here and re-check it on the next status request.
                         return GetCurrentState();
                     }
                 }
