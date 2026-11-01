@@ -123,15 +123,21 @@ namespace AzToolsFramework
                         // Connect thumbnailer component to the busy label repaint signal to notify the asset browser as it changes. 
                         AzQtComponents::StyledBusyLabel* busyLabel = {};
                         AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
-                        QObject::connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, m_placeholderObject.get(), [](){
-                            AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
-                        });
+                        if (busyLabel)
+                        {
+                            QObject::connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, m_placeholderObject.get(), [](){
+                                AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
+                            });
+                        }
 
                         // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
                         // disconnect from all of the signals.
                         QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail, busyLabel]()
                             {
-                                QObject::disconnect(busyLabel, nullptr, m_placeholderObject.get(), nullptr);
+                                if (busyLabel)
+                                {
+                                    QObject::disconnect(busyLabel, nullptr, m_placeholderObject.get(), nullptr);
+                                }
                                 QObject::disconnect(thumbnail.get(), nullptr, key.get(), nullptr);
 
                                 QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, key.get(), &ThumbnailKey::ThumbnailUpdated);
