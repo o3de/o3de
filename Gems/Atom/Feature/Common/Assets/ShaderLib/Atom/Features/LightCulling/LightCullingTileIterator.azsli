@@ -8,8 +8,15 @@
 
 #pragma once
 
-#include <Atom/Features/LightCulling/LightCullingShared.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
+
+#if ENABLE_LIGHT_CULLING
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+#else
+// Keep the iterator usable without pulling in the light-culling implementation.
+#define NVLC_END_OF_LIST     0xFFFF
+#define NVLC_END_OF_GROUP    0xFFFE
+#endif
 
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator
