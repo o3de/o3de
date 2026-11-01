@@ -1129,7 +1129,7 @@ void    XmlParserImp::onStartElement(const char* tagName, const char** atts)
         node->AddRef(); // Childs need to be add refed.
     }
 
-    node->setLine(static_cast<int>(XML_GetCurrentLineNumber((XML_Parser)m_parser)));
+    node->setLine(static_cast<int>(XML_GetCurrentLineNumber64((XML_Parser)m_parser)));
 
     // Call start element callback.
     int i = 0;
@@ -1314,7 +1314,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
         else
         {
             char str[1024];
-            azsprintf(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser));
+            azsprintf(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber64(m_parser));
             errorString = str;
             if (!bSuppressWarnings)
             {
@@ -1442,7 +1442,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         }
         else
         {
-            azsprintf(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser), filename);
+            azsprintf(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber64(m_parser), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         }
