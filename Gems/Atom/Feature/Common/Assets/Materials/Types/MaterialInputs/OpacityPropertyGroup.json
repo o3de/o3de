@@ -74,6 +74,30 @@
                 "type": "ShaderInput",
                 "name": "m_opacityAffectsSpecularFactor"
             }
+        },
+        {
+            "name": "alphaToCoverage",
+            "displayName": "Alpha to Coverage",
+            "description": "Cutout only. Emits per-sample coverage for the edge band instead of a hard clip, so MSAA anti-aliases the cutout silhouette. The depth pre-pass and forward pass emit the same mask.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_alphaToCoverage"
+            }
+        },
+        {
+            "name": "edgeSoftness",
+            "displayName": "Edge Softness",
+            "description": "Extra width of the anti-aliased alpha-to-coverage band around the cutout edge, in screen pixels. 0 gives a band about one pixel wide; higher values widen it regardless of how soft the alpha texture is.",
+            "type": "Float",
+            "min": 0.0,
+            "max": 3.0,
+            "defaultValue": 0.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_opacityEdgeSoftness"
+            }
         }
     ],
     "functors": [
